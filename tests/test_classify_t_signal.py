@@ -234,6 +234,19 @@ def test_strongest_rule_wins_high_over_low(tmp_path: Path, classify) -> None:
     assert result["confidence"] == "high"
 
 
+def test_issue_closed_wins_alphabetical_tiebreak_over_retro_lesson(tmp_path: Path, classify) -> None:
+    repo = tmp_path / "repo"
+    env = _setup_with_baseline(repo)
+    _write(repo, "charness-artifacts/retro/2026-05-22-collision-session.md", "lesson\n")
+    _commit(repo, "Land retro lesson\n\nCloses #999", env)
+
+    result = classify(repo)
+
+    assert result["rule_id"] == "issue-closed"
+    assert result["t_status"] == "issue_closed"
+    assert result["confidence"] == "high"
+
+
 def test_tie_broken_alphabetically_by_rule_id(tmp_path: Path, classify) -> None:
     repo = tmp_path / "repo"
     env = _setup_with_baseline(repo)

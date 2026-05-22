@@ -241,6 +241,12 @@ def _collect_candidates(
 
 
 def _select_strongest(candidates: list[dict]) -> dict | None:
+    # Spec-fixed tie-break: highest confidence first, then rule_id alphabetical for
+    # determinism. Consequence: when a retro-lesson commit also says "Closes #N",
+    # both rules fire at `high` and `issue-closed` sorts before
+    # `retro-lesson-path-added`, so the diff-side signal loses to the
+    # commit-message signal. Revisit only if reporting demands the substantive
+    # rule win the trailer-style rule.
     if not candidates:
         return None
     return sorted(

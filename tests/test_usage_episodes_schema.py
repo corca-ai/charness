@@ -50,7 +50,7 @@ def ceal_episode() -> dict:
             "ref": "issue-171-hlam-usage-episodes",
         },
         "t_evidence": {
-            "rule_id": "issue-closed",
+            "rule_id": "product-stub-rule",
             "confidence": "medium",
             "matched_paths": ["charness-artifacts/spec/issue-171-hlam-usage-episodes.md"],
             "commit_refs": ["deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"],

@@ -13,23 +13,19 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.10`; local `main` is 7 commits ahead of
+- Current shipped release is `v0.7.10`; local `main` is 9 commits ahead of
   origin pending push.
-- Bug-pattern sibling scan complete; the adapter-resolved hitl writer
-  migration and gitignore-aware standing scans landed alongside the
-  generated reference docs split under `docs/generated/`.
-- Usage episodes adapter remains `enabled: false`. Slice A of the
+- Usage-episodes adapter remains `enabled: false`. Slice A of the
   [H-LAM/T completion spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
-  landed in commit `33a5c57`: episode schema gained `session_id`,
-  `t_evidence`, and `classification_skipped` with the conditional clause;
-  the new [classify_t_signal helper](../scripts/classify_t_signal.py) runs
-  the diff-rule catalog; the slice-closeout emitter attaches `session_id`
-  from
-  `.charness/usage-episodes/sessions/current` plus the classifier's
-  `t_status`/`t_evidence` (or `classification_skipped` on skip); validator
-  returns `no_records` warning when `enabled:true` with no records yet.
-- Slice B (host SessionStart hook surface + `charness session-capture status`
-  CLI) is not yet executed.
+  landed (commit `33a5c57`) plus critique follow-ups: schema carries
+  `session_id`, `t_evidence`, `classification_skipped`; the
+  [classify_t_signal helper](../scripts/classify_t_signal.py) feeds the
+  slice-closeout emitter; validator returns `no_records` warning when
+  `enabled:true` with no records yet; CEAL fixture uses a generic
+  `product-stub-rule`; the alphabetical tie-break (`issue-closed` beats
+  `retro-lesson-path-added` at `high`/`high`) is pinned by test and inline
+  comment. Slice B (host hooks + `charness session-capture status`) is not
+  yet executed.
 
 ## Next Session
 
@@ -50,11 +46,16 @@
 - Static `check-current-pointer-writes` scanner only catches string-literal
   writes; future adapter-resolved writers must adopt the helper by convention
   until D19's reopen trigger fires.
-- Step-env leakage into nested test-command coverage probes is a class of bug;
-  subprocess tests that build `env={**os.environ, ...}` must scrub
-  workflow-controlled `MUTATION_*` keys before invoking the script under test.
-- Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; release proof suppression.
+- Step-env leakage into nested test-command coverage probes: subprocess tests
+  building `env={**os.environ, ...}` must scrub workflow-controlled
+  `MUTATION_*` keys before invoking the script under test.
+- Watch list: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
+  `pytest-xdist`; seed-cache LRU eviction; release proof suppression.
+- Usage-episodes non-blockers from Slice A critique to reopen when reporting
+  consumes episode data: schema cannot enforce `classification_skipped`
+  required-when-classifier-invoked; `issue-closed` uses `<commit-message>`
+  as a matched_paths sentinel; emitter's `emit_failed` reports only the
+  exception class name.
 
 ## References
 
