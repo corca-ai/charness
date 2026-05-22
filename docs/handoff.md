@@ -38,10 +38,10 @@
 3. Reopen-trigger watchlist after enable: D21 (orphan hook after checkout
    move), D22 (depth cap on hook script repo-root walk), D23 (Codex TOML
    block dedup + boundary), D24 (closeout emitter best-effort), D25 (per-host
-   install exit code), D26 (hook command interpreter). The maintainer-filed
-   GH issue for the test isolation leak in
+   install exit code), D26 (hook command interpreter). Issue #194 tracks the
+   test isolation leak in
    [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py)
-   is the most likely first hit once the next test run rewrites
+   and is the most likely first hit once the next test run rewrites
    `host-hooks-state.json`.
 
 ## Discuss
