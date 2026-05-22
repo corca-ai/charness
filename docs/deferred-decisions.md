@@ -179,6 +179,30 @@ Reopen trigger:
 - Impact surfaces: [scripts/check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
 - Reopen trigger: When a second adapter-resolved current-pointer sibling that bypasses the string-literal scanner appears, or when more than one new skill adds a `latest.md` / `latest.json` writer through adapter-resolved paths without the helper.
 
+### D20. Usage-Episodes Host-Hook State Per-Checkout Scope
+
+- Question: Should `.charness/usage-episodes/host-hooks-state.json` be widened to detect side-by-side charness checkouts so `session-capture status` does not report "in sync" when a sibling checkout has also installed its own SessionStart hook?
+- Current choice: Defer. State stays per-checkout; two checkouts each install their own command-path entry and both fire on each host session. Reporting reads only the local state.
+- Why now: Two-checkout setups are rare and the spec's last-writer-wins semantics already permit duplicate `sessions/<id>/start.json` records. Adding cross-checkout discovery requires a machine-scoped registry that is out of scope for Slice B.
+- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py), [charness-artifacts/spec/usage-episodes-h-lam-t-completion.md](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
+- Reopen trigger: When duplicate-recording on the same machine starts contaminating reporting, or when a maintainer reports confusion about which checkout installed an active hook.
+
+### D21. Stale Host-Hook Entries After Checkout Path Change
+
+- Question: How should charness recover the host-side SessionStart entry when the source checkout is moved to a new path so the recorded `command` string no longer matches any entry in host settings?
+- Current choice: Defer cleanup tooling. Uninstall silently no-ops when the recorded command does not match; the maintainer must hand-edit `~/.claude/settings.json` or `~/.codex/config.toml` to remove the orphan.
+- Why now: Slice B's success criteria are satisfied by the install/uninstall round-trip on a single canonical checkout path; orphan cleanup is a follow-up surface needing its own design.
+- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py)
+- Reopen trigger: First report of an orphaned host hook after a checkout move, or when `session-capture status` starts reporting confusing drift caused by a stale path.
+
+### D22. Hook Script Depth Cap for Repo-Root Discovery
+
+- Question: Should [`scripts/usage_episode_session_start.py`](../scripts/usage_episode_session_start.py)'s `_discover_repo_root` add a hard depth cap on the parent-directory walk?
+- Current choice: Defer. The existing `seen`-set already prevents infinite loops via symlink cycles, and typical walks resolve in 2–3 parent levels.
+- Why now: No reported stalls on network mounts, and adding a constant adds friction without a forcing function.
+- Impact surfaces: [scripts/usage_episode_session_start.py](../scripts/usage_episode_session_start.py)
+- Reopen trigger: First report of a host session blocking on SessionStart due to slow parent traversal.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

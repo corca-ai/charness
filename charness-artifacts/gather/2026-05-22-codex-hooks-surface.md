@@ -1,7 +1,7 @@
 # Codex Hooks Surface
 
 - Source: https://developers.openai.com/codex/hooks
-- Fetched: 2026-05-22 (WebFetch direct fetch; `gather_public_url.py` misclassified as login-wall)
+- Fetched: 2026-05-22; refreshed 2026-05-23 for precedence details
 - Access mode: direct public web fetch
 - Use: design context for charness usage-episodes session tracking
 
@@ -76,4 +76,37 @@ The Codex docs do not mention Claude Code. From repo prior knowledge, Claude Cod
 - Exact `hook_event_name` strings (e.g., is it `"SessionStart"` literal or some other form?). Confirm before wiring an emitter.
 - Whether hook scripts can write to the same JSONL safely under concurrent turns/sessions. Likely fine if append-only with a lock, but unverified.
 - Whether `session_id` is stable across `resume` of the same session (vs being a new id on each resume). Critical for session-grouping semantics.
-- Codex hook discovery precedence when both `hooks.json` and `config.toml` define the same event — first-wins, both-run, or override?
+
+## Source Precedence (refreshed 2026-05-23)
+
+Direct quotes from the Codex hooks doc address what was previously the open
+precedence gap:
+
+- "If more than one hook source exists, Codex loads all matching hooks.
+  Higher-precedence config layers don't replace lower-precedence hooks."
+- "Matching hooks from multiple files all run."
+- "If a single layer contains both `hooks.json` and inline `[hooks]`, Codex
+  merges them and warns at startup. Prefer one representation per layer."
+
+Implications:
+
+- `hooks.json` and `config.toml` are *additive*, not override. Both run when
+  both exist.
+- Within one layer (e.g., user-level), defining hooks in *both* `hooks.json`
+  and `config.toml` triggers a Codex startup warning. The doc's guidance is
+  "one representation per layer."
+- The four common locations load in this precedence order (lower to higher):
+  `~/.codex/hooks.json`, `~/.codex/config.toml`, `<repo>/.codex/hooks.json`,
+  `<repo>/.codex/config.toml`. Precedence affects managed policy enforcement,
+  not whether hooks run.
+
+Install-target rule for charness usage-episodes:
+
+- Default install target is `~/.codex/config.toml` because it is the file most
+  Codex users already configure for other settings, and TOML supports the
+  inline `# charness:usage-episodes` marker the spec already references.
+- If `~/.codex/hooks.json` exists with any hook entries when reconciliation
+  runs, install to `hooks.json` instead of `config.toml` for that layer to
+  honor "one representation per layer" and avoid the merge warning. Without
+  TOML comments available, JSON entries are identified by state-file hash
+  only.

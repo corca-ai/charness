@@ -15,3 +15,14 @@ privacy:
 rotation:
   max_files: 10
   max_size_mb: 10
+# host_hooks installs a SessionStart hook into the named host's settings via
+# `charness init`/`charness update`. Default disabled to keep host settings
+# untouched. Set the host you want capture from to `enabled` and re-run
+# `charness update` (or `charness session-capture install`) to install the hook.
+# Claude target: ~/.claude/settings.json (`hooks.SessionStart`).
+# Codex target: ~/.codex/config.toml unless ~/.codex/hooks.json already carries
+# hook entries on the user layer, in which case charness installs to hooks.json
+# instead to honor the Codex "one representation per layer" guidance.
+# host_hooks:
+#   claude: disabled
+#   codex: disabled

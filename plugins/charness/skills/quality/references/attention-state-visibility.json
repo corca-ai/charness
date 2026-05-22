@@ -98,6 +98,12 @@
       "evidence_terms": ["skipped"],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
+    "scripts/host_hook_install_lib.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["intent", "disabled"],
+      "rationale": "Host-hook install/uninstall library exposes per-host intent (enabled/disabled) in reconcile and status payloads so adapter-driven no-op runs cannot read as silent install."
+    },
     "scripts/install_machine_local.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary"],
@@ -163,6 +169,12 @@
       "visibility": ["terminal_payload"],
       "evidence_terms": ["mode", "disabled"],
       "rationale": "Tool update reports disabled adapter state as structured skipped output."
+    },
+    "scripts/usage_episode_session_start.py": {
+      "states": ["disabled", "no_adapter"],
+      "visibility": ["local_noop_not_closeout"],
+      "evidence_terms": ["status", "no_adapter", "disabled"],
+      "rationale": "SessionStart hook payload returns local no-op statuses (no_adapter, disabled) so optional capture can stay silent without ever being treated as closeout proof; statuses are surfaced via CHARNESS_SESSION_START_DEBUG diagnostics."
     },
     "scripts/validate_cautilus_proof.py": {
       "states": ["disabled"],

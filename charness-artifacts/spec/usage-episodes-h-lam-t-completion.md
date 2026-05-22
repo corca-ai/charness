@@ -58,9 +58,18 @@ that can answer the maintainer's question.
 
 - charness writes a `SessionStart` hook entry to:
   - `~/.claude/settings.json` (or repo `.claude/settings.json` when present)
-  - `~/.codex/config.toml` *or* `~/.codex/hooks.json` (precedence between the
-    two must be resolved before Slice B opens — see Slice B step 0). Repo-level
-    equivalents take precedence when present, matching the Codex docs.
+  - `~/.codex/config.toml` as the default Codex install target. The Codex docs
+    confirm `hooks.json` and `config.toml` are *additive* — both run when both
+    exist — but the doc explicitly warns "If a single layer contains both
+    `hooks.json` and inline `[hooks]`, Codex merges them and warns at startup.
+    Prefer one representation per layer." (See
+    [codex hooks surface](../gather/2026-05-22-codex-hooks-surface.md).) To
+    honor that guidance and avoid the merge warning, charness installs to
+    `~/.codex/config.toml` unless `~/.codex/hooks.json` already exists with at
+    least one hook entry, in which case the install target for that layer
+    becomes `hooks.json`. Repo-level equivalents take precedence when present,
+    matching the Codex docs; the same `hooks.json`-already-present rule
+    applies per layer.
 - The hook command runs a small charness script (e.g.
   `scripts/usage_episode_session_start.py`) that:
   1. Reads `.agents/usage-episodes-adapter.yaml`. If absent or
@@ -197,8 +206,6 @@ These are checked during implementation; their answers may revise this spec.
   a fresh id? If fresh, gap-based clustering still works; if stable, gap-based
   clustering may over-merge resumed sessions. Validate against real
   resume behavior.
-- Do Codex `hooks.json` and `config.toml` cooperate or override on conflict?
-  Confirm precedence before choosing the install target.
 - Does Claude Code merge multiple `SessionStart` arrays from
   user + project settings, or does the more specific one override? Confirm
   before assuming the maintainer's other hooks survive a charness install.
@@ -227,10 +234,15 @@ Behavioral, measurable claims this slice must satisfy:
 1. With `enabled: true` and `host_hooks: disabled`, `charness init` and
    `charness update` make zero changes to any host settings file.
 2. With `host_hooks.claude: enabled`, `charness update` adds exactly one
-   `SessionStart` hook entry to the resolved Claude settings file, with the
-   `charness:usage-episodes` marker on the command line, and records the
-   install in `.charness/usage-episodes/host-hooks-state.json`. Same applies <!-- reproduction-source -->
-   to Codex independently.
+   `SessionStart` hook entry to the resolved Claude settings file and
+   records the install in `.charness/usage-episodes/host-hooks-state.json` <!-- reproduction-source -->
+   so future uninstall/reconcile can identify it. Same applies to Codex
+   independently; the Codex TOML install also writes a
+   `# charness:usage-episodes` comment line above the inserted
+   `[[hooks.SessionStart]]` block for human-visible identification. Claude
+   `settings.json` and Codex `hooks.json` carry no inline marker (strict
+   JSON, no comments); state-file matching is the sole identification path
+   for those formats.
 3. With `host_hooks.claude: disabled` after a prior install,
    `charness update` removes only the charness-installed entry (verified by
    diffing against fresh-state and marker presence) and leaves any other
@@ -293,12 +305,12 @@ Two slices to keep each commit reviewable.
 
 **Slice B — host hook surface and CLI**
 
-0. Resolve the Codex `hooks.json` vs `config.toml` install-target question.
-   Verify against the live Codex install behavior (small probe) or refresh
-   the gather record at
-   [gather/2026-05-22-codex-hooks-surface.md](../gather/2026-05-22-codex-hooks-surface.md).
-   Promote the chosen target to a Fixed Decision in this spec before
-   proceeding.
+0. **Done.** Codex precedence resolved against the refreshed
+   [gather/2026-05-22-codex-hooks-surface.md](../gather/2026-05-22-codex-hooks-surface.md):
+   `hooks.json` and `config.toml` are additive, but Codex warns when a layer
+   defines both. Default install target promoted to `~/.codex/config.toml`,
+   with a fallback to `~/.codex/hooks.json` when the JSON file already carries
+   hook entries on that layer. See the Host hook surface Fixed Decision above.
 1. Add `scripts/usage_episode_session_start.py` (the SessionStart hook
    payload script). Self-check the adapter; write
    `sessions/<id>/start.json`; refresh `sessions/current` via the symlink-safe

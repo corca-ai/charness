@@ -3155,6 +3155,35 @@ def print_tool_human_summary(payload: dict[str, object]) -> None:
         _print_tool_result_block(tool_id, result)
 
 
+def reconcile_usage_episodes_host_hooks(
+    repo_root: Path,
+    *,
+    home_root: Path,
+) -> dict[str, object] | None:
+    if not (repo_root / ".agents" / "usage-episodes-adapter.yaml").is_file():
+        return None
+    if not (repo_root / "scripts" / "reconcile_usage_episodes_host_hooks.py").is_file():
+        return None
+    try:
+        payload = invoke_repo_json_script(
+            repo_root,
+            "scripts/reconcile_usage_episodes_host_hooks.py",
+            "--repo-root",
+            str(repo_root),
+            "--home",
+            str(home_root),
+            "--mode",
+            "reconcile",
+            "--json",
+            allow_failure=True,
+        )
+    except CharnessError as exc:
+        return {"status": "runner_error", "error": str(exc)}
+    if isinstance(payload, dict):
+        return payload
+    return {"status": "runner_error", "error": "reconcile runner produced no JSON payload"}
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
@@ -3183,6 +3212,12 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=False,
     )
+    host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
+        Path(checkout["repo_root"]),
+        home_root=home_root,
+    )
+    if host_hooks_reconcile is not None:
+        payload["usage_episodes_host_hooks"] = host_hooks_reconcile
     if (
         EMBEDDED_REPO_ROOT is None
         and not args.skip_cli_install
@@ -3298,6 +3333,12 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
+    host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
+        Path(checkout["repo_root"]),
+        home_root=home_root,
+    )
+    if host_hooks_reconcile is not None:
+        payload["usage_episodes_host_hooks"] = host_hooks_reconcile
     payload["previous_checkout_version"] = previous_checkout_version
     initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
@@ -3973,6 +4014,91 @@ def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     return Path(target).resolve()
 
 
+def _session_capture_invoke(
+    args: argparse.Namespace,
+    *,
+    mode: str,
+    extra: list[str] | None = None,
+) -> tuple[Path, object]:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    checkout_payload = ensure_checkout(
+        repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )
+    charness_repo_root = Path(checkout_payload["repo_root"])
+    script_args = [
+        "--repo-root",
+        str(charness_repo_root),
+        "--home",
+        str(home_root),
+        "--mode",
+        mode,
+        "--json",
+    ]
+    if extra:
+        script_args.extend(extra)
+    payload = invoke_repo_json_script(
+        charness_repo_root,
+        "scripts/reconcile_usage_episodes_host_hooks.py",
+        *script_args,
+        allow_failure=True,
+    )
+    return charness_repo_root, payload
+
+
+def cmd_session_capture_status(args: argparse.Namespace) -> int:
+    _, payload = _session_capture_invoke(args, mode="status")
+    if not isinstance(payload, dict):
+        raise CharnessError("session-capture status returned no JSON payload")
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        in_sync = payload.get("in_sync") is True
+        print(f"IN_SYNC: {'yes' if in_sync else 'no'}")
+        hosts = payload.get("hosts")
+        if isinstance(hosts, dict):
+            for host, entry in hosts.items():
+                if not isinstance(entry, dict):
+                    continue
+                actual = entry.get("actual", {})
+                intent = entry.get("intent", "?")
+                present = actual.get("present") if isinstance(actual, dict) else None
+                settings_path = actual.get("settings_path") if isinstance(actual, dict) else None
+                print(f"{host.upper()}: intent={intent} present={'yes' if present else 'no'} settings={settings_path}")
+        drift = payload.get("drift")
+        if isinstance(drift, list) and drift:
+            print("DRIFT:")
+            for item in drift:
+                print(f"  - {item}")
+    return 0 if payload.get("in_sync") is True else 1
+
+
+def cmd_session_capture_install(args: argparse.Namespace) -> int:
+    extra: list[str] = []
+    if getattr(args, "host", None):
+        extra.extend(["--host", args.host])
+    _, payload = _session_capture_invoke(args, mode="install", extra=extra)
+    if not isinstance(payload, dict):
+        raise CharnessError("session-capture install returned no JSON payload")
+    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_session_capture_uninstall(args: argparse.Namespace) -> int:
+    extra: list[str] = []
+    if getattr(args, "host", None):
+        extra.extend(["--host", args.host])
+    _, payload = _session_capture_invoke(args, mode="uninstall", extra=extra)
+    if not isinstance(payload, dict):
+        raise CharnessError("session-capture uninstall returned no JSON payload")
+    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_worktree_doctor(args: argparse.Namespace) -> int:
     lib = _load_worktree_lib(args)
     payload = lib.run_doctor(_resolve_worktree_target(args))
@@ -4387,6 +4513,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip support skill rematerialization after update.",
     )
     tool_update_parser.set_defaults(func=cmd_tool_update)
+
+    session_capture_parser = subparsers.add_parser(
+        "session-capture",
+        help="Inspect and reconcile the SessionStart hook charness installs into Claude/Codex for usage-episodes capture.",
+    )
+    session_capture_subparsers = session_capture_parser.add_subparsers(dest="session_capture_command", required=True)
+
+    def add_session_capture_common_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--home-root", type=Path, default=default_home_root(), help="Home root used to resolve host settings paths (default: $HOME).")
+        command.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
+        command.add_argument("--repo-url", default=REPO_URL)
+        command.add_argument("--json", action="store_true")
+
+    session_capture_status_parser = session_capture_subparsers.add_parser(
+        "status",
+        help="Report adapter intent vs actual host settings; exits 0 in sync, 1 on drift.",
+    )
+    add_session_capture_common_args(session_capture_status_parser)
+    session_capture_status_parser.set_defaults(func=cmd_session_capture_status)
+
+    session_capture_install_parser = session_capture_subparsers.add_parser(
+        "install",
+        help="Install the SessionStart hook entry for the requested host(s) without running a full charness update.",
+    )
+    add_session_capture_common_args(session_capture_install_parser)
+    session_capture_install_parser.add_argument("--host", choices=["claude", "codex"], help="Restrict the install to a single host; default installs both.")
+    session_capture_install_parser.set_defaults(func=cmd_session_capture_install)
+
+    session_capture_uninstall_parser = session_capture_subparsers.add_parser(
+        "uninstall",
+        help="Remove the charness-installed SessionStart hook entry from the requested host(s).",
+    )
+    add_session_capture_common_args(session_capture_uninstall_parser)
+    session_capture_uninstall_parser.add_argument("--host", choices=["claude", "codex"], help="Restrict the uninstall to a single host; default removes from both.")
+    session_capture_uninstall_parser.set_defaults(func=cmd_session_capture_uninstall)
 
     worktree_parser = subparsers.add_parser(
         "worktree",

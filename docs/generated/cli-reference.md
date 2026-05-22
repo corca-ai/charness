@@ -9,14 +9,14 @@ Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --outp
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,capability,tool,worktree}
+                {init,update,doctor,version,uninstall,reset,task,capability,tool,session-capture,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,capability,tool,worktree}
+  {init,update,doctor,version,uninstall,reset,task,capability,tool,session-capture,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -36,6 +36,8 @@ positional arguments:
                         inspect provider readiness.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
+    session-capture     Inspect and reconcile the SessionStart hook charness
+                        installs into Claude/Codex for usage-episodes capture.
     worktree            Create, inspect, prepare, and clean up git worktrees
                         so mutate-phase work runs against installed
                         dependencies and live hooks.
