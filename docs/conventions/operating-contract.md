@@ -90,6 +90,13 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 - After a release or dogfood cycle, `charness update` with no flags restores
   the managed-checkout flow.
 
+## Local Enforcement Policy
+
+- `./scripts/run-quality.sh --read-only` is enforced locally via `.githooks/pre-push`. Every push runs the read-only gate plus current-pointer freshness, plugin manifest sync, and the artifact-mutation guard.
+- The only checked-in workflow is [`scheduled-deeper-check`](../../.github/workflows/mutation-tests.yml). It is marked `# charness:gate-policy scheduled-deeper-check` and is intentionally exempt from CI/local gate parity by [`inventory_ci_local_gate_parity.py`](../../skills/public/quality/scripts/inventory_ci_local_gate_parity.py).
+- PR CI does **not** mirror the read-only quality gate. This is the intended posture under the current single-maintainer push model: the pre-push hook owns standing enforcement, and no recurring external PR contribution path exists yet. Quality reviews that flag "no non-exempt PR CI workflow runs the local gate" should treat that as intended, not missing.
+- Reopen trigger: when external PR contribution becomes a recurring path (more than one outside contributor PR per release cycle), add a conditional PR CI workflow that mirrors `./scripts/run-quality.sh --read-only` for `pull_request.head.repo.full_name != github.repository`.
+
 ## Session Discipline
 
 - Update [docs/handoff.md](../handoff.md) when the next session's first move changed.

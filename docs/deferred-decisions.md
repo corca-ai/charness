@@ -171,6 +171,14 @@ Reopen trigger:
 - Impact surfaces: [docs/public-skill-dogfood.json](./public-skill-dogfood.json), [evals/cautilus/](../evals/cautilus/), [charness-artifacts/spec/readme-proof-cautilus-eval-migration.md](../charness-artifacts/spec/readme-proof-cautilus-eval-migration.md), [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [scripts/agent-runtime/run-local-eval-test.mjs](../scripts/agent-runtime/run-local-eval-test.mjs)
 - Reopen trigger: When the Cautilus adapter `run_mode` leaves `disabled` or when an unrelated workspace-write dogfood slice is started, whichever comes first; the next session that re-enables Cautilus must land both the workspace-write carrier and the routing-eval `--read-only` wiring before treating the read-only versus workspace-write split as closed.
 
+### D19. Current-Pointer Write Scanner Generalization
+
+- Question: Should [check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py) detect adapter-resolved current-pointer writes via taint analysis, or rely on per-writer helper adoption?
+- Current choice: Defer scanner generalization; rely on helper-adoption convention for adapter-resolved writers. The static scanner continues to catch string-literal `latest.md` / `latest.json` writes only.
+- Why now: Only one adapter-resolved sibling ([hitl sync_review_artifact.py](../skills/public/hitl/scripts/sync_review_artifact.py)) was discovered, and it was closed in commit `0364886` by migrating to `write_current_pointer_text`. Adding taint analysis on a single sample is premature; the fixture matrix and false-positive surface are larger than the leak surface.
+- Impact surfaces: [scripts/check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
+- Reopen trigger: When a second adapter-resolved current-pointer sibling that bypasses the string-literal scanner appears, or when more than one new skill adds a `latest.md` / `latest.json` writer through adapter-resolved paths without the helper.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and
