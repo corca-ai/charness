@@ -55,7 +55,7 @@ Output contract:
 3. Add `charness worktree doctor` and `charness worktree prepare` subcommands wired through the existing argparse tree in `charness`.
 4. Wire `impl` SKILL.md `Bootstrap` block to call `charness worktree doctor --json` non-fatally and surface the next action only when status is non-pass. Same wiring on `hitl`.
 5. Add `tests/charness_cli/test_worktree_doctor.py` with deterministic fixtures for: clean worktree, missing `node_modules` + lefthook present, husky `_` directory missing, manifest-declared command failure.
-6. Sync `docs/cli-reference.md` (`scripts/render_cli_reference.py`) and `docs/worktree-prepare.md`. Update `docs/handoff.md` `Current State` and `Next Session`.
+6. Sync `docs/generated/cli-reference.md` (`scripts/render_cli_reference.py`) and `docs/worktree-prepare.md`. Update `docs/handoff.md` `Current State` and `Next Session`.
 7. Add a portable `setup` preset slot for the worktree adapter (seeded only when the consumer repo opts in via `--seed-worktree-adapter` or equivalent post-init prompt).
 
 ## Fixed Decisions
@@ -89,7 +89,7 @@ Output contract:
 4. With a manifest declaring `prepare.commands: ["echo hi"]`, `charness worktree prepare` executes the command and reports it in `executed[0]`.
 5. In a synthetic worktree where lefthook shim references a missing `node_modules/lefthook-*/bin/lefthook` and `lefthook` is not on PATH, `charness worktree doctor` exits non-zero and the `next_action` field names `charness worktree prepare`.
 6. `impl` SKILL.md and `hitl` SKILL.md both reference `charness worktree doctor` in their bootstrap surface.
-7. `docs/cli-reference.md` regeneration produces no drift after the new commands are wired and `tests/quality_gates/test_command_docs_gate.py` (or its equivalent) stays green.
+7. `docs/generated/cli-reference.md` regeneration produces no drift after the new commands are wired and `tests/quality_gates/test_command_docs_gate.py` (or its equivalent) stays green.
 8. `node_modules` is never written, copied, or symlinked by any charness-owned code path introduced in this slice.
 9. The new code paths add no new external binary dependency to charness itself; manifests can declare their own.
 
@@ -97,7 +97,7 @@ Output contract:
 
 - Unit/library tests in `tests/charness_cli/test_worktree_doctor.py` covering: no-manifest pass, lefthook shim missing fallback, husky `_` missing, manifest command success, manifest command failure, post-prepare doctor still failing.
 - Manual proof: create a temp git worktree on this repo with `git worktree add /tmp/charness-wt-proof HEAD`, then run `python3 scripts/worktree_doctor.py --json --repo-root /tmp/charness-wt-proof` and confirm clean pass (charness has no node_modules / lefthook so canonical checks should be `skipped` not `fail`).
-- Render proof: run `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md` and confirm no drift after the wiring slice.
+- Render proof: run `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md` and confirm no drift after the wiring slice.
 - Closeout: bounded fresh-eye subagent critique against the new manifest contract before commit.
 
 ## References

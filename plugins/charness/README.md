@@ -54,7 +54,7 @@ of guessing. For day-to-day operation, start with `charness --help`,
 Use `charness update all` when you also want to refresh tracked external tools
 and bundled support skills.
 
-For the full command surface, see [CLI Reference](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md).
+For the full command surface, see [CLI Reference](https://github.com/corca-ai/charness/blob/main/docs/generated/cli-reference.md).
 
 ## Workflow Routes
 
@@ -161,7 +161,7 @@ See [Support Skill Policy](https://github.com/corca-ai/charness/blob/main/docs/s
 README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
-- CLI command reference: [docs/cli-reference.md](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)
+- CLI command reference: [docs/generated/cli-reference.md](https://github.com/corca-ai/charness/blob/main/docs/generated/cli-reference.md)
 - workflow route examples: [docs/workflow-routes.md](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md)
 - repo-local development and dogfood paths:
   [docs/development.md](https://github.com/corca-ai/charness/blob/main/docs/development.md)

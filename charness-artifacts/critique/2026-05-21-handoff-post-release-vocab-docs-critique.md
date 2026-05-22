@@ -23,9 +23,9 @@ same-agent fresh-eye review.
   release lands. Mitigation: the handoff now makes push/release step 1 and
   vocabulary step 2.
 - Workflow trigger ambiguity: "docs ergonomics" could be read as a generated
-  [docs/cli-reference.md](../../docs/cli-reference.md) rewrite. Mitigation:
+  [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md) rewrite. Mitigation:
   the handoff and quality latest name
-  [docs/cli-reference.md](../../docs/cli-reference.md) as generated reference
+  [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md) as generated reference
   noise and point first to [README.md](../../README.md) route/procedure trim.
 - Scope creep: usage-episode vocabulary could accidentally imply immediate
   runtime capture. Mitigation: the handoff requires either a runtime emitter or

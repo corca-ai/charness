@@ -1,7 +1,9 @@
+<!-- GENERATED: do not edit. Regenerate via `python3 scripts/render_cli_reference.py --repo-root .` -->
+
 # CLI Reference
 
 This file is generated from `./charness --help` and subcommand help output in the current checkout.
-Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`.
+Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md`.
 
 ## `charness`
 

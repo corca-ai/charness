@@ -376,7 +376,7 @@ acted before commit:
     a1-a3,a5 대응.
 11. `python3 scripts/sync_root_plugin_manifests.py --repo-root .` 실행.
 12. `python3 scripts/render_cli_reference.py --repo-root . --output
-    docs/cli-reference.md` 실행 (CLI surface가 새 propose 스크립트 알아야 할
+    docs/generated/cli-reference.md` 실행 (CLI surface가 새 propose 스크립트 알아야 할
     경우만).
 13. quality 본 실행으로 self-dogfood.
 

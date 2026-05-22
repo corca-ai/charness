@@ -365,7 +365,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert "(./skills/setup/SKILL.md)" in exported_readme_text
     assert "(./support/agent-browser/SKILL.md)" not in exported_readme_text
     assert "(./support/specdown/SKILL.md)" not in exported_readme_text
-    assert "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)" in exported_readme_text
+    assert "(https://github.com/corca-ai/charness/blob/main/docs/generated/cli-reference.md)" in exported_readme_text
     assert "(https://github.com/corca-ai/charness/blob/main/packaging/charness.json)" in exported_readme_text
 
     validate_exported_skills = run_script(

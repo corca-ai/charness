@@ -46,7 +46,7 @@ of guessing. For day-to-day operation, start with `charness --help`,
 Use `charness update all` when you also want to refresh tracked external tools
 and bundled support skills.
 
-For the full command surface, see [CLI Reference](./docs/cli-reference.md).
+For the full command surface, see [CLI Reference](./docs/generated/cli-reference.md).
 
 ## Workflow Routes
 
@@ -153,7 +153,7 @@ See [Support Skill Policy](./docs/support-skill-policy.md) for the boundary and
 README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
-- CLI command reference: [docs/cli-reference.md](./docs/cli-reference.md)
+- CLI command reference: [docs/generated/cli-reference.md](./docs/generated/cli-reference.md)
 - workflow route examples: [docs/workflow-routes.md](./docs/workflow-routes.md)
 - repo-local development and dogfood paths:
   [docs/development.md](./docs/development.md)

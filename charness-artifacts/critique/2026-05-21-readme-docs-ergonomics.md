@@ -4,7 +4,7 @@ Date: 2026-05-21
 ## Decision
 
 Trim README as a first-touch orientation surface without turning
-[docs/cli-reference.md](../../docs/cli-reference.md) into the prose owner.
+[docs/generated/cli-reference.md](../../docs/generated/cli-reference.md) into the prose owner.
 
 ## Fresh-Eye Review
 

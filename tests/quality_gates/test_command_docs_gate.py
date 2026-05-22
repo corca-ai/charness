@@ -88,4 +88,4 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "cli-reference.md").read_text(encoding="utf-8")
+    assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "generated" / "cli-reference.md").read_text(encoding="utf-8")

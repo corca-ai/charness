@@ -87,7 +87,7 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Docs ergonomics still has generated-reference noise, but README first-touch
   prose is reduced: `README.md` reports `core_nonempty_lines=135`,
   `internal_doc_link_count=37`, and no entrypoint-doc heuristics; generated
-  [docs/cli-reference.md](../../docs/cli-reference.md) remains `670` lines.
+  [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md) remains `670` lines.
 - Standing test economics still shows nested CLI fanout across `75` files and
   a multi-GB retained pytest temp footprint from real packaging/tool tests.
 - Usage-episodes validation is visible but disabled by
@@ -109,7 +109,7 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 
 ## Advisory
 - `inventory_entrypoint_docs_ergonomics.py`: generated reference length remains
-  visible in [docs/cli-reference.md](../../docs/cli-reference.md), but
+  visible in [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md), but
   first-touch duplication moved to [docs/workflow-routes.md](../../docs/workflow-routes.md).
 - `inventory_standing_test_economics.py` advisory: `nested_cli_files` are the
   review queue; reduce process-boundary proof before changing budgets.
@@ -135,6 +135,6 @@ runtime/test economics, security/supply-chain gates, and artifacts.
   `scheduled-deeper-check`.
 - passive `AUTO_CANDIDATE`: because generated-reference ownership is unresolved,
   keep docs ergonomics separate; README is below the threshold and generated
-  [docs/cli-reference.md](../../docs/cli-reference.md) remains separate.
+  [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md) remains separate.
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md); [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)

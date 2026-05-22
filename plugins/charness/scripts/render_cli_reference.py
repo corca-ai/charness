@@ -67,10 +67,12 @@ def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
 
 def render_cli_reference(repo_root: Path) -> str:
     sections = [
+        "<!-- GENERATED: do not edit. Regenerate via `python3 scripts/render_cli_reference.py --repo-root .` -->",
+        "",
         "# CLI Reference",
         "",
         "This file is generated from `./charness --help` and subcommand help output in the current checkout.",
-        "Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`.",
+        "Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md`.",
         "",
     ]
     for title, command in COMMANDS:
@@ -93,7 +95,7 @@ def render_cli_reference(repo_root: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--output", type=Path, default=Path("docs/cli-reference.md"))
+    parser.add_argument("--output", type=Path, default=Path("docs/generated/cli-reference.md"))
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
