@@ -147,6 +147,7 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
             raise RuntimeError(
                 "checked-in plugin tree does not match the generated install surface"
                 + (f" ({'; '.join(details)})" if details else "")
+                + "; re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
             )
 
         for rel_path in sorted(expected_files):
@@ -155,7 +156,8 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
             if actual_text != expected_text:
                 raise RuntimeError(
                     "checked-in plugin tree does not match the generated install surface "
-                    f"(drift at `{(plugin_root / rel_path).relative_to(root)}`)"
+                    f"(drift at `{(plugin_root / rel_path).relative_to(root)}`); "
+                    "re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
                 )
 
 

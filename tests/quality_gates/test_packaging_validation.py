@@ -127,6 +127,7 @@ def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path,
     result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "checked-in plugin tree does not match the generated install surface" in result.stderr
+    assert "scripts/sync_root_plugin_manifests.py" in result.stderr
 
 
 def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> None:
@@ -258,6 +259,7 @@ def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_ex
     assert committed_validate.returncode == 1
     assert "checked-in plugin tree does not match the generated install surface" in committed_validate.stderr
     assert "plugins/charness/skills/create-cli/SKILL.md" in committed_validate.stderr
+    assert "scripts/sync_root_plugin_manifests.py" in committed_validate.stderr
 
 
 def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
