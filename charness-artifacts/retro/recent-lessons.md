@@ -3,7 +3,7 @@
 ## Current Focus
 
 - This session worked through the autonomous-processable items in `docs/handoff.md`: fixed issue #194 (test-isolation leak of `host-hooks-state.json` into the live repo from the two session-capture CLI tests), confirmed issue #191's mutation test regression was already fixed in the unpushed commit `eead33f`, landed issue #192 (argparse `help=` rule in `create-skill` portable authoring), and emitted SC5/SC6 evidence with `session_id` plus `t_evidence` against a real commit. (source: `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`)
-- Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files). (source: `charness-artifacts/retro/2026-05-23-help-text-sweep-session.md`)
+- tier-1+2 critique (parent-delegated fresh eye): help-text actionability + dup/placeholder check; found 3 weak generic strings + 1 misleading enum (source: `charness-artifacts/retro/2026-05-23-help-text-sweep-session.md`)
 
 ## Repeat Traps
 

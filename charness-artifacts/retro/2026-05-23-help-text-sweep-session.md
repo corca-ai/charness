@@ -10,11 +10,20 @@ issue #193 (audit found 256 `add_argument` calls missing `help=` text across
 authoring rule in `create-skill`; this session cleared the existing-skill
 baseline so the rule starts from zero.
 
-Parallelization: split the sweep into four tiers by per-skill count
-(handoff/create-skill/impl/critique/debug/narrative; retro/find-skills/
-announcement; hitl/setup/gather; issue/release; quality) and ran tier 1+2 in
-three parallel subagents, tier 3+4 in two parallel subagents. Two critique
-subagents reviewed completed tiers while the next tier ran.
+Parallelization: split the sweep into four tiers by per-skill count and ran
+five bounded sweep subagents plus two bounded critique subagents:
+- tier-1 sweep (18 calls): handoff, create-skill, impl, critique, debug, narrative
+- tier-2a sweep (36 calls): retro, find-skills, announcement
+- tier-2b sweep (49 calls): hitl, setup, gather
+- tier-3 sweep (60 calls): issue, release
+- tier-4 sweep (91 calls): quality
+- tier-1+2 critique (parent-delegated fresh eye): help-text actionability
+  + dup/placeholder check; found 3 weak generic strings + 1 misleading enum
+- tier-3+4 critique (parent-delegated fresh eye): same lens; found 1
+  misleading enum at `issue_tool.py:266 --carrier`
+A second broader critique pass after commit (4 parallel reviewers: corpus-
+quality at scale, contract discipline, bug coverage, artifact durability)
+surfaced the carry-overs that became this session's Next Session items.
 
 ## Evidence Summary
 
@@ -75,8 +84,26 @@ subagents reviewed completed tiers while the next tier ran.
 
 ## Open
 
-- The next-time `handoff.md` will be down to ideation-shaped items
-  (#184, #185) and watchlists (D21-D26 reopen triggers, Yarn Berry hooks,
-  pnpm+lefthook stale snippets, `filelock` + `pytest-xdist`, seed-cache LRU
-  eviction, release proof suppression). None are autonomous-processable in
-  the sense this session used the term.
+- **#195 (filed against `e057bfd`)**: scheduled mutation cron reported 80.5%
+  reachable vs 80% threshold right after this session's push. Broader-
+  critique bounded review confirmed the regression is UNRELATED to the
+  sweep — surviving mutants live in `init_adapter.py` shims with zero diff
+  in the sweep; the sweep starved the changed-file sampler so Fill drew
+  from pre-existing weak coverage on `if __name__ == "__main__":` and
+  `sys.path.insert(...)` lines. Triage carried over to next session.
+- **#191 closure cites the wrong commit**. The closure comment named
+  `eead33f` ("Scrub MUTATION_BASE_SHA leak into sampler probe test"), but
+  that commit fixes #190's Python probe leak. #191's stated body was a
+  StrykerJS failure; the de-facto resolution landed elsewhere (StrykerJS
+  workflow run 26323487405 PASS at 91.9%). Correcting comment owed.
+- **Sweep corpus is ship-quality, not perfect**. Critic-at-scale review
+  found 18× generic `"Repository root path"`, 6× generic `"Emit JSON
+  output"`, 7 missing `help=` in `issue_tool.py:233-278` subparser
+  declarations, and a `"Repo"` (53 instances) vs `"Repository"` (37
+  instances) vocab split across the subagent boundary. A one-bounded-
+  session cleanup is queued in the next handoff.
+- **Deferred validators**: choices/help enum-mismatch detector;
+  post-mutation sync gate (currently signal-side detection via failing
+  `test_plugin_preamble_..._readiness`). Neither is cost-justified yet, but
+  both became real after this session's traps.
+- **Ideation-shaped** carry-overs: #184, #185.

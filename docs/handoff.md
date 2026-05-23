@@ -13,56 +13,58 @@
 
 ## Current State
 
-- `main` is in sync with `origin/main` at commit `e057bfd`.
-- Issue #193 (256 `add_argument` calls missing `help=`) resolved: 254 calls
-  fixed across 87 hand-authored files in `skills/public/**/scripts/`; AST
-  scanner reports `global remaining: 0`. The generated `plugins/charness/`
-  install surface was re-synced via
-  [scripts/sync_root_plugin_manifests.py](../scripts/sync_root_plugin_manifests.py)
-  in the same commit.
-- Issue #191 (mutation test regression) closed with reference to the already-
-  pushed fix commit `eead33f` ("Scrub MUTATION_BASE_SHA leak into sampler probe test").
-- Issues #194 and #192 were closed in the previous session.
+- `main` synced with `origin/main` at `5c5f15c` (retro+handoff); #193 sweep
+  landed in `e057bfd` — 254 `add_argument` calls in 87 source files received
+  `help=`, AST `remaining: 0`, plugin install surface re-synced.
+- Critic-flagged sweep follow-ups (corpus is ship-quality, not perfect):
+  18× `"Repository root path"`, 6× `"Emit JSON output"`, 7 missing-`help=`
+  subparsers in `skills/public/issue/scripts/issue_tool.py:233-278`,
+  `"Repo"` vs `"Repository"` vocab split across the subagent boundary.
+- **#195 OPEN** (mutation cron, 80.5% vs 80% threshold against `e057bfd`).
+  Bounded review: UNRELATED to the sweep — survivors are `if __name__ == "__main__":`
+  in `init_adapter.py` shims (zero diff in sweep). Sweep starved the
+  changed-file sampler; Fill drew from pre-existing weak coverage.
+- **#191 closed with wrong commit ref**: cited `eead33f` actually fixes #190
+  (Python probe leak); #191's body was StrykerJS. De-facto fix landed
+  elsewhere (StrykerJS run 26323487405 PASS at 91.9%). Correcting comment owed.
+- #194, #192, #193 closed cleanly.
 
 ## Next Session
 
-1. The remaining open issues are ideation-shaped:
-   [#185 AI/ML 엔지니어링 성공 패턴](https://github.com/corca-ai/charness/issues/185) and
-   [#184 제품 성공 기준과 핵심 메트릭](https://github.com/corca-ai/charness/issues/184).
-   These need product discovery, not autonomous repo work — route through
-   `ideation` or `spec` before any implementation slice.
-2. Reopen-trigger watchlist: D21–D26.
-3. Optional follow-up to #193: a small `quality` validator that scans for
-   `add_argument(...)` without `help=` so the gap does not silently reopen.
-   Deferred as low priority — recent sweep proved the surface is small enough
-   to spot-check during create-skill review per #192 rule.
+1. **Triage #195**: skip-mark `__name__ == "__main__":` / `sys.path.insert(...)`
+   in adapter shims, or raise the per-file mutant skip for trivial entry
+   guards. The help= sweep is NOT the cause.
+2. **Correcting comment on #191**: point at workflow run 26323487405
+   (StrykerJS PASS 91.9%) so the audit trail does not anchor on `eead33f`.
+3. **Optional #193 cleanup**: 18× generic `"Repository root path"`, 6×
+   `"Emit JSON output"`, `issue_tool.py:233-278` subparser `help=`, and one
+   of `"Repo"` / `"Repository"` corpus-wide.
+4. **Ideation-shaped**:
+   [#185 AI/ML 패턴](https://github.com/corca-ai/charness/issues/185),
+   [#184 성공 기준/메트릭](https://github.com/corca-ai/charness/issues/184)
+   route through `ideation` / `spec` first.
 
 ## Discuss
 
-- Subprocess tests passing `--repo-root str(REPO_ROOT)` to a CLI that writes
-  gitignored state must use a tmp fake repo with symlinked `packaging/` and
-  `scripts/`. See `fake_charness_repo` in
-  [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py).
-- After mutating `skills/public/` for any multi-file sweep, run
-  `python3 scripts/sync_root_plugin_manifests.py --repo-root .` before the
-  read-only quality gate; otherwise drift surfaces as a failing
+- After multi-file mutation under `skills/public/`, run
+  [scripts/sync_root_plugin_manifests.py](../scripts/sync_root_plugin_manifests.py)
+  before the quality gate; drift otherwise surfaces as a failing
   `test_plugin_preamble_..._readiness`.
-- When adding `help=` to an `add_argument` that already carries `choices=`,
-  the help text must reflect the actual choice strings. Caught one such bug
-  at `skills/public/issue/scripts/issue_tool.py:266` during the #193 sweep.
-- Watch list: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
-  `pytest-xdist`; seed-cache LRU eviction; `MUTATION_*` env-scrub in subprocess
-  tests; release proof suppression.
+- `add_argument` with `choices=` must have `help=` that reflects the actual
+  choice strings; argparse auto-prints choices, so a paraphrase contradicts.
+- Subprocess tests passing `--repo-root str(REPO_ROOT)` to a writing CLI
+  must use the `fake_charness_repo` fixture in
+  [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py);
+  scrub `MUTATION_*` env keys before forwarding `os.environ`.
+- Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
+  `pytest-xdist`; seed-cache LRU eviction; release proof suppression;
+  D21–D26 reopen-trigger watchlist.
 
 ## References
 
-- [usage-episodes H-LAM/T completion spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md):
-  fixed decisions and two-slice implementation plan.
-- [codex hooks surface](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md):
-  Codex SessionStart/Stop/UserPromptSubmit/PreToolUse/PostToolUse hook surface.
-- [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md):
-  current-pointer and gitignore sibling scan RCA and prevention.
-- [quality posture](../charness-artifacts/quality/latest.md) and
-  [release surface](../charness-artifacts/release/latest.md): current state pointers.
-- [#193 help= sweep retro](../charness-artifacts/retro/2026-05-23-help-text-sweep-session.md):
-  parallel-subagent sweep, sync-after-mutate trap, misleading enum-in-help bug.
+- [#193 help= sweep retro](../charness-artifacts/retro/2026-05-23-help-text-sweep-session.md)
+- [quality posture](../charness-artifacts/quality/latest.md),
+  [release surface](../charness-artifacts/release/latest.md)
+- [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md),
+  [codex hooks surface](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md),
+  [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md)

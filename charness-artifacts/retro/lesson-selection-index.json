@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-05-23",
   "source_artifact_count": 70,
-  "candidate_count": 431,
+  "candidate_count": 437,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -60,10 +60,130 @@
       ]
     },
     {
-      "candidate_id": "current_focus:0d0a05607960",
+      "candidate_id": "current_focus:19b8d126dc35",
       "kind": "current_focus",
-      "lesson": "Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files).",
-      "normalized_key": "worked through the remaining autonomous processable item in docs handoff md issue 193 audit",
+      "lesson": "tier-1+2 critique (parent-delegated fresh eye): help-text actionability + dup/placeholder check; found 3 weak generic strings + 1 misleading enum",
+      "normalized_key": "tier 1 2 critique parent delegated fresh eye help text actionability dup placeholder check",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b5dd58243ee3",
+      "kind": "current_focus",
+      "lesson": "tier-1 sweep (18 calls): handoff, create-skill, impl, critique, debug, narrative",
+      "normalized_key": "tier 1 sweep 18 calls handoff create skill impl critique debug narrative",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7c0ea095198f",
+      "kind": "current_focus",
+      "lesson": "tier-2a sweep (36 calls): retro, find-skills, announcement",
+      "normalized_key": "tier 2a sweep 36 calls retro find skills announcement",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:cc9c2fa5ab91",
+      "kind": "current_focus",
+      "lesson": "tier-2b sweep (49 calls): hitl, setup, gather",
+      "normalized_key": "tier 2b sweep 49 calls hitl setup gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:636365037f16",
+      "kind": "current_focus",
+      "lesson": "tier-3+4 critique (parent-delegated fresh eye): same lens; found 1 misleading enum at `issue_tool.py:266 --carrier` A second broader critique pass after commit (4 parallel reviewers: corpus- quality at scale, contract discipline, bug coverage, artifact durability) surfaced the carry-overs that became this session's Next Session items.",
+      "normalized_key": "tier 3 4 critique parent delegated fresh eye same lens found 1 misleading enum",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6db3f1f71b0c",
+      "kind": "current_focus",
+      "lesson": "tier-3 sweep (60 calls): issue, release",
+      "normalized_key": "tier 3 sweep 60 calls issue release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:47df4a55632c",
+      "kind": "current_focus",
+      "lesson": "tier-4 sweep (91 calls): quality",
+      "normalized_key": "tier 4 sweep 91 calls quality",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
       "latest_source_date": "2026-05-23",
@@ -138,126 +258,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "repeat_trap:3e9f4b393ee8",
-      "kind": "repeat_trap",
-      "lesson": "Adding a trap directly to `charness-artifacts/retro/recent-lessons.md` by hand was reverted by `refresh_recent_lessons.py` on the next pre-push run; the digest is generated from the selection index, not authored.",
-      "normalized_key": "adding a trap directly to charness artifacts retro recent lessons md by hand was",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:bb05cb768a41",
-      "kind": "repeat_trap",
-      "lesson": "The #192 commit message used `Add #192` instead of a closing keyword (`Fix`/`Closes`/`Resolves`), so GitHub did not auto-close the issue on push. The sibling #194 commit used `Fix #194` and auto-closed cleanly. Manual `gh issue close 192` recovered, but the cost of one stray PR or closeout review missing the keyword can be a stale OPEN issue for days.",
-      "normalized_key": "the 192 commit message used add 192 instead of a closing keyword fix closes",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:68c6c384f0e6",
-      "kind": "repeat_trap",
-      "lesson": "The first draft of the #194 fix added a `CHARNESS_USAGE_EPISODES_STATE_PATH` env override to `host_hook_install_lib.py`. The override blocked the leak but exposed a second test bug: the tests also depended on the live `.agents/usage-episodes-adapter.yaml` for adapter intent. The cleaner rewrite (tmp fake repo with symlinked `packaging/scripts/`) handles both surfaces, so the env override was reverted before commit. Discarded code, but it took two iterations to see the second dependency.",
-      "normalized_key": "the first draft of the 194 fix added a charness usage episodes state path",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:33718f816d5b",
-      "kind": "repeat_trap",
-      "lesson": "The misleading `--carrier` help text was caught only by spot-check critique, not by the original sweep. A small validator that cross-checks `help=` parenthesized enums against the `choices=` tuple would catch this class deterministically; deferred because the similar-pattern scan surfaced no other instances and adding a gate for a one-off bug would be noise.",
-      "normalized_key": "the misleading carrier help text was caught only by spot check critique not by",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:8db0a5a8ca3e",
-      "kind": "repeat_trap",
-      "lesson": "The sweep mutated `skills/public/` without running the plugin-export sync, and the first quality run failed on `test_plugin_preamble_..._readiness` with `root_install_surface.ok = False` warning about drift at `plugins/charness/skills/announcement/scripts/collect_commits.py`. CLAUDE.md already declares `mutate -> sync -> verify -> publish` as a hard phase barrier; the lesson is to run `scripts/sync_root_plugin_manifests.py` immediately after any `skills/public/` mutation rather than discovering the drift via a failing readiness test.",
-      "normalized_key": "the sweep mutated skills public without running the plugin export sync and the first",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:bdee3fcb6a12",
-      "kind": "current_focus",
-      "lesson": "This session continued the bug-pattern sibling scan and repaired the release publish path that treated a failed unreleased-path diff as an empty release delta.",
-      "normalized_key": "this session continued the bug pattern sibling scan and repaired the release publish path",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
-          "date": "2026-05-22",
-          "section": "Context"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -307,10 +307,130 @@
       ]
     },
     {
-      "candidate_id": "current_focus:0d0a05607960",
+      "candidate_id": "current_focus:19b8d126dc35",
       "kind": "current_focus",
-      "lesson": "Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files).",
-      "normalized_key": "worked through the remaining autonomous processable item in docs handoff md issue 193 audit",
+      "lesson": "tier-1+2 critique (parent-delegated fresh eye): help-text actionability + dup/placeholder check; found 3 weak generic strings + 1 misleading enum",
+      "normalized_key": "tier 1 2 critique parent delegated fresh eye help text actionability dup placeholder check",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b5dd58243ee3",
+      "kind": "current_focus",
+      "lesson": "tier-1 sweep (18 calls): handoff, create-skill, impl, critique, debug, narrative",
+      "normalized_key": "tier 1 sweep 18 calls handoff create skill impl critique debug narrative",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7c0ea095198f",
+      "kind": "current_focus",
+      "lesson": "tier-2a sweep (36 calls): retro, find-skills, announcement",
+      "normalized_key": "tier 2a sweep 36 calls retro find skills announcement",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:cc9c2fa5ab91",
+      "kind": "current_focus",
+      "lesson": "tier-2b sweep (49 calls): hitl, setup, gather",
+      "normalized_key": "tier 2b sweep 49 calls hitl setup gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:636365037f16",
+      "kind": "current_focus",
+      "lesson": "tier-3+4 critique (parent-delegated fresh eye): same lens; found 1 misleading enum at `issue_tool.py:266 --carrier` A second broader critique pass after commit (4 parallel reviewers: corpus- quality at scale, contract discipline, bug coverage, artifact durability) surfaced the carry-overs that became this session's Next Session items.",
+      "normalized_key": "tier 3 4 critique parent delegated fresh eye same lens found 1 misleading enum",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6db3f1f71b0c",
+      "kind": "current_focus",
+      "lesson": "tier-3 sweep (60 calls): issue, release",
+      "normalized_key": "tier 3 sweep 60 calls issue release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:47df4a55632c",
+      "kind": "current_focus",
+      "lesson": "tier-4 sweep (91 calls): quality",
+      "normalized_key": "tier 4 sweep 91 calls quality",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
       "latest_source_date": "2026-05-23",
