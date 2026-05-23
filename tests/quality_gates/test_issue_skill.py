@@ -47,6 +47,25 @@ def test_issue_selector_parses_single_and_range_without_github() -> None:
     assert json.loads(ranged.stdout)["numbers"] == [17, 18, 19]
 
 
+def test_issue_selector_rejects_non_positive_number_and_range() -> None:
+    zero = run_script(SCRIPT, "select", "--repo", "corca-ai/charness", "--selector", "0")
+    zero_range = run_script(SCRIPT, "select", "--repo", "corca-ai/charness", "--selector", "0-3")
+
+    assert zero.returncode == 1
+    assert json.loads(zero.stdout)["ok"] is False
+    assert zero_range.returncode == 1
+    assert json.loads(zero_range.stdout)["ok"] is False
+
+
+def test_issue_brief_path_rejects_non_positive_number_with_structured_error(tmp_path: Path) -> None:
+    result = run_script(SCRIPT, "brief-path", "--repo-root", str(tmp_path), "--number", "0")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "positive integer" in payload["error"]
+
+
 def test_issue_resolve_invocation_treats_single_number_as_selector(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "120")
 

@@ -221,7 +221,12 @@ def command_resolve_invocation(args: argparse.Namespace) -> int:
 
 
 def command_brief_path(args: argparse.Namespace) -> int:
-    emit(BRIEF.build_brief_path_payload(args.repo_root.resolve(), args.number, args.date))
+    try:
+        payload = BRIEF.build_brief_path_payload(args.repo_root.resolve(), args.number, args.date)
+    except ValueError as exc:
+        emit({"ok": False, "error": str(exc), "number": args.number})
+        return 1
+    emit(payload)
     return 0
 
 

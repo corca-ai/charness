@@ -306,6 +306,18 @@ def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(tm
     assert result.returncode == 1
 
 
+def test_validate_debug_artifact_rejects_deferred_with_trailing_punctuation(tmp_path: Path) -> None:
+    # `deferred.` / `deferred,` are still a bare deferred with no anchor.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred.",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "follow-up:" in result.stderr
+
+
 def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path: Path) -> None:
     # A non-deferred identifier (e.g., a bare issue number) is acceptable.
     artifact = valid_current_artifact().replace(

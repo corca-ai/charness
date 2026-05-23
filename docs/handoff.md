@@ -13,8 +13,17 @@
 
 ## Current State
 
-- `main` in sync with `origin/main` (pushed `858da76` + retro `89f6a0b`).
-  Closed this session: **#198** (eval_registry coverage-attribution fix —
+- Latest local commit: a latent-bug sweep (no open GitHub bug — the issue queue
+  held only deferred ideation). Four self-found defects fixed with regression
+  tests through the design→impl→pattern-scan→RCA→final-critique loop and bounded
+  fresh-eye subagents: `parse_selector` now rejects issue#<1 (was returning
+  `[0]`); `is_valid_followup_tail` strips trailing punctuation so `deferred.` is
+  caught (shared by debug/retro/critique); `bump_version --set-version` validates
+  format before mutating the manifest; `issue brief-path` emits structured
+  `{"ok": false}` on a non-positive `--number` instead of a raw traceback.
+  Closeout: [bug-sweep critique](../charness-artifacts/critique/2026-05-23-handoff-bug-sweep-closeout.md).
+- `main` previously in sync with `origin/main` (pushed `858da76` + retro `89f6a0b`).
+  Closed earlier: **#198** (eval_registry coverage-attribution fix —
   immutability test loads a fresh module copy so the frozen-dataclass line
   re-executes under the test context), **#200/#201** (prior-session fixes that
   had silently stayed OPEN), **#202** (issue existing-only label/milestone +

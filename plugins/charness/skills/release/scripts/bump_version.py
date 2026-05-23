@@ -106,7 +106,11 @@ def main() -> None:
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     current_version = manifest["version"]
-    target_version = args.set_version or bump_part(current_version, args.part)
+    if args.set_version is not None:
+        parse_version(args.set_version)
+        target_version = args.set_version
+    else:
+        target_version = bump_part(current_version, args.part)
     old_version = write_packaging_version(manifest_path, target_version)
     run_sync(repo_root, data["sync_command"])
 

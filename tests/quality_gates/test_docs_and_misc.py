@@ -412,6 +412,64 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
     assert (repo / "sync-version.txt").read_text(encoding="utf-8").strip() == "0.0.1"
 
 
+def test_release_bump_version_rejects_malformed_set_version_without_mutating_manifest(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "packaging").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/release",
+                "preset_id: portable-defaults",
+                "customized_from: portable-defaults",
+                "package_id: demo",
+                "packaging_manifest_path: packaging/demo.json",
+                "checked_in_plugin_root: plugins/demo",
+                "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+                "quality_command: ./scripts/run-quality.sh",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    manifest_text = (
+        json.dumps(
+            {
+                "schema_version": "1",
+                "package_id": "demo",
+                "display_name": "demo",
+                "version": "0.0.0-dev",
+                "summary": "Demo package.",
+                "author": {"name": "Demo"},
+                "homepage": "https://example.com/demo",
+                "repository": "https://example.com/demo",
+                "source": {"readme": "README.md", "skills_dir": "skills"},
+                "codex": {"manifest": {"version": "0.0.0-dev"}},
+                "claude": {"manifest": {"version": "0.0.0-dev"}},
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+    (repo / "packaging" / "demo.json").write_text(manifest_text, encoding="utf-8")
+
+    result = run_script(
+        "skills/public/release/scripts/bump_version.py",
+        "--repo-root",
+        str(repo),
+        "--set-version",
+        "not.a.version",
+    )
+
+    assert result.returncode != 0
+    assert (repo / "packaging" / "demo.json").read_text(encoding="utf-8") == manifest_text
+
+
 def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     adapter_contract = (

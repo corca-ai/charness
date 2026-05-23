@@ -121,7 +121,7 @@ def is_valid_followup_tail(tail: str) -> bool:
     parts = tail.split(None, 1)
     if not parts:
         return False
-    if parts[0] == "deferred":
+    if parts[0].rstrip(".,;:") == "deferred":
         return len(parts) > 1 and bool(parts[1].strip())
     return True
 

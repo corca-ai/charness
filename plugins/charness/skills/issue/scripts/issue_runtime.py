@@ -82,11 +82,16 @@ def parse_selector(selector: str | None) -> list[int] | None:
         return None
     cleaned = selector.strip()
     if re.fullmatch(r"\d+", cleaned):
-        return [int(cleaned)]
+        number = int(cleaned)
+        if number < 1:
+            raise ValueError("selector issue number must be a positive integer")
+        return [number]
     match = re.fullmatch(r"(\d+)-(\d+)", cleaned)
     if not match:
         raise ValueError("selector must be a number or inclusive start-end range")
     start, end = int(match.group(1)), int(match.group(2))
+    if start < 1:
+        raise ValueError("selector range start must be a positive integer")
     if end < start:
         raise ValueError("selector range end must be greater than or equal to start")
     return list(range(start, end + 1))
