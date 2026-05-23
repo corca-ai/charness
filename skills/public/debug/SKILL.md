@@ -125,6 +125,9 @@ as codebase memory rather than as stale trivia.
      proof level separately from the decision; bug-class `issue resolve`
      invokes the same substrate through `../issue/references/causal-review.md`
      Lens 3
+   - persist `valid follow-up outside the slice` siblings with a `follow-up:`
+     identifier per `references/sibling-search.md`; the validator blocks
+     closeout when the identifier is missing
    - trivial single-file fixes may record `n/a — trivial fix` in the detection
      gap and sibling search sections; the short-circuit is reviewer-visible,
      not a default escape

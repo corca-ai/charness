@@ -331,3 +331,87 @@ def test_critique_artifact_validator_fails_closed_when_changed_path_discovery_fa
 
     assert result.returncode == 1
     assert "critique artifact changed-path discovery failed" in result.stderr
+
+
+def _seed_structured_critique(repo: Path, body: str) -> Path:
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(body, encoding="utf-8")
+    return artifact
+
+
+_STRUCTURED_PRELUDE = (
+    "# Demo Critique\n"
+    "\n"
+    "Fresh-Eye Satisfaction: parent-delegated.\n"
+    "\n"
+)
+
+
+def test_validate_critique_structured_findings_accepts_well_formed_block(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: act-before-ship | evidence: strong | ref: skills/public/impl/SKILL.md:139 | action: fix | note: missing Lint Gate\n"
+        + "- F2 | bin: over-worry | evidence: weak | ref: n/a | action: document | note: speculative\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_critique_structured_findings_rejects_unknown_bin(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: must-fix | evidence: strong | ref: a:1 | action: fix | note: typo bin\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "unknown bin" in result.stderr
+
+
+def test_validate_critique_structured_findings_rejects_missing_field(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: bundle-anyway | evidence: moderate | action: fix | note: missing ref\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "missing required field `ref`" in result.stderr
+
+
+def test_validate_critique_structured_findings_rejects_duplicate_id(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: act-before-ship | evidence: strong | ref: a:1 | action: fix | note: first\n"
+        + "- F1 | bin: over-worry | evidence: weak | ref: b:2 | action: document | note: dup\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "duplicate id" in result.stderr
+
+
+def test_validate_critique_structured_findings_section_is_opt_in(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = _STRUCTURED_PRELUDE + "## Findings\n\n- prose only\n"
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr

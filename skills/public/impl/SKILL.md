@@ -111,6 +111,7 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, resolve browser/runtime support through `find-skills`
      and say explicitly that it did not run when runtime proof is unavailable
+   - run the surveyed lint gate before commit when detected (`references/verification-ladder.md`)
    - for external named targets or third-party APIs, verify runtime state before acting
    - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply `../../shared/references/prescribed-path-self-test.md`
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
@@ -153,8 +154,8 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 The closeout should usually include:
 
 `Implemented`, `Contract Source`, `Verification` naming code/fixture and
-runtime/evaluator proof, `Truth Surface Sync`, `Critique`, `Contract Updates`,
-`Residual Risks`, and `Next Slice`.
+runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
+`Truth Surface Sync`, `Critique`, `Contract Updates`, `Residual Risks`, `Next Slice`.
 
 ## Guardrails
 
@@ -178,6 +179,8 @@ runtime/evaluator proof, `Truth Surface Sync`, `Critique`, `Contract Updates`,
 - Do not call a same-agent review a critique.
 - Do not skip critique for task-completing repo work just because the code
   looks locally clean.
+- Do not commit a source-touching slice without recording `Lint Gate` per
+  `references/verification-ladder.md`.
 - Do not reinvent one-off critique angle selection when the standalone `critique` skill fits the slice.
 - If the required critique is blocked, stop instead of downgrading to a local
   substitute and still calling the slice reviewed.

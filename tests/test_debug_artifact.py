@@ -197,3 +197,121 @@ def test_validate_debug_artifact_forced_interrupt_requires_spec_handoff(tmp_path
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "forced risk interrupt" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "follow-up:" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_followup_sibling_with_issue_url(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: https://example.com/issues/42",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/handoff.md#cleanup-backlog",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_ignores_prose_mention_of_decision_phrase(tmp_path: Path) -> None:
+    # A prose paragraph (no leading `- ` bullet and no `decision:` token) that
+    # quotes the decision phrase must not trip the validator.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n"
+            "Authors may discuss the `valid follow-up outside the slice` rule "
+            "in commentary without surfacing a fileable sibling."
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_rejects_title_case_decision(tmp_path: Path) -> None:
+    # Title-case must not silently bypass enforcement.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: Valid Follow-Up Outside The Slice | proof: static scan only",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "follow-up:" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_ascii_dash_short_circuit(tmp_path: Path) -> None:
+    # The trivial-bug short-circuit must accept ASCII `-` as well as em-dash.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- n/a - trivial fix; no plausible siblings",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_reports_first_invalid_with_offender_text(tmp_path: Path) -> None:
+    # Mixed bullets: the validator should surface the offending bullet snippet.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- same layer: tests/repo_copy.py:12 | decision: same bug, fix now | proof: static scan only\n"
+            "- abstraction up: lib/foo.py:42 | decision: valid follow-up outside the slice | proof: not inspected"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "abstraction up: lib/foo.py:42" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_bare_deferred_followup(tmp_path: Path) -> None:
+    # `follow-up: deferred` with no anchor must not satisfy the rule.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "follow-up:" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred   ",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+
+
+def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path: Path) -> None:
+    # A non-deferred identifier (e.g., a bare issue number) is acceptable.
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: #199",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr

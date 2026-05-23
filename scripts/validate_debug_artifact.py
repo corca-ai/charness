@@ -86,6 +86,100 @@ def validate_candidate_causes(lines: list[str]) -> None:
         raise ValidationError("`## Candidate Causes` must list at least three plausible causes")
 
 
+SIBLING_DECISION_FOLLOWUP = "valid follow-up outside the slice"
+SIBLING_TRIVIAL_SHORT_CIRCUIT = "n/a"  # the bullet must contain "n/a" plus "trivial fix" + "no plausible siblings"
+
+
+def _is_sibling_decision_bullet(line: str) -> bool:
+    """Bullet entries are `- ...` lines that carry a `decision:` field.
+
+    Prose paragraphs that mention the decision phrase are excluded so authors
+    can quote the rule in commentary without tripping the validator.
+    """
+    stripped = line.lstrip()
+    return stripped.startswith("- ") and "decision:" in stripped.lower()
+
+
+def _is_trivial_short_circuit(line: str) -> bool:
+    """`n/a — trivial fix; no plausible siblings` short-circuit, dash-agnostic."""
+    lowered = line.lower()
+    return (
+        "n/a" in lowered
+        and "trivial fix" in lowered
+        and "no plausible siblings" in lowered
+    )
+
+
+def validate_sibling_followups(lines: list[str]) -> None:
+    """Fail when a `valid follow-up outside the slice` sibling lacks a follow-up id.
+
+    `## Sibling Search` is a list of `- <axis>: <location> | decision: ... | proof: ...`
+    bullets. When `decision: valid follow-up outside the slice` appears on a
+    bullet line, the same bullet must also carry a `follow-up: <issue-url>` or
+    `follow-up: deferred <anchor>` field. The follow-up may also be expressed
+    on the immediately following continuation line.
+
+    Prose paragraphs that mention the decision phrase outside a bullet are
+    ignored so authors can cite the rule itself. Decision matching is
+    case-insensitive so `Valid Follow-Up Outside The Slice` cannot bypass.
+    """
+    try:
+        start = find_index(lines, "## Sibling Search") + 1
+    except ValidationError:
+        return
+    end = len(lines)
+    for candidate in ("## Seam Risk", "## Interrupt Decision", "## Prevention", "## Related Prior Incidents"):
+        try:
+            index = find_index(lines, candidate)
+        except ValidationError:
+            continue
+        if index > start:
+            end = min(end, index)
+    section = lines[start:end]
+    if any(_is_trivial_short_circuit(line) for line in section):
+        return
+    for index, raw in enumerate(section):
+        line = raw.rstrip()
+        if not _is_sibling_decision_bullet(line):
+            continue
+        if SIBLING_DECISION_FOLLOWUP not in line.lower():
+            continue
+        if _line_has_valid_followup(line):
+            continue
+        peek = section[index + 1] if index + 1 < len(section) else ""
+        if _line_has_valid_followup(peek):
+            continue
+        offender = line.strip().lstrip("- ").strip()
+        raise ValidationError(
+            "`## Sibling Search` entry classified `valid follow-up outside the slice` must record a "
+            "`follow-up: <issue-url>` or `follow-up: deferred <handoff-anchor>` identifier on the same "
+            f"bullet (offender: `{offender[:120]}`); see "
+            "skills/public/debug/references/sibling-search.md."
+        )
+
+
+def _line_has_valid_followup(line: str) -> bool:
+    lower = line.lower()
+    if "follow-up:" not in lower:
+        return False
+    tail = lower.split("follow-up:", 1)[1].strip()
+    return _is_valid_followup_tail(tail)
+
+
+def _is_valid_followup_tail(tail: str) -> bool:
+    """`follow-up:` payload must name an identifier or `deferred <anchor>`.
+
+    Bare tokens like `deferred` (without an anchor) silently re-export the
+    follow-up to the next session — that is the exact failure the rule blocks.
+    """
+    parts = tail.split(None, 1)
+    if not parts:
+        return False
+    if parts[0] == "deferred":
+        return len(parts) > 1 and bool(parts[1].strip())
+    return True
+
+
 def section_lines(lines: list[str], heading: str, next_headings: tuple[str, ...]) -> list[str]:
     start = find_index(lines, heading) + 1
     end = len(lines)
@@ -193,12 +287,14 @@ def validate_debug_artifact(path: Path) -> None:
         validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS)
         validate_nonempty_sections(lines, required_sections)
         validate_candidate_causes(lines)
+        validate_sibling_followups(lines)
         validate_current_interrupt_sections(lines)
         return
 
     validate_section_order(lines, REQUIRED_SECTIONS)
     validate_nonempty_sections(lines, REQUIRED_SECTIONS)
     validate_candidate_causes(lines)
+    validate_sibling_followups(lines)
 
 
 def main() -> int:

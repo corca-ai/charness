@@ -73,10 +73,41 @@ bounded fix, but it must not be described as end-to-end provider proof.
 Return the exact patterns searched plus concrete locations the implementer
 should inspect, organized by axis. Each location is `file:line` with a one-line
 note on why it matches the abstracted pattern, not the keyword, followed by
-`decision:` and `proof:` fields. Decide at artifact close-out whether to bundle
-into the current fix, keep diagnostic-only, mark an intentional boundary, or
-defer as a follow-up. Record the decision with location so the next reader
-inherits the list.
+`decision:`, `proof:`, and a `follow-up:` field when the decision defers the
+sibling outside the slice. Decide at artifact close-out whether to bundle into
+the current fix, keep diagnostic-only, mark an intentional boundary, or defer
+as a follow-up. Record the decision with location so the next reader inherits
+the list.
+
+## Persist `valid follow-up` decisions
+
+When a sibling is classified `valid follow-up outside the slice`, the closeout
+must record a `follow-up:` identifier so the deferred work cannot disappear
+into the artifact:
+
+- `follow-up: <issue-url>` — preferred. File via the `issue` skill's
+  adapter-resolved backend (`gh`, `ceal github`, or whatever the host
+  configured); do not invent a parallel filing path. The new issue body links
+  back to this debug artifact so reviewers can re-derive the invariant.
+- `follow-up: deferred <docs/handoff.md anchor>` — acceptable when the repo
+  has no issue tracker or the next session will pick it up immediately. The
+  handoff anchor is enough; chat-only deferral is not.
+
+A sibling marked `valid follow-up outside the slice` with no `follow-up:`
+identifier silently exports the cost of the scan to the next session. The
+`validate_debug_artifact.py` validator fails closeout when this happens.
+
+The other three decision values resolve their disposition inside the current
+slice and so do not require a `follow-up:` field:
+`same bug, fix now`;
+`same class, diagnostic-only for this slice`;
+`intentional plain-text or non-rendering boundary`.
+
+For schema alignment across skills, see
+`skills/public/critique/references/counterweight-triage.md` (the
+`action: file-issue` field maps to a `follow-up:` URL here) and
+`skills/public/impl/references/verification-ladder.md` (the `Lint Gate`
+`ran-fail-deferred` state takes the same `<issue|anchor>` identifier).
 
 ## Trivial-bug short-circuit
 

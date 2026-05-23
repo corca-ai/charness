@@ -46,3 +46,53 @@ Counterweight prompts should push especially hard on:
 The purpose is not bravado.
 The purpose is to stop a good critique from turning into an unowned paranoia
 backlog.
+
+## Structured Findings Emission
+
+When the caller orchestrator needs to act on findings without re-classifying
+each one — for example, a parent skill running three sequential critique
+passes per slice — append a machine-readable `## Structured Findings` section
+to the critique artifact alongside the prose. The schema reuses the existing
+four bins and four evidence tags so this is a serialization, not a parallel
+taxonomy.
+
+Each finding is one bullet with `|`-separated `key: value` fields, matching
+the convention used by `debug/references/sibling-search.md`. The bin values
+are the same four labels above; the evidence values are the same four
+strength tags; the action values name the smallest next move:
+
+```markdown
+## Structured Findings
+
+- F1 | bin: act-before-ship | evidence: strong | ref: skills/public/impl/SKILL.md:139 | action: fix | note: closeout omits Lint Gate field
+- F2 | bin: valid-but-defer | evidence: moderate | ref: docs/conventions/operating-contract.md#critique | action: file-issue | note: bin/action coupling for impl handoffs is real but slice-scoped
+- F3 | bin: over-worry | evidence: weak | ref: n/a | action: document | note: speculative future schema churn
+```
+
+Field grammar:
+
+- `id`: caller-stable label (`F1`, `F2`, …); the orchestrator uses this when
+  re-citing findings across phases.
+- `bin`: one of `act-before-ship`, `bundle-anyway`, `over-worry`,
+  `valid-but-defer` — the same four bins from the counterweight pass above.
+- `evidence`: one of `strong`, `moderate`, `weak`, `contested` — the same
+  four tags from the evidence basis list above.
+- `ref`: free-form pointer to the supporting source — `file:line`, doc
+  anchor, runtime trace name, or `n/a`. The looser shape is intentional;
+  critique commonly cites cross-file invariants and runtime behavior that
+  do not collapse to one line number.
+- `action`: one of `fix` (apply in current slice), `file-issue` (open a
+  follow-up via the `issue` skill), `document` (record in a
+  `Deliberately Not Doing` section or commit body), `defer` (leave to the
+  named next slice with no separate filing).
+- `note`: one-line description; the prose `Findings` and
+  `Counterweight Triage` sections still own the longer narrative.
+
+The section is opt-in. Critique runs that produce only prose stay
+back-compatible. When the section is present, `scripts/validate_critique_artifacts.py`
+fails on unknown enum values, missing required fields, or duplicate ids so
+the caller can rely on the schema instead of re-parsing prose.
+
+Do not treat the bullet schema as a substitute for the counterweight pass.
+The bins still come from the counterweight reviewer's judgment; structured
+emission is the persistence layer, not the analysis.

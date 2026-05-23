@@ -12,6 +12,11 @@ from runtime_bootstrap import repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
+STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
+STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer"})
+STRUCTURED_EVIDENCE = frozenset({"strong", "moderate", "weak", "contested"})
+STRUCTURED_ACTIONS = frozenset({"fix", "file-issue", "document", "defer"})
+STRUCTURED_REQUIRED_FIELDS = ("bin", "evidence", "ref", "action", "note")
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -134,6 +139,76 @@ def has_blocked_signal_detail(text: str) -> bool:
     return False
 
 
+def _structured_findings_lines(text: str) -> list[str]:
+    lines = text.splitlines()
+    try:
+        start = next(index for index, line in enumerate(lines) if line.strip() == STRUCTURED_FINDINGS_HEADING)
+    except StopIteration:
+        return []
+    section: list[str] = []
+    for line in lines[start + 1 :]:
+        if line.startswith("## "):
+            break
+        section.append(line)
+    return [line for line in section if line.strip().startswith("- ")]
+
+
+def _parse_structured_finding(raw: str) -> dict[str, str]:
+    body = raw.strip().lstrip("- ").strip()
+    parts = [chunk.strip() for chunk in body.split("|") if chunk.strip()]
+    if not parts:
+        return {}
+    fields: dict[str, str] = {}
+    head = parts[0]
+    if ":" not in head:
+        fields["id"] = head
+        rest = parts[1:]
+    else:
+        rest = parts
+    for chunk in rest:
+        if ":" not in chunk:
+            continue
+        key, _, value = chunk.partition(":")
+        fields[key.strip().lower()] = value.strip()
+    return fields
+
+
+def validate_structured_findings(path: Path, text: str) -> None:
+    bullets = _structured_findings_lines(text)
+    if not bullets:
+        return
+    seen_ids: set[str] = set()
+    for index, raw in enumerate(bullets, start=1):
+        finding = _parse_structured_finding(raw)
+        finding_id = finding.get("id", f"<line {index}>")
+        for field in STRUCTURED_REQUIRED_FIELDS:
+            if not finding.get(field):
+                raise ValidationError(
+                    f"{path}: `## Structured Findings` entry {finding_id} missing required field `{field}`"
+                )
+        if "id" in finding:
+            if finding["id"] in seen_ids:
+                raise ValidationError(
+                    f"{path}: `## Structured Findings` duplicate id `{finding['id']}`"
+                )
+            seen_ids.add(finding["id"])
+        if finding["bin"] not in STRUCTURED_BINS:
+            raise ValidationError(
+                f"{path}: `## Structured Findings` entry {finding_id} has unknown bin `{finding['bin']}`; "
+                f"allowed: {sorted(STRUCTURED_BINS)}"
+            )
+        if finding["evidence"] not in STRUCTURED_EVIDENCE:
+            raise ValidationError(
+                f"{path}: `## Structured Findings` entry {finding_id} has unknown evidence `{finding['evidence']}`; "
+                f"allowed: {sorted(STRUCTURED_EVIDENCE)}"
+            )
+        if finding["action"] not in STRUCTURED_ACTIONS:
+            raise ValidationError(
+                f"{path}: `## Structured Findings` entry {finding_id} has unknown action `{finding['action']}`; "
+                f"allowed: {sorted(STRUCTURED_ACTIONS)}"
+            )
+
+
 def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -152,6 +227,7 @@ def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool
             raise ValidationError(
                 f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
             )
+    validate_structured_findings(path, text)
 
 
 def main() -> int:

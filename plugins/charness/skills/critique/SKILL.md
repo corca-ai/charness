@@ -153,7 +153,7 @@ The result should usually include:
 - `Change`
 - `Angles`
 - `Findings`
-- `Counterweight Triage`
+- `Counterweight Triage` (optional `Structured Findings` per `references/counterweight-triage.md`)
 - `Deliberately Not Doing`
 - `Next Move`
 

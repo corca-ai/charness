@@ -72,6 +72,29 @@ trap shapes that mocked tests routinely miss.
   propose installation or setup before silently downgrading the claim
 - when a check is missing, add the smallest one that prevents the branch from
   going unproven
+- when the bootstrap survey reports `lint_gate.detected: true`, run the surveyed
+  command before commit instead of waiting for the push-time hook to surface
+  the regression; record `Lint Gate` in the closeout per the shape below
+
+## Lint Gate Closeout Shape
+
+`Lint Gate` records one of:
+
+- `ran-pass <command>` — surveyed command ran clean
+- `ran-fail-fixed <command>` — ran, surfaced regressions, fixed in the same slice
+- `ran-fail-deferred <command> <issue|anchor>` — ran, deferred fixes to a named follow-up
+- `not-detected` — bootstrap survey found no standing gate
+- `skipped <reason>` — doc-only slice, autonomous-continuation cost cap, or
+  pre-existing unrelated lint debt; the reason names the choice so the next
+  reader can audit it
+
+Sibling pointers: a filed follow-up should also surface as a
+`follow-up: <url>` entry under the related `## Sibling Search` bullet when the
+debug substrate is the same investigation — see
+`skills/public/debug/references/sibling-search.md` and the matching
+`action: file-issue` field in
+`skills/public/critique/references/counterweight-triage.md` so orchestrators
+do not invent a third schema.
 
 ## Closeout
 
