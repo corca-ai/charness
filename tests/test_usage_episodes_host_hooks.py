@@ -12,6 +12,46 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import host_hook_install_lib as lib  # noqa: E402
 
+LIVE_STATE_PATH = REPO_ROOT / lib.HOST_HOOKS_STATE_RELATIVE
+LIVE_USAGE_EPISODES_DIR = REPO_ROOT / ".charness" / "usage-episodes"
+
+
+def _snapshot_live_usage_episodes() -> dict[Path, bytes | None]:
+    """Snapshot every file under the live `.charness/usage-episodes/` tree.
+
+    Covers `host-hooks-state.json`, `sessions/<id>/start.json`, `sessions/current`,
+    and `usage_episode.jsonl` — every gitignored writer that could leak from a
+    CLI test taking `--repo-root REPO_ROOT`. Issue #194 only reported the
+    state-file leak, but the same plumbing reaches each of these paths.
+    """
+    snapshot: dict[Path, bytes | None] = {LIVE_STATE_PATH: None}
+    if LIVE_STATE_PATH.is_file():
+        snapshot[LIVE_STATE_PATH] = LIVE_STATE_PATH.read_bytes()
+    if LIVE_USAGE_EPISODES_DIR.is_dir():
+        for path in LIVE_USAGE_EPISODES_DIR.rglob("*"):
+            if path.is_file():
+                snapshot[path] = path.read_bytes()
+    return snapshot
+
+
+def _assert_live_usage_episodes_unchanged(before: dict[Path, bytes | None]) -> None:
+    after_paths: set[Path] = set()
+    if LIVE_USAGE_EPISODES_DIR.is_dir():
+        after_paths = {p for p in LIVE_USAGE_EPISODES_DIR.rglob("*") if p.is_file()}
+    new_files = after_paths - {p for p, content in before.items() if content is not None}
+    assert not new_files, (
+        "test created new files under the live usage-episodes tree: "
+        f"{sorted(str(p) for p in new_files)}; tests must target a tmp "
+        "`--repo-root` so state does not bleed into the production layout "
+        "(issue #194)."
+    )
+    for path, before_content in before.items():
+        after_content = path.read_bytes() if path.is_file() else None
+        assert after_content == before_content, (
+            f"test mutated live usage-episodes file {path}; tests must target "
+            "a tmp `--repo-root` (issue #194)."
+        )
+
 
 @pytest.fixture
 def fake_repo(tmp_path: Path) -> Path:
@@ -27,6 +67,30 @@ def fake_home(tmp_path: Path) -> Path:
     home = tmp_path / "home"
     home.mkdir()
     return home
+
+
+@pytest.fixture
+def fake_charness_repo(tmp_path: Path) -> Path:
+    """Tmp repo that looks like a charness source checkout to the CLI.
+
+    Carries a symlinked `packaging/` (so `has_source_manifest` accepts it) and
+    a symlinked `scripts/` directory (so the CLI can invoke the real
+    `reconcile_usage_episodes_host_hooks.py`). Adapter and state stay under
+    `tmp_path` so the live `.agents/usage-episodes-adapter.yaml` and
+    `.charness/usage-episodes/` do not influence assertions. Issue #194.
+
+    Invariant this fixture relies on: scripts under `scripts/` resolve their
+    repo-root-relative paths from the `--repo-root` argument, NOT from
+    `__file__`. If a future runner walks up from its own location to discover
+    state, the symlink would land it back in the live repo and the leak
+    returns; `_assert_live_usage_episodes_unchanged` will catch it.
+    """
+    repo = tmp_path / "fake-charness-repo"
+    repo.mkdir()
+    (repo / "packaging").symlink_to(REPO_ROOT / "packaging", target_is_directory=True)
+    (repo / "scripts").symlink_to(REPO_ROOT / "scripts", target_is_directory=True)
+    (repo / ".agents").mkdir()
+    return repo
 
 
 def _write_adapter(repo: Path, body: str) -> Path:
@@ -320,10 +384,15 @@ def test_session_start_script_no_adapter_exits_silent(fake_repo: Path) -> None:
     assert not (fake_repo / ".charness").exists()
 
 
-def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path) -> None:
+def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path, fake_charness_repo: Path) -> None:
+    _write_adapter(
+        fake_charness_repo,
+        "version: 1\nenabled: true\nhost_hooks:\n  claude: enabled\n  codex: enabled\n",
+    )
     cli = REPO_ROOT / "charness"
+    live_state_before = _snapshot_live_usage_episodes()
     install = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "install", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT)],
+        [sys.executable, str(cli), "session-capture", "install", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
     )
@@ -335,7 +404,7 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path) -
     assert claude_settings.is_file()
     assert codex_settings.is_file()
     status = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
         capture_output=True,
         text=True,
     )
@@ -343,7 +412,7 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path) -
     assert status_payload["hosts"]["claude"]["actual"]["present"] is True
     assert status_payload["hosts"]["codex"]["actual"]["present"] is True
     uninstall = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "uninstall", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT)],
+        [sys.executable, str(cli), "session-capture", "uninstall", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
     )
@@ -353,30 +422,37 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path) -
     if claude_settings.is_file():
         settings = json.loads(claude_settings.read_text(encoding="utf-8"))
         assert "hooks" not in settings or "SessionStart" not in settings.get("hooks", {})
+    _assert_live_usage_episodes_unchanged(live_state_before)
 
 
-def test_session_capture_cli_status_exit_codes(fake_home: Path) -> None:
+def test_session_capture_cli_status_exit_codes(fake_home: Path, fake_charness_repo: Path) -> None:
+    _write_adapter(
+        fake_charness_repo,
+        "version: 1\nenabled: true\nhost_hooks:\n  claude: disabled\n  codex: disabled\n",
+    )
     cli = REPO_ROOT / "charness"
+    live_state_before = _snapshot_live_usage_episodes()
     in_sync = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
         capture_output=True,
         text=True,
     )
     assert in_sync.returncode == 0
     subprocess.run(
-        [sys.executable, str(cli), "session-capture", "install", "--host", "claude", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT)],
+        [sys.executable, str(cli), "session-capture", "install", "--host", "claude", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
         check=True,
     )
     drift = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(REPO_ROOT), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
         capture_output=True,
         text=True,
     )
     assert drift.returncode == 1
     drift_payload = json.loads(drift.stdout)
     assert drift_payload["in_sync"] is False
+    _assert_live_usage_episodes_unchanged(live_state_before)
 
 
 def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Path) -> None:
