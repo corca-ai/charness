@@ -13,48 +13,40 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.10`; local `main` is 11 commits ahead of
-  origin pending push.
-- Usage-episodes adapter is now `enabled: true` with
-  `host_hooks: {claude: enabled, codex: enabled}` and the SessionStart hook
-  is installed in `~/.claude/settings.json` plus `~/.codex/config.toml`. Slice
-  closeout emission has already landed at least one
-  `slice-closeout-*` record in `.charness/usage-episodes/usage_episode.jsonl`;
-  a SessionStart-driven record carrying `session_id` is expected on the next
-  Claude/Codex session. The flip critique
-  ([2026-05-22-usage-episodes-adapter-flip.md](../charness-artifacts/critique/2026-05-22-usage-episodes-adapter-flip.md))
-  triaged all surfaced concerns to over-worry, existing D21/D22, four new
-  deferred decisions (D23–D26), and one GH issue for the test isolation leak.
+- Shipped release `v0.7.10`; local `main` is 14 commits ahead of origin.
+- Usage-episodes adapter is `enabled: true` with both host hooks installed.
+  SC5/SC6 is satisfied: this session's closeout emitted records with
+  `session_id` and `t_evidence` against commit `bc5899b` in
+  [.charness/usage-episodes/usage_episode.jsonl](../.charness/usage-episodes/usage_episode.jsonl)
+  (gitignored).
+- Issue #194 (test-isolation leak) resolved in commit `02c34b5`; the two
+  CLI tests now use a `fake_charness_repo` fixture with a regression guard
+  over [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py).
+- Issue #192 (argparse help rule) landed in commit `bc5899b` in
+  [portable-authoring.md](../skills/public/create-skill/references/portable-authoring.md).
 
 ## Next Session
 
-1. Monitor `.charness/usage-episodes/usage_episode.jsonl` for the first
-   SessionStart-driven record with `session_id` and `t_evidence` populated;
-   that record (combined with any closeout episode it pairs with) satisfies
-   SC5/SC6 against a real charness commit.
-2. After SC5/SC6 evidence lands, push the staged commits to `origin/main`
-   (currently 11 ahead) so the dogfood adapter state and the new deferred
-   decisions are visible to the next checkout.
-3. Reopen-trigger watchlist after enable: D21 (orphan hook after checkout
-   move), D22 (depth cap on hook script repo-root walk), D23 (Codex TOML
-   block dedup + boundary), D24 (closeout emitter best-effort), D25 (per-host
-   install exit code), D26 (hook command interpreter). Issue #194 tracks the
-   test isolation leak in
-   [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py)
-   and is the most likely first hit once the next test run rewrites
-   `host-hooks-state.json`.
+1. Push 14 commits to `origin/main` so the dogfood adapter state, #194 fix,
+   and #192 rule become visible. Push also gives the mutation cron a new
+   HEAD so the #191 same-SHA failure trail stops (already fixed locally in
+   `eead33f`).
+2. After push, close #194 and #192 on GitHub referencing landing commits.
+3. Optional: tackle #193 sweep (259 add_argument calls missing `help=`
+   across ~131 files). Lowest-risk-first per-skill split documented in the
+   issue body; quality(96) and release(30) are the heaviest.
+4. Reopen-trigger watchlist: D21–D26.
 
 ## Discuss
 
-- Step-env leakage into nested test-command coverage probes: subprocess tests
-  building `env={**os.environ, ...}` must scrub `MUTATION_*` keys first.
+- Subprocess tests passing `--repo-root str(REPO_ROOT)` to a CLI that writes
+  gitignored state must use a tmp fake repo with symlinked `packaging/` and
+  `scripts/`. See `fake_charness_repo` in
+  [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py).
+- Step-env leakage: subprocess tests building `env={**os.environ, ...}` must
+  scrub `MUTATION_*` keys first.
 - Watch list: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
   `pytest-xdist`; seed-cache LRU eviction; release proof suppression.
-- Usage-episodes Slice A non-blockers (reopen when reporting consumes
-  episode data): `classification_skipped` required-when-classifier-invoked
-  not enforceable in schema; `issue-closed` uses `<commit-message>` sentinel;
-  `emit_failed` reports only the exception class name. Privacy block on the
-  adapter is advisory until a non-gitignored upload pipeline appears.
 
 ## References
 
