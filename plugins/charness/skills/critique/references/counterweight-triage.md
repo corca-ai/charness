@@ -85,6 +85,11 @@ Field grammar:
   follow-up via the `issue` skill), `document` (record in a
   `Deliberately Not Doing` section or commit body), `defer` (leave to the
   named next slice with no separate filing).
+- `follow-up`: optional issue URL or `deferred <handoff-anchor>` — required
+  when `action: file-issue` so the deferred work cannot disappear into the
+  artifact. Same field grammar as
+  `debug/references/sibling-search.md` `follow-up:`; the validator rejects
+  bare `deferred` tokens with no anchor.
 - `note`: one-line description; the prose `Findings` and
   `Counterweight Triage` sections still own the longer narrative.
 

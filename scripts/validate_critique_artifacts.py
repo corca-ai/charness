@@ -173,6 +173,16 @@ def _parse_structured_finding(raw: str) -> dict[str, str]:
     return fields
 
 
+def _is_valid_followup_value(value: str) -> bool:
+    """Same grammar as `debug` sibling follow-up: identifier or `deferred <anchor>`."""
+    parts = value.strip().split(None, 1)
+    if not parts:
+        return False
+    if parts[0].lower() == "deferred":
+        return len(parts) > 1 and bool(parts[1].strip())
+    return True
+
+
 def validate_structured_findings(path: Path, text: str) -> None:
     bullets = _structured_findings_lines(text)
     if not bullets:
@@ -206,6 +216,20 @@ def validate_structured_findings(path: Path, text: str) -> None:
             raise ValidationError(
                 f"{path}: `## Structured Findings` entry {finding_id} has unknown action `{finding['action']}`; "
                 f"allowed: {sorted(STRUCTURED_ACTIONS)}"
+            )
+        followup_value = finding.get("follow-up", "")
+        if finding["action"] == "file-issue":
+            if not _is_valid_followup_value(followup_value):
+                raise ValidationError(
+                    f"{path}: `## Structured Findings` entry {finding_id} has `action: file-issue` "
+                    "but no parseable `follow-up:` field; record the issue URL or "
+                    "`follow-up: deferred <handoff-anchor>` per "
+                    "skills/public/critique/references/counterweight-triage.md."
+                )
+        elif followup_value and not _is_valid_followup_value(followup_value):
+            raise ValidationError(
+                f"{path}: `## Structured Findings` entry {finding_id} has malformed `follow-up:` value "
+                "(bare `deferred` without an anchor)."
             )
 
 

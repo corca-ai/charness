@@ -415,3 +415,47 @@ def test_validate_critique_structured_findings_section_is_opt_in(tmp_path: Path)
     _seed_structured_critique(repo, body)
     result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_critique_structured_findings_rejects_file_issue_without_followup(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: valid-but-defer | evidence: moderate | ref: a:1 | action: file-issue | note: missing follow-up\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "file-issue" in result.stderr
+    assert "follow-up:" in result.stderr
+
+
+def test_validate_critique_structured_findings_accepts_file_issue_with_followup(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: valid-but-defer | evidence: moderate | ref: a:1 | action: file-issue | follow-up: https://github.com/x/y/issues/1 | note: filed\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_critique_structured_findings_rejects_bare_deferred_followup(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        _STRUCTURED_PRELUDE
+        + "## Structured Findings\n"
+        + "\n"
+        + "- F1 | bin: valid-but-defer | evidence: moderate | ref: a:1 | action: file-issue | follow-up: deferred | note: bare\n"
+        + "\n"
+    )
+    _seed_structured_critique(repo, body)
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
