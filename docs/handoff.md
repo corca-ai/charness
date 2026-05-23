@@ -13,20 +13,19 @@
 
 ## Current State
 
-- Fixed **#208** (scheduled Mutation Tests red ~2 days): the changed-file
-  scope-gap BLOCKER reused whole-file selection predicates, so a well-tested
-  change to a partially-covered CLI/validator was failed by unrelated untested
-  plumbing. Rescoped the blocker to *changed lines*
-  ([mutation_changed_files_lib.py](../scripts/mutation_changed_files_lib.py));
-  whole-file coverage exclusions are now advisory, budget exclusions still
-  block. Added the two genuinely-uncovered changed-line tests (brief-path
-  success, valid set-version); next-run window reports
-  `changed_line_uncovered=[]`. RCA:
-  [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-scope-gap-whole-file.md).
-- #207 was the prior by-design close of this same auto-filed regression; #208 is
-  the recurrence it anticipated, now fixed. Known limitation: changed-line
-  *statement* coverage is weaker than mutation-line (executed ≠ asserted),
-  sampled files keep full rigor.
+- Fixed **#209** (the #208 fix re-triggered the gate on its own next run): #208's
+  new `changed_line_numbers` empty-base guard (`if not base_sha: return set()`)
+  is unreachable from its only caller (pre-guards `not base_sha`), so the line
+  stayed permanently uncovered and blocked any window spanning the new file.
+  Covered it in
+  [test_quality_mutation_sampling.py](../tests/quality_gates/test_quality_mutation_sampling.py)
+  → file now 100% statement coverage (window-independent). #208's verification
+  falsely reported green: it ran against `git diff base..HEAD` while the new file
+  was still uncommitted. RCA:
+  [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md).
+- Fixed **#208** earlier: rescoped the scope-gap BLOCKER to *changed lines*
+  ([mutation_changed_files_lib.py](../scripts/mutation_changed_files_lib.py)); #207
+  was the prior by-design close.
 - Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
 - Open: **#184/#185** (deferred ideation).
 
@@ -35,13 +34,16 @@
 1. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
    메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
    `skill-experiment`; usage-episodes adapter activation).
-2. **Mutation blocker follow-up** (see #208/#207 thread): if the changed-line
-   statement-coverage blocker proves too weak, consider mutation-line coverage
-   of changed lines (needs Cosmic Ray init on all changed files) — spec +
-   critique first.
+2. **Mutation blocker follow-up** (#208/#207 thread): if changed-line *statement*
+   coverage proves too weak, consider mutation-line coverage of changed lines
+   (needs Cosmic Ray init on all changed files) — spec + critique first.
 
 ## Discuss
 
+- **Deferred (#209 critique)**: a changed-line gate verified pre-commit against
+  `git diff base..HEAD` is blind to a fix's own *new* uncommitted file → false
+  green (the #208→#209 shape). Discipline: commit-then-verify, or 100% coverage on
+  new sampler modules. Enforced untracked-file guard triaged over-worry; revisit.
 - New opt-in artifact validators (`validate_ideation_artifact.py`,
   `validate_retro_artifact.py`) are section-gated + changed-paths-default, so
   historical retro artifacts and prose-only output stay valid.

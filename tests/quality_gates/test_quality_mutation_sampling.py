@@ -426,6 +426,8 @@ def test_changed_line_numbers_parses_added_lines_over_range(tmp_path: Path) -> N
     git("commit", "-am", "head")
 
     assert changed_line_numbers(tmp_path, base, "HEAD", "mod.py") == {2, 4}
+    # Empty base sha returns no changed lines (fail-safe guard).
+    assert changed_line_numbers(tmp_path, "", "HEAD", "mod.py") == set()
 
 
 def test_sample_budget_limits_executable_mutants_and_test_nodeids(tmp_path: Path) -> None:
