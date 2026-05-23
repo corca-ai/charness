@@ -63,4 +63,4 @@ with five bounded fresh-eye subagent passes. All fixes landed in one commit
 
 ## Persisted
 
-Persisted: yes (pending persist_retro_artifact.py write)
+Persisted: yes `charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md`

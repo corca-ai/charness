@@ -13,42 +13,42 @@
 
 ## Current State
 
-- `main` ahead of `origin/main` (unpushed). Closes on push: **#198**
-  (eval_registry coverage-attribution fix — immutability test loads a fresh
-  module copy so the frozen-dataclass line re-executes under the test context),
-  **#202** (issue existing-only label/milestone + `resolve-milestone` guard),
-  **#203** (retro opt-in `## Sibling Search`), **#204** (create-cli `Lint Gate`
-  closeout), **#205** (ideation opt-in `## Structured Questions`), **#206**
-  (create-skill "Closeout Schema Rule" + advisory survey).
+- `main` in sync with `origin/main` (pushed `858da76` + retro `89f6a0b`).
+  Closed this session: **#198** (eval_registry coverage-attribution fix —
+  immutability test loads a fresh module copy so the frozen-dataclass line
+  re-executes under the test context), **#200/#201** (prior-session fixes that
+  had silently stayed OPEN), **#202** (issue existing-only label/milestone +
+  `resolve-milestone` guard), **#203** (retro opt-in `## Sibling Search`),
+  **#204** (create-cli `Lint Gate` closeout), **#205** (ideation opt-in
+  `## Structured Questions`), **#206** (create-skill "Closeout Schema Rule" +
+  advisory survey). **#207** closed by-design (RCA: fail-closed scope-gap
+  signal, not a defect).
 - Sibling follow-up grammar now shared from `artifact_validator`
   (`validate_sibling_followups`) across `debug`, `retro`, and `critique`.
-- **#207** RCA done — working-as-designed fail-closed; needs RCA comment +
-  by-design close (external, not yet done). **#184/#185** still deferred.
+- Only **#184/#185** remain open (deferred ideation).
 
 ## Next Session
 
-1. **#207 close**: post the RCA (it is the fail-closed scope-gap signal at
-   `check_mutation_score.py:200-207`, not a defect) and close by-design. Open
-   question: a no-mutable-line changed-file allowlist would reduce false
-   failures on string/generated-only commits but weakens the guarantee —
-   decide deliberately, do not auto-add.
-2. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
+1. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
    메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
    `skill-experiment`; usage-episodes adapter activation).
+2. **Deferred design**: a no-mutable-line changed-file allowlist for the
+   mutation scope-gap signal would cut false failures on string/generated-only
+   commits but weakens the just-hardened guarantee — needs spec + critique, do
+   not auto-add. Reopen #207 only with a recurring false-positive pattern.
 3. **Optional**: 14 pre-existing "used to resolve the X adapter" strings in
-   `release/` + `issue_tool.py` understate their roles; only worth a sweep if
-   budget allows.
+   `release/` + `issue_tool.py` understate their roles; sweep only if budget.
 
 ## Discuss
 
 - New opt-in artifact validators (`validate_ideation_artifact.py`,
   `validate_retro_artifact.py`) are section-gated + changed-paths-default, so
-  the 70 historical retro artifacts and prose-only output stay valid.
+  historical retro artifacts and prose-only output stay valid.
 - `validate_skill_output_schemas.py` is intentionally advisory (report, exit 0,
   un-wired) — a hard gate over freeform Output Shape prose would false-fire.
-- `resolve-milestone` strips the requested title but not existing titles
-  (backend titles are authoritative); exact case-sensitive match is correct
-  for GitHub.
+- New repeat-trap (retro `89f6a0b`): a single `Fixes #a #b` closes only the
+  first issue; repeat the keyword per number, then verify each issue state
+  after push.
 - Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
   `pytest-xdist`; seed-cache LRU eviction; release proof suppression;
   D21–D26 reopen-trigger watchlist; 2 pre-existing ruff errors in the vendored
@@ -61,10 +61,10 @@
   [release surface](../charness-artifacts/release/latest.md)
 - [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md),
   [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md)
-- Closes on push: [#198](https://github.com/corca-ai/charness/issues/198),
+- Closed: [#198](https://github.com/corca-ai/charness/issues/198),
   [#202](https://github.com/corca-ai/charness/issues/202),
   [#203](https://github.com/corca-ai/charness/issues/203),
   [#204](https://github.com/corca-ai/charness/issues/204),
   [#205](https://github.com/corca-ai/charness/issues/205),
-  [#206](https://github.com/corca-ai/charness/issues/206). By-design (RCA, no
-  fix): [#207](https://github.com/corca-ai/charness/issues/207).
+  [#206](https://github.com/corca-ai/charness/issues/206); by-design
+  [#207](https://github.com/corca-ai/charness/issues/207).

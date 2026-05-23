@@ -88,7 +88,10 @@ Shape prose would false-fire).
 
 ## Next Move
 
-- Commit closes #198 #202 #203 #204 #205 #206 on push (auto-close keywords).
-- #207 needs an RCA comment + by-design close (external action; surfaced to the
-  operator rather than performed unprompted).
-- Push and handoff update surfaced for operator decision.
+- Commit landed as `858da76`; retro followup `89f6a0b`. Both pushed.
+- Correction (post-push): the single `Fixes #198 #202 ...` keyword auto-closed
+  only #198 — GitHub needs a closing keyword per issue number. #200-#206 were
+  closed manually; the trap is captured in
+  `charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md`.
+- #207 closed by-design with the RCA comment. All six target issues + #207 are
+  CLOSED; only #184/#185 (deferred ideation) remain open.
