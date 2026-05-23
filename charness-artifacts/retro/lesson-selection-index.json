@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-23",
-  "source_artifact_count": 70,
-  "candidate_count": 437,
+  "source_artifact_count": 71,
+  "candidate_count": 443,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -36,6 +36,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:feb085170006",
+      "kind": "current_focus",
+      "lesson": "Closed the handoff's self-fixable open issues (#198, #202-#206) and RCA'd #207 (by-design) through the design→impl→pattern-scan→RCA→final-critique loop with five bounded fresh-eye subagent passes.",
+      "normalized_key": "closed the handoff s self fixable open issues 198 202 206 and rca d",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+          "date": "2026-05-23",
+          "section": "Context"
         }
       ]
     },
@@ -200,50 +220,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:0e163ac7a4c0",
+      "kind": "next_improvement",
+      "lesson": "after any push that should auto-close issues, verify each issue's state (`gh issue view <n> --json state`) before declaring closeout done; the check is cheap and catches both this trap and the parent `Add #NNN` trap.",
+      "normalized_key": "after any push that should auto close issues verify each issue s state gh",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+          "date": "2026-05-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9f0361079761",
       "kind": "next_improvement",
       "lesson": "do not edit `charness-artifacts/retro/recent-lessons.md` directly; write a session retro file and run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .` so the digest stays consistent with the selection index.",
       "normalized_key": "do not edit charness artifacts retro recent lessons md directly write a session retro",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9180a66315a8",
-      "kind": "next_improvement",
-      "lesson": "when a commit resolves a GitHub issue, the commit message subject line must use a GitHub closing keyword (`Fix`, `Fixes`, `Closes`, `Resolves`) so auto-close fires on push. `Add #NNN`, `Implement #NNN`, and `Document #NNN` do not auto-close; the `issue` skill already states this preference but the trap recurs on non-bug commits.",
-      "normalized_key": "when a commit resolves a github issue the commit message subject line must use",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:941ad459f28f",
-      "kind": "next_improvement",
-      "lesson": "when a test passes `--repo-root str(REPO_ROOT)` to a subprocess that writes gitignored state, switch to a tmp fake repo with symlinked `packaging/` and `scripts/`. The `fake_charness_repo` fixture in `tests/test_usage_episodes_host_hooks.py` is the canonical pattern.",
-      "normalized_key": "when a test passes repo root str repo root to a subprocess that writes",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
       "latest_source_date": "2026-05-23",
@@ -287,6 +287,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:feb085170006",
+      "kind": "current_focus",
+      "lesson": "Closed the handoff's self-fixable open issues (#198, #202-#206) and RCA'd #207 (by-design) through the design→impl→pattern-scan→RCA→final-critique loop with five bounded fresh-eye subagent passes.",
+      "normalized_key": "closed the handoff s self fixable open issues 198 202 206 and rca d",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:43d6fe2cb0b0",
       "kind": "current_focus",
       "lesson": "This session worked through the autonomous-processable items in `docs/handoff.md`: fixed issue #194 (test-isolation leak of `host-hooks-state.json` into the live repo from the two session-capture CLI tests), confirmed issue #191's mutation test regression was already fixed in the unpushed commit `eead33f`, landed issue #192 (argparse `help=` rule in `create-skill` portable authoring), and emitted SC5/SC6 evidence with `session_id` plus `t_evidence` against a real commit.",
@@ -447,6 +467,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:0e163ac7a4c0",
+      "kind": "next_improvement",
+      "lesson": "after any push that should auto-close issues, verify each issue's state (`gh issue view <n> --json state`) before declaring closeout done; the check is cheap and catches both this trap and the parent `Add #NNN` trap.",
+      "normalized_key": "after any push that should auto close issues verify each issue s state gh",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+          "date": "2026-05-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9f0361079761",
       "kind": "next_improvement",
       "lesson": "do not edit `charness-artifacts/retro/recent-lessons.md` directly; write a session retro file and run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .` so the digest stays consistent with the selection index.",
@@ -461,6 +501,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
+          "date": "2026-05-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4fd649c21aeb",
+      "kind": "next_improvement",
+      "lesson": "this refines the existing closing-keyword lesson rather than replacing it; the parent (\"use a closing keyword at all\") still holds.",
+      "normalized_key": "this refines the existing closing keyword lesson rather than replacing it the parent use",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
           "date": "2026-05-23",
           "section": "Next Improvements"
         }
@@ -501,6 +561,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
+          "date": "2026-05-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:32d306e2c04a",
+      "kind": "next_improvement",
+      "lesson": "when one commit resolves multiple issues, repeat the closing keyword before EACH number (`Fixes #1, fixes #2, fixes #3`) or use the `issue` skill's `Close #1. Close #2.` form. A bare list after one keyword closes only the first.",
+      "normalized_key": "when one commit resolves multiple issues repeat the closing keyword before each number fixes",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
           "date": "2026-05-23",
           "section": "Next Improvements"
         }
@@ -547,6 +627,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:a8b6bab17d97",
+      "kind": "repeat_trap",
+      "lesson": "The commit subject `Fixes #198 #202 #203 #204 #205 #206` auto-closed only **#198**. GitHub applies a closing keyword to the FIRST issue number only; a list of bare numbers after one keyword are mentions, not closing references. The result was 6 unpushed-then-pushed fixes that all stayed OPEN until a manual `gh issue close` sweep. The prior session's `a689024` (`Fixes #199 #200 #201`) had the same defect — #199 closed, #200/#201 did not — so this already recurred once and was not caught.",
+      "normalized_key": "the commit subject fixes 198 202 203 204 205 206 auto closed only 198",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:68c6c384f0e6",
       "kind": "repeat_trap",
       "lesson": "The first draft of the #194 fix added a `CHARNESS_USAGE_EPISODES_STATE_PATH` env override to `host_hook_install_lib.py`. The override blocked the leak but exposed a second test bug: the tests also depended on the live `.agents/usage-episodes-adapter.yaml` for adapter intent. The cleaner rewrite (tmp fake repo with symlinked `packaging/scripts/`) handles both surfaces, so the env override was reverted before commit. Discarded code, but it took two iterations to see the second dependency.",
@@ -581,6 +681,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b8a18c4e8591",
+      "kind": "repeat_trap",
+      "lesson": "The recent-lessons digest already carries the parent trap (\"`Add #NNN` does not auto-close; use a closing keyword\"), but it does not say the keyword must be repeated **per issue number**. The refinement is what bit twice.",
+      "normalized_key": "the recent lessons digest already carries the parent trap add nnn does not auto",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
           "date": "2026-05-23",
           "section": "Waste"
         }
