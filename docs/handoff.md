@@ -13,32 +13,18 @@
 
 ## Current State
 
-- Latest local commit `4e69881` (**1 ahead of `origin/main`, not yet pushed** —
-  push is the maintainer's call): a latent-bug sweep (no open GitHub bug — the
-  issue queue held only deferred ideation). Four self-found defects fixed with
-  regression tests through the design→impl→pattern-scan→RCA→final-critique loop
-  and bounded fresh-eye subagents: `parse_selector` now rejects issue#<1 (was
-  returning `[0]`); `is_valid_followup_tail` strips trailing punctuation so
-  `deferred.` is caught (shared by debug/retro/critique);
-  `bump_version --set-version` validates format before mutating the manifest;
-  `issue brief-path` emits structured `{"ok": false}` on a non-positive
-  `--number` instead of a raw traceback. A final independent fresh-eye subagent re-derived
-  all four fixes, proved each regression test non-vacuous (revert→fail,
-  restore→pass), and cleared the commit SAFE-TO-PUSH; 114 affected tests + full
-  read-only quality gate (67 passed) green; exports synced byte-identical.
+- Bug-sweep `4e69881` landed four self-found input-validation fixes (no open
+  GitHub bug — the queue held only deferred ideation), each with a regression
+  test through the design→impl→pattern-scan→RCA→final-critique loop and bounded
+  fresh-eye subagents: `parse_selector` rejects issue#<1; `is_valid_followup_tail`
+  strips trailing punctuation so bare `deferred.` is caught; `bump_version`
+  validates an explicit `--set-version` before mutating the manifest;
+  `issue brief-path` emits a structured `ok:false` on a non-positive `--number`.
   Closeout: [bug-sweep critique](../charness-artifacts/critique/2026-05-23-handoff-bug-sweep-closeout.md).
-- `main` previously in sync with `origin/main` (pushed `858da76` + retro `89f6a0b`).
-  Closed earlier: **#198** (eval_registry coverage-attribution fix —
-  immutability test loads a fresh module copy so the frozen-dataclass line
-  re-executes under the test context), **#200/#201** (prior-session fixes that
-  had silently stayed OPEN), **#202** (issue existing-only label/milestone +
-  `resolve-milestone` guard), **#203** (retro opt-in `## Sibling Search`),
-  **#204** (create-cli `Lint Gate` closeout), **#205** (ideation opt-in
-  `## Structured Questions`), **#206** (create-skill "Closeout Schema Rule" +
-  advisory survey). **#207** closed by-design (RCA: fail-closed scope-gap
-  signal, not a defect).
-- Sibling follow-up grammar now shared from `artifact_validator`
+- Cutting the **v0.7.11** patch release (0.7.10 → 0.7.11) for these fixes.
+- Sibling follow-up grammar shared from `artifact_validator`
   (`validate_sibling_followups`) across `debug`, `retro`, and `critique`.
+- Earlier this cycle: closed #198, #202–#206 (+ #207 by-design) — see References.
 - Only **#184/#185** remain open (deferred ideation).
 
 ## Next Session
