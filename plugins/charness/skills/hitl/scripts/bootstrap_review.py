@@ -206,7 +206,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose HITL review should be bootstrapped")
     parser.add_argument("--session-id", default=f"hitl-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}", help="HITL session identifier")
     parser.add_argument("--target", default="git-diff", help="Path to review, or 'git-diff' to diff against --base-ref")
     parser.add_argument("--base-ref", default="main", help="Base git ref to diff against")

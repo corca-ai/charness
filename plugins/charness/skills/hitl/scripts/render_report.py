@@ -33,7 +33,7 @@ ReportModeError = _report_mode_lib.ReportModeError
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render a HITL report packet as a decision queue.")
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose HITL review report should be rendered.")
     parser.add_argument("--input", type=Path, required=True, help="Queue/report packet JSON.")
     parser.add_argument("--output-html", type=Path, help="HTML review surface path.")
     parser.add_argument("--output-decisions", type=Path, help="Structured decisions JSON path.")

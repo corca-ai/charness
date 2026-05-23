@@ -13,7 +13,7 @@ GITIGNORE_RUNTIME_LINES = (".charness/retro/",)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose retro selection-index memory should be seeded")
     return parser.parse_args()
 
 

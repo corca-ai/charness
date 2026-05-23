@@ -47,7 +47,7 @@ rotation:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose t-events adapter should be seeded")
     parser.add_argument(
         "--force",
         action="store_true",

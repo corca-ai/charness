@@ -109,7 +109,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose skill-routing markdown should be rendered")
     parser.add_argument("--json", action="store_true", help="Emit JSON payload instead of markdown")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()

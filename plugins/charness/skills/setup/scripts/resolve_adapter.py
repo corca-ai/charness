@@ -52,7 +52,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
 def main() -> None:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="setup resolve_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose setup adapter should be resolved")
     try:
         args = parser.parse_args()
         sys.stdout.write(json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n")

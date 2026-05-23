@@ -139,11 +139,11 @@ def build_payload(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose public release narrative should be audited")
     parser.add_argument("--target-tag", required=True, help="Release tag the audit narrative must reference")
     parser.add_argument("--artifact-path", type=Path, help="Path to the release audit artifact (defaults to adapter output_dir/latest.md)")
     parser.add_argument("--notes-file", type=Path, help="Path to the public release notes file to audit")
-    parser.add_argument("--json", action="store_true", help="Emit JSON output")
+    parser.add_argument("--json", action="store_true", help="Emit the full narrative-audit payload as JSON")
     return parser.parse_args()
 
 

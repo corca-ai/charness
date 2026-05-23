@@ -137,7 +137,7 @@ def payload_for(repo_root: Path) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose Slack gather path advice should be computed")
     args = parser.parse_args()
     print(json.dumps(payload_for(args.repo_root.resolve()), ensure_ascii=False, indent=2))
 

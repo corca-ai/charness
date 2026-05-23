@@ -188,7 +188,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
 def main() -> int:
     parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
     parser.add_argument("--url", required=True, help="Public URL to gather")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repository root path")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root where the gathered URL record should be written")
     parser.add_argument("--slug", default=None, help="Slug for the dated record (auto-derived from URL when omitted)")
     parser.add_argument("--date", default=None, help="Record date in YYYY-MM-DD (defaults to today UTC)")
     parser.add_argument("--intent", choices=("single", "collect"), default="single", help="single = one durable record; collect = bulk crawl session")

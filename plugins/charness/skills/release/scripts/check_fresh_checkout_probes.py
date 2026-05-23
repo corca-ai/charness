@@ -169,9 +169,9 @@ def build_payload(repo_root: Path, *, run_probes: bool) -> dict[str, Any]:
 def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release fresh checkout probes")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--run-probes", action="store_true", help="Clone the repo into a temp dir and execute the declared probes")
-    parser.add_argument("--json", action="store_true", help="Emit JSON output")
+    parser.add_argument("--json", action="store_true", help="Emit the full fresh-checkout probe payload as JSON")
     try:
         args = parser.parse_args()
         payload = build_payload(args.repo_root.resolve(), run_probes=args.run_probes)

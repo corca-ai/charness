@@ -89,7 +89,7 @@ def run_sync(repo_root: Path, command: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump")
     group.add_argument("--set-version", help="Explicit version string to set (overrides --part)")

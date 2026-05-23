@@ -68,7 +68,7 @@ verify_release_visible = _post_create.verify_release_visible
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--remote", default="origin", help="Git remote to push to (default: origin)")
     parser.add_argument("--title", help="Release title (defaults to the tag name)")
     parser.add_argument("--notes-file", type=Path, help="Path to a release notes file; omit to generate notes from commits")
