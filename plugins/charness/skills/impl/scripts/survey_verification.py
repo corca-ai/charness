@@ -121,7 +121,7 @@ def _group_specs(adapter_data: dict[str, object]) -> dict[str, list[str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to survey for verification tools")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

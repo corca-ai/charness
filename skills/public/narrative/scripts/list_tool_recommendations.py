@@ -36,10 +36,10 @@ load_manifests = _CONTROL_PLANE_LIB.load_manifests_for_discovery
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--recommendation-role", default="runtime")
-    parser.add_argument("--next-skill-id", default="narrative")
-    parser.add_argument("--include-ready", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for tool recommendations")
+    parser.add_argument("--recommendation-role", default="runtime", help="Filter manifests by role (runtime or validation)")
+    parser.add_argument("--next-skill-id", default="narrative", help="Skill id that will consume the recommendations next")
+    parser.add_argument("--include-ready", action="store_true", help="Include ready (non-blocking) recommendations as well")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

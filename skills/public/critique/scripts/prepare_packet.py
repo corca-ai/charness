@@ -54,7 +54,7 @@ def _default_slug() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the critique prepare-packet runner")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root to build the critique packet from")
     parser.add_argument("--prepared-for", default="working tree",
                         help="Short label describing what this packet covers (e.g. commit range)")
     parser.add_argument("--changed-ref", default=None,

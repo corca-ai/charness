@@ -41,8 +41,8 @@ write_lesson_selection_index = _scripts_recent_lessons_lib_module.write_lesson_s
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--source", type=Path)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root that owns the retro adapter and recent-lessons summary")
+    parser.add_argument("--source", type=Path, help="Optional repo-relative retro source artifact to require during digest rebuild")
     return parser.parse_args()
 
 

@@ -29,8 +29,8 @@ inventory = _standing_gate_verbosity_lib_module.inventory
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-gate verbosity inventory")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     return parser.parse_args()
 
 

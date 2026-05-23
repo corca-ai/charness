@@ -31,7 +31,7 @@ _inspect_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root to inspect")
     args = parser.parse_args()
     payload = _inspect_lib.build_setup_inspection_payload(
         args.repo_root.resolve(),

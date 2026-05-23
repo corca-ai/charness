@@ -143,7 +143,7 @@ def inventory_sloc(repo_root: Path, *, excludes: list[str]) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the tokei-backed SLOC inventory")
     parser.add_argument(
         "--exclude",
         action="append",
@@ -151,7 +151,7 @@ def main() -> int:
         help="Directory or path glob to exclude (repeatable). "
         "Defaults to common cache and vendor directories.",
     )
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     parser.add_argument(
         "--output",
         type=Path,

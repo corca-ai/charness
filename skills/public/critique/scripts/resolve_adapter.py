@@ -31,7 +31,7 @@ load_adapter = _critique_adapter_lib.load_adapter
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Resolve the critique adapter")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root for resolving the critique adapter")
     args = parser.parse_args()
     payload = load_adapter(args.repo_root.resolve())
     json.dump(payload, sys.stdout, indent=2, ensure_ascii=False, sort_keys=True)

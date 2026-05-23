@@ -175,7 +175,7 @@ def _execute_install(repo_root: Path, adapter_path: str | None, block: dict) -> 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose quality adapter should be inspected for mutation testing state")
     parser.add_argument("--execute", action="store_true", help="Apply install when status is missing.")
     args = parser.parse_args()
 

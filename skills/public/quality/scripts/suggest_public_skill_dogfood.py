@@ -39,9 +39,9 @@ public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--skill-id", action="append", default=[])
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose public skill dogfood matrix should be suggested")
+    parser.add_argument("--skill-id", action="append", default=[], help="Public skill id to include in the matrix (repeatable; defaults to all)")
+    parser.add_argument("--json", action="store_true", help="Emit the full dogfood matrix payload as JSON")
     return parser.parse_args()
 
 

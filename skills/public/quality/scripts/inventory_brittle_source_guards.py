@@ -150,8 +150,8 @@ def inventory(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--min-pattern-chars", type=int, default=DEFAULT_MIN_PATTERN_CHARS)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the brittle source-guard markdown inventory")
+    parser.add_argument("--min-pattern-chars", type=int, default=DEFAULT_MIN_PATTERN_CHARS, help="Minimum quoted-pattern length before a source guard is treated as durable")
     parser.add_argument(
         "--scan-root",
         action="append",
@@ -159,7 +159,7 @@ def main() -> int:
         dest="scan_roots",
         help="Markdown file or directory to scan for source guards. Repeat to override the default bounded roots.",
     )
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     args = parser.parse_args()
     payload = inventory(
         args.repo_root.resolve(),

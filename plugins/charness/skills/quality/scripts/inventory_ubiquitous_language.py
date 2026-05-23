@@ -215,9 +215,9 @@ def render_report(report: dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--adapter", type=Path, default=DEFAULT_CONTRACT_PATH)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the ubiquitous-language terminology inventory")
+    parser.add_argument("--adapter", type=Path, default=DEFAULT_CONTRACT_PATH, help="Quality adapter file declaring the domain_language_contract")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     args = parser.parse_args()
 
     try:

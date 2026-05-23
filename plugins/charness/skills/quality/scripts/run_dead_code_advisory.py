@@ -144,11 +144,11 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--path", action="append", default=[])
-    parser.add_argument("--primary-confidence", type=int, default=80)
-    parser.add_argument("--sweep-confidence", type=int, default=60)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the vulture-backed dead-code advisory scan")
+    parser.add_argument("--path", action="append", default=[], help="Repo-relative path to scan for dead code (repeatable; defaults applied if omitted)")
+    parser.add_argument("--primary-confidence", type=int, default=80, help="vulture --min-confidence for the high-confidence primary pass")
+    parser.add_argument("--sweep-confidence", type=int, default=60, help="vulture --min-confidence for the lower-confidence sweep pass")
+    parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

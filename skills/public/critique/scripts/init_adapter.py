@@ -23,7 +23,7 @@ packet_sections: []
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize critique adapter skeleton")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root to scaffold the critique adapter into")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite an existing adapter file")
     args = parser.parse_args()

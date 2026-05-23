@@ -209,7 +209,7 @@ def inventory(repo_root: Path) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the adapter-and-gate-design inventory scan")
     args = parser.parse_args()
     payload = inventory(args.repo_root.resolve())
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))

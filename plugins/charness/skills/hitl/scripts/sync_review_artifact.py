@@ -32,9 +32,9 @@ write_current_pointer_text = _current_pointer_writer.write_current_pointer_text
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--session-id", required=True)
-    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--session-id", required=True, help="HITL session identifier")
+    parser.add_argument("--check", action="store_true", help="Check artifact freshness without writing")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

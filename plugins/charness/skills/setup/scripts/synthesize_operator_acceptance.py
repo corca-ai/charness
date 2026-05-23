@@ -33,11 +33,11 @@ synthesize_operator_acceptance = _scripts_operator_acceptance_lib_module.synthes
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path("docs/operator-acceptance.md"))
-    parser.add_argument("--write", action="store_true")
-    parser.add_argument("--force", action="store_true")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--output", type=Path, default=Path("docs/operator-acceptance.md"), help="Output path for the generated doc")
+    parser.add_argument("--write", action="store_true", help="Write the doc to disk instead of stdout")
+    parser.add_argument("--force", action="store_true", help="Overwrite an existing output file")
+    parser.add_argument("--json", action="store_true", help="Emit JSON payload instead of markdown")
     args = parser.parse_args()
 
     payload = synthesize_operator_acceptance(

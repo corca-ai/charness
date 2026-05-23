@@ -97,17 +97,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Emit a Charness quality behavior-test recommendation using the Cautilus robustness contract."
     )
-    parser.add_argument("--behavior-seam", required=True)
-    parser.add_argument("--subject-ref", required=True)
-    parser.add_argument("--intent", default="operator_behavior")
-    parser.add_argument("--risk-focus", required=True)
-    parser.add_argument("--deterministic-gap", required=True)
-    parser.add_argument("--source-evidence-ref", action="append", default=[])
-    parser.add_argument("--mutation-kind", action="append", choices=MUTATION_KINDS, default=[])
-    parser.add_argument("--limitation", action="append", default=[])
-    parser.add_argument("--state", choices=STATES, default="recommend_only")
+    parser.add_argument("--behavior-seam", required=True, help="Behavior seam under test (free-form identifier for the operator-visible contract)")
+    parser.add_argument("--subject-ref", required=True, help="Cautilus subjectRef value pointing at the artifact being probed")
+    parser.add_argument("--intent", default="operator_behavior", help="Intent profile passed to Cautilus (e.g. operator_behavior)")
+    parser.add_argument("--risk-focus", required=True, help="Short label describing the risk this robustness probe should stress")
+    parser.add_argument("--deterministic-gap", required=True, help="Reason the deterministic gate alone cannot prove this seam")
+    parser.add_argument("--source-evidence-ref", action="append", default=[], help="Evidence reference supporting the recommendation (repeatable; commas accepted)")
+    parser.add_argument("--mutation-kind", action="append", choices=MUTATION_KINDS, default=[], help="Mutation kinds requested from Cautilus (repeatable; defaults to stimulus)")
+    parser.add_argument("--limitation", action="append", default=[], help="Known limitation to record on the recommendation (repeatable)")
+    parser.add_argument("--state", choices=STATES, default="recommend_only", help="Lifecycle state of the recommendation (recommend_only, executed, blocked, unavailable)")
     parser.add_argument("--report-ref", help="Required when --state executed; points to the Cautilus report.")
-    parser.add_argument("--markdown", action="store_true")
+    parser.add_argument("--markdown", action="store_true", help="Render the recommendation as a markdown bullet instead of JSON")
     return parser
 
 

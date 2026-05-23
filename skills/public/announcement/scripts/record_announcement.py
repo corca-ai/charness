@@ -31,12 +31,12 @@ def _path_provenance(repo_root: Path, value: str) -> dict[str, str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--head-commit", required=True)
-    parser.add_argument("--delivery-kind", default="none")
-    parser.add_argument("--delivery-target", default="")
-    parser.add_argument("--artifact-path", default="charness-artifacts/announcement/latest.md")
-    parser.add_argument("--commits", nargs="*", default=[])
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root that owns the announcement record log")
+    parser.add_argument("--head-commit", required=True, help="HEAD commit sha covered by this announcement record")
+    parser.add_argument("--delivery-kind", default="none", help="Delivery channel kind for this announcement (e.g. none, slack, github-release)")
+    parser.add_argument("--delivery-target", default="", help="Delivery target identifier such as a channel name, URL, or release tag")
+    parser.add_argument("--artifact-path", default="charness-artifacts/announcement/latest.md", help="Path to the announcement artifact to record (repo-relative preferred)")
+    parser.add_argument("--commits", nargs="*", default=[], help="Commit shas included in this announcement window")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

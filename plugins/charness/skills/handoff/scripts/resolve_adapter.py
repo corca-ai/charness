@@ -48,7 +48,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
 def main() -> None:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="handoff resolve_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for resolving the handoff adapter")
     try:
         args = parser.parse_args()
         sys.stdout.write(json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n")

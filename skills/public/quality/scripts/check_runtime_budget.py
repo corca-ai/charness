@@ -31,7 +31,7 @@ runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_bu
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose runtime-signals.json budgets should be enforced")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument(
         "--runtime-profile",

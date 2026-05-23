@@ -44,7 +44,7 @@ default_specdown_smoke_patterns = _scripts_quality_policy_defaults_module.defaul
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--preset-id", default="portable-defaults")
+    parser.add_argument("--preset-id", default="portable-defaults", help="Quality adapter preset to seed defaults from (e.g. portable-defaults, python-quality, specdown-quality)")
 
 
 def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:

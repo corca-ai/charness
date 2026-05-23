@@ -161,9 +161,9 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--title")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold the debug artifact into")
+    parser.add_argument("--title", help="Title for the scaffolded debug artifact")
+    parser.add_argument("--json", action="store_true", help="Emit the payload as JSON instead of the rendered template")
     args = parser.parse_args()
 
     payload = payload_for(args.repo_root.resolve(), title=args.title)

@@ -33,8 +33,8 @@ def _repo_root() -> Path:
 def main() -> None:
     cancel_timeout = arm_cli_timeout(label="announcement preflight_sources")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--draft-path", type=Path, default=None)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root that owns the announcement adapter and draft artifact")
+    parser.add_argument("--draft-path", type=Path, default=None, help="Override path to the announcement draft to preflight (defaults to the adapter artifact path)")
     try:
         args = parser.parse_args()
         repo_root = args.repo_root.resolve()

@@ -46,8 +46,8 @@ def _record_runtime_script_path(repo_root: Path) -> Path:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--class", dest="probe_class", choices=("standing", "release", "all"), default="all")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose adapter-declared startup probes should be measured")
+    parser.add_argument("--class", dest="probe_class", choices=("standing", "release", "all"), default="all", help="Probe class to run (standing, release, or all)")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument(
         "--record-runtime-signals",

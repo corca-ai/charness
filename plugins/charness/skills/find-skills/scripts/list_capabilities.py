@@ -142,13 +142,13 @@ def _filter_shadowed(entries: list[dict[str, str]], preferred: list[dict[str, st
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for installed skills, support capabilities, and integrations")
     recommendation_group = parser.add_mutually_exclusive_group()
-    recommendation_group.add_argument("--recommend-for-skill")
-    recommendation_group.add_argument("--recommendation-role", choices=("runtime", "validation"))
-    recommendation_group.add_argument("--recommend-for-task")
-    parser.add_argument("--next-skill-id")
-    parser.add_argument("--only-blocking", action="store_true")
+    recommendation_group.add_argument("--recommend-for-skill", help="Public skill id to score tool/support routes against (e.g. impl, quality)")
+    recommendation_group.add_argument("--recommendation-role", choices=("runtime", "validation"), help="Limit recommendation route to runtime tooling or validation tooling for the named skill")
+    recommendation_group.add_argument("--recommend-for-task", help="Free-text task summary to score against the capability inventory and return best-fit skills/support/integrations")
+    parser.add_argument("--next-skill-id", help="Skill id the caller plans to invoke next; pairs with --recommendation-role to focus the route")
+    parser.add_argument("--only-blocking", action="store_true", help="Filter recommendations to entries that are blocking for the requested skill/role")
     parser.add_argument(
         "--read-only",
         action="store_true",

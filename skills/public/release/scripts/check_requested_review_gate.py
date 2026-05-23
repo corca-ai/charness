@@ -112,10 +112,10 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--artifact", type=Path)
-    parser.add_argument("--skip-commands", action="store_true")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--artifact", type=Path, help="Release artifact file to scan for review waiver/unavailability phrases")
+    parser.add_argument("--skip-commands", action="store_true", help="Skip executing the configured requested_review_commands")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

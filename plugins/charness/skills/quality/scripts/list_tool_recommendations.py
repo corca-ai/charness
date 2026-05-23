@@ -38,10 +38,10 @@ load_manifests = _scripts_control_plane_lib_module.load_manifests_for_discovery
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--recommendation-role", default="validation")
-    parser.add_argument("--next-skill-id", default="quality")
-    parser.add_argument("--include-ready", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose integration manifests should be inspected for tool recommendations")
+    parser.add_argument("--recommendation-role", default="validation", help="Recommendation role to surface (e.g. validation, security)")
+    parser.add_argument("--next-skill-id", default="quality", help="Skill ID about to run, used to scope manifest recommendations")
+    parser.add_argument("--include-ready", action="store_true", help="Include already-satisfied tool recommendations in the output")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

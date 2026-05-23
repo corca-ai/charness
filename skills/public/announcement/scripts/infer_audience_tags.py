@@ -32,7 +32,7 @@ def infer_tags(repo_root: Path) -> list[dict[str, str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for user, operator, and developer audience signals")
     args = parser.parse_args()
     sys.stdout.write(json.dumps({"candidates": infer_tags(args.repo_root.resolve())}, ensure_ascii=False, indent=2) + "\n")
 

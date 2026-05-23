@@ -38,7 +38,7 @@ def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the duplicate-implementation scan")
     return parser.parse_args()
 
 

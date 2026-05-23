@@ -34,10 +34,10 @@ bootstrap_quality_adapter = _scripts_quality_bootstrap_lib_module.bootstrap_qual
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path(".agents/quality-adapter.yaml"))
-    parser.add_argument("--report-path", type=Path, default=Path(".charness/quality/bootstrap.json"))
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to bootstrap the quality adapter for")
+    parser.add_argument("--output", type=Path, default=Path(".agents/quality-adapter.yaml"), help="Path to write the generated quality adapter YAML")
+    parser.add_argument("--report-path", type=Path, default=Path(".charness/quality/bootstrap.json"), help="Path to write the bootstrap report JSON")
+    parser.add_argument("--dry-run", action="store_true", help="Plan the bootstrap without writing the adapter or report")
     args = parser.parse_args()
 
     report = bootstrap_quality_adapter(

@@ -45,8 +45,8 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--paths", nargs="*")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for auto-retro trigger surfaces and path globs")
+    parser.add_argument("--paths", nargs="*", help="Changed paths to evaluate against trigger surfaces (defaults to git diff)")
     return parser.parse_args()
 
 

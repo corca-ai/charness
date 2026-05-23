@@ -165,12 +165,12 @@ def analyze_file(path: Path, repo_root: Path) -> list[dict[str, object]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--path-glob", action="append", default=[])
-    parser.add_argument("--exclude-glob", action="append", default=[])
-    parser.add_argument("--require-empty", action="store_true")
-    parser.add_argument("--json", action="store_true")
-    parser.add_argument("--require-git-file-listing", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the gitignore scan-hygiene inventory")
+    parser.add_argument("--path-glob", action="append", default=[], help="Glob of Python scanners to inspect (repeatable; defaults applied if omitted)")
+    parser.add_argument("--exclude-glob", action="append", default=[], help="Glob of paths to exclude from the inventory (repeatable)")
+    parser.add_argument("--require-empty", action="store_true", help="Exit non-zero when any non-git-aware repo traversal is found")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for scanner discovery")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

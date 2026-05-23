@@ -181,7 +181,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
 def main() -> None:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="create-skill resolve_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for resolving the create-skill adapter")
     try:
         args = parser.parse_args()
         sys.stdout.write(

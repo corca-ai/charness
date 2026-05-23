@@ -92,10 +92,10 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
 def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="quality resolve_quality_artifact")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--slug", default="quality-review")
-    parser.add_argument("--intent", choices=("current", "record"), default="current")
-    parser.add_argument("--date")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose quality artifact paths should be resolved")
+    parser.add_argument("--slug", default="quality-review", help="Slug used in the dated quality artifact filename")
+    parser.add_argument("--intent", choices=("current", "record"), default="current", help="Whether to resolve the current pointer or a new dated record")
+    parser.add_argument("--date", help="ISO date stamp for the record artifact (defaults to today)")
     try:
         args = parser.parse_args()
         artifact_date = dt.date.fromisoformat(args.date) if args.date else dt.date.today()

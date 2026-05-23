@@ -108,7 +108,7 @@ def build_next_steps(doctor: dict[str, object], manifest: dict[str, object]) -> 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

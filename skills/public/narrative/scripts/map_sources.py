@@ -82,7 +82,7 @@ def _status_lines(repo_root: Path, paths: list[str]) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to map narrative source documents in")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

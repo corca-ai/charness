@@ -240,8 +240,8 @@ def has_failures(report: dict[str, Any]) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose skill ergonomics gate rules should be evaluated")
+    parser.add_argument("--json", action="store_true", help="Emit the full validation payload as JSON")
     args = parser.parse_args()
 
     report = evaluate(args.repo_root.resolve())

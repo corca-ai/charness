@@ -125,7 +125,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
     args = parser.parse_args()
     print(json.dumps(build_payload(args.repo_root.resolve()), ensure_ascii=False, indent=2))
 

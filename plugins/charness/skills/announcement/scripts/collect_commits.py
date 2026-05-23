@@ -169,9 +169,9 @@ def collect_commits(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--limit", type=int, default=12)
-    parser.add_argument("--body-limit", type=int, default=1200)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose git log and announcement record are scanned for new commits")
+    parser.add_argument("--limit", type=int, default=12, help="Maximum commits to inspect when no previous announcement head is recorded")
+    parser.add_argument("--body-limit", type=int, default=1200, help="Maximum commit-body characters to retain before truncation")
     parser.add_argument(
         "--fanout-hint",
         action="store_true",

@@ -45,8 +45,8 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--paths", nargs="*")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root used to resolve the release adapter")
+    parser.add_argument("--paths", nargs="*", help="Changed paths to evaluate; defaults to git-derived changed paths")
     return parser.parse_args()
 
 

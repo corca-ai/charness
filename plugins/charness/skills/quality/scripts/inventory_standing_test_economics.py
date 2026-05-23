@@ -29,8 +29,8 @@ inventory = _standing_test_economics.inventory
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-test economics inventory")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     args = parser.parse_args()
 
     payload = inventory(args.repo_root.resolve())

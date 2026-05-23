@@ -40,7 +40,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
 def main() -> None:
     cancel_timeout = arm_cli_timeout(label="announcement resolve_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to load the announcement adapter from")
     try:
         args = parser.parse_args()
         payload = load_adapter(args.repo_root.resolve())

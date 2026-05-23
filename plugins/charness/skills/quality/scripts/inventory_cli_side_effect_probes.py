@@ -39,11 +39,11 @@ def _adapter_vendored_prefixes(adapter: dict[str, object]) -> list[str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--contract-file", action="append", default=[])
-    parser.add_argument("--execute-probes", action="store_true")
-    parser.add_argument("--fail-on-findings", action="store_true")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the CLI side-effect probe inventory")
+    parser.add_argument("--contract-file", action="append", default=[], help="Path to a side-effect probe contract file (repeatable)")
+    parser.add_argument("--execute-probes", action="store_true", help="Actually execute declared probe commands rather than only inventorying them")
+    parser.add_argument("--fail-on-findings", action="store_true", help="Exit non-zero when any findings are surfaced")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     return parser.parse_args()
 
 

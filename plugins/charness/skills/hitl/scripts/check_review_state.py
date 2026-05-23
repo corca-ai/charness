@@ -30,9 +30,9 @@ load_adapter = _resolve_adapter.load_adapter
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--session-id", required=True)
-    parser.add_argument("--phase", choices=("pre-edit", "cursor-advance"), required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--session-id", required=True, help="HITL session identifier")
+    parser.add_argument("--phase", choices=("pre-edit", "cursor-advance"), required=True, help="Review phase to check")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)

@@ -99,7 +99,7 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the CI/local gate parity inventory")
     parser.add_argument(
         "--workflow-glob",
         default=plib.DEFAULT_WORKFLOW_GLOB,
@@ -126,7 +126,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when a workflow has run-steps but no canonical-gate match",
     )
-    parser.add_argument("--require-git-file-listing", action="store_true")
+    parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for workflow discovery")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     return parser
 

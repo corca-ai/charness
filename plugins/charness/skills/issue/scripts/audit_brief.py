@@ -111,8 +111,8 @@ def audit(events: list[dict[str, Any]]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--transcript", type=Path, required=True)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--transcript", type=Path, required=True, help="Path to the transcript JSON file listing fix-unit events")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output")
     args = parser.parse_args()
 
     try:

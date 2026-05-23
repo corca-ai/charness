@@ -67,7 +67,7 @@ def _read_content(path: Path | None) -> str:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repository root path")
     parser.add_argument("--slug", required=True, help="lowercase slug for the dated record")
     parser.add_argument("--date", default=None, help="YYYY-MM-DD (default: today UTC)")
     parser.add_argument(

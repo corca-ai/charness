@@ -36,14 +36,14 @@ run_markdown_preview = _BOOTSTRAP_LIB.run_markdown_preview
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
-    parser.add_argument("--width", action="append", type=int, default=[])
-    parser.add_argument("--artifact-dir", default=_BOOTSTRAP_LIB.DEFAULT_ARTIFACT_DIR)
-    parser.add_argument("--changed-only", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--force", action="store_true")
-    parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold markdown-preview tooling under")
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH, help="Path to write the markdown-preview config file")
+    parser.add_argument("--width", action="append", type=int, default=[], help="Terminal width to preview at (repeatable; defaults applied if omitted)")
+    parser.add_argument("--artifact-dir", default=_BOOTSTRAP_LIB.DEFAULT_ARTIFACT_DIR, help="Directory under the repo root where preview artifacts are written")
+    parser.add_argument("--changed-only", action="store_true", help="Limit the preview run to markdown files changed in the working tree")
+    parser.add_argument("--dry-run", action="store_true", help="Plan the scaffold without writing config or running the preview")
+    parser.add_argument("--force", action="store_true", help="Overwrite an existing markdown-preview config")
+    parser.add_argument("--execute", action="store_true", help="Run the markdown-preview tool after scaffolding the config")
     return parser.parse_args()
 
 

@@ -51,10 +51,10 @@ RUNTIME_INSTALL_REVIEW_PROMPTS = elib.RUNTIME_INSTALL_REVIEW_PROMPTS
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--skill-path", action="append", default=[])
-    parser.add_argument("--max-core-lines", type=int, default=160)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the skill ergonomics inventory")
+    parser.add_argument("--skill-path", action="append", default=[], help="Skill directory or SKILL.md to inventory (repeatable; defaults applied if omitted)")
+    parser.add_argument("--max-core-lines", type=int, default=160, help="Non-empty line count above which a SKILL.md core is flagged as long")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     return parser.parse_args()
 
 

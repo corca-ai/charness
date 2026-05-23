@@ -48,10 +48,10 @@ CORE_DOCS_TOP_LEVEL = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--doc-path", action="append", default=[])
-    parser.add_argument("--max-core-lines", type=int, default=140)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the entrypoint-docs ergonomics inventory")
+    parser.add_argument("--doc-path", action="append", default=[], help="Entrypoint doc path relative to the repo root (repeatable; defaults applied if omitted)")
+    parser.add_argument("--max-core-lines", type=int, default=140, help="Non-empty line count above which an entrypoint doc is flagged as long")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     return parser.parse_args()
 
 

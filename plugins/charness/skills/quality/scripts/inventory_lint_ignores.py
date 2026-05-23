@@ -15,8 +15,8 @@ def main() -> int:
     from scripts.quality_adapter_lib import load_quality_adapter_permissive
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the lint-ignore inventory")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     args = parser.parse_args()
     target_root = args.repo_root.resolve()
     adapter = load_quality_adapter_permissive(target_root)

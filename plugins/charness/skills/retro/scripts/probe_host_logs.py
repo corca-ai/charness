@@ -35,8 +35,8 @@ build_payload = _scripts_host_log_probe_lib_module.build_payload
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--home", type=Path, default=Path.home())
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--home", type=Path, default=Path.home(), help="User home directory to probe for host CLI log locations")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to resolve repo-local log paths")
     return parser.parse_args()
 
 

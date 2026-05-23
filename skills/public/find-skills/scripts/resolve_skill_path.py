@@ -151,11 +151,11 @@ def main() -> int:
         description="Resolve a current installed skill path when a host-injected path is stale. "
         "Defaults to charness skills; pass --marketplace/--plugin to resolve any other Codex plugin's cache.",
     )
-    parser.add_argument("--skill-id", required=True)
-    parser.add_argument("--reported-path", type=Path)
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument("--home", type=Path, default=Path.home())
-    parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
+    parser.add_argument("--skill-id", required=True, help="Skill id to resolve a current installed SKILL.md path for (e.g. impl, quality)")
+    parser.add_argument("--reported-path", type=Path, help="Host-reported SKILL.md path to verify; reported as stale when missing but a current path is found")
+    parser.add_argument("--repo-root", type=Path, default=Path("."), help="Repo root used to search repo-local skill surfaces")
+    parser.add_argument("--home", type=Path, default=Path.home(), help="User home directory used to search managed-checkout skill paths")
+    parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")), help="Codex home directory used to search installed plugin and cache skill paths")
     parser.add_argument("--marketplace", default="local", help="Codex marketplace name. Defaults to `local` (charness).")
     parser.add_argument("--plugin", default="charness", help="Codex plugin name. Defaults to `charness`.")
     args = parser.parse_args()

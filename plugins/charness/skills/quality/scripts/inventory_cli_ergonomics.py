@@ -42,11 +42,11 @@ def _adapter_vendored_prefixes(adapter: dict[str, object]) -> list[str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--registry-file", action="append", default=[])
-    parser.add_argument("--archetype-contract-file", action="append", default=[])
-    parser.add_argument("--flat-help-threshold", type=int, default=10)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the CLI ergonomics inventory scan")
+    parser.add_argument("--registry-file", action="append", default=[], help="Path to a command-registry JSON file (repeatable; defaults auto-discover under the repo)")
+    parser.add_argument("--archetype-contract-file", action="append", default=[], help="Path to a command-archetype contract JSON file (repeatable; defaults auto-discover under the repo)")
+    parser.add_argument("--flat-help-threshold", type=int, default=10, help="Number of subcommands above which a flat help surface is flagged")
+    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     return parser.parse_args()
 
 

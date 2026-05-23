@@ -39,10 +39,10 @@ persist_retro_artifact = _scripts_retro_persistence_lib_module.persist_retro_art
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--artifact-name", required=True)
-    parser.add_argument("--markdown-file", type=Path, required=True)
-    parser.add_argument("--snapshot-file", type=Path)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root that owns the retro adapter and output directory")
+    parser.add_argument("--artifact-name", required=True, help="Filename stem (without extension) for the persisted retro artifact")
+    parser.add_argument("--markdown-file", type=Path, required=True, help="Path to the rendered retro markdown body to persist")
+    parser.add_argument("--snapshot-file", type=Path, help="Optional path to a JSON snapshot payload to persist alongside the artifact")
     parser.add_argument(
         "--force-empty-summary",
         action="store_true",

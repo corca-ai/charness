@@ -12,8 +12,8 @@ remote_name: origin
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root where the issue adapter should be written")
+    parser.add_argument("--force", action="store_true", help="Overwrite an existing adapter file")
     args = parser.parse_args()
 
     adapter_path = args.repo_root.resolve() / ".agents" / "issue-adapter.yaml"

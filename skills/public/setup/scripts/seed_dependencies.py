@@ -48,8 +48,8 @@ def _resolve_tool_ids(repo_root: Path, *, explicit: list[str], from_recommendati
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--tool-id", action="append", default=[])
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root path")
+    parser.add_argument("--tool-id", action="append", default=[], help="Tool id to seed (repeatable)")
     parser.add_argument(
         "--from-recommendations",
         action="store_true",
@@ -60,7 +60,7 @@ def main() -> int:
         action="store_true",
         help="Overwrite an existing integrations/tools/dependencies.json.",
     )
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

@@ -40,7 +40,7 @@ def review_adapter(repo_root: Path) -> dict[str, object]:
 def main() -> None:
     cancel_timeout = arm_cli_timeout(label="narrative review_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to review the narrative adapter against")
     try:
         args = parser.parse_args()
         payload = review_adapter(args.repo_root.resolve())
