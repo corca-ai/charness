@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-23",
-  "source_artifact_count": 69,
-  "candidate_count": 428,
+  "source_artifact_count": 70,
+  "candidate_count": 431,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -54,6 +54,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:0d0a05607960",
+      "kind": "current_focus",
+      "lesson": "Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files).",
+      "normalized_key": "worked through the remaining autonomous processable item in docs handoff md issue 193 audit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
           "date": "2026-05-23",
           "section": "Context"
         }
@@ -180,6 +200,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:33718f816d5b",
+      "kind": "repeat_trap",
+      "lesson": "The misleading `--carrier` help text was caught only by spot-check critique, not by the original sweep. A small validator that cross-checks `help=` parenthesized enums against the `choices=` tuple would catch this class deterministically; deferred because the similar-pattern scan surfaced no other instances and adding a gate for a one-off bug would be noise.",
+      "normalized_key": "the misleading carrier help text was caught only by spot check critique not by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8db0a5a8ca3e",
+      "kind": "repeat_trap",
+      "lesson": "The sweep mutated `skills/public/` without running the plugin-export sync, and the first quality run failed on `test_plugin_preamble_..._readiness` with `root_install_surface.ok = False` warning about drift at `plugins/charness/skills/announcement/scripts/collect_commits.py`. CLAUDE.md already declares `mutate -> sync -> verify -> publish` as a hard phase barrier; the lesson is to run `scripts/sync_root_plugin_manifests.py` immediately after any `skills/public/` mutation rather than discovering the drift via a failing readiness test.",
+      "normalized_key": "the sweep mutated skills public without running the plugin export sync and the first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:bdee3fcb6a12",
       "kind": "current_focus",
       "lesson": "This session continued the bug-pattern sibling scan and repaired the release publish path that treated a failed unreleased-path diff as an empty release delta.",
@@ -194,66 +254,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
-          "date": "2026-05-22",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f50ecbffd194",
-      "kind": "current_focus",
-      "lesson": "This session continued the release proof suppression scan by fixing publish behavior for broken real-host proof configuration and proof-builder failures.",
-      "normalized_key": "this session continued the release proof suppression scan by fixing publish behavior for broken",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
-          "date": "2026-05-22",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:c0cc24aff553",
-      "kind": "current_focus",
-      "lesson": "This session continued the release proof suppression scan by fixing `_release_base_ref()` fallback behavior for failed previous-tag lookup and fetch commands.",
-      "normalized_key": "this session continued the release proof suppression scan by fixing release base ref fallback",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-          "date": "2026-05-22",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d501629f5844",
-      "kind": "current_focus",
-      "lesson": "This session continued the suppression-pattern scan by hardening `run-quality --read-only` changed-path discovery.",
-      "normalized_key": "this session continued the suppression pattern scan by hardening run quality read only changed",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-run-quality-changed-path-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-run-quality-changed-path-session.md",
           "date": "2026-05-22",
           "section": "Context"
         }
@@ -307,6 +307,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0d0a05607960",
+      "kind": "current_focus",
+      "lesson": "Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files).",
+      "normalized_key": "worked through the remaining autonomous processable item in docs handoff md issue 193 audit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9f0361079761",
       "kind": "next_improvement",
       "lesson": "do not edit `charness-artifacts/retro/recent-lessons.md` directly; write a session retro file and run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .` so the digest stays consistent with the selection index.",
@@ -421,6 +441,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:33718f816d5b",
+      "kind": "repeat_trap",
+      "lesson": "The misleading `--carrier` help text was caught only by spot-check critique, not by the original sweep. A small validator that cross-checks `help=` parenthesized enums against the `choices=` tuple would catch this class deterministically; deferred because the similar-pattern scan surfaced no other instances and adding a gate for a one-off bug would be noise.",
+      "normalized_key": "the misleading carrier help text was caught only by spot check critique not by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+          "date": "2026-05-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8db0a5a8ca3e",
+      "kind": "repeat_trap",
+      "lesson": "The sweep mutated `skills/public/` without running the plugin-export sync, and the first quality run failed on `test_plugin_preamble_..._readiness` with `root_install_surface.ok = False` warning about drift at `plugins/charness/skills/announcement/scripts/collect_commits.py`. CLAUDE.md already declares `mutate -> sync -> verify -> publish` as a hard phase barrier; the lesson is to run `scripts/sync_root_plugin_manifests.py` immediately after any `skills/public/` mutation rather than discovering the drift via a failing readiness test.",
+      "normalized_key": "the sweep mutated skills public without running the plugin export sync and the first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
+      "latest_source_date": "2026-05-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
           "date": "2026-05-23",
           "section": "Waste"
         }

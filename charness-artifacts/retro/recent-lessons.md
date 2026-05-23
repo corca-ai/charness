@@ -3,14 +3,14 @@
 ## Current Focus
 
 - This session worked through the autonomous-processable items in `docs/handoff.md`: fixed issue #194 (test-isolation leak of `host-hooks-state.json` into the live repo from the two session-capture CLI tests), confirmed issue #191's mutation test regression was already fixed in the unpushed commit `eead33f`, landed issue #192 (argparse `help=` rule in `create-skill` portable authoring), and emitted SC5/SC6 evidence with `session_id` plus `t_evidence` against a real commit. (source: `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`)
-- This session continued the bug-pattern sibling scan and repaired the release publish path that treated a failed unreleased-path diff as an empty release delta. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`)
+- Worked through the remaining autonomous-processable item in `docs/handoff.md`: issue #193 (audit found 256 `add_argument` calls missing `help=` text across 14 public skills, 131 files). (source: `charness-artifacts/retro/2026-05-23-help-text-sweep-session.md`)
 
 ## Repeat Traps
 
 - Adding a trap directly to `charness-artifacts/retro/recent-lessons.md` by hand was reverted by `refresh_recent_lessons.py` on the next pre-push run; the digest is generated from the selection index, not authored. (source: `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`)
 - The #192 commit message used `Add #192` instead of a closing keyword (`Fix`/`Closes`/`Resolves`), so GitHub did not auto-close the issue on push. The sibling #194 commit used `Fix #194` and auto-closed cleanly. Manual `gh issue close 192` recovered, but the cost of one stray PR or closeout review missing the keyword can be a stale OPEN issue for days. (source: `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`)
 - The first draft of the #194 fix added a `CHARNESS_USAGE_EPISODES_STATE_PATH` env override to `host_hook_install_lib.py`. The override blocked the leak but exposed a second test bug: the tests also depended on the live `.agents/usage-episodes-adapter.yaml` for adapter intent. The cleaner rewrite (tmp fake repo with symlinked `packaging/scripts/`) handles both surfaces, so the env override was reverted before commit. Discarded code, but it took two iterations to see the second dependency. (source: `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`)
-- Compatibility for no-trigger dry-run repos without `.agents/surfaces.json` was implied by execute tests but not directly pinned. (source: `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`)
+- The misleading `--carrier` help text was caught only by spot-check critique, not by the original sweep. A small validator that cross-checks `help=` parenthesized enums against the `choices=` tuple would catch this class deterministically; deferred because the similar-pattern scan surfaced no other instances and adding a gate for a one-off bug would be noise. (source: `charness-artifacts/retro/2026-05-23-help-text-sweep-session.md`)
 
 ## Next-Time Checklist
 
@@ -29,5 +29,5 @@
 
 - `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`
 - `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`
-- `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`
 - `charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md`
+- `charness-artifacts/retro/2026-05-23-help-text-sweep-session.md`
