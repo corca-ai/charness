@@ -625,8 +625,8 @@ usage: charness worktree create [-h] [--repo-root REPO_ROOT] --path PATH
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repository to create the worktree from. Defaults to
-                        the current working directory.
+                        Repo root that the worktree should be created under.
+                        Defaults to the current working directory.
   --path PATH           Path for the new git worktree.
   --branch BRANCH       Create a new local branch for the worktree.
   --base BASE           Base ref passed to `git worktree add` after the path.
@@ -657,8 +657,8 @@ usage: charness worktree add [-h] [--repo-root REPO_ROOT] --path PATH
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repository to create the worktree from. Defaults to
-                        the current working directory.
+                        Repo root that the worktree should be created under.
+                        Defaults to the current working directory.
   --path PATH           Path for the new git worktree.
   --branch BRANCH       Create a new local branch for the worktree.
   --base BASE           Base ref passed to `git worktree add` after the path.
@@ -733,8 +733,8 @@ usage: charness worktree audit [-h] [--repo-root REPO_ROOT]
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repository to inspect. Defaults to the current working
-                        directory.
+                        Repo root whose worktree registry should be audited.
+                        Defaults to the current working directory.
   --stale-days STALE_DAYS
                         Detached-HEAD worktrees older than this many days are
                         reported as stale (default: 14).
@@ -764,8 +764,8 @@ usage: charness worktree cleanup [-h] [--repo-root REPO_ROOT] --path PATH
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repository to operate from. Defaults to the current
-                        working directory.
+                        Repo root whose worktree should be operated on.
+                        Defaults to the current working directory.
   --path PATH           Registered worktree path to remove.
   --delete-merged-branch
                         Delete the local branch only after it is contained in

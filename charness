@@ -4573,7 +4573,7 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--repo-root",
             type=Path,
-            help="Repository to create the worktree from. Defaults to the current working directory.",
+            help="Repo root that the worktree should be created under. Defaults to the current working directory.",
         )
         command.add_argument("--path", type=Path, required=True, help="Path for the new git worktree.")
         command.add_argument("--branch", help="Create a new local branch for the worktree.")
@@ -4633,7 +4633,7 @@ def build_parser() -> argparse.ArgumentParser:
     worktree_audit_parser.add_argument(
         "--repo-root",
         type=Path,
-        help="Repository to inspect. Defaults to the current working directory.",
+        help="Repo root whose worktree registry should be audited. Defaults to the current working directory.",
     )
     worktree_audit_parser.add_argument(
         "--stale-days",
@@ -4662,7 +4662,7 @@ def build_parser() -> argparse.ArgumentParser:
     worktree_cleanup_parser.add_argument(
         "--repo-root",
         type=Path,
-        help="Repository to operate from. Defaults to the current working directory.",
+        help="Repo root whose worktree should be operated on. Defaults to the current working directory.",
     )
     worktree_cleanup_parser.add_argument("--path", type=Path, required=True, help="Registered worktree path to remove.")
     worktree_cleanup_parser.add_argument(
