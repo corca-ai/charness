@@ -13,57 +13,58 @@
 
 ## Current State
 
-- `main` at `4bc44d3`. Closed this session: **#195** (`a37ab31` entry-guard
-  mutation skip in `filter_cosmic_ray_mutants.py` + sampler mirror),
-  **#197** (`3e59152` RCA — gate already at
-  `validate_packaging_install_surface.py:130`; commit names the sync
-  script in the drift message and locks the contract), **#196**
-  (`4bc44d3` corpus normalization: 18 Repo-root + 6 Emit-JSON role-
-  specific, 7 subparser helps added, Repository→Repo corpus-wide).
-- Filed: **#198** (eval_registry sampler nodeid gap;
-  `test_eval_registry_scenarios_are_immutable_contract_records` exists
-  but sampler did not pick it for `eval_registry.py:6`).
-- 1차 조사 메모 posted to **#185** and **#184**; full ideation deferred.
+- `main` ahead of `origin/main` (unpushed). Closes on push: **#198**
+  (eval_registry coverage-attribution fix — immutability test loads a fresh
+  module copy so the frozen-dataclass line re-executes under the test context),
+  **#202** (issue existing-only label/milestone + `resolve-milestone` guard),
+  **#203** (retro opt-in `## Sibling Search`), **#204** (create-cli `Lint Gate`
+  closeout), **#205** (ideation opt-in `## Structured Questions`), **#206**
+  (create-skill "Closeout Schema Rule" + advisory survey).
+- Sibling follow-up grammar now shared from `artifact_validator`
+  (`validate_sibling_followups`) across `debug`, `retro`, and `critique`.
+- **#207** RCA done — working-as-designed fail-closed; needs RCA comment +
+  by-design close (external, not yet done). **#184/#185** still deferred.
 
 ## Next Session
 
-1. **Ideation for #185 + #184**: spawn `charness:ideation` against the
-   1차 메모. Top-3 candidates: (a) 'symptom→root-cause shift' counter (#197
-   is the exemplar), (b) LLM-as-judge via Cautilus `skill-experiment`,
-   (c) usage-episodes adapter activation decision.
-2. **Triage #198**: reproduce sampler attribution for `eval_registry.py:6`
-   — budget vs coverage-context is the suspect. Do not lower threshold.
-3. **Optional**: 14 pre-existing "used to resolve the X adapter" strings
-   in `release/` + `issue_tool.py` understate their roles. Out of #196
-   scope; only worth a sweep if budget allows.
+1. **#207 close**: post the RCA (it is the fail-closed scope-gap signal at
+   `check_mutation_score.py:200-207`, not a defect) and close by-design. Open
+   question: a no-mutable-line changed-file allowlist would reduce false
+   failures on string/generated-only commits but weakens the guarantee —
+   decide deliberately, do not auto-add.
+2. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
+   메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
+   `skill-experiment`; usage-episodes adapter activation).
+3. **Optional**: 14 pre-existing "used to resolve the X adapter" strings in
+   `release/` + `issue_tool.py` understate their roles; only worth a sweep if
+   budget allows.
 
 ## Discuss
 
-- Sync gate already exists at `validate_packaging_install_surface.py:130`
-  and runs before pytest. The diff-based design in #197 would have been
-  weaker (false positives, misses unstaged); content-diff is correct.
-- Entry-guard skip detector `is_trivial_entry_guard_mutation` lives in
-  `filter_cosmic_ray_mutants.py` and is mirrored in
-  `mutation_sampling_lib.py` so the sampler stops counting entry-guard
-  lines as mutable. New stat: `skipped_entry_guard`.
-- `add_argument` with `choices=` must have `help=` reflecting actual
-  choice strings; argparse prints them, so paraphrase contradicts.
-- Subprocess tests passing `--repo-root str(REPO_ROOT)` to a writing CLI
-  must use the `fake_charness_repo` fixture in
-  [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py);
-  scrub `MUTATION_*` env keys before forwarding `os.environ`.
+- New opt-in artifact validators (`validate_ideation_artifact.py`,
+  `validate_retro_artifact.py`) are section-gated + changed-paths-default, so
+  the 70 historical retro artifacts and prose-only output stay valid.
+- `validate_skill_output_schemas.py` is intentionally advisory (report, exit 0,
+  un-wired) — a hard gate over freeform Output Shape prose would false-fire.
+- `resolve-milestone` strips the requested title but not existing titles
+  (backend titles are authoritative); exact case-sensitive match is correct
+  for GitHub.
 - Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
   `pytest-xdist`; seed-cache LRU eviction; release proof suppression;
-  D21–D26 reopen-trigger watchlist.
+  D21–D26 reopen-trigger watchlist; 2 pre-existing ruff errors in the vendored
+  notion-to-md converter (out of scope).
 
 ## References
 
-- [#193 help= sweep retro](../charness-artifacts/retro/2026-05-23-help-text-sweep-session.md)
+- [open-issue sweep closeout](../charness-artifacts/critique/2026-05-23-handoff-open-issues-closeout.md)
 - [quality posture](../charness-artifacts/quality/latest.md),
   [release surface](../charness-artifacts/release/latest.md)
 - [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md),
   [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md)
-- Closed this session: [#195](https://github.com/corca-ai/charness/issues/195),
-  [#196](https://github.com/corca-ai/charness/issues/196),
-  [#197](https://github.com/corca-ai/charness/issues/197). Opened:
-  [#198](https://github.com/corca-ai/charness/issues/198).
+- Closes on push: [#198](https://github.com/corca-ai/charness/issues/198),
+  [#202](https://github.com/corca-ai/charness/issues/202),
+  [#203](https://github.com/corca-ai/charness/issues/203),
+  [#204](https://github.com/corca-ai/charness/issues/204),
+  [#205](https://github.com/corca-ai/charness/issues/205),
+  [#206](https://github.com/corca-ai/charness/issues/206). By-design (RCA, no
+  fix): [#207](https://github.com/corca-ai/charness/issues/207).

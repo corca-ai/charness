@@ -102,6 +102,8 @@ QUALITY_PYTHON_STUBS = (
     ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
+    ("validate-ideation-artifact", "validate_ideation_artifact.py"),
+    ("validate-retro-artifact", "validate_retro_artifact.py"),
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("check-current-pointer-writes", "check_current_pointer_writes.py"),
     ("inventory-quality-handoff", "inventory_quality_handoff.py"),

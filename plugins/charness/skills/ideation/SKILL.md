@@ -140,6 +140,12 @@ If entity/stage separation materially clarifies the idea, also include:
 
 Use that split as a thinking aid, not as mandatory ceremony.
 
+When the open questions are ones a downstream skill (`spec` or `impl`) must act
+on, emit an opt-in `## Structured Questions` section that classifies each item
+by `urgency`, `depends-on`, and `action` so the next skill does not re-triage
+prose bullets. The schema, enums, and the section-gated validator are owned by
+`references/structured-questions.md`. Prose-only output stays valid.
+
 ## Guardrails
 
 - Do not jump into implementation while the concept is still unstable.
@@ -174,5 +180,6 @@ Use that split as a thinking aid, not as mandatory ceremony.
 - `references/sequence-discipline.md`
 - `references/spec-boundary.md`
 - `references/decision-question-response.md`
+- `references/structured-questions.md`
 - `../spec/references/taxonomy-axis-checkpoint.md`
 - `../../shared/references/success-criteria-review.md`

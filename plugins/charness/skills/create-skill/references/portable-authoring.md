@@ -262,6 +262,36 @@ instructions.
 Good scripts reduce cold-start variance and make error recovery real. A future
 session should not have to reinterpret the same ritual from scratch.
 
+## Closeout Schema Rule
+
+The Helper Script Rule covers producer-side bootstrap. Its mirror covers
+caller-side closeout:
+
+> When a skill's `Output Shape` contains classifier fields the caller is
+> expected to act on — severity bins, decision/proof pairs, urgency or
+> next-action enums — ship a validator script that fails when those fields are
+> missing or free-form, and name it as the closeout gate in `SKILL.md`. A prose
+> schema the caller must re-derive every time is not a contract.
+
+This is the unifying root cause behind corca-ai/charness#199/#201/#203/#205:
+skills declared structured output the caller had to act on, but shipped no
+validator, so the caller re-classified prose on every pass (15 critique passes ×
+15 manual triages in the Ceal-session evidence). The fix each time was the same
+intervention — a `scripts/validate_*_artifact.py` + a section-gated rule.
+
+Keep the validator opt-in and section-gated (fail only when the structured
+section is present) so prose-only output and historical artifacts stay valid.
+Reuse the shared grammar in `scripts/artifact_validator.py` (e.g.
+`validate_sibling_followups`) instead of re-implementing follow-up or enum
+parsing per skill.
+
+`scripts/validate_skill_output_schemas.py --report` surveys
+`skills/public/*/SKILL.md` for classifier-bearing `Output Shape` fields that
+lack a matching `validate_*_artifact.py` / `validate_*_output.py`. It is
+advisory by design: the "does this field need a validator?" judgment is
+semantic, not lexical, so the survey informs the author rather than hard-failing
+CI on a heuristic.
+
 ## Argparse Help Rule
 
 Every `argparse.add_argument(...)` call in a skill script must pass an explicit

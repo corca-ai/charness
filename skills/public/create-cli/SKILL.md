@@ -145,6 +145,12 @@ steps call tools outside the baseline shell surface.
      that asserts `git status` stays clean and `HEAD` stays unchanged on
      success, and prefer a read-only path or disposable checkout for any
      generating step
+   - run the repo's standing lint gate against the new CLI source before
+     slice-complete and record the result in the `Lint Gate` closeout field
+     rather than waiting for the push-time hook to reject the commit; the lint
+     survey and the field shape are owned by
+     `../impl/references/verification-ladder.md` "Lint Gate Closeout Shape" and
+     `references/quality-gates.md`
 
 ## Guardrails
 
@@ -176,5 +182,6 @@ steps call tools outside the baseline shell surface.
 - `references/external-capability-clis.md`
 - `references/quality-gates.md`
 - `references/case-studies.md`
+- `../impl/references/verification-ladder.md`
 - `../../shared/references/binary-preflight.md`
 - `../../shared/references/external-capability-proof-ladder.md`

@@ -59,12 +59,18 @@ repo by created date. It must not use the current session's last created issue.
    or other external source.
 4. Add only an optional weak solution direction (`This may be solved by...`,
    `A useful outcome might be...`); avoid prescribing.
-5. Create the issue through `selected_backend`; apply labels through that
-   backend, and never substitute direct `gh` when another backend is selected.
+5. Create the issue through `selected_backend`; apply labels and any milestone
+   through that backend, and never substitute direct `gh` when another backend
+   is selected. Assign only existing repository labels and milestones: list the
+   repo's milestones through the backend, gate the requested one with
+   `issue_tool.py resolve-milestone`, and never create a new label or milestone
+   to satisfy a request — leave it unassigned and say so when none fits, or
+   report a backend capability gap when the runtime cannot set it.
    Do not ask for approval unless the user explicitly asks to review first.
 6. Verify each created issue through `selected_backend`; render closeout only
-   from the verified `{repo, number, url}` ledger. See
-   `references/closeout-discipline.md`.
+   from the verified `{repo, number, url}` ledger, and include the final
+   verified labels and milestone (or an explicit "milestone: unassigned"
+   note). See `references/closeout-discipline.md`.
 
 ## Resolve Issue
 
@@ -138,6 +144,10 @@ repo by created date. It must not use the current session's last created issue.
   `status: verified` with GitHub state checked as `CLOSED`.
 - Do not hardcode `gh` when the adapter advertises a stronger backend, or hide
   missing backend auth behind public-fetch fallback for mutating operations.
+- Do not invent or guess repository labels or milestones. Assign only ones the
+  repo already has; when none fits, leave it unassigned and state that, or
+  report the backend capability gap — never create a new label/milestone to
+  make the request fit.
 - Do not silently retarget on retry: surface `target_unavailable` instead of
   falling through to another accessible repo.
 - Render `issue new` closeout only from the verified `{repo, number, url}`

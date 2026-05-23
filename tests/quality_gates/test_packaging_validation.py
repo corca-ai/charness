@@ -268,10 +268,32 @@ def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
 
 
 def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
-    scenario = EVAL_REGISTRY.SCENARIOS[0]
+    # Load a fresh copy from source so the `@dataclass(frozen=True)` decorator
+    # line re-executes under THIS test's coverage context. The decorator runs
+    # once at import (before any test context is active), so mutation sampling
+    # never attributes the frozen-dataclass line to this kill test and the
+    # `frozen=True -> False` mutant survives as a false coverage gap (#198). A
+    # fresh module copy avoids mutating `sys.modules` and so cannot contaminate
+    # other tests that import `scripts.eval_registry`.
+    import importlib.util
+    import sys
 
-    with pytest.raises(FrozenInstanceError):
-        scenario.description = "mutated"
+    source = ROOT / "scripts" / "eval_registry.py"
+    spec = importlib.util.spec_from_file_location("_eval_registry_immutability_probe", source)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    # `from __future__ import annotations` makes the field annotation a string;
+    # dataclasses resolves it via `sys.modules[cls.__module__]`, so the probe
+    # module must be registered before exec. Pop it in `finally` so the unique
+    # throwaway name never leaks into other tests.
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+        scenario = module.SCENARIOS[0]
+        with pytest.raises(FrozenInstanceError):
+            scenario.description = "mutated"
+    finally:
+        sys.modules.pop(spec.name, None)
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:

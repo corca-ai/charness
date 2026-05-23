@@ -96,6 +96,33 @@ When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.
 
+## Milestones
+
+The skill assigns only milestones the repository already has and never creates
+one. The flow is backend-routed:
+
+1. List existing milestones through the selected backend. For the default `gh`
+   backend: `gh api repos/<org/repo>/milestones --jq '.[].title'`. A
+   host-mediated backend should expose its own milestone-list command; if it
+   has none, report the capability gap instead of guessing.
+2. Gate the requested milestone with the worker:
+
+   ```bash
+   python3 "$SKILL_DIR/scripts/issue_tool.py" resolve-milestone \
+     --requested "<title>" --existing "<title-1>" --existing "<title-2>"
+   ```
+
+   `action: assign` means the title matches an existing milestone and is safe to
+   pass to the backend (`gh issue create --milestone "<title>"`, which itself
+   rejects unknown titles). `action: leave-unassigned` means no existing
+   milestone matched — leave it unset and tell the operator; do not create one.
+3. Verify the final milestone in closeout through the backend `view` op (add
+   `milestone` to `{json_fields}` for `gh`).
+
+This keeps milestone handling backend-agnostic: the worker only decides
+assignability from titles the agent fetched, so it never embeds a `gh`-specific
+milestone mutation.
+
 ## File-Backed Close Comments
 
 For multi-line close comments, route through the backend rather than

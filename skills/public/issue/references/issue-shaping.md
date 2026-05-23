@@ -11,6 +11,13 @@ The receiver should understand what happened before seeing any proposed fix:
 - labels: pick from the target repo's existing label vocabulary; check
   `gh label list --repo <org/repo>` if unfamiliar, and add `--label <name>`
   on the create call
+- milestone: assign only a milestone the repository already has. List existing
+  milestones through the selected backend first (for the `gh` backend:
+  `gh api repos/<org/repo>/milestones --jq '.[].title'`), then gate the request
+  with `issue_tool.py resolve-milestone` before assigning. Never create a new
+  milestone to satisfy a request; if no existing milestone fits, leave it
+  unassigned and say so explicitly. If the selected backend exposes no milestone
+  capability, report the gap honestly rather than guessing
 - source identity (required when the originating context is external —
   Slack thread, Notion page, doc, gathered artifact, web URL): canonical
   URL plus local gathered-artifact path, access mode, and freshness when

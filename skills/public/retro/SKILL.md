@@ -75,6 +75,13 @@ Adapter policy:
    - `workflow`: change the sequence, gate, or review habit
    - `capability`: add or adjust a skill, tool, adapter, preset, or automation
    - `memory`: write the lesson into a durable artifact so it is not relearned
+   - when a lesson names a *transferable* waste pattern (one that could recur in
+     another skill, script, doc, or workflow), scan for siblings before
+     declaring the lesson learned and record the result in a `## Sibling Search`
+     section of the per-session artifact; narrowly local waste uses the
+     `n/a — trivial fix; no plausible siblings` short-circuit. The four-axis
+     scan, four-decision taxonomy, follow-up identifiers, and the section-gated
+     validator are owned by `references/waste-sibling-scan.md`
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes
    - if `weekly` and the adapter defines `snapshot_path`, write a compact machine-readable snapshot with the window, evidence sources, and any real metrics or deltas you used
@@ -96,6 +103,8 @@ The result should usually include:
 - `Trends vs Last Retro` for `weekly` when prior evidence exists
 - `Expert Counterfactuals`
 - `Next Improvements`
+- `Sibling Search` when a transferable waste pattern is named (opt-in;
+  `n/a — trivial fix; no plausible siblings` short-circuit otherwise)
 - `Persisted`
 
 ## Auto-Retro Trigger
@@ -158,3 +167,5 @@ The result should usually include:
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
 - `references/weekly-trends.md`
+- `references/waste-sibling-scan.md`
+- `../debug/references/sibling-search.md`

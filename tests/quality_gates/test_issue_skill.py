@@ -705,3 +705,44 @@ def test_issue_skill_documents_backend_resolution() -> None:
     assert "selected_backend" in skill_text
     assert "issue_backend" in backend_ref
     assert "ceal" in backend_ref
+
+
+def test_resolve_milestone_assigns_existing_match() -> None:
+    result = run_script(
+        SCRIPT, "resolve-milestone", "--requested", "v1.0", "--existing", "v1.0", "--existing", "backlog"
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["assignable"] is True
+    assert payload["action"] == "assign"
+    assert payload["milestone"] == "v1.0"
+
+
+def test_resolve_milestone_never_invents_when_no_match() -> None:
+    result = run_script(SCRIPT, "resolve-milestone", "--requested", "made-up", "--existing", "v1.0")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["assignable"] is False
+    assert payload["action"] == "leave-unassigned"
+    assert payload["milestone"] is None
+    assert "not creating a new one" in payload["reason"]
+
+
+def test_resolve_milestone_leaves_unassigned_when_none_requested() -> None:
+    result = run_script(SCRIPT, "resolve-milestone", "--existing", "v1.0")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["assignable"] is False
+    assert payload["milestone"] is None
+    assert payload["reason"] == "no milestone requested"
+
+
+def test_issue_skill_documents_existing_milestone_rule() -> None:
+    skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
+    shaping = (ROOT / "skills" / "public" / "issue" / "references" / "issue-shaping.md").read_text(
+        encoding="utf-8"
+    )
+    skill_flat = " ".join(skill_text.split())
+    shaping_flat = " ".join(shaping.split())
+    assert "Assign only existing repository labels and milestones" in skill_flat
+    assert "Never create a new milestone" in shaping_flat

@@ -7,9 +7,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+
+_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
@@ -174,13 +177,13 @@ def _parse_structured_finding(raw: str) -> dict[str, str]:
 
 
 def _is_valid_followup_value(value: str) -> bool:
-    """Same grammar as `debug` sibling follow-up: identifier or `deferred <anchor>`."""
-    parts = value.strip().split(None, 1)
-    if not parts:
-        return False
-    if parts[0].lower() == "deferred":
-        return len(parts) > 1 and bool(parts[1].strip())
-    return True
+    """Same grammar as `debug` sibling follow-up: identifier or `deferred <anchor>`.
+
+    Delegates to the shared `artifact_validator.is_valid_followup_tail` so the
+    follow-up grammar lives in one place (the Closeout Schema Rule in
+    `create-skill/references/portable-authoring.md` requires reusing it).
+    """
+    return is_valid_followup_tail(value.strip().lower())
 
 
 def validate_structured_findings(path: Path, text: str) -> None:

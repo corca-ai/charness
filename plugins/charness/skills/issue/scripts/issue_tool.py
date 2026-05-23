@@ -225,6 +225,52 @@ def command_brief_path(args: argparse.Namespace) -> int:
     return 0
 
 
+def resolve_milestone(requested: str | None, existing: list[str]) -> dict[str, Any]:
+    """Resolve a requested milestone against the repo's existing milestone titles.
+
+    The skill must never invent a milestone. This guard assigns only when the
+    requested title exactly matches one the repository already has; otherwise it
+    leaves the issue unassigned and says so, so the agent cannot silently create
+    a fake milestone (corca-ai/charness#202).
+    """
+    existing_titles = [title for title in existing if title]
+    requested_title = (requested or "").strip()
+    if not requested_title:
+        return {
+            "ok": True,
+            "assignable": False,
+            "milestone": None,
+            "action": "leave-unassigned",
+            "reason": "no milestone requested",
+            "existing": existing_titles,
+        }
+    if requested_title in existing_titles:
+        return {
+            "ok": True,
+            "assignable": True,
+            "milestone": requested_title,
+            "action": "assign",
+            "reason": f"`{requested_title}` is an existing repository milestone",
+            "existing": existing_titles,
+        }
+    return {
+        "ok": True,
+        "assignable": False,
+        "milestone": None,
+        "action": "leave-unassigned",
+        "reason": (
+            f"no existing repository milestone titled `{requested_title}`; "
+            "not creating a new one — state this explicitly to the operator"
+        ),
+        "existing": existing_titles,
+    }
+
+
+def command_resolve_milestone(args: argparse.Namespace) -> int:
+    emit(resolve_milestone(args.requested, args.existing or []))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -276,6 +322,18 @@ def build_parser() -> argparse.ArgumentParser:
     brief.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     brief.add_argument("--date", help="ISO date (YYYY-MM-DD); defaults to today")
     brief.set_defaults(func=command_brief_path)
+
+    milestone = subparsers.add_parser(
+        "resolve-milestone",
+        help="Decide whether a requested milestone is assignable from the repo's existing milestones (never invents one)",
+    )
+    milestone.add_argument("--requested", help="Milestone title the operator asked for; omit when none was requested")
+    milestone.add_argument(
+        "--existing",
+        action="append",
+        help="An existing repository milestone title (fetch via the backend, e.g. `gh api repos/{repo}/milestones`); repeat per milestone",
+    )
+    milestone.set_defaults(func=command_resolve_milestone)
     return parser
 
 
