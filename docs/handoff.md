@@ -21,23 +21,24 @@
   whole-file coverage exclusions are now advisory, budget exclusions still
   block. Added the two genuinely-uncovered changed-line tests (brief-path
   success, valid set-version); next-run window reports
-  `changed_line_uncovered=[]`. Ran five bounded fresh-eye critique subagents
-  (design→impl→pattern-scan→counterweight→closeout). RCA:
+  `changed_line_uncovered=[]`. RCA:
   [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-scope-gap-whole-file.md).
+- #207 was the prior by-design close of this same auto-filed regression; #208 is
+  the recurrence it anticipated, now fixed. Known limitation: changed-line
+  *statement* coverage is weaker than mutation-line (executed ≠ asserted),
+  sampled files keep full rigor.
 - Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
-- Open: **#184/#185** (deferred ideation); **#207** reopened — its by-design
-  "whole-file exclusion blocks" contract is superseded; known limitation:
-  changed-line *statement* coverage is weaker than mutation-line (executed ≠
-  asserted), sampled files keep full rigor.
+- Open: **#184/#185** (deferred ideation).
 
 ## Next Session
 
 1. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
    메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
    `skill-experiment`; usage-episodes adapter activation).
-2. **#207 follow-up**: if the changed-line statement-coverage blocker proves too
-   weak in practice, consider mutation-line coverage of changed lines (needs
-   Cosmic Ray init on all changed files) — spec + critique first.
+2. **Mutation blocker follow-up** (see #208/#207 thread): if the changed-line
+   statement-coverage blocker proves too weak, consider mutation-line coverage
+   of changed lines (needs Cosmic Ray init on all changed files) — spec +
+   critique first.
 
 ## Discuss
 
@@ -46,9 +47,6 @@
   historical retro artifacts and prose-only output stay valid.
 - `validate_skill_output_schemas.py` is intentionally advisory (report, exit 0,
   un-wired) — a hard gate over freeform Output Shape prose would false-fire.
-- New repeat-trap (retro `89f6a0b`): a single `Fixes #a #b` closes only the
-  first issue; repeat the keyword per number, then verify each issue state
-  after push.
 - Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
   `pytest-xdist`; seed-cache LRU eviction; release proof suppression;
   D21–D26 reopen-trigger watchlist; 2 pre-existing ruff errors in the vendored
