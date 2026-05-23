@@ -262,6 +262,29 @@ instructions.
 Good scripts reduce cold-start variance and make error recovery real. A future
 session should not have to reinterpret the same ritual from scratch.
 
+## Argparse Help Rule
+
+Every `argparse.add_argument(...)` call in a skill script must pass an explicit
+`help="..."` string — for positional arguments too, not just flags. The first
+caller of any skill script is an LLM with no shared context with the author;
+without `help=` text, `--help` lists flag names only, and the model is forced
+into a guess-then-grep-source loop on first use (observed in live agent
+runtimes; see corca-ai/charness#192).
+
+A short imperative phrase is enough. The bar is: "an LLM caller can pick the
+right value on first read of `--help`." Example:
+
+```python
+# Wrong — `--help` shows the flag with no description.
+parser.add_argument("--workspace")
+
+# Right — `--help` shows what the flag controls.
+parser.add_argument("--workspace", help="Workspace id the run targets (e.g. C0123ABC).")
+```
+
+This applies to skill scripts, not arbitrary repo scripts; the bar is the
+agent caller, not the human author.
+
 ## Cross-Skill Propagation Rule
 
 When a high-leverage reasoning pattern lands in one public skill, inspect
