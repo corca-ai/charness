@@ -15,7 +15,13 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+import scripts.mutation_changed_files_lib as mutation_changed_files_lib  # noqa: E402
 import scripts.sample_mutation_files as sample_mutation_files  # noqa: E402
+from scripts.mutation_changed_files_lib import (  # noqa: E402
+    changed_line_numbers,
+    classify_changed_file_exclusions,
+    classify_changed_line_scope_gap,
+)
 from scripts.mutation_sampling_lib import (  # noqa: E402
     coverage_run_command,
     filter_eligible_by_coverage,
@@ -30,7 +36,6 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_test_nodeids,
 )
 from scripts.sample_mutation_files import (  # noqa: E402
-    classify_changed_file_exclusions,
     list_changed,
     list_eligible,
     mutation_pathspecs,
@@ -349,6 +354,80 @@ def test_changed_file_exclusions_split_filter_boundaries() -> None:
     ) == ([], [], [])
 
 
+def test_changed_line_scope_gap_blocks_only_uncovered_changed_lines(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    changed = {
+        "scripts/covered.py": {10, 11},  # changed lines covered; unrelated line 13 uncovered
+        "scripts/uncovered.py": {20},  # changed line itself uncovered
+        "scripts/untracked.py": {5},  # file never tracked by the suite
+        "scripts/rename_noop.py": set(),  # rename/mode change with no content lines
+    }
+    monkeypatch.setattr(
+        mutation_changed_files_lib,
+        "changed_line_numbers",
+        lambda repo_root, base, head, path: changed[path],
+    )
+    statement_lines = {
+        "scripts/covered.py": ({10, 11, 12}, {13}),
+        "scripts/uncovered.py": ({19}, {20, 21}),
+    }
+
+    gaps = classify_changed_line_scope_gap(
+        repo_root=ROOT,
+        base_sha="base",
+        head_sha="head",
+        changed_before_coverage=list(changed),
+        statement_lines=statement_lines,
+        coverage_enabled=True,
+    )
+
+    assert gaps == ["scripts/uncovered.py", "scripts/untracked.py"]
+
+    assert (
+        classify_changed_line_scope_gap(
+            repo_root=ROOT,
+            base_sha="base",
+            head_sha="head",
+            changed_before_coverage=list(changed),
+            statement_lines=statement_lines,
+            coverage_enabled=False,
+        )
+        == []
+    )
+    assert (
+        classify_changed_line_scope_gap(
+            repo_root=ROOT,
+            base_sha=None,
+            head_sha="head",
+            changed_before_coverage=list(changed),
+            statement_lines=statement_lines,
+            coverage_enabled=True,
+        )
+        == []
+    )
+
+
+def test_changed_line_numbers_parses_added_lines_over_range(tmp_path: Path) -> None:
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    git("init")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "t")
+    target = tmp_path / "mod.py"
+    target.write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
+    git("add", "mod.py")
+    git("commit", "-m", "base")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    target.write_text("a = 1\nb = 20\nc = 3\nd = 4\n", encoding="utf-8")
+    git("commit", "-am", "head")
+
+    assert changed_line_numbers(tmp_path, base, "HEAD", "mod.py") == {2, 4}
+
+
 def test_sample_budget_limits_executable_mutants_and_test_nodeids(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     test_path = repo / "tests" / "test_demo.py"
@@ -562,7 +641,9 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
     ]
     assert payload["selection_excluded_changed_files"] == ["scripts/c.py"]
     assert "- Changed pool files: 2" in text
-    assert "- Changed files excluded by coverage/mutation-line filters (compatibility union): 1" in text
+    assert "- Changed files with uncovered changed lines (blocking): 0" in text
+    assert "## Changed files with uncovered changed lines (blocking)" in text
+    assert "- Changed files excluded by coverage/mutation-line filters (advisory union): 1" in text
     assert "- Changed files excluded by file coverage floor: 1" in text
     assert "- Changed files excluded by mutation-line coverage: 1" in text
     assert "- Changed files excluded by selection budgets: 1" in text

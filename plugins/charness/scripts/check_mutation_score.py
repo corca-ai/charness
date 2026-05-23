@@ -333,7 +333,7 @@ def build_summary_lines(
         lines.append("- Blocking signal: sampled mutants were not covered by the selected test command.")
     if metrics.get("changed_scope_gap_count", 0):
         lines.append(
-            "- Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
+            "- Blocking signal: changed lines were left test-uncovered, or eligible changed files were dropped by selection/workload budgets, before mutation."
         )
     if not metrics.get("sample_manifest_ok", True):
         lines.append(f"- Blocking signal: {metrics['sample_manifest_issue']}")

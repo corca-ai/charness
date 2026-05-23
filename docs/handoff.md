@@ -13,31 +13,31 @@
 
 ## Current State
 
-- Bug-sweep `4e69881` landed four self-found input-validation fixes (no open
-  GitHub bug — the queue held only deferred ideation), each with a regression
-  test through the design→impl→pattern-scan→RCA→final-critique loop and bounded
-  fresh-eye subagents: `parse_selector` rejects issue#<1; `is_valid_followup_tail`
-  strips trailing punctuation so bare `deferred.` is caught; `bump_version`
-  validates an explicit `--set-version` before mutating the manifest;
-  `issue brief-path` emits a structured `ok:false` on a non-positive `--number`.
-  Closeout: [bug-sweep critique](../charness-artifacts/critique/2026-05-23-handoff-bug-sweep-closeout.md).
-- Cutting the **v0.7.11** patch release (0.7.10 → 0.7.11) for these fixes.
-- Sibling follow-up grammar shared from `artifact_validator`
-  (`validate_sibling_followups`) across `debug`, `retro`, and `critique`.
-- Earlier this cycle: closed #198, #202–#206 (+ #207 by-design) — see References.
-- Only **#184/#185** remain open (deferred ideation).
+- Fixed **#208** (scheduled Mutation Tests red ~2 days): the changed-file
+  scope-gap BLOCKER reused whole-file selection predicates, so a well-tested
+  change to a partially-covered CLI/validator was failed by unrelated untested
+  plumbing. Rescoped the blocker to *changed lines*
+  ([mutation_changed_files_lib.py](../scripts/mutation_changed_files_lib.py));
+  whole-file coverage exclusions are now advisory, budget exclusions still
+  block. Added the two genuinely-uncovered changed-line tests (brief-path
+  success, valid set-version); next-run window reports
+  `changed_line_uncovered=[]`. Ran five bounded fresh-eye critique subagents
+  (design→impl→pattern-scan→counterweight→closeout). RCA:
+  [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-scope-gap-whole-file.md).
+- Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
+- Open: **#184/#185** (deferred ideation); **#207** reopened — its by-design
+  "whole-file exclusion blocks" contract is superseded; known limitation:
+  changed-line *statement* coverage is weaker than mutation-line (executed ≠
+  asserted), sampled files keep full rigor.
 
 ## Next Session
 
 1. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
    메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
    `skill-experiment`; usage-episodes adapter activation).
-2. **Deferred design**: a no-mutable-line changed-file allowlist for the
-   mutation scope-gap signal would cut false failures on string/generated-only
-   commits but weakens the just-hardened guarantee — needs spec + critique, do
-   not auto-add. Reopen #207 only with a recurring false-positive pattern.
-3. **Optional**: 14 pre-existing "used to resolve the X adapter" strings in
-   `release/` + `issue_tool.py` understate their roles; sweep only if budget.
+2. **#207 follow-up**: if the changed-line statement-coverage blocker proves too
+   weak in practice, consider mutation-line coverage of changed lines (needs
+   Cosmic Ray init on all changed files) — spec + critique first.
 
 ## Discuss
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-22T00:55:03Z",
+  "generated_at": "2026-05-23T14:39:33Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -66,11 +66,12 @@
           "skills/public/create-cli/references/command-surface.md",
           "skills/public/create-cli/references/external-capability-clis.md",
           "skills/shared/references/external-capability-proof-ladder.md",
+          "skills/public/impl/references/verification-ladder.md",
+          "skills/public/create-cli/references/quality-gates.md",
           "skills/public/create-cli/references/install-update.md",
           "skills/public/create-cli/references/version-provenance.md",
           "skills/public/create-cli/references/machine-readable-state.md",
           "skills/public/create-cli/references/code-shape.md",
-          "skills/public/create-cli/references/quality-gates.md",
           "skills/public/create-cli/references/case-studies.md"
         ],
         "source": "local-public",
@@ -94,8 +95,8 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/SKILL.md",
-          "skills/public/create-skill/references/adapter-contract.md",
           "skills/public/create-skill/references/portable-authoring.md",
+          "skills/public/create-skill/references/adapter-contract.md",
           "skills/public/create-skill/references/adapter-pattern.md",
           "skills/public/create-skill/references/preset-conventions.md",
           "skills/public/create-skill/references/integration-seams.md",
@@ -308,6 +309,7 @@
           "skills/public/ideation/references/effectuation.md",
           "skills/public/ideation/references/decision-question-response.md",
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/ideation/references/structured-questions.md",
           "skills/public/ideation/references/concept-architecture.md",
           "skills/public/ideation/references/truth-and-edge.md",
           "skills/public/ideation/references/world-modeling.md",
@@ -517,11 +519,13 @@
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/retro/references/adapter-contract.md",
+          "skills/public/retro/references/waste-sibling-scan.md",
           "skills/public/retro/references/mode-guide.md",
           "skills/public/retro/references/section-guide.md",
           "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/trigger-and-persistence.md",
-          "skills/public/retro/references/weekly-trends.md"
+          "skills/public/retro/references/weekly-trends.md",
+          "skills/public/debug/references/sibling-search.md"
         ],
         "source": "local-public",
         "layer": "public skill"

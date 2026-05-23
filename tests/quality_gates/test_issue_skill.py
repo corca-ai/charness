@@ -66,6 +66,19 @@ def test_issue_brief_path_rejects_non_positive_number_with_structured_error(tmp_
     assert "positive integer" in payload["error"]
 
 
+def test_issue_brief_path_emits_payload_for_valid_number(tmp_path: Path) -> None:
+    result = run_script(
+        SCRIPT, "brief-path", "--repo-root", str(tmp_path), "--number", "208", "--date", "2026-05-24"
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["issue_number"] == 208
+    assert payload["date"] == "2026-05-24"
+    assert payload["relpath"].endswith(".md")
+
+
 def test_issue_resolve_invocation_treats_single_number_as_selector(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "120")
 

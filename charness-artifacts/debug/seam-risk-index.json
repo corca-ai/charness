@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 42,
-  "indexed_artifact_count": 34,
+  "source_artifact_count": 43,
+  "indexed_artifact_count": 35,
   "risk_class_counts": {
-    "contract-freeze-risk": 18,
+    "contract-freeze-risk": 19,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 3,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 34
+    "monitor": 35
   },
   "entries": [
     {
@@ -476,6 +476,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-05-24-mutation-changed-scope-gap-whole-file.md",
+      "is_current_pointer": false,
+      "interrupt_id": "mutation-changed-scope-gap-whole-file",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "git changed-line discovery -> coverage missing-lines -> changed-file",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this file",
       "forced": false
     },
     {

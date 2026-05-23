@@ -413,7 +413,7 @@ def test_check_mutation_score_allows_manifest_with_changed_file_proof_disabled(
     assert "Blocking signal:" not in summary
 
 
-def test_check_mutation_score_fails_changed_files_excluded_by_sampling(tmp_path: Path) -> None:
+def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path) -> None:
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
         _ADAPTER_HEADER
@@ -430,7 +430,13 @@ def test_check_mutation_score_fails_changed_files_excluded_by_sampling(tmp_path:
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
-        json.dumps({"uncovered_changed_files": ["scripts/changed.py"]}) + "\n",
+        json.dumps(
+            {
+                "base_sha": "deadbeef",
+                "changed_line_uncovered_changed_files": ["scripts/changed.py"],
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     dump = tmp_path / "dump.jsonl"
@@ -458,10 +464,11 @@ def test_check_mutation_score_fails_changed_files_excluded_by_sampling(tmp_path:
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert (
-        "Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
+        "Blocking signal: changed lines were left test-uncovered, or eligible changed files were dropped by selection/workload budgets, before mutation."
         in summary
     )
     assert "## Changed Files Excluded Before Mutation" in summary
+    assert "### Uncovered changed lines" in summary
     assert "`scripts/changed.py`" in summary
 
 
@@ -513,9 +520,12 @@ def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(t
     assert "`scripts/expensive.py`" in summary
 
 
-def test_check_mutation_score_fails_changed_files_excluded_by_split_keys_only(
+def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_changed_files(
     tmp_path: Path,
 ) -> None:
+    # Whole-file coverage-floor / mutation-line exclusions are advisory: a
+    # well-tested change must not fail because unrelated pre-existing lines in a
+    # touched file are uncovered. Only the changed-line blocker fails closed.
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
         _ADAPTER_HEADER
@@ -534,10 +544,16 @@ def test_check_mutation_score_fails_changed_files_excluded_by_split_keys_only(
     (reports / "sample.json").write_text(
         json.dumps(
             {
+                "base_sha": "deadbeef",
                 "changed_files_excluded_by_file_coverage": ["scripts/file_floor.py"],
                 "changed_files_excluded_by_mutation_line_coverage": [
                     "scripts/mutation_line.py"
                 ],
+                "uncovered_changed_files": [
+                    "scripts/file_floor.py",
+                    "scripts/mutation_line.py",
+                ],
+                "changed_line_uncovered_changed_files": [],
             }
         )
         + "\n",
@@ -565,14 +581,8 @@ def test_check_mutation_score_fails_changed_files_excluded_by_split_keys_only(
         text=True,
     )
 
-    assert result.returncode == 1
+    assert result.returncode == 0, result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")
-    assert (
-        "Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
-        in summary
-    )
-    assert "## Changed Files Excluded Before Mutation" in summary
-    assert "### File coverage floor" in summary
-    assert "`scripts/file_floor.py`" in summary
-    assert "### Mutation-line coverage" in summary
-    assert "`scripts/mutation_line.py`" in summary
+    assert "Status: **PASS**" in summary
+    assert "Blocking signal:" not in summary
+    assert "## Changed Files Excluded Before Mutation" not in summary

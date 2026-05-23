@@ -36,6 +36,12 @@ exercise_install_tool_helper_scenarios = _scripts_check_coverage_extra_lib_modul
 exercise_support_sync_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_support_sync_helper_scenarios
 exercise_upstream_release_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_upstream_release_helper_scenarios
 
+# A fixed whole-repo target list, intentionally not a changed-file subset. The
+# per-file PER_FILE_MIN_COVERAGE floor is safe as a hard blocker only because of
+# this: gating a whole-file floor on a changed subset would false-fire on a
+# well-tested change to a partially-covered file (the #208 mutation-gate trap).
+# If this is ever narrowed to changed files, scope the floor to changed lines as
+# scripts/mutation_changed_files_lib.py:classify_changed_line_scope_gap does.
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),
     Path("scripts/control_plane_lifecycle_lib.py"),

@@ -19,6 +19,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.mutation_changed_files_lib import (  # noqa: E402
+    classify_changed_file_exclusions,
+    classify_changed_line_scope_gap,
+)
 from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
     build_mutation_line_coverage,
@@ -222,32 +226,6 @@ def select_eligible_for_mutation(
     )
 
 
-def classify_changed_file_exclusions(
-    *,
-    changed_before_coverage: list[str],
-    coverage_eligible: list[str],
-    eligible: list[str],
-    coverage_enabled: bool,
-) -> tuple[list[str], list[str], list[str]]:
-    if not coverage_enabled:
-        return [], [], []
-    coverage_eligible_set = set(coverage_eligible)
-    eligible_set = set(eligible)
-    file_coverage_excluded = [
-        path for path in changed_before_coverage if path not in coverage_eligible_set
-    ]
-    mutation_line_excluded = [
-        path
-        for path in changed_before_coverage
-        if path in coverage_eligible_set and path not in eligible_set
-    ]
-    return (
-        file_coverage_excluded,
-        mutation_line_excluded,
-        file_coverage_excluded + mutation_line_excluded,
-    )
-
-
 def mutation_test_command_for_sample(
     repo_root: Path,
     sample: list[str],
@@ -402,10 +380,10 @@ def main() -> int:
         test_command=test_command,
         min_file_coverage=min_file_coverage,
     )
-
     if not eligible:
         report_no_eligible(coverage_enabled, test_command)
         return 1
+    statement_lines = load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
     all_eligible_set = set(all_eligible)
     eligible_set = set(eligible)
     changed_before_coverage = [
@@ -417,10 +395,13 @@ def main() -> int:
         changed_files_excluded_by_mutation_line_coverage,
         uncovered_changed_files,
     ) = classify_changed_file_exclusions(
+        changed_before_coverage=changed_before_coverage, coverage_eligible=coverage_eligible,
+        eligible=eligible, coverage_enabled=coverage_enabled,
+    )
+    changed_line_uncovered_changed_files = classify_changed_line_scope_gap(
+        repo_root=repo_root, base_sha=base_sha, head_sha=head_sha,
         changed_before_coverage=changed_before_coverage,
-        coverage_eligible=coverage_eligible,
-        eligible=eligible,
-        coverage_enabled=coverage_enabled,
+        statement_lines=statement_lines, coverage_enabled=coverage_enabled,
     )
 
     (
@@ -449,11 +430,7 @@ def main() -> int:
         return 1
 
     mutation_test_command = mutation_test_command_for_sample(
-        repo_root,
-        sample,
-        line_contexts,
-        test_command,
-        coverage_enabled=coverage_enabled,
+        repo_root, sample, line_contexts, test_command, coverage_enabled=coverage_enabled
     )
     if mutation_test_command is None:
         sys.stderr.write("no pytest test nodeids were observed for the selected mutation sample\n")
