@@ -250,7 +250,11 @@ def build_mutation_line_coverage(
     try:
         from cosmic_ray.work_db import use_db
 
-        from scripts.filter_cosmic_ray_mutants import should_skip_mutation
+        from scripts.filter_cosmic_ray_mutants import (
+            is_trivial_entry_guard_mutation,
+            should_skip_mutation,
+            source_line,
+        )
     except ImportError as exc:
         raise SystemExit(
             "cosmic-ray is required for mutation-line sampling; install Cosmic Ray 8.4.6 first"
@@ -286,6 +290,9 @@ def build_mutation_line_coverage(
                 if should_skip_mutation(repo_root, mutation):
                     continue
                 line_number, _start_col = mutation.start_pos
+                line = source_line(repo_root, mutation.module_path, line_number)
+                if is_trivial_entry_guard_mutation(line, getattr(mutation, "operator_name", "")):
+                    continue
                 stats[module_path]["mutable"] += 1
                 if int(line_number) in covered_lines.get(module_path, set()):
                     stats[module_path]["covered"] += 1

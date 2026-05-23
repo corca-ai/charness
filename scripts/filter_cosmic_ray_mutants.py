@@ -16,8 +16,11 @@ import sys
 from pathlib import Path
 
 BITOR_OPERATOR_PREFIX = "core/ReplaceBinaryOperator_BitOr_"
+COMPARISON_EQ_OPERATOR_PREFIX = "core/ReplaceComparisonOperator_Eq_"
+NUMBER_REPLACER_OPERATOR = "core/NumberReplacer"
 ANNOTATION_UNION_SKIP_OUTPUT = "Filtered function annotation union"
 UNCOVERED_MUTATION_SKIP_OUTPUT = "Filtered uncovered mutation line"
+ENTRY_GUARD_SKIP_OUTPUT = "Filtered trivial entry guard"
 
 
 def resolve(repo_root: Path, path: Path) -> Path:
@@ -47,6 +50,15 @@ def should_skip_mutation(repo_root: Path, mutation: object) -> bool:
     line_number, start_col = getattr(mutation, "start_pos", (0, 0))
     line = source_line(repo_root, getattr(mutation, "module_path", Path()), line_number)
     return is_function_annotation_union(line, start_col)
+
+
+def is_trivial_entry_guard_mutation(line: str, operator_name: str) -> bool:
+    stripped = line.lstrip()
+    if stripped.startswith("if __name__ ==") and operator_name.startswith(COMPARISON_EQ_OPERATOR_PREFIX):
+        return True
+    if stripped.startswith("sys.path.insert(") and operator_name == NUMBER_REPLACER_OPERATOR:
+        return True
+    return False
 
 
 def load_coverage_lines(repo_root: Path, coverage_json: Path) -> dict[str, set[int]]:
@@ -81,6 +93,10 @@ def coverage_skip_reason(mutation: object, covered_lines: dict[str, set[int]]) -
 def skip_reason(repo_root: Path, mutation: object, covered_lines: dict[str, set[int]]) -> str | None:
     if should_skip_mutation(repo_root, mutation):
         return ANNOTATION_UNION_SKIP_OUTPUT
+    line_number, _start_col = getattr(mutation, "start_pos", (0, 0))
+    line = source_line(repo_root, getattr(mutation, "module_path", Path()), line_number)
+    if is_trivial_entry_guard_mutation(line, getattr(mutation, "operator_name", "")):
+        return ENTRY_GUARD_SKIP_OUTPUT
     return coverage_skip_reason(mutation, covered_lines)
 
 
@@ -98,6 +114,7 @@ def filter_session(repo_root: Path, session: Path, coverage_json: Path | None = 
     skipped = 0
     skipped_uncovered = 0
     skipped_annotation = 0
+    skipped_entry_guard = 0
     inspected = 0
     with use_db(session) as db:
         for item in db.work_items:
@@ -122,11 +139,14 @@ def filter_session(repo_root: Path, session: Path, coverage_json: Path | None = 
                     skipped_uncovered += 1
                 elif output == ANNOTATION_UNION_SKIP_OUTPUT:
                     skipped_annotation += 1
+                elif output == ENTRY_GUARD_SKIP_OUTPUT:
+                    skipped_entry_guard += 1
     return {
         "inspected": inspected,
         "skipped": skipped,
         "skipped_uncovered": skipped_uncovered,
         "skipped_annotation": skipped_annotation,
+        "skipped_entry_guard": skipped_entry_guard,
     }
 
 
@@ -152,7 +172,8 @@ def main() -> int:
         print(
             f"filtered {payload['skipped']} mutants from {payload['inspected']} pending mutants "
             f"({payload['skipped_annotation']} annotation unions, "
-            f"{payload['skipped_uncovered']} uncovered lines)"
+            f"{payload['skipped_uncovered']} uncovered lines, "
+            f"{payload['skipped_entry_guard']} trivial entry guards)"
         )
     return 0
 

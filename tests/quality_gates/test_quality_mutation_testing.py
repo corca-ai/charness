@@ -29,6 +29,7 @@ from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
     UNCOVERED_MUTATION_SKIP_OUTPUT,
     coverage_skip_reason,
     is_function_annotation_union,
+    is_trivial_entry_guard_mutation,
 )
 from scripts.quality_adapter_lib import (  # noqa: E402
     infer_quality_defaults,
@@ -639,6 +640,33 @@ def test_cosmic_ray_filter_identifies_function_annotation_unions() -> None:
     )
     assert not is_function_annotation_union("value = left | right", 13)
     assert not is_function_annotation_union("def plain(repo_root: Path) -> Path:", 0)
+
+
+def test_cosmic_ray_filter_identifies_trivial_entry_guard_mutations() -> None:
+    assert is_trivial_entry_guard_mutation(
+        'if __name__ == "__main__":',
+        "core/ReplaceComparisonOperator_Eq_LtE",
+    )
+    assert is_trivial_entry_guard_mutation(
+        '    if __name__ == "__main__":',
+        "core/ReplaceComparisonOperator_Eq_GtE",
+    )
+    assert is_trivial_entry_guard_mutation(
+        "sys.path.insert(0, str(repo_root))",
+        "core/NumberReplacer",
+    )
+    assert not is_trivial_entry_guard_mutation(
+        'if __name__ == "__main__":',
+        "core/ReplaceTrueWithFalse",
+    )
+    assert not is_trivial_entry_guard_mutation(
+        'if value == "__main__":',
+        "core/ReplaceComparisonOperator_Eq_LtE",
+    )
+    assert not is_trivial_entry_guard_mutation(
+        "result = sys.path.insert(0, str(repo_root))",
+        "core/NumberReplacer",
+    )
 
 
 def test_cosmic_ray_filter_identifies_uncovered_mutation_lines() -> None:
