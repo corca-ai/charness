@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-05-21
+Date: 2026-05-23
 
 ## Scope
 
-Advanced `charness` toward release `0.7.10` (tag `v0.7.10`) through the repo-owned release helper.
+Advanced `charness` toward release `0.7.11` (tag `v0.7.11`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.7.9`
-- target version: `0.7.10`
+- previous version: `0.7.10`
+- target version: `0.7.11`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,20 +17,18 @@ Advanced `charness` toward release `0.7.10` (tag `v0.7.10`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.7.10`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.11`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by `gh release view v0.7.10` at
-  `2026-05-21T20:54:51Z`.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
@@ -45,13 +43,9 @@ Advanced `charness` toward release `0.7.10` (tag `v0.7.10`) through the repo-own
 - Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
 - Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
 
-## Review Proof
+## Review Status
 
-- Review proof: `charness-artifacts/critique/2026-05-22-v0.7.10-release-risk-check.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.7.10`.
+- Review proof: not recorded in this helper invocation.
 
 ## Fresh Checkout Probes
 
