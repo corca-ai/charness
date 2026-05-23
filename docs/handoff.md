@@ -13,45 +13,41 @@
 
 ## Current State
 
-- `main` synced at `5c5f15c` (retro+handoff); #193 sweep landed in `e057bfd`
-  — 254 `add_argument` calls in 87 source files received `help=`, AST scan
-  `remaining: 0`, plugin install surface re-synced.
-- #194, #192, #193 closed cleanly. Correcting + nuance comments posted on
-  #191 (already closed; comments named the actual StrykerJS workflow run
-  and the Python slice that survives in #195).
-- Open follow-ups filed: **#196** (#193 corpus cleanup), **#197**
-  (post-mutation sync gate to close the mutate→sync→verify barrier).
-- **#195 OPEN** (Python mutation slice, 80.5% vs 80% threshold against
-  `e057bfd`). Bounded review concluded UNRELATED to the sweep — survivors
-  are `if __name__ == "__main__":` in `init_adapter.py` shims (zero diff in
-  the sweep). The sweep starved the changed-file sampler so Fill drew from
-  pre-existing weak coverage.
+- `main` at `4bc44d3`. Closed this session: **#195** (`a37ab31` entry-guard
+  mutation skip in `filter_cosmic_ray_mutants.py` + sampler mirror),
+  **#197** (`3e59152` RCA — gate already at
+  `validate_packaging_install_surface.py:130`; commit names the sync
+  script in the drift message and locks the contract), **#196**
+  (`4bc44d3` corpus normalization: 18 Repo-root + 6 Emit-JSON role-
+  specific, 7 subparser helps added, Repository→Repo corpus-wide).
+- Filed: **#198** (eval_registry sampler nodeid gap;
+  `test_eval_registry_scenarios_are_immutable_contract_records` exists
+  but sampler did not pick it for `eval_registry.py:6`).
+- 1차 조사 메모 posted to **#185** and **#184**; full ideation deferred.
 
 ## Next Session
 
-1. **Triage #195**: skip-mark `__name__ == "__main__":` / `sys.path.insert(...)`
-   in adapter shims or raise the per-file mutant skip for trivial entry
-   guards. The help= sweep is NOT the cause.
-2. **Implement #197 sync gate** wired into `run-quality.sh --read-only` so
-   the mutate→sync→verify barrier fails closed at the gate, not via
-   `test_plugin_preamble_..._readiness`. The issue body lists false-positive
-   hazards (SKILL.md vs scripts; staged vs committed scope).
-3. **Run #196 sweep cleanup** — bounded session: 18 generic Repository-root
-   strings, 6 generic Emit-JSON strings, 7 subparser help= in
-   `issue_tool.py:233-278`, and one of Repo/Repository corpus-wide.
-4. **Ideation-shaped, deferred**:
-   [#185 AI/ML 패턴](https://github.com/corca-ai/charness/issues/185),
-   [#184 성공 기준/메트릭](https://github.com/corca-ai/charness/issues/184)
-   route through `ideation` / `spec` first.
+1. **Ideation for #185 + #184**: spawn `charness:ideation` against the
+   1차 메모. Top-3 candidates: (a) 'symptom→root-cause shift' counter (#197
+   is the exemplar), (b) LLM-as-judge via Cautilus `skill-experiment`,
+   (c) usage-episodes adapter activation decision.
+2. **Triage #198**: reproduce sampler attribution for `eval_registry.py:6`
+   — budget vs coverage-context is the suspect. Do not lower threshold.
+3. **Optional**: 14 pre-existing "used to resolve the X adapter" strings
+   in `release/` + `issue_tool.py` understate their roles. Out of #196
+   scope; only worth a sweep if budget allows.
 
 ## Discuss
 
-- After multi-file mutation under `skills/public/`, run
-  [scripts/sync_root_plugin_manifests.py](../scripts/sync_root_plugin_manifests.py)
-  before the quality gate; otherwise drift only surfaces via failing
-  `test_plugin_preamble_..._readiness`. #197 will mechanize this.
-- `add_argument` with `choices=` must have `help=` reflecting the actual
-  choice strings; argparse auto-prints choices, so a paraphrase contradicts.
+- Sync gate already exists at `validate_packaging_install_surface.py:130`
+  and runs before pytest. The diff-based design in #197 would have been
+  weaker (false positives, misses unstaged); content-diff is correct.
+- Entry-guard skip detector `is_trivial_entry_guard_mutation` lives in
+  `filter_cosmic_ray_mutants.py` and is mirrored in
+  `mutation_sampling_lib.py` so the sampler stops counting entry-guard
+  lines as mutable. New stat: `skipped_entry_guard`.
+- `add_argument` with `choices=` must have `help=` reflecting actual
+  choice strings; argparse prints them, so paraphrase contradicts.
 - Subprocess tests passing `--repo-root str(REPO_ROOT)` to a writing CLI
   must use the `fake_charness_repo` fixture in
   [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py);
@@ -67,3 +63,7 @@
   [release surface](../charness-artifacts/release/latest.md)
 - [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md),
   [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md)
+- Closed this session: [#195](https://github.com/corca-ai/charness/issues/195),
+  [#196](https://github.com/corca-ai/charness/issues/196),
+  [#197](https://github.com/corca-ai/charness/issues/197). Opened:
+  [#198](https://github.com/corca-ai/charness/issues/198).
