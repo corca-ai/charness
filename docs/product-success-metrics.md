@@ -42,6 +42,36 @@ Qualitative success means an operator can trust the harness to make the next
 right workflow move, name what it cannot prove, leave durable evidence, and
 avoid turning missing context into false confidence.
 
+## Single North-Star Objective
+
+Charness optimizes one objective: the **repeated-mistake-to-learning conversion
+rate** — the share of RCA events (bugs, repeated corrections, weak-proof
+findings) that are converted into a recurrence-preventing durable artifact (a
+new deterministic gate, spec, test, tracked issue, or a retro lesson naming the
+detection gap and sibling pattern). This proves the core value claim: the
+harness gets smarter with use instead of repeating the same class of mistake.
+It sharpens the `Follow-up conversion` row in
+[Metric Definitions](#metric-definitions) into the one optimized objective.
+
+The remaining metrics in [Metric Definitions](#metric-definitions) are a
+*monitored* dashboard, not optimization targets, following Google Rules of ML:
+many monitored metrics, one optimized objective.
+
+Decisions (2026-05-24, issue #184):
+
+- First instrument: a symptom-to-root-cause shift counter recorded in a
+  fixed-schema RCA ledger under charness-artifacts/metrics/, appended at debug,
+  issue, and retro closeout. Conversion rate = converted events / total RCA
+  events, decomposable by source and event kind. Build contract:
+  [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md).
+- Numeric target: baseline-first. Observe 2-4 weeks of ledger data before
+  committing a target; do not set a guessed number now.
+- Scope: Charness self-development dogfood first. Consumer-repo measurement
+  depends on usage-episode capture, which stays a separate deferred decision.
+
+The ledger schema, append discipline, aggregation script, and review-loop wiring
+are specced separately (issue #185).
+
 ## Core Success Criteria
 
 1. Routing correctness: task language maps to the intended public skill,
