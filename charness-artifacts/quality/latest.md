@@ -3,12 +3,12 @@ Date: 2026-05-24
 
 ## Scope
 
-Continuation of user-requested quality plus critique: current gates, #211, fresh-eye review, autonomous fixes, and deferred issues.
+Continuation of user-requested quality plus critique, updated after #212, #213, and #214 closed on GitHub.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh --read-only` passed before edits: 67 passed,
-  0 failed, 35.4s.
+- `./scripts/run-quality.sh --read-only` passed after closeout: 68 passed,
+  0 failed, 46.2s.
 - Targeted touched-surface tests passed after fixes: RCA ledger, mutation
   sampling, current-pointer scanner, `sync-support`, and pytest-temp economics.
 - Packaging mirror was synced; packaging validators passed after sync.
@@ -69,8 +69,10 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 - `AUTO_EXISTING`: read-only quality, packaging validation, current-pointer
   scan, RCA ledger validation, mutation sample reporting, runtime budgets,
   secrets/supply chain, and CI/local parity inventory.
-- `AUTO_CANDIDATE`: behavior-shaped command docs and CLI registry inputs (#214).
-- `NON_AUTOMATABLE`: RCA recorder idempotency semantics (#212).
+- `AUTO_EXISTING`: CLI ergonomics inventory now scans committed registry and
+  archetype inputs as an advisory `run-quality` phase (#214 closed).
+- `AUTO_EXISTING`: RCA recorder idempotency semantics are pinned by tests for
+  duplicate success no-op and no historical rewrite (#212 closed).
 
 ## Healthy
 
@@ -92,9 +94,10 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   during execution; the current fix reduces retained disk, not execution-time
   copy volume.
 - Generated [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md)
-  is 786 lines; structural CLI ergonomics lacks registry/archetype inputs
-  (#214).
-- Direct `validate_packaging_install_surface.py` needs `PYTHONPATH=.` (#213).
+  is 786 lines; CLI ergonomics is advisory-scanned, not failing-gated.
+- Scheduled mutation testing opened #215 after the release follow-up commits:
+  reachable score was 79.3% against the 80% threshold and survived mutants
+  concentrated around runtime-profile/setup seed behavior.
 
 ## Missing
 
@@ -102,9 +105,8 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 ## Deferred
 
-- RCA ledger `class_key` idempotency: #212.
-- CLI ergonomics structural inventory setup: #214.
-- Direct bootstrap fix for `validate_packaging_install_surface.py`: #213.
+- #212, #213, and #214 are closed. No deferred sweep issue remains open.
+- Product success metric work remains deferred by design under #184/#185.
 
 ## Advisory
 
@@ -120,19 +122,17 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 ## Commands Run
 
-- Commands included read-only quality, mutation probes, targeted `pytest`,
-  `ruff`, length checks, packaging validators, current-pointer scan, standing
-  economics, CI/local parity, skill ergonomics, runtime summary, quality handoff
-  inventory, and issue creation for #212-#214.
-- Follow-up pytest temp proof: selected `check-seed-fixture-budget` and `pytest`
-  labels in `run-quality.sh`, focused tests, and packaging validators after sync.
+- Commands included read-only quality, mutation probes, targeted tests/lint,
+  packaging, current-pointer, economics, parity, ergonomics, runtime summary,
+  quality handoff inventory, and historical issue creation for #212-#214.
+- Follow-up pytest temp proof: full read-only quality passed after per-run
+  `--basetemp` isolation and successful-run cleanup.
 
 ## Recommended Next Gates
 
-- passive `AUTO_CANDIDATE`: because registry shape is undecided, design CLI
-  ergonomics inputs before promoting structural findings (#214).
-- passive `NON_AUTOMATABLE`: because metric semantics change, spec RCA ledger
-  idempotency before changing append behavior (#212).
+- active `AUTO_EXISTING`: resolve #215 scheduled mutation regression on `main`.
+- passive `NON_AUTOMATABLE`: continue #184/#185 because target/LLM-judge choices
+  need live seed-excluded RCA ledger data and product judgment.
 
 ## History
 

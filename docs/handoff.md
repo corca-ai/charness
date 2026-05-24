@@ -29,22 +29,24 @@
 - **Pytest temp blowup follow-up**: `run-quality.sh` now uses a repo-keyed
   pytest temp root under cache and [pyproject](../pyproject.toml) keeps only failed tmp-path
   sessions, so passed release runs should not retain 40GiB tmp trees.
-- **Deferred issues from the sweep resolved locally**: #212 RCA ledger recorder
+- **Deferred sweep issues are closed on GitHub**: #212 RCA ledger recorder
   now treats duplicate `source` + `event_kind` + `class_key` appends as success
   no-ops; #213 `validate_packaging_install_surface.py` bootstraps repo imports
   without `PYTHONPATH`; #214 adds advisory CLI ergonomics registry/archetype
   inputs and a standing `run-quality` advisory inventory phase.
+- **#215 Mutation test regression is open**: scheduled mutation testing on
+  `6afea15` missed the 80% threshold; treat it as the first self-fixable pickup.
 - **#184/#185 RCA ledger slices 1+2 landed earlier**. Open by design: numeric
   target is baseline-first, revisit after 2-4 weeks of live seed-excluded data;
   #185 LLM-as-judge and usage-episodes activation remain un-specced.
 
 ## Next Session
 
-1. RCA ledger baseline observation: let live non-seed events accrue from
+1. Resolve #215: inspect the workflow body, narrow survived mutants locally,
+   commit a targeted fix, and verify with the mutation closeout path.
+2. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
-2. Push the local closeout commit if not already published, then verify GitHub
-   issues #212, #213, and #214 are closed.
 3. If release-only tests fail after this change, inspect the repo-keyed cache
    temp root from `run-quality.sh` before widening the seed fixture budget.
 
@@ -57,12 +59,9 @@
   [operating contract](./conventions/operating-contract.md); do not reopen unless outside PRs
   become recurring.
 - Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock`+`pytest-xdist`;
-  seed-cache LRU eviction; release proof suppression; D21-D26 reopen watchlist;
-  2 pre-existing ruff errors in vendored notion-to-md remain out of scope.
+  seed-cache LRU eviction; release proof suppression; D21-D26 reopen watchlist.
 
 ## References
 
-- [quality posture](../charness-artifacts/quality/latest.md),
-  [debug artifact](../charness-artifacts/debug/latest.md),
-  [release surface](../charness-artifacts/release/latest.md),
-  [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
+- [quality posture](../charness-artifacts/quality/latest.md), [debug artifact](../charness-artifacts/debug/latest.md),
+  [release surface](../charness-artifacts/release/latest.md), [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
