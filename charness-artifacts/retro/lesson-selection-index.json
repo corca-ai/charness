@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-24",
-  "source_artifact_count": 72,
-  "candidate_count": 448,
+  "source_artifact_count": 73,
+  "candidate_count": 456,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -60,6 +60,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:40588c430d8a",
+      "kind": "current_focus",
+      "lesson": "Reviewing the session that landed RCA ledger slice 2 (commit `a67675c`): wiring `record_rca_event.py` into the `debug`/`issue`/`retro` closeout prompts via a presence-gated shared reference, flipping `AUTO_APPEND_WIRED=True`, syncing truth surfaces, and a 4-angle + 1-counterweight fresh-eye critique.",
+      "normalized_key": "reviewing the session that landed rca ledger slice 2 commit a67675c wiring record rca",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6021cc6d626a",
       "kind": "next_improvement",
       "lesson": "before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first.",
@@ -74,6 +94,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e485ce7e215c",
+      "kind": "next_improvement",
+      "lesson": "**capability (immediate next slice)**: decouple AC4/AC7 from the live committed ledger — assert the seed-only/empty-baseline guarantees against synthetic fixtures so the committed ledger is free to accrue live events. This unblocks the wiring; until then the auto-append cannot fire. Once decoupled, this retro's own RCA event becomes the first live append (the proper dogfood).",
+      "normalized_key": "capability immediate next slice decouple ac4 ac7 from the live committed ledger assert the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:27f4db4d94aa",
+      "kind": "next_improvement",
+      "lesson": "**capability (optional)**: extract some `debug/SKILL.md` step-6 detail into a reference so it has margin below 200 instead of sitting pinned at the gate.",
+      "normalized_key": "capability optional extract some debug skill md step 6 detail into a reference so",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15699791d022",
+      "kind": "next_improvement",
+      "lesson": "**memory**: generalize the \"check length budget before editing\" habit to ANY length-gated file, including the SKILL.md 200-line gate, not only `.py` budgets. Detection point: `validate_skills` `MAX_SKILL_MD_LINES`.",
+      "normalized_key": "memory generalize the check length budget before editing habit to any length gated file",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
@@ -100,12 +180,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:8e8203da14bd",
-      "kind": "repeat_trap",
-      "lesson": "Implemented the full fix before running the file/function length gates, so `sample_mutation_files.py` (already 474/480) and its `main` (already ~99/100) blew past their limits and forced a mid-stream extraction into a new module plus a `main` compaction. Running `check_python_lengths` against a file that is already near its budget before adding to it would have surfaced the need for the new module up front.",
-      "normalized_key": "implemented the full fix before running the file function length gates so sample mutation",
+      "candidate_id": "next_improvement:988af40d819a",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: before flipping a feature flag ON, simulate the post-activation state and run the suite against it. Detection point: the AC4/AC7 break would have been caught pre-commit.",
+      "normalized_key": "workflow before flipping a feature flag on simulate the post activation state and run",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -113,19 +193,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
           "date": "2026-05-24",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:8385d06951ca",
+      "candidate_id": "repeat_trap:80afa58a48f9",
       "kind": "repeat_trap",
-      "lesson": "The added `bump_version` test duplicated ~75 lines of release-repo setup that already existed twice, pushing `test_docs_and_misc.py` past the 800-line test limit; the de-duplication helper that fixed it should have been the first move, not a reaction to the gate.",
-      "normalized_key": "the added bump version test duplicated 75 lines of release repo setup that already",
+      "lesson": "**200-line SKILL.md budget trap (recurrence, twice)**: edited `skills/public/debug/SKILL.md` while it was already exactly at the `MAX_SKILL_MD_LINES=200` gate without pre-checking, so `validate_skills` failed and forced mid-stream bullet compression — once on the initial wiring and again after the critique's debug-bullet rewrite. `recent-lessons.md` already carries this exact lesson, but scoped to `.py` budgets (480/360 file, 100/150 function, 800 test); it did not transfer to the SKILL.md 200-line gate.",
+      "normalized_key": "200 line skill md budget trap recurrence twice edited skills public debug skill md",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -133,129 +213,49 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
           "date": "2026-05-24",
           "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:feb085170006",
-      "kind": "current_focus",
-      "lesson": "Closed the handoff's self-fixable open issues (#198, #202-#206) and RCA'd #207 (by-design) through the design→impl→pattern-scan→RCA→final-critique loop with five bounded fresh-eye subagent passes.",
-      "normalized_key": "closed the handoff s self fixable open issues 198 202 206 and rca d",
+      "candidate_id": "repeat_trap:ceeb519103e6",
+      "kind": "repeat_trap",
+      "lesson": "**doc-link backtick trap (minor)**: the new reference's path-like backticks (`scripts/record_rca_event.py`, the ledger path) tripped `check_doc_links`; resolved with `<repo-root>/` placeholders. Gate-caught fast, low cost.",
+      "normalized_key": "doc link backtick trap minor the new reference s path like backticks scripts record",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-open-issue-sweep.md",
-          "date": "2026-05-23",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:43d6fe2cb0b0",
-      "kind": "current_focus",
-      "lesson": "This session worked through the autonomous-processable items in `docs/handoff.md`: fixed issue #194 (test-isolation leak of `host-hooks-state.json` into the live repo from the two session-capture CLI tests), confirmed issue #191's mutation test regression was already fixed in the unpushed commit `eead33f`, landed issue #192 (argparse `help=` rule in `create-skill` portable authoring), and emitted SC5/SC6 evidence with `session_id` plus `t_evidence` against a real commit.",
-      "normalized_key": "this session worked through the autonomous processable items in docs handoff md fixed issue",
+      "candidate_id": "repeat_trap:c93fdda06864",
+      "kind": "repeat_trap",
+      "lesson": "**Headline — slice 2 shipped a latent break (verified)**: the committed ledger `charness-artifacts/metrics/rca-ledger.jsonl` doubles as the AC4/AC7 test fixture. The first live (non-seed) auto-appended event flips `baseline_rate_available` to True and `seed_excluded.rate` off `n/a` to a real number, so `test_ac4_*` and `test_ac7_*` fail. The auto-append I just turned ON is therefore self-defeating: the first real `debug`/`issue`/`retro` closeout that appends will red-flag pre-push/CI. The suite is green now only because no live event exists yet. This is a `weak_proof`/`bug`-class event — verification reached \"all gates green\" but green was measured against a seed-only state the feature's success immediately destroys. Caught by agent reflection in this retro, not by a gate.",
+      "normalized_key": "headline slice 2 shipped a latent break verified the committed ledger charness artifacts metrics",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-handoff-bug-cleanup-session.md",
-          "date": "2026-05-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:19b8d126dc35",
-      "kind": "current_focus",
-      "lesson": "tier-1+2 critique (parent-delegated fresh eye): help-text actionability + dup/placeholder check; found 3 weak generic strings + 1 misleading enum",
-      "normalized_key": "tier 1 2 critique parent delegated fresh eye help text actionability dup placeholder check",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b5dd58243ee3",
-      "kind": "current_focus",
-      "lesson": "tier-1 sweep (18 calls): handoff, create-skill, impl, critique, debug, narrative",
-      "normalized_key": "tier 1 sweep 18 calls handoff create skill impl critique debug narrative",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:7c0ea095198f",
-      "kind": "current_focus",
-      "lesson": "tier-2a sweep (36 calls): retro, find-skills, announcement",
-      "normalized_key": "tier 2a sweep 36 calls retro find skills announcement",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:cc9c2fa5ab91",
-      "kind": "current_focus",
-      "lesson": "tier-2b sweep (49 calls): hitl, setup, gather",
-      "normalized_key": "tier 2b sweep 49 calls hitl setup gather",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-      "latest_source_date": "2026-05-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-23-help-text-sweep-session.md",
-          "date": "2026-05-23",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
         }
       ]
     }
@@ -307,6 +307,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:40588c430d8a",
+      "kind": "current_focus",
+      "lesson": "Reviewing the session that landed RCA ledger slice 2 (commit `a67675c`): wiring `record_rca_event.py` into the `debug`/`issue`/`retro` closeout prompts via a presence-gated shared reference, flipping `AUTO_APPEND_WIRED=True`, syncing truth surfaces, and a 4-angle + 1-counterweight fresh-eye critique.",
+      "normalized_key": "reviewing the session that landed rca ledger slice 2 commit a67675c wiring record rca",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6021cc6d626a",
       "kind": "next_improvement",
       "lesson": "before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first.",
@@ -321,6 +341,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e485ce7e215c",
+      "kind": "next_improvement",
+      "lesson": "**capability (immediate next slice)**: decouple AC4/AC7 from the live committed ledger — assert the seed-only/empty-baseline guarantees against synthetic fixtures so the committed ledger is free to accrue live events. This unblocks the wiring; until then the auto-append cannot fire. Once decoupled, this retro's own RCA event becomes the first live append (the proper dogfood).",
+      "normalized_key": "capability immediate next slice decouple ac4 ac7 from the live committed ledger assert the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:27f4db4d94aa",
+      "kind": "next_improvement",
+      "lesson": "**capability (optional)**: extract some `debug/SKILL.md` step-6 detail into a reference so it has margin below 200 instead of sitting pinned at the gate.",
+      "normalized_key": "capability optional extract some debug skill md step 6 detail into a reference so",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15699791d022",
+      "kind": "next_improvement",
+      "lesson": "**memory**: generalize the \"check length budget before editing\" habit to ANY length-gated file, including the SKILL.md 200-line gate, not only `.py` budgets. Detection point: `validate_skills` `MAX_SKILL_MD_LINES`.",
+      "normalized_key": "memory generalize the check length budget before editing habit to any length gated file",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
@@ -343,6 +423,86 @@
           "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:988af40d819a",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: before flipping a feature flag ON, simulate the post-activation state and run the suite against it. Detection point: the AC4/AC7 break would have been caught pre-commit.",
+      "normalized_key": "workflow before flipping a feature flag on simulate the post activation state and run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:80afa58a48f9",
+      "kind": "repeat_trap",
+      "lesson": "**200-line SKILL.md budget trap (recurrence, twice)**: edited `skills/public/debug/SKILL.md` while it was already exactly at the `MAX_SKILL_MD_LINES=200` gate without pre-checking, so `validate_skills` failed and forced mid-stream bullet compression — once on the initial wiring and again after the critique's debug-bullet rewrite. `recent-lessons.md` already carries this exact lesson, but scoped to `.py` budgets (480/360 file, 100/150 function, 800 test); it did not transfer to the SKILL.md 200-line gate.",
+      "normalized_key": "200 line skill md budget trap recurrence twice edited skills public debug skill md",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ceeb519103e6",
+      "kind": "repeat_trap",
+      "lesson": "**doc-link backtick trap (minor)**: the new reference's path-like backticks (`scripts/record_rca_event.py`, the ledger path) tripped `check_doc_links`; resolved with `<repo-root>/` placeholders. Gate-caught fast, low cost.",
+      "normalized_key": "doc link backtick trap minor the new reference s path like backticks scripts record",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c93fdda06864",
+      "kind": "repeat_trap",
+      "lesson": "**Headline — slice 2 shipped a latent break (verified)**: the committed ledger `charness-artifacts/metrics/rca-ledger.jsonl` doubles as the AC4/AC7 test fixture. The first live (non-seed) auto-appended event flips `baseline_rate_available` to True and `seed_excluded.rate` off `n/a` to a real number, so `test_ac4_*` and `test_ac7_*` fail. The auto-append I just turned ON is therefore self-defeating: the first real `debug`/`issue`/`retro` closeout that appends will red-flag pre-push/CI. The suite is green now only because no live event exists yet. This is a `weak_proof`/`bug`-class event — verification reached \"all gates green\" but green was measured against a seed-only state the feature's success immediately destroys. Caught by agent reflection in this retro, not by a gate.",
+      "normalized_key": "headline slice 2 shipped a latent break verified the committed ledger charness artifacts metrics",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
         }
       ]
     },
