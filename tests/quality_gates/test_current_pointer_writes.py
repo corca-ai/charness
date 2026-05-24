@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -179,6 +180,77 @@ def test_current_pointer_write_scanner_flags_direct_latest_write(tmp_path: Path)
 
     assert result.returncode == 1
     assert "scripts/bad_writer.py:3" in result.stdout
+
+
+def test_current_pointer_write_scanner_flags_direct_expression_write(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    bad = script_dir / "expression_writer.py"
+    bad.write_text(
+        "from pathlib import Path\n"
+        "CURRENT = 'latest.md'\n"
+        "(Path('charness-artifacts/demo') / CURRENT).write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/expression_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+
+    assert result.returncode == 1
+    assert "scripts/expression_writer.py:3" in result.stdout
+
+
+def test_current_pointer_write_scanner_json_output(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    bad = script_dir / "json_writer.py"
+    bad.write_text(
+        "from pathlib import Path\n"
+        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/json_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["findings"][0]["path"] == "scripts/json_writer.py"
+
+
+def test_current_pointer_write_scanner_fallback_file_listing(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    target = script_dir / "fallback_writer.py"
+    target.write_text("from pathlib import Path\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        SCANNER.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 1, b"", b""),
+    )
+
+    assert SCANNER._git_visible_python_files(repo) == [target]
+
+
+def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    helper = script_dir / "current_pointer_writer_lib.py"
+    helper.write_text("from pathlib import Path\nPath('x/latest.md').write_text('ok')\n", encoding="utf-8")
+    broken = script_dir / "broken.py"
+    broken.write_text("def broken(:\n", encoding="utf-8")
+
+    assert SCANNER.scan_path(repo, helper) == []
+    assert SCANNER.scan_path(repo, broken) == []
 
 
 def test_current_pointer_write_scanner_does_not_exempt_mixed_helper_file(tmp_path: Path) -> None:
