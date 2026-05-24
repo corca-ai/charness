@@ -32,6 +32,8 @@ debug/quality/handoff artifacts.
 - The first post-commit sampler still found changed-line coverage gaps in new
   helper branches. The fix was straightforward, but it shows targeted tests
   should be checked against the committed sampler's actual selection signal.
+- The final committed sampler cleared the sweep-specific blockers: 0
+  changed-line blockers and 0 mutation-line coverage exclusions.
 - Directly editing `recent-lessons.md` was waste because the file is generated
   from the retro lesson index.
 - The first full quality rerun found an inventory race that targeted tests had

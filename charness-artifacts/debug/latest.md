@@ -83,17 +83,17 @@ crash the standing economics scan.
 
 - Targeted tests for current-pointer writes, mutation sampling, RCA ledger, and
   sync-support passed (56 passed).
-- `ruff check ...` over touched scripts/tests passed.
-- `python3 scripts/check_python_lengths.py --repo-root .` passed.
+- `ruff check ...` and `check_python_lengths` passed.
 - `python3 scripts/validate_packaging.py --repo-root .`,
   `python3 scripts/validate_packaging_committed.py --repo-root .`, and
   `python3 scripts/check_current_pointer_writes.py --repo-root . --require-empty`
   passed after plugin sync.
-- After the temp-scan race fix, standing-test economics tests passed (5 passed)
-  and touched-file `ruff check` passed.
+- After the temp-scan race fix, standing-test economics tests passed (5 passed).
 - Post-commit sampler exposed a second changed-line coverage gap in the pointer
   scanner, mutation-line integration path, and pytest-temp iterator helper;
   focused tests now cover those branches (21 passed).
+- Final committed sampler `final5` reported 0 changed-line blockers and 0
+  mutation-line coverage exclusions.
 
 ## Root Cause
 
@@ -131,6 +131,8 @@ ledger slice plus sibling gate holes:
   temp-dir regression.
 - post-commit mutation proof | new helper branches stayed outside selected
   coverage | add focused branch tests before rerunning the committed sampler.
+- compound-statement mutation spans | multiline condition lines were excluded
+  when avoiding body overreach | cover only the header span before child suites.
 
 ## Sibling Search
 
@@ -157,8 +159,8 @@ ledger slice plus sibling gate holes:
 - Seam: scheduled mutation changed-window proof, RCA metric validation,
   current-pointer writer detection, external-tool command exit semantics, and
   volatile pytest temp inventory
-- Disproving Observation: targeted tests and local validators pass; post-commit
-  mutation sampler is being rerun with the second proof-gap fix included.
+- Disproving Observation: final committed sampler reported 0 changed-line
+  blockers and 0 mutation-line coverage exclusions.
 - What Local Reasoning Cannot Prove: hosted scheduled mutation run after push.
 - Generalization Pressure: monitor
 

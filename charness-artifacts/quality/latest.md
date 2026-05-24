@@ -42,8 +42,8 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   impossible timestamps, empty baseline rendering, and seed/live behavior.
 - Fixed: standing-test economics tolerates pytest temp directories disappearing
   during xdist cleanup.
-- Post-commit sampler found remaining changed-line coverage gaps; focused
-  branch tests were added and the committed sampler needs one final rerun.
+- Final committed mutation sampler `final5` reported 0 changed-line blockers and
+  0 mutation-line coverage exclusions.
 
 ## Coverage and Eval Depth
 
@@ -124,8 +124,8 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 ## Recommended Next Gates
 
-- active `AUTO_EXISTING`: after commit, rerun mutation sampler with committed
-  fix included in `base..HEAD`; then run `./scripts/run-quality.sh --read-only`.
+- active `AUTO_EXISTING`: comment or close #211 after push/remote verification
+  if remote closeout is in scope.
 - passive `AUTO_CANDIDATE`: because registry shape is undecided, design CLI
   ergonomics inputs before promoting structural findings (#214).
 - passive `NON_AUTOMATABLE`: because metric semantics change, spec RCA ledger

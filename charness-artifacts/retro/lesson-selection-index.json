@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-05-24",
   "source_artifact_count": 74,
-  "candidate_count": 468,
+  "candidate_count": 469,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -721,6 +721,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a7bb891dd98e",
+      "kind": "repeat_trap",
+      "lesson": "The final committed sampler cleared the sweep-specific blockers: 0 changed-line blockers and 0 mutation-line coverage exclusions.",
+      "normalized_key": "the final committed sampler cleared the sweep specific blockers 0 changed line blockers and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Waste"
         }
