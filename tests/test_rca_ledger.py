@@ -182,6 +182,146 @@ def test_ac3_record_optional_fields_round_trip(tmp_path: Path) -> None:
     assert record["note"] == "covers optional field branches"
 
 
+def test_ac3_record_duplicate_identity_is_success_noop(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    first = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "duplicate-class",
+        "--ref", "#212",
+    )
+    assert first.returncode == 0, first.stderr
+
+    duplicate = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "duplicate-class",
+        "--ref", "different-ref-does-not-change-identity",
+        "--json",
+    )
+
+    assert duplicate.returncode == 0, duplicate.stderr
+    payload = json.loads(duplicate.stdout)
+    assert payload["status"] == "duplicate"
+    assert payload["appended"] is False
+    records = lib.read_events(ledger)
+    assert len(records) == 1
+    assert records[0]["ref"] == "#212"
+
+
+def test_ac3_record_duplicate_identity_does_not_rewrite_existing_duplicates(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    first = event(
+        source="issue",
+        event_kind="bug",
+        converted=True,
+        durable_kind="issue",
+        class_key="preexisting-duplicate-class",
+        ref="first-existing",
+    )
+    second = event(
+        source="issue",
+        event_kind="bug",
+        converted=True,
+        durable_kind="issue",
+        class_key="preexisting-duplicate-class",
+        ref="second-existing",
+    )
+    write_raw(ledger, [json.dumps(first), json.dumps(second)])
+    before = ledger.read_text(encoding="utf-8")
+
+    duplicate = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "preexisting-duplicate-class",
+        "--ref", "third-should-not-append",
+        "--json",
+    )
+
+    assert duplicate.returncode == 0, duplicate.stderr
+    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert ledger.read_text(encoding="utf-8") == before
+
+
+def test_ac3_record_distinct_identity_appends(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    for class_key in ("first-class", "second-class"):
+        result = run_script(
+            "record_rca_event.py",
+            "--ledger", str(ledger),
+            "--source", "issue",
+            "--event-kind", "bug",
+            "--converted",
+            "--durable-kind", "issue",
+            "--class-key", class_key,
+        )
+        assert result.returncode == 0, result.stderr
+
+    assert [record["class_key"] for record in lib.read_events(ledger)] == [
+        "first-class",
+        "second-class",
+    ]
+
+
+def test_ac3_record_duplicate_scan_ignores_malformed_existing_lines(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    write_raw(
+        ledger,
+        [
+            "{not-json}",
+            json.dumps(
+                event(
+                    source="issue",
+                    event_kind="bug",
+                    converted=True,
+                    durable_kind="issue",
+                    class_key="blocked-by-invalid-ledger",
+                    ref="#212",
+                )
+            ),
+        ],
+    )
+
+    duplicate = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "blocked-by-invalid-ledger",
+        "--json",
+    )
+
+    assert duplicate.returncode == 0, duplicate.stderr
+    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert ledger.read_text(encoding="utf-8").count("\n") == 2
+
+    new_key = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "new-key-despite-invalid-existing-line",
+    )
+    assert new_key.returncode == 0, new_key.stderr
+    assert ledger.read_text(encoding="utf-8").count("\n") == 3
+
+
 # AC4 -------------------------------------------------------------------------
 def seed_only_both_outcomes() -> list[dict[str, object]]:
     return [

@@ -427,7 +427,7 @@ REPO_TMP_KEY="$(python3 -c 'import hashlib, sys; print(hashlib.sha256(sys.argv[1
 PYTEST_TEMPROOT="${PYTEST_DEBUG_TEMPROOT:-${XDG_CACHE_HOME:-${HOME:-/tmp/.cache}}/charness/pytest-tmp/$REPO_TMP_KEY}"
 export PYTEST_DEBUG_TEMPROOT="$PYTEST_TEMPROOT"
 PYTEST_TMP_USER="$(id -un 2>/dev/null || printf unknown)"
-PYTEST_BASETEMP="$PYTEST_TEMPROOT/pytest-of-$PYTEST_TMP_USER/pytest-0"
+PYTEST_BASETEMP="$PYTEST_TEMPROOT/pytest-of-$PYTEST_TMP_USER/pytest-$RUN_QUALITY_START_NS"
 mkdir -p "$(dirname "$PYTEST_BASETEMP")"
 PYTEST_TEMP_FLAGS=(--basetemp "$PYTEST_BASETEMP")
 queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
@@ -507,6 +507,11 @@ if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_ubiquitous_language
 else
   queue_selected "inventory-ubiquitous-language" bash -c 'echo "inventory_ubiquitous_language.py unavailable; skipping optional advisory inventory."'
 fi
+if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_cli_ergonomics.py" ]]; then
+  queue_selected "inventory-cli-ergonomics" python3 skills/public/quality/scripts/inventory_cli_ergonomics.py --repo-root "$REPO_ROOT"
+else
+  queue_selected "inventory-cli-ergonomics" bash -c 'echo "inventory_cli_ergonomics.py unavailable; skipping optional advisory inventory."'
+fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then
@@ -522,6 +527,9 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     OVERALL_RC=$?
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
+fi
+if [[ "$OVERALL_RC" == "0" && -n "${PYTEST_BASETEMP:-}" ]]; then
+  rm -rf "$PYTEST_BASETEMP"
 fi
 print_final_summary
 exit "$OVERALL_RC"

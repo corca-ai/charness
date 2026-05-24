@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "subcommand": "charness task",
+      "accepted_schema_ids": ["charness.task.v1"],
+      "example_fixtures": ["fixtures/task-envelope.json"]
+    },
+    {
+      "subcommand": "charness capability",
+      "accepted_schema_ids": ["charness.capability.v1"],
+      "example_fixtures": ["fixtures/capability-config.json"]
+    },
+    {
+      "subcommand": "charness tool",
+      "accepted_schema_ids": ["charness.tool.v1"],
+      "example_fixtures": ["fixtures/tool-manifest.json"]
+    },
+    {
+      "subcommand": "charness worktree",
+      "accepted_schema_ids": ["charness.worktree.v1"],
+      "example_fixtures": ["fixtures/worktree-state.json"]
+    }
+  ]
+}

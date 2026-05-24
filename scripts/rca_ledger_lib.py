@@ -14,6 +14,7 @@ except ImportError:  # standalone invocation (scripts/ on sys.path[0])
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = Path(__file__).resolve().parent / "rca_event.schema.json"
 LEDGER_PATH = Path("charness-artifacts/metrics/rca-ledger.jsonl")
+IDEMPOTENCY_FIELDS = ("source", "event_kind", "class_key")
 
 # Slice 2 wired auto-append into the debug/issue/retro closeout prompts via
 # skills/shared/references/rca-ledger-append.md, so the banner reads ON. The
@@ -96,6 +97,38 @@ def read_events(ledger_path: Path) -> list[dict[str, object]]:
         if raw.strip():
             events.append(json.loads(raw))
     return events
+
+
+def event_identity(record: dict[str, object]) -> tuple[str, str, str] | None:
+    values = tuple(record.get(field) for field in IDEMPOTENCY_FIELDS)
+    if all(isinstance(value, str) for value in values):
+        return values  # type: ignore[return-value]
+    return None
+
+
+def has_existing_event_identity(
+    events: list[dict[str, object]], record: dict[str, object]
+) -> bool:
+    identity = event_identity(record)
+    if identity is None:
+        return False
+    return any(event_identity(event) == identity for event in events)
+
+
+def ledger_contains_event_identity(ledger_path: Path, record: dict[str, object]) -> bool:
+    identity = event_identity(record)
+    if identity is None or not ledger_path.is_file():
+        return False
+    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event_identity(event) == identity:
+            return True
+    return False
 
 
 def _rate(converted: int, total: int) -> float | str:

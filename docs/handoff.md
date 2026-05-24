@@ -29,10 +29,11 @@
 - **Pytest temp blowup follow-up**: `run-quality.sh` now uses a repo-keyed
   pytest temp root under cache and [pyproject](../pyproject.toml) keeps only failed tmp-path
   sessions, so passed release runs should not retain 40GiB tmp trees.
-- **Filed deferred issues from the sweep**: #212 RCA ledger `class_key`
-  idempotency semantics; #213 `validate_packaging_install_surface.py` direct
-  invocation needs repo import bootstrap; #214 structural CLI ergonomics
-  registry/archetype inputs.
+- **Deferred issues from the sweep resolved locally**: #212 RCA ledger recorder
+  now treats duplicate `source` + `event_kind` + `class_key` appends as success
+  no-ops; #213 `validate_packaging_install_surface.py` bootstraps repo imports
+  without `PYTHONPATH`; #214 adds advisory CLI ergonomics registry/archetype
+  inputs and a standing `run-quality` advisory inventory phase.
 - **#184/#185 RCA ledger slices 1+2 landed earlier**. Open by design: numeric
   target is baseline-first, revisit after 2-4 weeks of live seed-excluded data;
   #185 LLM-as-judge and usage-episodes activation remain un-specced.
@@ -42,8 +43,8 @@
 1. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
-2. Deferred issue queue: #213 direct validator bootstrap first, then #212
-   recorder idempotency contract, then #214 CLI ergonomics structural inventory.
+2. Push the local closeout commit if not already published, then verify GitHub
+   issues #212, #213, and #214 are closed.
 3. If release-only tests fail after this change, inspect the repo-keyed cache
    temp root from `run-quality.sh` before widening the seed fixture budget.
 

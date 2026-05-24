@@ -8,7 +8,13 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
-from scripts.skill_iter import iter_skill_ids
+try:
+    from runtime_bootstrap import import_repo_module
+except ModuleNotFoundError:  # imported as scripts.validate_packaging_install_surface
+    from scripts.runtime_bootstrap import import_repo_module
+
+_skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
+iter_skill_ids = _skill_iter_module.iter_skill_ids
 
 
 def validate_exported_public_skills(

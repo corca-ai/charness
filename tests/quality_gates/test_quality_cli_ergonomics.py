@@ -5,6 +5,8 @@ from pathlib import Path
 
 from .support import run_script
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -120,3 +122,23 @@ def test_inventory_cli_ergonomics_flags_cross_archetype_contract_overlap(tmp_pat
     finding_types = {finding["type"] for finding in payload["findings"]}
     assert "cross_archetype_schema_overlap" in finding_types
     assert "fixture_schema_namespace_mismatch" in finding_types
+
+
+def test_committed_cli_ergonomics_inputs_are_scanned_clean() -> None:
+    result = run_script(
+        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+        "--repo-root",
+        str(ROOT),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "clean"
+    assert payload["scope_classification"] == "scanned"
+    assert [registry["path"] for registry in payload["registries"]] == [
+        ".agents/command-registry.json"
+    ]
+    assert [contract["path"] for contract in payload["archetype_contracts"]] == [
+        ".agents/command-archetypes.json"
+    ]
+    assert payload["findings"] == []

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -308,6 +309,27 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
     result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
+
+
+def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Path) -> None:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env.pop("CHARNESS_REPO_ROOT", None)
+
+    result = subprocess.run(
+        [
+            "python3",
+            str(ROOT / "scripts" / "validate_packaging_install_surface.py"),
+            "--repo-root",
+            str(ROOT),
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 @pytest.mark.release_only

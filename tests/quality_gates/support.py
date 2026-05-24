@@ -302,9 +302,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
-@pytest.fixture(scope="module")
-def seeded_quality_runner_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    seed_root = tmp_path_factory.mktemp("quality-runner-seed")
+@pytest.fixture
+def seeded_quality_runner_repo(tmp_path: Path) -> Path:
+    seed_root = tmp_path / "quality-runner-seed"
     return make_quality_runner_repo(seed_root)[0]
 
 

@@ -84,6 +84,16 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, indent=2) if args.json else f"rejected: {exc.message}", file=sys.stderr)
         return 1
 
+    if lib.ledger_contains_event_identity(ledger_path, record):
+        result = {
+            "status": "duplicate",
+            "appended": False,
+            "ledger_path": lib.portable_path(repo_root, ledger_path),
+            "class_key": record["class_key"],
+        }
+        print(json.dumps(result, indent=2) if args.json else f"duplicate: {result['ledger_path']}")
+        return 0
+
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     with ledger_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")

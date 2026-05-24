@@ -43,6 +43,33 @@
       ]
     },
     {
+      "surface_id": "rca-ledger-metrics",
+      "description": "Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.",
+      "source_paths": [
+        "charness-artifacts/metrics/rca-ledger.jsonl",
+        "scripts/record_rca_event.py",
+        "scripts/validate_rca_ledger.py",
+        "scripts/aggregate_rca_ledger.py",
+        "scripts/rca_ledger_lib.py",
+        "scripts/rca_event.schema.json"
+      ],
+      "derived_paths": [
+        "plugins/charness/scripts/record_rca_event.py",
+        "plugins/charness/scripts/validate_rca_ledger.py",
+        "plugins/charness/scripts/aggregate_rca_ledger.py",
+        "plugins/charness/scripts/rca_ledger_lib.py",
+        "plugins/charness/scripts/rca_event.schema.json"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate_rca_ledger.py --repo-root .",
+        "python3 scripts/aggregate_rca_ledger.py --repo-root . --json"
+      ],
+      "notes": [
+        "Commit live non-seed closeout events with the work that produced them; do not rewrite historical duplicates."
+      ]
+    },
+    {
       "surface_id": "repo-markdown",
       "description": "Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.",
       "source_paths": [
@@ -211,6 +238,24 @@
       ],
       "notes": [
         "Adapter contracts should stay machine-readable and loadable."
+      ]
+    },
+    {
+      "surface_id": "cli-ergonomics-inventory",
+      "description": "Advisory CLI ergonomics registry and archetype inputs for the charness command surface.",
+      "source_paths": [
+        ".agents/command-registry.json",
+        ".agents/command-archetypes.json",
+        "skills/public/quality/scripts/cli_ergonomics_lib.py",
+        "skills/public/quality/scripts/inventory_cli_ergonomics.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 skills/public/quality/scripts/inventory_cli_ergonomics.py --repo-root . --json"
+      ],
+      "notes": [
+        "This inventory is advisory; promote only low-noise behavior-shaped findings to failing gates."
       ]
     },
     {

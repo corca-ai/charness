@@ -204,7 +204,8 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     assert "--basetemp" in payload["args"]
     basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
     assert basetemp.startswith(payload["temproot"] + "/pytest-of-")
-    assert basetemp.endswith("/pytest-0")
+    assert Path(basetemp).name.startswith("pytest-")
+    assert not basetemp.endswith("/pytest-0")
 
 
 def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
