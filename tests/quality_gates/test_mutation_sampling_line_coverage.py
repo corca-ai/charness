@@ -68,6 +68,31 @@ def test_mutation_line_coverage_does_not_propagate_across_function_body(
     assert not _mutation_line_is_covered(5, {2}, spans)
 
 
+def test_mutation_line_coverage_counts_compound_statement_header_only(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "target.py"
+    target.write_text(
+        dedent(
+            """\
+            def check(flag: bool, value: bool) -> bool:
+                if (
+                    flag
+                    and value
+                ):
+                    return True
+                return False
+            """
+        ),
+        encoding="utf-8",
+    )
+    spans = _covered_statement_spans(target, {2})
+
+    assert _mutation_line_is_covered(3, set(), spans)
+    assert _mutation_line_is_covered(4, set(), spans)
+    assert not _mutation_line_is_covered(6, set(), spans)
+
+
 def test_covered_statement_spans_tolerates_syntax_error(tmp_path: Path) -> None:
     target = tmp_path / "broken.py"
     target.write_text("def broken(:\n", encoding="utf-8")

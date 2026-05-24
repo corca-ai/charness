@@ -319,24 +319,30 @@ def _covered_statement_spans(path: Path, covered: set[int]) -> list[tuple[int, i
     for node in ast.walk(tree):
         if not isinstance(node, ast.stmt):
             continue
-        if _has_child_statement_suite(node):
-            continue
         start = getattr(node, "lineno", None)
         end = getattr(node, "end_lineno", None)
         if start is None or end is None or start == end:
             continue
-        if any(line in covered for line in range(start, end + 1)):
-            spans.append((int(start), int(end)))
+        span_end = int(end)
+        if (suite_start := _child_statement_suite_start(node)) is not None:
+            span_end = min(span_end, suite_start - 1)
+        start = int(start)
+        if span_end <= start:
+            continue
+        if any(line in covered for line in range(start, span_end + 1)):
+            spans.append((start, span_end))
     return spans
 
 
-def _has_child_statement_suite(node: ast.stmt) -> bool:
-    suite_fields = ("body", "orelse", "finalbody", "handlers", "cases")
-    for field in suite_fields:
-        value = getattr(node, field, None)
-        if isinstance(value, list) and any(isinstance(item, (ast.stmt, ast.ExceptHandler, ast.match_case)) for item in value):
-            return True
-    return False
+def _child_statement_suite_start(node: ast.stmt) -> int | None:
+    starts: list[int] = []
+    for field in ("body", "orelse", "finalbody", "handlers", "cases"):
+        for item in getattr(node, field, None) or []:
+            if isinstance(item, (ast.stmt, ast.ExceptHandler)):
+                starts.append(item.lineno)
+            elif isinstance(item, ast.match_case):
+                starts.extend(child.lineno for child in item.body if isinstance(child, ast.stmt))
+    return min(starts, default=None)
 
 
 def _mutation_line_is_covered(line_number: int, covered: set[int], spans: list[tuple[int, int]]) -> bool:
@@ -392,11 +398,7 @@ def pytest_nodeid_from_coverage_context(repo_root: Path, context: str) -> str | 
     return None
 
 
-def select_test_nodeids(
-    repo_root: Path,
-    sample: list[str],
-    line_contexts: dict[str, dict[int, set[str]]],
-) -> list[str]:
+def select_test_nodeids(repo_root: Path, sample: list[str], line_contexts: dict[str, dict[int, set[str]]]) -> list[str]:
     nodeids: set[str] = set()
     for path in sample:
         for contexts in line_contexts.get(path, {}).values():
@@ -407,11 +409,7 @@ def select_test_nodeids(
     return sorted(nodeids)
 
 
-def file_test_nodeids(
-    repo_root: Path,
-    path: str,
-    line_contexts: dict[str, dict[int, set[str]]],
-) -> list[str]:
+def file_test_nodeids(repo_root: Path, path: str, line_contexts: dict[str, dict[int, set[str]]]) -> list[str]:
     return select_test_nodeids(repo_root, [path], line_contexts)
 
 
