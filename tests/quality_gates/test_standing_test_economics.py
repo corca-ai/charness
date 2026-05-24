@@ -184,7 +184,7 @@ def test_pytest_temp_iter_helpers_skip_missing_and_stale_children(
     def flaky_iterdir(path: Path):
         if path == missing:
             raise FileNotFoundError(path)
-        yield from original_iterdir(path)
+        return original_iterdir(path)
 
     def flaky_stat(path: Path, *args, **kwargs):
         if path == stale_path:
