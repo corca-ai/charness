@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 from .support import ROOT, init_git_repo, run_script
@@ -29,6 +30,15 @@ FIND_SKILLS_SPEC = importlib.util.spec_from_file_location(
 assert FIND_SKILLS_SPEC is not None and FIND_SKILLS_SPEC.loader is not None
 FIND_SKILLS_ARTIFACT = importlib.util.module_from_spec(FIND_SKILLS_SPEC)
 FIND_SKILLS_SPEC.loader.exec_module(FIND_SKILLS_ARTIFACT)
+
+SCANNER_SPEC = importlib.util.spec_from_file_location(
+    "check_current_pointer_writes",
+    ROOT / "scripts" / "check_current_pointer_writes.py",
+)
+assert SCANNER_SPEC is not None and SCANNER_SPEC.loader is not None
+SCANNER = importlib.util.module_from_spec(SCANNER_SPEC)
+sys.modules[SCANNER_SPEC.name] = SCANNER
+SCANNER_SPEC.loader.exec_module(SCANNER)
 
 
 def _sha(path: Path) -> str:
@@ -237,6 +247,27 @@ def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_pa
     assert "scripts/constant_writer.py:4" in result.stdout
 
 
+def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    bad = script_dir / "constant_open_writer.py"
+    bad.write_text(
+        "from pathlib import Path\n"
+        "CURRENT = 'latest.md'\n"
+        "with open(Path('charness-artifacts/demo') / CURRENT, 'w', encoding='utf-8') as handle:\n"
+        "    handle.write('bad')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/constant_open_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+
+    assert result.returncode == 1
+    assert "scripts/constant_open_writer.py:3" in result.stdout
+
+
 def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
     tmp_path: Path,
 ) -> None:
@@ -259,3 +290,13 @@ def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
     result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 0
+
+
+def test_current_pointer_write_scanner_constant_helpers_ignore_non_name_targets() -> None:
+    tree = SCANNER.ast.parse("obj.attr = 'latest.md'\nCURRENT = 'latest.md'\ntarget = CURRENT\n")
+    SCANNER._attach_parent_links(tree)
+    first_assign = tree.body[0]
+
+    assert SCANNER._resolved_string_constants(tree) == {"CURRENT": "latest.md"}
+    assert SCANNER._scope_assigned_names(first_assign) == set()
+    assert SCANNER._pointer_names_in_resolved(tree.body[2].value, {"CURRENT": "latest.md"}, set()) == {"latest.md"}

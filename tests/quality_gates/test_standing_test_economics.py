@@ -163,3 +163,28 @@ def test_pytest_temp_footprint_tolerates_disappearing_temp_dirs(tmp_path: Path, 
     assert footprint["status"] == "available"
     assert footprint["session_count"] == 1
     assert footprint["worker_dir_count"] == 1
+
+
+def test_pytest_temp_iter_helpers_skip_missing_and_stale_children(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    lib = _load_inventory_lib()
+    root = tmp_path / "root"
+    root.mkdir()
+    file_path = root / "payload.bin"
+    stale_path = root / "stale.bin"
+    file_path.write_bytes(b"x")
+    stale_path.write_bytes(b"y")
+
+    original_stat = Path.stat
+
+    def flaky_stat(path: Path, *args, **kwargs):
+        if path == stale_path:
+            raise FileNotFoundError(path)
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", flaky_stat)
+
+    assert list(lib._iter_child_stats(tmp_path / "missing")) == []
+    assert [item.st_size for item in lib._iter_file_stats(root)] == [1]

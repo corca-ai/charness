@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-05-24",
   "source_artifact_count": 74,
-  "candidate_count": 466,
+  "candidate_count": 468,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -547,6 +547,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1246e36a267c",
+      "kind": "next_improvement",
+      "lesson": "when that committed sampler names residual changed-line gaps, add branch-level tests immediately and rerun before updating issue status.",
+      "normalized_key": "when that committed sampler names residual changed line gaps add branch level tests immediately",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:988af40d819a",
       "kind": "next_improvement",
       "lesson": "**workflow**: before flipping a feature flag ON, simulate the post-activation state and run the suite against it. Detection point: the AC4/AC7 break would have been caught pre-commit.",
@@ -731,6 +751,26 @@
       "kind": "repeat_trap",
       "lesson": "The first mutation-line continuation fix over-propagated coverage across enclosing `FunctionDef` bodies. Counterweight caught it, but only after a full sample probe had already been run.",
       "normalized_key": "the first mutation line continuation fix over propagated coverage across enclosing functiondef bodies counterweight",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c444f05bcc0d",
+      "kind": "repeat_trap",
+      "lesson": "The first post-commit sampler still found changed-line coverage gaps in new helper branches. The fix was straightforward, but it shows targeted tests should be checked against the committed sampler's actual selection signal.",
+      "normalized_key": "the first post commit sampler still found changed line coverage gaps in new helper",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
       "latest_source_date": "2026-05-24",

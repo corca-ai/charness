@@ -176,7 +176,6 @@ def _pytest_temp_root() -> Path:
 
 
 def _pytest_temp_footprint_quick() -> dict[str, Any]:
-    """Single `du -d 4` walk that returns just what budget gates need."""
     root = _pytest_temp_root()
     if not root.exists():
         return {"status": "missing", "root": str(root)}

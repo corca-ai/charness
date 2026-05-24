@@ -91,9 +91,9 @@ crash the standing economics scan.
   passed after plugin sync.
 - After the temp-scan race fix, standing-test economics tests passed (5 passed)
   and touched-file `ruff check` passed.
-- Pre-commit sample caveat: before commit, `MUTATION_HEAD_SHA=HEAD` cannot see
-  uncommitted changes; after commit, rerun the sampler against a window that
-  includes the committed fix.
+- Post-commit sampler exposed a second changed-line coverage gap in the pointer
+  scanner, mutation-line integration path, and pytest-temp iterator helper;
+  focused tests now cover those branches (21 passed).
 
 ## Root Cause
 
@@ -129,6 +129,8 @@ ledger slice plus sibling gate holes:
 - standing-test economics | volatile pytest temp roots crashed scan | replace
   fragile traversal with tolerant iterator/stat helpers and add a disappearing
   temp-dir regression.
+- post-commit mutation proof | new helper branches stayed outside selected
+  coverage | add focused branch tests before rerunning the committed sampler.
 
 ## Sibling Search
 
@@ -156,7 +158,7 @@ ledger slice plus sibling gate holes:
   current-pointer writer detection, external-tool command exit semantics, and
   volatile pytest temp inventory
 - Disproving Observation: targeted tests and local validators pass; post-commit
-  mutation sampler still needs to run with the fix included in `base..HEAD`.
+  mutation sampler is being rerun with the second proof-gap fix included.
 - What Local Reasoning Cannot Prove: hosted scheduled mutation run after push.
 - Generalization Pressure: monitor
 

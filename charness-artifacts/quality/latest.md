@@ -11,7 +11,8 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   0 failed, 35.4s.
 - Targeted touched-surface tests passed after fixes: RCA ledger, mutation
   sampling, current-pointer scanner, `sync-support` exit semantics, and the
-  standing-test economics pytest-temp race.
+  standing-test economics pytest-temp race; post-commit proof-gap branch tests
+  passed (21 passed).
 - Packaging mirror was synced; packaging validators passed after sync.
 
 ## Runtime Signals
@@ -41,8 +42,8 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   impossible timestamps, empty baseline rendering, and seed/live behavior.
 - Fixed: standing-test economics tolerates pytest temp directories disappearing
   during xdist cleanup.
-- Caveat: `MUTATION_HEAD_SHA=HEAD` ignores uncommitted work; final sample proof
-  must run after commit.
+- Post-commit sampler found remaining changed-line coverage gaps; focused
+  branch tests were added and the committed sampler needs one final rerun.
 
 ## Coverage and Eval Depth
 

@@ -29,6 +29,9 @@ debug/quality/handoff artifacts.
   previous committed window, not the current uncommitted patch. This repeated
   the same verification-window trap already documented in the mutation debug
   artifacts.
+- The first post-commit sampler still found changed-line coverage gaps in new
+  helper branches. The fix was straightforward, but it shows targeted tests
+  should be checked against the committed sampler's actual selection signal.
 - Directly editing `recent-lessons.md` was waste because the file is generated
   from the retro lesson index.
 - The first full quality rerun found an inventory race that targeted tests had
@@ -60,6 +63,8 @@ debug/quality/handoff artifacts.
 - workflow: after any changed-line or changed-path gate fix, commit first, then
   rerun the sampler against the committed `base..HEAD` window before claiming
   the scheduled gate is repaired.
+- workflow: when that committed sampler names residual changed-line gaps, add
+  branch-level tests immediately and rerun before updating issue status.
 - workflow: for mutation-line coverage heuristics, write the negative
   overreach test before the expensive end-to-end sample probe.
 - workflow: for filesystem inventories over runtime temp trees, include a

@@ -22,9 +22,9 @@
   standing-test economics race was also fixed so disappearing pytest temp paths
   do not crash inventory.
 - **#211 Mutation test regression**: locally reproduced before fix; current fix
-  has targeted tests green. Important closeout step: after committing, rerun the
-  mutation sampler against a window that includes the committed fix because
-  `MUTATION_HEAD_SHA=HEAD` ignores uncommitted work.
+  has targeted tests green. The first post-commit sampler found second-order
+  changed-line coverage gaps; rerun the mutation sampler after the follow-up
+  branch-coverage commit.
 - **Filed deferred issues from the sweep**: #212 RCA ledger `class_key`
   idempotency semantics; #213 `validate_packaging_install_surface.py` direct
   invocation needs repo import bootstrap; #214 structural CLI ergonomics
