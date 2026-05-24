@@ -509,11 +509,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "quality-critique-sweep-bug-fixes",
+      "interrupt_id": "issue-215-mutation-coverage-probe-source-boundary",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "scheduled mutation changed-window proof, RCA metric validation,",
+      "seam": "GitHub Actions scheduled mutation workflow plus local pytest temp",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

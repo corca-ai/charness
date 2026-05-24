@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import shutil
 from pathlib import Path
@@ -488,6 +489,39 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
     assert payload["findings"][0]["recommended_reference"] == "v6"
     assert payload["findings"][1]["normalized_action"] == "actions/checkout"
     assert payload["findings"][2]["normalized_action"] == "actions/setup-node"
+
+
+def test_check_github_actions_json_output_is_stable_and_utf8(monkeypatch, capsys, tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "check_github_actions_under_test",
+        ROOT / "scripts" / "check_github_actions.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(
+        module,
+        "collect_github_actions_drift",
+        lambda _repo_root: {
+            "workflow_files": [".github/workflows/ci.yml"],
+            "checked_actions": ["demo/action"],
+            "findings": [],
+            "skipped_refs": [],
+            "guidance": {"z_note": "한글", "a_note": "first"},
+        },
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        ["check_github_actions.py", "--repo-root", str(tmp_path), "--json"],
+    )
+
+    assert module.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out.startswith('{\n  "checked_actions"')
+    assert '    "a_note": "first",' in captured.out
+    assert "한글" in captured.out
+    assert "\\ud55c" not in captured.out
 
 
 def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:

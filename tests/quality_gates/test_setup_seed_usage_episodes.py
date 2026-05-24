@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
@@ -34,6 +35,27 @@ def test_seed_usage_episodes_writes_adapter(tmp_path: Path) -> None:
     target = repo / ".agents" / "usage-episodes-adapter.yaml"
     assert target.is_file()
     assert "usage_episode" in target.read_text(encoding="utf-8")
+
+
+def test_seed_usage_episodes_creates_nested_parent_directories(monkeypatch, tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "seed_usage_episodes_adapter_under_test",
+        ROOT / SCRIPT,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    nested_target = Path(".agents") / "nested" / "usage-episodes-adapter.yaml"
+    monkeypatch.setattr(module, "DEFAULT_TARGET", nested_target)
+    monkeypatch.setattr(
+        "sys.argv",
+        ["seed_usage_episodes_adapter.py", "--repo-root", str(repo)],
+    )
+
+    assert module.main() == 0
+    assert (repo / nested_target).is_file()
 
 
 def test_seed_usage_episodes_refuses_overwrite_without_force(tmp_path: Path) -> None:

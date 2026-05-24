@@ -97,6 +97,7 @@ def run_test_coverage(repo_root: Path, test_command: str, coverage_json: Path) -
             [
                 "[run]",
                 f"data_file = {data_file}",
+                f"source = {repo_root}",
                 "dynamic_context = test_function",
                 "disable_warnings = dynamic-conflict",
                 "parallel = True",

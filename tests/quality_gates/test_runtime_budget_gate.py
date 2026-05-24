@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
-from .support import run_script
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
+RUNTIME_PROFILE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "runtime_profile_lib.py"
+_spec = importlib.util.spec_from_file_location("runtime_profile_lib_under_test", RUNTIME_PROFILE_LIB)
+assert _spec is not None and _spec.loader is not None
+runtime_profile_lib = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(runtime_profile_lib)
 
 
 def _seed_repo(
@@ -63,6 +69,53 @@ def _seed_repo(
             json.dumps(smoothing), encoding="utf-8"
         )
     return repo
+
+
+def test_runtime_profile_lib_default_profile_uses_top_level_commands_and_budgets() -> None:
+    commands = {"pytest": {"latest": {"elapsed_ms": 1000}}}
+    named_commands = {"pytest": {"latest": {"elapsed_ms": 999999}}}
+    payload = {
+        "commands": commands,
+        "profiles": {"ci": {"commands": named_commands}},
+    }
+    adapter_data = {
+        "runtime_budgets": {"pytest": 22000},
+        "runtime_budget_profiles": {"ci": {"budgets": {"pytest": 540000}}},
+    }
+
+    assert runtime_profile_lib.profile_commands(payload, runtime_profile_lib.DEFAULT_RUNTIME_PROFILE) == commands
+    assert runtime_profile_lib.profile_budgets(adapter_data, runtime_profile_lib.DEFAULT_RUNTIME_PROFILE) == (
+        {"pytest": 22000},
+        [],
+    )
+
+
+def test_runtime_profile_lib_named_profile_uses_profile_commands_and_budgets() -> None:
+    commands = {"pytest": {"latest": {"elapsed_ms": 1000}}}
+    named_commands = {"pytest": {"latest": {"elapsed_ms": 300000}}}
+    payload = {
+        "commands": commands,
+        "profiles": {"ci": {"commands": named_commands}},
+    }
+    adapter_data = {
+        "runtime_budgets": {"pytest": 22000},
+        "runtime_budget_profiles": {"ci": {"budgets": {"pytest": 540000}}},
+    }
+
+    assert runtime_profile_lib.profile_commands(payload, "ci") == named_commands
+    assert runtime_profile_lib.profile_budgets(adapter_data, "ci") == ({"pytest": 540000}, [])
+
+
+def test_runtime_profile_selection_treats_literal_default_as_machine_auto(monkeypatch) -> None:
+    monkeypatch.delenv("CHARNESS_RUNTIME_PROFILE", raising=False)
+
+    selected = runtime_profile_lib.selected_runtime_profile(
+        {"runtime_profile_default": runtime_profile_lib.DEFAULT_RUNTIME_PROFILE},
+        requested_profile=None,
+    )
+
+    assert selected.startswith("local-")
+    assert selected != runtime_profile_lib.DEFAULT_RUNTIME_PROFILE
 
 
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:

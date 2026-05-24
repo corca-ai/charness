@@ -1,167 +1,136 @@
-# Quality Critique Sweep Bug Fixes Debug
-Date: 2026-05-24
+# Mutation Coverage Probe Debug
+Date: 2026-05-25
 
 ## Problem
 
-The sweep found one active mutation regression (#211) and four self-fixable
-sibling defects: RCA impossible timestamps passed validation, constant-derived
-current-pointer writes were missed, advisory `sync-support` gaps returned
-failure, and standing-test economics could crash on disappearing pytest temp
-paths.
+GitHub issue #215 stayed open after the original Python mutation score failure
+because the latest scheduled mutation run on `3873a73` failed before mutation
+execution. The `Select mutation sample` step ran the full pytest coverage probe
+and then `coverage json` failed with `No source for code:
+/tmp/pytest-of-runner/.../repo/scripts/agent_browser_runtime_guard.py`; because
+the sample step failed, neither `cosmic-ray-dump.jsonl` nor
+`stryker-js.json` was produced.
 
 ## Correct Behavior
 
-Given the RCA ledger slice is in a scheduled mutation window, when the sampler
-builds coverage and mutation-line eligibility, then changed RCA scripts must not
-be excluded by uncovered changed lines or mutation-line coverage false
-negatives. Given an RCA event declares `ts`, the validator must reject malformed
-date-times and impossible calendar values. Given a current pointer filename is
-hidden behind a simple constant, the scanner must still flag direct writes.
-Given support sync succeeds and the remaining doctor finding is advisory, the
-sync-support command should report the finding but return success. Given pytest
-temp roots are volatile during xdist runs, standing-test economics inventory
-should skip paths that disappear mid-scan instead of failing the caller.
+Given mutation sample selection wraps the repo test command in coverage, when
+tests execute copied or generated helper files outside the repo root and those
+temporary files disappear before `coverage json`, then mutation sampling should
+ignore those outside-repo sources and still emit the mutation coverage JSON.
+<!-- reproduction-source -->
+Given the sample step succeeds, the workflow can continue to Python and JS
+mutation execution and report real survivor scores instead of a missing-report
+placeholder.
 
 ## Observed Facts
 
-- `gh issue view 211 --json body` reported changed-line blockers for
-  `scripts/rca_ledger_lib.py` and `scripts/record_rca_event.py`, plus
-  mutation-line exclusions for `scripts/validate_rca_ledger.py`.
-- Reproducing the sample locally against `ad0f233..HEAD` initially produced
-  `changed_line_uncovered_changed_files = ["scripts/rca_ledger_lib.py",
-  "scripts/record_rca_event.py"]` and mutation-line exclusions for all three RCA
-  scripts.
-- A temp ledger containing `ts: "2026-99-99T99:99:99Z"` returned valid before
-  the fix because `jsonschema.FormatChecker()` was not used and the schema regex
-  only checked shape.
-- A temp repo with `CURRENT = "latest.md"; target = Path(...) / CURRENT;
-  target.write_text(...)` returned clean from `check_current_pointer_writes.py`.
-- `./charness tool sync-support --dry-run --json` returned 1 when `defuddle` was
-  missing, even though that doctor disposition is advisory-install-needed.
-- `./scripts/run-quality.sh --read-only` later failed inside
-  `test_standing_test_economics_ignores_generated_mutant_tree` because the
-  inventory subprocess raised `FileNotFoundError` for a concurrently removed
-  `/home/hwidong/.cache/tmp/pytest-of-hwidong/garbage-*` path.
+- `gh issue view 215` showed the original body at `6afea153` failed Python
+  mutation score, `79.3%` versus the `80%` threshold.
+- Later issue comments from GitHub Actions showed the current failure on
+  `3873a73`: `StrykerJS JSON report missing` with no sample manifest.
+- `gh run view 26373389015 --log-failed` showed the earlier step failed with
+  `No source for code: '/tmp/pytest-of-runner/.../repo/scripts/agent_browser_runtime_guard.py'`
+  and `test-command coverage probe failed with exit 1`.
+- `run_test_coverage` wrote a temporary coverage rcfile without a `source`
+  boundary, so coverage tried to include files executed by tests even when they
+  lived under volatile pytest temp repos outside `/home/hwidong/codes/charness`.
+- A local sample run after adding `source = <repo_root>` completed the coverage
+  json step and printed `Wrote JSON report to .../reports/mutation/test-coverage.json`.
 
 ## Reproduction
 
-- Mutation sample before fix: temp `cosmic-ray.toml`, `MUTATION_BASE_SHA=ad0f233`,
-  `MUTATION_HEAD_SHA=HEAD`, full coverage probe.
-- Timestamp/current-pointer/sync-support: use focused temp-ledger, temp-repo, and
-  missing-manual-binary checks.
-- Pytest-temp race: full read-only quality while xdist workers create and clean
-  temp roots.
+- Failing hosted reproduction: GitHub Actions mutation run
+  `26373389015` on commit `3873a73`.
+- Local focused reproduction: a regression test creates a repo source, executes
+  and deletes an outside temp Python file during a pytest run, then calls
+  `run_test_coverage`; before the fix this shape could make `coverage json`
+  chase deleted non-repo source.
+- Local workflow reproduction after the fix:
+  `MUTATION_BASE_SHA=6ad879dc3c98fda9c71e36d826b2c6095c734d7b MUTATION_HEAD_SHA=HEAD ... python3 scripts/sample_mutation_files.py --repo-root .`
+  completed successfully.
 
 ## Candidate Causes
 
-- RCA tests did not cover several optional and error branches in the new scripts.
-- Mutation-line coverage treated coverage as line-exact, so mutations on
-  continuation lines of an executed multiline statement looked uncovered.
-- The first continuation-line fix over-propagated across enclosing `FunctionDef`
-  bodies; counterweight review caught this before closeout.
-- RCA timestamp validation trusted JSON Schema `format` without a format checker
-  or explicit calendar parse.
-- Current-pointer scanning looked only for literal `latest.*` strings or names
-  assigned from such expressions, not simple filename constants.
-- `sync-support` checked raw `doctor_status` instead of the already-normalized
-  `doctor_disposition` used by `tool doctor`.
-- Standing-test economics caught `OSError` when opening a directory but still
-  used traversal paths that could raise after iteration had already started.
+- Coverage source boundary was absent, so temporary fixture repos became part of
+  the mutation coverage data.
+- The JS mutation runner was healthy but never reached because sample selection
+  failed first.
+- Python survivor tests were too broad and did not kill branch/format mutants
+  from the original #215 body.
 
 ## Hypothesis
 
-If RCA optional/error branches are covered, timestamp validation uses both
-`FormatChecker` and a calendar parse, mutation-line coverage propagates only
-within executed multiline simple statements, current-pointer scanning resolves
-module-level filename constants while respecting local shadowing, and
-sync-support exits on blocking doctor dispositions only, then #211's sampler
-blocker disappears and the sibling defects get deterministic tests. If pytest
-temp inventory uses tolerant iterator/stat helpers, volatile cleanup cannot
-crash the standing economics scan.
+If mutation coverage collection sets `source = <repo_root>` in its generated
+rcfile, then coverage will ignore deleted temp sources outside the repository
+and sample selection will reach manifest generation. If survivor-adjacent tests
+also pin runtime profile branch selection, setup parent creation, and GitHub
+Actions JSON formatting, the original weak mutation surface improves without
+turning the fix into a broad refactor.
 
 ## Verification
 
-- Targeted tests for current-pointer writes, mutation sampling, RCA ledger, and
-  sync-support passed (56 passed).
-- `ruff check ...` and `check_python_lengths` passed.
-- `python3 scripts/validate_packaging.py --repo-root .`,
-  `python3 scripts/validate_packaging_committed.py --repo-root .`, and
-  `python3 scripts/check_current_pointer_writes.py --repo-root . --require-empty`
-  passed after plugin sync.
-- After the temp-scan race fix, standing-test economics tests passed (5 passed).
-- Post-commit sampler exposed a second changed-line coverage gap in the pointer
-  scanner, mutation-line integration path, and pytest-temp iterator helper;
-  focused tests now cover those branches (21 passed).
-- Final committed sampler `final5` reported 0 changed-line blockers and 0
-  mutation-line coverage exclusions.
+- Focused tests passed:
+  `python3 -m pytest -q tests/quality_gates/test_mutation_coverage_probe.py ...`
+  reported `7 passed`.
+- Local sample selection completed after the fix:
+  `1524 passed, 4 skipped, 57 deselected`, `Combined 1186 files, skipped 596`,
+  `Wrote JSON report to .../reports/mutation/test-coverage.json`, and
+  `sample (5/5): ...`.
+- `npm run test:mutation:js:dry-run` passed and wrote the StrykerJS dry-run log;
+  this proves the runner/report path is locally reachable in dry-run mode, not
+  that the hosted full mutation step has already rerun.
+- `./scripts/run-quality.sh --read-only` passed: `68 passed, 0 failed`.
 
 ## Root Cause
 
-#211 was not one bug. It was a bundle of proof-boundary mistakes in the new RCA
-ledger slice plus sibling gate holes:
-
-- The RCA ledger scripts were behavior-tested but not branch-covered enough for
-  a changed-line gate that treats every newly-added statement as in scope.
-- Mutation-line coverage used physical mutation line membership rather than
-  executed statement membership, so continuation lines in executed multiline
-  statements were false negatives.
-- Timestamp schema validation declared `format: date-time` but did not enable a
-  format checker and did not parse the calendar value.
-- Current-pointer write detection assumed the filename literal stayed visible at
-  the write expression.
-- `sync-support` interpreted advisory install gaps as command failure by looking
-  at raw status instead of the disposition contract.
-- Standing-test economics assumed retained pytest temp directories were stable
-  for the duration of a scan, but xdist and pytest cleanup can remove sibling
-  directories while an inventory subprocess is traversing the same temp root.
+The mutation sampler assumed the full pytest coverage probe only needed to
+collect repository-owned source. In practice, repo tests execute copied helper
+scripts inside pytest temp repos; those temp files can disappear before
+`coverage json`. Without an explicit coverage `source` boundary, coverage
+recorded those outside-repo paths and later failed when it could not read them.
+That turned a recoverable outside-repo fixture detail into a blocking mutation
+workflow failure and prevented the JS mutation report from being generated.
 
 ## Detection Gap
 
-- mutation sample | continuation lines of executed multiline statements looked
-  uncovered | add statement-span continuation coverage, with a negative test
-  proving function-body over-propagation does not occur.
-- RCA ledger validation | impossible date-time accepted | add FormatChecker,
-  calendar parse, and impossible timestamp regression.
-- current-pointer scanner | simple constant-derived `latest.*` writes missed |
-  add module constant propagation plus local-shadowing regression.
-- sync-support CLI | advisory doctor status failed support sync | align exit
-  code to `doctor_disposition` and test both advisory and blocking paths.
-- standing-test economics | volatile pytest temp roots crashed scan | replace
-  fragile traversal with tolerant iterator/stat helpers and add a disappearing
-  temp-dir regression.
-- post-commit mutation proof | new helper branches stayed outside selected
-  coverage | add focused branch tests before rerunning the committed sampler.
-- compound-statement mutation spans | multiline condition lines were excluded
-  when avoiding body overreach | cover only the header span before child suites.
+- mutation sample coverage probe | deleted outside-repo temp sources could
+  break `coverage json` | add a regression that executes and deletes an
+  outside-repo Python file while verifying only repo-owned files enter the
+  mutation coverage JSON.
+- original Python survivor surface | CLI smoke tests did not pin branch and
+  format contracts | add direct tests for runtime profile default/named
+  branches, nested setup parent creation, and stable UTF-8 sorted JSON output.
+- plugin packaging surface | script change can drift from plugin mirror | run
+  `sync_root_plugin_manifests.py` before validation and keep preamble test in
+  the closeout proof.
 
 ## Sibling Search
 
-- Mental model: "shape-valid and behavior-tested is enough for new helper
-  scripts." Decision: false for changed-line/mutation-line gates; proof: #211
-  reproduction and targeted branch coverage.
-- Same layer: mutation changed-scope incidents
-  `2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md` and
-  `2026-05-24-mutation-changed-scope-gap-whole-file.md`. Decision: same family;
-  proof: both involve changed-window proof boundaries.
-- Abstraction up: current-pointer writer safety. Decision: fixed now for simple
-  constants; proof: new scanner tests and clean repo scan.
-- Specialization down: RCA recorder duplicate appends by `class_key`. Decision:
-  defer to spec because metric semantics change; proof: filed #212.
-- Adjacent operator seam: validators needing implicit `PYTHONPATH`. Decision:
-  defer; proof: filed #213.
-- CLI review depth: structural CLI ergonomics inventory inputs missing.
-  Decision: defer; proof: filed #214.
+- Mental model: "the pytest command is repo-scoped, so coverage output is
+  effectively repo-scoped." Decision: same bug, fixed now for mutation coverage
+  probe. Proof: #215 run log and outside-repo deleted-source regression.
+- Same layer: other coverage consumers that read coverage JSON already call
+  `_coverage_relative_path` and drop outside repo paths after JSON exists.
+  Decision: diagnostic-only for this slice. Proof: failure happened before JSON
+  could be produced.
+- Abstraction up: generated probe rcfiles that lack source/include boundaries.
+  Decision: same class, inspect when adding new probe helpers. Proof: this fix
+  is in the shared mutation sampling rcfile writer.
+- Specialization down: setup seed scripts that rely on `parents=True`, runtime
+  profile default/named branch selection, and machine-readable JSON formatting.
+  Decision: bundle cheap survivor tests now. Proof: #215 survivor sample and
+  focused tests.
 
 ## Seam Risk
 
-- Interrupt ID: quality-critique-sweep-bug-fixes
+- Interrupt ID: issue-215-mutation-coverage-probe-source-boundary
 - Risk Class: contract-freeze-risk
-- Seam: scheduled mutation changed-window proof, RCA metric validation,
-  current-pointer writer detection, external-tool command exit semantics, and
-  volatile pytest temp inventory
-- Disproving Observation: final committed sampler reported 0 changed-line
-  blockers and 0 mutation-line coverage exclusions.
-- What Local Reasoning Cannot Prove: hosted scheduled mutation run after push.
+- Seam: GitHub Actions scheduled mutation workflow plus local pytest temp
+  lifecycle
+- Disproving Observation: local sample selection now reaches coverage JSON and
+  manifest generation.
+- What Local Reasoning Cannot Prove: the next hosted scheduled mutation run on
+  GitHub Actions.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
@@ -172,9 +141,6 @@ ledger slice plus sibling gate holes:
 
 ## Prevention
 
-Keep proof boundaries explicit: changed-line gates need committed-window proof,
-mutation-line coverage must not confuse physical continuation lines with
-unexecuted statements, JSON Schema `format` needs a checker or explicit parser,
-scanner heuristics need negative tests for both misses and false positives, and
-CLI lifecycle commands should exit on disposition contracts rather than raw
-status names.
+Keep generated coverage probes explicitly repo-scoped, and add branch-level
+tests when mutation survivors show that broad CLI smoke tests are observing the
+right end state without pinning the contract that matters.
