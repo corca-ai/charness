@@ -34,8 +34,9 @@
 - Fixed **#209** then **#208** (mutation changed-scope gate self-recurrence); RCA
   in [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md).
 - Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
-- Open: **#184** (ledger specced; impl pending), **#185** (RCA ledger =
-  improvement #1; #2 LLM-as-judge / #3 usage-episodes activation un-specced).
+- Open: **#184** (ledger slice 1 landed; stays OPEN for baseline-first numeric
+  target after slice 2), **#185** (RCA ledger = improvement #1, slice 1 done /
+  slice 2 pending; #2 LLM-as-judge / #3 usage-episodes activation un-specced).
 
 ## Next Session
 
