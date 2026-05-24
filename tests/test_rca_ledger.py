@@ -124,14 +124,28 @@ def test_ac3_record_round_trip_and_refuse_before_append(tmp_path: Path) -> None:
 
 
 # AC4 -------------------------------------------------------------------------
-def test_ac4_committed_ledger_both_outcomes_and_empty_baseline() -> None:
-    events = lib.read_events(COMMITTED_LEDGER)
-    assert all(e.get("seed") is True for e in events)
-    converted = [e for e in events if e.get("converted") is True]
-    unconverted = [e for e in events if e.get("converted") is False]
-    assert converted and unconverted
+def seed_only_both_outcomes() -> list[dict[str, object]]:
+    return [
+        event(converted=True, durable_kind="gate", seed=True),
+        event(converted=False, durable_kind="none", seed=True),
+    ]
 
-    payload = lib.aggregate(events)
+
+def test_ac4_committed_ledger_retains_both_seed_outcomes() -> None:
+    # The committed ledger keeps its seeded both-outcome set even as live
+    # (non-seed) events accrue, so this asserts about the seed subset only —
+    # it must not regress the moment auto-append (slice 2) fires.
+    seed_events = [e for e in lib.read_events(COMMITTED_LEDGER) if e.get("seed") is True]
+    assert [e for e in seed_events if e.get("converted") is True]
+    assert [e for e in seed_events if e.get("converted") is False]
+
+
+def test_ac4_seed_only_window_baseline_is_empty(tmp_path: Path) -> None:
+    # Empty-baseline honesty is a property of a seed-only window, proven on a
+    # synthetic fixture decoupled from the live committed ledger.
+    ledger = tmp_path / "seed_only.jsonl"
+    write_ledger(ledger, seed_only_both_outcomes())
+    payload = lib.aggregate(lib.read_events(ledger))
     assert payload["baseline_rate_available"] is False
     assert payload["seed_excluded"]["rate"] == lib.NA
     assert 0.0 < payload["seed_included"]["rate"] < 1.0
@@ -172,12 +186,15 @@ def test_ac6_doc_contains_rubric() -> None:
 
 
 # AC7 -------------------------------------------------------------------------
-def test_ac7_on_state_keeps_na_and_no_baseline_number() -> None:
+def test_ac7_on_state_keeps_na_and_no_baseline_number(tmp_path: Path) -> None:
     # Slice 2 wired auto-append, so the banner reads ON. The substantive guard
-    # AC7 protects still holds on the seed-only committed ledger: no numeric
-    # baseline is printed while zero non-seed events exist.
+    # AC7 protects (no numeric baseline while the seed-excluded window is empty)
+    # is proven on a synthetic seed-only fixture, decoupled from the live
+    # committed ledger so accruing real events cannot mask the guard.
+    ledger = tmp_path / "seed_only.jsonl"
+    write_ledger(ledger, seed_only_both_outcomes())
     payload = json.loads(
-        run_script("aggregate_rca_ledger.py", "--repo-root", str(ROOT), "--json").stdout
+        run_script("aggregate_rca_ledger.py", "--ledger", str(ledger), "--json").stdout
     )
     assert payload["auto_append"] == lib.AUTO_APPEND_ON_BANNER
     assert payload["auto_append"].startswith("auto_append: ON")
@@ -185,7 +202,7 @@ def test_ac7_on_state_keeps_na_and_no_baseline_number() -> None:
     assert payload["seed_excluded"]["rate"] == lib.NA
     assert payload["baseline_rate_available"] is False
 
-    text = run_script("aggregate_rca_ledger.py", "--repo-root", str(ROOT)).stdout
+    text = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger)).stdout
     assert "auto_append: ON" in text
     # flipping OFF->ON must not strip the "do not quote" guard from the seed-only number
     assert "do not quote" in text

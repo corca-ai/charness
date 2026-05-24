@@ -21,7 +21,12 @@
   reads `ON`, and kept the baseline guards (n/a + no non-seed number until live
   events accrue). Spec [slice-2 section](../charness-artifacts/spec/rca-conversion-ledger.md)
   records the preserve/improve claim + residual risk (append is prompt-enforced,
-  not gate-enforced). The baseline window is now **open but empty**.
+  not gate-enforced). A session retro then caught a latent break (committed
+  ledger doubled as the AC4/AC7 fixture, so the first live append would fail
+  those tests) — fixed by proving the empty-window honesty on synthetic seed-only
+  fixtures. The **first live (non-seed) event** was then dogfood-appended (this
+  retro's recurring length-budget trap), so the seed-excluded baseline now reads
+  a real `0/1 (0.0%)`. The window is **open and accruing**.
 - **#184/#185 ledger slice 1 impl (prior session)**: shipped the RCA conversion
   ledger substrate —
   [rca_event.schema.json](../scripts/rca_event.schema.json), `record_rca_event.py`,
@@ -47,12 +52,13 @@
 
 ## Next Session
 
-1. **RCA ledger baseline observation** (DONE: slices 1+2). The auto-append window
-   is open; let live (non-seed) events accrue from `debug`/`issue`/`retro`
-   closeouts. Revisit the numeric target after 2–4 weeks of seed-excluded data
-   (`python3 scripts/aggregate_rca_ledger.py`). Optional follow-up: an advisory
-   closeout nudge when a `debug`/`issue`/`retro` slice commits with no matching
-   ledger append (spec slice-2 residual risk) — spec + critique first.
+1. **RCA ledger baseline observation** (DONE: slices 1+2 + fixture decoupling;
+   first live event landed). Let live (non-seed) events keep accruing from
+   `debug`/`issue`/`retro` closeouts. Revisit the numeric target after 2–4 weeks
+   of seed-excluded data (`python3 scripts/aggregate_rca_ledger.py`). Optional
+   follow-ups (spec slice-2 residual risk; each needs spec + critique first): an
+   advisory closeout nudge when a `debug`/`issue`/`retro` slice commits with no
+   matching ledger append; `class_key` dedup so a re-run cannot double-append.
 2. **Mutation blocker follow-up** (#208/#207): if changed-line *statement*
    coverage proves too weak, consider mutation-line coverage of changed lines
    (needs Cosmic Ray init on all changed files) — spec + critique first.

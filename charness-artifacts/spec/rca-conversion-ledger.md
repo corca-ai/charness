@@ -225,8 +225,11 @@ surfaces.
   `validate_rca_ledger.py` passes; an invalid input is refused before append
   (ledger unchanged).
 - AC4 -> committed `charness-artifacts/metrics/rca-ledger.jsonl` contains
-  >=1 converted and >=1 unconverted seed event, and the seed-excluded rate
-  starts empty (no non-seed events yet) while the seed-included rate is < 100%.
+  >=1 converted and >=1 unconverted seed event, and the seed-included rate is
+  < 100%. **Post slice 2**: the empty-seed-excluded-window guarantee is proven on
+  a synthetic seed-only fixture, not the committed ledger, so the test no longer
+  regresses once live (non-seed) events accrue; the committed-ledger test asserts
+  only the seed subset. The first live event landed in this slice (see below).
 - AC5 -> the AC3 round-trip test runs green regardless of usage-episodes adapter
   state, and the RCA scripts contain no reference to the adapter file, its
   emitter, or its state/session storage (structural independence). The adapter is
@@ -354,6 +357,21 @@ Minto/structure; plus 1 counterweight). Packet:
   the slice-2 residual risk and Deferred Decisions.
 
 Fresh-Eye Satisfaction (impl, slice 2): parent-delegated (4 angle + 1 counterweight subagents).
+
+### Slice-2 follow-up (landed): fixture decoupling + first live event
+
+A session retro
+(`charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md`) caught a
+latent break the slice-2 critique missed: the committed ledger doubled as the
+AC4/AC7 fixture, so the first live auto-appended event would have failed those
+tests (verified by simulation). Fixed by proving the empty-window/`n/a` honesty on
+synthetic seed-only fixtures and asserting only the seed subset against the
+committed ledger. With the fixtures decoupled, the **first live (non-seed)
+event** was appended (this retro's recurring length-budget trap: `--source retro`,
+`repeated_correction`, `converted=false`, `caught_by gate`), so the seed-excluded
+baseline now reads a real `0/1 (0.0%)` — the dogfood proof that the wiring works
+end-to-end. The baseline stays advisory and tiny; the numeric target is still
+baseline-first.
 
 ## Canonical Artifact
 
