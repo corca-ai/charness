@@ -161,6 +161,78 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, s
     assert "Quality summary: 4 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    real_python = subprocess.run(
+        ["python3", "-c", "import sys; print(sys.executable)"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    log_path = repo / "pytest-invocation.json"
+    write_executable(
+        repo / "bin" / "python3",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "${1:-}" == "-m" && "${2:-}" == "pytest" ]]; then',
+                "  shift 2",
+                '  if [[ "${1:-}" == "--version" ]]; then echo "pytest 9.0.2"; exit 0; fi',
+                '  if [[ "${1:-}" == "--help" ]]; then echo "  -n numprocesses, --numprocesses=numprocesses"; exit 0; fi',
+                f"  {real_python!r} - <<'PY' \"$PYTEST_DEBUG_TEMPROOT\" \"$@\"",
+                "import json",
+                "import sys",
+                "from pathlib import Path",
+                f"Path({str(log_path)!r}).write_text(json.dumps({{'temproot': sys.argv[1], 'args': sys.argv[2:]}}, indent=2) + '\\n', encoding='utf-8')",
+                "PY",
+                "  echo 'quality success output from pytest'",
+                "  exit 0",
+                "fi",
+                f"exec {real_python!r} \"$@\"",
+                "",
+            ]
+        ),
+    )
+    env["CHARNESS_QUALITY_LABELS"] = "pytest"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    assert "/charness/pytest-tmp/" in payload["temproot"]
+    assert "--basetemp" in payload["args"]
+    basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
+    assert basetemp.startswith(payload["temproot"] + "/pytest-of-")
+    assert basetemp.endswith("/pytest-0")
+
+
+def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    log_path = repo / "seed-budget-temproot.txt"
+    write_executable(
+        repo / "scripts" / "check_seed_fixture_budget.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import os",
+                "from pathlib import Path",
+                f"Path({str(log_path)!r}).write_text(os.environ['PYTEST_DEBUG_TEMPROOT'] + '\\n', encoding='utf-8')",
+                "print('quality success output from check-seed-fixture-budget')",
+                "",
+            ]
+        ),
+    )
+    env["CHARNESS_QUALITY_LABELS"] = "check-seed-fixture-budget"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "/charness/pytest-tmp/" in log_path.read_text(encoding="utf-8")
+
+
 def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"

@@ -24,6 +24,11 @@
 - **#211 Mutation test regression**: locally reproduced before fix; final
   committed mutation sampler `final5` reported 0 changed-line blockers and 0
   mutation-line coverage exclusions. GitHub currently reports #211 closed.
+- **v0.7.12 release is published**: `main` and tag `v0.7.12` are on GitHub;
+  release record is verified in [release latest](../charness-artifacts/release/latest.md).
+- **Pytest temp blowup follow-up**: `run-quality.sh` now uses a repo-keyed
+  pytest temp root under cache and [pyproject](../pyproject.toml) keeps only failed tmp-path
+  sessions, so passed release runs should not retain 40GiB tmp trees.
 - **Filed deferred issues from the sweep**: #212 RCA ledger `class_key`
   idempotency semantics; #213 `validate_packaging_install_surface.py` direct
   invocation needs repo import bootstrap; #214 structural CLI ergonomics
@@ -34,13 +39,13 @@
 
 ## Next Session
 
-1. Publish the local sweep commits if not already pushed, then verify the remote
-   branch/tag/release state.
-2. RCA ledger baseline observation: let live non-seed events accrue from
+1. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
-3. Deferred issue queue: #212 before changing recorder idempotency; #213 direct
-   validator bootstrap; #214 CLI ergonomics structural inventory.
+2. Deferred issue queue: #213 direct validator bootstrap first, then #212
+   recorder idempotency contract, then #214 CLI ergonomics structural inventory.
+3. If release-only tests fail after this change, inspect the repo-keyed cache
+   temp root from `run-quality.sh` before widening the seed fixture budget.
 
 ## Discuss
 

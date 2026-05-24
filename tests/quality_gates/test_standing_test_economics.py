@@ -111,6 +111,13 @@ def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -
     assert footprint["top_test_dirs"][0]["disk_bytes"] >= 13
 
 
+def test_pytest_tmp_retention_keeps_only_failed_session_dirs() -> None:
+    config = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+    assert 'tmp_path_retention_count = 1' in config
+    assert 'tmp_path_retention_policy = "failed"' in config
+
+
 def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -1,5 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+tmp_path_retention_count = 1
+tmp_path_retention_policy = "failed"
 markers = [
   "release_only: excluded from standing pre-push but included in full local release/update quality gates",
 ]

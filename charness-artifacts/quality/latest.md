@@ -10,9 +10,7 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 - `./scripts/run-quality.sh --read-only` passed before edits: 67 passed,
   0 failed, 35.4s.
 - Targeted touched-surface tests passed after fixes: RCA ledger, mutation
-  sampling, current-pointer scanner, `sync-support` exit semantics, and the
-  standing-test economics pytest-temp race; post-commit proof-gap branch tests
-  passed (21 passed).
+  sampling, current-pointer scanner, `sync-support`, and pytest-temp economics.
 - Packaging mirror was synced; packaging validators passed after sync.
 
 ## Runtime Signals
@@ -29,8 +27,9 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 - `inventory_standing_test_economics.py` reported `test_file_count=188`,
   `nested_cli_file_count=81`, and advisory `pytest_temp_footprint`.
-- Added one focused mutation-line continuation test file; nested CLI fanout
-  remains advisory.
+- Follow-up after release: passing pytest sessions use a repo-keyed cache temp
+  root and failed-only tmp retention, so successful release-only runs should not
+  retain large tmp trees.
 
 ## Testability and Selection
 
@@ -38,10 +37,11 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   mutation-line exclusions hit RCA scripts.
 - Fixed: continuation lines in executed multiline simple statements count as
   covered without propagating across enclosing function bodies.
-- Fixed: RCA tests cover optional fields, invalid JSON, missing ledger,
-  impossible timestamps, empty baseline rendering, and seed/live behavior.
+- Fixed: RCA tests cover optional/error branches, timestamps, and seed/live behavior.
 - Fixed: standing-test economics tolerates pytest temp directories disappearing
   during xdist cleanup.
+- Fixed: `run-quality.sh` isolates pytest temp retention from unrelated repos
+  and points the seed fixture budget at the same repo-keyed temp root.
 - Final committed mutation sampler `final5` reported 0 changed-line blockers and
   0 mutation-line coverage exclusions.
 
@@ -82,10 +82,15 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
   on blocking doctor dispositions.
 - `inventory_standing_test_economics.py` now skips volatile pytest temp paths
   that disappear mid-scan.
+- `check-seed-fixture-budget` now runs against the repo-keyed pytest temp root;
+  focused proof showed 1.1 MiB retained and no breaches.
 
 ## Weak
 
 - Standing test economics still shows 188 test files and 81 nested CLI files.
+- Release-only CLI lifecycle tests still materialize large repo/home surfaces
+  during execution; the current fix reduces retained disk, not execution-time
+  copy volume.
 - Generated [docs/generated/cli-reference.md](../../docs/generated/cli-reference.md)
   is 786 lines; structural CLI ergonomics lacks registry/archetype inputs
   (#214).
@@ -110,22 +115,20 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 - Delegated Review: executed. Fresh-eye satisfaction: parent-delegated.
 - Reviewers covered fixture-economics, parallel-critical-path,
-  duplicated-proof, bug/RCA sibling scan, architecture/code critique, and
-  counterweight.
+  duplicated-proof, bug/RCA sibling scan, architecture/code critique, and counterweight.
 - Counterweight found one Act Before Ship issue; it was corrected.
 
 ## Commands Run
 
-- `./scripts/run-quality.sh --read-only`; mutation sample probes; targeted
-  `pytest -q`; `ruff check`; `check_python_lengths`; packaging validators;
-  current-pointer write scan; standing test economics; CI/local parity; skill
-  ergonomics; runtime summary; quality handoff inventory; `gh issue create`
-  for #212, #213, and #214.
+- Commands included read-only quality, mutation probes, targeted `pytest`,
+  `ruff`, length checks, packaging validators, current-pointer scan, standing
+  economics, CI/local parity, skill ergonomics, runtime summary, quality handoff
+  inventory, and issue creation for #212-#214.
+- Follow-up pytest temp proof: selected `check-seed-fixture-budget` and `pytest`
+  labels in `run-quality.sh`, focused tests, and packaging validators after sync.
 
 ## Recommended Next Gates
 
-- active `AUTO_EXISTING`: comment or close #211 after push/remote verification
-  if remote closeout is in scope.
 - passive `AUTO_CANDIDATE`: because registry shape is undecided, design CLI
   ergonomics inputs before promoting structural findings (#214).
 - passive `NON_AUTOMATABLE`: because metric semantics change, spec RCA ledger
@@ -133,4 +136,4 @@ Continuation of user-requested quality plus critique: current gates, #211, fresh
 
 ## History
 
-- [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md); [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
+- [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)

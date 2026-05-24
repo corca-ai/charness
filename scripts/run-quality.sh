@@ -423,6 +423,13 @@ queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
+REPO_TMP_KEY="$(python3 -c 'import hashlib, sys; print(hashlib.sha256(sys.argv[1].encode()).hexdigest()[:12])' "$REPO_ROOT")"
+PYTEST_TEMPROOT="${PYTEST_DEBUG_TEMPROOT:-${XDG_CACHE_HOME:-${HOME:-/tmp/.cache}}/charness/pytest-tmp/$REPO_TMP_KEY}"
+export PYTEST_DEBUG_TEMPROOT="$PYTEST_TEMPROOT"
+PYTEST_TMP_USER="$(id -un 2>/dev/null || printf unknown)"
+PYTEST_BASETEMP="$PYTEST_TEMPROOT/pytest-of-$PYTEST_TMP_USER/pytest-0"
+mkdir -p "$(dirname "$PYTEST_BASETEMP")"
+PYTEST_TEMP_FLAGS=(--basetemp "$PYTEST_BASETEMP")
 queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py --strict
 queue_selected "check-markdown" ./scripts/check-markdown.sh
@@ -465,9 +472,9 @@ if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" != "1" ]]; then
   PYTEST_MARKER_FLAGS=(-m "not release_only")
 fi
 if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_TEMP_FLAGS[@]}" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 else
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_TEMP_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 fi
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
