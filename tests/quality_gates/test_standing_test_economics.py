@@ -177,14 +177,22 @@ def test_pytest_temp_iter_helpers_skip_missing_and_stale_children(
     file_path.write_bytes(b"x")
     stale_path.write_bytes(b"y")
 
+    missing = tmp_path / "missing"
+    original_iterdir = Path.iterdir
     original_stat = Path.stat
+
+    def flaky_iterdir(path: Path):
+        if path == missing:
+            raise FileNotFoundError(path)
+        yield from original_iterdir(path)
 
     def flaky_stat(path: Path, *args, **kwargs):
         if path == stale_path:
             raise FileNotFoundError(path)
         return original_stat(path, *args, **kwargs)
 
+    monkeypatch.setattr(Path, "iterdir", flaky_iterdir)
     monkeypatch.setattr(Path, "stat", flaky_stat)
 
-    assert list(lib._iter_child_stats(tmp_path / "missing")) == []
+    assert list(lib._iter_child_stats(missing)) == []
     assert [item.st_size for item in lib._iter_file_stats(root)] == [1]
