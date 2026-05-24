@@ -13,42 +13,25 @@
 
 ## Current State
 
-- **#184/#185 ledger slice 2 — auto-append wiring (this session)**: wired the
-  recorder into the `debug`/`issue`/`retro` closeout prompts via a presence-gated
-  shared reference
+- **#184/#185 RCA ledger slices 1+2 landed** (this session = slice 2 + fixture
+  fix). Substrate (schema, `record_rca_event.py`, `validate_rca_ledger.py`,
+  `aggregate_rca_ledger.py`, seeded
+  [ledger](../charness-artifacts/metrics/rca-ledger.jsonl)) plus auto-append wired
+  into `debug`/`issue`/`retro` closeouts via presence-gated
   [rca-ledger-append.md](../skills/shared/references/rca-ledger-append.md) (no-op
-  in consumer repos), flipped `AUTO_APPEND_WIRED=True` so the aggregator banner
-  reads `ON`, and kept the baseline guards (n/a + no non-seed number until live
-  events accrue). Spec [slice-2 section](../charness-artifacts/spec/rca-conversion-ledger.md)
-  records the preserve/improve claim + residual risk (append is prompt-enforced,
-  not gate-enforced). A session retro then caught a latent break (committed
-  ledger doubled as the AC4/AC7 fixture, so the first live append would fail
-  those tests) — fixed by proving the empty-window honesty on synthetic seed-only
-  fixtures. The **first live (non-seed) event** was then dogfood-appended (this
-  retro's recurring length-budget trap), so the seed-excluded baseline now reads
-  a real `0/1 (0.0%)`. The window is **open and accruing**.
-- **#184/#185 ledger slice 1 impl (prior session)**: shipped the RCA conversion
-  ledger substrate —
-  [rca_event.schema.json](../scripts/rca_event.schema.json), `record_rca_event.py`,
-  `validate_rca_ledger.py`, `aggregate_rca_ledger.py`, seeded
-  [rca-ledger.jsonl](../charness-artifacts/metrics/rca-ledger.jsonl) (3 converted
-  / 2 unconverted, all `seed=true`; 60% seed-included, seed-excluded `n/a`),
-  rubric into [product-success-metrics.md](./product-success-metrics.md), AC1–AC8
-  tests. usage-episodes adapter is `enabled`, so ledger independence is proven
-  structurally (scripts reference no adapter machinery).
-- **#184 ideation → spec (prior session)**: locked product north-star =
-  operator/agent task success (named, not yet measurable); first *instrumented*
-  objective = RCA-to-learning conversion rate. Wrote the
-  [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md)
-  (spec critique + 3-angle decision-premortem applied), doc
-  [product-success-metrics.md](./product-success-metrics.md). Commits `bc78db5`,
-  `201dacb`. #184 stays OPEN (numeric target is baseline-first).
-- Fixed **#209** then **#208** (mutation changed-scope gate self-recurrence); RCA
-  in [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md).
-- Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
-- Open: **#184** (ledger slices 1+2 landed; stays OPEN for baseline-first numeric
-  target after 2–4 weeks of live data), **#185** (RCA ledger = improvement #1,
-  slices 1+2 done; #2 LLM-as-judge / #3 usage-episodes activation un-specced).
+  for consumers); `AUTO_APPEND_WIRED=True`, banner `ON` with the
+  prompt-enforced/self-reported honesty qualifier. A retro caught the committed
+  ledger doubling as the AC4/AC7 fixture (first live append would break them) —
+  fixed via synthetic seed-only fixtures. First live event dogfood-appended;
+  seed-excluded baseline now `0/1 (0.0%)`, window open and accruing. Contract:
+  [spec](../charness-artifacts/spec/rca-conversion-ledger.md),
+  [metrics doc](./product-success-metrics.md).
+- Prior: fixed **#209**/**#208** (mutation changed-scope gate self-recurrence,
+  [RCA](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md));
+  bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
+- Open: **#184** + **#185** stay OPEN — numeric target is baseline-first (revisit
+  after 2–4 weeks of live seed-excluded data); #185 improvements #2 (LLM-as-judge)
+  and #3 (usage-episodes activation) are un-specced.
 
 ## Next Session
 
