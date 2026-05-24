@@ -22,13 +22,13 @@ Advanced `charness` toward release `0.7.12` (tag `v0.7.12`) through the repo-own
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.12`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.7.12`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by `gh release view v0.7.12`.
 
 ## Real-Host Verification
 
@@ -51,9 +51,13 @@ Advanced `charness` toward release `0.7.12` (tag `v0.7.12`) through the repo-own
 
 - No repo-declared fresh checkout probes were configured for this release.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.7.12`.
+
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `not_requested`.
 
 ## User Update Steps
 
