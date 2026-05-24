@@ -13,28 +13,29 @@
 
 ## Current State
 
-- Fixed **#209** (the #208 fix re-triggered the gate on its own next run): #208's
-  new `changed_line_numbers` empty-base guard (`if not base_sha: return set()`)
-  is unreachable from its only caller (pre-guards `not base_sha`), so the line
-  stayed permanently uncovered and blocked any window spanning the new file.
-  Covered it in
-  [test_quality_mutation_sampling.py](../tests/quality_gates/test_quality_mutation_sampling.py)
-  → file now 100% statement coverage (window-independent). #208's verification
-  falsely reported green: it ran against `git diff base..HEAD` while the new file
-  was still uncommitted. RCA:
-  [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md).
-- Fixed **#208** earlier: rescoped the scope-gap BLOCKER to *changed lines*
-  ([mutation_changed_files_lib.py](../scripts/mutation_changed_files_lib.py)); #207
-  was the prior by-design close.
+- **#184 ideation → spec (this session)**: locked product north-star =
+  operator/agent task success (named, not yet measurable); first *instrumented*
+  objective = RCA-to-learning conversion rate. Wrote
+  [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md)
+  (spec critique + 3-angle decision-premortem applied), doc
+  [product-success-metrics.md](./product-success-metrics.md). Commits `bc78db5`,
+  `201dacb`. #184 stays OPEN (numeric target is baseline-first).
+- Fixed **#209** then **#208** (mutation changed-scope gate self-recurrence); RCA
+  in [debug](../charness-artifacts/debug/2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md).
 - Prior: bug-sweep `4e69881` (v0.7.11); closed #198, #202–#206.
-- Open: **#184/#185** (deferred ideation).
+- Open: **#184** (ledger specced; impl pending), **#185** (RCA ledger =
+  improvement #1; #2 LLM-as-judge / #3 usage-episodes activation un-specced).
 
 ## Next Session
 
-1. **Ideation for #185 + #184**: spawn `charness:ideation` against the 1차
-   메모 (symptom→root-cause counter; LLM-as-judge via Cautilus
-   `skill-experiment`; usage-episodes adapter activation).
-2. **Mutation blocker follow-up** (#208/#207 thread): if changed-line *statement*
+1. **Impl the RCA conversion ledger** (slice 1) per
+   [the spec](../charness-artifacts/spec/rca-conversion-ledger.md): schema +
+   `record_rca_event.py` + `validate_rca_ledger.py` + `aggregate_rca_ledger.py` +
+   seed (both outcomes) + rubric into the doc + tests AC1–AC8. Reuse the
+   jsonschema/portable-path helpers from `slice_closeout_usage_episode.py`; do
+   NOT couple to the usage-episodes adapter. Slice 2 (auto-append into
+   debug/issue/retro prompts) is a hard prereq before any numeric target.
+2. **Mutation blocker follow-up** (#208/#207): if changed-line *statement*
    coverage proves too weak, consider mutation-line coverage of changed lines
    (needs Cosmic Ray init on all changed files) — spec + critique first.
 
@@ -42,29 +43,16 @@
 
 - **Deferred (#209 critique)**: a changed-line gate verified pre-commit against
   `git diff base..HEAD` is blind to a fix's own *new* uncommitted file → false
-  green (the #208→#209 shape). Discipline: commit-then-verify, or 100% coverage on
-  new sampler modules. Enforced untracked-file guard triaged over-worry; revisit.
-- New opt-in artifact validators (`validate_ideation_artifact.py`,
-  `validate_retro_artifact.py`) are section-gated + changed-paths-default, so
-  historical retro artifacts and prose-only output stay valid.
-- `validate_skill_output_schemas.py` is intentionally advisory (report, exit 0,
-  un-wired) — a hard gate over freeform Output Shape prose would false-fire.
-- Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
-  `pytest-xdist`; seed-cache LRU eviction; release proof suppression;
-  D21–D26 reopen-trigger watchlist; 2 pre-existing ruff errors in the vendored
-  notion-to-md converter (out of scope).
+  green. Discipline: commit-then-verify, or 100% coverage on new sampler modules.
+- Advisory-by-design: `validate_skill_output_schemas.py` (un-wired); new opt-in
+  artifact validators are section-gated + changed-paths-default.
+- Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock`+`pytest-xdist`;
+  seed-cache LRU eviction; release proof suppression; D21–D26 reopen watchlist;
+  2 pre-existing ruff errors in vendored notion-to-md (out of scope).
 
 ## References
 
-- [open-issue sweep closeout](../charness-artifacts/critique/2026-05-23-handoff-open-issues-closeout.md)
 - [quality posture](../charness-artifacts/quality/latest.md),
-  [release surface](../charness-artifacts/release/latest.md)
-- [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md),
-  [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md)
-- Closed: [#198](https://github.com/corca-ai/charness/issues/198),
-  [#202](https://github.com/corca-ai/charness/issues/202),
-  [#203](https://github.com/corca-ai/charness/issues/203),
-  [#204](https://github.com/corca-ai/charness/issues/204),
-  [#205](https://github.com/corca-ai/charness/issues/205),
-  [#206](https://github.com/corca-ai/charness/issues/206); by-design
-  [#207](https://github.com/corca-ai/charness/issues/207).
+  [release surface](../charness-artifacts/release/latest.md),
+  [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
+- Recently closed: #198, #202–#209 (#207 by-design).
