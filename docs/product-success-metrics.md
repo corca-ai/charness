@@ -42,20 +42,37 @@ Qualitative success means an operator can trust the harness to make the next
 right workflow move, name what it cannot prove, leave durable evidence, and
 avoid turning missing context into false confidence.
 
-## Single North-Star Objective
+## North-Star And First Instrumented Objective
 
-Charness optimizes one objective: the **repeated-mistake-to-learning conversion
-rate** — the share of RCA events (bugs, repeated corrections, weak-proof
-findings) that are converted into a recurrence-preventing durable artifact (a
-new deterministic gate, spec, test, tracked issue, or a retro lesson naming the
-detection gap and sibling pattern). This proves the core value claim: the
-harness gets smarter with use instead of repeating the same class of mistake.
-It sharpens the `Follow-up conversion` row in
-[Metric Definitions](#metric-definitions) into the one optimized objective.
+The product north-star is **operator/agent task success and trust**: an operator
+or agent in an installed repo can start from a normal task and trust the harness
+to make the next right workflow move, leaving durable evidence instead of false
+confidence. That is the success definition the [One-Page Summary](#one-page-summary)
+and [Core Success Criteria](#core-success-criteria) describe. It is named here
+but not yet directly measurable, because Charness does not yet capture
+operator-side task outcomes (consumer-repo measurement depends on the deferred
+usage-episode capture surface).
+
+The **first instrumented objective** — the one number Charness optimizes today —
+is the **repeated-mistake-to-learning conversion rate**: the share of RCA events
+(bugs, repeated corrections, weak-proof findings) converted into a
+recurrence-preventing durable artifact (a deterministic gate, spec, test, tracked
+issue, or a retro lesson naming the detection gap and sibling pattern). It is an
+engineering-health *leading indicator* that sharpens the `Follow-up conversion`
+row in [Metric Definitions](#metric-definitions), not the product north-star
+itself.
+
+This objective rests on a **falsifiable assumption**: that the conversion rate
+correlates with operator-observed value (a harness that stops repeating mistakes
+serves its users better). What would disprove it: a rising conversion rate while
+`First valuable artifact` or `Closeout proof strength` stay flat or decline — in
+that case the proxy is wrong and the north-star instrument must be revisited.
 
 The remaining metrics in [Metric Definitions](#metric-definitions) are a
 *monitored* dashboard, not optimization targets, following Google Rules of ML:
-many monitored metrics, one optimized objective.
+many monitored metrics, one optimized objective. They retain **veto power**: a
+high conversion rate during a period of degrading routing, evidence honesty, or
+operator continuity is a failed period, not a success.
 
 Decisions (2026-05-24, issue #184):
 

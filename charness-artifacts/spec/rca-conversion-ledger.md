@@ -4,15 +4,18 @@ Source: https://github.com/corca-ai/charness/issues/184 (north-star + first
 instrument), https://github.com/corca-ai/charness/issues/185 (improvement #1)
 
 Baseline doc: [docs/product-success-metrics.md](../../docs/product-success-metrics.md)
-("Single North-Star Objective")
+("North-Star And First Instrumented Objective")
 
 ## Problem
 
-Issue #184 selected one optimized objective for Charness: the
-**repeated-mistake-to-learning conversion rate** — the share of RCA events
-(bugs, repeated corrections, weak-proof findings) that are converted into a
-recurrence-preventing durable artifact (a new deterministic gate, spec, test,
-tracked issue, or a retro lesson naming the detection gap and sibling pattern).
+Issue #184 named the product north-star as operator/agent task success and trust
+(not yet directly measurable) and selected a **first instrumented objective** to
+optimize today: the **repeated-mistake-to-learning conversion rate** — the share
+of RCA events (bugs, repeated corrections, weak-proof findings) that are
+converted into a recurrence-preventing durable artifact (a deterministic gate,
+spec, test, tracked issue, or a retro lesson naming the detection gap and sibling
+pattern). It is an engineering-health leading indicator subordinate to the
+demoted monitored metrics, which keep veto power.
 
 The metric cannot be tracked until RCA events and their conversion are recorded
 in a fixed, aggregatable shape. Free-form retro/issue text is not reliably
@@ -39,7 +42,9 @@ surfaces and warrants its own preserve/improve claim and proof path.
 
 ## Fixed Decisions
 
-1. North-star = RCA-to-learning conversion rate; first instrument = this ledger;
+1. Product north-star = operator/agent task success and trust (named, not yet
+   measurable). First *instrumented* objective = RCA-to-learning conversion rate
+   (an engineering-health leading indicator), first instrument = this ledger;
    target policy = baseline-first (no guessed number now). (from #184)
 2. **The ledger is independent of the usage-episodes adapter.** usage-episodes
    captures consumer-repo runtime use and is privacy-gated and disabled by
@@ -61,6 +66,11 @@ surfaces and warrants its own preserve/improve claim and proof path.
      non-`none` kind and `converted=true` with `none`.
    - `class_key`: short opaque string identifying the mistake class (for dedup
      and recurrence tracking; non-PII)
+   - `caught_by`: closed enum `agent | human | gate`, nullable — who first
+     surfaced the mistake. Required to tell "the harness got smarter" (agent or
+     gate caught it) from "a human kept fixing it" (human caught it), which is
+     the core claim the conversion rate is supposed to support. Nullable so a
+     missing value never blocks a record.
    - `seed`: bool, default false — true marks a hand-entered historical event.
      Seed events are excluded from the baseline-window rate so a hand-picked
      starting set cannot anchor the eventual numeric target.
@@ -70,17 +80,30 @@ surfaces and warrants its own preserve/improve claim and proof path.
 5. Conversion rate = `converted=true` count / total RCA events, decomposable by
    `source` and `event_kind`, and windowable by `ts`. The aggregator reports the
    rate twice: including seed events (sanity) and excluding them (the figure the
-   baseline target is set from).
+   baseline target is set from). **OFF-state honesty**: until auto-append is live
+   (slice 2), the aggregator prints a loud `auto_append: OFF (slice 2 not wired)`
+   banner, emits `n/a` rather than `0%` for an empty seed-excluded window, and
+   refuses to print a non-seed baseline rate while zero non-seed events exist.
+   This stops anyone quoting a seed-only or fake-zero number as "the metric"
+   between slice 1 and slice 2.
 6. Closed enums are owned by the schema; docs summarize them and must not extend
    them inline (mirrors usage-episode enum discipline).
 7. **Classification rubric** (lives in `docs/product-success-metrics.md` so the
    number is reproducible across recorders): `converted=true` requires a named
-   durable artifact that prevents *this class* recurring — a `retro_lesson` only
-   counts when it names the detection gap and sibling pattern, not a bare note.
-   `event_kind` rules: `bug` = defect in shipped behavior; `repeated_correction`
-   = the same class of correction the operator already gave; `weak_proof` = a
-   closeout that reached only an explicitly weak proof level. Without this rubric
-   the rate is well-formed but not comparable across sessions.
+   durable artifact that prevents *this class* recurring, and the quality bar
+   applies to EVERY `durable_kind`, not just `retro_lesson` — each converted
+   event must name the class it prevents and cite the detection point (gate
+   name, spec/test path, issue number, or the retro lesson's detection-gap +
+   sibling-pattern lines). A throwaway issue or one-line lesson with no named
+   detection point does not count as converted; this closes the numerator-gaming
+   path (padding cheap conversions to inflate the rate). `event_kind` rules:
+   `bug` = defect in shipped behavior; `repeated_correction` = the same class of
+   correction the operator already gave; `weak_proof` = a closeout that reached
+   only an explicitly weak proof level. **Tie-break default**: if it is unclear
+   whether an event qualifies, log it with `converted=false` rather than omit it
+   — ambiguity should inflate the denominator (conservative), never silently
+   suppress it (flattering). Without this rubric the rate is well-formed but not
+   comparable across sessions.
 
 ## Probe Questions
 
@@ -106,9 +129,27 @@ surfaces and warrants its own preserve/improve claim and proof path.
 - Numeric target for the conversion rate (baseline-first: revisit after 2-4
   weeks of *auto-appended, seed-excluded* ledger data).
 - Consumer-repo scope (depends on usage-episode capture; separate deferred
-  decision, do not couple here).
+  decision, do not couple here). **Revisit trigger**: the 2-4 week baseline
+  review. No hard kill-date is encoded now because there is no committed
+  external-audience roadmap to anchor one; if the baseline review passes with no
+  consumer-scope decision, reopen the question then rather than letting it drift
+  silently.
 - Automation that feeds the aggregated rate into the weekly/monthly review
   loops described in the baseline doc.
+- **Independent denominator reconciliation** (deferred to the baseline review):
+  cross-check ledger `source` counts against independent evidence (debug
+  artifacts, bug-labeled closed issues, retro lessons) for the window; a gap is
+  a logged "missed-capture" finding. Deferred because there is no auto-appended,
+  non-seed data to reconcile against yet; build it when the ledger actually
+  accrues live events, since a self-reported denominator is otherwise
+  unauditable.
+- **Recurrence rate of already-converted `class_key`s** (deferred to the
+  baseline review): the deepest signal is whether a *converted* class recurs
+  anyway (a gate that did not actually prevent recurrence), reported as a
+  headline alongside the conversion rate. The schema already carries `class_key`
+  for this. Deferred because recurrence cannot be computed until classes have had
+  weeks of real data to recur; wiring it now reports noise over a seed-only
+  window.
 
 ## Non-Goals
 
@@ -154,7 +195,13 @@ surfaces and warrants its own preserve/improve claim and proof path.
 5. Recording and aggregation work with the usage-episodes adapter in its current
    `disabled` state (proves independence).
 6. The classification rubric (Fixed Decision 7) is written into
-   `docs/product-success-metrics.md`.
+   `docs/product-success-metrics.md`, with the quality bar applying to every
+   `durable_kind` and the `converted=false` tie-break default.
+7. The aggregator never emits a misreadable number in the OFF state: it prints
+   the `auto_append: OFF` banner and `n/a` (not `0%`) for an empty seed-excluded
+   window, and refuses a non-seed baseline rate when no non-seed events exist.
+8. A `caught_by` value, when present, is one of `agent | human | gate`; a record
+   without it is still valid.
 
 ## Acceptance Checks
 
@@ -173,7 +220,12 @@ surfaces and warrants its own preserve/improve claim and proof path.
 - AC5 -> the AC3 round-trip test runs green with no usage-episodes adapter
   enabled (default repo state).
 - AC6 -> `docs/product-success-metrics.md` contains the classification rubric
-  text matching Fixed Decision 7.
+  text matching Fixed Decision 7 (all-kinds quality bar + tie-break default).
+- AC7 -> running `aggregate_rca_ledger.py` against the seed-only committed ledger
+  prints the `auto_append: OFF` banner, prints `n/a` for the seed-excluded
+  window, and exits without printing a baseline rate number (assert in a test).
+- AC8 -> `validate_rca_ledger.py` rejects a `caught_by` outside
+  `agent | human | gate`, and accepts a record that omits `caught_by`.
 
 ## Critique
 
@@ -195,7 +247,36 @@ Accepted as over-worry: reusing usage-episode utility helpers is good, not the
 forbidden coupling; recent-lessons traps (length budgets, gate scoping,
 auto-close keyword) are already addressed.
 
+### Second pass: decision premortem (design lock-in)
+
+A three-angle decision premortem (framing/Goodhart, diagnostic, operational) plus
+a counterweight pass ran against the north-star design itself. Packet:
+`charness-artifacts/critique/2026-05-24-015131-packet.md`. Counterweight verdict:
+lockable now with named edits, no return to ideation. Triage and resolution:
+
+- **Act Before Ship — framing mismatch** (the section called a self-dev process
+  metric "the product north-star" while the doc's own user list is operator-value
+  framed): relabeled to product north-star = operator/agent task success (named,
+  not yet measurable) vs. first instrumented engineering-health objective =
+  conversion rate; added the falsifiable correlation assumption and veto power
+  for the monitored metrics. (Fixed Decision 1, baseline doc section.)
+- **Act Before Ship — operational OFF state** (aggregator could print a seed-only
+  or fake-`0%` rate before auto-append): added the OFF banner / `n/a` / refuse
+  behavior (Fixed Decision 5, SC7, AC7).
+- **Bundle — numerator gaming** (rubric quality bar only covered `retro_lesson`):
+  extended to every `durable_kind` plus the `converted=false` tie-break default
+  (Fixed Decision 7).
+- **Bundle — `caught_by`** (could not tell "harness got smarter" from "human kept
+  fixing it"): added nullable `caught_by` enum now, cheap on an append-only
+  ledger (Fixed Decision 4, SC8, AC8).
+- **Valid but Defer**: independent denominator reconciliation, recurrence rate of
+  converted `class_key`s, and the consumer-scope revisit trigger — all deferred
+  to the 2-4 week baseline review (Deferred Decisions), because none can produce
+  a meaningful number before live non-seed data exists.
+
 No forced debug interrupt is active (`plan_risk_interrupt.py` -> `not-applicable`).
+
+Fresh-Eye Satisfaction: parent-delegated (3 angle subagents + 1 counterweight).
 
 ## Canonical Artifact
 
@@ -205,13 +286,17 @@ during implementation. The metric definition of record stays in
 
 ## First Implementation Slice
 
-1. Add the `rca_event` JSON schema (closed enums, `none`/`converted` invariant).
-2. Implement `record_rca_event.py` (validate-then-append).
-3. Implement `validate_rca_ledger.py` and `aggregate_rca_ledger.py`.
+1. Add the `rca_event` JSON schema (closed enums incl. nullable `caught_by`,
+   bidirectional `none`/`converted` invariant).
+2. Implement `record_rca_event.py` (validate-then-append, tie-break default to
+   `converted=false` on ambiguity).
+3. Implement `validate_rca_ledger.py` and `aggregate_rca_ledger.py` (latter with
+   the OFF-state banner / `n/a` / refuse-non-seed-rate behavior).
 4. Seed `charness-artifacts/metrics/rca-ledger.jsonl` (`seed=true`) with recent
    real RCA events of BOTH outcomes: converted ones (e.g. #197 symptom->root-cause
    naming, the 2026-05-24 mutation-scope trap that became a retro lesson) AND
    unconverted ones (e.g. a bug that recurred, or a weak-proof finding never
    turned into a gate) so the day-one number is not survivorship-biased.
-5. Write the classification rubric into `docs/product-success-metrics.md`.
-6. Add unit tests for AC1-AC6.
+5. Write the classification rubric (all-kinds quality bar + tie-break default)
+   into `docs/product-success-metrics.md`.
+6. Add unit tests for AC1-AC8.
