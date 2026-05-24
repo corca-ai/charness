@@ -14,17 +14,16 @@
 
 ## Current State
 
-- **Quality/critique sweep in progress**: fresh-eye reviewers executed. Self-fixes
-  are staged for #211 plus sibling defects: RCA timestamp calendar validation,
-  mutation-line continuation coverage without function-body overreach,
-  current-pointer constant propagation with local-shadow guard, and
+- **Quality/critique sweep completed locally**: fresh-eye reviewers executed and
+  fixes are committed for #211 plus sibling defects: RCA timestamp calendar
+  validation, mutation-line continuation coverage without function-body
+  overreach, current-pointer constant propagation with local-shadow guard, and
   `sync-support` exit-code alignment to `doctor_disposition`. A closeout-found
   standing-test economics race was also fixed so disappearing pytest temp paths
   do not crash inventory.
-- **#211 Mutation test regression**: locally reproduced before fix; current fix
-  has targeted tests green. Final committed mutation sampler `final5` reported
-  0 changed-line blockers and 0 mutation-line coverage exclusions. Comment or
-  close #211 only after push/remote verification if remote closeout is in scope.
+- **#211 Mutation test regression**: locally reproduced before fix; final
+  committed mutation sampler `final5` reported 0 changed-line blockers and 0
+  mutation-line coverage exclusions. GitHub currently reports #211 closed.
 - **Filed deferred issues from the sweep**: #212 RCA ledger `class_key`
   idempotency semantics; #213 `validate_packaging_install_surface.py` direct
   invocation needs repo import bootstrap; #214 structural CLI ergonomics
@@ -35,13 +34,8 @@
 
 ## Next Session
 
-1. Finish this sweep closeout if not already committed:
-   - validate debug/quality artifacts and seam index;
-   - run `python3 scripts/run_slice_closeout.py --repo-root .` if changed
-     surfaces require it;
-   - run `./scripts/run-quality.sh --read-only` if new changes are added;
-   - close or comment #211 only after pushed/verified if remote closeout is in
-     scope.
+1. Publish the local sweep commits if not already pushed, then verify the remote
+   branch/tag/release state.
 2. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
