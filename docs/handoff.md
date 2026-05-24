@@ -13,9 +13,20 @@
 
 ## Current State
 
-- **#184 ideation → spec (this session)**: locked product north-star =
+- **#184/#185 ledger slice 1 impl (this session)**: shipped the RCA conversion
+  ledger substrate per
+  [the spec](../charness-artifacts/spec/rca-conversion-ledger.md) —
+  [rca_event.schema.json](../scripts/rca_event.schema.json), `record_rca_event.py`,
+  `validate_rca_ledger.py`, `aggregate_rca_ledger.py`, seeded
+  [rca-ledger.jsonl](../charness-artifacts/metrics/rca-ledger.jsonl) (3 converted
+  / 2 unconverted, all `seed=true`; 60% seed-included, seed-excluded `n/a`),
+  rubric into [product-success-metrics.md](./product-success-metrics.md), AC1–AC8
+  tests. Learned fact: the usage-episodes adapter is now `enabled`, so ledger
+  independence is proven structurally (scripts reference no adapter machinery).
+  Slice 2 (auto-append wiring) is still the hard prereq for any numeric target.
+- **#184 ideation → spec (prior session)**: locked product north-star =
   operator/agent task success (named, not yet measurable); first *instrumented*
-  objective = RCA-to-learning conversion rate. Wrote
+  objective = RCA-to-learning conversion rate. Wrote the
   [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md)
   (spec critique + 3-angle decision-premortem applied), doc
   [product-success-metrics.md](./product-success-metrics.md). Commits `bc78db5`,
@@ -28,13 +39,13 @@
 
 ## Next Session
 
-1. **Impl the RCA conversion ledger** (slice 1) per
-   [the spec](../charness-artifacts/spec/rca-conversion-ledger.md): schema +
-   `record_rca_event.py` + `validate_rca_ledger.py` + `aggregate_rca_ledger.py` +
-   seed (both outcomes) + rubric into the doc + tests AC1–AC8. Reuse the
-   jsonschema/portable-path helpers from `slice_closeout_usage_episode.py`; do
-   NOT couple to the usage-episodes adapter. Slice 2 (auto-append into
-   debug/issue/retro prompts) is a hard prereq before any numeric target.
+1. **RCA ledger slice 2 — auto-append wiring** (DONE: slice 1 substrate). Wire
+   `record_rca_event.py` into the `debug`, `issue`, and `retro` closeout prompts
+   so events accrue without manual discipline. This is a behavior-steering prompt
+   change: give it its own preserve/improve claim + critique + proof path, and
+   flip `AUTO_APPEND_WIRED` in [rca_ledger_lib.py](../scripts/rca_ledger_lib.py)
+   only when wiring lands.
+   The baseline window (and any numeric target) does not open until this is live.
 2. **Mutation blocker follow-up** (#208/#207): if changed-line *statement*
    coverage proves too weak, consider mutation-line coverage of changed lines
    (needs Cosmic Ray init on all changed files) — spec + critique first.
@@ -55,4 +66,5 @@
 - [quality posture](../charness-artifacts/quality/latest.md),
   [release surface](../charness-artifacts/release/latest.md),
   [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
-- Recently closed: #198, #202–#209 (#207 by-design).
+- [recent-lessons](../charness-artifacts/retro/recent-lessons.md): recently
+  closed #198, #202–#209 (#207 by-design).

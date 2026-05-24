@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness RCA-to-learning conversion ledger event",
+  "description": "Single RCA event and whether it was converted into a recurrence-preventing durable artifact. Records are JSON objects, one per line in charness-artifacts/metrics/rca-ledger.jsonl. Closed enums are owned here; docs summarize them and must not extend them inline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ts",
+    "source",
+    "event_kind",
+    "converted",
+    "durable_kind",
+    "class_key"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+      "description": "UTC ISO8601 timestamp ending in Z (RFC3339, no offset)."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["debug", "issue", "retro"]
+    },
+    "event_kind": {
+      "type": "string",
+      "enum": ["bug", "repeated_correction", "weak_proof"]
+    },
+    "converted": {
+      "type": "boolean",
+      "description": "True when a recurrence-preventing durable artifact was produced for this event."
+    },
+    "durable_kind": {
+      "type": "string",
+      "enum": ["gate", "spec", "test", "issue", "retro_lesson", "none"],
+      "description": "Bidirectional invariant: 'none' if and only if converted is false."
+    },
+    "class_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short opaque non-PII identifier of the mistake class, for dedup and recurrence tracking."
+    },
+    "caught_by": {
+      "enum": ["agent", "human", "gate", null],
+      "description": "Who first surfaced the mistake. Nullable; a missing value never blocks a record."
+    },
+    "seed": {
+      "type": "boolean",
+      "description": "True marks a hand-entered historical event, excluded from the baseline-window rate."
+    },
+    "ref": {
+      "type": "string",
+      "description": "Opaque non-PII reference (issue number, commit sha, or repo-root-relative artifact path)."
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional short non-PII human-readable summary."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"converted": {"const": true}},
+        "required": ["converted"]
+      },
+      "then": {
+        "properties": {
+          "durable_kind": {"enum": ["gate", "spec", "test", "issue", "retro_lesson"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"converted": {"const": false}},
+        "required": ["converted"]
+      },
+      "then": {
+        "properties": {"durable_kind": {"const": "none"}}
+      }
+    }
+  ]
+}

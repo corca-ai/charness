@@ -89,6 +89,44 @@ Decisions (2026-05-24, issue #184):
 The ledger schema, append discipline, aggregation script, and review-loop wiring
 are specced separately (issue #185).
 
+## RCA-To-Learning Classification Rubric
+
+This rubric makes the conversion rate reproducible across recorders. The closed
+enums (`source`, `event_kind`, `durable_kind`, `caught_by`) are owned by
+[scripts/rca_event.schema.json](../scripts/rca_event.schema.json); this section
+summarizes the judgment calls and must not extend the enums inline.
+
+`converted=true` requires a named durable artifact that prevents *this class* of
+mistake from recurring. The quality bar applies to **every** `durable_kind`, not
+only `retro_lesson`: each converted event must name the class it prevents and
+cite a concrete detection point —
+
+- `gate`: the gate name that will now catch the class,
+- `spec` / `test`: the spec or test path,
+- `issue`: the tracked issue number,
+- `retro_lesson`: the lesson's detection-gap and sibling-pattern lines.
+
+A throwaway issue or a one-line lesson with no named detection point does **not**
+count as converted. This closes the numerator-gaming path of padding cheap
+conversions to inflate the rate.
+
+`event_kind` rules:
+
+- `bug`: a defect in shipped behavior.
+- `repeated_correction`: the same class of correction the operator already gave.
+- `weak_proof`: a closeout that reached only an explicitly weak proof level.
+
+**Tie-break default**: when it is unclear whether an event qualifies, log it with
+`converted=false` rather than omitting it. Ambiguity should inflate the
+denominator (conservative), never silently suppress the event (flattering).
+
+**OFF-state honesty**: until auto-append wiring (the deferred slice 2) is live,
+[aggregate_rca_ledger.py](../scripts/aggregate_rca_ledger.py) prints an
+`auto_append: OFF` banner, emits `n/a` (not `0%`) for an empty seed-excluded
+window, and refuses to print a non-seed baseline rate while zero non-seed events
+exist. Seed events are excluded from the baseline figure so a hand-picked
+starting set cannot anchor the eventual numeric target.
+
 ## Core Success Criteria
 
 1. Routing correctness: task language maps to the intended public skill,

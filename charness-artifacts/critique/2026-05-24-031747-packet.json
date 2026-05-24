@@ -1,0 +1,31 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-05-24T03:17:47Z",
+  "prepared_for": "rca-conversion-ledger slice 1 impl",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/spec/rca-conversion-ledger.md\n- docs/handoff.md\n- docs/product-success-metrics.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- plugins/charness/scripts/aggregate_rca_ledger.py\n- plugins/charness/scripts/rca_event.schema.json\n- plugins/charness/scripts/rca_ledger_lib.py\n- plugins/charness/scripts/record_rca_event.py\n- plugins/charness/scripts/validate_rca_ledger.py\n- scripts/aggregate_rca_ledger.py\n- scripts/rca_event.schema.json\n- scripts/rca_ledger_lib.py\n- scripts/record_rca_event.py\n- scripts/validate_rca_ledger.py\n- tests/test_rca_ledger.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/aggregate_rca_ledger.py, scripts/rca_event.schema.json, scripts/rca_ledger_lib.py, scripts/record_rca_event.py, scripts/validate_rca_ledger.py\n  derived matches: plugins/charness/scripts/aggregate_rca_ledger.py, plugins/charness/scripts/rca_event.schema.json, plugins/charness/scripts/rca_ledger_lib.py, plugins/charness/scripts/record_rca_event.py, plugins/charness/scripts/validate_rca_ledger.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/spec/rca-conversion-ledger.md, docs/handoff.md, docs/product-success-metrics.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/aggregate_rca_ledger.py, plugins/charness/scripts/rca_event.schema.json, plugins/charness/scripts/rca_ledger_lib.py, plugins/charness/scripts/record_rca_event.py, plugins/charness/scripts/validate_rca_ledger.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/test_rca_ledger.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- The retro skill does not consume this packet today. A retro-side prepare slot (retro-adapter.yaml packet_sections) is a separate follow-up.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true
+}
