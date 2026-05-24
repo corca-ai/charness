@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -280,6 +281,10 @@ def build_mutation_line_coverage(
             f"stderr:\n{result.stderr}"
         )
 
+    statement_spans = {
+        path: _covered_statement_spans(repo_root / path, covered_lines.get(path, set()))
+        for path in candidates
+    }
     stats = {path: {"mutable": 0, "covered": 0, "uncovered": 0} for path in candidates}
     with use_db(probe_session) as db:
         for item in db.work_items:
@@ -294,11 +299,50 @@ def build_mutation_line_coverage(
                 if is_trivial_entry_guard_mutation(line, getattr(mutation, "operator_name", "")):
                     continue
                 stats[module_path]["mutable"] += 1
-                if int(line_number) in covered_lines.get(module_path, set()):
+                if _mutation_line_is_covered(
+                    int(line_number),
+                    covered_lines.get(module_path, set()),
+                    statement_spans.get(module_path, []),
+                ):
                     stats[module_path]["covered"] += 1
                 else:
                     stats[module_path]["uncovered"] += 1
     return stats
+
+
+def _covered_statement_spans(path: Path, covered: set[int]) -> list[tuple[int, int]]:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except SyntaxError:
+        return []
+    spans: list[tuple[int, int]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.stmt):
+            continue
+        if _has_child_statement_suite(node):
+            continue
+        start = getattr(node, "lineno", None)
+        end = getattr(node, "end_lineno", None)
+        if start is None or end is None or start == end:
+            continue
+        if any(line in covered for line in range(start, end + 1)):
+            spans.append((int(start), int(end)))
+    return spans
+
+
+def _has_child_statement_suite(node: ast.stmt) -> bool:
+    suite_fields = ("body", "orelse", "finalbody", "handlers", "cases")
+    for field in suite_fields:
+        value = getattr(node, field, None)
+        if isinstance(value, list) and any(isinstance(item, (ast.stmt, ast.ExceptHandler, ast.match_case)) for item in value):
+            return True
+    return False
+
+
+def _mutation_line_is_covered(line_number: int, covered: set[int], spans: list[tuple[int, int]]) -> bool:
+    if line_number in covered:
+        return True
+    return any(start <= line_number <= end for start, end in spans)
 
 
 def filter_eligible_by_mutation_line_coverage(

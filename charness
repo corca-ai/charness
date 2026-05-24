@@ -3870,7 +3870,7 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
     if any(
         isinstance(result, dict)
         and isinstance(result.get("doctor"), dict)
-        and result["doctor"].get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"}
+        and result["doctor"].get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS
         for result in payload["results"].values()
     ):
         return 1

@@ -1,122 +1,176 @@
-# Repo File Listing Strict Mode Debug
-Date: 2026-05-22
+# Quality Critique Sweep Bug Fixes Debug
+Date: 2026-05-24
 
 ## Problem
 
-`scripts/repo_file_listing.py` returned `None` when `git ls-files` failed, so
-callers silently fell back to `glob` or `rglob` scanning. That fallback is useful
-for non-git fixtures, but unsafe for standing quality gates that rely on
-git-aware visibility and gitignore filtering.
+The sweep found one active mutation regression (#211) and four self-fixable
+sibling defects: RCA impossible timestamps passed validation, constant-derived
+current-pointer writes were missed, advisory `sync-support` gaps returned
+failure, and standing-test economics could crash on disappearing pytest temp
+paths.
 
 ## Correct Behavior
 
-Given a standing Charness quality gate asks for repo-visible files, when
-`git ls-files -z --cached --others --exclude-standard` fails, then the gate
-must fail with command diagnostics. Direct helper consumers and non-git fixture
-tests may still use the default fallback mode when they do not request strict
-git listing.
+Given the RCA ledger slice is in a scheduled mutation window, when the sampler
+builds coverage and mutation-line eligibility, then changed RCA scripts must not
+be excluded by uncovered changed lines or mutation-line coverage false
+negatives. Given an RCA event declares `ts`, the validator must reject malformed
+date-times and impossible calendar values. Given a current pointer filename is
+hidden behind a simple constant, the scanner must still flag direct writes.
+Given support sync succeeds and the remaining doctor finding is advisory, the
+sync-support command should report the finding but return success. Given pytest
+temp roots are volatile during xdist runs, standing-test economics inventory
+should skip paths that disappear mid-scan instead of failing the caller.
 
 ## Observed Facts
 
-- `git_list_repo_files()` returned `None` on any nonzero `git ls-files` result.
-- `iter_repo_files()` then scanned every file under the root with `rglob("*")`.
-- `iter_matching_repo_files()` similarly dropped to pattern-based globbing
-  without gitignore filtering.
-- Several standing gate scripts use the shared helper to define their proof
-  scope, while many unit tests intentionally run those scripts against non-git
-  temporary repos.
+- `gh issue view 211 --json body` reported changed-line blockers for
+  `scripts/rca_ledger_lib.py` and `scripts/record_rca_event.py`, plus
+  mutation-line exclusions for `scripts/validate_rca_ledger.py`.
+- Reproducing the sample locally against `ad0f233..HEAD` initially produced
+  `changed_line_uncovered_changed_files = ["scripts/rca_ledger_lib.py",
+  "scripts/record_rca_event.py"]` and mutation-line exclusions for all three RCA
+  scripts.
+- A temp ledger containing `ts: "2026-99-99T99:99:99Z"` returned valid before
+  the fix because `jsonschema.FormatChecker()` was not used and the schema regex
+  only checked shape.
+- A temp repo with `CURRENT = "latest.md"; target = Path(...) / CURRENT;
+  target.write_text(...)` returned clean from `check_current_pointer_writes.py`.
+- `./charness tool sync-support --dry-run --json` returned 1 when `defuddle` was
+  missing, even though that doctor disposition is advisory-install-needed.
+- `./scripts/run-quality.sh --read-only` later failed inside
+  `test_standing_test_economics_ignores_generated_mutant_tree` because the
+  inventory subprocess raised `FileNotFoundError` for a concurrently removed
+  `/home/hwidong/.cache/tmp/pytest-of-hwidong/garbage-*` path.
 
 ## Reproduction
 
-Call `iter_matching_repo_files(<non-git-dir>, ("README.md",), require_git=True)`
-or run `check_python_lengths.py --require-git-file-listing` against a non-git
-directory. The strict path now exits with `repo file listing failed` and the
-failed `git ls-files` command.
+- Mutation sample before fix: temp `cosmic-ray.toml`, `MUTATION_BASE_SHA=ad0f233`,
+  `MUTATION_HEAD_SHA=HEAD`, full coverage probe.
+- Timestamp/current-pointer/sync-support: use focused temp-ledger, temp-repo, and
+  missing-manual-binary checks.
+- Pytest-temp race: full read-only quality while xdist workers create and clean
+  temp roots.
 
 ## Candidate Causes
 
-- The helper had only one failure representation: `None`, meaning both "git is
-  unavailable" and "fallback is acceptable."
-- Standing gates and non-git fixtures shared the same default behavior.
-- `run-quality` did not tell git-aware scanners that git listing was required
-  for gate-grade proof.
+- RCA tests did not cover several optional and error branches in the new scripts.
+- Mutation-line coverage treated coverage as line-exact, so mutations on
+  continuation lines of an executed multiline statement looked uncovered.
+- The first continuation-line fix over-propagated across enclosing `FunctionDef`
+  bodies; counterweight review caught this before closeout.
+- RCA timestamp validation trusted JSON Schema `format` without a format checker
+  or explicit calendar parse.
+- Current-pointer scanning looked only for literal `latest.*` strings or names
+  assigned from such expressions, not simple filename constants.
+- `sync-support` checked raw `doctor_status` instead of the already-normalized
+  `doctor_disposition` used by `tool doctor`.
+- Standing-test economics caught `OSError` when opening a directory but still
+  used traversal paths that could raise after iteration had already started.
 
 ## Hypothesis
 
-If the shared helper exposes an explicit strict mode, and `run-quality` passes
-that mode to gate scripts that use repo file listing for proof scope, then
-standing gates fail closed while fixture/default helper behavior remains
-compatible.
+If RCA optional/error branches are covered, timestamp validation uses both
+`FormatChecker` and a calendar parse, mutation-line coverage propagates only
+within executed multiline simple statements, current-pointer scanning resolves
+module-level filename constants while respecting local shadowing, and
+sync-support exits on blocking doctor dispositions only, then #211's sampler
+blocker disappears and the sibling defects get deterministic tests. If pytest
+temp inventory uses tolerant iterator/stat helpers, volatile cleanup cannot
+crash the standing economics scan.
 
 ## Verification
 
-- Focused helper and CLI tests passed for strict listing failure and default
-  non-git fixture compatibility.
-- `CHARNESS_QUALITY_LABELS=validate-profiles,validate-presets,validate-adapters,check-python-lengths,check-python-filenames,check-skill-bootstrap-vars,check-export-safe-imports,check-doc-links,check-spec-evidence-durability,check-references-link-inventory,check-test-production-ratio,check-duplicates ./scripts/run-quality.sh --read-only` passed.
-- `ruff check` and `py_compile` passed for the changed helper and gate scripts.
-- Fresh-eye review found `check-python-runtime-inheritance` and
-  `inventory-gitignore-scan-hygiene` still used fallback listing in standing
-  gates; both now have strict gate paths and focused fail-closed regressions.
-- Final sibling scan found `inventory-ci-local-gate-parity` also had a
-  workflow-listing fallback in a standing gate; it now requires strict git file
-  listing from `run-quality` and has a focused regression.
+- Targeted tests for current-pointer writes, mutation sampling, RCA ledger, and
+  sync-support passed (56 passed).
+- `ruff check ...` over touched scripts/tests passed.
+- `python3 scripts/check_python_lengths.py --repo-root .` passed.
+- `python3 scripts/validate_packaging.py --repo-root .`,
+  `python3 scripts/validate_packaging_committed.py --repo-root .`, and
+  `python3 scripts/check_current_pointer_writes.py --repo-root . --require-empty`
+  passed after plugin sync.
+- After the temp-scan race fix, standing-test economics tests passed (5 passed)
+  and touched-file `ruff check` passed.
+- Pre-commit sample caveat: before commit, `MUTATION_HEAD_SHA=HEAD` cannot see
+  uncommitted changes; after commit, rerun the sampler against a window that
+  includes the committed fix.
 
 ## Root Cause
 
-The repository file listing helper encoded discovery failure as an ordinary
-fallback signal. That made unknown git visibility look like a valid non-git
-scan to callers that needed git-aware proof.
+#211 was not one bug. It was a bundle of proof-boundary mistakes in the new RCA
+ledger slice plus sibling gate holes:
+
+- The RCA ledger scripts were behavior-tested but not branch-covered enough for
+  a changed-line gate that treats every newly-added statement as in scope.
+- Mutation-line coverage used physical mutation line membership rather than
+  executed statement membership, so continuation lines in executed multiline
+  statements were false negatives.
+- Timestamp schema validation declared `format: date-time` but did not enable a
+  format checker and did not parse the calendar value.
+- Current-pointer write detection assumed the filename literal stayed visible at
+  the write expression.
+- `sync-support` interpreted advisory install gaps as command failure by looking
+  at raw status instead of the disposition contract.
+- Standing-test economics assumed retained pytest temp directories were stable
+  for the duration of a scan, but xdist and pytest cleanup can remove sibling
+  directories while an inventory subprocess is traversing the same temp root.
 
 ## Detection Gap
 
-- central repo listing helper | failed `git ls-files` fell back to repo-wide
-  scan | add `require_git` mode and helper regression.
-- standing gate scope | run-quality did not request strict listing | pass
-  `--require-git-file-listing` to repo file-listing gates.
-- inventory-specific listing | quality gitignore scan hygiene had its own
-  `git ls-files` fallback | add a strict flag and run it from standing quality.
-- workflow listing | CI/local gate parity had its own `git ls-files` fallback |
-  add a strict flag and run it from standing quality.
-- CLI diagnostics | strict failure could have produced a traceback | use a
-  `SystemExit`-style exception carrying command diagnostics.
+- mutation sample | continuation lines of executed multiline statements looked
+  uncovered | add statement-span continuation coverage, with a negative test
+  proving function-body over-propagation does not occur.
+- RCA ledger validation | impossible date-time accepted | add FormatChecker,
+  calendar parse, and impossible timestamp regression.
+- current-pointer scanner | simple constant-derived `latest.*` writes missed |
+  add module constant propagation plus local-shadowing regression.
+- sync-support CLI | advisory doctor status failed support sync | align exit
+  code to `doctor_disposition` and test both advisory and blocking paths.
+- standing-test economics | volatile pytest temp roots crashed scan | replace
+  fragile traversal with tolerant iterator/stat helpers and add a disappearing
+  temp-dir regression.
 
 ## Sibling Search
 
-- Mental model: a broader filesystem scan is safer than an empty git-aware scan.
-- fixed now: shell file listing, read-only quality changed paths, critique
-  changed paths, mutation changed-file discovery, release proof discovery, and
-  central repo file listing all have fail-closed paths for their gate-grade
-  discovery surfaces.
-- deferred: final sibling scan still needs to verify no obvious `check=False`
-  discovery failures remain in standing release/quality paths.
+- Mental model: "shape-valid and behavior-tested is enough for new helper
+  scripts." Decision: false for changed-line/mutation-line gates; proof: #211
+  reproduction and targeted branch coverage.
+- Same layer: mutation changed-scope incidents
+  `2026-05-24-mutation-changed-line-uncovered-guard-recurrence.md` and
+  `2026-05-24-mutation-changed-scope-gap-whole-file.md`. Decision: same family;
+  proof: both involve changed-window proof boundaries.
+- Abstraction up: current-pointer writer safety. Decision: fixed now for simple
+  constants; proof: new scanner tests and clean repo scan.
+- Specialization down: RCA recorder duplicate appends by `class_key`. Decision:
+  defer to spec because metric semantics change; proof: filed #212.
+- Adjacent operator seam: validators needing implicit `PYTHONPATH`. Decision:
+  defer; proof: filed #213.
+- CLI review depth: structural CLI ergonomics inventory inputs missing.
+  Decision: defer; proof: filed #214.
 
 ## Seam Risk
 
-- Interrupt ID: repo-file-listing-strict-mode
-- Risk Class: none
-- Seam: git file visibility -> standing gate proof scope
-- Disproving Observation: selected run-quality repo-listing gates pass with
-  strict git file listing enabled.
-- What Local Reasoning Cannot Prove: none for the command-health boundary.
+- Interrupt ID: quality-critique-sweep-bug-fixes
+- Risk Class: contract-freeze-risk
+- Seam: scheduled mutation changed-window proof, RCA metric validation,
+  current-pointer writer detection, external-tool command exit semantics, and
+  volatile pytest temp inventory
+- Disproving Observation: targeted tests and local validators pass; post-commit
+  mutation sampler still needs to run with the fix included in `base..HEAD`.
+- What Local Reasoning Cannot Prove: hosted scheduled mutation run after push.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
 
 - Critique Required: yes
 - Next Step: impl
-- Handoff Artifact: docs/handoff.md
+- Handoff Artifact: this file
 
 ## Prevention
 
-Keep fallback and strict discovery as separate contracts. Fixture-friendly
-helpers may keep broad fallback defaults, but standing gates must opt into
-strict discovery and carry command diagnostics when proof scope is unknown.
-
-## Related Prior Incidents
-
-- `2026-05-22-shell-file-listing-suppression.md`: shell gate file listing
-  failure could hide behind fallback behavior.
-- `2026-05-22-run-quality-changed-path-suppression.md`: changed-path discovery
-  failure needed to widen or fail closed instead of reading as no changes.
-- `2026-05-22-critique-changed-path-discovery-suppression.md`: changed-path
-  discovery failure validated zero critique artifacts.
+Keep proof boundaries explicit: changed-line gates need committed-window proof,
+mutation-line coverage must not confuse physical continuation lines with
+unexecuted statements, JSON Schema `format` needs a checker or explicit parser,
+scanner heuristics need negative tests for both misses and false positives, and
+CLI lifecycle commands should exit on disposition contracts rather than raw
+status names.

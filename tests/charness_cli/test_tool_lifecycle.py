@@ -314,7 +314,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
     sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "--json", "cautilus", env=env)
-    assert sync_result.returncode == 1, sync_result.stderr
+    assert sync_result.returncode == 0, sync_result.stderr
     payload = json.loads(sync_result.stdout)
     cautilus = payload["results"]["cautilus"]
 
@@ -354,6 +354,37 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert f"Support skill is available at `{plugin_root / 'support' / 'cautilus' / 'SKILL.md'}`." in cautilus["next_step"]
     assert "installed Charness plugin support surface" in cautilus["next_step"]
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
+
+
+def test_tool_sync_support_fails_for_blocking_doctor_disposition(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path, auth_ready=False)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "sync-support",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "gws-cli",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["support"]["status"] == "skipped"
+    assert gws["doctor"]["doctor_status"] == "not-ready"
+    assert gws["doctor"]["doctor_disposition"] == "blocking-failure"
 
 
 def test_tool_update_does_not_run_agent_browser_upgrade_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:

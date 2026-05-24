@@ -45,7 +45,20 @@ def validate_record(record: object, schema: dict[str, object]) -> None:
     """Raise jsonschema.ValidationError when record is not a schema-valid event."""
     import jsonschema
 
-    jsonschema.validate(record, schema)
+    jsonschema.validate(record, schema, format_checker=jsonschema.FormatChecker())
+    if isinstance(record, dict):
+        _validate_timestamp_calendar(record.get("ts"))
+
+
+def _validate_timestamp_calendar(value: object) -> None:
+    if not isinstance(value, str):
+        return
+    import jsonschema
+
+    try:
+        datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError as exc:
+        raise jsonschema.ValidationError(f"{value!r} is not a valid RFC3339 date-time") from exc
 
 
 def validate_ledger(ledger_path: Path, schema: dict[str, object]) -> list[dict[str, object]]:
@@ -68,7 +81,8 @@ def validate_ledger(ledger_path: Path, schema: dict[str, object]) -> list[dict[s
             errors.append({"line": lineno, "error": f"invalid JSON: {exc.msg}"})
             continue
         try:
-            jsonschema.validate(record, schema)
+            jsonschema.validate(record, schema, format_checker=jsonschema.FormatChecker())
+            _validate_timestamp_calendar(record.get("ts") if isinstance(record, dict) else None)
         except jsonschema.ValidationError as exc:
             errors.append({"line": lineno, "error": exc.message})
     return errors

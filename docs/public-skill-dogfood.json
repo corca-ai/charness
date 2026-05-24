@@ -299,7 +299,7 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-18",
+      "reviewed_on": "2026-05-24",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
@@ -345,7 +345,8 @@
         "The mutation sampler dogfood now treats configured base/head changed-file diff failure as a fail-closed quality signal: it exits before sample manifests, workflow outputs, or Cosmic Ray config rewrites instead of publishing a fill-only sample from unknown changed-file state.",
         "The affected-test selection contract now says failed selector input discovery is not an empty set: cost-saving selectors should run the broader deterministic gate, while publish/proof selectors should fail with command diagnostics.",
         "The #188 slice_closeout usage-episode repair dogfooded attention-state visibility: the new emitter helper declares `disabled` and `no_adapter` as terminal payload states, and pre-push kept the declaration and file-length contracts blocking instead of letting telemetry no-op behavior read as successful capture.",
-        "Standing quality gates that derive proof scope from repo file listing now request strict git-aware listing, so failed `git ls-files` exits with diagnostics instead of falling back to a broad filesystem scan; fixture-friendly helper defaults remain available outside gate-grade proof."
+        "Standing quality gates that derive proof scope from repo file listing now request strict git-aware listing, so failed `git ls-files` exits with diagnostics instead of falling back to a broad filesystem scan; fixture-friendly helper defaults remain available outside gate-grade proof.",
+        "Scenario review for this quality-script slice kept the public `quality` consumer contract unchanged: the representative slow-gate prompt still routes to quality, preserves the artifact/gate/delegated-review expectations, and the semantic change is limited to deterministic standing-test economics inventory tolerating volatile pytest temp cleanup."
       ]
     },
     {

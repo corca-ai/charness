@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import re
+import stat
 import subprocess
 import tempfile
 from pathlib import Path
@@ -52,11 +53,27 @@ PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")
 PYTEST_SEED_PREFIXES = ("charness-repo-seed", "charness-git-repo-seed", "managed-home-seed")
 
 
-def _iter_child_dirs(path: Path) -> list[Path]:
+def _iter_child_stats(path: Path):
     try:
-        return [child for child in path.iterdir() if not child.is_symlink() and child.is_dir()]
+        iterator = path.iterdir()
     except OSError:
-        return []
+        return
+    while True:
+        try:
+            child = next(iterator)
+        except StopIteration:
+            break
+        except OSError:
+            break
+        try:
+            child_stat = child.stat(follow_symlinks=False)
+        except OSError:
+            continue
+        yield child, child_stat
+
+
+def _iter_child_dirs(path: Path) -> list[Path]:
+    return [child for child, child_stat in _iter_child_stats(path) if stat.S_ISDIR(child_stat.st_mode)]
 
 
 def _is_ignored(path: Path) -> bool:
@@ -125,39 +142,32 @@ def _du_bytes(path: Path, *args: str) -> int | None:
         return None
 
 
+def _iter_file_stats(path: Path):
+    stack = [path]
+    while stack:
+        for child, child_stat in _iter_child_stats(stack.pop()):
+            if stat.S_ISDIR(child_stat.st_mode):
+                stack.append(child)
+            elif stat.S_ISREG(child_stat.st_mode):
+                yield child_stat
+
+
 def _dir_size_bytes(path: Path) -> int:
-    apparent = _du_bytes(path, "-sb")
-    if apparent is not None:
+    if (apparent := _du_bytes(path, "-sb")) is not None:
         return apparent
 
-    total = 0
-    for child in path.rglob("*"):
-        try:
-            if not child.is_symlink() and child.is_file():
-                total += child.stat().st_size
-        except OSError:
-            continue
-    return total
+    return sum(child_stat.st_size for child_stat in _iter_file_stats(path))
 
 
 def _dir_disk_bytes(path: Path) -> int:
-    disk = _du_bytes(path, "-sB1")
-    if disk is not None:
+    if (disk := _du_bytes(path, "-sB1")) is not None:
         return disk
 
-    total = 0
-    for child in path.rglob("*"):
-        try:
-            if not child.is_symlink() and child.is_file():
-                total += child.stat().st_blocks * 512
-        except OSError:
-            continue
-    return total
+    return sum(child_stat.st_blocks * 512 for child_stat in _iter_file_stats(path))
 
 
 def _dir_usage(path: Path) -> dict[str, int]:
     return {"bytes": _dir_size_bytes(path), "disk_bytes": _dir_disk_bytes(path)}
-
 
 def _pytest_temp_root() -> Path:
     base = Path(os.environ.get("PYTEST_DEBUG_TEMPROOT") or tempfile.gettempdir())
@@ -166,13 +176,7 @@ def _pytest_temp_root() -> Path:
 
 
 def _pytest_temp_footprint_quick() -> dict[str, Any]:
-    """Single `du -d 4` walk that returns just what budget gates need.
-
-    Returns total_disk_bytes plus per-seed-prefix sums. Skips the per-test
-    `top_test_dirs` ranking that the full inventory needs but the budget
-    gate does not. ~10x faster than `_pytest_temp_footprint` because it
-    avoids one `du` subprocess per seed/test directory.
-    """
+    """Single `du -d 4` walk that returns just what budget gates need."""
     root = _pytest_temp_root()
     if not root.exists():
         return {"status": "missing", "root": str(root)}

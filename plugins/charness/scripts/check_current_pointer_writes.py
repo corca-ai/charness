@@ -61,12 +61,12 @@ def _pointer_names_in(node: ast.AST) -> set[str]:
     return _string_constants(node) & CURRENT_POINTER_NAMES
 
 
-def _assigned_pointer_names(tree: ast.AST) -> dict[str, str]:
+def _assigned_pointer_names(tree: ast.AST, constants: dict[str, str]) -> dict[str, str]:
     names: dict[str, str] = {}
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assign):
             continue
-        pointer_names = _pointer_names_in(node.value)
+        pointer_names = _pointer_names_in_resolved(node.value, constants, _scope_assigned_names(node))
         if not pointer_names:
             continue
         pointer_name = sorted(pointer_names)[0]
@@ -76,13 +76,61 @@ def _assigned_pointer_names(tree: ast.AST) -> dict[str, str]:
     return names
 
 
-def _call_target_name(call: ast.Call, assigned: dict[str, str]) -> str | None:
+def _resolved_string_constants(tree: ast.AST) -> dict[str, str]:
+    constants: dict[str, str] = {}
+    body = tree.body if isinstance(tree, ast.Module) else []
+    for node in body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if not isinstance(target, ast.Name):
+            continue
+        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+            constants[target.id] = node.value.value
+    return constants
+
+
+def _attach_parent_links(tree: ast.AST) -> None:
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            setattr(child, "_parent", parent)
+
+
+def _scope_assigned_names(node: ast.AST) -> set[str]:
+    scope = getattr(node, "_parent", None)
+    while scope is not None and not isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        scope = getattr(scope, "_parent", None)
+    if scope is None:
+        return set()
+    names: set[str] = set()
+    for child in ast.walk(scope):
+        if isinstance(child, ast.Assign):
+            for target in child.targets:
+                if isinstance(target, ast.Name):
+                    names.add(target.id)
+    return names
+
+
+def _pointer_names_in_resolved(node: ast.AST, constants: dict[str, str], shadowed: set[str]) -> set[str]:
+    names = _pointer_names_in(node)
+    for child in ast.walk(node):
+        if (
+            isinstance(child, ast.Name)
+            and child.id not in shadowed
+            and constants.get(child.id) in CURRENT_POINTER_NAMES
+        ):
+            names.add(constants[child.id])
+    return names
+
+
+def _call_target_name(call: ast.Call, assigned: dict[str, str], constants: dict[str, str]) -> str | None:
+    shadowed = _scope_assigned_names(call)
     func = call.func
     if isinstance(func, ast.Attribute) and func.attr in {"write_text", "write_bytes"}:
         receiver = func.value
         if isinstance(receiver, ast.Name) and receiver.id in assigned:
             return assigned[receiver.id]
-        pointer_names = _pointer_names_in(receiver)
+        pointer_names = _pointer_names_in_resolved(receiver, constants, shadowed)
         if pointer_names:
             return sorted(pointer_names)[0]
     if isinstance(func, ast.Attribute) and func.attr == "open":
@@ -90,14 +138,14 @@ def _call_target_name(call: ast.Call, assigned: dict[str, str]) -> str | None:
         pointer_names = set()
         if isinstance(receiver, ast.Name) and receiver.id in assigned:
             pointer_names.add(assigned[receiver.id])
-        pointer_names.update(_pointer_names_in(receiver))
+        pointer_names.update(_pointer_names_in_resolved(receiver, constants, shadowed))
         if pointer_names:
             mode = call.args[0] if call.args else None
             mode_text = mode.value if isinstance(mode, ast.Constant) and isinstance(mode.value, str) else "r"
             if any(flag in mode_text for flag in ("w", "a", "+")):
                 return sorted(pointer_names)[0]
     if isinstance(func, ast.Name) and func.id == "open" and call.args:
-        pointer_names = _pointer_names_in(call.args[0])
+        pointer_names = _pointer_names_in_resolved(call.args[0], constants, shadowed)
         if pointer_names:
             mode = call.args[1] if len(call.args) > 1 else None
             mode_text = mode.value if isinstance(mode, ast.Constant) and isinstance(mode.value, str) else "r"
@@ -115,12 +163,14 @@ def scan_path(repo_root: Path, path: Path) -> list[Finding]:
         tree = ast.parse(text, filename=str(relative))
     except SyntaxError:
         return []
-    assigned = _assigned_pointer_names(tree)
+    _attach_parent_links(tree)
+    constants = _resolved_string_constants(tree)
+    assigned = _assigned_pointer_names(tree, constants)
     findings: list[Finding] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
-        target = _call_target_name(node, assigned)
+        target = _call_target_name(node, assigned, constants)
         if target is None:
             continue
         findings.append(

@@ -1,15 +1,27 @@
 from __future__ import annotations
 
 import getpass
+import importlib.util
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
+from types import ModuleType
 
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_standing_test_economics.py"
+LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "standing_test_economics_lib.py"
+
+
+def _load_inventory_lib() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("standing_test_economics_lib_for_test", LIB)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -> None:
@@ -123,3 +135,31 @@ def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path
     assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
     assert footprint["seed_totals"]["charness-repo-seed"]["bytes"] >= 24
     assert footprint["seed_totals"]["charness-repo-seed"]["disk_bytes"] >= 24
+
+
+def test_pytest_temp_footprint_tolerates_disappearing_temp_dirs(tmp_path: Path, monkeypatch) -> None:
+    lib = _load_inventory_lib()
+    root = tmp_path / f"pytest-of-{getpass.getuser()}"
+    session = root / "pytest-0"
+    worker = session / "popen-gw0"
+    stale = root / "garbage-stale"
+    worker.mkdir(parents=True)
+    stale.mkdir(parents=True)
+
+    original_iterdir = Path.iterdir
+
+    def racy_iterdir(path: Path):
+        if path == root:
+            yield session
+            raise FileNotFoundError(stale)
+        yield from original_iterdir(path)
+
+    monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", str(tmp_path))
+    monkeypatch.setattr(lib, "_du_bytes", lambda *args: None)
+    monkeypatch.setattr(Path, "iterdir", racy_iterdir)
+
+    footprint = lib._pytest_temp_footprint()
+
+    assert footprint["status"] == "available"
+    assert footprint["session_count"] == 1
+    assert footprint["worker_dir_count"] == 1

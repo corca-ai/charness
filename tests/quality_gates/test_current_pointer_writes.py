@@ -214,3 +214,48 @@ def test_current_pointer_write_scanner_flags_write_bytes_and_path_open(tmp_path:
     assert result.returncode == 1
     assert "scripts/binary_writer.py:3" in result.stdout
     assert "scripts/binary_writer.py:4" in result.stdout
+
+
+def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    bad = script_dir / "constant_writer.py"
+    bad.write_text(
+        "from pathlib import Path\n"
+        "CURRENT = 'latest.md'\n"
+        "target = Path('charness-artifacts/demo') / CURRENT\n"
+        "target.write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/constant_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+
+    assert result.returncode == 1
+    assert "scripts/constant_writer.py:4" in result.stdout
+
+
+def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    ok = script_dir / "shadow_writer.py"
+    ok.write_text(
+        "from pathlib import Path\n"
+        "CURRENT = 'latest.md'\n"
+        "def write_record() -> None:\n"
+        "    CURRENT = '2026-05-24-record.md'\n"
+        "    target = Path('charness-artifacts/demo') / CURRENT\n"
+        "    target.write_text('ok', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/shadow_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+
+    assert result.returncode == 0

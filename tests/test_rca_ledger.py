@@ -65,6 +65,37 @@ def test_ac1_validate_rejects_each_malformed_case(tmp_path: Path) -> None:
     assert {entry["line"] for entry in payload["errors"]} == {1, 2, 3, 4, 5}
 
 
+def test_ac1_validate_rejects_impossible_calendar_timestamp(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    write_ledger(ledger, [event(ts="2026-99-99T99:99:99Z")])
+
+    result = run_script("validate_rca_ledger.py", "--ledger", str(ledger), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["errors"][0]["line"] == 1
+    assert "date-time" in payload["errors"][0]["error"]
+
+
+def test_ac1_timestamp_calendar_check_ignores_non_string_values() -> None:
+    lib._validate_timestamp_calendar(None)
+
+
+def test_ac1_validate_covers_missing_blank_and_invalid_json_paths(tmp_path: Path) -> None:
+    missing = tmp_path / "missing.jsonl"
+    assert lib.validate_ledger(missing, lib.load_schema()) == [
+        {"line": 0, "error": "ledger file not found"}
+    ]
+    assert lib.read_events(missing) == []
+
+    ledger = tmp_path / "ledger.jsonl"
+    write_raw(ledger, ["", "{not-json}", json.dumps(event())])
+
+    errors = lib.validate_ledger(ledger, lib.load_schema())
+
+    assert errors == [{"line": 2, "error": "invalid JSON: Expecting property name enclosed in double quotes"}]
+
+
 def test_ac1_validate_accepts_committed_ledger() -> None:
     result = run_script("validate_rca_ledger.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
@@ -121,6 +152,34 @@ def test_ac3_record_round_trip_and_refuse_before_append(tmp_path: Path) -> None:
     )
     assert bad.returncode == 1
     assert ledger.stat().st_size == size_before  # ledger unchanged
+
+
+def test_ac3_record_optional_fields_round_trip(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+
+    ok = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--converted",
+        "--durable-kind", "issue",
+        "--class-key", "optional-fields",
+        "--caught-by", "human",
+        "--seed",
+        "--ref", "#211",
+        "--note", "covers optional field branches",
+        "--json",
+    )
+
+    assert ok.returncode == 0, ok.stderr
+    payload = json.loads(ok.stdout)
+    assert payload["appended"] is True
+    [record] = lib.read_events(ledger)
+    assert record["caught_by"] == "human"
+    assert record["seed"] is True
+    assert record["ref"] == "#211"
+    assert record["note"] == "covers optional field branches"
 
 
 # AC4 -------------------------------------------------------------------------
@@ -208,6 +267,19 @@ def test_ac7_on_state_keeps_na_and_no_baseline_number(tmp_path: Path) -> None:
     assert "do not quote" in text
     baseline_line = next(line for line in text.splitlines() if "overall: n/a" in line)
     assert "%" not in baseline_line  # no numeric baseline rate printed
+
+
+def test_ac7_render_text_covers_empty_and_live_baseline_branches() -> None:
+    empty_text = lib.render_text(lib.aggregate([]))
+    assert "by source:\n      (none)" in empty_text
+    assert "overall: n/a" in empty_text
+
+    live_text = lib.render_text(
+        lib.aggregate([event(source="retro", event_kind="weak_proof", converted=False, durable_kind="none")])
+    )
+    assert "seed-excluded (baseline figure):" in live_text
+    assert "overall: 0/1 (0.0%)" in live_text
+    assert "retro: 0/1 (0.0%)" in live_text
 
 
 # AC8 -------------------------------------------------------------------------

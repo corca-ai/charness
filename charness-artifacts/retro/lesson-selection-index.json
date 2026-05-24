@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-24",
-  "source_artifact_count": 73,
-  "candidate_count": 456,
+  "source_artifact_count": 74,
+  "candidate_count": 466,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -80,6 +80,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:28667d21a2a6",
+      "kind": "current_focus",
+      "lesson": "This session continued the user-requested full-codebase `quality` and `critique` sweep with subagents.",
+      "normalized_key": "this session continued the user requested full codebase quality and critique sweep with subagents",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:98a786d0a106",
+      "kind": "next_improvement",
+      "lesson": "after any changed-line or changed-path gate fix, commit first, then rerun the sampler against the committed `base..HEAD` window before claiming the scheduled gate is repaired.",
+      "normalized_key": "after any changed line or changed path gate fix commit first then rerun the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6021cc6d626a",
       "kind": "next_improvement",
       "lesson": "before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first.",
@@ -140,12 +180,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:15699791d022",
+      "candidate_id": "next_improvement:43b9b175df17",
       "kind": "next_improvement",
-      "lesson": "**memory**: generalize the \"check length budget before editing\" habit to ANY length-gated file, including the SKILL.md 200-line gate, not only `.py` budgets. Detection point: `validate_skills` `MAX_SKILL_MD_LINES`.",
-      "normalized_key": "memory generalize the check length budget before editing habit to any length gated file",
+      "lesson": "do not hand-edit `charness-artifacts/retro/recent-lessons.md`; persist a retro artifact and refresh through `persist_retro_artifact.py` / `refresh_recent_lessons.py`.",
+      "normalized_key": "do not hand edit charness artifacts retro recent lessons md persist a retro artifact",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -153,19 +193,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:2f3fb25319ab",
+      "candidate_id": "next_improvement:6e6fd3f6fb07",
       "kind": "next_improvement",
-      "lesson": "when a quality gate is a *selection* heuristic reused as a *blocker*, scope the blocker to the changed surface (changed lines), not the whole artifact; keep the whole-artifact metric advisory.",
-      "normalized_key": "when a quality gate is a selection heuristic reused as a blocker scope the",
+      "lesson": "for filesystem inventories over runtime temp trees, include a disappearing-path regression before relying on read-only quality closeout.",
+      "normalized_key": "for filesystem inventories over runtime temp trees include a disappearing path regression before relying",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -173,19 +213,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:988af40d819a",
+      "candidate_id": "next_improvement:d7ad1d1067b3",
       "kind": "next_improvement",
-      "lesson": "**workflow**: before flipping a feature flag ON, simulate the post-activation state and run the suite against it. Detection point: the AC4/AC7 break would have been caught pre-commit.",
-      "normalized_key": "workflow before flipping a feature flag on simulate the post activation state and run",
+      "lesson": "for mutation-line coverage heuristics, write the negative overreach test before the expensive end-to-end sample probe.",
+      "normalized_key": "for mutation line coverage heuristics write the negative overreach test before the expensive end",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -193,19 +233,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:80afa58a48f9",
-      "kind": "repeat_trap",
-      "lesson": "**200-line SKILL.md budget trap (recurrence, twice)**: edited `skills/public/debug/SKILL.md` while it was already exactly at the `MAX_SKILL_MD_LINES=200` gate without pre-checking, so `validate_skills` failed and forced mid-stream bullet compression — once on the initial wiring and again after the critique's debug-bullet rewrite. `recent-lessons.md` already carries this exact lesson, but scoped to `.py` budgets (480/360 file, 100/150 function, 800 test); it did not transfer to the SKILL.md 200-line gate.",
-      "normalized_key": "200 line skill md budget trap recurrence twice edited skills public debug skill md",
+      "candidate_id": "next_improvement:b8847a75dda0",
+      "kind": "next_improvement",
+      "lesson": "keep #212 as the owner for RCA ledger idempotency semantics so future closeout retries do not silently double-append metric events.",
+      "normalized_key": "keep 212 as the owner for rca ledger idempotency semantics so future closeout retries",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
       "latest_source_date": "2026-05-24",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -213,49 +253,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:ceeb519103e6",
-      "kind": "repeat_trap",
-      "lesson": "**doc-link backtick trap (minor)**: the new reference's path-like backticks (`scripts/record_rca_event.py`, the ledger path) tripped `check_doc_links`; resolved with `<repo-root>/` placeholders. Gate-caught fast, low cost.",
-      "normalized_key": "doc link backtick trap minor the new reference s path like backticks scripts record",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-          "date": "2026-05-24",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c93fdda06864",
-      "kind": "repeat_trap",
-      "lesson": "**Headline — slice 2 shipped a latent break (verified)**: the committed ledger `charness-artifacts/metrics/rca-ledger.jsonl` doubles as the AC4/AC7 test fixture. The first live (non-seed) auto-appended event flips `baseline_rate_available` to True and `seed_excluded.rate` off `n/a` to a real number, so `test_ac4_*` and `test_ac7_*` fail. The auto-append I just turned ON is therefore self-defeating: the first real `debug`/`issue`/`retro` closeout that appends will red-flag pre-push/CI. The suite is green now only because no live event exists yet. This is a `weak_proof`/`bug`-class event — verification reached \"all gates green\" but green was measured against a seed-only state the feature's success immediately destroys. Caught by agent reflection in this retro, not by a gate.",
-      "normalized_key": "headline slice 2 shipped a latent break verified the committed ledger charness artifacts metrics",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-          "date": "2026-05-24",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     }
@@ -327,6 +327,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:28667d21a2a6",
+      "kind": "current_focus",
+      "lesson": "This session continued the user-requested full-codebase `quality` and `critique` sweep with subagents.",
+      "normalized_key": "this session continued the user requested full codebase quality and critique sweep with subagents",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:98a786d0a106",
+      "kind": "next_improvement",
+      "lesson": "after any changed-line or changed-path gate fix, commit first, then rerun the sampler against the committed `base..HEAD` window before claiming the scheduled gate is repaired.",
+      "normalized_key": "after any changed line or changed path gate fix commit first then rerun the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6021cc6d626a",
       "kind": "next_improvement",
       "lesson": "before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first.",
@@ -381,6 +421,86 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:43b9b175df17",
+      "kind": "next_improvement",
+      "lesson": "do not hand-edit `charness-artifacts/retro/recent-lessons.md`; persist a retro artifact and refresh through `persist_retro_artifact.py` / `refresh_recent_lessons.py`.",
+      "normalized_key": "do not hand edit charness artifacts retro recent lessons md persist a retro artifact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6e6fd3f6fb07",
+      "kind": "next_improvement",
+      "lesson": "for filesystem inventories over runtime temp trees, include a disappearing-path regression before relying on read-only quality closeout.",
+      "normalized_key": "for filesystem inventories over runtime temp trees include a disappearing path regression before relying",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d7ad1d1067b3",
+      "kind": "next_improvement",
+      "lesson": "for mutation-line coverage heuristics, write the negative overreach test before the expensive end-to-end sample probe.",
+      "normalized_key": "for mutation line coverage heuristics write the negative overreach test before the expensive end",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b8847a75dda0",
+      "kind": "next_improvement",
+      "lesson": "keep #212 as the owner for RCA ledger idempotency semantics so future closeout retries do not silently double-append metric events.",
+      "normalized_key": "keep 212 as the owner for rca ledger idempotency semantics so future closeout retries",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Next Improvements"
         }
@@ -461,6 +581,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a883c9841bc3",
+      "kind": "repeat_trap",
+      "lesson": "A pre-commit mutation sample using `MUTATION_HEAD_SHA=HEAD` proved only the previous committed window, not the current uncommitted patch. This repeated the same verification-window trap already documented in the mutation debug artifacts.",
+      "normalized_key": "a pre commit mutation sample using mutation head sha head proved only the previous",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dc9c428209f3",
+      "kind": "repeat_trap",
+      "lesson": "Directly editing `recent-lessons.md` was waste because the file is generated from the retro lesson index.",
+      "normalized_key": "directly editing recent lessons md was waste because the file is generated from the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Waste"
         }
@@ -541,6 +701,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:090122a7daa2",
+      "kind": "repeat_trap",
+      "lesson": "The first full quality rerun found an inventory race that targeted tests had not exercised; closeout gates need to run before treating the patch as ready to commit.",
+      "normalized_key": "the first full quality rerun found an inventory race that targeted tests had not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+          "date": "2026-05-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1c0cc3994e1c",
+      "kind": "repeat_trap",
+      "lesson": "The first mutation-line continuation fix over-propagated coverage across enclosing `FunctionDef` bodies. Counterweight caught it, but only after a full sample probe had already been run.",
+      "normalized_key": "the first mutation line continuation fix over propagated coverage across enclosing functiondef bodies counterweight",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
+      "latest_source_date": "2026-05-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
           "date": "2026-05-24",
           "section": "Waste"
         }

@@ -6,10 +6,10 @@
   "source_artifact_count": 44,
   "indexed_artifact_count": 36,
   "risk_class_counts": {
-    "contract-freeze-risk": 20,
+    "contract-freeze-risk": 21,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 3,
+    "none": 2,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
@@ -509,15 +509,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "repo-file-listing-strict-mode",
+      "interrupt_id": "quality-critique-sweep-bug-fixes",
       "risk_classes": [
-        "none"
+        "contract-freeze-risk"
       ],
-      "seam": "git file visibility -> standing gate proof scope",
+      "seam": "scheduled mutation changed-window proof, RCA metric validation,",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "docs/handoff.md",
+      "handoff_artifact": "this file",
       "forced": false
     }
   ],
