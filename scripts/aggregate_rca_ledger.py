@@ -2,10 +2,10 @@
 """Report the RCA-to-learning conversion rate from the ledger.
 
 Reports the rate twice: including seed events (sanity) and excluding them (the
-figure a baseline target is set from). OFF-state honesty: until auto-append is
-wired (slice 2), it prints the `auto_append: OFF` banner, emits `n/a` (not 0%)
-for an empty seed-excluded window, and refuses to print a non-seed baseline rate
-while zero non-seed events exist.
+figure a baseline target is set from). Auto-append is wired (slice 2), so the
+banner reads ON; the baseline honesty guards still hold — it emits `n/a` (not
+0%) for an empty seed-excluded window and refuses to print a non-seed baseline
+rate while zero non-seed events exist.
 """
 
 from __future__ import annotations

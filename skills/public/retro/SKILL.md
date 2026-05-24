@@ -88,6 +88,11 @@ Adapter policy:
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact recent-lessons digest automatically from the written durable artifact
    - on the first retro after a legacy hand-curated `recent-lessons.md` (file exists, `output_dir` has no prior `*.md` artifacts), the persistence helper preserves the existing summary instead of replacing it with an empty-stub digest. Pass `--force-empty-summary` only after confirming the legacy content is safe to drop.
    - otherwise still give the user a concise retro in chat
+   - when the retro names an RCA-class event (a bug, repeated correction, or
+     weak-proof finding) and the repo maintains the conversion ledger, append
+     one RCA event (`--source retro`) per
+     `../../shared/references/rca-ledger-append.md`; this is a silent no-op in
+     repos without the ledger
    - never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`
 
 ## Output Shape
@@ -169,3 +174,4 @@ The result should usually include:
 - `references/weekly-trends.md`
 - `references/waste-sibling-scan.md`
 - `../debug/references/sibling-search.md`
+- `../../shared/references/rca-ledger-append.md`

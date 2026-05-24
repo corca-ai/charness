@@ -120,12 +120,15 @@ conversions to inflate the rate.
 `converted=false` rather than omitting it. Ambiguity should inflate the
 denominator (conservative), never silently suppress the event (flattering).
 
-**OFF-state honesty**: until auto-append wiring (the deferred slice 2) is live,
-[aggregate_rca_ledger.py](../scripts/aggregate_rca_ledger.py) prints an
-`auto_append: OFF` banner, emits `n/a` (not `0%`) for an empty seed-excluded
-window, and refuses to print a non-seed baseline rate while zero non-seed events
-exist. Seed events are excluded from the baseline figure so a hand-picked
-starting set cannot anchor the eventual numeric target.
+**Auto-append wiring (slice 2) is live**: the `debug`, `issue`, and `retro`
+closeout prompts append RCA events through
+[skills/shared/references/rca-ledger-append.md](../skills/shared/references/rca-ledger-append.md),
+so [aggregate_rca_ledger.py](../scripts/aggregate_rca_ledger.py) prints an
+`auto_append: ON` banner. The baseline honesty guards still hold: it emits `n/a`
+(not `0%`) for an empty seed-excluded window and refuses to print a non-seed
+baseline rate while zero non-seed events exist. Seed events are excluded from the
+baseline figure so a hand-picked starting set cannot anchor the eventual numeric
+target, and the baseline window opens only as live (non-seed) events accrue.
 
 ## Core Success Criteria
 

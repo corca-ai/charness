@@ -172,17 +172,23 @@ def test_ac6_doc_contains_rubric() -> None:
 
 
 # AC7 -------------------------------------------------------------------------
-def test_ac7_off_state_banner_na_and_no_baseline_number() -> None:
+def test_ac7_on_state_keeps_na_and_no_baseline_number() -> None:
+    # Slice 2 wired auto-append, so the banner reads ON. The substantive guard
+    # AC7 protects still holds on the seed-only committed ledger: no numeric
+    # baseline is printed while zero non-seed events exist.
     payload = json.loads(
         run_script("aggregate_rca_ledger.py", "--repo-root", str(ROOT), "--json").stdout
     )
-    assert payload["auto_append"] == "auto_append: OFF (slice 2 not wired)"
-    assert payload["auto_append_wired"] is False
+    assert payload["auto_append"] == lib.AUTO_APPEND_ON_BANNER
+    assert payload["auto_append"].startswith("auto_append: ON")
+    assert payload["auto_append_wired"] is True
     assert payload["seed_excluded"]["rate"] == lib.NA
     assert payload["baseline_rate_available"] is False
 
     text = run_script("aggregate_rca_ledger.py", "--repo-root", str(ROOT)).stdout
-    assert "auto_append: OFF (slice 2 not wired)" in text
+    assert "auto_append: ON" in text
+    # flipping OFF->ON must not strip the "do not quote" guard from the seed-only number
+    assert "do not quote" in text
     baseline_line = next(line for line in text.splitlines() if "overall: n/a" in line)
     assert "%" not in baseline_line  # no numeric baseline rate printed
 
@@ -197,3 +203,32 @@ def test_ac8_caught_by_enum_enforced_and_optional(tmp_path: Path) -> None:
     write_ledger(omitted, [event()])  # no caught_by key
     assert "caught_by" not in event()
     assert run_script("validate_rca_ledger.py", "--ledger", str(omitted)).returncode == 0
+
+
+# Slice 2: auto-append wiring -------------------------------------------------
+APPEND_REFERENCE = ROOT / "skills" / "shared" / "references" / "rca-ledger-append.md"
+SKILL_SOURCE_FLAGS = {
+    "debug": "--source debug",
+    "issue": "--source issue",
+    "retro": "--source retro",
+}
+
+
+def test_slice2_append_reference_is_presence_gated_and_rubric_anchored() -> None:
+    text = APPEND_REFERENCE.read_text(encoding="utf-8")
+    # presence gate keeps the public-skill change a no-op for consumer repos
+    assert "scripts/record_rca_event.py" in text
+    assert "silent no-op" in text
+    # judgment calls defer to the rubric instead of being restated/extended here
+    assert "product-success-metrics.md" in text
+    # the seed flag must stay reserved for hand-entered history
+    assert "Never pass `--seed`" in text
+    # tie-break default to converted=false on ambiguity
+    assert "inflate the denominator" in text
+
+
+def test_slice2_three_skills_cite_append_reference_with_correct_source() -> None:
+    for skill, source_flag in SKILL_SOURCE_FLAGS.items():
+        text = (ROOT / "skills" / "public" / skill / "SKILL.md").read_text(encoding="utf-8")
+        assert "rca-ledger-append.md" in text, f"{skill}/SKILL.md must cite the append reference"
+        assert source_flag in text, f"{skill}/SKILL.md must wire {source_flag}"

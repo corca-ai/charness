@@ -24,8 +24,8 @@ build contract for that ledger.
 
 ## Current Slice
 
-Stand up the ledger substrate so a conversion rate can be computed from real
-data, without yet editing the debug/issue/retro skill prompts:
+Slice 1 (landed) stood up the ledger substrate so a conversion rate can be
+computed from real data, before editing the debug/issue/retro skill prompts:
 
 - a JSON schema for one `rca_event` record with closed enums
 - `scripts/record_rca_event.py`: validate-and-append one event to the ledger
@@ -36,9 +36,10 @@ data, without yet editing the debug/issue/retro skill prompts:
   seeded with the known recent real events so baseline observation can start
   immediately (non-empty number on day one)
 
-Auto-append wiring into the debug/issue/retro skill closeout prompts is the
-next slice (see Deferred Decisions), because it edits behavior-steering prompt
-surfaces and warrants its own preserve/improve claim and proof path.
+Auto-append wiring into the debug/issue/retro skill closeout prompts landed in
+slice 2 (see the Second Implementation Slice section), with its own
+preserve/improve claim and proof path because it edits behavior-steering prompt
+surfaces.
 
 ## Fixed Decisions
 
@@ -80,12 +81,14 @@ surfaces and warrants its own preserve/improve claim and proof path.
 5. Conversion rate = `converted=true` count / total RCA events, decomposable by
    `source` and `event_kind`, and windowable by `ts`. The aggregator reports the
    rate twice: including seed events (sanity) and excluding them (the figure the
-   baseline target is set from). **OFF-state honesty**: until auto-append is live
-   (slice 2), the aggregator prints a loud `auto_append: OFF (slice 2 not wired)`
-   banner, emits `n/a` rather than `0%` for an empty seed-excluded window, and
-   refuses to print a non-seed baseline rate while zero non-seed events exist.
-   This stops anyone quoting a seed-only or fake-zero number as "the metric"
-   between slice 1 and slice 2.
+   baseline target is set from). **Quote-safety honesty** (live invariant): the
+   aggregator emits `n/a` rather than `0%` for an empty seed-excluded window,
+   refuses to print a non-seed baseline rate while zero non-seed events exist,
+   and labels the seed-included rate "sanity only — do not quote". The banner
+   states the wiring state: `auto_append: OFF (slice 2 not wired)` before slice 2,
+   and after slice 2 `auto_append: ON` carrying the "prompt-enforced; denominator
+   self-reported, not gate-verified" qualifier. This stops anyone quoting a
+   seed-only or fake-zero number as "the metric".
 6. Closed enums are owned by the schema; docs summarize them and must not extend
    them inline (mirrors usage-episode enum discipline).
 7. **Classification rubric** (lives in `docs/product-success-metrics.md` so the
@@ -119,13 +122,14 @@ surfaces and warrants its own preserve/improve claim and proof path.
 
 ## Deferred Decisions
 
-- Auto-append wiring into `debug`, `issue`, and `retro` skill closeout prompts
-  (next slice; behavior-steering prompt change with its own preserve/improve
-  claim). **The baseline window does not open until this wiring is live** — a
-  ledger that grows only by manual discipline is measuring the very thing it
-  exists to track, so a target set before auto-append would rest on a tiny
-  biased sample. Slice 2 is a hard prerequisite for the numeric target, not a
-  soft follow-up.
+- **DONE (slice 2)**: Auto-append wiring into `debug`, `issue`, and `retro`
+  skill closeout prompts via the presence-gated shared reference
+  `skills/shared/references/rca-ledger-append.md`. `AUTO_APPEND_WIRED` is now
+  `True` so the aggregator banner reads `ON`. **The baseline window is now open
+  but empty** — it grows only as live (non-seed) events accrue; a target set on a
+  tiny sample would still rest on biased data, so the numeric target stays
+  baseline-first per the next bullet. The append is prompt-enforced, not
+  gate-enforced (see slice-2 residual risk).
 - Numeric target for the conversion rate (baseline-first: revisit after 2-4
   weeks of *auto-appended, seed-excluded* ledger data).
 - Consumer-repo scope (depends on usage-episode capture; separate deferred
@@ -201,9 +205,11 @@ surfaces and warrants its own preserve/improve claim and proof path.
 6. The classification rubric (Fixed Decision 7) is written into
    `docs/product-success-metrics.md`, with the quality bar applying to every
    `durable_kind` and the `converted=false` tie-break default.
-7. The aggregator never emits a misreadable number in the OFF state: it prints
-   the `auto_append: OFF` banner and `n/a` (not `0%`) for an empty seed-excluded
-   window, and refuses a non-seed baseline rate when no non-seed events exist.
+7. The aggregator never emits a misreadable number: it emits `n/a` (not `0%`)
+   for an empty seed-excluded window, refuses a non-seed baseline rate when no
+   non-seed events exist, labels the seed-included rate "do not quote", and the
+   banner states the wiring state (`OFF` pre-slice-2; `ON` with the
+   prompt-enforced qualifier post-slice-2).
 8. A `caught_by` value, when present, is one of `agent | human | gate`; a record
    without it is still valid.
 
@@ -229,8 +235,11 @@ surfaces and warrants its own preserve/improve claim and proof path.
 - AC6 -> `docs/product-success-metrics.md` contains the classification rubric
   text matching Fixed Decision 7 (all-kinds quality bar + tie-break default).
 - AC7 -> running `aggregate_rca_ledger.py` against the seed-only committed ledger
-  prints the `auto_append: OFF` banner, prints `n/a` for the seed-excluded
-  window, and exits without printing a baseline rate number (assert in a test).
+  prints `n/a` for the seed-excluded window and exits without printing a baseline
+  rate number (assert in a test). **Post slice 2**: the banner now reads
+  `auto_append: ON` (wiring is live); the substantive guard AC7 protects — no
+  numeric baseline while zero non-seed events exist — is unchanged and still
+  asserted.
 - AC8 -> `validate_rca_ledger.py` rejects a `caught_by` outside
   `agent | human | gate`, and accepts a record that omits `caught_by`.
 
@@ -311,6 +320,41 @@ correctness/invariants, metric-integrity/Goodhart, maintainability/boundary; plu
 
 Fresh-Eye Satisfaction (impl): parent-delegated (3 angle + 1 counterweight subagents).
 
+### Fourth pass: impl code critique (slice 2 — auto-append wiring)
+
+Bounded fresh-eye code critique of the slice-2 diff (4 angle subagents:
+Jackson/problem-framing, Weinberg/metric-integrity, Gawande/operational-portability,
+Minto/structure; plus 1 counterweight). Packet:
+`charness-artifacts/critique/2026-05-24-060248-packet.md`. Result:
+
+- **Act Before Ship (fixed in the slice commit)**:
+  - the `debug` closeout bullet buried the presence-gate in a trailing
+    parenthetical and dropped the RCA-class qualifier the `issue`/`retro` bullets
+    carry (denominator-comparability + consumer "file not found" risk) — rewritten
+    to gate in the main clause with the RCA-class qualifier;
+  - three stale spec passages (Current Slice, Fixed Decision 5, Success Criterion
+    7) still described the pre-slice-2 OFF state and contradicted the Landed
+    section and retargeted AC7 — reframed so the quote-safety guard is the live
+    invariant and the banner string is the wiring-state indicator.
+- **Bundle Anyway (fixed in the slice commit)**: the bare `auto_append: ON`
+  deleted the only "do not quote" signal while the seed-included `60.0%` kept
+  printing — the ON banner now carries `prompt-enforced; denominator
+  self-reported, not gate-verified`, the seed-included header now reads
+  `sanity only — do not quote`, and AC7 asserts that guard is present; dropped the
+  "without manual discipline" overclaim (a prompt is still discipline).
+- **Over-Worry (no change)**: adding a shell `test -f … || exit 0` guard to the
+  reference's `How` command — the presence gate is already stated in prose twice
+  and in every skill bullet, and shell-gating a deliberately prompt-enforced step
+  is belt-and-suspenders.
+- **Valid but Defer**: a one-event-per-fix-unit operational definition and a
+  non-idempotent-recorder "do not re-append" note (belongs with the deferred
+  `class_key` dedup slice, which is the only thing that can actually enforce it);
+  explicit "no numeric target until denominator reconciliation runs" wording
+  (belongs with the already-deferred reconciliation slice). Both are recorded in
+  the slice-2 residual risk and Deferred Decisions.
+
+Fresh-Eye Satisfaction (impl, slice 2): parent-delegated (4 angle + 1 counterweight subagents).
+
 ## Canonical Artifact
 
 This file (`charness-artifacts/spec/rca-conversion-ledger.md`) is canonical
@@ -333,3 +377,41 @@ during implementation. The metric definition of record stays in
 5. Write the classification rubric (all-kinds quality bar + tie-break default)
    into `docs/product-success-metrics.md`.
 6. Add unit tests for AC1-AC8.
+
+## Second Implementation Slice (Auto-Append Wiring) — Landed
+
+Preserve/improve claim:
+
+- **Preserve**: the `debug`, `issue`, and `retro` public skills keep their exact
+  closeout behavior in consumer repos. The append step is presence-gated on
+  repo-root `scripts/record_rca_event.py` + the ledger, so a consumer install is
+  a silent no-op (no new files, no missing-recorder noise).
+- **Improve**: in the Charness repo, task-completing `debug`/`issue`/`retro`
+  closeouts now append one rubric-anchored RCA event each through one
+  standardized closeout step, so the conversion ledger accrues live (non-seed)
+  events. The append stays prompt-enforced (closeout discipline), not
+  gate-enforced — see the residual risk below.
+
+Landed:
+
+1. `skills/shared/references/rca-ledger-append.md` — one portable, presence-gated
+   append contract that defers all judgment calls to the
+   `docs/product-success-metrics.md` rubric and the schema (no enum/rubric
+   restatement). Per-source mapping, one-event-per-fix-unit rule, tie-break
+   default, and the `--seed` prohibition live here.
+2. A single closeout bullet + References entry in each of the three public
+   `SKILL.md` files citing the shared reference with the correct `--source`.
+3. `AUTO_APPEND_WIRED = True`; aggregator/doc banners updated to `ON`; the n/a
+   render message updated to "wiring live, awaiting live events".
+4. Tests: AC7 retargeted to the ON state while keeping the no-baseline-number
+   guard; two slice-2 wiring-proof tests (reference is presence-gated +
+   rubric-anchored; all three skills cite it with the right source flag).
+
+Residual risk: the append is **prompt-enforced, not gate-enforced** — an agent
+that skips the closeout prompt still under-counts the denominator. This is the
+realistic mechanism for a metric whose `event_kind`/`converted`/`class_key`
+require judgment a deterministic hook cannot supply. A future slice could add an
+advisory closeout nudge (warn when a `debug`/`issue`/`retro` slice closed with no
+matching ledger append in the same commit); deferred to keep this slice minimal
+and because it depends on the denominator-reconciliation work already deferred to
+the baseline review.

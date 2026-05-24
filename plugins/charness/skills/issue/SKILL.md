@@ -131,6 +131,10 @@ repo by created date. It must not use the current session's last created issue.
     only after auto-close is unsupported or fails after remote verification,
     then verify the manual-fallback comment. Release-helper fixes pass
     `--close-issue <number>` and verify `issue_closeout.status: verified`.
+    At closeout of a bug-class resolution (or any resolution that surfaced a
+    repeated correction or weak-proof finding), append one RCA event
+    (`--source issue`) per `../../shared/references/rca-ledger-append.md` when
+    the repo maintains the conversion ledger; this is a silent no-op otherwise.
 
 ## Guardrails
 
@@ -181,6 +185,7 @@ repo by created date. It must not use the current session's last created issue.
 - `references/closeout-discipline.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `../../shared/references/external-capability-proof-ladder.md`
+- `../../shared/references/rca-ledger-append.md`
 - `scripts/issue_tool.py`
 - `scripts/issue_runtime.py`
 - `scripts/resolve_adapter.py`

@@ -122,26 +122,25 @@ as codebase memory rather than as stale trivia.
      `../issue/references/causal-review.md` Lens 2
    - walk the four-axis sibling scan per `references/sibling-search.md`,
      name the wrong mental model, classify each sibling decision, and record
-     proof level separately from the decision; bug-class `issue resolve`
-     invokes the same substrate through `../issue/references/causal-review.md`
-     Lens 3
+     proof level separately from the decision; bug-class `issue resolve` invokes
+     the same substrate through `../issue/references/causal-review.md` Lens 3
    - persist `valid follow-up outside the slice` siblings with a `follow-up:`
-     identifier per `references/sibling-search.md`; the validator blocks
-     closeout when the identifier is missing
+     identifier per `references/sibling-search.md`; missing it blocks closeout
    - trivial single-file fixes may record `n/a — trivial fix` in the detection
-     gap and sibling search sections; the short-circuit is reviewer-visible,
-     not a default escape
+     gap and sibling-search sections; reviewer-visible, not a default escape
    - classify seam risk explicitly when host behavior or repeated symptom fixes
      showed that local reasoning was not enough
    - if the incident hits an external seam, host-disproves-local behavior, or a
-     repeated symptom on the same seam, set the next step to `spec` and name a
-     spec handoff artifact instead of handing directly to ordinary `impl`
+     repeated symptom on the same seam, set the next step to `spec` with a named
+     handoff artifact instead of handing directly to ordinary `impl`
    - record prevention or follow-up; the prevention move should map to the
      detection-gap and sibling-search outputs, not restate the root cause
    - before closing task-completing debug work or handing off a repair, record
      the required critique as short scoped diagnosis/repair risk or full
      standalone review when the fix affects design, workflow, compatibility,
      host-proof, prompt-surface, public-skill, validator, or export behavior
+   - at closeout, if the fix surfaced an RCA-class event and the repo maintains
+     the conversion ledger, append one RCA event per `../../shared/references/rca-ledger-append.md` (`--source debug`); silent no-op otherwise
    - if the fix belongs to normal implementation work, hand off cleanly to
      `impl` with the debug artifact still intact
 
@@ -198,3 +197,4 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/anti-patterns.md`
 - `references/document-seams.md`
 - `references/named-target-verification.md`
+- `../../shared/references/rca-ledger-append.md`

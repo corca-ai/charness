@@ -15,12 +15,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = Path(__file__).resolve().parent / "rca_event.schema.json"
 LEDGER_PATH = Path("charness-artifacts/metrics/rca-ledger.jsonl")
 
-# Slice 2 (auto-append into debug/issue/retro closeout prompts) is not wired yet.
-# Flip this to True only when that wiring lands; the aggregator's OFF-state
-# honesty (banner, n/a, refuse non-seed baseline) keys off this flag.
-AUTO_APPEND_WIRED = False
+# Slice 2 wired auto-append into the debug/issue/retro closeout prompts via
+# skills/shared/references/rca-ledger-append.md, so the banner reads ON. The
+# baseline figure stays n/a until live (non-seed) events accrue; the
+# seed-excluded rate keys off non-seed event presence, not off this flag.
+AUTO_APPEND_WIRED = True
 AUTO_APPEND_OFF_BANNER = "auto_append: OFF (slice 2 not wired)"
-AUTO_APPEND_ON_BANNER = "auto_append: ON"
+AUTO_APPEND_ON_BANNER = "auto_append: ON (prompt-enforced; denominator self-reported, not gate-verified)"
 NA = "n/a"
 
 portable_path = _portable_path
@@ -149,7 +150,7 @@ def _render_breakdown(label: str, breakdown: dict[str, dict[str, object]]) -> li
 def render_text(payload: dict[str, object]) -> str:
     lines = [payload["auto_append"]]  # type: ignore[list-item]
     included = payload["seed_included"]  # type: ignore[assignment]
-    lines.append("seed-included (sanity):")
+    lines.append("seed-included (sanity only — not the baseline; do not quote):")
     lines.append(
         f"    overall: {included['converted']}/{included['total']} "  # type: ignore[index]
         f"({_format_rate(included['rate'])})"  # type: ignore[index]
@@ -159,8 +160,8 @@ def render_text(payload: dict[str, object]) -> str:
     lines.append("seed-excluded (baseline figure):")
     if not payload["baseline_rate_available"]:
         lines.append(
-            "    overall: n/a (0 non-seed events; baseline window opens when "
-            "auto-append is wired)"
+            "    overall: n/a (0 non-seed events yet; auto-append is wired, "
+            "baseline figure stays n/a until live closeout events accrue)"
         )
     else:
         excluded = payload["seed_excluded"]  # type: ignore[assignment]
