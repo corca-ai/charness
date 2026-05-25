@@ -13,6 +13,15 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import scripts.mutation_sampling_lib as mutation_sampling_lib  # noqa: E402
+from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
+    UNCOVERED_MUTATION_SKIP_OUTPUT,
+    coverage_skip_reason,
+    skip_reason,
+)
+from scripts.mutation_line_coverage_lib import (  # noqa: E402
+    covered_statement_spans,
+    mutation_line_is_covered,
+)
 from scripts.mutation_sampling_lib import (  # noqa: E402
     _covered_statement_spans,
     _mutation_line_is_covered,
@@ -42,6 +51,44 @@ def test_mutation_line_coverage_counts_executed_multiline_statement_continuation
     assert _mutation_line_is_covered(3, set(), spans)
     assert _mutation_line_is_covered(4, set(), spans)
     assert not _mutation_line_is_covered(10, set(), spans)
+
+
+def test_mutation_line_coverage_counts_statement_span_boundaries() -> None:
+    spans = [(2, 4)]
+
+    assert mutation_line_is_covered(2, set(), spans)
+    assert mutation_line_is_covered(4, set(), spans)
+    assert not mutation_line_is_covered(1, set(), spans)
+    assert not mutation_line_is_covered(5, set(), spans)
+
+
+def test_covered_statement_spans_counts_end_only_coverage(tmp_path: Path) -> None:
+    target = tmp_path / "target.py"
+    target.write_text(
+        dedent(
+            """\
+            def build() -> dict[str, object]:
+                record = {
+                    "schema_version": 1,
+                    "converted": True,
+                }
+                return record
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    spans = covered_statement_spans(target, {4})
+
+    assert (2, 5) in spans
+    assert mutation_line_is_covered(5, set(), spans)
+
+
+def test_covered_statement_spans_excludes_single_line_statements(tmp_path: Path) -> None:
+    target = tmp_path / "target.py"
+    target.write_text("value = 1\n", encoding="utf-8")
+
+    assert covered_statement_spans(target, {1}) == []
 
 
 def test_mutation_line_coverage_does_not_propagate_across_function_body(
@@ -119,6 +166,45 @@ def test_covered_statement_spans_tolerates_syntax_error(tmp_path: Path) -> None:
     target.write_text("def broken(:\n", encoding="utf-8")
 
     assert _covered_statement_spans(target, {1}) == []
+
+
+def test_filter_uses_statement_spans_for_multiline_mutation_coverage(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (script_dir / "demo.py").write_text(
+        dedent(
+            """\
+            def build() -> dict[str, object]:
+                record = {
+                    "converted": True,
+                }
+                return record
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    class CoveredMutation:
+        module_path = Path("scripts/demo.py")
+        start_pos = (3, 0)
+
+    class UncoveredMutation:
+        module_path = Path("scripts/demo.py")
+        start_pos = (5, 0)
+
+    covered_lines = {"scripts/demo.py": {2}}
+    spans = covered_statement_spans(repo / "scripts" / "demo.py", covered_lines["scripts/demo.py"])
+
+    assert mutation_line_is_covered(3, covered_lines["scripts/demo.py"], spans)
+    assert coverage_skip_reason(CoveredMutation(), covered_lines, repo_root=repo) is None
+    assert skip_reason(repo, CoveredMutation(), covered_lines) is None
+    assert not mutation_line_is_covered(5, covered_lines["scripts/demo.py"], spans)
+    assert (
+        coverage_skip_reason(UncoveredMutation(), covered_lines, repo_root=repo)
+        == UNCOVERED_MUTATION_SKIP_OUTPUT
+    )
+    assert skip_reason(repo, UncoveredMutation(), covered_lines) == UNCOVERED_MUTATION_SKIP_OUTPUT
 
 
 def test_build_mutation_line_coverage_uses_statement_spans(

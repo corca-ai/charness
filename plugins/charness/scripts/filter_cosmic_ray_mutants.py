@@ -22,6 +22,14 @@ ANNOTATION_UNION_SKIP_OUTPUT = "Filtered function annotation union"
 UNCOVERED_MUTATION_SKIP_OUTPUT = "Filtered uncovered mutation line"
 ENTRY_GUARD_SKIP_OUTPUT = "Filtered trivial entry guard"
 
+if str(Path(__file__).resolve().parent.parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from scripts.mutation_line_coverage_lib import (  # noqa: E402
+    covered_statement_spans,
+    mutation_line_is_covered,
+)
+
 
 def resolve(repo_root: Path, path: Path) -> Path:
     return path if path.is_absolute() else repo_root / path
@@ -80,12 +88,21 @@ def load_coverage_lines(repo_root: Path, coverage_json: Path) -> dict[str, set[i
     return covered
 
 
-def coverage_skip_reason(mutation: object, covered_lines: dict[str, set[int]]) -> str | None:
+def coverage_skip_reason(
+    mutation: object,
+    covered_lines: dict[str, set[int]],
+    repo_root: Path = Path("."),
+) -> str | None:
     if not covered_lines:
         return None
     module_path = getattr(mutation, "module_path", Path()).as_posix()
     line_number, _start_col = getattr(mutation, "start_pos", (0, 0))
-    if line_number not in covered_lines.get(module_path, set()):
+    covered = covered_lines.get(module_path, set())
+    if not mutation_line_is_covered(
+        int(line_number),
+        covered,
+        covered_statement_spans(resolve(repo_root, Path(module_path)), covered),
+    ):
         return UNCOVERED_MUTATION_SKIP_OUTPUT
     return None
 
@@ -97,7 +114,7 @@ def skip_reason(repo_root: Path, mutation: object, covered_lines: dict[str, set[
     line = source_line(repo_root, getattr(mutation, "module_path", Path()), line_number)
     if is_trivial_entry_guard_mutation(line, getattr(mutation, "operator_name", "")):
         return ENTRY_GUARD_SKIP_OUTPUT
-    return coverage_skip_reason(mutation, covered_lines)
+    return coverage_skip_reason(mutation, covered_lines, repo_root=repo_root)
 
 
 def filter_session(repo_root: Path, session: Path, coverage_json: Path | None = None) -> dict[str, int]:

@@ -3,7 +3,7 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 44,
+  "source_artifact_count": 45,
   "indexed_artifact_count": 36,
   "risk_class_counts": {
     "contract-freeze-risk": 21,
@@ -544,6 +544,10 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-04-21-committed-plugin-export-drift.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-05-26-issue-216-mutation-scope-oracle.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {

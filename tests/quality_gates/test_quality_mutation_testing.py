@@ -8,6 +8,7 @@ exercised by repo-level CI and is asserted in the closeout flow instead.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shutil
@@ -676,6 +677,24 @@ def test_cosmic_ray_filter_identifies_uncovered_mutation_lines() -> None:
 
     assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {10, 11}}) == UNCOVERED_MUTATION_SKIP_OUTPUT
     assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {12}}) is None
+
+
+def test_cosmic_ray_filter_bootstraps_repo_root_for_direct_script_import(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = str(ROOT)
+    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != root])
+    spec = importlib.util.spec_from_file_location(
+        "filter_cosmic_ray_mutants_direct_import_probe",
+        ROOT / "scripts" / "filter_cosmic_ray_mutants.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+
+    spec.loader.exec_module(module)
+
+    assert sys.path[0] == root
+    assert module.mutation_line_is_covered(1, {1}, [])
 
 
 def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> None:

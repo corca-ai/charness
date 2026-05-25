@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ast
 import hashlib
 import json
 import os
@@ -11,6 +10,13 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+
+from scripts.mutation_line_coverage_lib import (
+    covered_statement_spans as _covered_statement_spans,
+)
+from scripts.mutation_line_coverage_lib import (
+    mutation_line_is_covered as _mutation_line_is_covered,
+)
 
 
 def stable_hash(value: str) -> str:
@@ -309,47 +315,6 @@ def build_mutation_line_coverage(
                 else:
                     stats[module_path]["uncovered"] += 1
     return stats
-
-
-def _covered_statement_spans(path: Path, covered: set[int]) -> list[tuple[int, int]]:
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    except SyntaxError:
-        return []
-    spans: list[tuple[int, int]] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.stmt):
-            continue
-        start = getattr(node, "lineno", None)
-        end = getattr(node, "end_lineno", None)
-        if start is None or end is None or start == end:
-            continue
-        span_end = int(end)
-        if (suite_start := _child_statement_suite_start(node)) is not None:
-            span_end = min(span_end, suite_start - 1)
-        start = int(start)
-        if span_end <= start:
-            continue
-        if any(line in covered for line in range(start, span_end + 1)):
-            spans.append((start, span_end))
-    return spans
-
-
-def _child_statement_suite_start(node: ast.stmt) -> int | None:
-    starts: list[int] = []
-    for field in ("body", "orelse", "finalbody", "handlers", "cases"):
-        for item in getattr(node, field, None) or []:
-            if isinstance(item, (ast.stmt, ast.ExceptHandler)):
-                starts.append(item.lineno)
-            elif isinstance(item, ast.match_case):
-                starts.extend(child.lineno for child in item.body if isinstance(child, ast.stmt))
-    return min(starts, default=None)
-
-
-def _mutation_line_is_covered(line_number: int, covered: set[int], spans: list[tuple[int, int]]) -> bool:
-    if line_number in covered:
-        return True
-    return any(start <= line_number <= end for start, end in spans)
 
 
 def filter_eligible_by_mutation_line_coverage(
