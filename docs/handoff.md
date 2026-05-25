@@ -14,16 +14,10 @@
 
 ## Current State
 
-- **Quality/critique sweep completed locally**: fresh-eye reviewers executed and
-  fixes are committed for #211 plus sibling defects: RCA timestamp calendar
-  validation, mutation-line continuation coverage without function-body
-  overreach, current-pointer constant propagation with local-shadow guard, and
-  `sync-support` exit-code alignment to `doctor_disposition`. A closeout-found
-  standing-test economics race was also fixed so disappearing pytest temp paths
-  do not crash inventory.
-- **#211 Mutation test regression**: locally reproduced before fix; final
-  committed mutation sampler `final5` reported 0 changed-line blockers and 0
-  mutation-line coverage exclusions. GitHub currently reports #211 closed.
+- **Quality/critique sweep completed locally**: #211 and sibling fixes landed
+  for RCA timestamp validation, mutation-line continuation coverage,
+  current-pointer constants, `sync-support` exit codes, and disappearing pytest
+  temp paths. GitHub reports #211 closed.
 - **v0.7.12 release is published**: `main` and tag `v0.7.12` are on GitHub;
   release record is verified in [release latest](../charness-artifacts/release/latest.md).
 - **Pytest temp blowup follow-up**: `run-quality.sh` now uses a repo-keyed
@@ -35,19 +29,16 @@
   without `PYTHONPATH`; #214 adds advisory CLI ergonomics registry/archetype
   inputs and a standing `run-quality` advisory inventory phase.
 - **#215 Mutation test regression is closed on GitHub**: mutation coverage
-  sampling now scopes generated coverage rcfiles to the repo root so deleted
-  pytest temp sources outside the checkout cannot block coverage JSON/report
-  generation. Survivor-adjacent tests now pin runtime profile branching, nested
-  setup parent creation, and GitHub Actions JSON formatting.
+  sampling now scopes generated coverage rcfiles to the repo root, and
+  survivor-adjacent tests pin runtime profile, setup parent creation, and
+  GitHub Actions JSON formatting contracts.
 - **#184/#185 RCA ledger slices 1+2 landed earlier**. Open by design: numeric
   target is baseline-first, revisit after 2-4 weeks of live seed-excluded data;
   #185 LLM-as-judge and usage-episodes activation remain un-specced.
 
 ## Next Session
 
-1. Publish the next patch release after the #215 closeout if not already done;
-   include the pytest-temp retention, deferred issue closeouts, and mutation
-   coverage probe fix in the release notes.
+1. Publish the next patch release after the #215 closeout if not already done.
 2. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
@@ -67,5 +58,4 @@
 
 ## References
 
-- [quality posture](../charness-artifacts/quality/latest.md), [debug artifact](../charness-artifacts/debug/latest.md),
-  [release surface](../charness-artifacts/release/latest.md), [usage-episodes spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
+- [quality posture](../charness-artifacts/quality/latest.md), [debug artifact](../charness-artifacts/debug/latest.md), [release surface](../charness-artifacts/release/latest.md)

@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-05-24
+Date: 2026-05-25
 
 ## Scope
 
-Advanced `charness` toward release `0.7.12` (tag `v0.7.12`) through the repo-owned release helper.
+Advanced `charness` toward release `0.7.13` (tag `v0.7.13`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.7.11`
-- target version: `0.7.12`
+- previous version: `0.7.12`
+- target version: `0.7.13`
 - git branch: `main`
 - git remote: `origin`
 
@@ -21,14 +21,14 @@ Advanced `charness` toward release `0.7.12` (tag `v0.7.12`) through the repo-own
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.7.12`
-- public release surface verification: verified
+- branch/tag push: prepared; completes after this release commit and tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.13`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by `gh release view v0.7.12`.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
@@ -45,19 +45,15 @@ Advanced `charness` toward release `0.7.12` (tag `v0.7.12`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-05-24-v0.7.12-release-risk-check.md`.
+- Review proof: `charness-artifacts/critique/2026-05-25-v0.7.13-release-risk-check.md`.
 
 ## Fresh Checkout Probes
 
 - No repo-declared fresh checkout probes were configured for this release.
 
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.7.12`.
-
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
