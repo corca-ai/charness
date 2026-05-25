@@ -34,16 +34,20 @@
   no-ops; #213 `validate_packaging_install_surface.py` bootstraps repo imports
   without `PYTHONPATH`; #214 adds advisory CLI ergonomics registry/archetype
   inputs and a standing `run-quality` advisory inventory phase.
-- **#215 Mutation test regression is open**: scheduled mutation testing on
-  `6afea15` missed the 80% threshold; treat it as the first self-fixable pickup.
+- **#215 Mutation test regression is closed on GitHub**: mutation coverage
+  sampling now scopes generated coverage rcfiles to the repo root so deleted
+  pytest temp sources outside the checkout cannot block coverage JSON/report
+  generation. Survivor-adjacent tests now pin runtime profile branching, nested
+  setup parent creation, and GitHub Actions JSON formatting.
 - **#184/#185 RCA ledger slices 1+2 landed earlier**. Open by design: numeric
   target is baseline-first, revisit after 2-4 weeks of live seed-excluded data;
   #185 LLM-as-judge and usage-episodes activation remain un-specced.
 
 ## Next Session
 
-1. Resolve #215: inspect the workflow body, narrow survived mutants locally,
-   commit a targeted fix, and verify with the mutation closeout path.
+1. Publish the next patch release after the #215 closeout if not already done;
+   include the pytest-temp retention, deferred issue closeouts, and mutation
+   coverage probe fix in the release notes.
 2. RCA ledger baseline observation: let live non-seed events accrue from
    `debug`/`issue`/`retro` closeouts. Revisit after 2-4 weeks with
    `python3 scripts/aggregate_rca_ledger.py`.
