@@ -519,12 +519,14 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-07",
+      "reviewed_on": "2026-05-25",
       "observed_evidence": [
         "The checked-in public core now makes a real workflow miss trigger a short `session` retro before resuming work, and it requires the retro to separate local symptom from the workflow or capability change that would prevent the repeat trap.",
         "That persistence rule is reinforced in `skills/public/retro/references/trigger-and-persistence.md`, and the current repo treats `charness-artifacts/retro/recent-lessons.md` as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
         "That keeps `retro-structural-cause-followup` as a reviewed consumer seam worth re-promoting after the `v0.4.1` release follow-up work: pushing past a local explanation toward a structural cause and durable memory update is still explicit checked-in `retro` behavior, not only a conversation style preference.",
-        "`persist_retro_artifact.py` now normalizes `--artifact-name` to end in `.md` and refuses to overwrite a non-stub `summary_path` when lesson selection yields zero candidates. `--force-empty-summary` is the named opt-in, and `skills/public/retro/SKILL.md` step 5 records the legacy hand-curated summary case so a first retro after legacy adoption does not silently drop curated lessons."
+        "`persist_retro_artifact.py` now normalizes `--artifact-name` to end in `.md` and refuses to overwrite a non-stub `summary_path` when lesson selection yields zero candidates. `--force-empty-summary` is the named opt-in, and `skills/public/retro/SKILL.md` step 5 records the legacy hand-curated summary case so a first retro after legacy adoption does not silently drop curated lessons.",
+        "`skills/public/retro/references/phase-aware-efficiency.md` now makes efficiency retros distinguish user-intended exploration from post-triage drift, requiring a triage lock with `fix now`, `deferred`, `needs user call`, and `false positive` before broad exploration can be called waste.",
+        "`docs/retro-self-improvement-spec.md` preserves the host boundary from #218: Codex SQLite/TUI cost maps are evidence producers with measured/proxy/unavailable semantics, while the portable `retro` rule owns phase-aware waste interpretation."
       ]
     }
   ]

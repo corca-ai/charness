@@ -66,6 +66,11 @@ memory.
     through a stable, parsable, declared local source
 - Never fabricate turn, token, or tool-call counts. If the host log does not
   expose them, `retro` must say so plainly and fall back to portable proxies.
+- Before labeling broad exploration as waste, `retro` must first identify phase
+  intent and the triage lock. Portable interpretation rules live in
+  [`phase-aware-efficiency.md`](../skills/public/retro/references/phase-aware-efficiency.md);
+  Codex-specific cost maps such as SQLite/TUI parsing remain host-specific
+  evidence producers and must not define the public waste rule.
 - Expand `quality` so skill ergonomics are an explicit review lens when a repo
   authors skills:
   - concise `SKILL.md` core

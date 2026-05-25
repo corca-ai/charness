@@ -24,6 +24,13 @@ Identify where effort was lost:
 - repeated reconstruction
 - slow approval loops
 
+For efficiency claims, identify the phase before prescribing a fix. Broad
+exploration is not waste solely because it was broad; first ask whether it was
+user-intended, where the triage lock happened, and whether later work drifted
+after that lock. When phase is inferred rather than directly evidenced, reuse
+the `strong`, `moderate`, `weak`, or `contested` claim-strength tags from
+`Context`.
+
 Prefer causal explanation over complaint.
 
 ## Critical Decisions

@@ -40,3 +40,4 @@ The issue asks whether the audit script belongs in public `retro` or support, wh
 ## Relationship to #217
 
 #218 is an evidence-capture and host-log-analysis companion to #217. It should not replace #217's portable interpretation rules. The safer ordering is to define #217's phase-aware waste attribution contract first, then upstream the Codex analyzer as a host-specific producer of evidence that feeds that contract.
+

@@ -71,6 +71,8 @@ Adapter policy:
    - `Next Improvements`: concrete changes for the next session
    - `Persisted`: whether the retro was written to a durable artifact, and if
      not, why not
+   - for token, tool-call, broad exploration, or efficiency claims, apply
+     `references/phase-aware-efficiency.md` before labeling work as waste
 4. Make `Next Improvements` concrete.
    - `workflow`: change the sequence, gate, or review habit
    - `capability`: add or adjust a skill, tool, adapter, preset, or automation
@@ -153,6 +155,8 @@ The result should usually include:
 
 - Separate observed facts from proposed improvements.
 - Do not fabricate metrics when the adapter does not provide a real source.
+- Do not label broad exploration as waste solely because it was broad; identify
+  phase intent and the triage lock first.
 - Weekly retros may stay narrative without metrics, but must say so explicitly.
 - If no prior weekly retro exists, say so explicitly instead of implying a trend line.
 - Capability suggestions exist to reduce future waste, not to show tool awareness.
@@ -169,6 +173,7 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/mode-guide.md`
 - `references/section-guide.md`
+- `references/phase-aware-efficiency.md`
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
 - `references/weekly-trends.md`
