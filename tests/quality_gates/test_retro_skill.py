@@ -28,9 +28,11 @@ def test_retro_efficiency_waste_is_phase_aware() -> None:
 
     assert "references/phase-aware-efficiency.md" in skill_text
     assert "phase intent and the triage lock" in skill_text
+    assert "audit_codex_session.py" in skill_text
     assert "Broad" in section_text and "not waste solely because it was broad" in section_text
     assert "Classify high-cost activity by phase" in efficiency_text
     assert "Exploration -> Triage -> Implementation -> Verification" in efficiency_text
     assert "`fix now`, `deferred`, `needs user call`, and" in efficiency_text
     assert "measured, proxy, and unavailable signals" in efficiency_text
+    assert "audit_codex_session.py" in efficiency_text
     assert "Do not store one session's scope narrowing" in efficiency_text

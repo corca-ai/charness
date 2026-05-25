@@ -69,8 +69,10 @@ memory.
 - Before labeling broad exploration as waste, `retro` must first identify phase
   intent and the triage lock. Portable interpretation rules live in
   [`phase-aware-efficiency.md`](../skills/public/retro/references/phase-aware-efficiency.md);
-  Codex-specific cost maps such as SQLite/TUI parsing remain host-specific
-  evidence producers and must not define the public waste rule.
+  Codex-specific cost maps such as
+  [`audit_codex_session.py`](../skills/public/retro/scripts/audit_codex_session.py)
+  remain host-specific evidence producers and must not define the public waste
+  rule.
 - Expand `quality` so skill ergonomics are an explicit review lens when a repo
   authors skills:
   - concise `SKILL.md` core
@@ -273,8 +275,9 @@ Implication:
 - turn counts: available from `turn.id=` lines
 - tool-call counts: available from `ToolCall:` lines
 - token counts: supported in Codex internals, but not yet proven to be emitted
-  into the default local logs inspected here; treat as `unavailable` until the
-  probe proves a stable local path
+  as full-session totals in the default local logs inspected here. The Codex
+  audit script may report SQLite runtime/context token snapshots as `snapshot`,
+  but not as a proven session total.
 
 ## Probe Design Consequences
 

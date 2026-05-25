@@ -55,9 +55,11 @@ Adapter policy:
    - existing handoff or prior retro artifacts when they matter
    - for `weekly`, the most recent durable weekly retro under `output_dir` when one exists
    - adapter-defined `evidence_paths`
-   - for host-log-derived efficiency signals, prefer
-     `$SKILL_DIR/scripts/probe_host_logs.py` before claiming turns, tokens, or tool-call
-     counts; pass `--repo-root .` when probing the current repo
+   - for host-log-derived efficiency signals, prefer `$SKILL_DIR/scripts/probe_host_logs.py`
+     before claiming turns, tokens, or tool-call counts; pass `--repo-root .`
+     when probing the current repo. For Codex session-level detail, use
+     `$SKILL_DIR/scripts/audit_codex_session.py` as an evidence producer, not a
+     waste conclusion.
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next

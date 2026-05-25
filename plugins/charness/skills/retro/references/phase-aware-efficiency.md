@@ -53,6 +53,9 @@ Keep measured, proxy, and unavailable signals separate:
 
 Do not store one session's scope narrowing, thread ids, or intended breadth in
 the adapter. Put that context in the retro narrative or command flags.
+For Codex session detail, `$SKILL_DIR/scripts/audit_codex_session.py` may supply
+thread-scoped evidence pointers; its phase labels still require this review
+before anything is called waste.
 
 ## Counterfactual Prompts
 

@@ -526,7 +526,8 @@
         "That keeps `retro-structural-cause-followup` as a reviewed consumer seam worth re-promoting after the `v0.4.1` release follow-up work: pushing past a local explanation toward a structural cause and durable memory update is still explicit checked-in `retro` behavior, not only a conversation style preference.",
         "`persist_retro_artifact.py` now normalizes `--artifact-name` to end in `.md` and refuses to overwrite a non-stub `summary_path` when lesson selection yields zero candidates. `--force-empty-summary` is the named opt-in, and `skills/public/retro/SKILL.md` step 5 records the legacy hand-curated summary case so a first retro after legacy adoption does not silently drop curated lessons.",
         "`skills/public/retro/references/phase-aware-efficiency.md` now makes efficiency retros distinguish user-intended exploration from post-triage drift, requiring a triage lock with `fix now`, `deferred`, `needs user call`, and `false positive` before broad exploration can be called waste.",
-        "`docs/retro-self-improvement-spec.md` preserves the host boundary from #218: Codex SQLite/TUI cost maps are evidence producers with measured/proxy/unavailable semantics, while the portable `retro` rule owns phase-aware waste interpretation."
+        "`docs/retro-self-improvement-spec.md` preserves the host boundary from #218: Codex SQLite/TUI cost maps are evidence producers with measured/proxy/unavailable semantics, while the portable `retro` rule owns phase-aware waste interpretation.",
+        "`skills/public/retro/scripts/audit_codex_session.py` is now the reviewed Codex evidence-producer path for session efficiency detail: it keeps command snippets off by default, reports token data as `snapshot` or `unavailable` instead of full-session totals, and treats unreadable or schema-drifted sqlite sources as unavailable evidence rather than zero-cost sessions."
       ]
     }
   ]
