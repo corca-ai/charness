@@ -36,6 +36,8 @@ build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payl
 resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
 workflow_integrations = _list_lib.workflow_integrations
 workflow_recommendations_for_task = _list_lib.workflow_recommendations_for_task
+_public_rec = SKILL_RUNTIME.load_local_skill_module(__file__, "public_skill_recommendations")
+public_skill_recommendations_for_task = _public_rec.public_skill_recommendations_for_task
 _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory, read_only_inventory_artifacts = _artifact.persist_inventory, _artifact.read_only_inventory_artifacts
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
@@ -189,6 +191,8 @@ def main() -> None:
     support_skill_recommendations = []
     support_recommendation_query = None
     workflow_recommendations = []
+    public_skill_recommendations = []
+    public_recommendation_query = None
     if args.recommend_for_task:
         support_skill_recommendations = support_recommendations_for_task(
             args.recommend_for_task,
@@ -197,7 +201,15 @@ def main() -> None:
             integrations=integration_entries,
         )
         workflow_recommendations = workflow_recommendations_for_task(args.recommend_for_task)
+        public_skill_recommendations = public_skill_recommendations_for_task(
+            args.recommend_for_task,
+            public_entries=public_entries,
+        )
         support_recommendation_query = {
+            "mode": "task_text",
+            "task_text": args.recommend_for_task,
+        }
+        public_recommendation_query = {
             "mode": "task_text",
             "task_text": args.recommend_for_task,
         }
@@ -215,6 +227,8 @@ def main() -> None:
         support_recommendation_query=support_recommendation_query,
         workflow_recommendations=workflow_recommendations,
         workflow_integrations=workflow_integrations(),
+        public_skill_recommendations=public_skill_recommendations,
+        public_recommendation_query=public_recommendation_query,
     )
     if args.read_only:
         payload["artifacts"] = read_only_inventory_artifacts()

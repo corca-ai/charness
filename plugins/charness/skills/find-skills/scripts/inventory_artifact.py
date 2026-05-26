@@ -123,6 +123,8 @@ def _canonical_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     canonical["support_recommendation_query"] = None
     canonical["support_recommendation_note"] = None
     canonical["workflow_recommendations"] = []
+    canonical["public_skill_recommendations"] = []
+    canonical["public_recommendation_query"] = None
     return canonical
 
 

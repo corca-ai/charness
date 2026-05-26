@@ -43,6 +43,15 @@ def _write_worktree_adapter(root: Path) -> None:
     (root / ".agents" / "worktree-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
 
 
+def _write_public_skill(root: Path, skill_id: str, description: str) -> None:
+    skill_dir = root / "skills" / "public" / skill_id
+    skill_dir.mkdir(parents=True, exist_ok=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", f"name: {skill_id}", f'description: "{description}"', "---", "", f"# {skill_id.title()}"]) + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_specdown_surface(root: Path) -> None:
     support = root / "skills" / "support" / "specdown"
     support.mkdir(parents=True)
@@ -462,3 +471,76 @@ def test_recommend_for_task_note_absent_when_recommendation_query_absent(tmp_pat
     payload = _run_list_capabilities(tmp_path)
 
     assert payload["support_recommendation_note"] is None
+
+
+def test_recommend_for_task_surfaces_verbatim_public_skill(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "hitl", "Insert deliberate human judgment into a bounded review loop.")
+
+    task = "Let's do a hitl review of docs/specs/index.spec.md."
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task)
+
+    assert payload["public_recommendation_query"] == {"mode": "task_text", "task_text": task}
+    assert payload["public_skill_recommendations"] == [
+        {
+            "id": "hitl",
+            "layer": "public skill",
+            "path": "skills/public/hitl/SKILL.md",
+            "summary": "Insert deliberate human judgment into a bounded review loop.",
+            "matched_triggers": ["hitl"],
+            "referenced_paths": [],
+            "next_step": (
+                "Invoke the `hitl` public skill (the task names it verbatim) "
+                "before routing to an external tool or raw shell."
+            ),
+        }
+    ]
+    artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
+    assert artifact_json["inventory"]["public_skill_recommendations"] == []
+    assert artifact_json["inventory"]["public_recommendation_query"] is None
+
+
+def test_recommend_for_task_public_match_is_token_bounded(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "impl", "Move work into code.")
+    _write_public_skill(tmp_path, "spec", "Turn a concept into an implementation contract.")
+    _write_public_skill(tmp_path, "hitl", "Bounded human review loop.")
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommend-for-task",
+        "implement a simple feature that respects the existing specs directory",
+    )
+
+    assert payload["public_skill_recommendations"] == []
+
+
+def test_recommend_for_task_public_match_suppresses_support_empty_note(tmp_path: Path) -> None:
+    _write_browserlike_surface(tmp_path, populate_intent_triggers=False)
+    _write_public_skill(tmp_path, "critique", "Before-the-fact critique of a non-trivial change.")
+
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "critique this branch before we merge")
+
+    assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["critique"]
+    assert payload["support_skill_recommendations"] == []
+    assert payload["support_recommendation_note"] is None
+
+
+def test_recommend_for_task_public_match_ignores_cjk_glued_name(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "hitl", "Bounded human review loop.")
+
+    # A CJK letter glued directly to the ASCII name is not a verbatim naming;
+    # the Unicode word boundary must treat it as a non-boundary.
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "hitl스킬을 붙여서 실행")
+
+    assert payload["public_skill_recommendations"] == []
+
+
+def test_recommend_for_task_public_match_handles_space_bounded_name_in_korean(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "hitl", "Bounded human review loop.")
+
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "hitl 로 문서를 검토합시다")
+
+    assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["hitl"]

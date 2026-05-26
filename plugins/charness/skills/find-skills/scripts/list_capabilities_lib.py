@@ -309,12 +309,15 @@ def build_inventory_payload(
     support_recommendation_query: dict[str, Any] | None = None,
     workflow_recommendations: list[dict[str, Any]] | None = None,
     workflow_integrations: list[dict[str, Any]] | None = None,
+    public_skill_recommendations: list[dict[str, Any]] | None = None,
+    public_recommendation_query: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     show_note = (
         support_recommendation_query is not None
         and not support_skill_recommendations
         and not tool_recommendations
         and not workflow_recommendations
+        and not public_skill_recommendations
         and (support_entries or _validation_shaped_task(support_recommendation_query))
     )
     note = (
@@ -345,5 +348,7 @@ def build_inventory_payload(
         "support_skill_recommendations": support_skill_recommendations or [],
         "support_recommendation_query": support_recommendation_query,
         "workflow_recommendations": workflow_recommendations or [],
+        "public_skill_recommendations": public_skill_recommendations or [],
+        "public_recommendation_query": public_recommendation_query,
         "support_recommendation_note": note,
     }

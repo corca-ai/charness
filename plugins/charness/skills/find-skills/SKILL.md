@@ -139,7 +139,7 @@ What this does not do:
    - use a support capability through the right workflow
    - install or wire an external integration if the policy already supports it,
      and surface the supported access modes when that changes the next step
-   - use structured recommendation payloads for external-tool, runtime, validation, or support routes
+   - use structured recommendation payloads for external-tool, runtime, validation, support, or verbatim-named public-skill (`public_skill_recommendations`) routes
    - when the user asks about stronger validation, prompt-affecting or
      behavior-affecting changes, validation-shaped review/closeout, issue
      closeout, or operator reading test wording, query
