@@ -21,13 +21,17 @@
 - **0.9.0 shipped the `achieve` skill publicly for the first time**, plus the
   #223 quality/achieve duplicate-test-pressure contract, find-skills/achieve
   test-regression fixes, and a `local-linux-aarch64-4cpu` runtime budget profile.
-- **#225 is the active self-fixable issue** (filed this session):
-  [pre-push quality gate non-deterministic under xdist + cautilus version drift](https://github.com/corca-ai/charness/issues/225).
-  On this 4-CPU aarch64 host the pre-push `pytest` phase fails for environment
-  reasons only (parallel test-isolation flakiness — affected tests pass in
-  isolation; cautilus `0.14.2` lacks the `discover scenarios propose` surface),
-  so 0.9.0 was pushed with `--no-verify`. Resolving #225 restores a deterministic
-  pre-push gate here.
+- **#225 is RESOLVED** (commit `7e757c39` on `main`, issue closed): the
+  pre-push gate is deterministic again and honest pushes from this host no
+  longer need `--no-verify` (verified: the push of `7e757c39` ran the real
+  pre-push hook and passed 69/0). True root cause was NOT generic xdist
+  flakiness — `run-quality.sh` placed the pytest basetemp *inside* the repo
+  (temp-root fallback used bare `$HOME` instead of `$HOME/.cache`, and this
+  host's repo is `$HOME/charness`), which broke external-worktree/outside-git/
+  copytree fixtures; plus cautilus/coverage tests hard-failed on absent optional
+  capabilities instead of skipping. Fix added a guard that hard-fails if the
+  temp root ever resolves inside the repo. See
+  [debug artifact](../charness-artifacts/debug/2026-05-27-issue-225-prepush-nondeterminism.md).
 - **#224 and #219 are scheduled mutation-test regression issues** (the recurring
   bot-filed class, successor to the old #216/#208). Treat as the mutation
   backlog, not new bugs.
@@ -36,23 +40,21 @@
 
 ## Next Session
 
-1. Resolve **#225** via `issue` workflow. It is the highest-leverage move: it
-   unblocks a clean pre-push gate so future pushes here do not need `--no-verify`.
-   Two distinct root causes — handle as separate fix-units:
-   - parallel xdist test-isolation: the `*_fails_closed_outside_git` /
-     `strict_listing` / `setup_inspect` / `issue_skill` / `portable_json` /
-     `check_coverage` / `monorepo_layout` / `critique_skill` /
-     `test_production_ratio` / `list_external_links` tests pass under
-     `pytest -p no:xdist` but fail under `run-quality.sh` (`pytest -n auto`).
-   - cautilus eval tests hard-fail instead of skipping on version/surface drift.
-2. For the mutation backlog (#224/#219), classify before mutating; scheduled
-   mutation can be red even when reachable score clears threshold if sampled
-   scope gaps remain — score alone is not closeout.
+1. **Mutation backlog (#224/#219)** is now the top self-fixable work. Classify
+   before mutating; scheduled mutation can be red even when reachable score
+   clears threshold if sampled scope gaps remain — score alone is not closeout.
+2. **#184/#185** remain deferred product/AI-ML direction work (ideation/metrics
+   backlog, not urgent maintenance).
+3. Optional follow-up from #225: `verify-closeout` for `direct-commit` only
+   inspects the commit body, so the bug ledger lives in the #225 close
+   *comment* (all fields present, state CLOSED) rather than the commit body —
+   no action needed, just know the tool reports `missing_fields` for this carrier.
 
 ## Discuss
 
-- Pre-push gate on multi-CPU hosts is currently non-deterministic (#225); until
-  fixed, honest pushes from this env need `--no-verify` with the reason recorded.
+- Pre-push gate determinism is restored (#225 resolved); honest pushes from this
+  host no longer need `--no-verify`. Watch for a regressed temp-root: the new
+  `run-quality.sh` guard now hard-fails loudly if the basetemp lands in the repo.
 - Current PR CI posture is intentional maintainer-local enforcement per
   [operating contract](./conventions/operating-contract.md); do not reopen unless
   outside PRs become recurring.
