@@ -15,6 +15,7 @@ DOGFOOD_PATH = Path("docs/public-skill-dogfood.json")
 VALID_REVIEW_STATUSES = ("planned", "reviewed")
 
 REPO_SHAPE_HINTS = {
+    "achieve": "repo with a long-running autonomous objective worth shaping into a reviewable goal before activation",
     "announcement": "repo with recent checked-in changes and one clear delivery context such as release notes or a team update",
     "create-cli": "tooling repo where ad hoc shell or Python entrypoints already exist and the command surface needs to be normalized",
     "create-skill": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
@@ -36,6 +37,7 @@ REPO_SHAPE_HINTS = {
 }
 
 PROMPT_HINTS = {
+    "achieve": "$achieve make the accumulated local commits safe to push and give me a confidence report for what changed, what was verified, and what stays risky.",
     "announcement": "Summarize the latest repo changes into a chat-ready update and keep the draft scoped to what changed.",
     "create-cli": "We keep adding ad hoc scripts here; normalize this into one repo-owned CLI before the command surface sprawls further.",
     "create-skill": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
@@ -57,6 +59,10 @@ PROMPT_HINTS = {
 }
 
 EVIDENCE_OVERRIDES = {
+    "achieve": [
+        "saves a draft goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with an explicit `/goal @...` activation line",
+        "tells the user the file is inert until activation and does not start executing slices itself",
+    ],
     "create-skill": [
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",

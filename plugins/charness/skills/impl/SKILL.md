@@ -177,8 +177,7 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 - If a stronger verification path exists but needs permissions, setup, or an
   external tool, ask for it rather than pretending the weaker proof is enough.
 - Do not call a same-agent review a critique.
-- Do not skip critique for task-completing repo work just because the code
-  looks locally clean.
+- Do not skip critique for task-completing repo work just because code looks clean.
 - Do not commit a source-touching slice without recording `Lint Gate` per
   `references/verification-ladder.md`.
 - Do not reinvent one-off critique angle selection when the standalone `critique` skill fits the slice.
@@ -198,3 +197,4 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
 - `../../shared/references/external-capability-proof-ladder.md`
+- `../../shared/references/active-goal-coordination.md`

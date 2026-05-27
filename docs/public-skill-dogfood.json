@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "review_required_skills": [
+    "achieve",
     "announcement",
     "create-cli",
     "create-skill",
@@ -21,6 +22,31 @@
     "spec"
   ],
   "cases": [
+    {
+      "skill_id": "achieve",
+      "prompt": "$achieve make the accumulated local commits safe to push and give me a confidence report for what changed, what was verified, and what stays risky.",
+      "repo_shape": "repo with a long-running autonomous objective worth shaping into a reviewable goal before activation",
+      "expected_skill": "achieve",
+      "expected_artifact": null,
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `achieve` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "saves a draft goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with an explicit `/goal @...` activation line",
+        "tells the user the file is inert until activation and does not start executing slices itself"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-05-26",
+      "observed_evidence": [
+        "The checked-in `achieve` core Guardrails forbid generic task-runner behavior, auto-start before activation, handoff-as-running-scratchpad, broad gates after every small commit, and claiming live/provider proof when only local checks ran, which matches the design non-goals.",
+        "The goal artifact is created at `Status: draft` with an explicit `/goal @...` activation line, and `upsert_goal.py` never overwrites an existing body (it only rewrites the `Status:` line and only when it changes), so a reviewable activation artifact is produced rather than a runaway goal.",
+        "Metrics are represented honestly as host-agnostic shallow signals via `probe_host_logs.py` with deep Codex audit best-effort and `Metrics: when available`, instead of fabricating token or tool-call totals the host log does not expose.",
+        "The cross-skill behavior is owned by a presence-gated shared reference (`skills/shared/references/active-goal-coordination.md`) cited by impl/quality/critique/issue and is a silent no-op when no active goal artifact exists, so each coordinated skill stays useful standalone.",
+        "A fresh-eye subagent review found no correctness blockers in the four `achieve` scripts or the goal artifact helpers; slice append produces no trailing whitespace or doubled blank lines and `check_goal_artifact.py` passes on a scaffolded artifact."
+      ]
+    },
     {
       "skill_id": "announcement",
       "prompt": "Summarize the latest repo changes into a chat-ready update and keep the draft scoped to what changed.",

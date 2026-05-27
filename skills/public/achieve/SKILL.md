@@ -1,0 +1,114 @@
+---
+name: achieve
+description: "Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine."
+---
+
+# Achieve
+
+Use this when the user wants to prepare, strengthen, run, or audit a
+long-running autonomous objective — including prose like `$achieve <outcome>` or
+a request for a reviewable `/goal @file` activation artifact.
+
+The core problem is not long autonomous work. It is *unstructured* long
+autonomous work: weak goal contracts, invisible progress, repeated closeout
+ritual, broad gates run too often, and no final confidence story. `achieve`
+turns prose intent into one auditable goal artifact and coordinates the existing
+workflow skills around it. It does not execute the run loop itself.
+
+## Bootstrap
+
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Every
+invocation starts here.
+
+```bash
+# 1. current repo and workflow context
+sed -n '1,200p' docs/handoff.md 2>/dev/null || true
+git status --short --branch
+git log --oneline -10
+
+# 2. any active goal already on disk
+ls charness-artifacts/goals/ 2>/dev/null || true
+
+# 3. inspect or scaffold the goal artifact (helpers preserve manual content)
+python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . --slug <slug> --date <yyyy-mm-dd>
+python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug> --title "<title>"
+```
+
+If a goal artifact for this work already exists, read it first and continue its
+lifecycle instead of starting a new one.
+
+## Workflow
+
+`achieve` runs one goal as three phases. See `references/lifecycle.md` for the
+full per-phase contract and `references/goal-artifact.md` for the artifact shape
+and helper usage.
+
+1. Before — shape and save.
+   - interview from prose with a small number of high-leverage questions; stop
+     when the work has enough shape to save a reviewable artifact
+   - establish outcome, non-goals, boundaries, user acceptance, verification
+     plan (low-cost / high-confidence / external-or-live), slice sequence,
+     critique plan, stop conditions, and reporting expectations
+   - save with `upsert_goal.py` at status `draft`
+   - tell the user the file is inert until they run `/goal @...`; do not start
+     executing slices yourself
+2. During — slice and record.
+   - treat the active goal artifact as the slice memory surface, not `handoff`
+   - before a substantial slice, state its objective and expected evidence
+   - after each slice, append a report with `append_slice_log.py`
+   - use targeted deterministic checks per slice; reserve broad gates and
+     expensive proof for bundle boundaries or the final stage
+   - keep critique slice-level, not commit-level
+   - file off-goal findings through `issue`; record only the reference and
+     reason in the artifact
+   - on an unresolvable blocker, flip status to `blocked`, record the blocker
+     and attempted paths, and ask the user
+3. After — prove and reflect.
+   - run the final quality gate or its documented local substitute
+   - record high-confidence / live proof results, or state explicitly that they
+     were not run
+   - write final self-verification, residual risks, non-claims, and concrete
+     user verification instructions
+   - run `retro` for the automatic efficiency review
+   - run `check_goal_artifact.py`, then flip status to `complete`
+
+## Coordination
+
+`achieve` reuses existing skills and must keep each useful standalone. See
+`references/coordination.md` for the per-skill roles and the `handoff` boundary.
+
+- `ideation`/`spec` upstream; `impl` for slices; `quality` for verification
+  cadence; `issue` for off-goal findings; `critique` for plan/slice/final
+  review; `retro` for the after-action review.
+- Do not absorb their work or add `achieve`-only branches to them.
+
+## Output Shape
+
+- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with the
+  required sections (Goal, Non-Goals, Boundaries, User Acceptance, Agent
+  Verification Plan, Slice Plan, Slice Log, Off-Goal Findings, Final
+  Verification, User Verification Instructions, Auto-Retro)
+- `Status` is one of draft / active / blocked / complete
+- an explicit `/goal @...` activation line
+- at completion, a final report that separates self-verification, user
+  verification, residual risk, and non-claims
+
+## Guardrails
+
+- Do not make `achieve` a generic task runner; it is a goal operator, and it
+  does not implement a new execution engine.
+- Do not start executing the goal before the user activates it.
+- Do not require every short prompt to become a goal.
+- Do not run broad quality gates after every small commit.
+- Do not make `handoff` the normal running scratchpad while a goal is active.
+- Do not claim provider, live, or release proof when only local deterministic
+  checks ran; name skipped proof levels in the final report.
+- Do not fabricate token, time, or tool-call metrics the host log does not
+  expose; record `when available` instead.
+
+## References
+
+- `references/lifecycle.md`
+- `references/goal-artifact.md`
+- `references/coordination.md`
+- `../../shared/references/bootstrap-resolution.md`

@@ -3,6 +3,7 @@
   "tiers": {
     "smoke-only": [],
     "hitl-recommended": [
+      "achieve",
       "announcement",
       "create-cli",
       "hitl",
@@ -44,6 +45,7 @@
       "retro"
     ],
     "adapter-free": [
+      "achieve",
       "create-cli",
       "ideation",
       "spec"
@@ -51,6 +53,7 @@
   },
   "fallback_policy": {
     "allow": [
+      "achieve",
       "create-cli",
       "debug",
       "gather",

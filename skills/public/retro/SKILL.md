@@ -59,7 +59,11 @@ Adapter policy:
      before claiming turns, tokens, or tool-call counts; pass `--repo-root .`
      when probing the current repo. For Codex session-level detail, use
      `$SKILL_DIR/scripts/audit_codex_session.py` as an evidence producer, not a
-     waste conclusion.
+     waste conclusion. When a session id or rollout file is known, pass
+     `--session-id <id>` (or `--session-file <path>`) to read the full session
+     JSONL directly instead of the tail-limited sqlite/tui source; it tolerates
+     malformed lines and separates measured counts, point-in-time snapshots, and
+     proxy signals (including repeated broad gates and repeated VCS/status runs).
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next

@@ -169,8 +169,7 @@ actually ran.
 
 ## Guardrails
 
-- Do not turn critique into broad ideation. Start from an actual pending
-  change.
+- Do not turn critique into broad ideation; start from an actual pending change.
 - Do not pick a target reference that changes the angle distribution from
   what the caller actually asked for.
 - Do not open more angles than you can triage honestly.
@@ -198,3 +197,4 @@ actually ran.
 - `references/adapter-contract.md`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
+- `../../shared/references/active-goal-coordination.md`

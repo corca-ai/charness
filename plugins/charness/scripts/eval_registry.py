@@ -28,6 +28,7 @@ SCENARIOS = (
     Scenario("setup-operator-acceptance-synthesis", "setup can synthesize operator acceptance from functional checks and repo signals"),
     Scenario("handoff-relative-links", "handoff-style docs use relative markdown links"),
     Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured trusted roots"),
+    Scenario("find-skills-split-package-surface", "find-skills exposes support and integration surfaces from split Charness packages"),
     Scenario("support-sync-contracts", "shipped support-sync contracts stay discoverable without pretending every integration owns a support skill"),
     Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),
     Scenario("issue-sibling-search-concept-fixtures", "issue sibling-search fixtures enforce summary-level concept assertions"),

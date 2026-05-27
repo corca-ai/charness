@@ -174,6 +174,9 @@ repo by created date. It must not use the current session's last created issue.
   the mental model and structural patterns scanned.
 - Do not file siblings surfaced by causal review as new issues without first
   asking whether they should be bundled into the current fix.
+- When an active `achieve` goal artifact exists, file or defer off-goal findings
+  here and append only the issue reference and reason to that goal artifact; see
+  `../../shared/references/active-goal-coordination.md`.
 
 ## References
 
@@ -186,6 +189,7 @@ repo by created date. It must not use the current session's last created issue.
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `../../shared/references/external-capability-proof-ladder.md`
 - `../../shared/references/rca-ledger-append.md`
+- `../../shared/references/active-goal-coordination.md`
 - `scripts/issue_tool.py`
 - `scripts/issue_runtime.py`
 - `scripts/resolve_adapter.py`

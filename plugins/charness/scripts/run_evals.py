@@ -345,6 +345,44 @@ def scenario_find_skills_local_first(root: Path) -> None:
         if "## Support Skills" not in markdown_text:
             raise EvalError("find-skills local-first discovery: markdown artifact missing support skill section")
 
+def scenario_find_skills_split_package_surface(root: Path) -> None:
+    script_path = root / "skills" / "find-skills" / "scripts" / "list_capabilities.py"
+    if not script_path.is_file():
+        script_path = root / "skills" / "public" / "find-skills" / "scripts" / "list_capabilities.py"
+    result = run_command(
+        ["python3", str(script_path), "--repo-root", str(root), "--read-only"],
+        cwd=root,
+    )
+    expect_success(result, "find-skills split package surface")
+    inventory = json.loads(result.stdout)
+    raw_output = result.stdout
+    if len(inventory["support_skills"]) < 4:
+        raise EvalError(
+            "find-skills split package surface: expected support skills from sibling package, "
+            f"got {len(inventory['support_skills'])}"
+        )
+    if len(inventory["support_capabilities"]) < 4:
+        raise EvalError(
+            "find-skills split package surface: expected support capabilities from sibling package, "
+            f"got {len(inventory['support_capabilities'])}"
+        )
+    integration_ids = {entry["id"] for entry in inventory["integrations"]}
+    for expected in ("github-worker", "google-workspace-worker"):
+        if expected not in integration_ids:
+            raise EvalError(f"find-skills split package surface: missing integration {expected}")
+    for forbidden in (
+        "github-gh",
+        "gws-cli",
+        "SLACK" + "_BOT_TOKEN",
+        "authenticated `gh`",
+        "authenticated `gws`",
+        "gws" + " auth",
+        "gws" + " gather",
+        "www.googleapis" + ".com",
+    ):
+        if forbidden in raw_output:
+            raise EvalError(f"find-skills split package surface: leaked provider detail {forbidden!r}")
+
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
@@ -376,6 +414,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "setup-compact-skill-routing-discoverability": scenario_setup_compact_skill_routing_discoverability,
         "handoff-relative-links": scenario_handoff_relative_links,
         "find-skills-local-first": scenario_find_skills_local_first,
+        "find-skills-split-package-surface": scenario_find_skills_split_package_surface,
         "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,
         "issue-sibling-search-concept-fixtures": scenario_issue_sibling_search_concept_fixtures,
@@ -394,6 +433,11 @@ def ensure_fixtures_present(root: Path) -> None:
             raise EvalError(f"missing required eval fixture `{path.relative_to(root)}`")
 
 
+NO_FIXTURE_SCENARIOS = {
+    "find-skills-split-package-surface",
+}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run repo-owned smoke scenarios under evals/.")
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
@@ -401,13 +445,14 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    ensure_fixtures_present(root)
     selected = [scenario for scenario in SCENARIOS if not args.scenario_id or scenario.scenario_id in args.scenario_id]
     if args.scenario_id:
         known = {scenario.scenario_id for scenario in SCENARIOS}
         unknown = sorted(set(args.scenario_id) - known)
         if unknown:
             raise EvalError(f"unknown scenario id(s): {', '.join(unknown)}")
+    if not selected or any(scenario.scenario_id not in NO_FIXTURE_SCENARIOS for scenario in selected):
+        ensure_fixtures_present(root)
 
     for scenario in selected:
         run_scenario(root, scenario)

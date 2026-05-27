@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -50,6 +52,13 @@ def _local_surface_root(target_root: Path) -> Path:
         return target_root
     return target_root if _target_has_repo_owned_skill_surface(target_root) else REPO_ROOT
 
+
+@dataclass(frozen=True)
+class SkillRoot:
+    source_id: str
+    path: Path
+    display_prefix: Path | None = None
+
 def extract_frontmatter(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
@@ -64,7 +73,14 @@ def extract_frontmatter(path: Path) -> dict[str, str]:
         key, value = raw.split(":", 1)
         data[key.strip()] = value.strip().strip('"')
     return data
-def _render_path(path: Path, repo_root: Path) -> str:
+def _render_path(path: Path, repo_root: Path, skill_root: SkillRoot | None = None) -> str:
+    if skill_root is not None and skill_root.display_prefix is not None:
+        try:
+            relative = path.relative_to(skill_root.path)
+        except ValueError:
+            pass
+        else:
+            return (skill_root.display_prefix / relative).as_posix()
     try:
         return str(path.relative_to(repo_root))
     except ValueError:
@@ -95,7 +111,7 @@ def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
         )
     return _dedupe(phrases)
 def _collect_skill_entries(
-    skill_roots: list[tuple[str, Path]],
+    skill_roots: list[SkillRoot],
     *,
     repo_root: Path,
     layer: str,
@@ -104,10 +120,10 @@ def _collect_skill_entries(
     seen_paths: set[Path] = set()
     seen_ids: set[str] = set()
     seen_names: set[str] = set()
-    for source_id, skill_root in skill_roots:
-        if not skill_root.is_dir():
+    for skill_root in skill_roots:
+        if not skill_root.path.is_dir():
             continue
-        for skill_md in sorted(skill_root.glob("*/SKILL.md")):
+        for skill_md in sorted(skill_root.path.glob("*/SKILL.md")):
             resolved = skill_md.resolve()
             if resolved in seen_paths:
                 continue
@@ -125,12 +141,12 @@ def _collect_skill_entries(
                     "name": name,
                     "description": description,
                     "summary": description,
-                    "path": _render_path(skill_md, repo_root),
-                    "skill_dir": _render_path(skill_md.parent, repo_root),
-                    "canonical_path": _render_path(skill_md, repo_root),
+                    "path": _render_path(skill_md, repo_root, skill_root),
+                    "skill_dir": _render_path(skill_md.parent, repo_root, skill_root),
+                    "canonical_path": _render_path(skill_md, repo_root, skill_root),
                     "trigger_phrases": _skill_trigger_phrases(name, layer),
                     "referenced_paths": referenced_skill_paths(skill_md, repo_root),
-                    "source": source_id,
+                    "source": skill_root.source_id,
                     "layer": layer,
                 }
             )
@@ -140,6 +156,18 @@ def _filter_shadowed(entries: list[dict[str, str]], preferred: list[dict[str, st
     preferred_ids = {entry["id"] for entry in preferred}
     preferred_names = {entry["name"] for entry in preferred}
     return [entry for entry in entries if entry["id"] not in preferred_ids and entry["name"] not in preferred_names]
+
+
+def _sibling_support_root(root: Path) -> Path:
+    return root.parent / "charness-support"
+
+
+def _support_skill_roots(local_root: Path) -> list[SkillRoot]:
+    roots = [SkillRoot("local-support", support_dir(local_root))]
+    sibling_support = _sibling_support_root(local_root)
+    if sibling_support.is_dir():
+        roots.append(SkillRoot("sibling-support", sibling_support, Path("skills/support")))
+    return roots
 
 
 def main() -> None:
@@ -161,18 +189,21 @@ def main() -> None:
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
-    support_roots = [("local-support", support_dir(local_root))]
+    support_roots = _support_skill_roots(local_root)
     if REPO_ROOT != local_root and (REPO_ROOT / ".codex-plugin" / "plugin.json").is_file() and support_dir(REPO_ROOT).is_dir():
-        support_roots.append(("installed-plugin-support", support_dir(REPO_ROOT)))
+        support_roots.append(SkillRoot("installed-plugin-support", support_dir(REPO_ROOT)))
     support_entries = _collect_skill_entries(support_roots, repo_root=local_root, layer="support skill")
-    support_entries += _collect_skill_entries([("synced-support", generated_support_dir(local_root))], repo_root=local_root, layer="synced support skill")
+    support_entries += _collect_skill_entries([SkillRoot("synced-support", generated_support_dir(local_root))], repo_root=local_root, layer="synced support skill")
     public_entries = _collect_skill_entries(
-        [("local-public", public_skills_dir(local_root))],
+        [SkillRoot("local-public", public_skills_dir(local_root))],
         repo_root=local_root,
         layer="public skill",
     )
     trusted_entries = _collect_skill_entries(
-        [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)],
+        [
+            SkillRoot(f"trusted-root-{index + 1}", (root / skill_root).resolve())
+            for index, skill_root in enumerate(trusted_skill_roots)
+        ],
         repo_root=root,
         layer="trusted skill",
     )
@@ -233,11 +264,15 @@ def main() -> None:
     if args.read_only:
         payload["artifacts"] = read_only_inventory_artifacts()
     else:
-        payload["artifacts"] = persist_inventory(
-            repo_root=root,
-            output_dir=root / adapter["data"]["output_dir"],
-            inventory=payload,
-        )
+        try:
+            payload["artifacts"] = persist_inventory(
+                repo_root=root,
+                output_dir=root / adapter["data"]["output_dir"],
+                inventory=payload,
+            )
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            raise SystemExit(1) from exc
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 if __name__ == "__main__":
     main()
