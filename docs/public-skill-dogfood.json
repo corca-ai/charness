@@ -38,9 +38,10 @@
         "tells the user the file is inert until activation and does not start executing slices itself"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-26",
+      "reviewed_on": "2026-05-27",
       "observed_evidence": [
         "Static review only: the checked-in core, references, helper scripts, validator suite, and two fresh-eye subagent passes were inspected. `achieve` was not executed end-to-end because `/goal` activation is host-driven and was not run, so no live-run proof is claimed.",
+        "Issue #223 (2026-05-27): the duplicate-test-pressure contract additions (Before-phase expected proof cost / test-duplication pressure, the During-phase cheap `--test-pressure` slice sample carried forward across compaction, and the After-phase new-slice-local vs accumulated-suite-debt classification) were reviewed by a 3-angle + counterweight fresh-eye critique. The new `Test duplication pressure` slice field is a backward-compatible additive label (no REQUIRED_SECTIONS change) guarded by `test_render_slice_block_includes_test_duplication_pressure`.",
         "The checked-in `achieve` core Guardrails forbid generic task-runner behavior, auto-start before activation, handoff-as-running-scratchpad, broad gates after every small commit, and claiming live/provider proof when only local checks ran, which matches the design non-goals.",
         "The goal artifact is created at `Status: draft` with an explicit `/goal @...` activation line, and `upsert_goal.py` never overwrites an existing body (it only rewrites the `Status:` line and only when it changes), so a reviewable activation artifact is produced rather than a runaway goal.",
         "Metrics are represented honestly as host-agnostic shallow signals via `probe_host_logs.py` with deep Codex audit best-effort and `Metrics: when available`, instead of fabricating token or tool-call totals the host log does not expose.",
@@ -326,8 +327,9 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-24",
+      "reviewed_on": "2026-05-27",
       "observed_evidence": [
+        "Issue #223 (2026-05-27): the testability reference now distinguishes structural test cleanup (extract fixture builders, lifecycle wrappers, command runners, shared assertions while keeping behavioral intent in `.test.*`) from hiding test bodies in support files, and requires naming the smallest next structural cleanup on broad duplicate/pressure-gate failure instead of only reporting the percentage. A 3-angle + counterweight fresh-eye critique confirmed the boundary stays consumer-owned: the duplicate/length gate remains a repo-local deterministic gate, not a Charness-owned runner, consistent with `references/behavior-testing.md`.",
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
         "The prompt-asset reference now makes the adaptive `cautilus` split explicit: scenario review can run automatically as proof, while maintained scenario-registry mutation remains the higher-friction follow-up that still needs confirmation.",

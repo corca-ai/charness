@@ -32,6 +32,7 @@ _FIELD_FLAGS = (
     ("changed", "What changed"),
     ("alternatives", "Alternatives rejected"),
     ("verification", "Targeted verification"),
+    ("test-pressure", "Test duplication pressure"),
     ("critique", "Critique"),
     ("off-goal", "Off-goal findings"),
     ("lessons", "Lessons carried forward"),

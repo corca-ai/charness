@@ -52,6 +52,13 @@ def test_append_slice_numbers_and_spacing(tmp_path: Path) -> None:
     assert "- Objective:\n" in text  # empty field carries no trailing space
 
 
+def test_render_slice_block_includes_test_duplication_pressure(tmp_path: Path) -> None:
+    block = gal.render_slice_block(1, "s", {"Test duplication pressure": "23.2% vs 22% gate"})
+    assert "- Test duplication pressure: 23.2% vs 22% gate" in block
+    # field stays ordered between targeted verification and critique
+    assert block.index("Targeted verification") < block.index("Test duplication pressure") < block.index("Critique")
+
+
 def test_slugify_neutralizes_path_chars() -> None:
     assert gal.slugify("../../etc/passwd") == "etc-passwd"
     assert gal.slugify("Mixed CASE!!") == "mixed-case"

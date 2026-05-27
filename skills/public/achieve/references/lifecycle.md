@@ -15,6 +15,9 @@ until the work has enough shape to save a reviewable goal artifact. Establish:
 - user-visible acceptance proof
 - low-cost agent verification
 - high-confidence or high-cost verification
+- per-slice expected proof cost and expected test-duplication pressure, so a
+  slice that adds or expands tests states up front whether it is likely to push
+  a broad duplicate/length/pressure gate toward its threshold
 - slice sequence
 - critique plan
 - stop conditions
@@ -42,6 +45,10 @@ After each slice, append a slice report with `append_slice_log.py`:
 - commits or files changed
 - alternatives rejected
 - targeted verification (cheap, deterministic)
+- test-duplication pressure: when the slice adds or expands tests, a cheap
+  duplicate-pressure sample (the repo's duplicate/length gate run in sample or
+  report mode), so accumulated suite debt stays visible at the slice boundary
+  instead of surfacing only at final closeout
 - critique findings
 - off-goal findings filed through `issue`
 - lessons to carry into the next slice
@@ -49,19 +56,31 @@ After each slice, append a slice report with `append_slice_log.py`:
 
 Each slice uses targeted deterministic checks. Broad quality gates and expensive
 proof belong at bundle boundaries or the final stage, not after every commit.
-Subagent critique is slice-level by default, not commit-level.
+Subagent critique is slice-level by default, not commit-level. The cheap
+duplicate-pressure sample is the exception that stays slice-local: it is a
+sample, not the full broad gate, and it carries the test-debt signal forward in
+the goal artifact so a compacted or resumed session does not rediscover the same
+late blocker.
 
 Stop and ask the user when an unexpected blocker, an evidence conflict, or a
 policy/product decision appears that cannot be resolved autonomously. Flip the
 status to `blocked`, record the blocker and the paths already attempted, and
-hand the decision back rather than guessing.
+hand the decision back rather than guessing. When test-duplication pressure is
+the blocker or relevant context, cite the latest `Test duplication pressure`
+sample in the blocked record so the user and any resumed session inherit it
+instead of rediscovering it.
 
 ## After
 
 At completion the goal artifact should contain:
 
 - final self-verification against the original goal
-- final quality gate results
+- final quality gate results, including the full broad duplicate/length/pressure
+  gate when the run added or expanded tests; if that gate fails, classify the
+  failure as new-slice-local (introduced by this run's slices) or
+  accumulated-suite debt (pre-existing pressure the run pushed past threshold),
+  and name the smallest next structural cleanup rather than only reporting the
+  failing percentage
 - high-confidence or high-cost verification results, or an explicit statement
   that they were not run
 - residual risks and non-claims

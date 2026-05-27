@@ -47,7 +47,8 @@ and helper usage.
    - interview from prose with a small number of high-leverage questions; stop
      when the work has enough shape to save a reviewable artifact
    - establish outcome, non-goals, boundaries, user acceptance, verification
-     plan (low-cost / high-confidence / external-or-live), slice sequence,
+     plan (low-cost / high-confidence / external-or-live, plus expected proof
+     cost and expected test-duplication pressure per slice), slice sequence,
      critique plan, stop conditions, and reporting expectations
    - save with `upsert_goal.py` at status `draft`
    - tell the user the file is inert until they run `/goal @...`; do not start
@@ -55,7 +56,9 @@ and helper usage.
 2. During — slice and record.
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - before a substantial slice, state its objective and expected evidence
-   - after each slice, append a report with `append_slice_log.py`
+   - after each slice, append a report with `append_slice_log.py`; when the
+     slice adds or expands tests, record a cheap duplicate-pressure sample via
+     `--test-pressure` so accumulated test debt stays visible at the boundary
    - use targeted deterministic checks per slice; reserve broad gates and
      expensive proof for bundle boundaries or the final stage
    - keep critique slice-level, not commit-level
@@ -64,7 +67,9 @@ and helper usage.
    - on an unresolvable blocker, flip status to `blocked`, record the blocker
      and attempted paths, and ask the user
 3. After — prove and reflect.
-   - run the final quality gate or its documented local substitute
+   - run the final quality gate or its documented local substitute; if a broad
+     duplicate/pressure gate fails, classify it as new-slice-local or
+     accumulated-suite debt and name the smallest next structural cleanup
    - record high-confidence / live proof results, or state explicitly that they
      were not run
    - write final self-verification, residual risks, non-claims, and concrete

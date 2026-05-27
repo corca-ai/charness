@@ -113,6 +113,36 @@ Import-only or in-process-only tests are also not a complete strategy. They
 should carry most behavior proof, but they need a thin shell of real-boundary
 tests to prove that the shipped interface still reaches that behavior.
 
+## Duplicate-Pressure Cleanup vs Hiding Test Bodies
+
+Broad duplicate, length, or pressure gates over a test suite catch accumulated
+debt, but a passing percentage is not the goal and the failure response matters
+more than the number. When such a gate fails, distinguish two very different
+cleanups:
+
+- **Structural cleanup (good)**: extract fixture builders, lifecycle wrappers
+  (setup/teardown), command runners, and shared assertions into clearly named
+  support helpers, while the behavioral intent — what the test asserts and why —
+  stays in the `.test.*` / `*_test.*` file. The behavior is still readable at the
+  test site; only the mechanical scaffolding moved.
+- **Hiding test bodies (bad)**: moving the behavioral assertions themselves into
+  support files so the duplicate gate stops counting them. This games the metric,
+  scatters the behavior contract away from the test, and makes the suite harder
+  to read and trust. Classify this as a `Weak` finding even when the gate passes.
+
+The test is: could a reader still see what behavior each test proves by reading
+the `.test.*` file alone? If the assertions and intent left the test file to
+satisfy a counter, the cleanup is hiding, not structuring.
+
+When the gate fails, do not stop at reporting the failing percentage. Identify
+whether the pressure is new (introduced by the current change) or accumulated
+(pre-existing suite debt), then name the smallest next structural extraction
+(the specific shared builder, wrapper, runner, or assertion to lift) rather than
+only failing the broad gate. This keeps repair cheap and incremental instead of
+deferring an expensive late unwind. Charness owns this detection and
+recommendation contract; the duplicate/length gate itself stays a repo-local
+deterministic gate, not a Charness-owned runner.
+
 ## Language Notes
 
 Keep language-specific details here or in sibling references, not in
@@ -146,3 +176,8 @@ Prefer recommendations in this order:
    detector.
 7. Add runtime budgets or mutation sampling only after the structure and
    selection boundary are honest.
+
+When a broad duplicate/length/pressure gate over tests fails, apply the same
+ordering: prefer extracting shared scaffolding (builders, lifecycle wrappers,
+command runners, shared assertions) over either widening the threshold or
+hiding assertions in support files, and report the smallest next extraction.

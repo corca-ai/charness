@@ -205,6 +205,7 @@ def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
         "What changed",
         "Alternatives rejected",
         "Targeted verification",
+        "Test duplication pressure",
         "Critique",
         "Off-goal findings",
         "Lessons carried forward",

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-26T23:09:43Z",
+  "generated_at": "2026-05-27T04:12:27Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -19,6 +19,29 @@
       "prefer_local_first": true
     },
     "public_skills": [
+      {
+        "id": "achieve",
+        "name": "achieve",
+        "description": "Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine.",
+        "summary": "Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine.",
+        "path": "skills/public/achieve/SKILL.md",
+        "skill_dir": "skills/public/achieve",
+        "canonical_path": "skills/public/achieve/SKILL.md",
+        "trigger_phrases": [
+          "achieve",
+          "achieve skill",
+          "achieve 스킬",
+          "charness:achieve"
+        ],
+        "referenced_paths": [
+          "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/achieve/references/lifecycle.md",
+          "skills/public/achieve/references/goal-artifact.md",
+          "skills/public/achieve/references/coordination.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
       {
         "id": "announcement",
         "name": "announcement",
@@ -345,6 +368,7 @@
           "skills/public/impl/references/adapter-contract.md",
           "skills/shared/references/source-bound-records.md",
           "skills/public/impl/SKILL.md",
+          "skills/shared/references/active-goal-coordination.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/impl/references/contract-consumption.md",
@@ -376,6 +400,7 @@
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/resolution-brief.md",
           "skills/shared/references/rca-ledger-append.md",
+          "skills/shared/references/active-goal-coordination.md",
           "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolve-flow.md",
           "skills/shared/references/fresh-eye-subagent-review.md",

@@ -1,9 +1,9 @@
 # Find Skills Inventory
-Date: 2026-05-26
-Updated: 2026-05-26T23:09:43Z
+Date: 2026-05-27
+Updated: 2026-05-27T04:12:27Z
 
 ## Summary
-- public skills: 18
+- public skills: 19
 - support skills: 4
 - synced support skills: 1
 - support capabilities: 4
@@ -12,6 +12,7 @@ Updated: 2026-05-26T23:09:43Z
 - trusted skills: 0
 
 ## Public Skills
+- `achieve`: Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine.
 - `announcement`: Use when drafting or delivering human-facing repo change communication such as release-note style summaries or chat-ready updates. Draft value comes first; delivery, audience, and omission policy stay adapter-driven.
 - `create-cli`: Use when creating or upgrading a repo-owned CLI, bootstrap script, or command runner. Define the command surface, install/update contract, structured output, dry-run and doctor behavior, distribution path, and quality gates before spreading ad hoc shell or Python entrypoints.
 - `create-skill`: Use when creating a new charness skill or improving a migrated one. Defines the canonical portable authoring contract: classify public/support/profile/integration boundaries, simulate failure modes, keep host-specific behavior in adapters and presets, and express external tool dependencies through manifests instead of hidden assumptions.

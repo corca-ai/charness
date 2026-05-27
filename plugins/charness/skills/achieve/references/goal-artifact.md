@@ -72,9 +72,12 @@ python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
   --goal-body "Make the accumulated local commits safe to push."
 
 # Append one slice report to the Slice Log.
+# Use --test-pressure when the slice adds or expands tests, to carry a cheap
+# duplicate-pressure sample forward instead of rediscovering the debt at closeout.
 python3 "$SKILL_DIR/scripts/append_slice_log.py" --repo-root . \
   --slug ceal-184-push-confidence --date 2026-05-26 --name "Inventory local risk" \
-  --objective "Map the full unpushed surface" --verification "git diff --stat origin/main..HEAD"
+  --objective "Map the full unpushed surface" --verification "git diff --stat origin/main..HEAD" \
+  --test-pressure "adjacent duplicates 23.2% vs 22% gate; +2 runtime tests this slice"
 
 # Flip status as the run progresses (draft -> active -> blocked/complete).
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
