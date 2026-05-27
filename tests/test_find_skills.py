@@ -353,7 +353,7 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
             "access_modes": ["grant", "env", "degraded"],
             "capability_requirements": {
                 "grant_ids": ["slack.history"],
-                "env_vars": ["SLACK_BOT_TOKEN"],
+                "env_vars": ["Slack credential grant"],
             },
             "intent_triggers": ["gather slack"],
             "trigger_phrases": [

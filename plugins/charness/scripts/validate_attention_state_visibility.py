@@ -85,10 +85,16 @@ def _string_constants(path: Path) -> list[str]:
 
 
 def _scan_root(repo_root: Path, source: Path, display_prefix: Path | None = None) -> ScanRoot:
-    return ScanRoot(
-        source=source if source.is_absolute() else repo_root / source,
-        display_prefix=display_prefix or source,
-    )
+    absolute_source = source if source.is_absolute() else repo_root / source
+    if display_prefix is None:
+        # Render detected files under their repo-relative path so declaration
+        # keys match regardless of whether --scan-root was given relative or as
+        # an absolute path inside the repo.
+        try:
+            display_prefix = absolute_source.resolve().relative_to(repo_root.resolve())
+        except ValueError:
+            display_prefix = source
+    return ScanRoot(source=absolute_source, display_prefix=display_prefix)
 
 
 def _sibling_support_root(repo_root: Path) -> Path:
