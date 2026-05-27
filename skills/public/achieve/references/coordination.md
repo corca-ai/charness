@@ -26,9 +26,7 @@ The user activates a saved goal explicitly:
 `/goal` is the host's autonomous-run entrypoint, not a command `charness` ships.
 Reference it where the host provides it (Codex backs it with a goals store; the
 user confirmed it on their Claude Code). `achieve` prepares and audits the goal
-artifact; it does not implement the run loop itself. If a host has no `/goal`
-equivalent, the artifact still stands as a reviewable plan the user can drive
-manually.
+artifact; it does not implement the run loop itself.
 
 ## Boundary With `handoff`
 

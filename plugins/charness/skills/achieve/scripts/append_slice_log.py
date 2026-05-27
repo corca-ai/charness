@@ -45,7 +45,10 @@ def _resolve_goal_path(args) -> Path:
         return args.goal_path.expanduser().resolve()
     if not (args.slug and args.date):
         raise SystemExit("provide --goal-path, or both --slug and --date")
-    return goal_lib.goal_path(repo_root, args.date, args.slug)
+    try:
+        return goal_lib.goal_path(repo_root, args.date, args.slug)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
 
 
 def parse_args() -> argparse.Namespace:

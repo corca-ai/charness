@@ -31,8 +31,28 @@ REQUIRED_SECTIONS = (
 )
 
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
-_STATUS_LINE = re.compile(r"^Status:\s*(.+?)\s*$", re.MULTILINE)
-_H2 = re.compile(r"^## (.+?)\s*$", re.MULTILINE)
+_STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
+_H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
+_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _mask_fences(text: str) -> str:
+    """Return ``text`` with fenced code-block regions blanked to spaces.
+
+    Length and newline positions are preserved, so a match found on the masked
+    copy maps to the same offset in the real text. Heading and slice-number
+    detection runs on the masked copy so that ``##``/``### Slice`` lines pasted
+    inside ``` fences are ignored instead of corrupting the artifact.
+    """
+    masked: list[str] = []
+    in_fence = False
+    for line in text.splitlines(keepends=True):
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            masked.append("".join("\n" if char == "\n" else " " for char in line))
+            continue
+        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
+    return "".join(masked)
 
 _TEMPLATE = """# Achieve Goal: {title}
 
@@ -88,6 +108,8 @@ def slugify(value: str) -> str:
 
 
 def goal_path(repo_root: Path, date: str, slug: str) -> Path:
+    if not _DATE.match(date):
+        raise ValueError(f"invalid date {date!r}; expected YYYY-MM-DD")
     return repo_root / GOAL_DIR / f"{date}-{slugify(slug)}.md"
 
 
@@ -108,14 +130,19 @@ def render_template(*, title: str, date: str, status: str, goal_rel_path: str, g
 def set_status(text: str, status: str) -> str:
     if status not in VALID_STATUSES:
         raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
-    if not _STATUS_LINE.search(text):
+    match = _STATUS_LINE.search(_mask_fences(text))
+    if match is None:
         raise ValueError("artifact has no `Status:` line to update")
-    return _STATUS_LINE.sub(f"Status: {status}", text, count=1)
+    line = text[match.start():match.end()]
+    trailing = "\r" if line.endswith("\r") else ""
+    return f"{text[:match.start()]}Status: {status}{trailing}{text[match.end():]}"
 
 
 def read_status(text: str) -> str | None:
-    match = _STATUS_LINE.search(text)
-    return match.group(1).strip() if match else None
+    match = _STATUS_LINE.search(_mask_fences(text))
+    if match is None:
+        return None
+    return text[match.start():match.end()].split(":", 1)[1].strip()
 
 
 def upsert_goal(
@@ -142,7 +169,12 @@ def upsert_goal(
         changed = updated != original
         if changed:
             path.write_text(updated, encoding="utf-8")
-        return {"action": "updated" if changed else "unchanged", "path": rel, "status": status}
+        return {
+            "action": "updated" if changed else "unchanged",
+            "path": rel,
+            "status": status,
+            "note": "existing artifact: only Status was changed; title and goal body were left as-is",
+        }
     path.parent.mkdir(parents=True, exist_ok=True)
     body = render_template(
         title=title,
@@ -156,7 +188,7 @@ def upsert_goal(
 
 
 def next_slice_number(text: str) -> int:
-    numbers = [int(match.group(1)) for match in _SLICE_HEADING.finditer(text)]
+    numbers = [int(match.group(1)) for match in _SLICE_HEADING.finditer(_mask_fences(text))]
     return (max(numbers) + 1) if numbers else 1
 
 
@@ -181,7 +213,7 @@ def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
 
 def append_slice(text: str, slice_block: str) -> str:
     """Insert a slice block at the end of the ``## Slice Log`` section."""
-    headings = list(_H2.finditer(text))
+    headings = list(_H2.finditer(_mask_fences(text)))
     for index, match in enumerate(headings):
         if match.group(1).strip() != "Slice Log":
             continue
@@ -197,7 +229,7 @@ def append_slice(text: str, slice_block: str) -> str:
 
 
 def check_goal(text: str) -> dict[str, Any]:
-    present = {match.group(1).strip() for match in _H2.finditer(text)}
+    present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
     missing = [section for section in REQUIRED_SECTIONS if section not in present]
     status = read_status(text)
     issues: list[str] = []

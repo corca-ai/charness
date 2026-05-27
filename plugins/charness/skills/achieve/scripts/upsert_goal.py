@@ -46,14 +46,18 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    result = goal_lib.upsert_goal(
-        args.repo_root.expanduser().resolve(),
-        date=args.date,
-        slug=args.slug,
-        title=args.title,
-        status=args.status,
-        goal_body=args.goal_body,
-    )
+    try:
+        result = goal_lib.upsert_goal(
+            args.repo_root.expanduser().resolve(),
+            date=args.date,
+            slug=args.slug,
+            title=args.title,
+            status=args.status,
+            goal_body=args.goal_body,
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 2
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

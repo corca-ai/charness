@@ -1,9 +1,11 @@
 # Active Goal Coordination (Shared)
 
-`impl`, `quality`, `critique`, and `issue` cite this reference so a long-running
-autonomous run coordinated by `achieve` behaves consistently across the workflow
-skills, instead of each skill re-deriving how to treat a live goal. The behavior
-is prompt-enforced through these skills' own discipline, not gate-enforced.
+`impl` and `issue` cite this reference directly because they read and write the
+goal artifact during a run; `achieve` reads it to coordinate `quality` and
+`critique` cadence (the sections below cover all four). The point is that a
+long-running autonomous run behaves consistently across the workflow skills
+instead of each skill re-deriving how to treat a live goal. The behavior is
+prompt-enforced through these skills' own discipline, not gate-enforced.
 
 ## When This Applies
 
