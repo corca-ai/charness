@@ -26,6 +26,8 @@ ADAPTER_CANDIDATES = (
 )
 STRING_FIELDS = ("repo", "language", "output_dir")
 VALID_CONTENT_KINDS = ("static", "script")
+VALID_REVIEWER_TIERS = ("high-leverage", "standard")
+REVIEWER_TIER_FIELDS = ("model", "reasoning_effort", "service_tier")
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -151,6 +153,38 @@ def _validate_section(
     return section
 
 
+def _validate_reviewer_tiers(
+    raw: Any, *, errors: list[str], warnings: list[str]
+) -> dict[str, Any] | None:
+    if not isinstance(raw, dict):
+        errors.append("reviewer_tiers must be a mapping")
+        return None
+    tiers: dict[str, Any] = {}
+    for name, spec in raw.items():
+        field = f"reviewer_tiers.{name}"
+        if not isinstance(spec, dict):
+            errors.append(f"{field} must be a mapping")
+            continue
+        if name not in VALID_REVIEWER_TIERS:
+            warnings.append(
+                f"{field} is not a known reviewer tier "
+                f"({', '.join(VALID_REVIEWER_TIERS)})"
+            )
+        entry: dict[str, str] = {}
+        for key, value in spec.items():
+            if key not in REVIEWER_TIER_FIELDS:
+                errors.append(
+                    f"{field}.{key} is not a valid reviewer-tier field "
+                    f"({', '.join(REVIEWER_TIER_FIELDS)})"
+                )
+                continue
+            text = _string(value, f"{field}.{key}", errors)
+            if text is not None:
+                entry[key] = text
+        tiers[name] = entry
+    return tiers
+
+
 def validate_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -185,6 +219,12 @@ def validate_adapter_data(
             if section is not None:
                 sections.append(section)
         validated["packet_sections"] = sections
+
+    tiers_raw = data.get("reviewer_tiers")
+    if tiers_raw is not None:
+        tiers = _validate_reviewer_tiers(tiers_raw, errors=errors, warnings=warnings)
+        if tiers is not None:
+            validated["reviewer_tiers"] = tiers
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

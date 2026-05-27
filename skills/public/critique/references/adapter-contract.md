@@ -23,6 +23,11 @@ version: 1
 repo: <repo-name>
 language: en
 output_dir: charness-artifacts/critique
+reviewer_tiers:        # values are host-specific; Codex shown, Claude Code uses sonnet-4.6
+  high-leverage:
+    model: gpt-5.5
+    reasoning_effort: medium
+    service_tier: priority
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
@@ -51,6 +56,18 @@ Field semantics:
   defaults to `charness-artifacts/critique`
 - `packet_sections` — list of declared sections; empty list is valid
   (signals "no opt-in" same as omitting the field)
+- `reviewer_tiers` — optional mapping from a portable reviewer tier
+  (`high-leverage` or `standard`) to host-specific spawn fields. The tier is
+  host-plural: it translates the portable policy in
+  [fresh-eye-subagent-review.md](../../../shared/references/fresh-eye-subagent-review.md)
+  into the values for whichever host this repo runs on. Known host defaults for
+  the `high-leverage` tier: a Codex host uses `model: gpt-5.5`,
+  `reasoning_effort: medium`, `service_tier: priority`; a Claude Code host uses
+  `model: sonnet-4.6`. Each tier value may set `model`, `reasoning_effort`, and
+  `service_tier` (all strings, all optional); `reasoning_effort` /
+  `service_tier` apply only where the host exposes them. Unknown tier names
+  warn; unknown sub-fields error. A host without subagent model overrides
+  ignores it.
 
 Each `packet_sections` entry:
 

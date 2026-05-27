@@ -8,6 +8,32 @@ Use this for bounded reviewer scopes owned by another skill, including
 `critique`, `spec`, `quality`, `handoff`, and any skill that names a
 fresh-eye subagent review as its canonical path.
 
+## Reviewer Tier
+
+When a skill spawns a bounded fresh-eye reviewer, it declares a reviewer *tier*
+that expresses leverage, never a provider model name:
+
+- `high-leverage`: reasoning-heavy judgment — critique angles and counterweight,
+  release / issue / quality closeout review, and deployment-confidence scans.
+- `standard`: routine bounded checks where the host's default reviewer model is
+  enough.
+
+The portable contract names only the tier. A host that exposes subagent model
+overrides resolves the tier to concrete spawn fields (model, reasoning effort,
+service tier); a host without that capability ignores the tier and spawns its
+default reviewer. The tier is a request, never a hard requirement, so a host
+that cannot honor it is not blocked for that reason.
+
+Do not hardcode provider model names, reasoning-effort values, or service tiers
+in skill prose or in this reference. The tier is host-plural: each host adapter
+maps it to that host's strongest reviewer — for example a Codex host and a
+Claude Code host resolve `high-leverage` to their own top reasoning model and
+their own spawn fields — so the concrete values are host-specific and live in
+the consuming skill's adapter, never here. The mapping is recorded once, under
+`reviewer_tiers` in the critique adapter example at
+`<repo-root>/skills/public/critique/adapter.example.yaml`; other skills cite this
+policy and reuse the same tier names instead of repeating the mapping.
+
 ## Delegation Context
 
 The caller that owns the review decides whether it needs fresh-eye subagents and

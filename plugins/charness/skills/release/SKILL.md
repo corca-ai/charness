@@ -78,7 +78,7 @@ verified.
    - record `Critique: full <artifact-or-subagent-status>` after standalone `critique` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
    - use `Critique: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
    - if required critique is blocked because the host cannot provide subagents,
-     stop and record `Critique: blocked <host-signal>` instead of continuing
+     first apply `../../shared/references/fresh-eye-subagent-review.md` (it owns the blocked-vs-available determination and the reviewer tier), then record `Critique: blocked <host-signal>` instead of continuing
 4. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
    - minor for new maintained capability or additive operator surface
@@ -191,6 +191,7 @@ The result should usually include:
 - `references/version-policy.md`
 - `references/install-surface.md`
 - `../../shared/references/closeout-discipline.md`
+- `../../shared/references/fresh-eye-subagent-review.md`
 - `<repo-root>/scripts/current_release.py`
 - `<repo-root>/scripts/check_real_host_proof.py`
 - `<repo-root>/scripts/check_requested_review_gate.py`
