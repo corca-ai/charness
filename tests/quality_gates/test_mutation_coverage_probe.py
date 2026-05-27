@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
@@ -12,6 +14,7 @@ from scripts.mutation_sampling_lib import run_test_coverage  # noqa: E402
 
 
 def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) -> None:
+    pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
     repo = tmp_path / "repo"
     script = repo / "scripts" / "repo_target.py"
     test_file = repo / "tests" / "test_repo_target.py"

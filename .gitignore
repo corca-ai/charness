@@ -27,3 +27,4 @@ plugins/*/integrations/locks/*.json
 !plugins/*/integrations/locks/lock.schema.json
 skills/support/generated/*
 !skills/support/generated/.gitkeep
+pytest-tmp/

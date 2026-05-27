@@ -79,7 +79,11 @@ def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch,
     monkeypatch.setattr(CHECK_COVERAGE, "run_traced_entry", fake_run_traced_entry)
     monkeypatch.setattr(CHECK_COVERAGE, "run_traced_function", lambda *_args, **_kwargs: None)
 
-    CHECK_COVERAGE.collect_counts(ROOT)
+    # Probe against an isolated empty repo root rather than the live repo: the
+    # captured env overrides are a fixed literal, so the live tree adds nothing
+    # but its concurrent mutation under xdist can race `collect_counts`' internal
+    # copytree and empty `captured`. See #225.
+    CHECK_COVERAGE.collect_counts(tmp_path)
 
     assert captured
     assert all(item["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] == "1" for item in captured)

@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 45,
-  "indexed_artifact_count": 36,
+  "source_artifact_count": 46,
+  "indexed_artifact_count": 37,
   "risk_class_counts": {
-    "contract-freeze-risk": 21,
+    "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 2,
-    "operator-visible-recovery": 11
+    "operator-visible-recovery": 13
   },
   "generalization_pressure_counts": {
-    "monitor": 36
+    "monitor": 37
   },
   "entries": [
     {
@@ -507,13 +507,27 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-27-issue-225-prepush-nondeterminism.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-225-prepush-basetemp-and-optional-capability-gating",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "`run-quality.sh` temp-root expansion interacts with the operator's repo",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this file",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-215-mutation-coverage-probe-source-boundary",
+      "interrupt_id": "issue-225-prepush-basetemp-and-optional-capability-gating",
       "risk_classes": [
-        "contract-freeze-risk"
+        "operator-visible-recovery"
       ],
-      "seam": "GitHub Actions scheduled mutation workflow plus local pytest temp",
+      "seam": "`run-quality.sh` temp-root expansion interacts with the operator's repo",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

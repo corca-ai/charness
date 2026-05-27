@@ -424,7 +424,20 @@ queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root 
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
 REPO_TMP_KEY="$(python3 -c 'import hashlib, sys; print(hashlib.sha256(sys.argv[1].encode()).hexdigest()[:12])' "$REPO_ROOT")"
-PYTEST_TEMPROOT="${PYTEST_DEBUG_TEMPROOT:-${XDG_CACHE_HOME:-${HOME:-/tmp/.cache}}/charness/pytest-tmp/$REPO_TMP_KEY}"
+# Fall back to the XDG cache dir (`$HOME/.cache`), never bare `$HOME`: when the
+# repo itself lives at `$HOME/charness`, a bare-`$HOME` root would place the
+# pytest basetemp *inside* the repo, breaking outside-git/external-worktree
+# fixtures and racing repo-tree copytree probes under xdist. See issue #225.
+PYTEST_TEMPROOT="${PYTEST_DEBUG_TEMPROOT:-${XDG_CACHE_HOME:-${HOME:-/tmp}/.cache}/charness/pytest-tmp/$REPO_TMP_KEY}"
+# Fail loud if the temp root ever resolves inside the repo (regressed fallback,
+# or an XDG_CACHE_HOME/PYTEST_DEBUG_TEMPROOT pointed into the tree): an in-repo
+# basetemp silently re-breaks the outside-repo fixtures. See issue #225.
+case "$PYTEST_TEMPROOT/" in
+  "$REPO_ROOT"/*)
+    echo "run-quality: pytest temp root '$PYTEST_TEMPROOT' is inside the repo '$REPO_ROOT'; point XDG_CACHE_HOME or PYTEST_DEBUG_TEMPROOT outside the repo" >&2
+    exit 1
+    ;;
+esac
 export PYTEST_DEBUG_TEMPROOT="$PYTEST_TEMPROOT"
 PYTEST_TMP_USER="$(id -un 2>/dev/null || printf unknown)"
 PYTEST_BASETEMP="$PYTEST_TEMPROOT/pytest-of-$PYTEST_TMP_USER/pytest-$RUN_QUALITY_START_NS"

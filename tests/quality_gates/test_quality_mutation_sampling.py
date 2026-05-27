@@ -711,6 +711,7 @@ def test_coverage_run_command_wraps_pytest_module_command(tmp_path: Path) -> Non
 
 
 def test_mutation_coverage_tracks_python_subprocesses(tmp_path: Path) -> None:
+    pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
     repo = tmp_path / "repo"
     script = repo / "scripts" / "cli_target.py"
     test_file = repo / "tests" / "test_cli_target.py"
@@ -770,6 +771,7 @@ def test_mutation_coverage_tracks_python_subprocesses(tmp_path: Path) -> None:
 
 
 def test_mutation_coverage_drops_stale_parallel_shards(tmp_path: Path) -> None:
+    pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
     repo = tmp_path / "repo"
     script = repo / "scripts" / "cli_target.py"
     test_file = repo / "tests" / "test_cli_target.py"

@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
 import pytest
 
-from .test_quality_artifact import run_script
+from .test_quality_artifact import cautilus_supports, run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 requires_cautilus = pytest.mark.skipif(
-    shutil.which("cautilus") is None,
-    reason="cautilus binary is required for live chatbot comparison eval tests",
+    not (
+        cautilus_supports("discover", "scenarios", "propose")
+        and cautilus_supports("evaluate", "comparison", "prepare")
+    ),
+    reason="cautilus with the `discover scenarios propose` and `evaluate comparison prepare` surfaces is required for live chatbot comparison eval tests",
 )
 
 

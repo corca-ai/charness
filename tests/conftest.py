@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,26 @@ import pytest
 pytest_plugins = ["tests.repo_copy", "tests.quality_gates.support", "tests.charness_cli.support"]
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _confine_git_discovery_to_pytest_temp(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[None]:
+    # Stop git repo discovery from escaping the pytest temp tree into an ambient
+    # ancestor .git (e.g. a dotfiles repo above $TMPDIR). Otherwise the
+    # fail-closed-outside-git fixtures can non-deterministically find an ancestor
+    # repo depending on where the (xdist) basetemp lands. See issue #225.
+    ceiling = str(tmp_path_factory.getbasetemp().resolve().parent)
+    previous = os.environ.get("GIT_CEILING_DIRECTORIES")
+    os.environ["GIT_CEILING_DIRECTORIES"] = ceiling if not previous else f"{ceiling}:{previous}"
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("GIT_CEILING_DIRECTORIES", None)
+        else:
+            os.environ["GIT_CEILING_DIRECTORIES"] = previous
 
 
 @pytest.fixture(autouse=True)
