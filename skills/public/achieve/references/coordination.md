@@ -23,9 +23,12 @@ The user activates a saved goal explicitly:
 /goal @charness-artifacts/goals/<file>.md
 ```
 
-`/goal` is the host's autonomous-run entrypoint and exists in both Claude Code
-and Codex, so the skill references it directly. `achieve` prepares and audits the
-goal; it does not implement the run loop itself.
+`/goal` is the host's autonomous-run entrypoint, not a command `charness` ships.
+Reference it where the host provides it (Codex backs it with a goals store; the
+user confirmed it on their Claude Code). `achieve` prepares and audits the goal
+artifact; it does not implement the run loop itself. If a host has no `/goal`
+equivalent, the artifact still stands as a reviewable plan the user can drive
+manually.
 
 ## Boundary With `handoff`
 

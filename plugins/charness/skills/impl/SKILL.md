@@ -102,6 +102,7 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - for skill packages, scheduled workflows, or external lookup contracts, use
      the prescribed path from `SKILL.md`, not an author-composed smoke probe
+   - when an active `achieve` goal artifact exists, treat it as the slice memory surface and append slice evidence per `../../shared/references/active-goal-coordination.md`
 4. Verify with the strongest honest path.
    - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists
@@ -177,12 +178,11 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 - If a stronger verification path exists but needs permissions, setup, or an
   external tool, ask for it rather than pretending the weaker proof is enough.
 - Do not call a same-agent review a critique.
-- Do not skip critique for task-completing repo work just because code looks clean.
+- Do not skip critique for task-completing repo work just because code looks locally clean.
 - Do not commit a source-touching slice without recording `Lint Gate` per
   `references/verification-ladder.md`.
 - Do not reinvent one-off critique angle selection when the standalone `critique` skill fits the slice.
-- If the required critique is blocked, stop instead of downgrading to a local
-  substitute and still calling the slice reviewed.
+- If the required critique is blocked, stop instead of downgrading to a local substitute and still calling the slice reviewed.
 
 ## References
 

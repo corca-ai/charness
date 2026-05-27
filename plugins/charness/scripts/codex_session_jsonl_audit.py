@@ -134,12 +134,15 @@ def audit_session_jsonl(path: Path, *, top: int = 20) -> dict[str, Any]:
         "command_families": dict(families.most_common(top)),
         "phases": dict(phases.most_common()),
         "repeated_broad_gates": _repeated_broad_gates(families),
-        "repeated_vcs_status": _repeated_vcs(families),
+        "repeated_vcs_commands": _repeated_vcs_commands(families),
     }
     return {
         "schema_version": SCHEMA_VERSION,
         "source": {"kind": "session-jsonl", "path": str(path)},
         "warnings": _warnings(malformed),
+        "notes": [
+            "patch_applications counts patch_apply_end events; those patches also appear in custom_tool_calls as apply_patch, so the two fields overlap rather than add.",
+        ],
         "measured": measured,
         "snapshots": snapshots,
         "proxy": proxy,
@@ -155,7 +158,7 @@ def _repeated_broad_gates(families: Counter[str]) -> dict[str, int]:
     }
 
 
-def _repeated_vcs(families: Counter[str]) -> dict[str, int]:
+def _repeated_vcs_commands(families: Counter[str]) -> dict[str, int]:
     return {
         family: count
         for family, count in families.items()
@@ -186,7 +189,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## Proxy",
         f"- repeated broad gates: {payload['proxy']['repeated_broad_gates'] or 'none'}",
-        f"- repeated vcs/status: {payload['proxy']['repeated_vcs_status'] or 'none'}",
+        f"- repeated vcs commands: {payload['proxy']['repeated_vcs_commands'] or 'none'}",
     ]
     if payload["warnings"]:
         lines += ["", "## Warnings", *(f"- {warning}" for warning in payload["warnings"])]

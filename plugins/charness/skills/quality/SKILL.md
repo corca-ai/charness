@@ -143,7 +143,8 @@ Validators and consumer prompts use these core routing anchors; references carry
   simplification or ownership clarification.
 - Do not leave automatable rules as prose-only guidance.
 - Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`.
-- Do not give generic "add tests" or "improve security" advice without the seam and next setup.
+- Do not give generic "add tests" or "improve security" advice without the
+  seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared
   enforcement is the real gap.
 - Do not stop at producer-side validators when public-skill routing or durable
@@ -197,4 +198,3 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `../../shared/references/external-capability-proof-ladder.md`
-- `../../shared/references/active-goal-coordination.md`
