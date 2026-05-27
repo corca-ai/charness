@@ -32,6 +32,10 @@ executing slices on its own — activation is the user's explicit decision.
 The goal artifact becomes the working scratchpad for the active run. Do not use
 `handoff` as the mid-goal memory surface while a goal is active.
 
+When the run begins (the user has activated the goal), flip the status to
+`active` with `upsert_goal.py --status active`; move it to `blocked` or
+`complete` as the run state changes.
+
 After each slice, append a slice report with `append_slice_log.py`:
 
 - objective and why this slice was chosen now

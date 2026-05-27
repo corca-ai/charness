@@ -86,9 +86,15 @@ python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . \
 ```
 
 `upsert_goal.py` never overwrites an existing artifact body; on a second call it
-only rewrites the `Status:` line, and only when the value changed. The slice
-number in `append_slice_log.py` is derived from the existing `### Slice N:`
-headings, so reports stay ordered without a counter argument.
+only rewrites the `Status:` line, and only when the value changed (the result
+carries a note so a caller expecting a new file can tell). The slice number in
+`append_slice_log.py` is derived from the existing `### Slice N:` headings, so
+reports stay ordered without a counter argument.
+
+The `Slice Plan` table is hand-maintained planning intent; no helper updates its
+`Status` column. The `Slice Log` (appended by `append_slice_log.py`) is the
+execution source of truth. Keep the plan table for the up-front sequence and let
+the log record what actually happened.
 
 ## Metrics Honesty
 

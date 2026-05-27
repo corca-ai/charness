@@ -92,6 +92,19 @@ def test_fenced_headings_are_ignored(tmp_path: Path) -> None:
     assert "### Slice 9: fake-in-fence" in out  # fenced content untouched
 
 
+def test_unbalanced_fence_fails_open_and_still_sees_sections() -> None:
+    # An unclosed ``` must not mask every heading to EOF (regression guard).
+    doc = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x`\n\n"
+        "## Goal\n```python\nprint(1)\n"  # fence never closed
+        "## Non-Goals\n## Boundaries\n## User Acceptance\n## Agent Verification Plan\n"
+        "## Slice Plan\n## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
+        "## User Verification Instructions\n## Auto-Retro\n"
+    )
+    result = gal.check_goal(doc)
+    assert result["missing_sections"] == []  # all sections still detected
+
+
 def test_check_goal_does_not_count_fenced_sections() -> None:
     fenced_only = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x`\n\n"

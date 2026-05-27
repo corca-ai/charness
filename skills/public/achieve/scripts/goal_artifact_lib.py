@@ -52,6 +52,10 @@ def _mask_fences(text: str) -> str:
             masked.append("".join("\n" if char == "\n" else " " for char in line))
             continue
         masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
+    if in_fence:
+        # Unbalanced fences (an unclosed ``` block) would mask every heading to
+        # EOF, which is worse than not masking. Fail open: trust the raw text.
+        return text
     return "".join(masked)
 
 _TEMPLATE = """# Achieve Goal: {title}
