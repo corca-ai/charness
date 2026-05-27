@@ -147,6 +147,29 @@ runtime_budget_profiles:
       specdown: 10500
       validate-cautilus-call-provenance: 500
       validate-inventory-consumption-declaration: 35000
+  local-linux-aarch64-4cpu:
+    # Budgets set above this machine's measured median_recent/max_recent so the
+    # gate is honest for the slower 4-CPU aarch64 box (same key scope as the
+    # x86_64 profile; values derived from runtime-signals.json this turn).
+    budgets:
+      charness-version: 1000
+      check-cli-skill-surface: 15000
+      check-inventory-declaration-coverage: 1500
+      check-references-link-inventory: 2500
+      check-seed-fixture-budget: 5000
+      check-spec-evidence-durability: 5000
+      inventory-ci-local-gate-parity: 1000
+      inventory-sloc: 1500
+      inventory-ubiquitous-language: 2500
+      pytest: 110000
+      check-coverage: 60000
+      check-duplicates: 24000
+      check-markdown: 15000
+      check-secrets: 8000
+      run-evals: 8000
+      specdown: 13000
+      validate-cautilus-call-provenance: 1500
+      validate-inventory-consumption-declaration: 12000
 startup_probes:
   - label: charness-version
     command:
