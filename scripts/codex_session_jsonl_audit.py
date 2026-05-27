@@ -168,7 +168,7 @@ def _repeated_vcs_commands(families: Counter[str]) -> dict[str, int]:
 
 def _warnings(malformed: int) -> list[str]:
     if malformed:
-        return [f"{malformed} malformed JSONL line(s) skipped"]
+        return [f"{malformed} malformed JSONL line(s) dropped"]
     return []
 
 

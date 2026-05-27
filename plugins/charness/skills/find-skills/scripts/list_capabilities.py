@@ -170,7 +170,7 @@ def _support_skill_roots(local_root: Path) -> list[SkillRoot]:
     return roots
 
 
-def main() -> None:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for installed skills, support capabilities, and integrations")
     recommendation_group = parser.add_mutually_exclusive_group()
@@ -184,7 +184,11 @@ def main() -> None:
         action="store_true",
         help="Skip durable inventory artifact write; emit inventory payload to stdout only.",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = _parse_args()
     root = args.repo_root.resolve()
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)

@@ -56,7 +56,7 @@ def test_session_jsonl_audit_counts_and_separates(tmp_path: Path) -> None:
     assert payload["proxy"]["repeated_broad_gates"].get("pytest") == 3
     assert payload["proxy"]["repeated_vcs_commands"].get("git status") == 3
     assert payload["snapshots"]["last_rate_limits"]["primary"]["used_percent"] == 42.0
-    assert payload["warnings"] == ["1 malformed JSONL line(s) skipped"]
+    assert payload["warnings"] == ["1 malformed JSONL line(s) dropped"]
 
 
 def test_session_jsonl_audit_missing_session_returns_2(tmp_path: Path) -> None:
