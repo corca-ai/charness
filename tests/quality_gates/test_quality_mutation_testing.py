@@ -29,7 +29,6 @@ from scripts.check_mutation_score import (  # noqa: E402
 from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
     UNCOVERED_MUTATION_SKIP_OUTPUT,
     coverage_skip_reason,
-    is_function_annotation_union,
     is_trivial_entry_guard_mutation,
 )
 from scripts.quality_adapter_lib import (  # noqa: E402
@@ -628,19 +627,6 @@ def test_check_mutation_score_writes_survivor_details(tmp_path: Path) -> None:
     assert "- `demo`: 1" in summary
     assert "- `core/NumberReplacer`: 1" in summary
     assert "- `demo.py:2` `demo` `core/NumberReplacer` - return 1" in summary
-
-
-def test_cosmic_ray_filter_identifies_function_annotation_unions() -> None:
-    assert is_function_annotation_union(
-        "def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:",
-        61,
-    )
-    assert is_function_annotation_union(
-        "def upsert_lock(repo_root: Path, *, support: dict[str, Any] | None = None) -> Path:",
-        65,
-    )
-    assert not is_function_annotation_union("value = left | right", 13)
-    assert not is_function_annotation_union("def plain(repo_root: Path) -> Path:", 0)
 
 
 def test_cosmic_ray_filter_identifies_trivial_entry_guard_mutations() -> None:

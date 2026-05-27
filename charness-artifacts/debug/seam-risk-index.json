@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 46,
-  "indexed_artifact_count": 37,
+  "source_artifact_count": 47,
+  "indexed_artifact_count": 38,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 2,
-    "operator-visible-recovery": 13
+    "none": 4,
+    "operator-visible-recovery": 12
   },
   "generalization_pressure_counts": {
-    "monitor": 37
+    "monitor": 38
   },
   "entries": [
     {
@@ -507,6 +507,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-27-issue-224-219-mutation-annotation-filter.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-224-219-mutation-annotation-filter",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "Cosmic Ray work-item `start_pos` semantics for BitOr mutations",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-27-issue-225-prepush-nondeterminism.md",
       "is_current_pointer": false,
       "interrupt_id": "issue-225-prepush-basetemp-and-optional-capability-gating",
@@ -523,15 +537,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-225-prepush-basetemp-and-optional-capability-gating",
+      "interrupt_id": "issue-224-219-mutation-annotation-filter",
       "risk_classes": [
-        "operator-visible-recovery"
+        "none"
       ],
-      "seam": "`run-quality.sh` temp-root expansion interacts with the operator's repo",
+      "seam": "Cosmic Ray work-item `start_pos` semantics for BitOr mutations",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "this file",
+      "handoff_artifact": "docs/handoff.md",
       "forced": false
     }
   ],

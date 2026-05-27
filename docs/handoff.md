@@ -14,47 +14,39 @@
 
 ## Current State
 
-- **v0.9.0 is published and verified**: `main` and tag `v0.9.0` are on GitHub;
-  release state (including the `--no-verify` publish rationale) is in
-  [release latest](../charness-artifacts/release/latest.md). Working tree clean
-  on `main...origin/main`; `current_release.py` reports no version drift.
-- **0.9.0 shipped the `achieve` skill publicly for the first time**, plus the
-  #223 quality/achieve duplicate-test-pressure contract, find-skills/achieve
-  test-regression fixes, and a `local-linux-aarch64-4cpu` runtime budget profile.
-- **#225 is RESOLVED** (commit `7e757c39` on `main`, issue closed): the
-  pre-push gate is deterministic again and honest pushes from this host no
-  longer need `--no-verify` (verified: the push of `7e757c39` ran the real
-  pre-push hook and passed 69/0). True root cause was NOT generic xdist
-  flakiness — `run-quality.sh` placed the pytest basetemp *inside* the repo
-  (temp-root fallback used bare `$HOME` instead of `$HOME/.cache`, and this
-  host's repo is `$HOME/charness`), which broke external-worktree/outside-git/
-  copytree fixtures; plus cautilus/coverage tests hard-failed on absent optional
-  capabilities instead of skipping. Fix added a guard that hard-fails if the
-  temp root ever resolves inside the repo. See
+- **v0.9.0 is published and verified** on `main` + tag; no version drift. It
+  shipped the public `achieve` skill, the #223 duplicate-test-pressure contract,
+  and a `local-linux-aarch64-4cpu` runtime budget profile.
+- **#225 RESOLVED** (closed): pre-push gate is deterministic again; honest pushes
+  from this host no longer need `--no-verify`. `run-quality.sh` now hard-fails if
+  the pytest basetemp ever resolves inside the repo. See
   [debug artifact](../charness-artifacts/debug/2026-05-27-issue-225-prepush-nondeterminism.md).
-- **#224 and #219 are scheduled mutation-test regression issues** (the recurring
-  bot-filed class, successor to the old #216/#208). Treat as the mutation
-  backlog, not new bugs.
-- **#184/#185 remain deferred product/AI-ML direction work** (ideation/metrics
-  backlog, not urgent maintenance).
+- **#224/#219 RESOLVED pending scheduled auto-close**: the Cosmic Ray mutant
+  filter recognized PEP 604 annotation-union `|` equivalents only on single-line
+  `def` lines, so 212 equivalent mutants across 81 files leaked into the score.
+  Fix rewrote `filter_cosmic_ray_mutants.py` to detect them by AST position; the
+  mutation workflow auto-closes both on the next green scheduled run (do not
+  hand-close). See
+  [debug artifact](../charness-artifacts/debug/2026-05-27-issue-224-219-mutation-annotation-filter.md).
 
 ## Next Session
 
-1. **Mutation backlog (#224/#219)** is now the top self-fixable work. Classify
-   before mutating; scheduled mutation can be red even when reachable score
-   clears threshold if sampled scope gaps remain — score alone is not closeout.
-2. **#184/#185** remain deferred product/AI-ML direction work (ideation/metrics
-   backlog, not urgent maintenance).
-3. Optional follow-up from #225: `verify-closeout` for `direct-commit` only
-   inspects the commit body, so the bug ledger lives in the #225 close
-   *comment* (all fields present, state CLOSED) rather than the commit body —
-   no action needed, just know the tool reports `missing_fields` for this carrier.
+1. **#226** (Codex fresh-eye reviewer model policy) and **#227** (default
+   survey/turn-policy reliability) are the newest open issues, filed after the
+   prior handoff; #227 is a user-requested retro whose scope is partly in ceal.
+2. **#184/#185** remain deferred product/AI-ML direction work.
+3. **Mutation-gate residuals** (deferred from the #224/#219 fix; pick up if the
+   scheduled gate goes red, not yet filed as issues):
+   - Real test-strength survivors #224 named (`build_payload` comparisons,
+     worktree `timeout` numbers) the filter fix does not touch — re-confirm
+     against current HEAD before investing; they may be stale.
+   - `Annotated[...]` metadata over-skip: the AST detector skips any `|` in an
+     annotation subtree, including `Annotated` metadata (runtime-observable, so
+     not equivalent). Latent — zero `Annotated` usage today; a pin test
+     documents it. Exclude `Annotated` metadata before adopting that pattern.
 
 ## Discuss
 
-- Pre-push gate determinism is restored (#225 resolved); honest pushes from this
-  host no longer need `--no-verify`. Watch for a regressed temp-root: the new
-  `run-quality.sh` guard now hard-fails loudly if the basetemp lands in the repo.
 - Current PR CI posture is intentional maintainer-local enforcement per
   [operating contract](./conventions/operating-contract.md); do not reopen unless
   outside PRs become recurring.

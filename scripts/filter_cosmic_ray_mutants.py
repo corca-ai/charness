@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """Filter low-signal Cosmic Ray work items from a session database.
 
-Cosmic Ray 8.4.6 sees the PEP 604 union operator in function annotations as a
-binary ``|`` mutation point. With ``from __future__ import annotations`` those
-mutants are behavior-equivalent for this repo and can dominate the score. This
-filter marks those work items as skipped after ``cosmic-ray init`` and before
-``cosmic-ray exec``.
+Cosmic Ray 8.4.6 sees the PEP 604 union operator in annotations as a binary
+``|`` mutation point. With ``from __future__ import annotations`` (PEP 563) the
+annotation is never evaluated at runtime, so those mutants are behavior-
+equivalent: no test can kill them. The detector walks the module AST so a union
+annotation is recognized wherever it lands — single-line ``def`` signatures,
+continuation lines of a multi-line signature, return types, and module/local
+variable annotations alike — instead of only lines that start with ``def``.
+This filter marks those work items as skipped after ``cosmic-ray init`` and
+before ``cosmic-ray exec``.
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 BITOR_OPERATOR_PREFIX = "core/ReplaceBinaryOperator_BitOr_"
@@ -43,12 +49,74 @@ def source_line(repo_root: Path, module_path: Path, line_number: int) -> str:
         return ""
 
 
-def is_function_annotation_union(line: str, start_col: int) -> bool:
-    stripped = line.lstrip()
-    if not stripped.startswith("def "):
-        return False
-    prefix = line[:start_col]
-    return "|" in line and ("->" in line or ":" in prefix)
+def _has_future_annotations(tree: ast.Module) -> bool:
+    return any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "__future__"
+        and any(alias.name == "annotations" for alias in node.names)
+        for node in tree.body
+    )
+
+
+def _annotation_expressions(tree: ast.AST):
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            arguments = node.args
+            for arg in (*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs):
+                if arg.annotation is not None:
+                    yield arg.annotation
+            if arguments.vararg is not None and arguments.vararg.annotation is not None:
+                yield arguments.vararg.annotation
+            if arguments.kwarg is not None and arguments.kwarg.annotation is not None:
+                yield arguments.kwarg.annotation
+            if node.returns is not None:
+                yield node.returns
+        elif isinstance(node, ast.AnnAssign):
+            yield node.annotation
+
+
+def _pipe_position(
+    lines: list[str], left_end: tuple[int, int], right_start: tuple[int, int]
+) -> tuple[int, int] | None:
+    line, col = left_end
+    while (line, col) < right_start:
+        text = lines[line - 1] if 0 <= line - 1 < len(lines) else ""
+        if col >= len(text):
+            line += 1
+            col = 0
+            continue
+        if text[col] == "|":
+            return (line, col)
+        col += 1
+    return None
+
+
+@lru_cache(maxsize=None)
+def _annotation_union_positions(path_str: str) -> frozenset[tuple[int, int]]:
+    try:
+        source = Path(path_str).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+    except (OSError, SyntaxError):
+        return frozenset()
+    if not _has_future_annotations(tree):
+        return frozenset()
+    lines = source.splitlines()
+    positions: set[tuple[int, int]] = set()
+    for expression in _annotation_expressions(tree):
+        for node in ast.walk(expression):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
+                pipe = _pipe_position(
+                    lines,
+                    (node.left.end_lineno or 0, node.left.end_col_offset or 0),
+                    (node.right.lineno, node.right.col_offset),
+                )
+                if pipe is not None:
+                    positions.add(pipe)
+    return frozenset(positions)
+
+
+def annotation_union_operator_positions(repo_root: Path, module_path: Path) -> frozenset[tuple[int, int]]:
+    return _annotation_union_positions(str(resolve(repo_root, module_path)))
 
 
 def should_skip_mutation(repo_root: Path, mutation: object) -> bool:
@@ -56,8 +124,8 @@ def should_skip_mutation(repo_root: Path, mutation: object) -> bool:
     if not operator_name.startswith(BITOR_OPERATOR_PREFIX):
         return False
     line_number, start_col = getattr(mutation, "start_pos", (0, 0))
-    line = source_line(repo_root, getattr(mutation, "module_path", Path()), line_number)
-    return is_function_annotation_union(line, start_col)
+    module_path = getattr(mutation, "module_path", Path())
+    return (int(line_number), int(start_col)) in annotation_union_operator_positions(repo_root, module_path)
 
 
 def is_trivial_entry_guard_mutation(line: str, operator_name: str) -> bool:
