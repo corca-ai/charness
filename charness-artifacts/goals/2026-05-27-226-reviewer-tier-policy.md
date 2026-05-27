@@ -1,6 +1,6 @@
 # Achieve Goal: Close #226: centralize Codex fresh-eye reviewer tier policy
 
-Status: active
+Status: complete
 Created: 2026-05-27
 Activation: `/goal @charness-artifacts/goals/2026-05-27-226-reviewer-tier-policy.md`
 
@@ -190,9 +190,11 @@ Proof levels:
   68 passed / 0 failed (98.5s); duplicate-pressure sample clean at 0.98.
 - Fresh-eye critique (external proof): 2 bounded subagent reviewers, both NO
   BLOCKERS; 1 NIT taken (host-plural guard test).
+- Pushed: `cab0ce58` landed on origin/main (pre-push gate 68/0); `Closes #226`
+  closed the issue (state CLOSED / COMPLETED) with an outcome->proof closeout
+  comment.
 - NOT run: live Cautilus eval (none requested; planner consult not triggered),
-  mutation gate (out of scope for this change), and `git push` (pending user
-  confirmation — see below).
+  mutation gate (out of scope for this change).
 
 Residual risk / non-claims:
 
@@ -210,8 +212,8 @@ Residual risk / non-claims:
   confirm no provider model name and both hosts named.
 - `grep -nE "gpt-5|sonnet-4" skills/public/critique/adapter.example.yaml` —
   values present here (adapter surface), absent from portable surfaces.
-- Decide the `git push` (the local commit carries `Closes #226`, so the issue
-  closes on push). #226 is intentionally left open until you confirm the push.
+- `gh issue view 226` — confirm CLOSED with the outcome->proof closeout comment
+  (pushed as `cab0ce58`).
 
 ## Auto-Retro
 
