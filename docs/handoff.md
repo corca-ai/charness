@@ -31,12 +31,15 @@
 
 ## Next Session
 
-1. **#229 — immediate next slice (run `achieve` or `impl`).** Add a Before-phase
-   anti-anchoring probe to `achieve` (its `lifecycle` reference): test whether a
-   user-confirmed or issue-inherited value is a single point or one instance of
-   a system axis (host/provider/environment) before locking the design; consider
-   a matching `critique` angle. Small, fully in charness, derived from the #226
-   run (a Codex-only policy nearly shipped before host-plurality was caught).
+1. **#230 — top priority.** Reduce repeated agent-run waste surfaced by the #226
+   run + its retro
+   ([2026-05-28-issue-226-achieve-run](../charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md)):
+   make prescribed closeout sub-skill execution non-optional in `achieve`'s
+   After-phase (actually run `retro` + probe metrics before `complete`, not an
+   inline paraphrase); quiet the pre-commit/pre-push markdown hook so it stops
+   dumping the full 485-file list into agent context; address/defer broad-gate
+   push batching. Tackle alongside **#229** (same "self-substitution" pattern —
+   the Before-phase anti-anchoring half). Start with `spec` or `impl`.
 2. **#227** — larger user-requested survey-reliability retro; scope partly in
    ceal. Run `spec` first to carve the charness-only part (turn-policy
    execution-vs-approval, source-reuse, external-write verification taxonomy,
