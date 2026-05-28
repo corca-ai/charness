@@ -39,8 +39,18 @@
 
 ## Next Session
 
-1. **Push the #230 + #229 commits.** The 7-commit branch is ahead of
-   `origin/main` and locally green. The new pre-push hook will classify
+1. **Activate the handoff-chunked-routing goal.** Draft at
+   [2026-05-28-handoff-chunked-routing](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md);
+   run `/goal @charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md`
+   to start. Before-phase interview is already complete (4 questions
+   answered, recorded in Interview Decisions); plan critique
+   (bounded fresh-eye, agentId `a33dfbee0a68a7774`) already ran and
+   all blockers folded inline. The goal extends `handoff` with a new
+   conditional workflow phase that absorbs the recurring manual cost
+   of chunking residual handoff entries into a generative-sequence
+   order for `/achieve` consumption.
+2. **Push the #230 + #229 commits + this handoff-chunked-routing draft.**
+   The branch is ahead of `origin/main` and locally green. The new pre-push hook will classify
    this very push as `full-gate-required` (touches `.githooks/`, `scripts/`,
    `skills/`, `tests/`). Note: a preexisting find-skills inventory schema
    drift (integration IDs renamed but file basenames unchanged in
@@ -49,23 +59,23 @@
    rename the JSON files to match the new IDs or teach the validator to
    follow the id-to-path mapping. See the goal artifact's Off-Goal
    Findings section.
-2. **#233 — closeout-gate hardening (F1 binding + F2 user-message
-   surfacing).** Filed during this session's post-closeout correction.
+3. **#233 — closeout-gate hardening (F1 binding + F2 user-message
+   surfacing).** Filed during the #230 + #229 post-closeout correction.
    Bundles the slice 3 helper accepting stale unrelated retro files with
    the layer-up pattern of prescribed-skill conclusions not being
    narrated to the user. Single design slice can address both with one
    `check_complete_evidence` extension + one achieve After-phase
    lifecycle contract update.
-3. **Confirm Codex host smoke** of the After-phase gate when a Codex
+4. **Confirm Codex host smoke** of the After-phase gate when a Codex
    session is convenient. The gate is host-agnostic at the script level
    (only `git`, `os.stat`, and the portable shared helper) but live-refusal
    was only exercised under Claude Code this session.
-4. **#227** — larger user-requested survey-reliability retro; scope partly in
+5. **#227** — larger user-requested survey-reliability retro; scope partly in
    ceal. Run `spec` first to carve the charness-only part (turn-policy
    execution-vs-approval, source-reuse, external-write verification taxonomy,
    template fidelity) before `impl`.
-5. **#184/#185** remain deferred product/AI-ML direction work.
-6. **Mutation residuals** (only if the scheduled gate goes red on HEAD; not
+6. **#184/#185** remain deferred product/AI-ML direction work.
+7. **Mutation residuals** (only if the scheduled gate goes red on HEAD; not
    filed as issues): real test-strength survivors #224 named (`build_payload`
    comparisons, worktree `timeout` numbers) the filter fix does not touch, and
    the latent `Annotated[...]` metadata over-skip. Re-confirm against current
