@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-28",
-  "source_artifact_count": 77,
-  "candidate_count": 484,
+  "source_artifact_count": 78,
+  "candidate_count": 494,
   "top_candidates": [
     {
       "candidate_id": "current_focus:7bbdc8287603",
@@ -55,6 +55,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:12418169fcae",
+      "kind": "current_focus",
+      "lesson": "`propose_merges` (connected-components on token-overlap)",
+      "normalized_key": "propose merges connected components on token overlap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:425282092fc0",
+      "kind": "current_focus",
+      "lesson": "`render_auto_draft_artifact` (markdown templating from token-derived label/objective) — encode agent-judgment work as deterministic rules. The 886-line growth was a symptom of the underlying layering miss, not just a code-organization problem. The file resists clean chunking because the heuristics tangle together; agent judgment doesn't decompose into rule sets the way data parsing does.",
+      "normalized_key": "render auto draft artifact markdown templating from token derived label objective encode agent judgment",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d571a99ae930",
       "kind": "current_focus",
       "lesson": "Reviewing the #226 `achieve` run (centralize a portable fresh-eye reviewer-tier policy) — and specifically the user catching that the run's mandated Auto-Retro and efficiency report were never actually produced.",
@@ -75,6 +115,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:28655cd6fc49",
+      "kind": "current_focus",
+      "lesson": "`should_fire_chunker` (Korean+English regex intent classifier)",
+      "normalized_key": "should fire chunker korean english regex intent classifier",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:23053b3aaf10",
       "kind": "next_improvement",
       "lesson": "**capability**: Add a single-file growth gate for `*_lib.py` modules under `skills/public/*/scripts/`. The repo already has `check_python_lengths.py` at the 360-line line; make it a pre-commit gate (currently informational) so future slice bundles cannot silently grow a lib past the threshold without an explicit splitting slice.",
@@ -89,6 +149,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bed44038a3f6",
+      "kind": "next_improvement",
+      "lesson": "**capability**: add an advisory pre-impl scan in `impl`'s Before phase that surfaces new `*_lib.py` files in `skills/public/*/scripts/` and flags whichever ones match the verb pattern above. Output is a single pre-impl note: \"consider whether <function> is judgment-shaped\". Not a gate, a prompt.",
+      "normalized_key": "capability add an advisory pre impl scan in impl s before phase that surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -135,110 +215,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:aabd29644c3c",
+      "kind": "next_improvement",
+      "lesson": "**memory (correction)**: the prior closeout retro ([2026-05-28-handoff-chunked-routing-closeout](2026-05-28-handoff-chunked-routing-closeout.md)) asserted `check_python_lengths.py` is informational. It is not. Fixed-in-place updates to retro files are not the right move; this retro's record of the correction is the durable fix. recent-lessons should carry the correction so it does not propagate again.",
+      "normalized_key": "memory correction the prior closeout retro 2026 05 28 handoff chunked routing closeout 2026",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e3aeb113a8fa",
       "kind": "next_improvement",
       "lesson": "**memory**: Record in [recent-lessons.md](recent-lessons.md): doc-link gate transition (\"missing artifact\" → \"unique-basename\" on file create) is repeatable waste; the fix-after-create pattern across three slices in one goal is the signal. Either pre-create empty placeholder files in slice 1 OR teach check_doc_links to accept `<repo-root>/...` placeholders for paths that do not yet exist (already partially supported but did not cover the bare-backtick case).",
       "normalized_key": "memory record in recent lessons md recent lessons md doc link gate transition missing",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
-      "latest_source_date": "2026-05-28",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
-          "date": "2026-05-28",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1e644da2faa6",
-      "kind": "next_improvement",
-      "lesson": "**memory:** this artifact + #229 capture the \"lighter self-substitution\" pattern for the next session.",
-      "normalized_key": "memory this artifact 229 capture the lighter self substitution pattern for the next session",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
-      "latest_source_date": "2026-05-28",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
-          "date": "2026-05-28",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a8ea6e4ff7ad",
-      "kind": "next_improvement",
-      "lesson": "**memory:** this artifact captures the closed-loop achievement — the goal aimed at #230 + #229 also produces its own proof artifacts (retro file + host-log probe + 3 subagent critiques). Future achieve runs inherit the gate by default; no separate enforcement needed.",
-      "normalized_key": "memory this artifact captures the closed loop achievement the goal aimed at 230 229",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
-      "latest_source_date": "2026-05-28",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
-          "date": "2026-05-28",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:69fd738a3ac4",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** include the validator source (e.g. `validate_skills.py` line ranges) in slice-level critique prompts when the change touches a public skill. Slice-1 F4 fold was relaxed in slice 2 because the critique didn't see the strict listing rule; giving the reviewer the gate code itself prevents that.",
-      "normalized_key": "workflow include the validator source e g validate skills py line ranges in slice",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
-      "latest_source_date": "2026-05-28",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
-          "date": "2026-05-28",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c09084ba1b7f",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** when a skill phase says \"run `<skill>`\", invoke that skill; do not inline-substitute its output. Flip an achieve goal to `complete` only after the After-phase items (retro run, metrics reported) are executed.",
-      "normalized_key": "workflow when a skill phase says run skill invoke that skill do not inline",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
-      "latest_source_date": "2026-05-28",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
-          "date": "2026-05-28",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1f242257ccae",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: When a slice plan names \"deterministic regex (Python)\" for an operator-facing rule, ship the regex + fixture in the earliest slice that produces a testable surface, not at closeout. The prose-vs-implementation drift risk multiplies across every intervening slice that consults the prose.",
-      "normalized_key": "workflow when a slice plan names deterministic regex python for an operator facing rule",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
       "latest_source_date": "2026-05-28",
@@ -297,6 +297,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:12418169fcae",
+      "kind": "current_focus",
+      "lesson": "`propose_merges` (connected-components on token-overlap)",
+      "normalized_key": "propose merges connected components on token overlap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:425282092fc0",
+      "kind": "current_focus",
+      "lesson": "`render_auto_draft_artifact` (markdown templating from token-derived label/objective) — encode agent-judgment work as deterministic rules. The 886-line growth was a symptom of the underlying layering miss, not just a code-organization problem. The file resists clean chunking because the heuristics tangle together; agent judgment doesn't decompose into rule sets the way data parsing does.",
+      "normalized_key": "render auto draft artifact markdown templating from token derived label objective encode agent judgment",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d571a99ae930",
       "kind": "current_focus",
       "lesson": "Reviewing the #226 `achieve` run (centralize a portable fresh-eye reviewer-tier policy) — and specifically the user catching that the run's mandated Auto-Retro and efficiency report were never actually produced.",
@@ -317,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:28655cd6fc49",
+      "kind": "current_focus",
+      "lesson": "`should_fire_chunker` (Korean+English regex intent classifier)",
+      "normalized_key": "should fire chunker korean english regex intent classifier",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:23053b3aaf10",
       "kind": "next_improvement",
       "lesson": "**capability**: Add a single-file growth gate for `*_lib.py` modules under `skills/public/*/scripts/`. The repo already has `check_python_lengths.py` at the 360-line line; make it a pre-commit gate (currently informational) so future slice bundles cannot silently grow a lib past the threshold without an explicit splitting slice.",
@@ -331,6 +391,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bed44038a3f6",
+      "kind": "next_improvement",
+      "lesson": "**capability**: add an advisory pre-impl scan in `impl`'s Before phase that surfaces new `*_lib.py` files in `skills/public/*/scripts/` and flags whichever ones match the verb pattern above. Output is a single pre-impl note: \"consider whether <function> is judgment-shaped\". Not a gate, a prompt.",
+      "normalized_key": "capability add an advisory pre impl scan in impl s before phase that surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -371,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:aabd29644c3c",
+      "kind": "next_improvement",
+      "lesson": "**memory (correction)**: the prior closeout retro ([2026-05-28-handoff-chunked-routing-closeout](2026-05-28-handoff-chunked-routing-closeout.md)) asserted `check_python_lengths.py` is informational. It is not. Fixed-in-place updates to retro files are not the right move; this retro's record of the correction is the durable fix. recent-lessons should carry the correction so it does not propagate again.",
+      "normalized_key": "memory correction the prior closeout retro 2026 05 28 handoff chunked routing closeout 2026",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -431,6 +531,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ad345242da24",
+      "kind": "next_improvement",
+      "lesson": "**memory**: this retro file is the persistent record. Add a short recent-lessons entry naming the trap so the next handoff inherits the warning. The lesson is *not* \"split big files earlier\" — that is the surface-level read. The lesson is *\"when a public-skill helper grows past the soft cap because of heuristics-on-natural-language, the underlying smell is code doing agent work; consider walking back before splitting.\"*",
+      "normalized_key": "memory this retro file is the persistent record add a short recent lessons entry",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8eab1b84b815",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: extend `critique` Before-phase with an explicit \"code-vs-judgment boundary\" angle for any slice that introduces or grows a `*_lib.py` in a public skill. The angle should fire when the slice plan names verbs like *classify*, *propose*, *rank*, *draft*, *render*, *trigger*, *infer* on natural-language input. The reviewer's job is to ask: could an agent doing this conversationally on the parsed input produce a better answer than the procedural encoding? Bundle this with `references/confirmed-input-over-anchoring.md`'s axis-probe under a new `skills/public/critique/references/code-vs-judgment-boundary.md`.",
+      "normalized_key": "workflow extend critique before phase with an explicit code vs judgment boundary angle for",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -531,6 +671,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8eb4c1984044",
+      "kind": "repeat_trap",
+      "lesson": "The chunked-routing goal (slices 1–7, ~12 commits) shipped procedural code that re-implements three agent-judgment tasks. The full pipeline could be invoked conversationally on the parsed handoff entries — the parser is genuinely code-shaped, but merger + trigger + auto-draft are agents doing inference on natural-language context.",
+      "normalized_key": "the chunked routing goal slices 1 7 12 commits shipped procedural code that re",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cdf74cc0e43f",
+      "kind": "repeat_trap",
+      "lesson": "The mid-session split into 5 modules (this push) cleared the length gate but did not address the layering miss; it locked in the procedural design rather than challenging it.",
+      "normalized_key": "the mid session split into 5 modules this push cleared the length gate but",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+          "date": "2026-05-28",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ada3c8a7d847",
+      "kind": "repeat_trap",
+      "lesson": "The originating closeout retro said `check_python_lengths.py` is \"informational\" when it is in fact a hard gate (exit 1). That wrong belief flowed into recent-lessons and caused this push to discover the gate failure live rather than during the original closeout.",
+      "normalized_key": "the originating closeout retro said check python lengths py is informational when it is",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md",
           "date": "2026-05-28",
           "section": "Waste"
         }
