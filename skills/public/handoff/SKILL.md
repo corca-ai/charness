@@ -61,17 +61,22 @@ the `Workflow Trigger` first and continue with that workflow.
 
 ## Workflow
 
-1. Determine whether this is pickup or refresh.
+1. Chunked routing (conditional). When the user mentions the handoff
+   doc/skill with no explicit task directive, invoke the chunker
+   pipeline before refresh-vs-pickup classification. See
+   `references/chunked-routing.md` for the deterministic trigger rule,
+   pipeline, and auto-draft handoff into `/achieve`.
+2. Determine whether this is pickup or refresh.
    - for pickup, treat the workflow trigger as authoritative next-step
      instruction
    - for refresh, inspect only the live state that changes the next action
    - if the current handoff exceeds the size gate or stacks dated
      `This Session` sections, prune or spill before adding new prose
-2. Identify the canonical handoff artifact.
+3. Identify the canonical handoff artifact.
    - default to the adapter-resolved artifact path
    - if the repo already has a checked-in handoff surface, point the adapter
      there instead of hardcoding the host choice into the skill
-3. Rewrite the handoff around continuation, not history.
+4. Rewrite the handoff around continuation, not history.
    - exact workflow trigger
    - current state facts that change the next action
    - ordered next actions
@@ -89,17 +94,17 @@ the `Workflow Trigger` first and continue with that workflow.
      canonical source identity (URL, gathered-artifact path, access mode,
      freshness) per `../../shared/references/closeout-discipline.md` so the
      next session does not rediscover the source
-4. Keep the trigger explicit.
+5. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
-5. Run a bounded misunderstanding critique when the handoff changed materially.
+6. Run a bounded misunderstanding critique when the handoff changed materially.
    - call `critique` for material workflow or ownership changes
    - focuses: wrong next action, workflow trigger ambiguity, ownership/boundary
      misread, and examples that could be over-literalized
    - use `../../shared/references/fresh-eye-subagent-review.md` before reporting
      the reviewer path as blocked
    - incorporate only concrete clarity fixes, not speculative churn
-6. Finish with a clean baton pass.
+7. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation
 
 ## Output Shape
@@ -142,6 +147,7 @@ The handoff should usually contain:
 ## References
 
 - `references/adapter-contract.md`
+- `references/chunked-routing.md`
 - `references/continuation-sequence.md`
 - `references/workflow-trigger.md`
 - `references/state-selection.md`

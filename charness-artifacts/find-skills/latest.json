@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-28T08:44:59Z",
+  "generated_at": "2026-05-28T09:33:50Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -274,6 +274,7 @@
           "skills/public/handoff/references/continuation-sequence.md",
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/handoff/references/spill-targets.md",
+          "skills/public/handoff/references/chunked-routing.md",
           "skills/shared/references/closeout-discipline.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/handoff/references/adapter-contract.md",
