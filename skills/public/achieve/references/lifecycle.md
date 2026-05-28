@@ -133,6 +133,16 @@ At completion the goal artifact should contain:
 - residual risks and non-claims
 - concrete user verification instructions
 - an automatic retro focused on reducing time, tokens, and waste next time
+- a closeout narration that surfaces the retro's `## Waste`,
+  `## Critical Decisions`, `## Next Improvements`, and `## Sibling Search`
+  (when present) sections inline in the user-facing response — the retro
+  file is the durable copy, the user-facing message is the transport.
+  "Persisted at `<path>`" alone is the [#233](https://github.com/corca-ai/charness/issues/233)
+  F2 recurrence pattern (three observed occurrences as of 2026-05-28:
+  the #226 origin run, the #230+#229 closeout that filed #233, and the
+  handoff-chunked-routing closeout that inherited #233 as an Off-Goal
+  note and still hit it). This contract is prose-only until #233's
+  binding + meaning-transport gate lands.
 
 Run `check_goal_artifact.py` before declaring completion so the required
 sections, status, and activation line are all present. Flip the status to

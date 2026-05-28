@@ -110,6 +110,10 @@ and helper usage.
   checks ran; name skipped proof levels in the final report.
 - Do not fabricate token, time, or tool-call metrics the host log does not
   expose; record `when available` instead.
+- Do not collapse `retro` into a path reference at closeout; narrate the
+  retro's substantive findings inline as well as persisting the file
+  (the #233 F2 pattern is the recurrence history this guards against;
+  see `references/lifecycle.md` After section).
 
 ## References
 
