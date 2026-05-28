@@ -255,19 +255,19 @@ def commit_final_release_artifact(
         commit_post_publish_artifact(**kwargs, run_command=run)
 
 
-def main() -> None:
-    args = parse_args()
-    repo_root = args.repo_root.resolve()
+def _load_adapter_and_gate(args: argparse.Namespace, repo_root: Path) -> tuple[dict[str, Any], str | None]:
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:
         raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
-    adapter_data = adapter["data"]
     critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
-    enforce_release_critique_gate(
-        repo_root,
-        critique_artifact=critique_artifact,
-        critique_blocked=args.critique_blocked,
-    )
+    enforce_release_critique_gate(repo_root, critique_artifact=critique_artifact, critique_blocked=args.critique_blocked)
+    return adapter["data"], critique_artifact
+
+
+def main() -> None:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    adapter_data, critique_artifact = _load_adapter_and_gate(args, repo_root)
     status = git_status(repo_root)
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))

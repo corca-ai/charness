@@ -30,6 +30,8 @@ def _run_publish(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess
             "patch",
             "--close-issue",
             "44",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy issue-closeout preflight test",
             "--execute",
         ],
         cwd=ROOT,

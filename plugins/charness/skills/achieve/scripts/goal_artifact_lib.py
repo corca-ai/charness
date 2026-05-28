@@ -13,25 +13,22 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_shared_helper():
-    """Load the repo-owned shared closeout-evidence helper.
+def _load_sibling_closeout_evidence():
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_closeout_evidence",
+        Path(__file__).resolve().parent / "goal_artifact_closeout_evidence.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_closeout_evidence.py not found beside goal_artifact_lib.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
-    Resolution walks parent directories until ``scripts/`` is found, so the
-    helper stays portable across the working tree and any installed export.
-    """
-    here = Path(__file__).resolve()
-    for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location(
-                "check_prescribed_skill_executed_lib", candidate
-            )
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
+
+_closeout = _load_sibling_closeout_evidence()
+CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
+parse_closeout_evidence = _closeout.parse_closeout_evidence
+check_complete_evidence = _closeout.check_complete_evidence
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -93,69 +90,7 @@ def _mask_fences(text: str) -> str:
         return text
     return "".join(masked)
 
-_TEMPLATE = """# Achieve Goal: {title}
-
-Status: {status}
-Created: {date}
-Activation: `/goal @{goal_rel}`
-
-This file is the living goal scratchpad. It becomes active only when the user
-runs the activation command.
-
-## Goal
-
-{goal_body}
-
-## Non-Goals
-
-## Boundaries
-
-## User Acceptance
-
-What the user can do to verify completion directly.
-
-## Agent Verification Plan
-
-### Low-Cost Checks
-
-### High-Confidence Checks
-
-### External Or Live Proof
-
-## Slice Plan
-
-| Slice | Objective | Why Now | Expected Evidence | Status |
-| --- | --- | --- | --- | --- |
-
-## Slice Log
-
-## Context Sources
-
-Durable references this goal was shaped from. A fresh session can reconstruct
-the originating context by following them in order.
-
-## Interview Decisions
-
-For each Before-phase question: family of options considered, chosen value, and
-rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
-itself so a fresh session sees the design space, not only the closed point.
-
-## Plan Critique Findings
-
-Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
-not folded, and reviewer provenance. Preserves reasoning so a fresh session
-re-verifies the folded revisions without re-running critique.
-
-## Off-Goal Findings
-
-Issues or deferred findings discovered during the run.
-
-## Final Verification
-
-## User Verification Instructions
-
-## Auto-Retro
-"""
+_TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
 
 
 def slugify(value: str) -> str:
@@ -324,77 +259,6 @@ def is_non_trivial_goal(text: str) -> bool:
 def missing_portability_sections(text: str) -> list[str]:
     present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
     return [section for section in PORTABILITY_SECTIONS if section not in present]
-
-
-# Closeout-evidence parsing -------------------------------------------------
-
-# After-phase evidence names. The achieve closeout requires a checked-in retro
-# artifact plus a host-log probe output; either may be skipped with an
-# enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
-CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
-
-_EVIDENCE_LINE = re.compile(
-    r"^[\s>*-]*(Retro|Host[- ]log[- ]probe)\s*:\s*(.+?)\s*$",
-    re.MULTILINE | re.IGNORECASE,
-)
-
-
-def _normalize_evidence_name(label: str) -> str:
-    label = label.strip().lower()
-    if label == "retro":
-        return "retro_artifact"
-    if re.fullmatch(r"host[- ]log[- ]probe", label):
-        return "host_log_probe"
-    return label.replace(" ", "_").replace("-", "_")
-
-
-def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
-    """Extract ``Retro:`` and ``Host log probe:`` lines from the goal body.
-
-    Returns ``{name: {"kind": "evidence"|"skip", "value": <path-or-reason>}}``.
-    A value that starts with ``skipped:`` (case-insensitive) is treated as a
-    skip and the remaining text is the reason; otherwise the value is a
-    repo-relative or absolute path to the evidence file.
-    """
-    masked = _mask_fences(text)
-    parsed: dict[str, dict[str, str]] = {}
-    for match in _EVIDENCE_LINE.finditer(masked):
-        name = _normalize_evidence_name(match.group(1))
-        raw_value = match.group(2).strip()
-        if not raw_value:
-            continue
-        skip_match = re.match(r"^skipped\s*:\s*(.+)$", raw_value, re.IGNORECASE)
-        if skip_match:
-            parsed[name] = {"kind": "skip", "value": skip_match.group(1).strip()}
-        else:
-            parsed[name] = {"kind": "evidence", "value": raw_value}
-    return parsed
-
-
-def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
-    """Run the shared closeout-evidence helper for an ``achieve`` After-phase.
-
-    The wrapper extracts ``Retro:`` and ``Host log probe:`` lines from the
-    goal artifact body and feeds them as evidence/skip arguments to the
-    portable ``check`` function. The wrapper supplies the contract
-    (CLOSEOUT_EVIDENCE_NAMES); the helper is the gate.
-    """
-    helper = _load_shared_helper()
-    parsed = parse_closeout_evidence(text)
-    evidence: dict[str, str] = {}
-    skips: dict[str, str] = {}
-    for name, payload in parsed.items():
-        if payload["kind"] == "evidence":
-            evidence[name] = payload["value"]
-        else:
-            skips[name] = payload["value"]
-    return helper.check(
-        repo_root=repo_root,
-        required=list(CLOSEOUT_EVIDENCE_NAMES),
-        evidence=evidence,
-        skips=skips,
-        kind="achieve-after",
-    )
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:

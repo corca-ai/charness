@@ -185,6 +185,8 @@ def test_publish_release_records_real_host_proof_for_already_pushed_tag_delta(tm
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -208,6 +210,8 @@ def test_publish_release_fetches_missing_previous_tag_for_real_host_proof(tmp_pa
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -243,6 +247,8 @@ def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Pa
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -301,6 +307,8 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_fetch_fails(tmp_
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -339,6 +347,8 @@ def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: P
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -397,6 +407,8 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_lookup_fails(tmp
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -475,6 +487,8 @@ def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) ->
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -535,6 +549,8 @@ def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: 
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -578,6 +594,8 @@ def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: 
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -634,6 +652,8 @@ def test_publish_release_dry_run_fails_closed_when_real_host_config_is_broken(tm
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -677,6 +697,8 @@ def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -721,6 +743,8 @@ def test_publish_release_dry_run_allows_no_trigger_repo_without_surfaces(tmp_pat
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--part",
@@ -747,6 +771,8 @@ def test_publish_current_uses_previous_release_tag_for_real_host_proof(tmp_path:
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish real-host-delta test",
             "--repo-root",
             str(repo),
             "--publish-current",

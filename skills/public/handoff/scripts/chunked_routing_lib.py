@@ -1,4 +1,4 @@
-"""Shared dataclasses and helpers for the handoff chunked-routing pipeline.
+"""Shared entrypoint for the handoff chunked-routing pipeline.
 
 Records flow:
 
@@ -10,89 +10,60 @@ Records flow:
 The records carry plain-string boundary tokens (full path strings, never
 split components) so the merge proposer can compute overlap honestly. See
 ``docs/handoff-chunked-routing.md`` for the contract that owns this shape.
+
+This module hosts the ranker packet builder, the ranker-response
+validator, and the chunker trigger; it also re-exports the dataclasses,
+parser, merger, and auto-draft helpers from sibling modules so the
+``chunked_routing_lib.X`` accessor pattern keeps working for every
+caller and every test.
 """
+import importlib.util
 import re
-from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
-COMMON_NOUN_EXCLUSIONS = frozenset(
-    {"docs", "skills", "scripts", "tests", ".githooks", "plugins", "integrations"}
-)
+
+def _load_sibling(module_name: str):
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        Path(__file__).resolve().parent / f"{module_name}.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"{module_name}.py not found beside chunked_routing_lib.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def is_nontrivial_token(token: str) -> bool:
-    """A boundary token is non-trivial when it survives merge tokenization.
+_types = _load_sibling("chunked_routing_types")
+_parser = _load_sibling("chunked_routing_parser")
+_merger = _load_sibling("chunked_routing_merger")
+_auto_draft = _load_sibling("chunked_routing_auto_draft")
 
-    Per the spec: a non-trivial token contains at least one path separator
-    AND is not in the common-noun exclusion set. Bare directory roots like
-    ``scripts/`` do not count; two entries must share a deeper sub-path
-    like ``skills/public/handoff/`` to merge.
-    """
-    if not token:
-        return False
-    stripped = token.rstrip("/")
-    if stripped in COMMON_NOUN_EXCLUSIONS:
-        return False
-    return "/" in stripped
+# Re-exports — types & shared utility ---------------------------------------
+COMMON_NOUN_EXCLUSIONS = _types.COMMON_NOUN_EXCLUSIONS
+is_nontrivial_token = _types.is_nontrivial_token
+HandoffEntry = _types.HandoffEntry
+ChunkCandidate = _types.ChunkCandidate
+RankedChunk = _types.RankedChunk
+MergeProposal = _types.MergeProposal
 
+# Re-exports — parser -------------------------------------------------------
+extract_next_session_block = _parser.extract_next_session_block
+parse_handoff_entries = _parser.parse_handoff_entries
+_build_boundary_tokens = _parser._build_boundary_tokens
 
-@dataclass(frozen=True)
-class HandoffEntry:
-    index: int
-    title: str
-    body: str
-    referenced_paths: tuple[str, ...] = ()
-    referenced_issues: tuple[int, ...] = ()
-    referenced_skills: tuple[str, ...] = ()
-    boundary_tokens: tuple[str, ...] = ()
+# Re-exports — merger -------------------------------------------------------
+propose_merges = _merger.propose_merges
+parse_ranked_chunks = _merger.parse_ranked_chunks
 
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass(frozen=True)
-class ChunkCandidate:
-    entries: tuple[HandoffEntry, ...]
-    label: str
-    objective_summary: str
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "entries": [entry.to_dict() for entry in self.entries],
-            "label": self.label,
-            "objective_summary": self.objective_summary,
-        }
-
-
-@dataclass(frozen=True)
-class RankedChunk:
-    candidate: ChunkCandidate
-    rank: int
-    reasoning: str
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "candidate": self.candidate.to_dict(),
-            "rank": self.rank,
-            "reasoning": self.reasoning,
-        }
-
-
-@dataclass(frozen=True)
-class MergeProposal:
-    standalone: tuple[ChunkCandidate, ...]
-    merged: tuple[ChunkCandidate, ...]
-    shared_boundary_reason: dict[str, str]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "standalone": [candidate.to_dict() for candidate in self.standalone],
-            "merged": [candidate.to_dict() for candidate in self.merged],
-            "shared_boundary_reason": dict(self.shared_boundary_reason),
-        }
-
-    def all_candidates(self) -> tuple[ChunkCandidate, ...]:
-        return tuple(self.standalone) + tuple(self.merged)
+# Re-exports — auto-draft ---------------------------------------------------
+USER_ACCEPTANCE_PLACEHOLDER = _auto_draft.USER_ACCEPTANCE_PLACEHOLDER
+AGENT_VERIFICATION_PLACEHOLDER = _auto_draft.AGENT_VERIFICATION_PLACEHOLDER
+INTERVIEW_DECISIONS_PLACEHOLDER = _auto_draft.INTERVIEW_DECISIONS_PLACEHOLDER
+PLAN_CRITIQUE_PLACEHOLDER = _auto_draft.PLAN_CRITIQUE_PLACEHOLDER
+auto_draft_slug = _auto_draft.auto_draft_slug
+render_auto_draft_artifact = _auto_draft.render_auto_draft_artifact
 
 
 # Ranker packet -------------------------------------------------------------
@@ -226,362 +197,6 @@ def validate_ranker_response(
     return {"ok": not issues, "issues": issues}
 
 
-# Merge proposal ------------------------------------------------------------
-
-
-def _candidate_label_from_entries(entries: tuple[HandoffEntry, ...]) -> str:
-    """Stable label derived from a candidate's entries.
-
-    Single-entry: ``chunk-<index>``. Multi-entry: ``chunk-<sorted-indices>``
-    joined with ``-``. The label is the join key the agent uses in the
-    ranker response, so it must be deterministic.
-    """
-    indices = sorted(entry.index for entry in entries)
-    return "chunk-" + "-".join(str(index) for index in indices)
-
-
-def _candidate_objective_from_entries(entries: tuple[HandoffEntry, ...]) -> str:
-    """One-line objective summary for a candidate."""
-    if len(entries) == 1:
-        return entries[0].title
-    titles = " + ".join(entry.title for entry in entries)
-    return f"Bundle ({len(entries)}): {titles}"
-
-
-def _build_standalone(entries: list[HandoffEntry]) -> tuple[ChunkCandidate, ...]:
-    return tuple(
-        ChunkCandidate(
-            entries=(entry,),
-            label=_candidate_label_from_entries((entry,)),
-            objective_summary=_candidate_objective_from_entries((entry,)),
-        )
-        for entry in entries
-    )
-
-
-def _pairwise_shared_tokens(
-    entries: list[HandoffEntry],
-) -> dict[tuple[int, int], tuple[str, ...]]:
-    """Return ``{(i, j): shared_tokens}`` for every entry pair with overlap."""
-    shared: dict[tuple[int, int], tuple[str, ...]] = {}
-    for i, left in enumerate(entries):
-        left_tokens = set(left.boundary_tokens)
-        if not left_tokens:
-            continue
-        for j in range(i + 1, len(entries)):
-            right = entries[j]
-            overlap = left_tokens & set(right.boundary_tokens)
-            if overlap:
-                shared[(i, j)] = tuple(sorted(overlap))
-    return shared
-
-
-def _connected_components(
-    n: int, edges: list[tuple[int, int]]
-) -> list[list[int]]:
-    """Return connected components as lists of indices (sorted within)."""
-    parent = list(range(n))
-
-    def find(x: int) -> int:
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    def union(a: int, b: int) -> None:
-        ra, rb = find(a), find(b)
-        if ra != rb:
-            parent[ra] = rb
-
-    for a, b in edges:
-        union(a, b)
-
-    groups: dict[int, list[int]] = {}
-    for i in range(n):
-        root = find(i)
-        groups.setdefault(root, []).append(i)
-    return [sorted(group) for group in groups.values()]
-
-
-def propose_merges(entries: list[HandoffEntry]) -> MergeProposal:
-    """Build a MergeProposal from parsed handoff entries.
-
-    Standalone candidates: one per entry. Merged candidates: one per
-    connected component of size ≥ 2 in the boundary-token overlap graph.
-    A pair shares a boundary when their ``boundary_tokens`` sets
-    intersect; ``boundary_tokens`` is already pre-filtered by
-    ``is_nontrivial_token`` so common-noun bare-directory overlaps
-    (`scripts/`, `tests/`, ...) cannot trigger merges.
-    """
-    standalone = _build_standalone(entries)
-    if len(entries) < 2:
-        return MergeProposal(
-            standalone=standalone,
-            merged=(),
-            shared_boundary_reason={},
-        )
-    pairwise = _pairwise_shared_tokens(entries)
-    edges = list(pairwise.keys())
-    components = _connected_components(len(entries), edges)
-    merged: list[ChunkCandidate] = []
-    reasons: dict[str, str] = {}
-    for component in components:
-        if len(component) < 2:
-            continue
-        member_entries = tuple(entries[i] for i in component)
-        candidate = ChunkCandidate(
-            entries=member_entries,
-            label=_candidate_label_from_entries(member_entries),
-            objective_summary=_candidate_objective_from_entries(member_entries),
-        )
-        merged.append(candidate)
-        component_tokens: set[str] = set()
-        for i in component:
-            for j in component:
-                if i >= j:
-                    continue
-                component_tokens.update(pairwise.get((i, j), ()))
-        reasons[candidate.label] = (
-            "shared boundary tokens: " + ", ".join(sorted(component_tokens))
-        )
-    return MergeProposal(
-        standalone=standalone,
-        merged=tuple(merged),
-        shared_boundary_reason=reasons,
-    )
-
-
-def parse_ranked_chunks(
-    response: dict[str, Any], merge_proposal: MergeProposal
-) -> tuple[RankedChunk, ...]:
-    """Materialize ``RankedChunk`` records from a validated response.
-
-    Caller is responsible for running ``validate_ranker_response`` first;
-    this function trusts the shape but skips any chunk whose label is
-    unknown so a partial fail does not throw.
-    """
-    by_label = {
-        candidate.label: candidate for candidate in merge_proposal.all_candidates()
-    }
-    ranked: list[RankedChunk] = []
-    for entry in response.get("ranked_chunks", []):
-        label = entry.get("candidate_label")
-        candidate = by_label.get(label)
-        if candidate is None:
-            continue
-        ranked.append(
-            RankedChunk(
-                candidate=candidate,
-                rank=int(entry["rank"]),
-                reasoning=str(entry["reasoning"]).strip(),
-            )
-        )
-    ranked.sort(key=lambda chunk: chunk.rank)
-    return tuple(ranked)
-
-
-# Parsing -------------------------------------------------------------------
-
-_H2 = re.compile(r"^## (.+?)\s*$", re.MULTILINE)
-_NEXT_SESSION_HEADER = "Next Session"
-_NUMBERED_BULLET = re.compile(r"^(\d+)\.\s+(.*)$")
-_BOLD_TITLE = re.compile(r"^\*\*(.+?)\*\*", re.DOTALL)
-_MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-_ISSUE_REF = re.compile(r"#(\d+)\b")
-_SKILL_PATH = re.compile(r"skills/(?:public|support|profile)/([a-z0-9-]+)")
-_BARE_PATH = re.compile(
-    r"(?<![\w/])("
-    # file with extension: at least one path segment then file.ext
-    r"(?:[a-z0-9_.-]+/)+[a-z0-9_.-]+\.[a-z]{1,6}"
-    r"|"
-    # multi-segment directory token: ≥2 segments ending in /
-    r"(?:[a-z0-9_.-]+/){2,}"
-    r")"
-)
-_WHITESPACE = re.compile(r"\s+")
-
-
-def extract_next_session_block(text: str) -> str:
-    """Return the body of ``## Next Session`` from the handoff markdown.
-
-    Returns an empty string if the section is absent.
-    """
-    headings = list(_H2.finditer(text))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != _NEXT_SESSION_HEADER:
-            continue
-        body_start = text.find("\n", match.start())
-        body_start = body_start + 1 if body_start != -1 else match.end()
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
-        return text[body_start:body_end]
-    return ""
-
-
-def _split_numbered_items(block: str) -> list[tuple[int, str]]:
-    """Split a numbered-list block into ``(index, raw_text)`` tuples."""
-    items: list[tuple[int, str]] = []
-    current_lines: list[str] = []
-    current_index: int | None = None
-    for line in block.splitlines():
-        match = _NUMBERED_BULLET.match(line)
-        if match:
-            if current_index is not None:
-                items.append((current_index, "\n".join(current_lines).rstrip()))
-            current_index = int(match.group(1))
-            current_lines = [match.group(2)]
-        else:
-            if current_index is not None:
-                current_lines.append(line)
-    if current_index is not None:
-        items.append((current_index, "\n".join(current_lines).rstrip()))
-    return items
-
-
-def _extract_title(raw_text: str) -> tuple[str, str]:
-    """Split a numbered-bullet body into ``(title, remaining_body)``.
-
-    The title is the leading ``**Bold Title.**`` phrase, with internal
-    whitespace collapsed (so a soft-wrapped bold title returns as one
-    line). When there is no bold-leading marker, the first sentence
-    (up to the first period) is the title and the full text is preserved
-    as body.
-    """
-    stripped = raw_text.strip()
-    bold_match = _BOLD_TITLE.match(stripped)
-    if bold_match:
-        raw_title = bold_match.group(1).rstrip(".").strip()
-        title = _WHITESPACE.sub(" ", raw_title)
-        remainder = stripped[bold_match.end():].lstrip()
-        return title, remainder
-    period = stripped.find(".")
-    if period == -1:
-        return stripped, stripped
-    return _WHITESPACE.sub(" ", stripped[:period].strip()), stripped
-
-
-def _collect_paths(text: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Return ``(markdown_link_targets, bare_path_tokens)`` from ``text``.
-
-    Markdown link targets are deduped in first-seen order. Bare path tokens
-    are extension-bearing or trailing-slash directory tokens; URLs (anything
-    with a scheme) are excluded.
-    """
-    link_targets: list[str] = []
-    seen_links: set[str] = set()
-    for target in _MARKDOWN_LINK.findall(text):
-        cleaned = target.split("#", 1)[0].split(" ", 1)[0]
-        if cleaned.startswith(("http://", "https://", "mailto:")):
-            continue
-        if cleaned not in seen_links:
-            seen_links.add(cleaned)
-            link_targets.append(cleaned)
-    bare: list[str] = []
-    seen_bare: set[str] = set()
-    for match in _BARE_PATH.finditer(text):
-        token = match.group(1)
-        if token in seen_bare:
-            continue
-        seen_bare.add(token)
-        bare.append(token)
-    return tuple(link_targets), tuple(bare)
-
-
-def _normalize_path(token: str) -> str:
-    """Strip ``../`` and ``./`` prefixes so two link forms canonicalize."""
-    stripped = token.strip()
-    while stripped.startswith(("./", "../")):
-        if stripped.startswith("./"):
-            stripped = stripped[2:]
-        else:
-            stripped = stripped[3:]
-    return stripped
-
-
-def _collect_issues(text: str) -> tuple[int, ...]:
-    seen: list[int] = []
-    seen_set: set[int] = set()
-    for match in _ISSUE_REF.finditer(text):
-        number = int(match.group(1))
-        if number not in seen_set:
-            seen_set.add(number)
-            seen.append(number)
-    return tuple(seen)
-
-
-def _collect_skills(paths: tuple[str, ...]) -> tuple[str, ...]:
-    """Return canonical ``skills/public/<id>/`` tokens from referenced paths."""
-    seen: list[str] = []
-    seen_set: set[str] = set()
-    for path in paths:
-        normalized = _normalize_path(path)
-        match = _SKILL_PATH.search(normalized)
-        if not match:
-            continue
-        skill_id = match.group(1)
-        canonical = f"skills/public/{skill_id}/"
-        if canonical not in seen_set:
-            seen_set.add(canonical)
-            seen.append(canonical)
-    return tuple(seen)
-
-
-def _build_boundary_tokens(
-    referenced_paths: tuple[str, ...], referenced_skills: tuple[str, ...]
-) -> tuple[str, ...]:
-    """Return the deduped non-trivial token set used for merge proposals."""
-    seen: list[str] = []
-    seen_set: set[str] = set()
-    candidates = list(referenced_paths) + list(referenced_skills)
-    for raw in candidates:
-        token = _normalize_path(raw)
-        if not is_nontrivial_token(token):
-            continue
-        if token in seen_set:
-            continue
-        seen_set.add(token)
-        seen.append(token)
-    return tuple(seen)
-
-
-def parse_handoff_entries(text: str) -> list[HandoffEntry]:
-    """Parse the ``## Next Session`` block of a handoff markdown body."""
-    block = extract_next_session_block(text)
-    if not block.strip():
-        return []
-    entries: list[HandoffEntry] = []
-    for index, raw_text in _split_numbered_items(block):
-        title, body = _extract_title(raw_text)
-        link_paths, bare_paths = _collect_paths(raw_text)
-        # Dedup after normalization so `../foo.md` and `foo.md` count once.
-        normalized_paths: list[str] = []
-        seen_normalized: set[str] = set()
-        for token in list(link_paths) + list(bare_paths):
-            canonical = _normalize_path(token)
-            if canonical in seen_normalized:
-                continue
-            seen_normalized.add(canonical)
-            normalized_paths.append(canonical)
-        referenced_issues = _collect_issues(raw_text)
-        referenced_skills = _collect_skills(tuple(normalized_paths))
-        boundary_tokens = _build_boundary_tokens(
-            tuple(normalized_paths), referenced_skills
-        )
-        entries.append(
-            HandoffEntry(
-                index=index,
-                title=title,
-                body=body,
-                referenced_paths=tuple(normalized_paths),
-                referenced_issues=referenced_issues,
-                referenced_skills=referenced_skills,
-                boundary_tokens=boundary_tokens,
-            )
-        )
-    return entries
-
-
-# Auto-draft writer ---------------------------------------------------------
-
 # Trigger detection --------------------------------------------------------
 
 # The chunker fires iff a user invocation references the handoff surface
@@ -650,237 +265,3 @@ def should_fire_chunker(user_message: str) -> bool:
     if _matches_any(_TASK_DIRECTIVE_PATTERNS, user_message):
         return False
     return True
-
-
-USER_ACCEPTANCE_PLACEHOLDER = (
-    "*To be filled by the achieve Before-phase interview.*"
-)
-AGENT_VERIFICATION_PLACEHOLDER = (
-    "*To be filled by the achieve Before-phase interview.*"
-)
-INTERVIEW_DECISIONS_PLACEHOLDER = (
-    "*To be filled by the achieve Before-phase interview.*"
-)
-PLAN_CRITIQUE_PLACEHOLDER = (
-    "*To be filled by the achieve plan-critique pass.*"
-)
-
-_AUTODRAFT_TEMPLATE = """# Achieve Goal: {title}
-
-Status: draft
-Created: {date}
-Activation: `/goal @{goal_rel}`
-
-This file is the living goal scratchpad. It becomes active only when the user
-runs the activation command.
-
-## Goal
-
-{goal_body}
-
-## Non-Goals
-
-{non_goals}
-
-## Boundaries
-
-{boundaries}
-
-## User Acceptance
-
-{user_acceptance}
-
-## Agent Verification Plan
-
-{agent_verification}
-
-## Slice Plan
-
-| Slice | Objective | Why Now | Expected Evidence | Status |
-| --- | --- | --- | --- | --- |
-
-## Slice Log
-
-## Context Sources
-
-{context_sources}
-
-## Interview Decisions
-
-{interview_decisions}
-
-## Plan Critique Findings
-
-{plan_critique}
-
-## Off-Goal Findings
-
-## Final Verification
-
-## User Verification Instructions
-
-## Auto-Retro
-"""
-
-
-def _objective_from_chunk(chunk: ChunkCandidate) -> str:
-    """Return the one-line objective summary passed as `title`.
-
-    The goal_artifact template at
-    ``skills/public/achieve/scripts/goal_artifact_lib.py`` already wraps
-    ``{title}`` in ``# Achieve Goal: {title}``. The auto-draft writer
-    therefore passes only the objective text, never the literal
-    ``Achieve Goal:`` prefix — slice 1 critique finding 1.
-    """
-    return chunk.objective_summary.strip()
-
-
-_TRIVIAL_MARKER_PHRASE_RE = re.compile(r"single-slice goal", re.IGNORECASE)
-
-
-def _scrub_trivial_goal_marker(text: str) -> str:
-    """Escape the literal `single-slice goal` substring so quoted handoff
-    text cannot accidentally trigger ``goal_artifact_lib._TRIVIAL_GOAL_MARKER``.
-
-    The marker regex in
-    ``skills/public/achieve/scripts/goal_artifact_lib.py`` matches the
-    phrase as a substring anywhere in the artifact (including inside
-    blockquotes) and, when matched, short-circuits ``is_non_trivial_goal``
-    to ``False`` forever — neutering the portability gate. The
-    auto-draft writer blockquotes arbitrary handoff entry prose into the
-    Goal section, so any handoff entry that ever mentions the phrase
-    would silently poison the gate. Slice-5 critique finding 1.
-
-    Mitigation: replace the hyphen between ``single`` and ``slice`` with
-    a non-breaking hyphen (``U+2011``). The regex requires the plain
-    ASCII hyphen, so the match breaks; markdown renders the non-breaking
-    hyphen visually identically.
-    """
-    return _TRIVIAL_MARKER_PHRASE_RE.sub("single‑slice goal", text)
-
-
-def _quote_entry_body(body: str) -> str:
-    """Blockquote a handoff entry's body, with marker-phrase scrub."""
-    scrubbed = _scrub_trivial_goal_marker(body)
-    return "\n".join(f"> {line}" if line else ">" for line in scrubbed.splitlines())
-
-
-def _render_goal_body(chunk: ChunkCandidate) -> str:
-    """Two paragraphs: objective summary + the source handoff entry.
-
-    For merged bundles, each source entry is rendered with its own
-    `**Source…**` header and the entries are separated by a `---`
-    divider (slice-5 critique bundle-anyway 2).
-    """
-    objective = _scrub_trivial_goal_marker(_objective_from_chunk(chunk))
-    entries = chunk.entries
-    sources = []
-    for entry in entries:
-        scrubbed_title = _scrub_trivial_goal_marker(entry.title)
-        sources.append(
-            f"**Source handoff entry #{entry.index}: {scrubbed_title}**\n\n"
-            f"{_quote_entry_body(entry.body)}"
-        )
-    separator = "\n\n---\n\n" if len(sources) > 1 else "\n\n"
-    return f"{objective}\n\n{separator.join(sources)}"
-
-
-def _render_non_goals(chunk: ChunkCandidate) -> str:
-    """Two default Non-Goals seeded into every auto-drafted artifact."""
-    lines = [
-        "- Not a release: no plugin version bump expected.",
-        "- Do not absorb adjacent handoff entries beyond the selected chunk.",
-    ]
-    return "\n".join(lines)
-
-
-def _render_boundaries(chunk: ChunkCandidate) -> str:
-    """Boundaries seeded with the in-scope paths + portability invariant."""
-    in_scope_paths = sorted(
-        {path for entry in chunk.entries for path in entry.referenced_paths}
-    )
-    if in_scope_paths:
-        in_scope = "- In scope: " + ", ".join(f"`{path}`" for path in in_scope_paths)
-    else:
-        in_scope = (
-            "- In scope: paths to be named during the achieve Before-phase "
-            "(the source handoff entry referenced no explicit paths)."
-        )
-    lines = [
-        in_scope,
-        "- Portable per implementation-discipline: no host-specific assumption.",
-        "- Stop conditions: name on first discovery; do not guess.",
-    ]
-    return "\n".join(lines)
-
-
-def _render_context_sources(chunk: ChunkCandidate) -> str:
-    """Context Sources seeded with the source handoff entry + cited paths.
-
-    Bullet-list only (no intro line) so the standard goal-artifact
-    convention is preserved — slice-5 critique bundle-anyway 1.
-    """
-    lines: list[str] = []
-    for entry in chunk.entries:
-        scrubbed_title = _scrub_trivial_goal_marker(entry.title)
-        lines.append(
-            f"- Source: handoff entry #{entry.index} ({scrubbed_title}) — "
-            "see [docs/handoff.md](../../docs/handoff.md)."
-        )
-    cited = sorted(
-        {path for entry in chunk.entries for path in entry.referenced_paths}
-    )
-    for path in cited:
-        lines.append(f"- Cited path: `{path}`")
-    issues = sorted(
-        {issue for entry in chunk.entries for issue in entry.referenced_issues}
-    )
-    for issue in issues:
-        lines.append(f"- Cited issue: #{issue}")
-    return "\n".join(lines)
-
-
-def auto_draft_slug(chunk: ChunkCandidate) -> str:
-    """Derive a stable goal slug from the chunk.
-
-    Issue-bearing chunks get an `issue-NNN` prefix; the title's first
-    few alphanumeric words follow.
-    """
-    issues = sorted(
-        {issue for entry in chunk.entries for issue in entry.referenced_issues}
-    )
-    raw = _objective_from_chunk(chunk)
-    slug = re.sub(r"[^a-z0-9]+", "-", raw.lower()).strip("-")[:60]
-    if issues:
-        return f"issue-{'-'.join(str(i) for i in issues)}-{slug}".strip("-")
-    return slug or "auto-draft"
-
-
-def render_auto_draft_artifact(
-    chunk: ChunkCandidate, *, date: str, goal_rel: str
-) -> str:
-    """Render the auto-drafted goal artifact body.
-
-    ``goal_rel`` is the repo-relative path to the artifact (used in the
-    Activation line). The caller is responsible for writing the body to
-    that path; this function is pure rendering.
-
-    Every text region that originates in the source chunk (title, goal
-    body, context sources, boundaries' in-scope paths) is scrubbed
-    against the ``single-slice goal`` marker phrase so an unusual
-    handoff entry cannot silently neuter the portability gate after
-    /achieve fills slice rows.
-    """
-    return _AUTODRAFT_TEMPLATE.format(
-        title=_scrub_trivial_goal_marker(_objective_from_chunk(chunk)),
-        date=date,
-        goal_rel=goal_rel,
-        goal_body=_render_goal_body(chunk),
-        non_goals=_render_non_goals(chunk),
-        boundaries=_scrub_trivial_goal_marker(_render_boundaries(chunk)),
-        user_acceptance=USER_ACCEPTANCE_PLACEHOLDER,
-        agent_verification=AGENT_VERIFICATION_PLACEHOLDER,
-        context_sources=_render_context_sources(chunk),
-        interview_decisions=INTERVIEW_DECISIONS_PLACEHOLDER,
-        plan_critique=PLAN_CRITIQUE_PLACEHOLDER,
-    )

@@ -40,6 +40,8 @@ def _assert_publish_current_tag_discovery_failure(
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish tag-history test",
             "--repo-root",
             str(repo),
             "--publish-current",
@@ -123,6 +125,8 @@ def test_publish_current_allows_no_previous_release_tags_after_successful_discov
         [
             "python3",
             "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish tag-history test",
             "--repo-root",
             str(repo),
             "--publish-current",

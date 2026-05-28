@@ -47,6 +47,7 @@ run_git_listing_to_file tracked-markdown "$tracked_markdown_list" \
   ':(exclude).cautilus/**' \
   ':(exclude).pytest_cache/**' \
   ':(exclude)evals/fixtures/**' \
+  ':(exclude)tests/fixtures/**' \
   ':(exclude)plugins/**'
 mapfile -t tracked_markdown_files <"$tracked_markdown_list"
 
