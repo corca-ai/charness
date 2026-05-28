@@ -267,7 +267,18 @@ def _run_publish(repo: Path, env: dict[str, str], *args: str) -> subprocess.Comp
 
 
 def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subprocess.CompletedProcess[str]:
-    return _run_publish(repo, env, "--part", "patch", *extra, "--execute")
+    # The slice-5 release critique gate refuses publish unless one of
+    # --critique-artifact / --critique-blocked is supplied. Tests that already
+    # pass a critique flag are honored; tests that target a downstream failure
+    # get a synthetic blocked-skip injected so they still reach their assertion.
+    has_critique_flag = any(arg in ("--critique-artifact", "--critique-blocked") for arg in extra)
+    extras = list(extra)
+    if not has_critique_flag:
+        extras.extend([
+            "--critique-blocked",
+            "synthetic-test-harness does not spawn real critique subagents",
+        ])
+    return _run_publish(repo, env, "--part", "patch", *extras, "--execute")
 
 
 def _run_review_gate(repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:

@@ -61,6 +61,7 @@ ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
+enforce_release_critique_gate = _preflight.enforce_release_critique_gate
 safe_real_host_payload = _preflight.safe_real_host_payload
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
@@ -72,7 +73,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote", default="origin", help="Git remote to push to (default: origin)")
     parser.add_argument("--title", help="Release title (defaults to the tag name)")
     parser.add_argument("--notes-file", type=Path, help="Path to a release notes file; omit to generate notes from commits")
-    parser.add_argument("--critique-artifact", help="Path to the required release critique artifact")
+    parser.add_argument("--critique-artifact", help="Path to the required release critique artifact (under charness-artifacts/critique/)")
+    parser.add_argument("--critique-blocked", help="Host signal (>=20 chars) when the bounded fresh-eye critique was genuinely blocked by the host runtime; mutually exclusive with --critique-artifact")
     parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
     parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
@@ -261,6 +263,11 @@ def main() -> None:
         raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
     adapter_data = adapter["data"]
     critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
+    enforce_release_critique_gate(
+        repo_root,
+        critique_artifact=critique_artifact,
+        critique_blocked=args.critique_blocked,
+    )
     status = git_status(repo_root)
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))

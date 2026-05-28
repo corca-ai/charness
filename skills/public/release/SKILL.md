@@ -190,6 +190,7 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/version-policy.md`
 - `references/install-surface.md`
+- `references/closeout-critique-gate.md`
 - `../../shared/references/closeout-discipline.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `<repo-root>/scripts/current_release.py`
