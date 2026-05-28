@@ -14,8 +14,6 @@ PROVIDER_ID_ALIASES = {
 }
 
 TEXT_REPLACEMENTS = {
-    "github-gh": "github-worker",
-    "gws-cli": "google-workspace-worker",
     "SLACK" + "_BOT_TOKEN": "Slack credential grant",
     "authenticated or installed binaries such as `gh`, `yt-dlp`, `defuddle`, or `agent-browser`": "host-mediated fetch helpers",
     "authenticated `gh`": "host-mediated GitHub credential",
@@ -59,13 +57,6 @@ def _sanitize_value(value: Any) -> Any:
     return value
 
 
-def _alias_path(path: str) -> str:
-    for source_id, public_id in PROVIDER_ID_ALIASES.items():
-        path = path.replace(f"{source_id}.json", f"{public_id}.json")
-        path = path.replace(source_id, public_id)
-    return path
-
-
 def _materialized_support_skill_path(root: Path, manifest: dict[str, object]) -> str | None:
     support = manifest.get("support_skill_source")
     generated_skill = generated_support_dir(root) / support_link_name(manifest) / "SKILL.md"
@@ -95,6 +86,15 @@ def _checks(data: dict[str, object]) -> list[dict[str, object]]:
     ]
 
 
+_VERBATIM_INTEGRATION_FIELDS = frozenset({
+    "intent_triggers",
+    "strong_intent_triggers",
+    "supports_public_skills",
+    "recommendation_role",
+    "path",
+})
+
+
 def integrations(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
     for data in load_manifests_for_discovery(root):
@@ -114,11 +114,15 @@ def integrations(root: Path) -> list[dict[str, object]]:
             "readiness_checks": _checks(data),
             "supports_public_skills": data.get("supports_public_skills", []),
             "recommendation_role": data.get("recommendation_role"),
-            "path": _alias_path(data["_manifest_path"]),
+            "path": data["_manifest_path"],
             "source": "local-integration" if origin == "user-repo" else "plugin-fallback-integration",
             "layer": "external integration",
         }
-        items.append(_sanitize_value(entry))
+        sanitized = {
+            key: value if key in _VERBATIM_INTEGRATION_FIELDS else _sanitize_value(value)
+            for key, value in entry.items()
+        }
+        items.append(sanitized)
     return items
 
 

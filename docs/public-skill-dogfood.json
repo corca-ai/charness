@@ -161,8 +161,9 @@
         "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`"
       ],
   "review_status": "reviewed",
-      "reviewed_on": "2026-05-17",
+      "reviewed_on": "2026-05-28",
       "observed_evidence": [
+        "Integration entries in `charness-artifacts/find-skills/latest.json` now carry the real on-disk manifest path (`integrations/tools/<file>.json`) and the manifest's verbatim `intent_triggers`/`supports_public_skills`/`recommendation_role` values, while the `id` field continues to use the public-facing alias from `PROVIDER_ID_ALIASES`. This keeps `validate_current_pointer_freshness` able to pin manifest-to-inventory equality (path lookup and validator-checked field comparison) without breaking the user-facing provider abstraction.",
         "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
         "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
         "That keeps `find-skills-canonical-artifact-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to distinguish canonical evidence from query-shaped output still maps directly to checked-in `find-skills` behavior and artifact policy.",

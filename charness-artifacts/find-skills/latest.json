@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-28T09:33:50Z",
+  "generated_at": "2026-05-28T11:47:03Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -1148,7 +1148,7 @@
           "issue"
         ],
         "recommendation_role": null,
-        "path": "integrations/tools/github-worker.json",
+        "path": "integrations/tools/github-gh.json",
         "source": "local-integration",
         "layer": "external integration"
       },
@@ -1241,13 +1241,13 @@
           "gmail message",
           "google calendar",
           "google workspace",
-          "workspace gather",
+          "gws gather",
           "workspace gather"
         ],
         "strong_intent_triggers": [],
         "config_layers": [
           {
-            "layer_id": "authenticated-google-workspace-worker",
+            "layer_id": "authenticated-gws-cli",
             "layer_type": "authenticated-binary",
             "summary": "Prefer an already host-mediated Google Workspace credential session for private Google Workspace gather."
           },
@@ -1267,7 +1267,7 @@
           "gather"
         ],
         "recommendation_role": "runtime",
-        "path": "integrations/tools/google-workspace-worker.json",
+        "path": "integrations/tools/gws-cli.json",
         "source": "local-integration",
         "layer": "external integration"
       },
