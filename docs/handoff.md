@@ -14,7 +14,10 @@
 
 ## Current State
 
-- **v0.9.0 is published and verified** on `main` + tag; no version drift.
+- **v0.10.0 published** (GitHub release + tag, all surfaces synced, no drift);
+  ships the #226 reviewer-tier policy. **Open:** release-time real-host proof
+  (Cautilus install/doctor on a clean machine) is required and NOT yet run — see
+  [release latest](../charness-artifacts/release/latest.md).
 - **#226 CLOSED** (this session, via `achieve`): centralized a portable
   fresh-eye reviewer-tier policy. `high-leverage`/`standard` tier in
   [the shared fresh-eye reference](../skills/shared/references/fresh-eye-subagent-review.md)
