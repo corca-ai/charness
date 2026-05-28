@@ -183,6 +183,20 @@ Additionally, add a Before-phase portability self-test to `achieve` so future go
 - Lessons carried forward: Live smoke during this very slice (running upsert_goal --status complete on the active goal and seeing it refuse with exit 1) IS the real-host proof. The retro artifact and host-log probe will only exist once slice 8 runs retro and probe_host_logs.py — by design. The gate is non-bypassable from the path the lifecycle prescribes.
 - Metrics: when available — host-log probe deferred to slice 8
 
+### Slice 4: Markdown hook quieting (#230 Waste 2)
+
+- Objective: Drop the single 50KB Finding: line that markdownlint-cli2 emits on every commit; preserve all failure detail and the non-zero exit code
+- Why this approach: Pure recurring context noise observed live in slices 1, 2, 3 of this very run (50.6KB flood per commit). Reordered ahead of slices 4/5/7 mid-run to stop polluting agent context for the remaining slices; ordering changes nothing in correctness, only in cost. The reorder is recorded honestly in this log so a fresh session can reconstruct it.
+- Commits:
+- What changed: scripts/check-markdown.sh: append | sed '/^Finding: /d' to the markdownlint-cli2 invocation, with a load-bearing inline comment explaining why the filter is anchored and what it preserves. docs/deferred-decisions.md: new entry D27 tracking the upstream-fix follow-up so the local sed filter is not forgotten.
+- Alternatives rejected: Replacing markdownlint-cli2 with a quieter tool (rejected — out of scope for slice 6 + would lose existing rule coverage). Hiding stdout entirely on success (rejected — Linting:/Summary: lines are useful operator signal at 4 lines total). Patching markdownlint-cli2 source (rejected — upstream is external, deferred-decisions D27 records the upgrade-watch trigger). Filtering at the pre-commit hook level instead of check-markdown.sh (rejected — the script is also called outside the hook by run-quality.sh and direct human invocation; fix belongs at the script boundary).
+- Targeted verification: Clean tree: full hook stdout shrinks from 50.6KB to 143 bytes (350x reduction); 4 lines remain (Validated/markdownlint-cli2 banner/Linting:/Summary:). Known-failing fixture: per-error lines (file:line:col error MDxxx) preserved; failing file name appears verbatim. pipefail behavior: bash -c 'set -euo pipefail; ... | sed ... >/dev/null' returns exit 1 from markdownlint failure, propagated through sed. The hook script itself has set -euo pipefail on line 2 so the exit code is honored regardless of caller. check_doc_links exit 0; the new D27 entry passes after switching backtick references to markdown links and removing the trailing-space inside .
+- Test duplication pressure:
+- Critique: Bounded fresh-eye reviewer (standard tier, parent-delegated; agentId a28af53807ad5aef1). Four angles probed: suppression-risk (F1, regex is anchored + literal load-bearing space, future cli2 break would fail loudly not silently — Over-Worry), exit-code-loss (F2, script-level set -euo pipefail covers all callers — non-issue), regex-collision/tracked-paths (F3, *.md glob plus the trailing-space anchor make a path-named-Finding-foo.md case impossible to match — Over-Worry), and upstream-recurrence (F4, no --quiet flag in v0.21.0 — Valid but Defer). Next Move: no change to the hook; optional follow-up was 'record the upstream-tracking note' which I folded by adding D27 to deferred-decisions.md.
+- Off-goal findings: None this slice
+- Lessons carried forward: The flood was visible in this very session's prior commits; closing it mid-run saved real tokens on slices 4/5/7/8. Reordering slices within a run is honest when the cost-reduction is measurable and the cadence's required pieces (slice-level critique here) still run. The deferred-decisions ledger is the right durable home for 'this is a workaround pending upstream change' — better than a TODO comment that nobody re-reads.
+- Metrics: Direct: hook stdout 50.6KB to 143 bytes per call. Indirect (when available): host-log probe deferred to slice 8.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

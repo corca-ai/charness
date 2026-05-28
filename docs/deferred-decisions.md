@@ -235,6 +235,14 @@ Reopen trigger:
 - Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py)
 - Reopen trigger: First report of a Claude/Codex session surfacing `python3: command not found` from the installed SessionStart hook.
 
+### D27. markdownlint-cli2 Verbose Banner Filter
+
+- Question: Should [`check-markdown.sh`](../scripts/check-markdown.sh) keep the local `sed` `Finding:` filter forever, or replace it once markdownlint-cli2 adds a `--quiet` flag or equivalent upstream knob?
+- Current choice: Defer. v0.21.0 has no quiet flag; the banner line listing every linted path is the only source of the per-commit ~50KB stdout flood that #230 Waste 2 targeted. The filter is anchored, load-bearing-space, and verified against a known-failing fixture (slice 6 critique, agentId `a28af53807ad5aef1`, F1+F3 confirmed Over-Worry).
+- Why now: Local one-line fix is correct today and saves ~350x stdout bytes per commit; rewriting it under a future upstream flag would just be ceremony until the upgrade actually lands.
+- Impact surfaces: [scripts/check-markdown.sh](../scripts/check-markdown.sh)
+- Reopen trigger: markdownlint-cli2 ships a documented quiet/verbosity flag, OR the per-error line format changes such that legitimate errors now begin with the same prefix the filter drops (caught by slice 6 stop condition on every fixture run).
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

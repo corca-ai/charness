@@ -61,4 +61,10 @@ if [ "${#markdown_files[@]}" -eq 0 ]; then
 fi
 
 python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT"
-"${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}"
+# The markdownlint-cli2 banner emits a single `Finding: <space-separated paths>`
+# line listing every file it is about to lint. On this repo that line is
+# ~50KB (485+ tracked markdown paths), which floods agent context on every
+# commit and push without changing lint behavior. Filter it out; per-file
+# error lines (`file.md:line:col error MDxxx ...`) do not start with
+# `Finding: ` and continue to surface failing file names. See #230 Waste 2.
+"${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}" | sed '/^Finding: /d'
