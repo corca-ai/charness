@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-28T04:39:45Z",
+  "generated_at": "2026-05-28T08:44:59Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -161,6 +161,7 @@
           "skills/public/critique/references/prepare-packet.md",
           "skills/public/critique/references/angle-selection.md",
           "skills/public/critique/references/counterweight-triage.md",
+          "skills/public/critique/references/confirmed-input-over-anchoring.md",
           "skills/public/critique/references/adapter-contract.md",
           "skills/shared/references/agent-assessment-invariant.md"
         ],
@@ -525,7 +526,8 @@
           "skills/shared/references/closeout-discipline.md",
           "skills/public/release/references/adapter-contract.md",
           "skills/public/release/references/version-policy.md",
-          "skills/public/release/references/install-surface.md"
+          "skills/public/release/references/install-surface.md",
+          "skills/public/release/references/closeout-critique-gate.md"
         ],
         "source": "local-public",
         "layer": "public skill"

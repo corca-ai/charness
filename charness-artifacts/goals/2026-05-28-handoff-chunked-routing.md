@@ -1,6 +1,6 @@
 # Achieve Goal: Handoff auto-chunking: generative-sequence routing into /achieve
 
-Status: draft
+Status: active
 Created: 2026-05-28
 Activation: `/goal @charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md`
 
@@ -179,6 +179,20 @@ Absorb the recurring manual cost of reading docs/handoff.md, identifying which r
 | 7. Closeout | Broad gates, full `retro` invocation, host-log probe, final verification with honest non-claims, user verification instructions | Final-stage proof per After-phase contract | `check_goal_artifact.py` ok=true, retro artifact, evidence-binding (consume #233 fix if landed, else explicit Off-Goal note), real-host round-trip smoke | planned |
 
 ## Slice Log
+
+### Slice 1: Spec for handoff auto-chunking
+
+- Objective: Lock the algorithm, data shape, trigger rule (with 7-row fixture), deterministic-vs-LLM split, auto-draft template, and skill-surface plan that slices 2-7 build to.
+- Why this approach: Multiple cross-cutting decisions had to converge before code (data structures shared across parser/ranker/merger/drafter; auto-draft template must match the existing goal_artifact_lib template; trigger rule has to be the same across slice 6 SKILL.md prose and slice 7 verification).
+- Commits:
+- What changed: New docs/handoff-chunked-routing.md (466 lines): algorithm 5-step pipeline, data structures (HandoffEntry / ChunkCandidate / RankedChunk / MergeProposal), deterministic-vs-LLM split table, trigger detection rule + 7-row fixture, auto-draft template + post-condition, skill-surface plan with ≤161 line budget for handoff/SKILL.md, test plan table per slice, stop conditions, critique findings provenance.
+- Alternatives rejected: Inline-extending handoff SKILL.md instead of a separate spec doc: rejected because the spec elaborates 6 slices' worth of design and SKILL.md cap is 200 lines; the new reference file owns the body, the spec owns the design contract that survives beyond a single skill surface.
+- Targeted verification: check_doc_links --repo-root . passed (after folding the spec into <repo-root>/path placeholders for to-be-created artifacts and markdown links for existing ones).
+- Test duplication pressure:
+- Critique: Bounded fresh-eye subagent spec critique (standard tier, agentId a3b7d3116ace3415c). Four findings folded inline (2 Act-Before-Ship: Title double-prefix bug, missing why-not test row; 2 Bundle-Anyway: boundary-token canonicalization, prose-in-Acceptance/Verification assertion). Two Over-Worry / Valid-but-Defer preserved as reasoning trail in spec's Critique Findings section. Provenance recorded so a fresh session re-verifies without re-running critique.
+- Off-goal findings:
+- Lessons carried forward: (1) When a spec passes a value into an existing template, trace the template's wrapping prefix exactly — the Title double-prefix bug was the kind of mistake that only a fresh-eye reader catching the spec against the actual _TEMPLATE source would find. (2) Boundary-token canonicalization needs a real-data merge negative case in the fixture, not just positive cases — over-merging on common directory roots is the silent failure mode.
+- Metrics: spec doc: 466 lines; check_doc_links: green; critique tokens: 54914 / tool_uses: 8 / duration: 89955ms (fresh-eye subagent self-reported)
 
 ## Context Sources
 
