@@ -187,6 +187,35 @@ def _manifest_default(field: str) -> object:
     return None if field == "recommendation_role" else []
 
 
+def _load_find_skills_sanitizer(repo_root: Path):
+    """Load the find-skills capability_sources module so the validator can
+    apply the same provider-id alias + text sanitization the inventory does.
+
+    Returns ``(alias_path_fn, sanitize_value_fn)``. If the module cannot be
+    found (split-install missing the source tree), returns ``(None, None)``
+    and the caller falls back to verbatim comparison.
+    """
+    import importlib.util
+    candidate = repo_root / "skills/public/find-skills/scripts/capability_sources.py"
+    if not candidate.is_file():
+        return None, None
+    repo_root_str = str(repo_root)
+    added_path = False
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
+        added_path = True
+    try:
+        spec = importlib.util.spec_from_file_location("_find_skills_capability_sources", candidate)
+        if spec is None or spec.loader is None:
+            return None, None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return getattr(module, "_alias_path", None), getattr(module, "_sanitize_value", None)
+    finally:
+        if added_path:
+            sys.path.remove(repo_root_str)
+
+
 def validate_find_skills_integration_claims(repo_root: Path) -> None:
     inventory_path = repo_root / FIND_SKILLS_INVENTORY
     integrations_dir = repo_root / INTEGRATIONS_DIR
@@ -196,6 +225,7 @@ def validate_find_skills_integration_claims(repo_root: Path) -> None:
     inventory = payload.get("inventory")
     if not isinstance(inventory, dict):
         return
+    alias_path, sanitize_value = _load_find_skills_sanitizer(repo_root)
     artifact_integrations = {
         item.get("path"): item
         for item in inventory.get("integrations", [])
@@ -207,12 +237,15 @@ def validate_find_skills_integration_claims(repo_root: Path) -> None:
             continue
         manifest = _load_json(manifest_path)
         relative_path = str(manifest_path.relative_to(repo_root))
-        artifact_entry = artifact_integrations.get(relative_path)
+        lookup_path = alias_path(relative_path) if alias_path is not None else relative_path
+        artifact_entry = artifact_integrations.get(lookup_path)
         if not artifact_entry:
             stale.append(f"`{relative_path}` missing from `{FIND_SKILLS_INVENTORY}`")
             continue
         for field in ("intent_triggers", "supports_public_skills", "recommendation_role"):
-            if artifact_entry.get(field) != manifest.get(field, _manifest_default(field)):
+            manifest_value = manifest.get(field, _manifest_default(field))
+            expected = sanitize_value(manifest_value) if sanitize_value is not None else manifest_value
+            if artifact_entry.get(field) != expected:
                 stale.append(f"`{relative_path}` `{field}` differs from `{FIND_SKILLS_INVENTORY}`")
     if stale:
         raise ValidationError(

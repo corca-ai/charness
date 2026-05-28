@@ -344,6 +344,12 @@
       "evidence_terms": ["skipped:", "skipped: <enum>"],
       "rationale": "Achieve After-phase closeout writes per-evidence-name `skipped: <enum>: <detail>` lines into the goal artifact so the persisted reason stays operator-visible."
     },
+    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
+      "states": ["skipped"],
+      "visibility": ["artifact_visible"],
+      "evidence_terms": ["skipped"],
+      "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
+    },
     "skills/public/issue/scripts/issue_verify_closeout.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload", "hard_failure_or_blocker"],
