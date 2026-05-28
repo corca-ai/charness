@@ -219,7 +219,7 @@ Slice-4 merge fixture must include a negative case (entries 2 and 7
 of the current handoff, which both mention bare `tests` and
 `scripts` but share no deeper path) that asserts they do **not**
 merge.
-3. **Rank.** `prepare_ranker_packet.py` writes a JSON packet containing
+3. **Rank.** [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) writes a JSON packet containing
    the `MergeProposal` plus the canonical generative-sequence prompt.
    The agent fills it, producing a list of `RankedChunk` records (one
    per standalone + one per merged candidate; agent picks which to
@@ -351,7 +351,7 @@ gate enforces the second direction mechanically.
 | Slice | Test surface | Fixture |
 | --- | --- | --- |
 | 2 | `<repo-root>/tests/test_handoff_chunker_parse.py` | current [`docs/handoff.md`](./handoff.md) snapshot copied into `<repo-root>/tests/fixtures/handoff-snapshot-2026-05-28.md`; assert HandoffEntry list shape, count, and boundary_tokens for each entry. |
-| 3 | `<repo-root>/tests/test_handoff_chunker_ranker_packet.py` | known parsed entry list + canonical filled-packet JSON; round-trip through `prepare_ranker_packet.py` and a validator that asserts the schema. |
+| 3 | `<repo-root>/tests/test_handoff_chunker_ranker_packet.py` | known parsed entry list + canonical filled-packet JSON; round-trip through [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) and a validator that asserts the schema. |
 | 3 (why-not) | `<repo-root>/tests/test_handoff_chunker_why_not_followup.py` | filled `RankedChunk` list; assert every `reasoning` field is non-empty and >0 chars per chunk, so a "why not chunk N?" follow-up can be answered from already-computed reasoning without re-invoking the ranker (User Acceptance criterion in goal artifact). |
 | 4 | `<repo-root>/tests/test_handoff_chunker_merge_proposer.py` | three sub-fixtures: shared-file, shared-skill, shared-policy. Each asserts the merged candidate list contains exactly the expected member entries with the expected reason. |
 | 5 | `<repo-root>/tests/test_handoff_chunker_auto_draft.py` | selected `ChunkCandidate` → drafted goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py); portability section content matches the placeholder-or-seeded rule; Slice Plan data row count is 0. |

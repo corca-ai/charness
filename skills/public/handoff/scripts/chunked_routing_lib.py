@@ -91,6 +91,169 @@ class MergeProposal:
             "shared_boundary_reason": dict(self.shared_boundary_reason),
         }
 
+    def all_candidates(self) -> tuple[ChunkCandidate, ...]:
+        return tuple(self.standalone) + tuple(self.merged)
+
+
+# Ranker packet -------------------------------------------------------------
+
+RANKER_PACKET_VERSION = 1
+
+# Canonical generative-sequence prompt. Mirrors the Christopher Alexander
+# idiom used in skills/public/issue/SKILL.md step 5 ("the move that reduces
+# uncertainty or unlocks the next issue comes first"). Pinned here so a
+# prompt change forces a fixture update; the round-trip test is the gate.
+RANKER_PROMPT = (
+    "Rank the chunk candidates as a Christopher Alexander generative "
+    "sequence: the chunk that reduces the most uncertainty for, or "
+    "unlocks the most of, the remaining chunks comes first. Prefer moves "
+    "that lower risk for later chunks; do not optimize for cheapest-first "
+    "or for personal momentum. Do not rank by input order, alphabetical "
+    "order, or any other ordering that ignores the unlock relation between "
+    "chunks.\n\n"
+    "For each candidate (standalone or merged), assign:\n"
+    "- candidate_label: the candidate's `label` field verbatim\n"
+    "- rank: integer starting at 1; ranks must be a contiguous 1..N\n"
+    "  permutation of all candidates with no gaps or duplicates\n"
+    "- reasoning: 2-3 sentences naming what this chunk unlocks for the\n"
+    "  next chunk, what uncertainty it removes, or which downstream\n"
+    "  decision becomes cheaper. Do not restate the chunk's objective\n"
+    "  summary — the reasoning explains why this position in the\n"
+    "  sequence is right.\n\n"
+    "Reasoning must be non-empty for every candidate so a later "
+    '"why not chunk X?" follow-up can be answered from this rendered '
+    "output without re-running the ranker."
+)
+
+
+_RESPONSE_SCHEMA = {
+    "type": "object",
+    "required": ["ranked_chunks"],
+    "properties": {
+        "ranked_chunks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["candidate_label", "rank", "reasoning"],
+                "properties": {
+                    "candidate_label": {"type": "string", "minLength": 1},
+                    "rank": {"type": "integer", "minimum": 1},
+                    "reasoning": {"type": "string", "minLength": 1},
+                },
+            },
+        }
+    },
+}
+
+
+def build_ranker_packet(merge_proposal: MergeProposal) -> dict[str, Any]:
+    """Return the JSON-serializable packet handed to the agent ranker.
+
+    The packet is self-contained: the agent fills the response shape
+    declared in ``response_schema`` and the parent calls
+    ``validate_ranker_response`` on the filled payload. No follow-up
+    fetch is needed.
+    """
+    return {
+        "version": RANKER_PACKET_VERSION,
+        "merge_proposal": merge_proposal.to_dict(),
+        "ranker_prompt": RANKER_PROMPT,
+        "response_schema": _RESPONSE_SCHEMA,
+    }
+
+
+def _expected_labels(merge_proposal: MergeProposal) -> list[str]:
+    return [candidate.label for candidate in merge_proposal.all_candidates()]
+
+
+def validate_ranker_response(
+    response: dict[str, Any], merge_proposal: MergeProposal
+) -> dict[str, Any]:
+    """Validate an agent-filled ranker response.
+
+    Returns ``{"ok": bool, "issues": [...]}``. Issues to report:
+
+    - missing ``ranked_chunks`` key or non-list shape
+    - wrong length (must equal total candidate count)
+    - duplicate or unknown ``candidate_label`` values
+    - ranks are not a contiguous 1..N permutation
+    - any chunk has empty ``reasoning``
+    """
+    issues: list[str] = []
+    expected = _expected_labels(merge_proposal)
+    expected_set = set(expected)
+
+    ranked = response.get("ranked_chunks")
+    if not isinstance(ranked, list):
+        return {"ok": False, "issues": ["missing or non-list `ranked_chunks`"]}
+
+    if len(ranked) != len(expected):
+        issues.append(
+            f"ranked_chunks length {len(ranked)} != candidate count {len(expected)}"
+        )
+
+    seen_labels: set[str] = set()
+    seen_ranks: list[int] = []
+    for entry in ranked:
+        if not isinstance(entry, dict):
+            issues.append(f"non-dict entry: {entry!r}")
+            continue
+        label = entry.get("candidate_label")
+        rank = entry.get("rank")
+        reasoning = entry.get("reasoning")
+        if not isinstance(label, str) or not label:
+            issues.append(f"missing/empty candidate_label in {entry!r}")
+            continue
+        if label not in expected_set:
+            issues.append(f"unknown candidate_label {label!r}")
+        if label in seen_labels:
+            issues.append(f"duplicate candidate_label {label!r}")
+        seen_labels.add(label)
+        if not isinstance(rank, int) or rank < 1:
+            issues.append(f"invalid rank {rank!r} for {label!r}")
+        else:
+            seen_ranks.append(rank)
+        if not isinstance(reasoning, str) or not reasoning.strip():
+            issues.append(f"empty reasoning for {label!r}")
+
+    if seen_ranks:
+        expected_ranks = list(range(1, len(expected) + 1))
+        if sorted(seen_ranks) != expected_ranks:
+            issues.append(
+                f"ranks {sorted(seen_ranks)} != contiguous 1..{len(expected)}"
+            )
+
+    return {"ok": not issues, "issues": issues}
+
+
+def parse_ranked_chunks(
+    response: dict[str, Any], merge_proposal: MergeProposal
+) -> tuple[RankedChunk, ...]:
+    """Materialize ``RankedChunk`` records from a validated response.
+
+    Caller is responsible for running ``validate_ranker_response`` first;
+    this function trusts the shape but skips any chunk whose label is
+    unknown so a partial fail does not throw.
+    """
+    by_label = {
+        candidate.label: candidate for candidate in merge_proposal.all_candidates()
+    }
+    ranked: list[RankedChunk] = []
+    for entry in response.get("ranked_chunks", []):
+        label = entry.get("candidate_label")
+        candidate = by_label.get(label)
+        if candidate is None:
+            continue
+        ranked.append(
+            RankedChunk(
+                candidate=candidate,
+                rank=int(entry["rank"]),
+                reasoning=str(entry["reasoning"]).strip(),
+            )
+        )
+    ranked.sort(key=lambda chunk: chunk.rank)
+    return tuple(ranked)
+
 
 # Parsing -------------------------------------------------------------------
 
