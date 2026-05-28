@@ -14,35 +14,28 @@
 
 ## Current State
 
-- **`main` is 20 commits ahead of `origin/main`, locally green, not yet pushed.**
-  Carries the #230 + #229 closeout (8 slices) and the handoff-chunked-routing
-  goal (draft + 7 slices + closeout-narration follow-up). Pre-push will run as
-  `full-gate-required` (touches `.githooks/`, `scripts/`, `skills/`, `tests/`).
-- **handoff-chunked-routing goal: COMPLETE locally** — chunker behind a
-  deterministic trigger gate on the `handoff` skill
-  ([goal](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md),
-  [closeout](../charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md)).
-- **#229 + #230 LOCALLY RESOLVED, still OPEN on GitHub** (gh-close pending push;
-  [goal](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md)).
+- **`main` is at `origin/main` (push landed).** The 22-commit batch carrying
+  the #230 + #229 closeout, the handoff-chunked-routing goal, and the
+  pre-push gate clearing is now upstream.
+- **#230 CLOSED, #229 still OPEN.** #229 close still pending against the
+  [closeout retro](../charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md)
+  and the
+  [goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md).
+- **handoff-chunked-routing goal: shipped.** Chunker behind a deterministic
+  trigger gate on `handoff`; layering miss captured in
+  [chunked-routing-layering-miss](../charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md).
 - **v0.10.0 published**; real-host release proof (Cautilus install/doctor on a
   clean machine) NOT yet run. See [release latest](../charness-artifacts/release/latest.md).
 - **#219 still OPEN** — fix `a0b8de0e` on `main` awaiting next scheduled mutation
   run to validate + auto-close (do not hand-close). See
   [debug artifact](../charness-artifacts/debug/2026-05-27-issue-224-219-mutation-annotation-filter.md).
-- **New issues**: #234 (mutation regression on main), #233 (closeout-gate
-  hardening: F1 binding + F2 user-message surfacing), #232 (issue skill
-  shell-quoting body corruption).
+- **Open issues**: #234, #233, #232, #229, #219, #185, #184.
 
 ## Next Session
 
-1. **Push the 20 commits.** Pre-push runs as `full-gate-required`. A
-   preexisting find-skills inventory schema drift (integration IDs renamed
-   but file basenames unchanged in
-   [integrations/tools](../integrations/tools/)) will fire under
-   `validate-current-pointer-freshness` and likely block — either rename the
-   JSON files to match the new IDs or teach the validator to follow the
-   id-to-path mapping. After push, gh-close #229 + #230 against the local
-   closeout retro evidence.
+1. **gh-close #229** — re-read the closeout retro + goal artifact and verify
+   the evidence actually binds to #229 before invoking `gh issue close`
+   (this is the exact failure mode #233 names; do not hand-close blind).
 2. **#233 closeout-gate hardening.** One design slice extends
    `check_complete_evidence` so retro evidence binds to the completing
    goal's context (slice 3 helper currently accepts stale unrelated retros)
@@ -61,6 +54,12 @@
 
 ## Discuss
 
+- **setup-skill improvement candidate**: `find-skills → handoff` did not
+  auto-trigger on a `@docs/handoff.md` pickup this session; the `CLAUDE.md`
+  Start Here prose lost to the @-mention's "react to content" affordance.
+  See
+  [routing-miss retro](../charness-artifacts/retro/2026-05-28-find-skills-handoff-no-auto-trigger.md).
+  If recurring, open a setup-skill issue.
 - PR CI posture is intentional maintainer-local enforcement per
   [operating contract](./conventions/operating-contract.md); do not reopen
   unless outside PRs become recurring.
