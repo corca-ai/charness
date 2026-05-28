@@ -83,6 +83,30 @@ status is useful before push or merge, but it is not final closeout. Final
 issue-resolution handoff requires `status: verified`, which means every selected
 issue matched the expected GitHub state.
 
+## Resolution-Critique Carrier Header
+
+For `bug`, `feature`, and `deferred-work` classifications, the carrier body
+must carry one of the following lines so `verify-closeout` can prove the
+resolution-critique sub-skill ran (closes the
+[#230](https://github.com/corca-ai/charness/issues/230) Waste 1b
+self-substitution pattern):
+
+- `Critique: <path>` — a checked-in critique artifact under
+  `charness-artifacts/critique/` referencing the resolution. The file must
+  exist and be non-empty.
+- `Critique: blocked <host-signal>` — when the host genuinely could not
+  spawn the bounded fresh-eye subagent. The signal text must be specific
+  enough that the total skip reason
+  (`host-blocked-subagent: <signal>`) exceeds 40 characters; terse
+  signals like `host-down` are rejected.
+
+`question` and `decision-needed` classifications do not run the critique
+substrate and skip this gate. The gate is additive — it runs before the
+existing ledger checks (`missing_close_keywords`, `missing_fields`,
+`state_mismatches`, `manual_comment_missing`) and the existing
+`_classification_requirements` field set is **not** extended. The full
+contract lives at `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+
 Release-driven direct-to-default work follows the same linkage. If the
 repo-owned release helper is used, pass resolved issue numbers with
 `--close-issue <number>` so the helper can place close keywords in the release
