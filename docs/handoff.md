@@ -49,11 +49,13 @@
    rename the JSON files to match the new IDs or teach the validator to
    follow the id-to-path mapping. See the goal artifact's Off-Goal
    Findings section.
-2. **File the After-phase gate hardening as a follow-up issue.** Final
-   critique F1: the slice 3 helper accepts any pre-existing retro/probe
-   file, not just one bound to the current goal. Smallest fix sketch is in
-   the goal artifact's Off-Goal Findings; this is real future-recurrence
-   risk but not a closeout blocker.
+2. **#233 — closeout-gate hardening (F1 binding + F2 user-message
+   surfacing).** Filed during this session's post-closeout correction.
+   Bundles the slice 3 helper accepting stale unrelated retro files with
+   the layer-up pattern of prescribed-skill conclusions not being
+   narrated to the user. Single design slice can address both with one
+   `check_complete_evidence` extension + one achieve After-phase
+   lifecycle contract update.
 3. **Confirm Codex host smoke** of the After-phase gate when a Codex
    session is convenient. The gate is host-agnostic at the script level
    (only `git`, `os.stat`, and the portable shared helper) but live-refusal
