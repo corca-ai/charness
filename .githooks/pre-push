@@ -18,8 +18,55 @@ fi
 echo "charness pre-push: checking current pointers before full quality"
 python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
 
-echo "charness pre-push: running ./scripts/run-quality.sh --read-only"
-./scripts/run-quality.sh --read-only
+# Slice 7 (#230 Waste 3): classify the pending push to decide whether to run
+# the full broad gate or a smaller docs-only subset. Stop condition is
+# mechanically enforced by classify_push_diff_lib.UNCONDITIONAL_FULL_GATE_PREFIXES
+# (plugins/, .claude-plugin/, .agents/plugins/).
+# Pre-push stdin format per `git help githooks`:
+#   <local-ref> SP <local-sha> SP <remote-ref> SP <remote-sha> LF
+# The hook collects all <remote-sha>..<local-sha> pairs and classifies the
+# union of their diffs.
+zero="0000000000000000000000000000000000000000"
+classify_input=""
+saw_ref=0
+saw_new_or_delete=0
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  saw_ref=1
+  if [[ "$local_sha" == "$zero" || "$remote_sha" == "$zero" ]]; then
+    # New ref creation (no remote-sha to diff against) or ref deletion;
+    # force the full gate rather than guess.
+    saw_new_or_delete=1
+    break
+  fi
+  if [[ -n "$classify_input" ]]; then
+    classify_input+=$'\n'
+  fi
+  classify_input+=$(git diff --name-only "${remote_sha}..${local_sha}")
+done
+
+force_full="${CHARNESS_FORCE_FULL_GATE:-0}"
+if [[ "$saw_new_or_delete" == "1" || "$saw_ref" == "0" || "$force_full" == "1" ]]; then
+  classification="full-gate-required"
+  reason="new/deleted ref, no refs on stdin, or CHARNESS_FORCE_FULL_GATE=1"
+else
+  classification_payload="$(printf '%s\n' "$classify_input" | python3 scripts/classify_push_diff.py --paths-stdin --repo-root "$REPO_ROOT")"
+  classification="$(printf '%s' "$classification_payload" | python3 -c 'import json,sys; print(json.load(sys.stdin)["classification"])')"
+  reason="$(printf '%s' "$classification_payload" | python3 -c 'import json,sys; print(json.load(sys.stdin)["reason"])')"
+fi
+
+# Docs-only quality subset that still runs when classification = docs-artifact-only.
+# These check the things a pure docs/artifact change could break and would
+# otherwise land on remote unchecked (slice-7 critique F1). Order does not matter.
+DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,check-title-slug-drift,check-duplicates,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
+
+if [[ "$classification" == "docs-artifact-only" ]]; then
+  echo "charness pre-push: docs/artifact-only push detected ($reason)"
+  echo "charness pre-push: running docs-only quality subset (set CHARNESS_FORCE_FULL_GATE=1 to force full)"
+  CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
+else
+  echo "charness pre-push: running full ./scripts/run-quality.sh --read-only ($reason)"
+  ./scripts/run-quality.sh --read-only
+fi
 
 if ! git diff --quiet -- charness-artifacts; then
   echo "charness pre-push: charness-artifacts/ mutated during a read-only quality run"
