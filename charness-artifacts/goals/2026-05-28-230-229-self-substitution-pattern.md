@@ -11,6 +11,8 @@ runs the activation command.
 
 Eliminate the lighter self-substitution pattern across achieve/issue/release closeouts (#230 Waste 1) and the same pattern's Before-phase anti-anchoring half (#229), quiet the markdown commit/push hook context-flooding (#230 Waste 2), and remove the redundant broad-gate push repetition (#230 Waste 3) so future agent runs cost less time/tokens and produce more honest closeouts.
 
+Additionally, add a Before-phase portability self-test to `achieve` so future goal artifacts durably preserve their originating context (sources, interview alternatives with rejected reasons per the #229 anti-anchoring lesson, plan critique reasoning) and can be activated in a fresh session without depending on the saving session's working memory. This closes the self-referential gap this very goal exposed: the draft artifact was initially saved with only chosen values, not the families that produced them, nor the critique reasoning behind folded revisions.
+
 ## Non-Goals
 
 - Not a release: no plugin version bump expected; v0.10.0 real-host proof stays an
@@ -72,6 +74,14 @@ Eliminate the lighter self-substitution pattern across achieve/issue/release clo
   user-confirmed or issue-inherited value is one of a known system axis
   (host/provider/environment) before locking the design; demonstrable via spec
   example and a test that fails when the probe is removed.
+- A future `achieve` Before-phase produces a goal artifact that contains
+  `Context Sources`, `Interview Decisions` (family + chosen + rejected reason
+  per question), and `Plan Critique Findings` (blockers + reasoning + over-worry)
+  inline before save; a fresh session reading only the artifact can start
+  slice 1 without consulting the originating session's working memory.
+  Demonstrable via a portability self-test step in `achieve` lifecycle
+  documentation and a test fixture that fails when any of the three sections
+  is missing from a non-trivial goal artifact.
 
 ## Agent Verification Plan
 
@@ -120,8 +130,8 @@ Eliminate the lighter self-substitution pattern across achieve/issue/release clo
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1. Spec | Carve the shared closeout-guard contract + Before-phase anti-anchoring probe contract across `achieve` / `issue` / `release` / `critique`; resolve cross-cutting trade-offs before code | Cross-cutting design must converge once before three skill surfaces drift | Spec doc under `docs/`, revised Slice Plan, plan critique pass | planned |
-| 2. Anti-anchoring probe (#229) | Add Before-phase anti-anchoring probe to `achieve` lifecycle + new `critique` "confirmed-input over-anchoring" angle | Smallest standalone slice; informs how closeout guards record skipped-proof reasons | Lifecycle update, critique angle ref, focused tests | planned |
+| 1. Spec | Carve the shared closeout-guard contract + Before-phase anti-anchoring probe contract + Before-phase portability self-test contract across `achieve` / `issue` / `release` / `critique`; resolve cross-cutting trade-offs before code | Cross-cutting design must converge once before three skill surfaces drift | Spec doc under `docs/`, revised Slice Plan, plan critique pass | planned |
+| 2. Before-phase anti-anchoring + portability self-test (#229 + meta) | Add Before-phase anti-anchoring probe to `achieve` lifecycle + new `critique` "confirmed-input over-anchoring" angle + Before-phase portability self-test that requires `Context Sources` / `Interview Decisions` (family + chosen + rejected) / `Plan Critique Findings` sections inline before goal save | Smallest standalone slice; informs how closeout guards record skipped-proof reasons; **closes the self-referential gap that this very goal exposed** — the draft artifact was originally saved without rejected interview alternatives or critique reasoning, so #229's lesson was not applied to the artifact itself | Lifecycle update with portability self-test step, critique angle ref, focused tests + a goal-artifact portability test fixture that fails when any of the three new sections is missing | planned |
 | 3. achieve After-phase guard (#230 Waste 1a) | Closeout guard preventing `complete` flip without executed retro + host-log probe; integrate with `check_goal_artifact.py` | Highest stated priority half of #230; primary surface | Helper update, guard test, achieve doc edit | planned |
 | 4. issue closeout guard (#230 Waste 1b) | Extend shared guard to `issue` resolution closeout — refuse closeout without resolution-critique artifact reference or explicit skip record | Sibling surface per user scope | Issue skill doc edit, shared-helper reuse, test, **documented interaction with existing `issue_tool.py verify-closeout` (no duplication)** | planned |
 | 5. release closeout guard (#230 Waste 1c) | Extend shared guard to `release` standalone critique closeout | Sibling surface per user scope | Release skill doc edit, shared-helper reuse, test | planned |
@@ -130,6 +140,124 @@ Eliminate the lighter self-substitution pattern across achieve/issue/release clo
 | 8. Closeout | Broad gates, full `retro` invocation, host-log probe metrics, final verification, non-claims, user verification instructions | Final-stage proof per After-phase contract | `check_goal_artifact.py` pass, retro artifact, broad gate green, real-host guard smoke | planned |
 
 ## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following these in order.
+
+- Source retro: [`charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`](../retro/2026-05-28-issue-226-achieve-run.md)
+  — the #226 achieve-run session retro that produced both #230 and #229; carries
+  the measured cost (~377.8K output tokens, 120 tool calls, ~2h52m) that drives
+  Waste 1's significance.
+- Origin goal artifact: [`charness-artifacts/goals/2026-05-27-226-reviewer-tier-policy.md`](./2026-05-27-226-reviewer-tier-policy.md)
+  — the #226 close that demonstrated the lighter-self-substitution pattern at
+  After-phase (Auto-Retro paraphrased, never invoked `retro`) and Before-phase
+  (Codex-only design locked from a single confirmed value).
+- GitHub issues: #230 (After-phase prescribed-skill-execution + sibling
+  surfaces + Waste 2 markdown hook + Waste 3 broad-gate push), #229 (Before-phase
+  anti-anchoring), #226 (closed, originating policy work).
+- Recent-lessons surface: [`charness-artifacts/retro/recent-lessons.md`](../retro/recent-lessons.md)
+  — Repeat Traps inform slice-2 SKILL.md budget guard and the markdown hook
+  Next-Time Checklist item.
+- Out of scope but live: #231 (mutation regression, opened 2026-05-28) — deliberately
+  excluded; track separately. Not the same class of work as #219.
+
+## Interview Decisions
+
+Each Before-phase user question is recorded as its family of options, the chosen
+value, and the reason the rejected alternatives are not adopted. This applies
+#229's anti-anchoring lesson to the goal artifact itself: a fresh session sees
+the design space, not only the closed point.
+
+### Q1 — Priority shift for newly opened #231
+
+- Family considered: (a) proceed with #230 + #229 as planned; (b) confirm #231
+  scope first (5-10 min check whether it is real on HEAD vs a #219 leftover)
+  before committing order; (c) include #231 inside this goal.
+- Chosen: (a) proceed with #230 + #229.
+- Rejected reason: user kept #231 on a separate track; the self-substitution
+  pattern goal does not need #231's mutation context, and combining them would
+  blur the lesson scope. Option (b) was the recommended path; user took the
+  faster commit instead.
+
+### Q2 — Sibling-surface scope for the "prescribed sub-skill execution" fix
+
+- Family considered: (a) `achieve` After-phase only (smallest); (b) `achieve`
+  + a shared portable closeout-guard helper that `issue` / `release` can opt
+  into later (recommended; phased); (c) all three sibling surfaces in scope
+  now (`achieve` + `issue` closeout + `release` standalone critique).
+- Chosen: (c) all three surfaces in scope.
+- Rejected reason: user explicitly chose the largest scope to fix sibling
+  surfaces in one pass; portability fallback was added as a stop condition so
+  a slice-1 spec finding of "shared helper is infeasible" downgrades to three
+  standalone guards instead of blocking the whole goal.
+
+### Q3 — Waste 3 (broad-gate push batching) disposition
+
+- Family considered: (a) defer with explicit reason (recommended; the issue
+  itself flags Waste 3 as low priority); (b) lightweight guidance only —
+  one-line note in operating-contract about batching closeout/bookkeeping
+  commits, no code change; (c) full mechanism — gate-router that detects
+  docs/artifact-only repushes and skips the broad gate, with correctness
+  protections.
+- Chosen: (c) full mechanism inside this goal.
+- Rejected reason: user explicitly chose the full fix. Correctness risk is
+  protected by slice-level critique on slice 7 and by an unconditional
+  full-gate stop condition for any file under `plugins/`, `.claude-plugin/`,
+  or `.agents/plugins/` (per the plan critique blocker 4).
+
+## Plan Critique Findings
+
+Bounded fresh-eye standard-tier subagent review (per
+[`skills/shared/references/fresh-eye-subagent-review.md`](../../skills/shared/references/fresh-eye-subagent-review.md))
+run on the draft artifact before activation. Reasoning preserved here so a
+fresh session can re-verify the folded revisions without re-running critique.
+
+### Blockers (all folded into Boundaries / Verification Plan / Slice Plan)
+
+1. **Stop condition 1 was circular.** Boundaries listed "spec discovers
+   portability infeasible" as a blocking stop condition, but slice 1 is
+   exactly where portability is decided — the plan had no fallback path if
+   slice 1 found it infeasible. **Folded** to a portability fallback: if slice
+   1's spec doc records the shared guard as infeasible, downgrade slices 3-5
+   to three standalone guards and re-run plan critique on the revised slice
+   plan, instead of flipping the goal to `blocked`.
+2. **"All three sibling surfaces" risks duplicating existing `issue`
+   mechanism.** `issue` closeout already has `issue_tool.py verify-closeout`,
+   a classification ledger, and `closeout-discipline.md`. A new shared "did
+   you run the sub-skill?" guard may duplicate or conflict with the existing
+   one. **Folded** into slice 4's Expected Evidence: must document interaction
+   with `issue_tool.py verify-closeout` and prove no duplication.
+3. **Slice 2's new `critique` angle risks 200-line SKILL.md budget repeat
+   trap.** `test_reviewer_tier_policy.py` already pins `critique/SKILL.md`,
+   and the 200-line gate has bitten recent slices twice. **Folded** into
+   Low-Cost Checks: pre-edit `wc -l` check, refuse body growth within 10 lines
+   of the budget, route new content into `references/*.md` instead.
+4. **Waste 3 stop condition was vague enough to not fire.** "Weakening
+   correctness guarantee" is a judgment call; the classifier can silently
+   misclassify a real regression as artifact-only. **Folded** into stop
+   conditions: any file under `plugins/`, `.claude-plugin/`, or
+   `.agents/plugins/` unconditionally triggers the full gate regardless of
+   any docs/artifact-only classification.
+
+### Over-Worry (raised, not flagged as blockers)
+
+- Markdown hook (Waste 2) suppression risk: low because `check-markdown.sh`
+  uses exit code as the gate signal, not stdout enumeration; failing file
+  names are preserved on failure regardless of verbosity; no downstream
+  parser uses the full enumeration.
+- Test-pressure budget across 6+ test-adding slices: the per-slice
+  `--test-pressure` sample (already in the Low-Cost plan) is the correct
+  mitigation; the 0.5-percentage-point-from-threshold stop condition catches
+  drift early.
+
+### Provenance
+
+- Reviewer: bounded fresh-eye subagent, standard tier, agentId
+  `ae71a6b01b02d7357`.
+- Run timing: pre-activation, after the initial draft and before any slice
+  execution.
 
 ## Off-Goal Findings
 
