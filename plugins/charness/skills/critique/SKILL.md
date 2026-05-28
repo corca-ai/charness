@@ -178,9 +178,8 @@ actually ran.
 - Do not treat every surfaced concern as equally important.
 - Do not skip the counterweight pass; a paranoia backlog without triage is
   not change support.
-- Do not silently downgrade critique into a same-agent local pass. Before
-  declaring subagents unavailable, use the fresh-eye reference and cite the
-  host signal; if still blocked, stop instead of improvising degraded critique.
+- Do not silently downgrade critique into a same-agent local pass. Use the
+  fresh-eye reference; if the canonical path stays blocked, stop, do not improvise.
 - Do not make an already delegated angle or counterweight reviewer spawn another
   reviewer unless recursive delegation was explicitly requested.
 
@@ -192,6 +191,7 @@ actually ran.
 - `references/rename-critique.md`
 - `references/spec-critique.md`
 - `references/autonomous-trigger.md`
+- `references/confirmed-input-over-anchoring.md`
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
 - `references/prepare-packet.md`

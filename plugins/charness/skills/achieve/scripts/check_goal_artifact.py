@@ -53,8 +53,31 @@ def main() -> int:
     if not path.exists():
         print(json.dumps({"ok": False, "issues": [f"goal artifact not found: {path}"]}, ensure_ascii=False, indent=2, sort_keys=True))
         return 2
-    result = goal_lib.check_goal(path.read_text(encoding="utf-8"))
+    text = path.read_text(encoding="utf-8")
+    result = goal_lib.check_goal(text)
     result["path"] = str(path)
+    if result.get("status") == "complete":
+        evidence_report = goal_lib.check_complete_evidence(args.repo_root.expanduser().resolve(), text)
+        result["closeout_evidence"] = evidence_report
+        if not evidence_report["ok"]:
+            result["ok"] = False
+            missing_bits: list[str] = []
+            if evidence_report["missing"]:
+                missing_bits.append("missing: " + ", ".join(evidence_report["missing"]))
+            if evidence_report["missing_evidence_files"]:
+                missing_bits.append(
+                    "missing files: "
+                    + ", ".join(entry["name"] for entry in evidence_report["missing_evidence_files"])
+                )
+            if evidence_report["invalid_skips"]:
+                missing_bits.append(
+                    "invalid skips: "
+                    + ", ".join(entry["name"] for entry in evidence_report["invalid_skips"])
+                )
+            result["issues"].append(
+                "After-phase prescribed-skill evidence not satisfied — "
+                + "; ".join(missing_bits)
+            )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1
 

@@ -7,9 +7,31 @@ manual content.
 """
 from __future__ import annotations
 
+import importlib.util
 import re
 from pathlib import Path
 from typing import Any
+
+
+def _load_shared_helper():
+    """Load the repo-owned shared closeout-evidence helper.
+
+    Resolution walks parent directories until ``scripts/`` is found, so the
+    helper stays portable across the working tree and any installed export.
+    """
+    here = Path(__file__).resolve()
+    for ancestor in here.parents:
+        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location(
+                "check_prescribed_skill_executed_lib", candidate
+            )
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -29,6 +51,19 @@ REQUIRED_SECTIONS = (
     "User Verification Instructions",
     "Auto-Retro",
 )
+
+# H2 sections a non-trivial goal must carry so a fresh session can reconstruct
+# the originating context (sources, rejected interview alternatives, and
+# critique reasoning) without consulting the saving session's working memory.
+# A goal is non-trivial when its Slice Plan table has 2+ data rows, or when
+# its Slice Log has 2+ ``### Slice`` headings (execution started).
+PORTABILITY_SECTIONS = (
+    "Context Sources",
+    "Interview Decisions",
+    "Plan Critique Findings",
+)
+
+_TRIVIAL_GOAL_MARKER = re.compile(r"single-slice goal", re.IGNORECASE)
 
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
@@ -93,6 +128,23 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 
 ## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
 
 ## Off-Goal Findings
 
@@ -169,6 +221,22 @@ def upsert_goal(
     rel = goal_rel(repo_root, path)
     if path.exists():
         original = path.read_text(encoding="utf-8")
+        if status == "complete" and read_status(original) != "complete":
+            evidence_report = check_complete_evidence(repo_root, original)
+            if not evidence_report["ok"]:
+                return {
+                    "action": "refused",
+                    "path": rel,
+                    "status": read_status(original) or "unknown",
+                    "requested_status": status,
+                    "note": (
+                        "refused to flip to complete: After-phase prescribed sub-skill "
+                        "evidence missing or invalid. Add `Retro:` and `Host log probe:` "
+                        "lines (path or `skipped: <enum>: <detail>`) to the goal artifact, "
+                        "then re-run. See docs/prescribed-skill-closeout-contract.md."
+                    ),
+                    "evidence_report": evidence_report,
+                }
         updated = set_status(original, status)
         changed = updated != original
         if changed:
@@ -194,6 +262,139 @@ def upsert_goal(
 def next_slice_number(text: str) -> int:
     numbers = [int(match.group(1)) for match in _SLICE_HEADING.finditer(_mask_fences(text))]
     return (max(numbers) + 1) if numbers else 1
+
+
+def slice_plan_data_row_count(text: str) -> int:
+    """Count data rows in the first markdown table inside ``## Slice Plan``.
+
+    Data rows start with ``|`` and are neither the header row nor the table
+    separator row (the ``| --- |`` line). Counting against the dominant
+    representation (a markdown table) keeps the portability discriminator
+    honest; the ``### Slice N:`` heading form is execution intent in
+    ``## Slice Log``, not planning intent in ``## Slice Plan``.
+    """
+    masked = _mask_fences(text)
+    headings = list(_H2.finditer(masked))
+    section_text: str | None = None
+    for index, match in enumerate(headings):
+        if match.group(1).strip() != "Slice Plan":
+            continue
+        body_start = masked.find("\n", match.start())
+        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
+        section_text = masked[body_start + 1 if body_start != -1 else match.start():body_end]
+        break
+    if section_text is None:
+        return 0
+    seen_header = False
+    seen_separator = False
+    data_rows = 0
+    for line in section_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            if seen_header:
+                break
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        is_separator = bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells)
+        if not seen_header:
+            seen_header = True
+            continue
+        if not seen_separator and is_separator:
+            seen_separator = True
+            continue
+        if is_separator:
+            continue
+        data_rows += 1
+    return data_rows
+
+
+def is_non_trivial_goal(text: str) -> bool:
+    """A goal is non-trivial when planning intent shows ≥2 slices, when
+    execution started (≥2 ``### Slice`` headings in the Slice Log), or when
+    no explicit ``Single-slice goal:`` exemption marker is present *and* any
+    activity exists. A scaffolded empty goal stays trivial."""
+    if _TRIVIAL_GOAL_MARKER.search(text):
+        return False
+    if slice_plan_data_row_count(text) >= 2:
+        return True
+    masked = _mask_fences(text)
+    return sum(1 for _ in _SLICE_HEADING.finditer(masked)) >= 2
+
+
+def missing_portability_sections(text: str) -> list[str]:
+    present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
+    return [section for section in PORTABILITY_SECTIONS if section not in present]
+
+
+# Closeout-evidence parsing -------------------------------------------------
+
+# After-phase evidence names. The achieve closeout requires a checked-in retro
+# artifact plus a host-log probe output; either may be skipped with an
+# enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
+CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
+
+_EVIDENCE_LINE = re.compile(
+    r"^[\s>*-]*(Retro|Host[- ]log[- ]probe)\s*:\s*(.+?)\s*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+
+
+def _normalize_evidence_name(label: str) -> str:
+    label = label.strip().lower()
+    if label == "retro":
+        return "retro_artifact"
+    if re.fullmatch(r"host[- ]log[- ]probe", label):
+        return "host_log_probe"
+    return label.replace(" ", "_").replace("-", "_")
+
+
+def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
+    """Extract ``Retro:`` and ``Host log probe:`` lines from the goal body.
+
+    Returns ``{name: {"kind": "evidence"|"skip", "value": <path-or-reason>}}``.
+    A value that starts with ``skipped:`` (case-insensitive) is treated as a
+    skip and the remaining text is the reason; otherwise the value is a
+    repo-relative or absolute path to the evidence file.
+    """
+    masked = _mask_fences(text)
+    parsed: dict[str, dict[str, str]] = {}
+    for match in _EVIDENCE_LINE.finditer(masked):
+        name = _normalize_evidence_name(match.group(1))
+        raw_value = match.group(2).strip()
+        if not raw_value:
+            continue
+        skip_match = re.match(r"^skipped\s*:\s*(.+)$", raw_value, re.IGNORECASE)
+        if skip_match:
+            parsed[name] = {"kind": "skip", "value": skip_match.group(1).strip()}
+        else:
+            parsed[name] = {"kind": "evidence", "value": raw_value}
+    return parsed
+
+
+def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
+    """Run the shared closeout-evidence helper for an ``achieve`` After-phase.
+
+    The wrapper extracts ``Retro:`` and ``Host log probe:`` lines from the
+    goal artifact body and feeds them as evidence/skip arguments to the
+    portable ``check`` function. The wrapper supplies the contract
+    (CLOSEOUT_EVIDENCE_NAMES); the helper is the gate.
+    """
+    helper = _load_shared_helper()
+    parsed = parse_closeout_evidence(text)
+    evidence: dict[str, str] = {}
+    skips: dict[str, str] = {}
+    for name, payload in parsed.items():
+        if payload["kind"] == "evidence":
+            evidence[name] = payload["value"]
+        else:
+            skips[name] = payload["value"]
+    return helper.check(
+        repo_root=repo_root,
+        required=list(CLOSEOUT_EVIDENCE_NAMES),
+        evidence=evidence,
+        skips=skips,
+        kind="achieve-after",
+    )
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
@@ -246,4 +447,19 @@ def check_goal(text: str) -> dict[str, Any]:
         issues.append("missing `Activation:` line")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))
-    return {"ok": not issues, "status": status, "missing_sections": missing, "issues": issues}
+    portability_missing: list[str] = []
+    if is_non_trivial_goal(text):
+        portability_missing = [section for section in PORTABILITY_SECTIONS if section not in present]
+        if portability_missing:
+            issues.append(
+                "missing portability sections (non-trivial goal): "
+                + ", ".join(portability_missing)
+                + " — add the sections or mark with `Single-slice goal:` to exempt"
+            )
+    return {
+        "ok": not issues,
+        "status": status,
+        "missing_sections": missing,
+        "portability_missing_sections": portability_missing,
+        "issues": issues,
+    }

@@ -18,11 +18,33 @@ def _load_local(module_name: str, alias: str | None = None):
     return module
 
 
+def _load_shared_helper():
+    here = Path(__file__).resolve()
+    for ancestor in here.parents:
+        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location(
+                "check_prescribed_skill_executed_lib", candidate
+            )
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
+
+
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 GIT_TIMEOUT_SECONDS = 10
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
 CLASSIFICATIONS = ("bug", "feature", "deferred-work", "question", "decision-needed")
+# Classifications that require a resolution critique sub-skill execution
+# before closeout. ``question`` and ``decision-needed`` are step-7 discussion
+# resolutions and do not run the critique substrate.
+CRITIQUE_REQUIRED_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
+_CRITIQUE_LINE = re.compile(r"^\s*Critique\s*:\s*(.+?)\s*$", re.MULTILINE)
+_CRITIQUE_BLOCKED = re.compile(r"^blocked\s+(.+)$", re.IGNORECASE)
 MANUAL_FALLBACK_REASONS = (
     "auto-close-unsupported",
     "auto-close-failed-after-remote-verification",
@@ -142,6 +164,68 @@ def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[in
             continue
         found.add(int(match.group("number")))
     return [number for number in numbers if number not in found]
+
+
+def _extract_critique_value(body: str) -> str | None:
+    """Return the value of the first ``Critique:`` line in the carrier body.
+
+    Lines inside code fences are stripped first via ``_strip_code_fences`` so
+    a quoted example in the body cannot satisfy the gate.
+    """
+    plain = "\n".join(_strip_code_fences(body))
+    match = _CRITIQUE_LINE.search(plain)
+    if match is None:
+        return None
+    value = match.group(1).strip()
+    return value or None
+
+
+def _check_resolution_critique(
+    *,
+    repo_root: Path,
+    body: str,
+    classification: str,
+) -> dict[str, Any]:
+    """Run the shared closeout helper for a resolution critique.
+
+    The wrapper extracts the ``Critique:`` carrier-body line and maps:
+      - ``<path>`` -> ``--evidence resolution_critique:<path>``
+      - ``blocked <host-signal>`` -> ``--skip resolution_critique:host-blocked-subagent: <signal>``
+
+    The shared helper's ``_classification_requirements`` is **not** extended;
+    this carrier-header check is an additive gate that runs before the
+    existing ledger verification (per
+    ``docs/prescribed-skill-closeout-contract.md``).
+    """
+    helper = _load_shared_helper()
+    if classification not in CRITIQUE_REQUIRED_CLASSIFICATIONS:
+        return {"ok": True, "skipped_classification": classification}
+    value = _extract_critique_value(body)
+    if value is None:
+        return helper.check(
+            repo_root=repo_root,
+            required=["resolution_critique"],
+            evidence={},
+            skips={},
+            kind="issue-resolution",
+        )
+    blocked_match = _CRITIQUE_BLOCKED.match(value)
+    if blocked_match:
+        signal = blocked_match.group(1).strip()
+        return helper.check(
+            repo_root=repo_root,
+            required=["resolution_critique"],
+            evidence={},
+            skips={"resolution_critique": f"host-blocked-subagent: {signal}"},
+            kind="issue-resolution",
+        )
+    return helper.check(
+        repo_root=repo_root,
+        required=["resolution_critique"],
+        evidence={"resolution_critique": value},
+        skips={},
+        kind="issue-resolution",
+    )
 
 
 def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None) -> str:
@@ -274,6 +358,9 @@ def verify_closeout(
         raise RuntimeError("final closeout verification requires --expect-state CLOSED")
 
     body = _read_carrier_body(repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file)
+    resolution_critique_check = _check_resolution_critique(
+        repo_root=repo_root, body=body, classification=classification
+    )
     missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
     missing_fields = _missing_ledger_fields(body, classification)
     if carrier == "manual-fallback":
@@ -316,7 +403,14 @@ def verify_closeout(
             if carrier == "manual-fallback" and not _manual_comment_found(body, state_payload):
                 manual_comment_missing.append(number)
 
-    ok = not missing_close_keywords and not missing_fields and not state_mismatches and not manual_comment_missing
+    critique_ok = resolution_critique_check.get("ok", True)
+    ok = (
+        critique_ok
+        and not missing_close_keywords
+        and not missing_fields
+        and not state_mismatches
+        and not manual_comment_missing
+    )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
     return {
         "ok": ok,
@@ -333,5 +427,6 @@ def verify_closeout(
         "missing_fields": missing_fields,
         "state_mismatches": state_mismatches,
         "manual_comment_missing": manual_comment_missing,
+        "resolution_critique_check": resolution_critique_check,
         "verified_state": verified_state,
     }
