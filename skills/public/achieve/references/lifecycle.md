@@ -26,6 +26,53 @@ until the work has enough shape to save a reviewable goal artifact. Establish:
 Ask a small number of high-leverage questions. Do not interrogate the user for
 detail that a strong default or the request wording already settles.
 
+### Anti-anchoring probe
+
+For each value confirmed by the user, inherited from issue framing, or
+pulled from prior session memory, test whether the value is one of a known
+system axis (host, provider, environment, profile, locale, runtime, tier)
+before locking the design. Record the result on each value:
+
+- `axis: <name>` when the system already varies on that axis somewhere
+  else (adapter, preset, profile, integration manifest), or
+- `single-point: <reason>` when the value really is a singleton.
+
+A confirmed value with neither record is over-anchored. This is the
+[#229](https://github.com/corca-ai/charness/issues/229) lesson — one
+confirmed model name was treated as a global default when the repo runs
+on multiple hosts.
+
+When the repo is known to vary on a host/provider/environment axis, do
+**not** offer an `AskUserQuestion` that frames the value as a global
+`confirm <value-X>` vs `defer to host` binary. Offer the family shape
+instead (one option per axis instance), or ask the axis question first.
+
+A `critique` Before-phase pass may pick the
+[`confirmed-input over-anchoring`](../../critique/references/confirmed-input-over-anchoring.md)
+angle to verify the probe ran honestly.
+
+### Portability self-test
+
+A goal artifact must be readable by a fresh session without the saving
+session's working memory. Before saving the artifact at status `draft`,
+the Before-phase records three durable sections inline (already present
+in the template):
+
+- `## Context Sources` — retros, prior goal artifacts, issue numbers,
+  recent-lessons surfaces; what a fresh session follows first.
+- `## Interview Decisions` — for each user question: the family
+  considered, the chosen value, and the rejected-alternatives reason.
+  This applies the anti-anchoring lesson to the artifact itself.
+- `## Plan Critique Findings` — blockers folded into Boundaries /
+  Verification / Slice Plan, over-worry raised but not folded, and
+  reviewer provenance. Preserves the reasoning so a fresh session does
+  not have to re-run critique to verify the folded revisions.
+
+`check_goal_artifact.py` enforces these on any non-trivial goal (Slice
+Plan with 2+ data rows, or Slice Log with 2+ `### Slice` headings). A
+one-shot research-only goal may use a `Single-slice goal: <reason>`
+marker inside the Slice Plan section to opt out.
+
 Save the artifact with `upsert_goal.py` at status `draft`. Tell the user the
 file is inert until they run the activation command. The skill does **not** start
 executing slices on its own — activation is the user's explicit decision.

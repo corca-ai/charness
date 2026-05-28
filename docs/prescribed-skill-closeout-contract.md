@@ -157,11 +157,14 @@ It asks:
 This angle is one of the angles `critique` may pick during a Before-phase
 review; it is not always required.
 
-The new angle file is discoverable via `find-skills` and the existing
-`critique` `references/` listing only; **no `critique/SKILL.md` body change.**
-That SKILL.md is already at the `MAX_SKILL_MD_LINES` ceiling (recent-lessons
-Repeat Trap #1) and any body growth would trip the gate. The new reference
-must reach readers through directory discovery alone.
+The new angle file is listed in `critique/SKILL.md` `## References` (the
+[`validate_skills`](../scripts/validate_skills.py) gate requires every
+`references/` file to be listed), but **`critique/SKILL.md` net line count
+must not grow** past the 200-line ceiling. Adding the reference listing
+forces compressing one existing guardrail by one wrapped line. The
+recent-lessons Repeat Trap #1 (the 200-line gate biting twice) is exactly
+this trade-off; record it explicitly in the slice log so the next session
+inherits the constraint.
 
 ### AskUserQuestion Guidance
 

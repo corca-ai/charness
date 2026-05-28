@@ -155,6 +155,20 @@ Additionally, add a Before-phase portability self-test to `achieve` so future go
 - Lessons carried forward: Live confirmation of #230 Waste 2: a single check-markdown.sh run emitted a 485-path Finding line into stdout during this slice's verification — exact reproduction of the goal's symptom. Confirms slice 6's hook quieting is needed regardless of broader fixes. Doc-link backtick trap (Repeat Trap #4) hit twice; the <repo-root>/ prefix convention is the correct escape.
 - Metrics: when available — host-log probe deferred to slice 8 per After-phase contract
 
+### Slice 2: Before-phase anti-anchoring + portability self-test (#229 + meta)
+
+- Objective: Add Before-phase anti-anchoring probe step to achieve lifecycle + new critique angle reference + Before-phase portability self-test that gates the goal artifact on Context Sources / Interview Decisions / Plan Critique Findings for any non-trivial goal
+- Why this approach: Smallest standalone slice; informs how closeout guards record skipped-proof reasons. Closes the self-referential gap the goal artifact itself exposed (now demonstrably enforced by gate)
+- Commits:
+- What changed: 1) skills/public/achieve/scripts/goal_artifact_lib.py — new PORTABILITY_SECTIONS constant, slice_plan_data_row_count(), is_non_trivial_goal(), missing_portability_sections() helpers, and check_goal() now emits portability_missing_sections. _TEMPLATE gains the three portability sections so new goals scaffold with them. 2) skills/public/critique/references/confirmed-input-over-anchoring.md — new 89-line angle reference implementing the #229 lesson. 3) skills/public/critique/SKILL.md — list the new reference (+1 line) and compress one guardrail wrap (-1 line) to stay at the 200-line ceiling. 4) skills/public/achieve/references/lifecycle.md — new Before-phase ### Anti-anchoring probe and ### Portability self-test subsections. 5) tests/quality_gates/test_goal_artifact_lib.py — 7 new tests covering both table and heading representations plus the Single-slice goal exemption.
+- Alternatives rejected: Putting the new critique angle as a shared reference (skills/shared/references/) — rejected because the angle is critique-specific, not cross-skill. Keeping the Single-slice marker outside the Slice Plan section — rejected because nesting it inside is the most discoverable location for a fresh reader. Strict 'no SKILL.md body change' (the slice-1 F4 phrasing) — relaxed to 'no net growth' after validate_skills enforced reference listing as a hard gate; the spec doc was amended to record this.
+- Targeted verification: validate_skills.py exit 0; check_doc_links.py exit 0; pytest tests/quality_gates/test_goal_artifact_lib.py 17 passed; ruff check on changed Python clean; check_goal_artifact.py on the live goal artifact still ok=true (the artifact already had the three portability sections from the goal-scaffold pass, so the new gate is satisfied retroactively)
+- Test duplication pressure: +7 tests added in one file; all are pure-function unit tests against goal_artifact_lib so they do not duplicate I/O setup with existing tests. Adjacency check not run this slice — deferred to bundle boundary per the goal's stop conditions (no slice within 0.5pp of threshold yet)
+- Critique: Short scoped (slice-level F4 from slice 1 already covered the SKILL.md gate; no new design surface emerged that warrants a fresh standalone subagent pass). The F4 trap relaxation is recorded transparently in the spec doc and this log.
+- Off-goal findings: None this slice
+- Lessons carried forward: F4 ('no SKILL.md body change') was too strong; the actual constraint is 'no net growth past the 200-line gate'. validate_skills requires every references/ file to be listed in SKILL.md as a hard gate — discovery-only is not a viable escape. Slice-1 critique caught the gate-budget risk; the fix path turned out to be 1-line compression + 1-line addition. Recent-lessons Repeat Trap #1 holds: pre-edit wc -l caught this before the validator did.
+- Metrics: when available — host-log probe deferred to slice 8
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

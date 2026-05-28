@@ -30,6 +30,19 @@ REQUIRED_SECTIONS = (
     "Auto-Retro",
 )
 
+# H2 sections a non-trivial goal must carry so a fresh session can reconstruct
+# the originating context (sources, rejected interview alternatives, and
+# critique reasoning) without consulting the saving session's working memory.
+# A goal is non-trivial when its Slice Plan table has 2+ data rows, or when
+# its Slice Log has 2+ ``### Slice`` headings (execution started).
+PORTABILITY_SECTIONS = (
+    "Context Sources",
+    "Interview Decisions",
+    "Plan Critique Findings",
+)
+
+_TRIVIAL_GOAL_MARKER = re.compile(r"single-slice goal", re.IGNORECASE)
+
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
@@ -93,6 +106,23 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 
 ## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
 
 ## Off-Goal Findings
 
@@ -196,6 +226,68 @@ def next_slice_number(text: str) -> int:
     return (max(numbers) + 1) if numbers else 1
 
 
+def slice_plan_data_row_count(text: str) -> int:
+    """Count data rows in the first markdown table inside ``## Slice Plan``.
+
+    Data rows start with ``|`` and are neither the header row nor the table
+    separator row (the ``| --- |`` line). Counting against the dominant
+    representation (a markdown table) keeps the portability discriminator
+    honest; the ``### Slice N:`` heading form is execution intent in
+    ``## Slice Log``, not planning intent in ``## Slice Plan``.
+    """
+    masked = _mask_fences(text)
+    headings = list(_H2.finditer(masked))
+    section_text: str | None = None
+    for index, match in enumerate(headings):
+        if match.group(1).strip() != "Slice Plan":
+            continue
+        body_start = masked.find("\n", match.start())
+        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
+        section_text = masked[body_start + 1 if body_start != -1 else match.start():body_end]
+        break
+    if section_text is None:
+        return 0
+    seen_header = False
+    seen_separator = False
+    data_rows = 0
+    for line in section_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            if seen_header:
+                break
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        is_separator = bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells)
+        if not seen_header:
+            seen_header = True
+            continue
+        if not seen_separator and is_separator:
+            seen_separator = True
+            continue
+        if is_separator:
+            continue
+        data_rows += 1
+    return data_rows
+
+
+def is_non_trivial_goal(text: str) -> bool:
+    """A goal is non-trivial when planning intent shows ≥2 slices, when
+    execution started (≥2 ``### Slice`` headings in the Slice Log), or when
+    no explicit ``Single-slice goal:`` exemption marker is present *and* any
+    activity exists. A scaffolded empty goal stays trivial."""
+    if _TRIVIAL_GOAL_MARKER.search(text):
+        return False
+    if slice_plan_data_row_count(text) >= 2:
+        return True
+    masked = _mask_fences(text)
+    return sum(1 for _ in _SLICE_HEADING.finditer(masked)) >= 2
+
+
+def missing_portability_sections(text: str) -> list[str]:
+    present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
+    return [section for section in PORTABILITY_SECTIONS if section not in present]
+
+
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
     lines = [f"### Slice {number}: {name}", ""]
     for label in (
@@ -246,4 +338,19 @@ def check_goal(text: str) -> dict[str, Any]:
         issues.append("missing `Activation:` line")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))
-    return {"ok": not issues, "status": status, "missing_sections": missing, "issues": issues}
+    portability_missing: list[str] = []
+    if is_non_trivial_goal(text):
+        portability_missing = [section for section in PORTABILITY_SECTIONS if section not in present]
+        if portability_missing:
+            issues.append(
+                "missing portability sections (non-trivial goal): "
+                + ", ".join(portability_missing)
+                + " — add the sections or mark with `Single-slice goal:` to exempt"
+            )
+    return {
+        "ok": not issues,
+        "status": status,
+        "missing_sections": missing,
+        "portability_missing_sections": portability_missing,
+        "issues": issues,
+    }

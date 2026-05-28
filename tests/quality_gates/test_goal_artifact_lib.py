@@ -120,3 +120,111 @@ def test_check_goal_does_not_count_fenced_sections() -> None:
     result = gal.check_goal(fenced_only)
     assert result["ok"] is False
     assert "Goal" in result["missing_sections"]
+
+
+# --- Portability self-test fixtures (#230 + #229 goal, slice 2) -----------
+
+
+_REQUIRED_BODY = (
+    "## Goal\n## Non-Goals\n## Boundaries\n## User Acceptance\n"
+    "## Agent Verification Plan\n"
+)
+_TAIL_SECTIONS = (
+    "## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
+    "## User Verification Instructions\n## Auto-Retro\n"
+)
+_PORTABILITY_BODY = (
+    "## Context Sources\n- src\n## Interview Decisions\n- Q1\n"
+    "## Plan Critique Findings\n- blocker folded\n"
+)
+_GOAL_HEAD = "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n"
+
+
+def _goal_with_table(rows: list[str], portability: str = "") -> str:
+    body = _GOAL_HEAD + _REQUIRED_BODY
+    body += "## Slice Plan\n\n"
+    body += "| Slice | Objective | Why | Evidence | Status |\n"
+    body += "| --- | --- | --- | --- | --- |\n"
+    for row in rows:
+        body += row + "\n"
+    body += "\n" + portability + _TAIL_SECTIONS
+    return body
+
+
+def test_slice_plan_table_row_count_table_form() -> None:
+    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])
+    assert gal.slice_plan_data_row_count(one_row) == 1
+    two_rows = _goal_with_table([
+        "| 1 | a | now | x | planned |",
+        "| 2 | b | next | y | planned |",
+    ])
+    assert gal.slice_plan_data_row_count(two_rows) == 2
+
+
+def test_is_non_trivial_goal_table_form() -> None:
+    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])
+    assert gal.is_non_trivial_goal(one_row) is False
+    two_rows = _goal_with_table([
+        "| 1 | a | now | x | planned |",
+        "| 2 | b | next | y | planned |",
+    ])
+    assert gal.is_non_trivial_goal(two_rows) is True
+
+
+def test_is_non_trivial_goal_heading_form() -> None:
+    # Slice Plan empty but Slice Log carries ≥2 ``### Slice`` headings (a
+    # heading-only style or a run that has executed multiple slices).
+    body = _GOAL_HEAD + _REQUIRED_BODY
+    body += "## Slice Plan\n\n## Slice Log\n\n"
+    body += "### Slice 1: a\n- Objective: x\n\n### Slice 2: b\n- Objective: y\n\n"
+    body += "## Off-Goal Findings\n## Final Verification\n"
+    body += "## User Verification Instructions\n## Auto-Retro\n"
+    assert gal.is_non_trivial_goal(body) is True
+
+
+def test_single_slice_marker_exempts_portability() -> None:
+    body = _goal_with_table([
+        "| 1 | a | now | x | planned |",
+        "| 2 | b | next | y | planned |",
+    ])
+    body = body.replace(
+        "## Slice Plan\n",
+        "## Slice Plan\n\nSingle-slice goal: research-only one-shot.\n",
+        1,
+    )
+    assert gal.is_non_trivial_goal(body) is False
+    assert gal.check_goal(body)["portability_missing_sections"] == []
+
+
+def test_check_goal_reports_missing_portability_for_non_trivial() -> None:
+    body = _goal_with_table([
+        "| 1 | a | now | x | planned |",
+        "| 2 | b | next | y | planned |",
+    ])  # no portability sections
+    result = gal.check_goal(body)
+    assert result["ok"] is False
+    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
+    assert any("portability" in issue.lower() for issue in result["issues"])
+
+
+def test_check_goal_passes_with_portability_sections_present() -> None:
+    body = _goal_with_table(
+        [
+            "| 1 | a | now | x | planned |",
+            "| 2 | b | next | y | planned |",
+        ],
+        portability=_PORTABILITY_BODY,
+    )
+    result = gal.check_goal(body)
+    assert result["ok"] is True
+    assert result["portability_missing_sections"] == []
+
+
+def test_trivial_scaffold_does_not_demand_portability(tmp_path: Path) -> None:
+    # A freshly scaffolded goal has an empty Slice Plan table; the portability
+    # gate must not fire on this case.
+    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
+    text = _goal_text(tmp_path)
+    result = gal.check_goal(text)
+    assert result["ok"] is True
+    assert result["portability_missing_sections"] == []
