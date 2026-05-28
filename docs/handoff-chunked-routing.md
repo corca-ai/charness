@@ -186,7 +186,7 @@ step 3 is the agent.
    bullets, and emits a list of `HandoffEntry` records. Additional
    residual-work sections (e.g., `## Discuss`) are read only if the
    adapter declares them; default scope is `## Next Session` only.
-2. **Propose merges.** `propose_merges.py` consumes the entry list,
+2. **Propose merges.** [`propose_merges.py`](../skills/public/handoff/scripts/propose_merges.py) consumes the entry list,
    computes pairwise `boundary_tokens` overlap, and emits a
    `MergeProposal`. The standalone list always contains one
    `ChunkCandidate` per entry. The merged list contains additional
