@@ -1,11 +1,11 @@
 # Find Skills Inventory
-Date: 2026-05-27
-Updated: 2026-05-27T04:12:27Z
+Date: 2026-05-28
+Updated: 2026-05-28T04:39:45Z
 
 ## Summary
 - public skills: 19
 - support skills: 4
-- synced support skills: 1
+- synced support skills: 0
 - support capabilities: 4
 - integrations: 11
 - workflow integrations: 2
@@ -37,7 +37,6 @@ Updated: 2026-05-27T04:12:27Z
 - `gather-slack` (support skill): Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.
 - `markdown-preview` (support skill): Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.
 - `web-fetch` (support skill): Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.
-- `cautilus` (synced support skill): Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.
 
 ## Support Capabilities
 - `gather-notion`: charness-owned published Notion gather runtime used by the public gather skill. Supports `gather`.
@@ -49,10 +48,10 @@ Updated: 2026-05-27T04:12:27Z
 - `agent-browser` (external_binary_with_skill, upstream-consumed): access modes `binary, human-only, degraded`
 - `cautilus` (external_binary_with_skill, upstream-consumed): access modes `binary, human-only, degraded`
 - `defuddle` (external_binary, integration-only): access modes `binary, degraded`
-- `github-gh` (external_binary, integration-only): access modes `binary, public, degraded`
+- `github-worker` (external capability, integration-only): access modes `binary, public, degraded`
 - `gitleaks` (external_binary, integration-only): access modes `binary, degraded`
 - `glow` (external_binary, integration-only): access modes `binary, degraded`
-- `gws-cli` (external_binary, integration-only): access modes `binary, human-only, degraded`
+- `google-workspace-worker` (external capability, integration-only): access modes `binary, human-only, degraded`
 - `ruff` (external_binary, integration-only): access modes `binary`
 - `specdown` (external_binary, upstream-consumed): access modes `binary, human-only, degraded`
 - `tokei` (external_binary, integration-only): access modes `binary, degraded`

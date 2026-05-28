@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-27T04:12:27Z",
+  "generated_at": "2026-05-28T04:39:45Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -521,6 +521,7 @@
         ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/release/references/adapter-contract.md",
           "skills/public/release/references/version-policy.md",
@@ -733,28 +734,6 @@
         ],
         "source": "local-support",
         "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "skills/support/generated/cautilus/SKILL.md",
-        "skill_dir": "skills/support/generated/cautilus",
-        "canonical_path": "skills/support/generated/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus",
-          "cautilus skill",
-          "cautilus 스킬",
-          "charness:cautilus",
-          "support/cautilus",
-          "cautilus support",
-          "cautilus support skill",
-          "cautilus helper"
-        ],
-        "referenced_paths": [],
-        "source": "synced-support",
-        "layer": "synced support skill"
       }
     ],
     "support_capabilities": [
@@ -816,7 +795,7 @@
             "slack.files.read"
           ],
           "env_vars": [
-            "SLACK_BOT_TOKEN"
+            "Slack credential grant"
           ],
           "permission_scopes": [
             "channels:history",
@@ -853,7 +832,7 @@
           {
             "layer_id": "slack-bot-env",
             "layer_type": "env",
-            "summary": "Fall back to `SLACK_BOT_TOKEN` in ordinary local operator setups."
+            "summary": "Fall back to `Slack credential grant` in ordinary local operator setups."
           },
           {
             "layer_id": "slack-channel-operator-step",
@@ -975,7 +954,7 @@
           {
             "layer_id": "web-fetch-authenticated-binaries",
             "layer_type": "authenticated-binary",
-            "summary": "Use authenticated or installed binaries such as `gh`, `yt-dlp`, `defuddle`, or `agent-browser` only when the selected route or fallback stage explicitly calls for them."
+            "summary": "Use host-mediated fetch helpers only when the selected route or fallback stage explicitly calls for them."
           },
           {
             "layer_id": "web-fetch-operator-step",
@@ -1066,7 +1045,7 @@
           "degraded"
         ],
         "support_state": "upstream-consumed",
-        "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
+        "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
@@ -1128,8 +1107,8 @@
         "layer": "external integration"
       },
       {
-        "id": "github-gh",
-        "kind": "external_binary",
+        "id": "github-worker",
+        "kind": "external capability",
         "access_modes": [
           "binary",
           "public",
@@ -1153,7 +1132,7 @@
           {
             "layer_id": "authenticated-gh",
             "layer_type": "authenticated-binary",
-            "summary": "Prefer an already authenticated `gh` session for private GitHub gather."
+            "summary": "Prefer an already host-mediated GitHub credential session for private GitHub gather."
           },
           {
             "layer_id": "public-github-fallback",
@@ -1166,7 +1145,7 @@
           "issue"
         ],
         "recommendation_role": null,
-        "path": "integrations/tools/github-gh.json",
+        "path": "integrations/tools/github-worker.json",
         "source": "local-integration",
         "layer": "external integration"
       },
@@ -1232,8 +1211,8 @@
         "layer": "external integration"
       },
       {
-        "id": "gws-cli",
-        "kind": "external_binary",
+        "id": "google-workspace-worker",
+        "kind": "external capability",
         "access_modes": [
           "binary",
           "human-only",
@@ -1244,10 +1223,10 @@
         "discovery_stub_path": null,
         "capability_requirements": {
           "permission_scopes": [
-            "https://www.googleapis.com/auth/drive.readonly",
-            "https://www.googleapis.com/auth/documents.readonly",
-            "https://www.googleapis.com/auth/spreadsheets.readonly",
-            "https://www.googleapis.com/auth/presentations.readonly"
+            "google-workspace-scope:drive.readonly",
+            "google-workspace-scope:documents.readonly",
+            "google-workspace-scope:spreadsheets.readonly",
+            "google-workspace-scope:presentations.readonly"
           ]
         },
         "intent_triggers": [
@@ -1259,20 +1238,20 @@
           "gmail message",
           "google calendar",
           "google workspace",
-          "gws gather",
+          "workspace gather",
           "workspace gather"
         ],
         "strong_intent_triggers": [],
         "config_layers": [
           {
-            "layer_id": "authenticated-gws-cli",
+            "layer_id": "authenticated-google-workspace-worker",
             "layer_type": "authenticated-binary",
-            "summary": "Prefer an already authenticated `gws` session for private Google Workspace gather."
+            "summary": "Prefer an already host-mediated Google Workspace credential session for private Google Workspace gather."
           },
           {
             "layer_id": "gws-auth-operator-step",
             "layer_type": "operator-step",
-            "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed. This is a human-driven step and is not advertised as an agent-runtime fallback path."
+            "summary": "When no auth state exists yet, the operator may need `Google Workspace credential setup setup --login` or `Google Workspace credential setup login` before gather can proceed. This is a human-driven step and is not advertised as an agent-runtime fallback path."
           }
         ],
         "readiness_checks": [
@@ -1285,7 +1264,7 @@
           "gather"
         ],
         "recommendation_role": "runtime",
-        "path": "integrations/tools/gws-cli.json",
+        "path": "integrations/tools/google-workspace-worker.json",
         "source": "local-integration",
         "layer": "external integration"
       },

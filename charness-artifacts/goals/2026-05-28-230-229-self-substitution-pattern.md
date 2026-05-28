@@ -1,6 +1,6 @@
 # Achieve Goal: Reduce achieve/issue/release self-substitution and commit-hook waste (#230 + #229)
 
-Status: draft
+Status: active
 Created: 2026-05-28
 Activation: `/goal @charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md`
 
@@ -140,6 +140,20 @@ Additionally, add a Before-phase portability self-test to `achieve` so future go
 | 8. Closeout | Broad gates, full `retro` invocation, host-log probe metrics, final verification, non-claims, user verification instructions | Final-stage proof per After-phase contract | `check_goal_artifact.py` pass, retro artifact, broad gate green, real-host guard smoke | planned |
 
 ## Slice Log
+
+### Slice 1: Spec - shared closeout-guard contract
+
+- Objective: Carve shared closeout-guard, Before-phase anti-anchoring probe, and portability self-test contracts across achieve/issue/release/critique before three skill surfaces drift
+- Why this approach: Cross-cutting design must converge once before three skill surfaces drift; the read-side counterpart (prescribed-path-self-test.md) already existed and pairs with this closeout-side doc
+- Commits:
+- What changed: New docs/prescribed-skill-closeout-contract.md (~280 lines after critique fold); covers shared helper at scripts/check_prescribed_skill_executed.py, per-skill evidence lists, Before-phase anti-anchoring probe contract, new critique angle reference at skills/public/critique/references/confirmed-input-over-anchoring.md (find-skills discoverable only, no SKILL.md body change), and Before-phase portability self-test with three required sections gated by Slice Plan table data-row count
+- Alternatives rejected: Per-skill closeout guards without shared helper (would re-implement the policy three times). Putting the helper under skills/public/achieve/scripts (couples issue and release to achieve directory layout, violates standalone-usefulness rule). Counting ### Slice headings instead of table data rows (would silently exempt the dominant plan representation — caught by F3).
+- Targeted verification: check_doc_links.py exit 0; check-markdown.sh exit 0; check_goal_artifact.py still passes; spec read-through fold of fresh-eye subagent critique (F1+F3+F4 acted, F2 valid-but-defer for slice 3)
+- Test duplication pressure:
+- Critique: Bounded fresh-eye reviewer (standard tier, parent-delegated). 4 angles: coordination boundary, honest-skip risk, before-phase scope creep, test-pressure budget. Triage acted: F1 issue-verify duplication (Act Before Ship — body source of truth split with carrier-header pattern, _classification_requirements explicitly NOT extended); F3 trivial-goal discriminator (Act Before Ship — switched from ### Slice headings to Slice Plan table data rows, both fixture styles required); F4 critique SKILL.md 200-line gate (Bundle Anyway — explicit no-SKILL.md-body-change rule). Deferred: F2 skip-reason honesty enum (Valid but Defer, slice 3 defines the enum when achieve guard's real evidence shape exists). Reviewer agentId ab3ee39c9711b3b39.
+- Off-goal findings: None this slice
+- Lessons carried forward: Live confirmation of #230 Waste 2: a single check-markdown.sh run emitted a 485-path Finding line into stdout during this slice's verification — exact reproduction of the goal's symptom. Confirms slice 6's hook quieting is needed regardless of broader fixes. Doc-link backtick trap (Repeat Trap #4) hit twice; the <repo-root>/ prefix convention is the correct escape.
+- Metrics: when available — host-log probe deferred to slice 8 per After-phase contract
 
 ## Context Sources
 
