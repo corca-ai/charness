@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Reviewing the #226 `achieve` run (centralize a portable fresh-eye reviewer-tier policy) — and specifically the user catching that the run's mandated Auto-Retro and efficiency report were never actually produced. (source: `charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`)
 - Issue #208 (scheduled Mutation Tests red on `main` ~2 days) was the only self-fixable open bug (#184/#185 are deferred ideation). (source: `charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md`)
-- Reviewing the session that landed RCA ledger slice 2 (commit `a67675c`): wiring `record_rca_event.py` into the `debug`/`issue`/`retro` closeout prompts via a presence-gated shared reference, flipping `AUTO_APPEND_WIRED=True`, syncing truth surfaces, and a 4-angle + 1-counterweight fresh-eye critique. (source: `charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md`)
 
 ## Repeat Traps
 
@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- **capability:** quiet the pre-commit/pre-push markdown hook (print a file count, not the full 485-path list) so agent context is not flooded each commit; until then redirect that hook's stdout. Candidate issue. (source: `charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`)
+- **memory:** this artifact + #229 capture the "lighter self-substitution" pattern for the next session. (source: `charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`)
+- **workflow:** when a skill phase says "run `<skill>`", invoke that skill; do not inline-substitute its output. Flip an achieve goal to `complete` only after the After-phase items (retro run, metrics reported) are executed. (source: `charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`)
 - keep release proof suppression split into fixed diff failure and deferred real-host payload/post-create/base-ref risks is stale after this session; current split is fixed diff, fixed real-host payload/config, fixed base-ref lookup/fetch, and deferred post-create recovery semantics. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`; sources: 2)
-- after any changed-line or changed-path gate fix, commit first, then rerun the sampler against the committed `base..HEAD` window before claiming the scheduled gate is repaired. (source: `charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md`)
-- before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first. (source: `charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md`)
-- **capability (immediate next slice)**: decouple AC4/AC7 from the live committed ledger — assert the seed-only/empty-baseline guarantees against synthetic fixtures so the committed ledger is free to accrue live events. This unblocks the wiring; until then the auto-append cannot fire. Once decoupled, this retro's own RCA event becomes the first live append (the proper dogfood). (source: `charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md`)
 
 ## Selection Policy
 
@@ -32,3 +32,4 @@
 - `charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md`
 - `charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md`
 - `charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md`
+- `charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md`
