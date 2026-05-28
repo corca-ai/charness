@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-28",
-  "source_artifact_count": 76,
-  "candidate_count": 477,
+  "source_artifact_count": 77,
+  "candidate_count": 484,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:7bbdc8287603",
+      "kind": "current_focus",
+      "lesson": "Closeout of a 7-slice achieve-goal run that absorbed the recurring manual cost of chunking residual handoff entries into a generative- sequence routing recommendation for `/achieve`.",
+      "normalized_key": "closeout of a 7 slice achieve goal run that absorbed the recurring manual cost",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:6ecf44d05d7a",
       "kind": "current_focus",
@@ -55,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:23053b3aaf10",
+      "kind": "next_improvement",
+      "lesson": "**capability**: Add a single-file growth gate for `*_lib.py` modules under `skills/public/*/scripts/`. The repo already has `check_python_lengths.py` at the 360-line line; make it a pre-commit gate (currently informational) so future slice bundles cannot silently grow a lib past the threshold without an explicit splitting slice.",
+      "normalized_key": "capability add a single file growth gate for lib py modules under skills public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c2abaf527012",
       "kind": "next_improvement",
       "lesson": "**capability:** quiet the pre-commit/pre-push markdown hook (print a file count, not the full 485-path list) so agent context is not flooded each commit; until then redirect that hook's stdout. Candidate issue.",
@@ -89,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e3aeb113a8fa",
+      "kind": "next_improvement",
+      "lesson": "**memory**: Record in [recent-lessons.md](recent-lessons.md): doc-link gate transition (\"missing artifact\" → \"unique-basename\" on file create) is repeatable waste; the fix-after-create pattern across three slices in one goal is the signal. Either pre-create empty placeholder files in slice 1 OR teach check_doc_links to accept `<repo-root>/...` placeholders for paths that do not yet exist (already partially supported but did not cover the bare-backtick case).",
+      "normalized_key": "memory record in recent lessons md recent lessons md doc link gate transition missing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -175,93 +235,48 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:5de08e36a11f",
+      "candidate_id": "next_improvement:1f242257ccae",
       "kind": "next_improvement",
-      "lesson": "keep release proof suppression split into fixed diff failure and deferred real-host payload/post-create/base-ref risks is stale after this session; current split is fixed diff, fixed real-host payload/config, fixed base-ref lookup/fetch, and deferred post-create recovery semantics.",
-      "normalized_key": "keep release proof suppression split into fixed diff failure and deferred real host payload",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 6,
-      "recency_weight": 0.743,
-      "alpha": 0.14,
-      "selection_weight": 0.847,
+      "lesson": "**workflow**: When a slice plan names \"deterministic regex (Python)\" for an operator-facing rule, ship the regex + fixture in the earliest slice that produces a testable surface, not at closeout. The prose-vs-implementation drift risk multiplies across every intervening slice that consults the prose.",
+      "normalized_key": "workflow when a slice plan names deterministic regex python for an operator facing rule",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-          "date": "2026-05-22",
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
           "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
-          "date": "2026-05-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:296fca2c8ee4",
-      "kind": "current_focus",
-      "lesson": "Issue #208 (scheduled Mutation Tests red on `main` ~2 days) was the only self-fixable open bug (#184/#185 are deferred ideation).",
-      "normalized_key": "issue 208 scheduled mutation tests red on main 2 days was the only self",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
-          "date": "2026-05-24",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:40588c430d8a",
-      "kind": "current_focus",
-      "lesson": "Reviewing the session that landed RCA ledger slice 2 (commit `a67675c`): wiring `record_rca_event.py` into the `debug`/`issue`/`retro` closeout prompts via a presence-gated shared reference, flipping `AUTO_APPEND_WIRED=True`, syncing truth surfaces, and a 4-angle + 1-counterweight fresh-eye critique.",
-      "normalized_key": "reviewing the session that landed rca ledger slice 2 commit a67675c wiring record rca",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-          "date": "2026-05-24",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:28667d21a2a6",
-      "kind": "current_focus",
-      "lesson": "This session continued the user-requested full-codebase `quality` and `critique` sweep with subagents.",
-      "normalized_key": "this session continued the user requested full codebase quality and critique sweep with subagents",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
-          "date": "2026-05-24",
-          "section": "Context"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:7bbdc8287603",
+      "kind": "current_focus",
+      "lesson": "Closeout of a 7-slice achieve-goal run that absorbed the recurring manual cost of chunking residual handoff entries into a generative- sequence routing recommendation for `/achieve`.",
+      "normalized_key": "closeout of a 7 slice achieve goal run that absorbed the recurring manual cost",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:6ecf44d05d7a",
       "kind": "current_focus",
       "lesson": "Closeout of the #230 + #229 achieve goal at `charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md`.",
@@ -302,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:23053b3aaf10",
+      "kind": "next_improvement",
+      "lesson": "**capability**: Add a single-file growth gate for `*_lib.py` modules under `skills/public/*/scripts/`. The repo already has `check_python_lengths.py` at the 360-line line; make it a pre-commit gate (currently informational) so future slice bundles cannot silently grow a lib past the threshold without an explicit splitting slice.",
+      "normalized_key": "capability add a single file growth gate for lib py modules under skills public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c2abaf527012",
       "kind": "next_improvement",
       "lesson": "**capability:** quiet the pre-commit/pre-push markdown hook (print a file count, not the full 485-path list) so agent context is not flooded each commit; until then redirect that hook's stdout. Candidate issue.",
@@ -336,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e3aeb113a8fa",
+      "kind": "next_improvement",
+      "lesson": "**memory**: Record in [recent-lessons.md](recent-lessons.md): doc-link gate transition (\"missing artifact\" → \"unique-basename\" on file create) is repeatable waste; the fix-after-create pattern across three slices in one goal is the signal. Either pre-create empty placeholder files in slice 1 OR teach check_doc_links to accept `<repo-root>/...` placeholders for paths that do not yet exist (already partially supported but did not cover the bare-backtick case).",
+      "normalized_key": "memory record in recent lessons md recent lessons md doc link gate transition missing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -418,6 +473,86 @@
           "artifact_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1f242257ccae",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: When a slice plan names \"deterministic regex (Python)\" for an operator-facing rule, ship the regex + fixture in the earliest slice that produces a testable surface, not at closeout. The prose-vs-implementation drift risk multiplies across every intervening slice that consults the prose.",
+      "normalized_key": "workflow when a slice plan names deterministic regex python for an operator facing rule",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ff85c509ccb7",
+      "kind": "repeat_trap",
+      "lesson": "**chunked_routing_lib.py grew to 816 lines.** Not a hook gate (check_python_lengths.py is informational), but past the soft 360 cap. The slice-1 plan held it at 292 (parser only); slices 3, 4, 5 added ranker + merger + auto-draft helpers in one file. Splitting would have been a slice in itself; deferred.",
+      "normalized_key": "chunked routing lib py grew to 816 lines not a hook gate check python",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ac52652911f5",
+      "kind": "repeat_trap",
+      "lesson": "**Slice 7 trigger implementation surfaced late.** The spec named the trigger rule as \"deterministic regex (Python)\" in slice 1, but the implementation landed only in slice 7. Slices 2–6 carried the rule in prose alone; the test that pins it deterministically did not exist until closeout. A slice-3 or slice-4 ship of the trigger detector would have surfaced the regex-design edges (Korean variants, polite interrogatives) earlier.",
+      "normalized_key": "slice 7 trigger implementation surfaced late the spec named the trigger rule as deterministic",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:aa417c84f244",
+      "kind": "repeat_trap",
+      "lesson": "**Three doc-link follow-ups across slices 2, 3, 4.** Each slice created a new script file (parse, ranker packet, propose merges). After committing the file, check_doc_links rejected the spec doc because its backticked-without-link references to the to-be-created file became \"unique-basename\" hits the moment the file appeared on disk. Three separate amend commits followed. Phase intent was right (slice 1 had to forward-reference files that did not yet exist via `<repo-root>/` placeholders) but the doc-link gate's transition from \"missing artifact\" to \"unique-basename\" was repeatable waste.",
+      "normalized_key": "three doc link follow ups across slices 2 3 4 each slice created a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md",
+          "date": "2026-05-28",
+          "section": "Waste"
         }
       ]
     },

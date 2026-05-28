@@ -1,6 +1,6 @@
 # Achieve Goal: Handoff auto-chunking: generative-sequence routing into /achieve
 
-Status: active
+Status: complete
 Created: 2026-05-28
 Activation: `/goal @charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md`
 
@@ -264,6 +264,20 @@ Absorb the recurring manual cost of reading docs/handoff.md, identifying which r
 - Lessons carried forward: (1) Reference-file spill is the right answer when a SKILL.md addition would otherwise blow past the cap: the reference owns the body, the SKILL.md owns the trigger + pointer. (2) Renumbering ordered list steps is mechanical but easy to forget - any Workflow insertion before step 1 needs the renumbering pass on every following step. (3) validate_skills enforces 'every references/ file is listed in ## References' - a slice that adds a reference must add the listing line in the same commit or validate_skills fails.
 - Metrics: tests: 57 passed (2 new this slice); SKILL.md: 151 -> 157 lines (+6, cap 161 with 4 lines headroom against this slice's cap and 43 against the 200-line absolute cap); references/chunked-routing.md: 127 lines (well under the 200 SKILL.md cap; references have no separate cap); validate_skills: 23 packages green; standalone-usefulness invariant: holds against acfb228..HEAD
 
+### Slice 7: Closeout
+
+- Objective: Ship the trigger detector (deterministic regex + 7-row spec fixture) and the end-to-end pipeline test, run the After-phase prescribed-skill gates (retro artifact + host-log probe), record honest non-claims, write user verification instructions, and flip the goal to complete.
+- Why this approach: Final-stage proof per the After-phase contract: every User Acceptance criterion is now backed by a passing test (or an explicit non-claim with documented rationale), the closeout retro is persisted, and the host-log probe records what is and is not derivable from the active host's session logs.
+- Commits:
+- What changed: skills/public/handoff/scripts/chunked_routing_lib.py: added _HANDOFF_MENTION_PATTERNS + _TASK_DIRECTIVE_PATTERNS + should_fire_chunker. tests/test_handoff_chunker_trigger.py (new, 78 lines, 10 tests): parametrizes over all 7 spec fixture rows + empty/whitespace + polite-interrogative + implementation-verb over-fire guard. tests/test_handoff_chunker_end_to_end.py (new, 142 lines, 2 tests): full pipeline parse→propose→ranker→materialize→draft→check_goal; trigger-then-pipeline integration. charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md (new, ~140 lines): session-mode retro with sibling-search. charness-artifacts/retro/recent-lessons.md + lesson-selection-index.json: refreshed via persist_retro_artifact.py. charness-artifacts/probe/2026-05-28-handoff-chunked-routing-host-log.json: host-log probe output (Claude Code detected; token/tool-call/duration metrics derivable from session JSONL). Goal artifact: filled Off-Goal Findings (#233 still open, chunked_routing_lib line growth, prose-vs-code drift), Final Verification (every User Acceptance criterion mapped to a passing test), Honest Non-Claims (no nested-subagent ranker, no Cautilus eval, no Codex coverage, no adversarial trigger stress), User Verification Instructions (5-step verification), Auto-Retro with Retro: and Host log probe: evidence lines.
+- Alternatives rejected: (1) Implement the trigger detector in slice 1 (or slice 1.5): rejected at the time because the trigger lives behind SKILL.md wiring (slice 6) and the e2e test (slice 7); recorded as next-improvement in the closeout retro (prose-vs-code drift across 6 slices is repeatable waste). (2) Split chunked_routing_lib.py into 5 sibling modules before slice 7: rejected as scope creep within this goal; recorded as Off-Goal finding for a follow-up slice. (3) Wait for #233 to land before closing this goal: rejected because the existing check_complete_evidence gate is honest-but-imperfect (it accepts the retro + probe files this slice produced), and the slice-7 Stop Condition explicitly required only an explicit decision when #233 is open. Decision: closeout uses the existing gate, records the gap as Off-Goal note.
+- Targeted verification: pytest tests/test_handoff_*.py: 69 passed across 7 test files. ruff: green. validate_skills: 23 packages green. check_doc_links: green. check_markdown: green. check_duplicates --json: []. check_goal_artifact.py --slug handoff-chunked-routing: ok=true at status=active before this slice (status flip to complete happens after this commit lands). git diff --name-only acfb228..HEAD | grep '^skills/public/achieve/': empty (standalone-usefulness invariant holds across the full goal run). Real-host smoke: Claude Code session JSONL exists at /home/hwidong/.claude/projects/.../c4cd5e6e-...jsonl per host-log probe; pipeline tested e2e via pytest.
+- Test duplication pressure: check_duplicates --json: [] (no near-duplicates introduced). Cumulative test code added across this goal: 1,200+ lines across 7 chunker test files. check_python_lengths: chunked_routing_lib.py at 875 lines (informational, not a hook gate; closeout retro proposes upgrading to hard gate as future improvement).
+- Critique: Final closeout critique: same-agent self-check rather than a fourth bounded fresh-eye subagent. Rationale: the per-slice critiques (slice 1 spec, slice 3 ranker, slice 5 auto-draft) already covered the cross-cutting risk surface (prompt drift, depth-crossing, standalone-usefulness, marker-phrase poisoning, trigger over-fire). A fourth subagent at closeout would duplicate that coverage. The closeout retro itself records expert counterfactuals (Christopher Alexander on pattern integrity for the prose-vs-code drift; Brian Kernighan on lib splitting) as the substitute for a fresh-eye pass on the closeout boundary.
+- Off-goal findings:
+- Lessons carried forward: (1) Trigger-rule prose without code is a six-slice latent debt - ship the deterministic regex + fixture in the earliest slice with a testable surface, not at closeout. (2) Long-lived shared-lib growth (chunked_routing_lib.py at 875 lines) is invisible to informational-only gates - upgrade check_python_lengths.py to a hard pre-commit gate. (3) Doc-link gate transition surprise ('missing artifact' -> 'unique-basename' on file create) is a producer-side mitigation: write the markdown link upfront when forward-referencing, even when the target does not exist; or land both file-create and doc-edit in the same commit. (4) Substring-match gates remain vulnerable to user-quoted prose; the writer-side scrub fix is local but the underlying gate-side weakness is generalizable - track via #233.
+- Metrics: tests: 69 passed cumulative; 12 new this slice; ruff: green; validate_skills: 23 packages green; standalone-usefulness invariant: holds; check_complete_evidence prerequisites in place (retro artifact + host-log probe both written, Retro: + Host log probe: lines added to Auto-Retro). Slice critique counts (bounded fresh-eye, standard tier): 3 total across goal (slices 1, 3, 5).
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -443,8 +457,146 @@ fresh session can re-verify the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- **#233 still open at closeout.** Per the slice-7 Stop Condition,
+  this goal had to decide whether the After-phase gate's binding
+  contract (#233 F1: gate accepts stale unrelated retro files; #233
+  F2: prescribed-skill conclusions need user-message surfacing) had
+  landed before closeout. Status checked via `gh issue view 233`:
+  OPEN, no PRs cited. Decision: this closeout uses the existing
+  (still-imperfect) `check_complete_evidence` gate. The retro
+  artifact path and host-log probe path below pass the existing gate
+  but are not yet bound by goal-slug/activation-date per #233 F1.
+  Not silently papered over; recorded here explicitly. Track via
+  [#233](https://github.com/corca-ai/charness/issues/233).
+- **chunked_routing_lib.py at 816 lines is past the soft 360-line
+  cap.** Not a hook gate; `check_python_lengths.py` is
+  informational. Closeout retro proposes upgrading the gate to
+  hard pre-commit + splitting the lib into 5 sibling modules. Not
+  in scope for this goal; deferred to a follow-up slice.
+- **Trigger detection prose lived without code from slice 1 to
+  slice 7.** Closeout retro proposes shipping the detector + fixture
+  in the earliest slice that produces a testable surface (slice-1.5
+  rather than slice 7). Workflow note recorded in
+  [`recent-lessons.md`](../retro/recent-lessons.md).
+
 ## Final Verification
+
+The 7-slice run satisfied every User Acceptance criterion from the
+Boundaries section above:
+
+- Trigger fires/no-fires per the 7-row fixture: ✓
+  [`tests/test_handoff_chunker_trigger.py`](../../tests/test_handoff_chunker_trigger.py)
+  parametrizes over all 7 spec rows + an empty/whitespace guard + a
+  polite-interrogative case + an implementation-verb over-fire
+  guard. 10/10 green.
+- Ranked list with per-chunk objective summary + 2-3 line generative-
+  sequence reasoning: ✓
+  [`tests/test_handoff_chunker_ranker_packet.py`](../../tests/test_handoff_chunker_ranker_packet.py)
+  14/14 green; the canonical prompt pinned in
+  [`chunked_routing_lib.RANKER_PROMPT`](../../skills/public/handoff/scripts/chunked_routing_lib.py)
+  explicitly mandates non-empty reasoning per chunk and negates
+  cheapest-first / alphabetical / input-order alternatives.
+- Merge proposals when shared boundary present: ✓
+  [`tests/test_handoff_chunker_merge_proposer.py`](../../tests/test_handoff_chunker_merge_proposer.py)
+  10/10 green covering shared-file / shared-skill / shared-policy
+  positives + the spec's negative-merge invariant for snapshot
+  entries 2 and 7.
+- "Why not chunk N?" answered from already-rendered reasoning, not a
+  fresh recomputation: ✓
+  [`tests/test_handoff_chunker_why_not_followup.py`](../../tests/test_handoff_chunker_why_not_followup.py)
+  pins the User Acceptance criterion (every RankedChunk carries
+  non-empty reasoning sourceable by candidate_label without
+  re-invoking the ranker). 2/2 green.
+- Auto-draft writes a goal artifact passing `check_goal_artifact.py`
+  at status draft: ✓
+  [`tests/test_handoff_chunker_auto_draft.py`](../../tests/test_handoff_chunker_auto_draft.py)
+  15/15 green including the slice-5 single-prefix heading invariant,
+  Slice Plan zero data rows, no Single-slice goal marker inserted,
+  Context Sources non-empty with citations, and the regression test
+  for the trivial-marker poison-prevention scrub.
+- Slice-5 Standalone-Usefulness Invariant: ✓
+  `git diff --name-only acfb228..HEAD | grep '^skills/public/achieve/'`
+  returns empty (the goal-start commit is the baseline; no file
+  under `skills/public/achieve/` was modified by any of the 6
+  slice commits in this goal).
+- End-to-end pipeline: ✓
+  [`tests/test_handoff_chunker_end_to_end.py`](../../tests/test_handoff_chunker_end_to_end.py)
+  feeds the 2026-05-28 snapshot through
+  parse → propose_merges → build_ranker_packet → known-good filled
+  response → validate → materialize → draft_goal_from_chunk →
+  `check_goal_artifact.check_goal` ok at status draft. 2/2 green
+  including the trigger-then-pipeline integration test.
+
+Cumulative test count: 69 passed across 7 handoff-chunker test
+files. ruff: green across all new Python. validate_skills: 23
+packages green. check_doc_links + check_markdown: green.
+check_duplicates: 0 near-duplicates introduced.
+
+Three bounded fresh-eye subagent slice critiques (standard tier)
+ran: slice 1 (spec, `a3b7d3116ace3415c`), slice 3 (ranker,
+`af4926ec0074f654f`), slice 5 (auto-draft, `ab369da824c910faf`).
+All Act-Before-Ship findings folded inline; reasoning preserved
+in the spec doc and in each slice log entry.
+
+### Honest Non-Claims
+
+- **No nested-subagent ranker.** The slice-3 ranker is the active
+  agent reasoning over the packet, not a separate subagent grader.
+  The goal artifact's slice-3 Stop Condition explicitly avoided the
+  nested-subagent escalation; it did not fire.
+- **No Cautilus eval ran.** This goal is not a release per the
+  Non-Goals; no clean-machine Cautilus install/doctor proof is
+  required from this run.
+- **No real-host smoke beyond Claude Code.** The chunker pipeline was
+  exercised end-to-end via pytest on Claude Code (this session).
+  Codex coverage is explicitly deferred — the trigger detector,
+  parser, merger, ranker validator, and auto-draft writer are pure
+  Python so portability is high, but a Codex round-trip was not
+  attempted in this session.
+- **Trigger detector regex was not stress-tested against adversarial
+  prose.** The 7-row spec fixture + 3 additional cases (polite
+  interrogative, empty/whitespace, implementation-verb over-fire)
+  cover the documented decision space; real-world prose patterns
+  beyond these may surface drift. The goal artifact's "Trigger
+  detection over-fires" Stop Condition documents the re-anchoring
+  path for future drift.
 
 ## User Verification Instructions
 
+A future session in which you mention `docs/handoff.md` (or "the
+handoff" / "핸드오프") with no other explicit task directive should
+trigger the chunker. To verify:
+
+1. Pull this branch and run `python3 -m pytest
+   tests/test_handoff_*.py` — all 69 tests should pass green.
+2. In a fresh Claude Code session, send a single user message
+   containing one of the 7 fixture chunk-cases (e.g., "read
+   docs/handoff.md", "what's next in the handoff?", "핸드오프 봐",
+   or "pick up from handoff"). The agent should invoke the
+   handoff skill and trigger the chunker pipeline before refresh-
+   vs-pickup classification. The agent should present a ranked
+   chunk list with per-chunk reasoning naming what each chunk
+   unlocks downstream.
+3. Send a no-chunk case in a separate session (e.g., "read handoff
+   and start slice 7" or "read handoff.md and fix #233"). The
+   chunker should NOT fire; refresh-vs-pickup runs as normal.
+4. On a chunk-case run, pick a chunk and confirm the auto-drafted
+   goal artifact appears under `charness-artifacts/goals/` at
+   status `draft` and passes `python3
+   skills/public/achieve/scripts/check_goal_artifact.py --repo-root
+   . --goal-path <new-artifact>`.
+5. Activate the drafted goal with `/goal @<new-artifact>` and
+   confirm the achieve Before-phase interview opens normally; the
+   placeholder lines in User Acceptance / Agent Verification Plan
+   / Interview Decisions / Plan Critique Findings are the interview
+   prompts to fill.
+
 ## Auto-Retro
+
+Closeout retro persisted at
+[`charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md`](../retro/2026-05-28-handoff-chunked-routing-closeout.md);
+recent-lessons digest refreshed at
+[`charness-artifacts/retro/recent-lessons.md`](../retro/recent-lessons.md).
+
+Retro: charness-artifacts/retro/2026-05-28-handoff-chunked-routing-closeout.md
+Host log probe: charness-artifacts/probe/2026-05-28-handoff-chunked-routing-host-log.json

@@ -582,6 +582,76 @@ def parse_handoff_entries(text: str) -> list[HandoffEntry]:
 
 # Auto-draft writer ---------------------------------------------------------
 
+# Trigger detection --------------------------------------------------------
+
+# The chunker fires iff a user invocation references the handoff surface
+# *and* contains no explicit task directive. The rule is deterministic so
+# slice 6 SKILL.md prose, slice 7 verification, and the spec fixture all
+# consult the same source.
+
+_HANDOFF_MENTION_PATTERNS = (
+    r"\bdocs/handoff\.md\b",
+    r"\bhandoff\.md\b",
+    r"\bhandoff[ -]skill\b",
+    r"\bcharness:handoff\b",
+    r"\bhandoff[ ]?스킬\b",
+    r"\b(?:read|check|see)\s+(?:the\s+)?handoff\b",
+    r"\bwhat'?s\s+(?:in|next)\s+(?:in\s+)?(?:the\s+)?handoff\b",
+    r"\bnext\s+from\s+handoff\b",
+    r"\bpick\s+up\s+from\s+handoff\b",
+    r"\b핸드오프\b",
+)
+
+_TASK_DIRECTIVE_PATTERNS = (
+    # Imperative verb + non-handoff noun. Pattern matches a verb followed
+    # by at least one word that is not 'handoff' / 'the handoff'.
+    (
+        r"\b(?:do|fix|implement|close|push|run|start|work\s+on|resolve|"
+        r"merge|release|revert)\s+"
+        r"(?!the\s+handoff\b|handoff\b)\S+"
+    ),
+    # Explicit issue id.
+    r"#\d+",
+    # File path other than the handoff itself (anything matching path/file.ext
+    # where the path is NOT docs/handoff.md or handoff.md).
+    (
+        r"(?<![A-Za-z0-9_])(?!docs/handoff\.md\b|handoff\.md\b)"
+        r"(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+\.[A-Za-z]{1,8}\b"
+    ),
+    # Slash command other than /handoff.
+    r"/(?!handoff\b)[A-Za-z][A-Za-z0-9_-]*",
+    # CLI flag.
+    r"\s--[A-Za-z][A-Za-z0-9-]*\b",
+)
+
+
+def _matches_any(patterns: tuple[str, ...], text: str) -> bool:
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
+
+
+def should_fire_chunker(user_message: str) -> bool:
+    """Return True iff the chunker should fire for ``user_message``.
+
+    The rule is deterministic: fires iff both
+    (a) the message references the handoff surface (file, skill id,
+        or one of the canonical pickup phrases including Korean), AND
+    (b) the message contains no explicit task directive (imperative
+        verb + non-handoff noun, issue id, non-handoff file path,
+        slash command other than /handoff, or CLI flag).
+
+    See ``skills/public/handoff/references/chunked-routing.md`` for the
+    operator-facing rule and the 7-row trigger fixture in
+    ``tests/test_handoff_chunker_trigger.py``.
+    """
+    if not user_message or not user_message.strip():
+        return False
+    if not _matches_any(_HANDOFF_MENTION_PATTERNS, user_message):
+        return False
+    if _matches_any(_TASK_DIRECTIVE_PATTERNS, user_message):
+        return False
+    return True
+
+
 USER_ACCEPTANCE_PLACEHOLDER = (
     "*To be filled by the achieve Before-phase interview.*"
 )
