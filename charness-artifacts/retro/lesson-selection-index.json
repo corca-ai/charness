@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-28",
-  "source_artifact_count": 75,
-  "candidate_count": 473,
+  "source_artifact_count": 76,
+  "candidate_count": 477,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:6ecf44d05d7a",
+      "kind": "current_focus",
+      "lesson": "Closeout of the #230 + #229 achieve goal at `charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md`.",
+      "normalized_key": "closeout of the 230 229 achieve goal at charness artifacts goals 2026 05 28",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:d571a99ae930",
       "kind": "current_focus",
@@ -55,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:aceb53d5baa4",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the `<repo-root>/` placeholder convention should be auto-applied or pre-checked in spec/doc authoring. Repeat-trap #4 hit three times this run despite already being documented. A small pre-commit fixer (`check_doc_links --autofix-placeholder`) would retire this trap.",
+      "normalized_key": "capability the repo root placeholder convention should be auto applied or pre checked in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1e644da2faa6",
       "kind": "next_improvement",
       "lesson": "**memory:** this artifact + #229 capture the \"lighter self-substitution\" pattern for the next session.",
@@ -69,6 +109,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a8ea6e4ff7ad",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this artifact captures the closed-loop achievement — the goal aimed at #230 + #229 also produces its own proof artifacts (retro file + host-log probe + 3 subagent critiques). Future achieve runs inherit the gate by default; no separate enforcement needed.",
+      "normalized_key": "memory this artifact captures the closed loop achievement the goal aimed at 230 229",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:69fd738a3ac4",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** include the validator source (e.g. `validate_skills.py` line ranges) in slice-level critique prompts when the change touches a public skill. Slice-1 F4 fold was relaxed in slice 2 because the critique didn't see the strict listing rule; giving the reviewer the gate code itself prevents that.",
+      "normalized_key": "workflow include the validator source e g validate skills py line ranges in slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }
@@ -178,89 +258,29 @@
           "section": "Context"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:98a786d0a106",
-      "kind": "next_improvement",
-      "lesson": "after any changed-line or changed-path gate fix, commit first, then rerun the sampler against the committed `base..HEAD` window before claiming the scheduled gate is repaired.",
-      "normalized_key": "after any changed line or changed path gate fix commit first then rerun the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-quality-critique-sweep-closeout.md",
-          "date": "2026-05-24",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6021cc6d626a",
-      "kind": "next_improvement",
-      "lesson": "before adding code to a script/test file, check its current line count against the 480/360/800 file and 100/150 function budgets; if it is within ~15 lines of a limit, extract first.",
-      "normalized_key": "before adding code to a script test file check its current line count against",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-mutation-changed-scope-gap.md",
-          "date": "2026-05-24",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e485ce7e215c",
-      "kind": "next_improvement",
-      "lesson": "**capability (immediate next slice)**: decouple AC4/AC7 from the live committed ledger — assert the seed-only/empty-baseline guarantees against synthetic fixtures so the committed ledger is free to accrue live events. This unblocks the wiring; until then the auto-append cannot fire. Once decoupled, this retro's own RCA event becomes the first live append (the proper dogfood).",
-      "normalized_key": "capability immediate next slice decouple ac4 ac7 from the live committed ledger assert the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-          "date": "2026-05-24",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:27f4db4d94aa",
-      "kind": "next_improvement",
-      "lesson": "**capability (optional)**: extract some `debug/SKILL.md` step-6 detail into a reference so it has margin below 200 instead of sitting pinned at the gate.",
-      "normalized_key": "capability optional extract some debug skill md step 6 detail into a reference so",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-      "latest_source_date": "2026-05-24",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-24-rca-ledger-slice2-wiring.md",
-          "date": "2026-05-24",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:6ecf44d05d7a",
+      "kind": "current_focus",
+      "lesson": "Closeout of the #230 + #229 achieve goal at `charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md`.",
+      "normalized_key": "closeout of the 230 229 achieve goal at charness artifacts goals 2026 05 28",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:d571a99ae930",
       "kind": "current_focus",
@@ -302,6 +322,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:aceb53d5baa4",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the `<repo-root>/` placeholder convention should be auto-applied or pre-checked in spec/doc authoring. Repeat-trap #4 hit three times this run despite already being documented. A small pre-commit fixer (`check_doc_links --autofix-placeholder`) would retire this trap.",
+      "normalized_key": "capability the repo root placeholder convention should be auto applied or pre checked in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1e644da2faa6",
       "kind": "next_improvement",
       "lesson": "**memory:** this artifact + #229 capture the \"lighter self-substitution\" pattern for the next session.",
@@ -316,6 +356,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a8ea6e4ff7ad",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this artifact captures the closed-loop achievement — the goal aimed at #230 + #229 also produces its own proof artifacts (retro file + host-log probe + 3 subagent critiques). Future achieve runs inherit the gate by default; no separate enforcement needed.",
+      "normalized_key": "memory this artifact captures the closed loop achievement the goal aimed at 230 229",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+          "date": "2026-05-28",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:69fd738a3ac4",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** include the validator source (e.g. `validate_skills.py` line ranges) in slice-level critique prompts when the change touches a public skill. Slice-1 F4 fold was relaxed in slice 2 because the critique didn't see the strict listing rule; giving the reviewer the gate code itself prevents that.",
+      "normalized_key": "workflow include the validator source e g validate skills py line ranges in slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
+      "latest_source_date": "2026-05-28",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md",
           "date": "2026-05-28",
           "section": "Next Improvements"
         }

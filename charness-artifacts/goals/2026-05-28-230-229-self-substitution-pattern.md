@@ -1,6 +1,6 @@
 # Achieve Goal: Reduce achieve/issue/release self-substitution and commit-hook waste (#230 + #229)
 
-Status: active
+Status: complete
 Created: 2026-05-28
 Activation: `/goal @charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md`
 
@@ -361,8 +361,45 @@ fresh session can re-verify the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- **find-skills inventory schema drift (slice 7).** `charness-artifacts/find-skills/latest.json.inventory.integrations` entries use renamed IDs (`github-worker`, `google-workspace-worker`) while `integrations/tools/*.json` file basenames are still `github-gh.json` and `gws-cli.json`. `validate_current_pointer_freshness` expects file-basename matching and fails. Not introduced by this goal; surfaced by the slice 7 docs-only subset (the F1 fold that prevented silent regressions). To file: rename the JSON files to match the new IDs OR teach the validator to follow the id-to-path mapping.
+- **After-phase gate accepts stale unrelated retro/probe files (final critique F1).** The slice 3 helper validates `is_file() and stat.st_size > 0` only — it does not bind the retro artifact's path/basename/mtime to the goal slug or activation date. A bounded fresh-eye subagent demonstrated live during the final critique: pointing `Retro: charness-artifacts/retro/2026-04-10-some-old.md` at any pre-existing retro under that directory passes the gate. This is real future-recurrence risk (the lighter-self-substitution pattern moved one level out), but not a closeout blocker because (a) the *dominant* failure mode the goal targeted — "no evidence at all" — is still blocked correctly, (b) the goal artifact's authored evidence lines this session were honest, and (c) the recency/binding fix is its own design slice. Smallest fix sketch (deferred): in `goal_artifact_lib.check_complete_evidence`, additionally require each evidence path's basename or content to contain the goal slug, or require `mtime >= goal-artifact created date`. To file as a follow-up issue against `charness`. Reviewer: bounded fresh-eye subagent, agentId `a2f9d3df17d699156`.
+
 ## Final Verification
+
+- Slice 1–7 commits: `ef9df39`, `d1735d9`, `443308d`, `e44bb88`, `78472c9`, `d03bc9a`, `dd3865d`.
+- Targeted tests: 49 across `test_classify_push_diff.py`, `test_prescribed_skill_executed.py`, `test_goal_artifact_lib.py` plus 21 in `test_issue_closeout_verifier.py` and 16 in `test_release_publish*` — all green at slice boundaries.
+- Live gate proofs:
+  - Slice 3 achieve gate: `upsert_goal --status complete` refused with exit 1 + structured payload on the active goal before this retro ran. The goal cannot close itself without producing real After-phase proof.
+  - Slice 4 issue gate: `verify-closeout` test suite proved bug/feature/deferred-work closeouts now require a `Critique:` carrier-body header (file path or honest blocked-signal); question/decision-needed exempt.
+  - Slice 5 release gate: `publish_release.py --execute` rejects without `--critique-artifact` or `--critique-blocked` and rejects both at once.
+  - Slice 6 hook quieting: per-commit stdout shrank from 50.6KB to 143 bytes (~350× reduction) on a clean run; failing-file names still appear on a deliberate-fail fixture.
+  - Slice 7 push-gate router: docs-only subset (~13s) caught real preexisting find-skills inventory drift (recorded as Off-Goal above) — the F1 fold prevented a silent regression.
+- Honest non-claims:
+  - No live `git push` was executed this session; the slice 7 hook is unit-tested via the classifier and the hook is bash-syntax-checked + shellcheck-clean. The preexisting find-skills inventory drift blocks any push attempt and is out of scope.
+  - No release was cut (this goal is not a release; per Non-Goals).
+  - No GitHub issue was filed or closed during the run.
+  - **Codex host coverage of the After-phase gate was not exercised this session.** The achieve gate is host-agnostic at the script level (it calls only `git`, `os.stat`, and the portable shared helper) but the live-refusal smoke ran only under Claude Code. A future session under Codex should re-confirm the refusal path; the host-log probe artifact does detect Codex sources, so future probe reads work under either host.
+
+### Closeout Evidence
+
+Retro: charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md
+Host log probe: charness-artifacts/probe/2026-05-28-230-229-host-log.json
 
 ## User Verification Instructions
 
+1. **Review the goal artifact end-to-end** for the lifecycle story: `cat charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md | less`. Look for the 8-slice log + Final Verification + this Closeout Evidence subsection.
+2. **Verify the achieve gate fires:** create a throwaway goal at draft, flip it active, then try `python3 skills/public/achieve/scripts/upsert_goal.py --slug throwaway-test --date 2026-05-28 --title test --status complete`. It should refuse with exit 1 and the structured `evidence_report` payload.
+3. **Verify the markdown hook is quiet:** `wc -c < <(./scripts/check-markdown.sh 2>&1)` should be ≲200 bytes (was ~50.6KB). The failing-file behavior is unchanged.
+4. **Verify the push-gate router classifies correctly:** `printf 'docs/handoff.md\nREADME.md\n' | python3 scripts/classify_push_diff.py --paths-stdin` returns `classification: docs-artifact-only`. `printf 'plugins/charness/SKILL.md\n' | ...` returns `classification: full-gate-required`.
+5. **Push when ready:** the new pre-push hook will classify this very push as `full-gate-required` (because `.githooks/pre-push`, `scripts/classify_push_diff*.py`, tests, and skill source all changed). The preexisting find-skills inventory drift may need a separate fix before push succeeds; see Off-Goal Findings.
+6. **Future achieve goals** automatically inherit the gate. To verify, scaffold a new goal with `upsert_goal.py` and try to flip it to `complete` without adding `Retro:` and `Host log probe:` lines — the gate refuses.
+
 ## Auto-Retro
+
+Run separately via the prescribed path:
+
+- Retro skill invocation: `Skill(charness:retro)` ran with session mode (this run, the live #230 Waste 1 proof point).
+- Retro artifact recorded above under Closeout Evidence.
+- Recent-lessons refreshed automatically by `persist_retro_artifact.py`.
+- Host-log probe output also recorded above under Closeout Evidence; the retro artifact carries the measured session metrics inline.
+- Slice-level critique runs: 3 (slice 1 plan, slice 6 hook, slice 7 push-gate router), all bounded fresh-eye subagents, all parent-delegated.

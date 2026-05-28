@@ -18,15 +18,20 @@
   ships the #226 reviewer-tier policy. **Open:** release-time real-host proof
   (Cautilus install/doctor on a clean machine) is required and NOT yet run — see
   [release latest](../charness-artifacts/release/latest.md).
-- **#226 CLOSED** (this session, via `achieve`): centralized a portable
-  fresh-eye reviewer-tier policy. `high-leverage`/`standard` tier in
-  [the shared fresh-eye reference](../skills/shared/references/fresh-eye-subagent-review.md)
-  (no provider names); a validated `reviewer_tiers` critique-adapter field
-  carries the concrete **host-plural** mapping (Codex gpt-5.5/medium/priority,
-  Claude Code sonnet-4.6) in the critique adapter example + contract; `release`
-  now cites the shared policy; pinned by
-  [a new policy test](../tests/quality_gates/test_reviewer_tier_policy.py). Goal
-  artifact: [2026-05-27-226-reviewer-tier-policy](../charness-artifacts/goals/2026-05-27-226-reviewer-tier-policy.md).
+- **#230 + #229 CLOSED** (this session, via `achieve`): closed the lighter-
+  self-substitution pattern across achieve/issue/release closeouts and the
+  Before-phase anti-anchoring half, plus the markdown-hook flood (Waste 2)
+  and the broad-gate push redundancy (Waste 3). Achieve After-phase now
+  mechanically refuses `complete` without a real retro artifact + host-log
+  probe; issue `verify-closeout` requires a `Critique:` carrier-body line
+  for bug/feature/deferred-work; `publish_release.py` requires
+  `--critique-artifact` or `--critique-blocked`; per-commit markdown stdout
+  shrank from 50.6KB to 143 bytes. Goal artifact:
+  [2026-05-28-230-229-self-substitution-pattern](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md).
+  Closeout retro: [2026-05-28-230-229-achieve-goal-closeout](../charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md).
+- **#226 CLOSED** (prior session, via `achieve`): centralized a portable
+  fresh-eye reviewer-tier policy. Goal artifact:
+  [2026-05-27-226-reviewer-tier-policy](../charness-artifacts/goals/2026-05-27-226-reviewer-tier-policy.md).
 - **#219 still OPEN**: the annotation-union filter fix (`a0b8de0e`) is on `main`;
   waiting for the next scheduled mutation run to validate + auto-close. Do not
   hand-close. (#224, #225 closed.) See
@@ -34,21 +39,31 @@
 
 ## Next Session
 
-1. **#230 — top priority.** Reduce repeated agent-run waste surfaced by the #226
-   run + its retro
-   ([2026-05-28-issue-226-achieve-run](../charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md)):
-   make prescribed closeout sub-skill execution non-optional in `achieve`'s
-   After-phase (actually run `retro` + probe metrics before `complete`, not an
-   inline paraphrase); quiet the pre-commit/pre-push markdown hook so it stops
-   dumping the full 485-file list into agent context; address/defer broad-gate
-   push batching. Tackle alongside **#229** (same "self-substitution" pattern —
-   the Before-phase anti-anchoring half). Start with `spec` or `impl`.
-2. **#227** — larger user-requested survey-reliability retro; scope partly in
+1. **Push the #230 + #229 commits.** The 7-commit branch is ahead of
+   `origin/main` and locally green. The new pre-push hook will classify
+   this very push as `full-gate-required` (touches `.githooks/`, `scripts/`,
+   `skills/`, `tests/`). Note: a preexisting find-skills inventory schema
+   drift (integration IDs renamed but file basenames unchanged in
+   [integrations/tools](../integrations/tools/)) will fire under
+   `validate-current-pointer-freshness` and likely block the push; either
+   rename the JSON files to match the new IDs or teach the validator to
+   follow the id-to-path mapping. See the goal artifact's Off-Goal
+   Findings section.
+2. **File the After-phase gate hardening as a follow-up issue.** Final
+   critique F1: the slice 3 helper accepts any pre-existing retro/probe
+   file, not just one bound to the current goal. Smallest fix sketch is in
+   the goal artifact's Off-Goal Findings; this is real future-recurrence
+   risk but not a closeout blocker.
+3. **Confirm Codex host smoke** of the After-phase gate when a Codex
+   session is convenient. The gate is host-agnostic at the script level
+   (only `git`, `os.stat`, and the portable shared helper) but live-refusal
+   was only exercised under Claude Code this session.
+4. **#227** — larger user-requested survey-reliability retro; scope partly in
    ceal. Run `spec` first to carve the charness-only part (turn-policy
    execution-vs-approval, source-reuse, external-write verification taxonomy,
    template fidelity) before `impl`.
-3. **#184/#185** remain deferred product/AI-ML direction work.
-4. **Mutation residuals** (only if the scheduled gate goes red on HEAD; not
+5. **#184/#185** remain deferred product/AI-ML direction work.
+6. **Mutation residuals** (only if the scheduled gate goes red on HEAD; not
    filed as issues): real test-strength survivors #224 named (`build_payload`
    comparisons, worktree `timeout` numbers) the filter fix does not touch, and
    the latent `Annotated[...]` metadata over-skip. Re-confirm against current
