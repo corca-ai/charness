@@ -231,7 +231,7 @@ merge.
    labelled `(merged: <reason>)`. The user picks one chunk (or none) and
    may ask "why not chunk X?" in the same turn; the agent answers from
    the already-rendered reasoning.
-5. **Draft.** On user selection, `draft_goal_from_chunk.py` calls
+5. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py) calls
    [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py)
    to write the goal artifact at
    `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at status
