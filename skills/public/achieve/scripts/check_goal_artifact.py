@@ -74,6 +74,13 @@ def main() -> int:
                     "invalid skips: "
                     + ", ".join(entry["name"] for entry in evidence_report["invalid_skips"])
                 )
+            if evidence_report.get("binding_failures"):
+                missing_bits.append(
+                    "evidence not bound to this goal: "
+                    + ", ".join(
+                        entry["name"] for entry in evidence_report["binding_failures"]
+                    )
+                )
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(missing_bits)

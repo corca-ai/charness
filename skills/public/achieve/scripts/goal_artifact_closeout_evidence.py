@@ -38,10 +38,73 @@ def _load_shared_helper():
 # enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
 CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
 
+# Retro H2 sections whose substance must be narrated to the user, not just
+# persisted to the retro file (#233 F2). The After-phase gate surfaces which of
+# these the retro actually contains so the closeout response can transport them.
+NARRATION_REQUIRED_SECTIONS = (
+    "Waste",
+    "Critical Decisions",
+    "Next Improvements",
+    "Sibling Search",
+)
+
 _EVIDENCE_LINE = re.compile(
     r"^[\s>*-]*(Retro|Host[- ]log[- ]probe)\s*:\s*(.+?)\s*$",
     re.MULTILINE | re.IGNORECASE,
 )
+
+# Activation line points at the goal's own file: ``/goal @<repo-rel-path>``.
+# The basename minus the date prefix is the goal slug, the strongest binding
+# token for the closeout's evidence files (#233 F1).
+_ACTIVATION_PATH = re.compile(
+    r"^[\s>*-]*Activation\s*:\s*`?\s*/goal\s+@?([^`\s]+)",
+    re.MULTILINE | re.IGNORECASE,
+)
+_DATE_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}-")
+_LEADING_NUMERIC_CLUSTER = re.compile(r"^\d+(?:[-_]\d+)*")
+
+
+def derive_goal_tokens(text: str) -> list[str]:
+    """Extract distinctive binding tokens identifying this goal.
+
+    The tokens are matched against each evidence file's basename/content so a
+    closeout cannot satisfy the gate by citing an unrelated pre-existing
+    artifact (#233 F1). Returns ``[]`` when the goal identity is not derivable
+    (e.g., a malformed Activation line); the caller then opts out of binding.
+    """
+    match = _ACTIVATION_PATH.search(text)
+    if not match:
+        return []
+    stem = Path(match.group(1)).name
+    if stem.endswith(".md"):
+        stem = stem[:-3]
+    slug = _DATE_PREFIX.sub("", stem)
+    if not slug:
+        return []
+    tokens = [slug]
+    numeric = _LEADING_NUMERIC_CLUSTER.match(slug)
+    if numeric and numeric.group(0) != slug:
+        tokens.append(numeric.group(0))
+    return tokens
+
+
+def narration_sections_present(retro_text: str) -> list[str]:
+    """Return which ``NARRATION_REQUIRED_SECTIONS`` the retro file contains.
+
+    Used to surface, at flip-to-complete time, exactly which substantive retro
+    sections the closeout response must narrate to the user (#233 F2). This is
+    an affordance, not a gate: it does not block the flip.
+    """
+    masked = _mask_fences(retro_text)
+    present: list[str] = []
+    for section in NARRATION_REQUIRED_SECTIONS:
+        pattern = re.compile(
+            rf"^#{{1,6}}\s+{re.escape(section)}\b",
+            re.MULTILINE | re.IGNORECASE,
+        )
+        if pattern.search(masked):
+            present.append(section)
+    return present
 
 
 def _mask_fences(text: str) -> str:
@@ -110,10 +173,59 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
             evidence[name] = payload["value"]
         else:
             skips[name] = payload["value"]
-    return helper.check(
+    report = helper.check(
         repo_root=repo_root,
         required=list(CLOSEOUT_EVIDENCE_NAMES),
         evidence=evidence,
         skips=skips,
         kind="achieve-after",
     )
+
+    # F1 binding: a present file is necessary but not sufficient — each
+    # satisfied evidence file must also bind to this goal's identity, else a
+    # closeout could cite any pre-existing retro/probe in the repo.
+    tokens = derive_goal_tokens(text)
+    binding_failures: list[dict[str, Any]] = []
+    for entry in report["satisfied"]:
+        if entry.get("via") != "evidence":
+            continue
+        path = Path(entry["path"])
+        if not tokens:
+            # Fail closed: a goal that cites evidence files but whose identity
+            # is not derivable from its `Activation:` line cannot bind them.
+            # A bare `Activation:` substring satisfies check_goal but must not
+            # silently disable binding (that one-line shape would reopen F1).
+            reason = (
+                "goal identity not derivable from the Activation line; cannot "
+                "bind this evidence file to the goal"
+            )
+        else:
+            binds, detail = helper.evidence_binds_to_context(path, tokens=tokens)
+            reason = detail
+            if binds:
+                entry["binding"] = reason
+                continue
+        entry["binding"] = reason
+        binding_failures.append(
+            {"name": entry["name"], "path": entry["path"], "reason": reason}
+        )
+    report["binding_tokens"] = tokens
+    report["binding_failures"] = binding_failures
+    if binding_failures:
+        report["ok"] = False
+
+    # F2 affordance: surface which substantive retro sections must travel with
+    # the user-facing closeout (not just persist to the file). Non-blocking.
+    narration: list[str] = []
+    for entry in report["satisfied"]:
+        if entry["name"] != "retro_artifact" or entry.get("via") != "evidence":
+            continue
+        retro_path = Path(entry["path"])
+        try:
+            retro_text = retro_path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            retro_text = ""
+        narration = narration_sections_present(retro_text)
+    report["narration_required_sections"] = narration
+
+    return report

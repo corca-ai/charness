@@ -2,68 +2,68 @@
 
 ## Workflow Trigger
 
-- Start every task-oriented pickup with `charness:find-skills`, then read this
-  file, [quality latest](../charness-artifacts/quality/latest.md), and
+- Pickup = `charness:find-skills` → **invoke `charness:handoff`** (do not just
+  read this file; manual reading is the recurring miss — see Discuss) → read
+  [quality latest](../charness-artifacts/quality/latest.md) +
   [recent lessons](../charness-artifacts/retro/recent-lessons.md).
-- Refresh live state: `git status --short --branch`,
-  `git log --oneline origin/main..HEAD`, and `gh issue list --state open --limit 50`.
-- Before mutating code, generated exports, or validation behavior, read
-  [implementation discipline](./conventions/implementation-discipline.md) and
+- Refresh: `git status --short --branch`,
+  `git log --oneline origin/main..HEAD`, `gh issue list --state open --limit 50`.
+- Before mutating code/exports/validation, read
+  [implementation discipline](./conventions/implementation-discipline.md) +
   [operating contract](./conventions/operating-contract.md).
-- Route external URLs through `gather`.
 
 ## Current State
 
-- **`main` is at `origin/main` (push landed).** The 22-commit batch carrying
-  the #230 + #229 closeout, the handoff-chunked-routing goal, and the
-  pre-push gate clearing is now upstream.
-- **#230 CLOSED, #229 still OPEN.** #229 close still pending against the
-  [closeout retro](../charness-artifacts/retro/2026-05-28-230-229-achieve-goal-closeout.md)
-  and the
-  [goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md).
-- **handoff-chunked-routing goal: shipped.** Chunker behind a deterministic
-  trigger gate on `handoff`; layering miss captured in
-  [chunked-routing-layering-miss](../charness-artifacts/retro/2026-05-28-chunked-routing-layering-miss.md).
-- **v0.10.0 published**; real-host release proof (Cautilus install/doctor on a
-  clean machine) NOT yet run. See [release latest](../charness-artifacts/release/latest.md).
-- **#219 still OPEN** — fix `a0b8de0e` on `main` awaiting next scheduled mutation
-  run to validate + auto-close (do not hand-close). See
-  [debug artifact](../charness-artifacts/debug/2026-05-27-issue-224-219-mutation-annotation-filter.md).
-- **Open issues**: #234, #233, #232, #229, #219, #185, #184.
+- **`main` tracks `origin/main`.** The #233 achieve-F1 binding fix is committed
+  on `main` (see commit log); verify it is pushed before new work.
+- **Open issues**: #235, #233, #232, #219, #185, #184. (#229, #230, #234 closed.)
+- **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`:
+  `check_complete_evidence` binds each cited `Retro:`/`Host log probe:` file to
+  the goal (basename/content must carry the goal slug or issue cluster from the
+  `Activation:` line), fails closed on underivable identity, boundary-anchors
+  the numeric token. Blocks the demonstrated stale-retro attack; tested;
+  resolution critique caught + fixed a fail-open bypass pre-ship. **Still open:**
+  F2 narration is a non-blocking affordance + prose only (hard enforcement
+  deferred — judgment-bound); issue/release sibling bindings deferred. Remainder
+  home: [closeout contract](./prescribed-skill-closeout-contract.md).
+- **#235 is the live mutation regression** (73.7% < 80%); **#219 superseded**
+  (its `artifact_closeout_status` survivors no longer appear in #235).
+- **v0.10.0 published**; real-host release proof not yet run
+  ([release latest](../charness-artifacts/release/latest.md)).
 
 ## Next Session
 
-1. **gh-close #229** — re-read the closeout retro + goal artifact and verify
-   the evidence actually binds to #229 before invoking `gh issue close`
-   (this is the exact failure mode #233 names; do not hand-close blind).
-2. **#233 closeout-gate hardening.** One design slice extends
-   `check_complete_evidence` so retro evidence binds to the completing
-   goal's context (slice 3 helper currently accepts stale unrelated retros)
-   and adds an achieve After-phase contract update so prescribed-skill
-   conclusions get narrated to the user.
-3. **#234** mutation regression on `main` — triage against current HEAD and
-   the #219 filter-fix path before designing.
-4. **Real-host release proof for v0.10.0** when a clean machine + Cautilus
-   slot are available.
-5. **Codex host smoke** of the After-phase gate — host-agnostic at the script
-   level but live-refusal only exercised under Claude Code.
-6. **#232** issue skill shell-quoting body corruption (`gh issue create` body path).
-7. **#227** survey-reliability retro — run `spec` first to carve the
-   charness-only part (ceal owns the rest).
-8. **#184/#185** remain deferred product/AI-ML direction work.
+1. **Routing-enforcement hook (user request 2026-05-29).** A
+   `SessionStart`/`UserPromptSubmit` hook — Claude Code (settings.json, via
+   `update-config`) **and** the Codex equivalent — that forces
+   `find-skills → named-workflow-skill` on `@artifact`/pickup-shaped first
+   messages, plus an `AGENTS.md` rule that the next action is driven by the
+   skill's output, not the `@`-mention content. This is the gate-not-exhortation
+   fix for the recurring routing miss (Discuss).
+2. **#233 remainder.** Decide F2 narration enforcement (judgment-bound), then
+   wire `evidence_binds_to_context` into `issue` (`issue_verify_closeout.py`)
+   and `release` (`publish_release_preflight.py`) — both still call the
+   presence-only `helper.check` and inherit the F1 shape.
+3. **#235** mutation regression — triage current survivors; auto-close #219 once
+   the scheduled run clears (do not hand-close).
+4. **#232** issue-skill `gh issue create` body shell-quoting corruption.
+5. **Real-host release proof for v0.10.0** when a clean machine + Cautilus slot
+   are available; **Codex host smoke** of the After-phase gate.
+6. **#184/#185** deferred product / AI-ML direction work.
 
 ## Discuss
 
-- **setup-skill improvement candidate**: `find-skills → handoff` did not
-  auto-trigger on a `@docs/handoff.md` pickup this session; the `CLAUDE.md`
-  Start Here prose lost to the @-mention's "react to content" affordance.
-  See
-  [routing-miss retro](../charness-artifacts/retro/2026-05-28-find-skills-handoff-no-auto-trigger.md).
-  If recurring, open a setup-skill issue.
-- PR CI posture is intentional maintainer-local enforcement per
-  [operating contract](./conventions/operating-contract.md); do not reopen
-  unless outside PRs become recurring.
+- **Routing miss CONFIRMED recurring (2026-05-29).** Again this session the
+  `handoff` skill did not auto-trigger on a `@docs/handoff.md` pickup
+  (`find-skills` ran, `handoff` did not — manual read), and the user expected
+  `achieve` where `issue` was chosen for #233. Per the
+  [routing-miss retro](../charness-artifacts/retro/2026-05-28-find-skills-handoff-no-auto-trigger.md)
+  this is the confirming recurrence — act via the Next-Session hook + a
+  setup-skill issue. Same "prose fails under stimulus, need a gate" pattern as
+  #230/#233.
 
 ## References
 
-- [quality posture](../charness-artifacts/quality/latest.md), [debug artifact](../charness-artifacts/debug/latest.md), [release surface](../charness-artifacts/release/latest.md)
+- [quality posture](../charness-artifacts/quality/latest.md),
+  [closeout contract](./prescribed-skill-closeout-contract.md),
+  [release surface](../charness-artifacts/release/latest.md)

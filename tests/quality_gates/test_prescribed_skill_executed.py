@@ -175,3 +175,55 @@ def test_cli_smoke_passes_with_real_file(tmp_path: Path) -> None:
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
+
+
+def test_binding_passes_on_basename_token(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/2026-05-28-230-229-closeout.md"
+    _touch(path, "body that does not mention the goal")
+    binds, reason = lib.evidence_binds_to_context(path, tokens=["230-229"])
+    assert binds is True
+    assert "basename" in reason
+
+
+def test_binding_passes_on_content_token(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/2026-05-28-unrelated.md"
+    _touch(path, "this retro is about 230-229-self-substitution-pattern")
+    binds, reason = lib.evidence_binds_to_context(
+        path, tokens=["230-229-self-substitution-pattern"]
+    )
+    assert binds is True
+    assert "content" in reason
+
+
+def test_binding_fails_on_stale_unrelated_file(tmp_path: Path) -> None:
+    # The #233 F1 attack: a present, non-empty, but unrelated pre-existing file.
+    path = tmp_path / "charness-artifacts/retro/2026-04-10-some-old.md"
+    _touch(path, "an old retro from a different goal entirely")
+    binds, reason = lib.evidence_binds_to_context(
+        path, tokens=["230-229-self-substitution-pattern", "230-229"]
+    )
+    assert binds is False
+    assert "does not bind" in reason
+
+
+def test_binding_opts_out_with_no_tokens(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/anything.md"
+    _touch(path, "body")
+    binds, _ = lib.evidence_binds_to_context(path, tokens=[])
+    assert binds is True
+
+
+def test_binding_numeric_token_does_not_false_match_digit_run(tmp_path: Path) -> None:
+    # F-C: `185` must not bind on `21850` / `0185abc` (unanchored substring).
+    path = tmp_path / "charness-artifacts/retro/2026-05-28-unrelated.md"
+    _touch(path, "this body mentions 21850 and 0185abc but not the issue")
+    binds, _ = lib.evidence_binds_to_context(path, tokens=["185"])
+    assert binds is False
+
+
+def test_binding_numeric_token_matches_on_boundary(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/2026-05-28-185-foo.md"
+    _touch(path, "body")
+    binds, reason = lib.evidence_binds_to_context(path, tokens=["185"])
+    assert binds is True
+    assert "185" in reason

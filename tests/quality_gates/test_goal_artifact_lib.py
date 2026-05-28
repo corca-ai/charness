@@ -333,3 +333,150 @@ def test_upsert_refuses_flip_to_complete_with_invalid_skip(tmp_path: Path) -> No
     assert refusal["action"] == "refused"
     invalid_names = {entry["name"] for entry in refusal["evidence_report"]["invalid_skips"]}
     assert invalid_names == set(gal.CLOSEOUT_EVIDENCE_NAMES)
+
+
+# --- #233 F1 binding + F2 narration -----------------------------------------
+
+_BIND_SLUG = "233-closeout-binding"
+
+
+def _seed_named(tmp_path: Path, rel: str, body: str) -> Path:
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(body, encoding="utf-8")
+    return target
+
+
+def test_derive_goal_tokens_includes_slug_and_numeric_cluster(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
+    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
+    tokens = gal.derive_goal_tokens(text)
+    assert _BIND_SLUG in tokens
+    assert "233" in tokens
+
+
+def test_check_complete_evidence_passes_with_bound_files(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
+    retro = _seed_named(
+        tmp_path,
+        f"charness-artifacts/retro/2026-05-28-{_BIND_SLUG}.md",
+        "# Retro\n\n## Waste\n\nx\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
+        '{"host":"claude-code"}\n',
+    )
+    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(retro.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is True
+    assert report["binding_failures"] == []
+
+
+def test_check_complete_evidence_rejects_stale_unrelated_retro(tmp_path: Path) -> None:
+    # The #233 F1 attack: cite a present, non-empty, but unrelated retro.
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
+    stale = _seed_named(
+        tmp_path,
+        "charness-artifacts/retro/2026-04-10-some-old.md",
+        "# Old retro from a different goal\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
+        '{"host":"claude-code"}\n',
+    )
+    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(stale.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is False
+    failed = {entry["name"] for entry in report["binding_failures"]}
+    assert failed == {"retro_artifact"}
+
+
+def test_upsert_refuses_flip_to_complete_with_stale_retro(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
+    stale = _seed_named(
+        tmp_path,
+        "charness-artifacts/retro/2026-04-10-some-old.md",
+        "# Old retro\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
+        '{"host":"claude-code"}\n',
+    )
+    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(stale.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    gal.goal_path(tmp_path, "2026-05-28", _BIND_SLUG).write_text(text, encoding="utf-8")
+    refusal = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T", status="complete"
+    )
+    assert refusal["action"] == "refused"
+    assert refusal["evidence_report"]["binding_failures"]
+
+
+def test_check_complete_evidence_fails_closed_when_identity_underivable(
+    tmp_path: Path,
+) -> None:
+    # F-A: a bare `Activation:` substring satisfies check_goal but yields no
+    # binding tokens. Binding must fail closed for cited evidence files rather
+    # than silently opt out (which would reopen the F1 stale-citation hole).
+    retro = _seed_named(
+        tmp_path, "charness-artifacts/retro/2026-04-10-some-old.md", "# Old\n"
+    )
+    probe = _seed_named(
+        tmp_path, "charness-artifacts/probe/2026-04-10-some-old.json", "{}\n"
+    )
+    text = (
+        "# Achieve Goal: T\n\nStatus: active\nActivation: see above\n\n"
+        "## Final Verification\n\n"
+        f"Retro: {retro.relative_to(tmp_path)}\n"
+        f"Host log probe: {probe.relative_to(tmp_path)}\n"
+    )
+    assert gal.derive_goal_tokens(text) == []
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is False
+    failed = {entry["name"] for entry in report["binding_failures"]}
+    assert failed == set(gal.CLOSEOUT_EVIDENCE_NAMES)
+
+
+def test_narration_required_sections_surface_from_bound_retro(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
+    retro = _seed_named(
+        tmp_path,
+        f"charness-artifacts/retro/2026-05-28-{_BIND_SLUG}.md",
+        "# Retro\n\n## Waste\n\na\n\n## Critical Decisions\n\nb\n"
+        "\n## Next Improvements\n\nc\n\n## Sibling Search\n\nd\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
+        '{"host":"claude-code"}\n',
+    )
+    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(retro.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["narration_required_sections"] == [
+        "Waste",
+        "Critical Decisions",
+        "Next Improvements",
+        "Sibling Search",
+    ]

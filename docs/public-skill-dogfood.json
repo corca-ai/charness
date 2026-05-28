@@ -38,7 +38,7 @@
         "tells the user the file is inert until activation and does not start executing slices itself"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-27",
+      "reviewed_on": "2026-05-29",
       "observed_evidence": [
         "Static review only: the checked-in core, references, helper scripts, validator suite, and two fresh-eye subagent passes were inspected. `achieve` was not executed end-to-end because `/goal` activation is host-driven and was not run, so no live-run proof is claimed.",
         "Issue #223 (2026-05-27): the duplicate-test-pressure contract additions (Before-phase expected proof cost / test-duplication pressure, the During-phase cheap `--test-pressure` slice sample carried forward across compaction, and the After-phase new-slice-local vs accumulated-suite-debt classification) were reviewed by a 3-angle + counterweight fresh-eye critique. The new `Test duplication pressure` slice field is a backward-compatible additive label (no REQUIRED_SECTIONS change) guarded by `test_render_slice_block_includes_test_duplication_pressure`.",
@@ -46,7 +46,8 @@
         "The goal artifact is created at `Status: draft` with an explicit `/goal @...` activation line, and `upsert_goal.py` never overwrites an existing body (it only rewrites the `Status:` line and only when it changes), so a reviewable activation artifact is produced rather than a runaway goal.",
         "Metrics are represented honestly as host-agnostic shallow signals via `probe_host_logs.py` with deep Codex audit best-effort and `Metrics: when available`, instead of fabricating token or tool-call totals the host log does not expose.",
         "The cross-skill behavior is owned by a presence-gated shared reference (`skills/shared/references/active-goal-coordination.md`) cited by impl and issue, with quality/critique cadence coordinated by achieve through the same reference; it is a silent no-op when no active goal artifact exists, so each coordinated skill stays useful standalone.",
-        "Two fresh-eye subagent passes found no correctness blockers in the four `achieve` scripts or the goal artifact helpers; slice append produces no trailing whitespace or doubled blank lines and `check_goal_artifact.py` passes on a scaffolded artifact."
+        "Two fresh-eye subagent passes found no correctness blockers in the four `achieve` scripts or the goal artifact helpers; slice append produces no trailing whitespace or doubled blank lines and `check_goal_artifact.py` passes on a scaffolded artifact.",
+        "Issue #233 (2026-05-29): the After-phase closeout-evidence gate gained F1 context binding — a cited `Retro:`/`Host log probe:` file must now bind to the goal (its basename or content references the goal slug or issue cluster parsed from the `Activation:` line), so a closeout can no longer pass by citing an unrelated pre-existing artifact (the demonstrated F1 attack). Reviewed by a 3-angle + counterweight fresh-eye critique that caught and closed a fail-open bypass (a bare `Activation:` substring yielding no tokens) and anchored the numeric token against false digit-run matches. F2 narration is surfaced as a non-blocking `narration_required_sections` affordance only; hard narration enforcement is deliberately NOT delivered (a transcript gate is judgment-bound and would over-fire) and remains open. Routing/draft-save behavior in this case is unchanged by the fix. Guarded by tests in tests/quality_gates/test_goal_artifact_lib.py and test_prescribed_skill_executed.py."
       ]
     },
     {
@@ -160,7 +161,7 @@
         "uses the named skill or capability lookup path before falling back to broad filesystem search",
         "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`"
       ],
-  "review_status": "reviewed",
+      "review_status": "reviewed",
       "reviewed_on": "2026-05-28",
       "observed_evidence": [
         "`validate_current_pointer_freshness.validate_find_skills_integration_claims` now applies the find-skills provider-id alias (`_alias_path`) and text sanitization (`_sanitize_value`) to the on-disk manifest values before comparing them against `charness-artifacts/find-skills/latest.json`. This keeps the inventory's provider-detail abstraction intact (the eval `find-skills-split-package-surface` continues to forbid `github-gh`, `gws-cli`, `gws gather`, etc. anywhere in the inventory output) while making the freshness validator able to confirm that every on-disk integration manifest is represented and that its `intent_triggers`/`supports_public_skills`/`recommendation_role` values match the inventory's sanitized form.",
@@ -217,15 +218,15 @@
       ],
       "review_status": "reviewed",
       "reviewed_on": "2026-04-24",
-    "observed_evidence": [
-      "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
-      "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
-      "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
-      "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
-      "The generated compact Skill Routing block now tells agents to run `find-skills --recommend-for-task \"<task>\"` when a request names workflow or capability nouns such as worktree, browser automation, specdown, or validation before ad hoc shell/tool use.",
-      "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration."
-    ]
-  },
+      "observed_evidence": [
+        "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
+        "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
+        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
+        "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
+        "The generated compact Skill Routing block now tells agents to run `find-skills --recommend-for-task \"<task>\"` when a request names workflow or capability nouns such as worktree, browser automation, specdown, or validation before ad hoc shell/tool use.",
+        "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration."
+      ]
+    },
     {
       "skill_id": "issue",
       "prompt": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",

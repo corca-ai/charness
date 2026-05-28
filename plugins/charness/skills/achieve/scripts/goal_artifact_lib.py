@@ -27,8 +27,11 @@ def _load_sibling_closeout_evidence():
 
 _closeout = _load_sibling_closeout_evidence()
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
+NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
 parse_closeout_evidence = _closeout.parse_closeout_evidence
 check_complete_evidence = _closeout.check_complete_evidence
+derive_goal_tokens = _closeout.derive_goal_tokens
+narration_sections_present = _closeout.narration_sections_present
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -166,9 +169,12 @@ def upsert_goal(
                     "requested_status": status,
                     "note": (
                         "refused to flip to complete: After-phase prescribed sub-skill "
-                        "evidence missing or invalid. Add `Retro:` and `Host log probe:` "
-                        "lines (path or `skipped: <enum>: <detail>`) to the goal artifact, "
-                        "then re-run. See docs/prescribed-skill-closeout-contract.md."
+                        "evidence missing, invalid, or not bound to this goal. Add "
+                        "`Retro:` and `Host log probe:` lines (path or "
+                        "`skipped: <enum>: <detail>`) to the goal artifact; a cited "
+                        "evidence file must also bind to this goal (its basename or "
+                        "content must reference the goal slug/issue). Then re-run. "
+                        "See docs/prescribed-skill-closeout-contract.md."
                     ),
                     "evidence_report": evidence_report,
                 }

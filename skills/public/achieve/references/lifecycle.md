@@ -141,8 +141,11 @@ At completion the goal artifact should contain:
   F2 recurrence pattern (three observed occurrences as of 2026-05-28:
   the #226 origin run, the #230+#229 closeout that filed #233, and the
   handoff-chunked-routing closeout that inherited #233 as an Off-Goal
-  note and still hit it). This contract is prose-only until #233's
-  binding + meaning-transport gate lands.
+  note and still hit it). As of #233 the After-phase evidence gate now
+  surfaces a `narration_required_sections` list naming exactly which of
+  these sections the cited retro contains — narrate each one inline.
+  Narration itself stays a prose contract (a hard transcript gate would
+  over-fire); the list is the affordance, not a blocker.
 
 Run `check_goal_artifact.py` before declaring completion so the required
 sections, status, and activation line are all present. Flip the status to
@@ -169,6 +172,14 @@ whole body):
 status is already `complete`, so the gate stays visible from both
 directions. The contract lives at
 `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+
+A cited evidence file must also **bind** to this goal (#233 F1): file
+presence is necessary but not sufficient, so each evidence path's
+basename or content must reference the goal's identity (its slug or the
+issue numbers parsed from the `Activation:` line). A closeout that points
+`Retro:` at an unrelated pre-existing artifact is refused with a
+`binding_failures` entry. Binding is clone-safe (basename/content tokens,
+not mtime — a fresh checkout resets every file's mtime).
 
 ## Honest Proof Discipline
 

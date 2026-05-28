@@ -81,6 +81,25 @@ The helper does not know which kinds are required for which closeout — that
 list lives in each calling skill's wrapper. The helper is the gate; the
 wrapper supplies the contract.
 
+### Context Binding (#233 F1)
+
+Presence is necessary but not sufficient: a closeout could cite any
+pre-existing artifact in the repo and pass the presence check (the #233 F1
+hole — demonstrated live by pointing `Retro:` at a 2026-04-10 retro from an
+unrelated goal). The helper exposes a reusable
+`evidence_binds_to_context(path, *, tokens)` predicate: an evidence file
+binds when its basename or content contains a distinctive context token. The
+wrapper supplies the tokens (the achieve wrapper derives the goal slug + the
+issue-number cluster from the goal artifact's `Activation:` line). Token
+containment is clone-safe; an `mtime >= context-date` rule is deliberately
+**not** used because a fresh `git clone` resets every file's mtime to checkout
+time and would pass every stale file, silently reopening the hole.
+
+The achieve After-phase wrapper wires this now; `issue-resolution`
+(`*<issue-number>*` binding) and `release` (version binding) are recorded as
+follow-ups — they call the same presence-only `check()` today and inherit the
+same F1 shape until they pass tokens too.
+
 ### Per-Skill Required Evidence
 
 | Closeout kind | Required evidence | Skip allowed? |

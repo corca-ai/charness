@@ -14,6 +14,7 @@ lighter substitute.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,79 @@ ALLOWED_SKIP_REASONS = frozenset(
     }
 )
 MIN_SKIP_LENGTH = 40
+
+# Cap how much of an evidence file is scanned for a binding token. A retro or
+# probe artifact references its goal/issue/release identity in the first
+# screenful when it does at all; reading more buys nothing and risks a large
+# file stalling the gate.
+_BINDING_CONTENT_SCAN_BYTES = 65536
+
+# A bare numeric-cluster token (e.g. ``230-229`` or ``185``) is matched on
+# non-alphanumeric boundaries, not raw substring, so ``185`` does not falsely
+# bind a file whose body merely contains ``21850`` or ``0185abc``. Slug tokens
+# carry their own distinctiveness and match as substrings.
+_NUMERIC_CLUSTER_TOKEN = re.compile(r"^\d+(?:[-_]\d+)*$")
+
+
+def _token_matches(token: str, haystack: str) -> bool:
+    """True when ``token`` (already lowercased) occurs in ``haystack``.
+
+    Numeric-cluster tokens require non-alphanumeric neighbours so a short
+    issue number cannot bind on a coincidental digit run; other tokens use
+    plain containment.
+    """
+    if _NUMERIC_CLUSTER_TOKEN.match(token):
+        return (
+            re.search(
+                rf"(?<![0-9a-z]){re.escape(token)}(?![0-9a-z])", haystack
+            )
+            is not None
+        )
+    return token in haystack
+
+
+def evidence_binds_to_context(
+    path: Path, *, tokens: list[str]
+) -> tuple[bool, str]:
+    """Return ``(binds, reason)`` for whether an evidence file pertains to its
+    closeout context.
+
+    File *presence* is necessary but not sufficient: a closeout can cite any
+    pre-existing artifact in the repo and pass the presence check (the #233 F1
+    hole). An evidence file *binds* to its context when its basename or its
+    content contains at least one distinctive context token (a goal slug, an
+    issue number, a release version).
+
+    Token containment is deliberately the binding signal rather than mtime:
+    a fresh ``git clone`` resets every file's mtime to checkout time, so an
+    ``mtime >= context-date`` rule would pass for every stale file in a cloned
+    tree and silently reopen the exact hole this guards. Basename/content
+    containment is clone-safe.
+
+    ``tokens`` empty means the caller could not derive a context identity; the
+    caller opts out of binding and only the presence check applies.
+    """
+    if not tokens:
+        return True, "no binding tokens supplied"
+    lowered = [token.lower() for token in tokens if token]
+    if not lowered:
+        return True, "no binding tokens supplied"
+    name = path.name.lower()
+    for token in lowered:
+        if _token_matches(token, name):
+            return True, f"basename contains {token!r}"
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            content = handle.read(_BINDING_CONTENT_SCAN_BYTES).lower()
+    except OSError:
+        content = ""
+    for token in lowered:
+        if _token_matches(token, content):
+            return True, f"content contains {token!r}"
+    return False, (
+        f"none of the binding tokens {sorted(set(lowered))} appear in the "
+        "evidence basename or content; the file does not bind to this closeout"
+    )
 
 
 def parse_evidence_arg(raw: str) -> tuple[str, str]:
