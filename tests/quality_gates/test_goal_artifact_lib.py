@@ -228,3 +228,108 @@ def test_trivial_scaffold_does_not_demand_portability(tmp_path: Path) -> None:
     result = gal.check_goal(text)
     assert result["ok"] is True
     assert result["portability_missing_sections"] == []
+
+
+# --- After-phase closeout-evidence gate (#230, slice 3) -------------------
+
+
+def _seed_retro(tmp_path: Path, slug: str = "g") -> Path:
+    retro = tmp_path / "charness-artifacts/retro" / f"2026-05-28-{slug}.md"
+    retro.parent.mkdir(parents=True, exist_ok=True)
+    retro.write_text("# Retro\n\nbody\n", encoding="utf-8")
+    return retro
+
+
+def _seed_probe(tmp_path: Path, slug: str = "g") -> Path:
+    probe = tmp_path / "charness-artifacts/probe" / f"2026-05-28-{slug}.json"
+    probe.parent.mkdir(parents=True, exist_ok=True)
+    probe.write_text('{"host":"claude-code"}\n', encoding="utf-8")
+    return probe
+
+
+def _append_evidence_lines(text: str, retro_value: str, probe_value: str) -> str:
+    return text.replace(
+        "## Final Verification\n",
+        f"## Final Verification\n\nRetro: {retro_value}\nHost log probe: {probe_value}\n",
+        1,
+    )
+
+
+def test_parse_closeout_evidence_handles_path_and_skip() -> None:
+    text = (
+        "Retro: charness-artifacts/retro/2026-05-28-g.md\n"
+        "Host log probe: skipped: host-log-not-exposed: claude jsonl unavailable\n"
+    )
+    parsed = gal.parse_closeout_evidence(text)
+    assert parsed["retro_artifact"] == {
+        "kind": "evidence",
+        "value": "charness-artifacts/retro/2026-05-28-g.md",
+    }
+    assert parsed["host_log_probe"]["kind"] == "skip"
+    assert "host-log-not-exposed" in parsed["host_log_probe"]["value"]
+
+
+def test_check_complete_evidence_passes_with_real_files(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    retro = _seed_retro(tmp_path)
+    probe = _seed_probe(tmp_path)
+    text = _goal_text(tmp_path, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(retro.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is True
+
+
+def test_check_complete_evidence_fails_when_no_lines(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    text = _goal_text(tmp_path, date="2026-05-28")
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is False
+    assert set(report["missing"]) == set(gal.CLOSEOUT_EVIDENCE_NAMES)
+
+
+def test_upsert_refuses_flip_to_complete_without_evidence(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    refusal = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
+    )
+    assert refusal["action"] == "refused"
+    assert refusal["status"] != "complete"
+    # the file's Status line must still say what it was before the call
+    assert "Status: complete" not in _goal_text(tmp_path, date="2026-05-28")
+    # the refusal payload carries the evidence diagnostic
+    assert refusal["evidence_report"]["ok"] is False
+
+
+def test_upsert_allows_flip_to_complete_with_valid_skips(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    skip_line = "skipped: host-log-not-exposed: claude jsonl path missing on this host"
+    text = _goal_text(tmp_path, date="2026-05-28")
+    text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
+    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
+    result = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
+    )
+    assert result["action"] in ("updated", "unchanged")
+    assert result["status"] == "complete"
+    assert "Status: complete" in _goal_text(tmp_path, date="2026-05-28")
+
+
+def test_upsert_refuses_flip_to_complete_with_invalid_skip(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    text = _goal_text(tmp_path, date="2026-05-28")
+    text = _append_evidence_lines(
+        text,
+        retro_value="skipped: ad-hoc: lighter substitute (anti-pattern)",
+        probe_value="skipped: ad-hoc: lighter substitute (anti-pattern)",
+    )
+    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
+    refusal = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
+    )
+    assert refusal["action"] == "refused"
+    invalid_names = {entry["name"] for entry in refusal["evidence_report"]["invalid_skips"]}
+    assert invalid_names == set(gal.CLOSEOUT_EVIDENCE_NAMES)

@@ -59,7 +59,7 @@ def main() -> int:
         print(str(exc))
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0
+    return 1 if result.get("action") == "refused" else 0
 
 
 if __name__ == "__main__":

@@ -139,6 +139,27 @@ sections, status, and activation line are all present. Flip the status to
 `complete` only after the final report separates what was proven from what
 remains the user's responsibility to verify.
 
+### After-phase evidence gate
+
+`upsert_goal.py --status complete` now refuses the flip unless the goal
+artifact body carries two evidence lines (anywhere; the parser scans the
+whole body):
+
+- `Retro: <path>` — a checked-in retro artifact under
+  `charness-artifacts/retro/` produced by running the `retro` skill this
+  run, **or** `Retro: skipped: <enum>: <detail>` with the enum from
+  `host-blocked-subagent`, `host-log-not-exposed`, `evaluator-unavailable`
+  and ≥40 chars total (free-text "host limit" is rejected).
+- `Host log probe: <path>` — a JSON file containing
+  `probe_host_logs.py` output (e.g.,
+  `charness-artifacts/probe/<date>-<slug>.json`), **or**
+  `Host log probe: skipped: <enum>: <detail>`.
+
+`check_goal_artifact.py` runs the same check post-flip when the goal's
+status is already `complete`, so the gate stays visible from both
+directions. The contract lives at
+`<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+
 ## Honest Proof Discipline
 
 Borrow W. Edwards Deming's Plan-Do-Study-Act emphasis on the *study* step:
