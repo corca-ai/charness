@@ -33,7 +33,7 @@
 
 ## Next Session
 
-1. **Routing-enforcement hook (user request 2026-05-29).** A
+1. **Routing-enforcement hook ([#240](https://github.com/corca-ai/charness/issues/240), user request 2026-05-29).** A
    `SessionStart`/`UserPromptSubmit` hook — Claude Code (settings.json, via
    `update-config`) **and** the Codex equivalent — that forces
    `find-skills → named-workflow-skill` on `@artifact`/pickup-shaped first
