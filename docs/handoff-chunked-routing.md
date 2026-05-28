@@ -181,7 +181,7 @@ class MergeProposal:
 The chunker runs as a five-step pipeline. Steps 1, 2, 4, 5 are scripts;
 step 3 is the agent.
 
-1. **Parse.** `parse_handoff_entries.py` reads the resolved handoff
+1. **Parse.** [`parse_handoff_entries.py`](../skills/public/handoff/scripts/parse_handoff_entries.py) reads the resolved handoff
    artifact, finds the `## Next Session` section, splits on numbered
    bullets, and emits a list of `HandoffEntry` records. Additional
    residual-work sections (e.g., `## Discuss`) are read only if the
