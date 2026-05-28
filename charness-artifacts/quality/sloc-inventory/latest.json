@@ -18,9 +18,9 @@
   "languages": {
     "JSON": {
       "blanks": 0,
-      "code": 30332,
+      "code": 30612,
       "comments": 0,
-      "files": 140
+      "files": 143
     },
     "JavaScript": {
       "blanks": 211,
@@ -29,27 +29,27 @@
       "files": 14
     },
     "Markdown": {
-      "blanks": 14796,
+      "blanks": 15144,
       "code": 0,
-      "comments": 54027,
-      "files": 795
+      "comments": 55514,
+      "files": 815
     },
     "Plain Text": {
       "blanks": 44,
       "code": 0,
-      "comments": 327,
+      "comments": 329,
       "files": 10
     },
     "Python": {
-      "blanks": 22251,
-      "code": 141219,
-      "comments": 810,
-      "files": 898
+      "blanks": 22626,
+      "code": 143367,
+      "comments": 860,
+      "files": 912
     },
     "Shell": {
       "blanks": 266,
-      "code": 1626,
-      "comments": 25,
+      "code": 1638,
+      "comments": 39,
       "files": 19
     },
     "TOML": {
@@ -60,20 +60,20 @@
     },
     "YAML": {
       "blanks": 52,
-      "code": 1230,
-      "comments": 218,
+      "code": 1240,
+      "comments": 234,
       "files": 38
     }
   },
-  "repo_root": "/home/hwidong/codes/charness",
+  "repo_root": "/home/ubuntu/charness",
   "schema_version": 1,
   "scope": "tokei-sloc",
   "status": "ok",
-  "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
+  "tokei_version": "tokei 14.0.0 compiled with serialization support: json, cbor, yaml",
   "totals": {
-    "blanks": 37625,
-    "code": 177590,
-    "comments": 55408,
-    "files": 1916
+    "blanks": 38348,
+    "code": 180040,
+    "comments": 56977,
+    "files": 1953
   }
 }
