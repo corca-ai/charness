@@ -104,6 +104,12 @@
       "evidence_terms": ["skipped"],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
+    "scripts/host_hook_find_skills.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["intent", "disabled"],
+      "rationale": "find-skills routing hook install/uninstall library exposes the per-host find_skills_routing intent (enabled/disabled) in the reconcile payload under actions['find_skills_routing']; a disabled (opt-in default) intent uninstalls/no-ops and cannot read as a silent install."
+    },
     "scripts/host_hook_install_lib.py": {
       "states": ["disabled"],
       "visibility": ["terminal_payload"],
@@ -355,6 +361,12 @@
       "visibility": ["artifact_visible"],
       "evidence_terms": ["skipped"],
       "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
+    },
+    "skills/public/issue/scripts/issue_create.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["verify_skipped", "verification disabled by caller", "body_verified"],
+      "rationale": "issue create emits a stdout payload whose body_verified is null with an explicit verify_skipped/verify_error note when read-back is disabled (verify=False) or not feasible; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
     },
     "skills/public/issue/scripts/issue_verify_closeout.py": {
       "states": ["skipped"],
