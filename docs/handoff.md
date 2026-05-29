@@ -25,8 +25,9 @@
   not hard-force a Skill call, and was not observed firing live yet.
 - **Host hooks deduped**: each host now has exactly 1 usage-episode hook +
   1 find-skills hook (both → the installed plugin source `~/.agents/src/charness`).
-- **Open issues**: #233, #232, #235, #219, #236/#237 (achieve/quality UX),
-  #184/#185. (`gh issue list` for live.)
+- **Open issues**: #243/#244/#245 (usage-episodes consumer-gap / find-skills
+  hook auto-install / episode-hook cross-checkout dup — filed this session),
+  #233, #232, #235, #236/#237 (achieve/quality UX), #184/#185. (`gh issue list`.)
 - **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`. **Open:** F2
   narration enforcement (judgment-bound) + issue/release sibling bindings →
   [closeout contract](./prescribed-skill-closeout-contract.md).
@@ -39,9 +40,9 @@
    session, check the injected "charness session-start routing" directive lands
    and a bare handoff-doc mention pickup routes through find-skills into
    `charness:handoff` without re-asking. Codex: same (host: Codex).
-2. **usage-episodes follow-ups** (see Discuss): no consumer/report yet; the
-   find-skills hook is not auto-wired by `charness update`; cross-checkout
-   episode-hook duplication is structural. File issues if pursuing.
+2. **usage-episodes follow-ups (filed): #243** (no consumer/report + inconsistent
+   capture → purpose unrealized), **#244** (find-skills hook not auto-wired by
+   `charness update`), **#245** (cross-checkout episode-hook dup). See Discuss.
 3. **#233 remainder.** F2 narration enforcement; wire `evidence_binds_to_context`
    into `issue` + `release` (still presence-only).
 4. **#235** mutation regression — triage survivors; auto-close #219 when the run clears.
