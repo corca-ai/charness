@@ -48,16 +48,6 @@ GENERIC_LABELS = frozenset(
     }
 )
 
-# gh default for listing open issues. Mirrors issue_runtime.GH_NEWEST_OPEN_ARGS:
-# the only built-in provider literal; non-gh backends declare commands.list_open.
-GH_LIST_OPEN_ARGS = [
-    "issue", "list", "--repo", "{repo}", "--state", "open",
-    "--limit", "{limit}", "--json", "number,title,labels,body",
-]
-
-DEFAULT_ISSUE_LIMIT = 50
-
-
 def _load_sibling(module_name: str):
     spec = importlib.util.spec_from_file_location(
         module_name, Path(__file__).resolve().parent / f"{module_name}.py"
@@ -71,28 +61,16 @@ def _load_sibling(module_name: str):
 
 _types = _load_sibling("chunked_routing_types")
 _parser = _load_sibling("chunked_routing_parser")
+_backend = _load_sibling("chunked_routing_issue_backend")
 HandoffEntry = _types.HandoffEntry
 
-
-def _load_issue_module(repo_root: Path, name: str):
-    """Import a module from the ``issue`` skill's scripts dir (route reuse).
-
-    Walks up to ``skills/public/issue/scripts/<name>.py``. Read/import across
-    skills is allowed (the same pattern draft_goal_from_chunk uses to import
-    the achieve goal-artifact lib); only file *mutation* across skills is gated.
-    """
-    here = Path(__file__).resolve()
-    roots = [repo_root, *here.parents]
-    for ancestor in roots:
-        candidate = ancestor / "skills" / "public" / "issue" / "scripts" / f"{name}.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location(f"issue_{name}", candidate)
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError(f"skills/public/issue/scripts/{name}.py not found")
+# Provider-routing layer lives in chunked_routing_issue_backend (length budget).
+# Re-export as module globals so build_issue_entries resolves them at call time
+# (and test monkeypatching of these names on this module still takes effect).
+DEFAULT_ISSUE_LIMIT = _backend.DEFAULT_ISSUE_LIMIT
+GH_LIST_OPEN_ARGS = _backend.GH_LIST_OPEN_ARGS
+_load_issue_module = _backend._load_issue_module
+list_open_issues = _backend.list_open_issues
 
 
 def _label_slug(name: str) -> str:
@@ -226,42 +204,6 @@ def load_issue_source_config(repo_root: Path) -> dict[str, Any]:
     if isinstance(nums, list):
         config["exclude_numbers"] = tuple(int(n) for n in nums if isinstance(n, int))
     return config
-
-
-def list_open_issues(
-    repo: str,
-    *,
-    backend: dict[str, Any] | None = None,
-    limit: int = DEFAULT_ISSUE_LIMIT,
-    runner: Callable[[list[str]], Any] | None = None,
-) -> list[dict[str, Any]]:
-    """List open issues for ``repo`` via the resolved backend.
-
-    ``runner`` (argv -> parsed JSON) defaults to issue_runtime._backend_json;
-    tests inject a stub so no live provider call is made.
-    """
-    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    binary = backend.get("binary") or backend.get("id") or "gh"
-    commands = backend.get("commands") or {}
-    template = commands.get("list_open")
-    if template is None:
-        if backend.get("id", "gh") != "gh":
-            raise RuntimeError(
-                f"issue_backend.id={backend.get('id')} did not declare "
-                "commands.list_open; configure the adapter for this host."
-            )
-        template = GH_LIST_OPEN_ARGS
-    argv = [binary] + [
-        part.replace("{repo}", repo).replace("{limit}", str(limit))
-        for part in template
-    ]
-    if runner is None:
-        issue_runtime = _load_issue_module(Path.cwd(), "issue_runtime")
-        runner = issue_runtime._backend_json
-    payload = runner(argv)
-    if isinstance(payload, dict) and "issues" in payload:
-        payload = payload.get("issues")
-    return list(payload) if isinstance(payload, list) else []
 
 
 def _passes_filters(
