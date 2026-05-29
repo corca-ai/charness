@@ -50,6 +50,13 @@ scan only).
   is guaranteed rather than inferred. Current inference ("read it first and
   continue its lifecycle" + "Start from prose, not an already perfect `/goal`")
   is sound, so this is a separate achieve-lifecycle hardening, not a #246 blocker.
+  - **Update (post-critique): DROPPED / superseded by #247.** A maintainer
+    refined the responsibility model — `/goal` = pure pursue; the caller is
+    responsible for handing `/goal` a ready goal; the achieve Before-phase
+    (`/achieve`) owns making the doc good. Under that model the "safety branch"
+    direction is wrong (it puts shaping into the pursue path), so it is dropped.
+    The real follow-up is the opposite — make `/goal` strictly pursue and move
+    all shaping into `/achieve` — tracked as decision-needed issue #247.
 
 ## Decision and proof
 
