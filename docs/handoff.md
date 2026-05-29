@@ -25,13 +25,13 @@
   not hard-force a Skill call, and was not observed firing live yet.
 - **Host hooks deduped**: each host now has exactly 1 usage-episode hook +
   1 find-skills hook (both → the installed plugin source `~/.agents/src/charness`).
-- **Open issues**: #243/#244/#245 (usage-episodes consumer-gap / find-skills
-  hook auto-install / episode-hook cross-checkout dup — filed this session),
-  #233, #232, #235, #236/#237 (achieve/quality UX), #184/#185. (`gh issue list`.)
+- **Open issues** (`gh issue list`): #246 (chunker `/goal`s unshaped auto-draft),
+  #245/#244/#243 (usage-episodes), #242+#219 (mutation regression; #235 closed),
+  #233, #232, #241 (create-skill), #237/#236 (achieve/quality UX), #184/#185.
 - **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`. **Open:** F2
   narration enforcement (judgment-bound) + issue/release sibling bindings →
   [closeout contract](./prescribed-skill-closeout-contract.md).
-- **#235** live mutation regression (73.7% < 80%); **#219** superseded.
+- **#242** live mutation regression (#235 now closed; **#219** still open).
 - **v0.11.0 real-host proof pending** (Cautilus clean-machine smoke).
 
 ## Next Session
@@ -40,12 +40,13 @@
    session, check the injected "charness session-start routing" directive lands
    and a bare handoff-doc mention pickup routes through find-skills into
    `charness:handoff` without re-asking. Codex: same (host: Codex).
+   **/achieve skeleton drafted** → `/goal @charness-artifacts/goals/2026-05-29-live-confirm-the-user-level-sessionstart-hook.md` (Before-phase fills it; #246).
 2. **usage-episodes follow-ups (filed): #243** (no consumer/report + inconsistent
    capture → purpose unrealized), **#244** (find-skills hook not auto-wired by
    `charness update`), **#245** (cross-checkout episode-hook dup). See Discuss.
 3. **#233 remainder.** F2 narration enforcement; wire `evidence_binds_to_context`
    into `issue` + `release` (still presence-only).
-4. **#235** mutation regression — triage survivors; auto-close #219 when the run clears.
+4. **#242** mutation regression (#235 closed) — triage survivors; reconcile #219 when the run clears.
 5. **#232** issue-skill `gh issue create` body shell-quoting; **v0.11.0 real-host proof**.
 6. **#184/#185** deferred product / AI-ML direction.
 
