@@ -52,6 +52,8 @@ TRIGGER_FIXTURE = (
     (5, "핸드오프 봐", "chunk", "Korean handoff mention, no directive."),
     (6, "read handoff.md and fix #233", "no-chunk", "Handoff mention + issue id directive `fix #233`."),
     (7, "pick up from handoff", "chunk", "Handoff pickup phrase, no other noun."),
+    (8, "/handoff", "chunk", "Bare slash invocation of the handoff skill, no task (#249)."),
+    (9, "/handoff fix #233", "no-chunk", "Skill invocation + explicit issue directive bypasses."),
 )
 
 
@@ -83,3 +85,16 @@ def test_handoff_mention_with_implementation_verb_does_not_fire(lib):
     """Sanity: a clearly task-directed message mentioning the handoff
     must not fire (over-fire guard)."""
     assert lib.should_fire_chunker("read handoff.md then implement #225") is False
+
+
+def test_direct_invocation_fires_without_a_mention(lib):
+    """#249 trigger widening: the handoff skill launched directly (no task)
+    fires even with an empty/mention-less message, but a task directive in the
+    invocation args still bypasses."""
+    assert lib.should_fire_chunker("", invoked_directly=True) is True
+    assert lib.should_fire_chunker("please continue", invoked_directly=True) is True
+    # an explicit task directive bypasses even on direct invocation
+    assert lib.should_fire_chunker("work on the slack bug", invoked_directly=True) is False
+    assert lib.should_fire_chunker("fix #233", invoked_directly=True) is False
+    # default (not invoked directly) is unchanged: empty does not fire
+    assert lib.should_fire_chunker("", invoked_directly=False) is False

@@ -88,18 +88,11 @@ fixture loudly per the goal artifact's High-Confidence Checks.
 
 ## Trigger Detection Rule
 
-The chunker fires iff **both** conditions hold for the current user
-invocation (the most recent user-authored message before the agent acts):
+The chunker fires iff there is **no explicit task directive** AND a
+**handoff signal** is present — for the current user invocation (the most
+recent user-authored message before the agent acts):
 
-1. **Handoff mention present.** The message matches at least one of:
-   - literal token matching the handoff artifact path
-     ([`docs/handoff.md`](./handoff.md)) or its bare basename
-   - phrase `handoff skill` / `handoff 스킬` / `charness:handoff`
-   - imperative referencing the handoff surface without naming a task:
-     `read the handoff`, `check the handoff`, `read handoff`,
-     `what's in the handoff`, `next from handoff`, `pick up from handoff`,
-     `핸드오프 봐` (or any case variant)
-2. **No explicit task directive present.** The message contains none of:
+1. **No explicit task directive.** The invocation contains none of:
    - an imperative verb naming a concrete next action paired with a noun
      other than the handoff itself: `do <X>`, `fix <X>`, `implement <X>`,
      `close <X>`, `push <X>`, `run <X>`, `start <X>`, `work on <X>`,
@@ -108,6 +101,20 @@ invocation (the most recent user-authored message before the agent acts):
    - a file path other than the handoff itself
    - a slash command other than `/handoff`
    - a `--<flag>` token
+
+   A task directive always bypasses, **even on a direct invocation that
+   carries one** (`/handoff fix #233` does not fire).
+2. **Handoff signal**, at least one of:
+   - literal token matching the handoff artifact path
+     ([`docs/handoff.md`](./handoff.md)), its bare basename, or `/handoff`
+   - phrase `handoff skill` / `handoff 스킬` / `charness:handoff`
+   - imperative referencing the handoff surface without naming a task:
+     `read the handoff`, `check the handoff`, `read handoff`,
+     `what's in the handoff`, `next from handoff`, `pick up from handoff`,
+     `핸드오프 봐` (or any case variant)
+   - **direct skill invocation** (`should_fire_chunker(..., invoked_directly=True)`):
+     the handoff skill was launched with no task. Invoking the skill is itself
+     a handoff signal — no doc mention required (#249 trigger widening).
 
 The directive negation is intentionally narrow: "read the handoff" is *not*
 a task directive against another noun, so it triggers; "read handoff and
@@ -131,6 +138,12 @@ loudly.
 | 5 | `핸드오프 봐` | `chunk` | Korean handoff mention, no directive. |
 | 6 | `read handoff.md and fix #233` | `no-chunk` | Handoff mention + issue id directive `fix #233`. |
 | 7 | `pick up from handoff` | `chunk` | Handoff pickup phrase, no other noun. |
+| 8 | `/handoff` | `chunk` | Bare slash invocation of the handoff skill, no task (#249). |
+| 9 | `/handoff fix #233` | `no-chunk` | Skill invocation + explicit issue directive bypasses. |
+
+Rows 8-9 are the #249 trigger-widening cases. The `invoked_directly=True`
+path (the skill launched programmatically with no task arg) is pinned by
+`test_direct_invocation_fires_without_a_mention` in the same fixture file.
 
 If trigger detection over-fires against any case 3, 4, or 6 row, the goal
 artifact's "Trigger detection over-fires" Stop Condition activates: stop

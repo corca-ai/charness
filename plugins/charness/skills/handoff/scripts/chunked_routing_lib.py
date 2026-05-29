@@ -207,6 +207,7 @@ def validate_ranker_response(
 _HANDOFF_MENTION_PATTERNS = (
     r"\bdocs/handoff\.md\b",
     r"\bhandoff\.md\b",
+    r"/handoff\b",
     r"\bhandoff[ -]skill\b",
     r"\bcharness:handoff\b",
     r"\bhandoff[ ]?스킬\b",
@@ -244,24 +245,33 @@ def _matches_any(patterns: tuple[str, ...], text: str) -> bool:
     return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
 
 
-def should_fire_chunker(user_message: str) -> bool:
+def should_fire_chunker(user_message: str, *, invoked_directly: bool = False) -> bool:
     """Return True iff the chunker should fire for ``user_message``.
 
-    The rule is deterministic: fires iff both
-    (a) the message references the handoff surface (file, skill id,
-        or one of the canonical pickup phrases including Korean), AND
-    (b) the message contains no explicit task directive (imperative
-        verb + non-handoff noun, issue id, non-handoff file path,
-        slash command other than /handoff, or CLI flag).
+    The rule is deterministic. The chunker fires iff there is no explicit task
+    directive AND one of:
+    (a) the message references the handoff surface — file, ``/handoff``, skill
+        id, or a canonical pickup phrase (including Korean); or
+    (b) ``invoked_directly`` is True — the handoff skill was launched directly
+        with no task (e.g. a bare ``/handoff`` / ``charness:handoff`` call), the
+        #249 trigger-widening path.
+
+    An explicit task directive (imperative verb + non-handoff noun, issue id,
+    non-handoff file path, slash command other than /handoff, or CLI flag)
+    always bypasses — even on a direct invocation that carries one
+    (``/handoff fix #233`` does not fire).
 
     See ``skills/public/handoff/references/chunked-routing.md`` for the
-    operator-facing rule and the 7-row trigger fixture in
+    operator-facing rule and the trigger fixture in
     ``tests/test_handoff_chunker_trigger.py``.
     """
-    if not user_message or not user_message.strip():
+    message = user_message or ""
+    if message.strip() and _matches_any(_TASK_DIRECTIVE_PATTERNS, message):
         return False
-    if not _matches_any(_HANDOFF_MENTION_PATTERNS, user_message):
+    if invoked_directly:
+        return True
+    if not message.strip():
         return False
-    if _matches_any(_TASK_DIRECTIVE_PATTERNS, user_message):
+    if not _matches_any(_HANDOFF_MENTION_PATTERNS, message):
         return False
     return True

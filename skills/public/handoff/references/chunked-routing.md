@@ -16,17 +16,11 @@ the operator-facing surface.
 
 ## Deterministic Trigger Rule
 
-The chunker fires iff **both** conditions hold for the current user
-invocation (the most recent user-authored message before the agent acts):
+The chunker fires iff there is **no explicit task directive** AND a
+**handoff signal** is present — for the current user invocation (the most
+recent user-authored message before the agent acts):
 
-1. **Handoff mention present.** The message matches at least one of:
-   - literal token `docs/handoff.md` or `handoff.md`
-   - phrase `handoff skill`, `handoff 스킬`, or `charness:handoff`
-   - imperative referencing the handoff surface without naming a task:
-     `read the handoff`, `check the handoff`, `read handoff`,
-     `what's in the handoff`, `next from handoff`, `pick up from handoff`,
-     `핸드오프 봐`
-2. **No explicit task directive present.** The message contains none of:
+1. **No explicit task directive.** The invocation contains none of:
    - an imperative verb naming a concrete next action paired with a noun
      other than the handoff itself (`do <X>`, `fix <X>`, `implement <X>`,
      `close <X>`, `push <X>`, `run <X>`, `start <X>`, `work on <X>`,
@@ -36,15 +30,28 @@ invocation (the most recent user-authored message before the agent acts):
    - a slash command other than `/handoff`
    - a `--<flag>` token
 
-When both conditions hold the chunker fires. When either fails (most
-commonly: the user named a specific next task alongside the handoff
-mention), the chunker steps aside and the rest of the handoff workflow
-runs as usual.
+   A task directive **always bypasses** — even a direct skill invocation that
+   carries one (`/handoff fix #233` does not fire).
+2. **Handoff signal**, at least one of:
+   - literal token `docs/handoff.md`, `handoff.md`, or `/handoff`
+   - phrase `handoff skill`, `handoff 스킬`, or `charness:handoff`
+   - imperative referencing the handoff surface without naming a task:
+     `read the handoff`, `check the handoff`, `read handoff`,
+     `what's in the handoff`, `next from handoff`, `pick up from handoff`,
+     `핸드오프 봐`
+   - **direct skill invocation** (`invoked_directly`): the handoff skill was
+     launched with no task — a bare `/handoff` / `charness:handoff` call.
+     Invoking the skill is itself enough; no doc mention is required. This is
+     the #249 trigger-widening path, so a pickup reasons over the backlog even
+     when the operator did not type a handoff filename.
+
+When both hold the chunker fires. When the task-directive check fails (the
+user named a specific next task), the chunker steps aside and the rest of the
+handoff workflow runs as usual.
 
 The trigger fixture in
 `<repo-root>/tests/test_handoff_chunker_trigger.py` is the source of
-truth pinned by slice 7; any divergence between this prose and that
-fixture is the prose's bug.
+truth; any divergence between this prose and that fixture is the prose's bug.
 
 ## Pipeline
 
