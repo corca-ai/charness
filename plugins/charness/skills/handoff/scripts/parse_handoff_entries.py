@@ -36,6 +36,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_lib")
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+chunked_routing_issue_source = SKILL_RUNTIME.load_local_skill_module(
+    __file__, "chunked_routing_issue_source"
+)
 
 
 def _resolve_handoff_path(args: argparse.Namespace) -> Path:
@@ -71,6 +74,15 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Explicit handoff artifact path; overrides --repo-root resolution.",
     )
+    parser.add_argument(
+        "--with-issues",
+        action="store_true",
+        help=(
+            "Also union open tracker issues into the entries so the chunker "
+            "reasons over the live backlog (adapter-gated; #249). Default off "
+            "keeps the source stage offline."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -90,10 +102,22 @@ def main() -> int:
             return 2
         text = handoff_path.read_text(encoding="utf-8")
         entries = chunked_routing_lib.parse_handoff_entries(text)
+        handoff_count = len(entries)
+        issue_count = 0
+        if args.with_issues:
+            repo_root = args.repo_root.expanduser().resolve()
+            issue_entries = chunked_routing_issue_source.build_issue_entries(
+                repo_root,
+                start_index=max((e.index for e in entries), default=0) + 1,
+            )
+            issue_count = len(issue_entries)
+            entries = chunked_routing_issue_source.union_entries(entries, issue_entries)
         payload = {
             "ok": True,
             "handoff_path": str(handoff_path),
             "entry_count": len(entries),
+            "handoff_entry_count": handoff_count,
+            "issue_entry_count": issue_count,
             "entries": [entry.to_dict() for entry in entries],
         }
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
