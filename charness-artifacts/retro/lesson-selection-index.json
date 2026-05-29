@@ -75,10 +75,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:6a661284a52e",
+      "candidate_id": "next_improvement:6c2b08fa3087",
       "kind": "next_improvement",
-      "lesson": "**capability:** A \"changed-surface broad-gate subset\" helper (map a changed path to the gates that uniquely cover it) would let slices shift-left without paying the full ~46s gate each time. Not built this run; logged as a quality posture idea (the goal explicitly declined to expand pre-commit).",
-      "normalized_key": "capability a changed surface broad gate subset helper map a changed path to the",
+      "lesson": "**capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom \"changed-surface→gate-subset\" mechanism needed (pre-commit already does staged-conditional gating).",
+      "normalized_key": "capability done this follow up wired validate attention state visibility staged scripts skills py",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
       "latest_source_date": "2026-05-29",
@@ -135,10 +135,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:6ef410ef3a65",
+      "candidate_id": "next_improvement:ecf14d3e6654",
       "kind": "next_improvement",
-      "lesson": "**memory:** Recorded below in Sibling Search + persisted to recent-lessons: the \"scanner correct only because one value existed\" trap, the SKILL.md-contract-snippet trap, and the new-helper attention-state trap.",
-      "normalized_key": "memory recorded below in sibling search persisted to recent lessons the scanner correct only",
+      "lesson": "**placement rule (memory):** cheap + agent-free + hard-fail ⇒ pre-commit; costly/agent-backed ⇒ pre-push only (accepted cost). \"pre-push already runs it\" is *not* a sufficient reason to keep a cheap check out of pre-commit. The advisory file-length WARN tier is the legitimate exception: it does not fail, so it does not fit pre-commit's pass/block model and stays pre-push.",
+      "normalized_key": "placement rule memory cheap agent free hard fail pre commit costly agent backed pre",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
       "latest_source_date": "2026-05-29",
@@ -317,10 +317,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:6a661284a52e",
+      "candidate_id": "next_improvement:6c2b08fa3087",
       "kind": "next_improvement",
-      "lesson": "**capability:** A \"changed-surface broad-gate subset\" helper (map a changed path to the gates that uniquely cover it) would let slices shift-left without paying the full ~46s gate each time. Not built this run; logged as a quality posture idea (the goal explicitly declined to expand pre-commit).",
-      "normalized_key": "capability a changed surface broad gate subset helper map a changed path to the",
+      "lesson": "**capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom \"changed-surface→gate-subset\" mechanism needed (pre-commit already does staged-conditional gating).",
+      "normalized_key": "capability done this follow up wired validate attention state visibility staged scripts skills py",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
       "latest_source_date": "2026-05-29",
@@ -377,10 +377,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:6ef410ef3a65",
+      "candidate_id": "next_improvement:ecf14d3e6654",
       "kind": "next_improvement",
-      "lesson": "**memory:** Recorded below in Sibling Search + persisted to recent-lessons: the \"scanner correct only because one value existed\" trap, the SKILL.md-contract-snippet trap, and the new-helper attention-state trap.",
-      "normalized_key": "memory recorded below in sibling search persisted to recent lessons the scanner correct only",
+      "lesson": "**placement rule (memory):** cheap + agent-free + hard-fail ⇒ pre-commit; costly/agent-backed ⇒ pre-push only (accepted cost). \"pre-push already runs it\" is *not* a sufficient reason to keep a cheap check out of pre-commit. The advisory file-length WARN tier is the legitimate exception: it does not fail, so it does not fit pre-commit's pass/block model and stays pre-push.",
+      "normalized_key": "placement rule memory cheap agent free hard fail pre commit costly agent backed pre",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
       "latest_source_date": "2026-05-29",
@@ -497,10 +497,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:44d154d6cb90",
+      "candidate_id": "next_improvement:dfd1f72f48b0",
       "kind": "next_improvement",
-      "lesson": "**workflow:** When a slice edits a `SKILL.md` body sentence, run `python3 scripts/run_evals.py` (representative-skill-contracts) before committing — `validate_skills.py` alone does not check required contract snippets. When a slice adds a repo-owned Python helper containing `disabled`/`skipped`/`no_adapter`/`not_configured`, run `validate_attention_state_visibility.py` before committing.",
-      "normalized_key": "workflow when a slice edits a skill md body sentence run python3 scripts run",
+      "lesson": "**workflow:** When introducing a *second* value into a previously single-valued scanned dimension (a second marker/identity), add the coexistence + mutation test in the same slice (see Sibling Search) rather than relying on the fresh-eye critique to catch the interaction.",
+      "normalized_key": "workflow when introducing a second value into a previously single valued scanned dimension a",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
       "latest_source_date": "2026-05-29",

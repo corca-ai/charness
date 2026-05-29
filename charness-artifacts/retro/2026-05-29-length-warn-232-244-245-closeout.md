@@ -70,27 +70,34 @@ coverage) and that the warn-tier signal is now acted on, not ignored.
   would have failed before the critique ran, catching the blocker at slice time.
   Changed action: "added a second value to a scanned dimension" ⇒ immediately add
   an adjacent-instances test.
-- **Shift-left gate lens (Deming, build quality in).** Run the cheap
-  surface-scoped slices of the broad gate (`run_evals` for a touched SKILL.md;
-  `validate-attention-state-visibility` for a new repo Python helper) at slice
-  time, not only at closeout. Both closeout reworks would have collapsed into the
-  slice that caused them.
+- **Gate-placement lens (Deming, build quality in) — corrected after user
+  feedback.** The right question is not "run it manually before commit" (a
+  memory-dependent habit — the exact fragility that failed here). It is binary:
+  a check that is **fast + agent-free + hard-fail belongs in pre-commit**
+  (automatic, no memory burden); a check that is genuinely costly or agent-backed
+  stays **pre-push-only by deliberate cost tradeoff** — and then late feedback is
+  by design, not waste. Both checks that caught my reworks
+  (`validate-attention-state-visibility` ≈0.8s, `run-evals` ≈2.3s) are cheap +
+  agent-free + hard-fail, so they belonged in pre-commit all along.
 
 ## Next Improvements
 
-- **workflow:** When a slice edits a `SKILL.md` body sentence, run
-  `python3 scripts/run_evals.py` (representative-skill-contracts) before
-  committing — `validate_skills.py` alone does not check required contract
-  snippets. When a slice adds a repo-owned Python helper containing
-  `disabled`/`skipped`/`no_adapter`/`not_configured`, run
-  `validate_attention_state_visibility.py` before committing.
-- **capability:** A "changed-surface broad-gate subset" helper (map a changed
-  path to the gates that uniquely cover it) would let slices shift-left without
-  paying the full ~46s gate each time. Not built this run; logged as a quality
-  posture idea (the goal explicitly declined to expand pre-commit).
-- **memory:** Recorded below in Sibling Search + persisted to recent-lessons:
-  the "scanner correct only because one value existed" trap, the
-  SKILL.md-contract-snippet trap, and the new-helper attention-state trap.
+- **capability (DONE this follow-up):** Wired `validate-attention-state-visibility`
+  (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into
+  `.githooks/pre-commit`, matching the existing staged-path-conditional pattern.
+  Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the
+  exact missing-snippet error); a clean tree passes. This structurally eliminates
+  both closeout reworks — no manual habit, no custom "changed-surface→gate-subset"
+  mechanism needed (pre-commit already does staged-conditional gating).
+- **placement rule (memory):** cheap + agent-free + hard-fail ⇒ pre-commit;
+  costly/agent-backed ⇒ pre-push only (accepted cost). "pre-push already runs it"
+  is *not* a sufficient reason to keep a cheap check out of pre-commit. The
+  advisory file-length WARN tier is the legitimate exception: it does not
+  fail, so it does not fit pre-commit's pass/block model and stays pre-push.
+- **workflow:** When introducing a *second* value into a previously single-valued
+  scanned dimension (a second marker/identity), add the coexistence + mutation
+  test in the same slice (see Sibling Search) rather than relying on the
+  fresh-eye critique to catch the interaction.
 
 ## Sibling Search
 

@@ -17,10 +17,24 @@ if [ "${#STAGED_PY[@]}" -gt 0 ]; then
   fi
 fi
 
+# A new repo Python helper with exit-zero disabled/skipped/no_adapter/
+# not_configured terms must declare them so the state cannot read as a silent
+# clean pass (#175). Cheap (<1s) + agent-free, so it belongs here rather than
+# surfacing only at the pre-push broad gate.
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^(scripts|skills)/.*\.py$'; then
+  echo "charness pre-commit: validate-attention-state-visibility"
+  python3 scripts/validate_attention_state_visibility.py --repo-root "$REPO_ROOT" \
+    --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support
+fi
+
 # Domain validators based on staged paths
 if printf '%s\n' "${STAGED[@]}" | grep -qE '^skills/'; then
   echo "charness pre-commit: validate-skills"
   python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
+  # Representative skill contracts (required SKILL.md snippets, fixtures) are
+  # agent-free and ~2s; catch a dropped contract snippet at commit, not pre-push.
+  echo "charness pre-commit: run-evals"
+  python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 fi
 if printf '%s\n' "${STAGED[@]}" | grep -qE '^profiles/'; then
   echo "charness pre-commit: validate-profiles"
