@@ -7,12 +7,13 @@ routing intelligence — the "drive the routed workflow from the result" contrac
 (a pickup continues with `charness:handoff`) lives in the find-skills skill, not
 in this hook text. See `skills/public/find-skills/references/session-start-routing.md`.
 
-Wiring:
+Wiring (installed at USER level so it fires in every session, pointing at the
+released plugin copy of this script — not committed into any one repo):
 
-- Claude Code: a `SessionStart` entry in `.claude/settings.json` runs
-  `python3 "$CLAUDE_PROJECT_DIR/scripts/session_start_find_skills.py" --host claude`.
-- Codex: a `[[hooks.SessionStart]]` entry in `.codex/config.toml` runs the same
-  script with `--host codex`, resolving the script from the git root.
+- Claude Code: a `SessionStart` entry in `~/.claude/settings.json` runs
+  `python3 <plugin-source>/scripts/session_start_find_skills.py --host claude`.
+- Codex: a `[[hooks.SessionStart]]` entry in `~/.codex/config.toml` runs the
+  same script with `--host codex`.
 
 Both hosts add the emitted `hookSpecificOutput.additionalContext` string to the
 session context (Codex confirmed 2026-05-29; see

@@ -281,6 +281,21 @@ a substitute for the prescribed Before→During critique pass.
 
 ## Final Verification
 
+**Post-completion adjustment (2026-05-29, same day):** the find-skills
+SessionStart hook was moved from the repo dogfood (`.claude/settings.json` /
+`.codex/config.toml`, removed) to a **user-level** install
+(`~/.claude/settings.json` / `~/.codex/config.toml`) pointing at the released
+plugin script, so it fires in every session on the machine rather than only
+inside this repo, and does not double-fire alongside a repo copy. The
+load-bearing achievement is unchanged (dumb hook triggers `find-skills`;
+`find-skills` owns driving the routed workflow); only the install *location*
+changed. The portable mechanism (`scripts/session_start_find_skills.py` + its
+behavior tests + the find-skills routing contract) stays in the repo;
+User Acceptance bullet 2 ("visible in the repo's `.claude/settings.json`") is
+superseded by this user-level decision. This adjustment also resolved a related
+finding: usage-episodes SessionStart hooks were duplicated per checkout, and the
+episode telemetry has no consumer/report yet — tracked separately (see handoff).
+
 All five slices shipped and verified locally; #238 and #239 resolved. Closeout
 evidence:
 
@@ -292,11 +307,11 @@ Proven (local, deterministic):
 - find-skills SKILL.md states the "drive the routed workflow from your result;
   pickup -> handoff Workflow Trigger -> `charness:handoff`" contract, pinned by
   `tests/quality_gates/test_find_skills_routing_drive.py` (fails on removal).
-- The dumb `SessionStart` hook is wired in the repo's `.claude/settings.json`
-  (Claude) and `.codex/config.toml` (Codex); `scripts/session_start_find_skills.py`
-  emits the `hookSpecificOutput.additionalContext` directive — demonstrated live
-  by firing the script with a SessionStart payload for both `--host claude` and
-  `--host codex`. Pinned by `tests/test_session_start_find_skills.py`.
+- The dumb `SessionStart` hook (`scripts/session_start_find_skills.py`) emits the
+  `hookSpecificOutput.additionalContext` directive — demonstrated live by firing
+  the script with a SessionStart payload for both `--host claude` and `--host
+  codex`. Pinned by `tests/test_session_start_find_skills.py`. Installed at user
+  level (see post-completion adjustment above), not committed into the repo.
 - #238: the setup-rendered Skill Routing block names `find-skills` as a skill,
   not a bare PATH command; AGENTS.md is an exact byte-match to the renderer (no
   rerun drift); regression guard in `test_setup_render_skill_routing.py`.

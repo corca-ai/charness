@@ -5,19 +5,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-try:
-    import tomllib  # Python 3.11+
-except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
-    import tomli as tomllib
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import session_start_find_skills as hook  # noqa: E402
 
 HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
-CLAUDE_SETTINGS = REPO_ROOT / ".claude" / "settings.json"
-CODEX_CONFIG = REPO_ROOT / ".codex" / "config.toml"
+
+# The find-skills SessionStart trigger is installed at USER level
+# (~/.claude/settings.json, ~/.codex/config.toml) pointing at the released
+# plugin script, not committed into this repo. These tests pin the script's
+# behavior (the portable mechanism); the host wiring is per-machine config.
 
 
 def test_directive_is_dumb_and_points_at_find_skills() -> None:
@@ -87,40 +85,3 @@ def test_hook_is_silent_failing_on_garbage_stdin() -> None:
     assert result.returncode == 0, result.stderr
     # Still emits the directive even when the stdin payload is unparseable.
     assert "charness:find-skills" in result.stdout
-
-
-def test_repo_claude_settings_wires_session_start_hook() -> None:
-    """Slice-2 acceptance: the hook is visible in the repo's .claude/settings.json."""
-    settings = json.loads(CLAUDE_SETTINGS.read_text(encoding="utf-8"))
-    entries = settings["hooks"]["SessionStart"]
-    assert isinstance(entries, list) and entries
-    commands = [
-        inner.get("command", "")
-        for entry in entries
-        for inner in entry.get("hooks", [])
-    ]
-    assert any("session_start_find_skills.py" in cmd and "--host claude" in cmd for cmd in commands)
-    # Fires on a fresh open and on resume/clear; NOT on mid-session compaction.
-    matchers = [entry.get("matcher", "") for entry in entries]
-    joined = " ".join(matchers)
-    assert "startup" in joined and "resume" in joined
-    assert "compact" not in joined
-
-
-def test_repo_codex_config_wires_session_start_hook() -> None:
-    """Slice-3 acceptance: Codex parity is visible in the repo's .codex/config.toml."""
-    config = tomllib.loads(CODEX_CONFIG.read_text(encoding="utf-8"))
-    entries = config["hooks"]["SessionStart"]
-    assert isinstance(entries, list) and entries
-    commands = [
-        inner.get("command", "")
-        for entry in entries
-        for inner in entry.get("hooks", [])
-    ]
-    assert any("session_start_find_skills.py" in cmd and "--host codex" in cmd for cmd in commands)
-    # Repo-local hooks resolve from the git root (Codex may start in a subdir).
-    assert any("git rev-parse --show-toplevel" in cmd for cmd in commands)
-    matchers = [entry.get("matcher", "") for entry in entries]
-    joined = " ".join(matchers)
-    assert "startup" in joined and "resume" in joined
-    assert "compact" not in joined
