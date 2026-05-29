@@ -657,3 +657,59 @@ def test_check_python_lengths_does_not_warn_just_below_band(tmp_path: Path) -> N
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "WARN:" not in result.stdout
+
+
+def test_check_python_lengths_paths_mode_rejects_over_limit_staged_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    (helper_dir / "over.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/demo/scripts/over.py",
+    )
+    assert result.returncode == 1
+    assert "file length 361 exceeds limit 360" in result.stderr
+
+
+def test_check_python_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    # 340 lines: inside the skill-helper warn band [330, 360].
+    (helper_dir / "band.py").write_text("\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8")
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/demo/scripts/band.py",
+    )
+    assert result.returncode == 0, result.stderr
+    warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
+    assert any("band.py: file length 340 is within the advisory warn band [330, 360]" in line for line in warn_lines)
+
+
+def test_check_python_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) -> None:
+    """Staged-only: only files in ``--paths`` are gated. An over-limit file not
+    in the list is left to the pre-push whole-repo run; a small staged file
+    passes quietly."""
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    (helper_dir / "trap.py").write_text("\n".join(f"print({i})" for i in range(400)) + "\n", encoding="utf-8")
+    (helper_dir / "small.py").write_text("print(1)\n", encoding="utf-8")
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/demo/scripts/small.py",
+    )
+    assert result.returncode == 0, result.stderr
+    assert "WARN:" not in result.stdout
+    assert "trap.py" not in result.stdout
+    assert "trap.py" not in result.stderr

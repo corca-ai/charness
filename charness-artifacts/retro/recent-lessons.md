@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - **capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom "changed-surface→gate-subset" mechanism needed (pre-commit already does staged-conditional gating). (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
+- **capability (none):** no new tooling warranted. The `--paths` mode is the capability delta and it shipped. (source: `charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md`)
 - **capability**: Promote `check_python_lengths.py` from informational to a pre-commit gate (warn-at-~330, fail-at-360 for `skills/public/*/scripts/*.py`). This is the second recorded recurrence of the silent-lib-growth trap; the prior retro already recommended it. The recurrence is the evidence to act now. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
 - **memory**: end-only handoff timing + the over-merge precision lesson are codified (operating-contract, chunked-routing.md) and captured here for the recent-lessons digest. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
-- **placement rule (memory):** cheap + agent-free + hard-fail ⇒ pre-commit; costly/agent-backed ⇒ pre-push only (accepted cost). "pre-push already runs it" is *not* a sufficient reason to keep a cheap check out of pre-commit. The advisory file-length WARN tier is the legitimate exception: it does not fail, so it does not fit pre-commit's pass/block model and stays pre-push. (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
 
 ## Selection Policy
 
@@ -29,4 +29,5 @@
 
 - `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`
 - `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`
+- `charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md`
 - `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`

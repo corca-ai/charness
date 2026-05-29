@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-29",
-  "source_artifact_count": 82,
-  "candidate_count": 517,
+  "source_artifact_count": 83,
+  "candidate_count": 523,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0fbbb9be748a",
@@ -75,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:040b14ec91f8",
+      "kind": "current_focus",
+      "lesson": "`/handoff` (bare invocation) → chunker fired (#249) → unioned the live open-issue backlog with the `## Next Session` memo → ranked 4 chunks → user picked chunk-1 → `/achieve` shaped a goal skeleton → `/goal` pursued it.",
+      "normalized_key": "handoff bare invocation chunker fired 249 unioned the live open issue backlog with the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+          "date": "2026-05-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6c2b08fa3087",
       "kind": "next_improvement",
       "lesson": "**capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom \"changed-surface→gate-subset\" mechanism needed (pre-commit already does staged-conditional gating).",
@@ -89,6 +109,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d208137e5b15",
+      "kind": "next_improvement",
+      "lesson": "**capability (none):** no new tooling warranted. The `--paths` mode is the capability delta and it shipped.",
+      "normalized_key": "capability none no new tooling warranted the paths mode is the capability delta and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -129,6 +169,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1de0a5789e3c",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the gate-placement rule is now *realized*, not just stated — `check_python_lengths` joins `validate-attention-state-visibility` and `run-evals` as a pre-commit gate (cheap + agent-free + hard-fail). Recorded so the next \"should this be pre-commit?\" decision has a third worked example.",
+      "normalized_key": "memory the gate placement rule is now realized not just stated check python lengths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -189,66 +249,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-          "date": "2026-05-29",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9a8b4c5f039d",
-      "kind": "next_improvement",
-      "lesson": "when a slice adds a new repo file whose basename may collide (`config.toml`, `settings.json`), run `check_doc_links` early in the slice, not only at closeout, so basename-uniqueness side-effects surface immediately.",
-      "normalized_key": "when a slice adds a new repo file whose basename may collide config toml",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-          "date": "2026-05-29",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:654c05b4971f",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: Before editing any SKILL.md, check budget headroom first (`wc -l` vs the repo/sub-budget cap). When headroom is <~10 lines, spill to a reference by default rather than writing prose and trimming back.",
-      "normalized_key": "workflow before editing any skill md check budget headroom first wc l vs the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
-          "date": "2026-05-29",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d5ba9be41686",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: For any heuristic that derives a signal from free text (clustering, boundary tokens, routing), run a live dogfood sanity check before pinning fixtures — Deming study-first — so the extraction breadth is data-shaped, not assumption-shaped.",
-      "normalized_key": "workflow for any heuristic that derives a signal from free text clustering boundary tokens",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -317,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:040b14ec91f8",
+      "kind": "current_focus",
+      "lesson": "`/handoff` (bare invocation) → chunker fired (#249) → unioned the live open-issue backlog with the `## Next Session` memo → ranked 4 chunks → user picked chunk-1 → `/achieve` shaped a goal skeleton → `/goal` pursued it.",
+      "normalized_key": "handoff bare invocation chunker fired 249 unioned the live open issue backlog with the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+          "date": "2026-05-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6c2b08fa3087",
       "kind": "next_improvement",
       "lesson": "**capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom \"changed-surface→gate-subset\" mechanism needed (pre-commit already does staged-conditional gating).",
@@ -331,6 +351,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d208137e5b15",
+      "kind": "next_improvement",
+      "lesson": "**capability (none):** no new tooling warranted. The `--paths` mode is the capability delta and it shipped.",
+      "normalized_key": "capability none no new tooling warranted the paths mode is the capability delta and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -371,6 +411,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1de0a5789e3c",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the gate-placement rule is now *realized*, not just stated — `check_python_lengths` joins `validate-attention-state-visibility` and `run-evals` as a pre-commit gate (cheap + agent-free + hard-fail). Recorded so the next \"should this be pre-commit?\" decision has a third worked example.",
+      "normalized_key": "memory the gate placement rule is now realized not just stated check python lengths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -491,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2e9a39849fa1",
+      "kind": "next_improvement",
+      "lesson": "**workflow (validated, no change needed):** the `/handoff` chunker → `/achieve` → `/goal` pipeline ran end-to-end on a real capability task with no friction. The chunker's `--with-issues` union correctly flagged the stale memo (closed #244/#245/#242/#233). No change proposed; the pipeline works.",
+      "normalized_key": "workflow validated no change needed the handoff chunker achieve goal pipeline ran end to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -631,6 +711,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f28a5148eb3f",
+      "kind": "repeat_trap",
+      "lesson": "Minor friction (not waste): a display-layer rewrite renders `check_python_lengths` as `n` / `n.py` in some shell output but not others (the `Read` tool and `python repr` show the true name). Cost ~2 tool calls to confirm the canonical name via `python -c \"os.path.exists(...)\"`. Recorded the quirk in the goal Boundaries so the next session does not re-derive it.",
+      "normalized_key": "minor friction not waste a display layer rewrite renders check python lengths as n",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+          "date": "2026-05-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c8d7a6d8c4e2",
+      "kind": "repeat_trap",
+      "lesson": "One process-shaped near-miss avoided by measuring first: the test file was at 659 lines with the 720 warn-band close by, so test additions were kept to 3 compact cases (landed at 715, under the band) — eating the gate's own dogfood.",
+      "normalized_key": "one process shaped near miss avoided by measuring first the test file was at",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
           "date": "2026-05-29",
           "section": "Waste"
         }

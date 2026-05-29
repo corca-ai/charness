@@ -108,14 +108,46 @@ def validate_function_lengths(path: Path, root: Path) -> None:
             )
 
 
+def select_targets(
+    root: Path, *, paths: list[Path] | None, require_git: bool
+) -> list[Path]:
+    """Whole-repo glob by default. When ``paths`` is given (e.g. staged files in
+    a pre-commit hook), restrict to the subset of those paths the whole-repo
+    glob would also gate, so the same per-class limits/bands apply and a path
+    outside the gated universe (an export mirror, a top-level file) is never
+    gated. Staged-only by design: a pre-existing over-limit file not in
+    ``paths`` is left to the whole-repo run.
+    """
+    if paths is None:
+        return iter_python_targets(root, require_git=require_git)
+    universe = set(iter_python_targets(root, require_git=False))
+    requested = {(p if p.is_absolute() else root / p).resolve() for p in paths}
+    return sorted(universe & requested)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--require-git-file-listing", action="store_true")
+    parser.add_argument(
+        "--paths",
+        nargs="+",
+        type=Path,
+        metavar="FILE",
+        help=(
+            "Explicit files to check (e.g. staged files in a pre-commit hook). "
+            "Restricts the check to the subset of these paths the whole-repo "
+            "glob would also gate, applying the same per-class limits and warn "
+            "bands. Takes precedence over the glob scan; "
+            "--require-git-file-listing is then irrelevant."
+        ),
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    targets = iter_python_targets(root, require_git=args.require_git_file_listing)
+    targets = select_targets(
+        root, paths=args.paths, require_git=args.require_git_file_listing
+    )
     warnings: list[str] = []
     for path in targets:
         try:

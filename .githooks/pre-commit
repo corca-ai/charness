@@ -15,6 +15,14 @@ if [ "${#STAGED_PY[@]}" -gt 0 ]; then
     echo "charness pre-commit: ruff (staged)"
     ruff check "${STAGED_PY[@]}"
   fi
+  # File/function length limits on staged py. Cheap (<1s) + agent-free +
+  # hard-fail, so it belongs at commit, not only pre-push (the silent-lib-growth
+  # trap recurred). --paths is staged-only: the script intersects with its own
+  # gated universe, so passing every staged .py is safe (export mirrors and
+  # top-level files are excluded), and a WARN-band file only surfaces when it is
+  # itself staged. Pre-existing over-limit files stay the pre-push run's job.
+  echo "charness pre-commit: check-python-lengths (staged)"
+  python3 scripts/check_python_lengths.py --repo-root "$REPO_ROOT" --paths "${STAGED_PY[@]}"
 fi
 
 # A new repo Python helper with exit-zero disabled/skipped/no_adapter/
