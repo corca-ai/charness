@@ -132,6 +132,26 @@ def test_ac2_aggregate_rate_and_breakdown(tmp_path: Path) -> None:
     assert "retro" not in excluded["by_source"]
 
 
+# #251 Slice 3: kill the survived `indent=2` mutant -------------------------
+def test_aggregate_json_uses_two_space_indent(tmp_path: Path) -> None:
+    """``print(json.dumps(payload, indent=2))`` survived mutation because the
+    AC2 assertion does ``json.loads`` (indent-agnostic). The NumberReplacer
+    mutant on ``indent=2`` still emits parseable JSON, so pin the RAW 2-space
+    formatting instead (critique B3)."""
+    ledger = tmp_path / "ledger.jsonl"
+    write_ledger(
+        ledger,
+        [event(source="debug", event_kind="bug", converted=True, durable_kind="gate")],
+    )
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger), "--json")
+    assert result.returncode == 0, result.stderr
+    raw = result.stdout
+    payload = json.loads(raw)
+    # Exact 2-space indentation: any other indent value diverges here.
+    assert raw.rstrip("\n") == json.dumps(payload, indent=2)
+    assert '\n  "' in raw  # a top-level key indented by exactly two spaces
+
+
 # AC3 -------------------------------------------------------------------------
 def test_ac3_record_round_trip_and_refuse_before_append(tmp_path: Path) -> None:
     ledger = tmp_path / "ledger.jsonl"

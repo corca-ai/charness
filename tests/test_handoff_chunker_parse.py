@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -158,3 +159,49 @@ def test_parser_cli_emits_valid_json_with_expected_shape(tmp_path):
             "referenced_skills",
             "boundary_tokens",
         }
+
+
+def _load_parser_module():
+    spec = importlib.util.spec_from_file_location("parse_handoff_entries", PARSER_SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_cli_with_issues_unions_live_backlog(tmp_path, monkeypatch, capsys):
+    """#251 regression coverage: the ``--with-issues`` union branch
+    (build_issue_entries + dedup_and_union + deduped_issue_count) was never
+    exercised, leaving parse_handoff_entries.py with uncovered changed lines
+    that blocked the mutation gate. Stub the provider call so no live tracker
+    request is made.
+    """
+    peh = _load_parser_module()
+    handoff = tmp_path / "handoff.md"
+    handoff.write_text(
+        "## Next Session\n\n1. **Only.** do a thing about #99.\n\n## End\n",
+        encoding="utf-8",
+    )
+    iss = peh.chunked_routing_issue_source
+
+    def fake_build(repo_root, *, start_index):
+        # one fresh (uncited) issue -> survives the union as a new chunk
+        return [iss.issue_to_handoff_entry(
+            {"number": 250, "title": "fresh untracked issue", "labels": [], "body": ""},
+            start_index,
+        )]
+
+    monkeypatch.setattr(iss, "build_issue_entries", fake_build)
+    monkeypatch.setattr(
+        sys, "argv",
+        ["parse_handoff_entries.py", "--handoff-path", str(handoff),
+         "--repo-root", str(tmp_path), "--with-issues"],
+    )
+
+    assert peh.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["handoff_entry_count"] == 1
+    assert payload["issue_entry_count"] == 1
+    assert payload["deduped_issue_count"] == 0  # #250 uncited -> not deduped
+    assert any(e["title"].startswith("#250:") for e in payload["entries"])

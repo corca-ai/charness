@@ -255,3 +255,213 @@ def test_build_issue_entries_disabled_returns_empty(src, monkeypatch, tmp_path):
         "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
     })
     assert src.build_issue_entries(tmp_path, start_index=1, runner=lambda a: [{"number": 1}]) == []
+
+
+# --- #251 regression coverage: changed lines the gate flagged as uncovered ----
+# These exercise the REAL load_issue_source_config, the provider-routing edges,
+# and the failure/skip branches that earlier tests monkeypatched away or never
+# reached, so the chunker scripts stop blocking the mutation gate (#251).
+
+
+@pytest.fixture
+def backend():
+    return _load("chunked_routing_issue_backend")
+
+
+def _write_adapter(repo: Path, body: str) -> None:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "handoff-adapter.yaml").write_text(body, encoding="utf-8")
+
+
+def test_load_issue_source_config_defaults_without_block(src, tmp_path):
+    """Adapter present but no issue_source block -> opt-out defaults."""
+    _write_adapter(tmp_path, "version: 1\nrepo: t\noutput_dir: docs\n")
+    config = src.load_issue_source_config(tmp_path)
+    assert config == {
+        "enabled": True, "limit": src.DEFAULT_ISSUE_LIMIT, "repo": None,
+        "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
+    }
+
+
+def test_load_issue_source_config_parses_full_block(src, tmp_path):
+    """Block-style lists + scalars all flow into the normalized config."""
+    _write_adapter(
+        tmp_path,
+        "version: 1\nrepo: t\noutput_dir: docs\n"
+        "issue_source:\n"
+        "  enabled: true\n  limit: 7\n  repo: o/r\n"
+        "  labels_include:\n    - keep\n"
+        "  labels_exclude:\n    - drop\n"
+        "  exclude_numbers:\n    - 9\n    - 10\n",
+    )
+    config = src.load_issue_source_config(tmp_path)
+    assert config == {
+        "enabled": True, "limit": 7, "repo": "o/r",
+        "labels_include": ("keep",), "labels_exclude": ("drop",),
+        "exclude_numbers": (9, 10),
+    }
+
+
+def test_load_issue_source_config_defaults_when_no_adapter_file(src, tmp_path):
+    """No adapter at all -> resolver yields no path -> opt-out defaults."""
+    config = src.load_issue_source_config(tmp_path)
+    assert config["enabled"] is True and config["limit"] == src.DEFAULT_ISSUE_LIMIT
+
+
+def test_load_issue_source_config_degrades_when_adapter_lib_missing(src, monkeypatch, tmp_path):
+    """If scripts/adapter_lib.py can't be located, degrade to defaults rather
+    than crash (the adapter_lib-None defensive branch)."""
+    _write_adapter(
+        tmp_path,
+        "version: 1\nrepo: t\noutput_dir: docs\nissue_source:\n  limit: 3\n",
+    )
+    real_is_file = src.Path.is_file
+    monkeypatch.setattr(
+        src.Path, "is_file",
+        lambda self: False if self.name == "adapter_lib.py" else real_is_file(self),
+    )
+    config = src.load_issue_source_config(tmp_path)
+    assert config["limit"] == src.DEFAULT_ISSUE_LIMIT  # block never parsed
+
+
+def test_load_issue_source_config_swallows_resolution_failure(src, monkeypatch, tmp_path):
+    """Any adapter-loading error degrades to defaults (trackerless fallback)."""
+    def boom(_name):
+        raise RuntimeError("adapter resolution blew up")
+    monkeypatch.setattr(src, "_load_sibling", boom)
+    config = src.load_issue_source_config(tmp_path)
+    assert config["enabled"] is True and config["repo"] is None
+
+
+def test_label_names_accepts_plain_string_labels(src):
+    """gh returns label dicts, but a plain-string label must also be read."""
+    entry = src.issue_to_handoff_entry(
+        {"number": 7, "title": "t", "labels": ["mutation-test", "  ", 5], "body": ""},
+        index=1,
+    )
+    assert "label/mutation-test" in entry.boundary_tokens
+
+
+def test_passes_filters_labels_include_gate(src):
+    issue = {"number": 5, "labels": [{"name": "infra"}]}
+    assert src._passes_filters(
+        issue, labels_include=("ui",), labels_exclude=(), exclude_numbers=()
+    ) is False
+    assert src._passes_filters(
+        issue, labels_include=("infra",), labels_exclude=(), exclude_numbers=()
+    ) is True
+
+
+def test_build_issue_entries_returns_empty_on_listing_failure(src, monkeypatch, tmp_path):
+    monkeypatch.setattr(src, "load_issue_source_config", lambda root: {
+        "enabled": True, "limit": 50, "repo": None,
+        "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
+    })
+
+    def fake_load_issue_module(root, name):
+        class _Mod:
+            @staticmethod
+            def load_adapter(r):
+                return {"data": {}}
+
+            @staticmethod
+            def resolve_target(r, repo, data):
+                return {"full_name": "o/r"}
+
+            @staticmethod
+            def _backend_json(argv):
+                return []
+        return _Mod
+
+    monkeypatch.setattr(src, "_load_issue_module", fake_load_issue_module)
+
+    def exploding_runner(argv):
+        raise RuntimeError("provider listing failed")
+
+    assert src.build_issue_entries(tmp_path, start_index=1, runner=exploding_runner) == []
+
+
+def test_build_issue_entries_skips_malformed_issues(src, monkeypatch, tmp_path):
+    monkeypatch.setattr(src, "load_issue_source_config", lambda root: {
+        "enabled": True, "limit": 50, "repo": None,
+        "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
+    })
+
+    def fake_load_issue_module(root, name):
+        class _Mod:
+            @staticmethod
+            def load_adapter(r):
+                return {"data": {}}
+
+            @staticmethod
+            def resolve_target(r, repo, data):
+                return {"full_name": "o/r"}
+
+            @staticmethod
+            def _backend_json(argv):
+                return []
+        return _Mod
+
+    monkeypatch.setattr(src, "_load_issue_module", fake_load_issue_module)
+
+    def runner(argv):
+        return ["not-a-dict", {"no": "number"}, {"number": 244, "title": "ok", "labels": [], "body": ""}]
+
+    entries = src.build_issue_entries(tmp_path, start_index=1, runner=runner)
+    assert [e.referenced_issues[0] for e in entries] == [244]
+
+
+def test_load_sibling_raises_when_spec_is_none(src, monkeypatch):
+    """The defensive guard fires when importlib cannot build a spec."""
+    monkeypatch.setattr(
+        src.importlib.util, "spec_from_file_location", lambda *a, **k: None
+    )
+    with pytest.raises(ImportError, match="not found beside"):
+        src._load_sibling("chunked_routing_types")
+
+
+# --- provider-routing layer (chunked_routing_issue_backend) ----------------
+
+
+def test_load_issue_module_imports_real_issue_runtime(backend):
+    module = backend._load_issue_module(REPO_ROOT, "issue_runtime")
+    assert hasattr(module, "_backend_json")
+
+
+def test_load_issue_module_missing_raises(backend):
+    with pytest.raises(ImportError, match="issue/scripts/definitely_missing_xyz"):
+        backend._load_issue_module(REPO_ROOT, "definitely_missing_xyz")
+
+
+def test_load_issue_module_skips_unbuildable_spec(backend, monkeypatch):
+    """An existing file whose spec can't be built is skipped (the `continue`
+    guard), so resolution keeps walking instead of crashing."""
+    monkeypatch.setattr(
+        backend.importlib.util, "spec_from_file_location", lambda *a, **k: None
+    )
+    with pytest.raises(ImportError):
+        backend._load_issue_module(REPO_ROOT, "issue_runtime")  # real file, None spec
+
+
+def test_list_open_issues_default_runner_resolves_backend_json(backend, monkeypatch):
+    """runner=None -> the backend loads issue_runtime._backend_json itself."""
+    calls = {}
+
+    class _Runtime:
+        @staticmethod
+        def _backend_json(argv):
+            calls["argv"] = argv
+            return [{"number": 9, "title": "t", "labels": [], "body": ""}]
+
+    monkeypatch.setattr(backend, "_load_issue_module", lambda root, name: _Runtime)
+    out = backend.list_open_issues("o/r", runner=None)
+    assert out[0]["number"] == 9
+    assert calls["argv"][0] == "gh"
+
+
+def test_list_open_issues_unwraps_issues_dict(backend):
+    """A backend that returns {"issues": [...]} is unwrapped to the list."""
+    out = backend.list_open_issues(
+        "o/r", runner=lambda argv: {"issues": [{"number": 1}]}
+    )
+    assert out == [{"number": 1}]

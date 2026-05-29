@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-29T10:54:45Z",
+  "generated_at": "2026-05-29T15:07:20Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -409,6 +409,7 @@
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/issue/scripts/issue_tool.py",
           "skills/public/issue/scripts/issue_runtime.py",
+          "skills/public/issue/scripts/issue_create.py",
           "skills/public/issue/scripts/resolve_adapter.py",
           "skills/public/issue/scripts/init_adapter.py"
         ],
