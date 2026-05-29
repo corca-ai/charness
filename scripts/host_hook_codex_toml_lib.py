@@ -15,10 +15,10 @@ from typing import Any
 CHARNESS_MARKER = "charness:usage-episodes"
 
 
-def codex_toml_block(command: str) -> str:
+def codex_toml_block(command: str, marker: str = CHARNESS_MARKER) -> str:
     return "\n".join(
         [
-            f"# {CHARNESS_MARKER}",
+            f"# {marker}",
             "[[hooks.SessionStart]]",
             "[[hooks.SessionStart.hooks]]",
             'type = "command"',
@@ -41,18 +41,18 @@ def write_text_atomic(path: Path, text: str) -> None:
     os.replace(tmp, path)
 
 
-def find_charness_toml_block(text: str, command: str) -> tuple[int, int] | None:
+def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MARKER) -> tuple[int, int] | None:
     """Return (start, end) char offsets of a charness-marked TOML block, or None.
 
-    A charness-marked block is `# charness:usage-episodes` immediately followed
-    (optionally with blank lines) by `[[hooks.SessionStart]]` plus a
-    `command = ...` line whose value equals the recorded command.
+    A charness-marked block is `# <marker>` immediately followed (optionally with
+    blank lines) by `[[hooks.SessionStart]]` plus a `command = ...` line whose
+    value equals the recorded command.
     """
     lines = text.splitlines(keepends=True)
     expected_command_line = f"command = {json.dumps(command, ensure_ascii=False)}"
     index = 0
     while index < len(lines):
-        if lines[index].strip() == f"# {CHARNESS_MARKER}":
+        if lines[index].strip() == f"# {marker}":
             start = index
             cursor = index + 1
             while cursor < len(lines) and lines[cursor].strip() == "":
@@ -62,7 +62,7 @@ def find_charness_toml_block(text: str, command: str) -> tuple[int, int] | None:
                 seen_command = False
                 while block_end < len(lines):
                     stripped = lines[block_end].strip()
-                    if stripped.startswith("#") and CHARNESS_MARKER in stripped:
+                    if stripped.startswith("#") and marker in stripped:
                         break
                     if stripped.startswith("[") and not stripped.startswith("[[hooks.SessionStart"):
                         break
@@ -81,11 +81,11 @@ def find_charness_toml_block(text: str, command: str) -> tuple[int, int] | None:
     return None
 
 
-def install_codex_toml_block(settings_path: Path, command: str) -> dict[str, Any]:
+def install_codex_toml_block(settings_path: Path, command: str, marker: str = CHARNESS_MARKER) -> dict[str, Any]:
     existing = read_text_or_empty(settings_path)
-    if find_charness_toml_block(existing, command) is not None:
+    if find_charness_toml_block(existing, command, marker) is not None:
         return {"settings_path": str(settings_path), "action": "noop"}
-    block = codex_toml_block(command)
+    block = codex_toml_block(command, marker)
     if existing and not existing.endswith("\n\n"):
         if not existing.endswith("\n"):
             existing += "\n"
@@ -94,11 +94,11 @@ def install_codex_toml_block(settings_path: Path, command: str) -> dict[str, Any
     return {"settings_path": str(settings_path), "action": "installed"}
 
 
-def uninstall_codex_toml_block(settings_path: Path, command: str) -> dict[str, Any]:
+def uninstall_codex_toml_block(settings_path: Path, command: str, marker: str = CHARNESS_MARKER) -> dict[str, Any]:
     existing = read_text_or_empty(settings_path)
     if not existing:
         return {"settings_path": str(settings_path), "action": "absent"}
-    span = find_charness_toml_block(existing, command)
+    span = find_charness_toml_block(existing, command, marker)
     if span is None:
         return {"settings_path": str(settings_path), "action": "not_installed"}
     start, end = span

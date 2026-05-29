@@ -10,6 +10,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
+import host_hook_find_skills as fs  # noqa: E402
 import host_hook_install_lib as lib  # noqa: E402
 
 LIVE_STATE_PATH = REPO_ROOT / lib.HOST_HOOKS_STATE_RELATIVE
@@ -476,3 +477,74 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["in_sync"] is True
+
+
+# --- find-skills routing hook (#244) ---
+
+
+def _claude_session_start(settings_path: Path) -> list[dict]:
+    settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    return settings["hooks"]["SessionStart"]
+
+
+def test_find_skills_reconcile_installs_when_enabled(fake_repo: Path, fake_home: Path) -> None:
+    adapter = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled", "codex": "enabled"}}
+    actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
+    fs_actions = actions["find_skills_routing"]
+    assert fs_actions["claude"]["result"]["action"] == "installed"
+    settings_path = lib.default_claude_settings_path(fake_home)
+    entries = _claude_session_start(settings_path)
+    assert len(entries) == 1
+    assert entries[0]["matcher"] == "startup|resume|clear"
+    assert entries[0]["hooks"][0]["command"].endswith("session_start_find_skills.py --host claude")
+    # usage-episodes intent absent -> its hook is NOT installed alongside.
+    assert "claude" not in lib.read_state(fake_repo)
+    assert lib.read_state(fake_repo)["claude:find_skills_routing"]["kind"] == "claude-json"
+
+
+def test_find_skills_coexists_with_usage_episodes(fake_repo: Path, fake_home: Path) -> None:
+    adapter = {
+        "version": 1, "enabled": True,
+        "host_hooks": {"claude": "enabled"},
+        "find_skills_routing": {"claude": "enabled"},
+    }
+    lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
+    commands = [e["hooks"][0]["command"] for e in _claude_session_start(lib.default_claude_settings_path(fake_home))]
+    assert any(c.endswith("usage_episode_session_start.py --host claude") for c in commands)
+    assert any(c.endswith("session_start_find_skills.py --host claude") for c in commands)
+    assert len(commands) == 2
+    state = lib.read_state(fake_repo)
+    assert "claude" in state and "claude:find_skills_routing" in state
+
+
+def test_find_skills_install_is_idempotent(fake_repo: Path, fake_home: Path) -> None:
+    first = fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+    second = fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+    assert first["action"] == "installed"
+    assert second["action"] == "noop"
+    assert len(_claude_session_start(lib.default_claude_settings_path(fake_home))) == 1
+
+
+def test_find_skills_disabled_by_default(fake_repo: Path, fake_home: Path) -> None:
+    actions = lib.reconcile_host_hooks(fake_repo, adapter={"version": 1, "enabled": True}, home=fake_home)
+    assert actions["find_skills_routing"]["claude"]["intent"] == "disabled"
+    assert not lib.default_claude_settings_path(fake_home).is_file()
+
+
+def test_find_skills_codex_toml_uses_distinct_marker(fake_repo: Path, fake_home: Path) -> None:
+    result = fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    assert result["action"] == "installed"
+    assert result["kind"] == "codex-toml"
+    text = Path(result["settings_path"]).read_text(encoding="utf-8")
+    assert "# charness:find-skills-routing" in text
+    assert "# charness:usage-episodes" not in text
+    assert "session_start_find_skills.py" in text
+
+
+def test_find_skills_uninstalled_when_intent_flipped(fake_repo: Path, fake_home: Path) -> None:
+    enabled = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}}
+    lib.reconcile_host_hooks(fake_repo, adapter=enabled, home=fake_home)
+    disabled = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "disabled"}}
+    actions = lib.reconcile_host_hooks(fake_repo, adapter=disabled, home=fake_home)
+    assert actions["find_skills_routing"]["claude"]["result"]["action"] == "removed"
+    assert "claude:find_skills_routing" not in lib.read_state(fake_repo)

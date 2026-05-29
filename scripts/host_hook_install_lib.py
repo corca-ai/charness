@@ -92,8 +92,8 @@ def resolve_codex_target(home: Path) -> tuple[Path, str]:
     return default_codex_config_toml_path(home), "codex-toml"
 
 
-def build_command(repo_root: Path, host: str) -> str:
-    script_path = (repo_root / HOOK_SCRIPT_RELATIVE).resolve()
+def build_command(repo_root: Path, host: str, *, script_relative: Path = HOOK_SCRIPT_RELATIVE) -> str:
+    script_path = (repo_root / script_relative).resolve()
     return f"python3 {shlex.quote(str(script_path))} --host {host}"
 
 
@@ -122,13 +122,13 @@ def write_state(repo_root: Path, state: dict[str, Any]) -> None:
 def _record_state_entry(
     repo_root: Path,
     *,
-    host: str,
+    state_key: str,
     settings_path: Path,
     kind: str,
     command: str,
 ) -> dict[str, Any]:
     state = read_state(repo_root)
-    state[host] = {
+    state[state_key] = {
         "settings_path": str(settings_path),
         "kind": kind,
         "command": command,
@@ -136,13 +136,13 @@ def _record_state_entry(
     }
     state.setdefault("schema_version", STATE_SCHEMA_VERSION)
     write_state(repo_root, state)
-    return state[host]
+    return state[state_key]
 
 
-def _clear_state_entry(repo_root: Path, host: str) -> None:
+def _clear_state_entry(repo_root: Path, state_key: str) -> None:
     state = read_state(repo_root)
-    if host in state:
-        state.pop(host)
+    if state_key in state:
+        state.pop(state_key)
         write_state(repo_root, state)
 
 
@@ -175,9 +175,9 @@ def _ensure_event_array(settings: dict[str, Any], event: str) -> list[Any]:
     return entries
 
 
-def _event_entry(command: str) -> dict[str, Any]:
+def _event_entry(command: str, matcher: str = "") -> dict[str, Any]:
     return {
-        "matcher": "",
+        "matcher": matcher,
         "hooks": [
             {
                 "type": "command",
@@ -203,12 +203,13 @@ def _install_json_event(
     settings_path: Path,
     *,
     command: str,
+    matcher: str = "",
 ) -> dict[str, Any]:
     settings = _read_json_settings(settings_path)
     entries = _ensure_event_array(settings, SESSION_START_EVENT)
     already = any(_entries_match_command(entry, command) for entry in entries)
     if not already:
-        entries.append(_event_entry(command))
+        entries.append(_event_entry(command, matcher))
         _write_json_atomic(settings_path, settings)
     return {
         "settings_path": str(settings_path),
@@ -251,7 +252,7 @@ def install_claude_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
     if result["action"] == "installed":
         _record_state_entry(
             repo_root,
-            host="claude",
+            state_key="claude",
             settings_path=settings_path,
             kind="claude-json",
             command=command,
@@ -286,7 +287,7 @@ def install_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
     if result["action"] == "installed":
         _record_state_entry(
             repo_root,
-            host="codex",
+            state_key="codex",
             settings_path=settings_path,
             kind=kind,
             command=command,
@@ -319,8 +320,8 @@ def uninstall_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
     return result
 
 
-def _intent_for(adapter: dict[str, Any], host: str) -> str:
-    raw = adapter.get("host_hooks")
+def _intent_for(adapter: dict[str, Any], host: str, *, section: str = "host_hooks") -> str:
+    raw = adapter.get(section)
     if not isinstance(raw, dict):
         return "disabled"
     value = raw.get(host)
@@ -349,6 +350,16 @@ def reconcile_host_hooks(
                 actions[host]["result"] = uninstaller(repo_root, home=home)
         except HostHookError as exc:
             actions[host]["error"] = str(exc)
+    # find-skills routing (#244): opt-in second hook, reconciled in parallel.
+    # Lazy import keeps the sibling module's dependency on this one acyclic.
+    try:
+        from host_hook_find_skills import reconcile_find_skills_hooks
+    except ImportError:  # pragma: no cover - module-from-elsewhere fallback
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from host_hook_find_skills import reconcile_find_skills_hooks  # type: ignore[no-redef]
+    actions["find_skills_routing"] = reconcile_find_skills_hooks(repo_root, adapter=adapter, home=home)
     return actions
 
 
