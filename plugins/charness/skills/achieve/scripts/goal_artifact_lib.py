@@ -65,6 +65,10 @@ PORTABILITY_SECTIONS = (
 
 _TRIVIAL_GOAL_MARKER = re.compile(r"single-slice goal", re.IGNORECASE)
 
+# Before-phase placeholder marker the handoff auto-draft (#246) leaves until
+# shaping fills it; its presence means `/goal` must fail-fast to `/achieve` (#247).
+_UNSHAPED_MARKER = re.compile(r"to be filled by the achieve before-phase", re.IGNORECASE)
+
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
@@ -265,6 +269,25 @@ def is_non_trivial_goal(text: str) -> bool:
 def missing_portability_sections(text: str) -> list[str]:
     present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
     return [section for section in PORTABILITY_SECTIONS if section not in present]
+
+
+def pursue_readiness(text: str) -> dict[str, Any]:
+    """Whether a goal is shaped enough to *pursue* via ``/goal`` (#247).
+
+    Unshaped = a Before-phase placeholder marker still present (the handoff
+    auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
+    rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
+    """
+    placeholders = _UNSHAPED_MARKER.findall(_mask_fences(text))
+    ready = not placeholders
+    reason = (
+        "shaped: no Before-phase placeholders remain; safe to pursue via `/goal`"
+        if ready
+        else f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
+        "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
+        "only and does not shape (#247)"
+    )
+    return {"pursue_ready": ready, "placeholder_count": len(placeholders), "reason": reason}
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:

@@ -44,6 +44,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--goal-path", type=Path, help="Explicit path to the goal artifact (overrides --slug/--date)")
     parser.add_argument("--slug", help="Goal slug, used with --date to locate the artifact")
     parser.add_argument("--date", default=date_cls.today().isoformat(), help="Goal date prefix YYYY-MM-DD used with --slug")
+    parser.add_argument(
+        "--pursue-ready",
+        action="store_true",
+        help="Instead of the full section/status check, report whether the goal is shaped "
+        "enough to pursue via `/goal` (#247). Exit 1 when unshaped.",
+    )
     return parser.parse_args()
 
 
@@ -54,6 +60,11 @@ def main() -> int:
         print(json.dumps({"ok": False, "issues": [f"goal artifact not found: {path}"]}, ensure_ascii=False, indent=2, sort_keys=True))
         return 2
     text = path.read_text(encoding="utf-8")
+    if args.pursue_ready:
+        report = goal_lib.pursue_readiness(text)
+        report["path"] = str(path)
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0 if report["pursue_ready"] else 1
     result = goal_lib.check_goal(text)
     result["path"] = str(path)
     if result.get("status") == "complete":

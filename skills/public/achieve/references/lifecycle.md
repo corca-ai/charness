@@ -7,8 +7,10 @@ audited from one file.
 
 ## Before
 
-Start from prose, not from an already perfect `/goal` command. Interview only
-until the work has enough shape to save a reviewable goal artifact. Establish:
+Start from prose, not from an already perfect goal. Shaping happens here, in the
+Before-phase (invoked via `/achieve`), never at `/goal` activation. Interview
+only until the work has enough shape to save a reviewable goal artifact.
+Establish:
 
 - desired outcome
 - non-goals and boundaries
@@ -34,9 +36,11 @@ One mode question is high-leverage often enough to call out: is this an
 activated)? When the selector or prose is genuinely ambiguous between the two,
 ask at least one question to resolve it before saving — a wrong assumption here
 either strands a draft the user wanted executed or starts executing a draft the
-user wanted only reviewed. When a strong default settles it (explicit `/goal`
-activation already happened, or the prose names the mode), state the assumed
-mode in the artifact and the response instead of asking. This is the
+user wanted only reviewed. When a strong default settles it (the prose names the
+mode), state the assumed mode in the artifact and the response instead of
+asking. The mode is a shaping-time intent question only; it never licenses
+auto-execution, because `/goal` (pursue) and `/achieve` (shape) are separate
+operator actions (#247). This is the
 [#239](https://github.com/corca-ai/charness/issues/239) before-phase
 question-discipline contract.
 
@@ -87,6 +91,12 @@ Plan with 2+ data rows, or Slice Log with 2+ `### Slice` headings). A
 one-shot research-only goal may use a `Single-slice goal: <reason>`
 marker inside the Slice Plan section to opt out.
 
+When shaping an auto-drafted skeleton, overwrite its
+`To be filled by the achieve Before-phase` placeholder lines with the real
+content — a leftover marker leaves the goal reading as unshaped to the
+pursue-readiness check, which would make `/goal` fail-fast on an
+actually-shaped goal (#247).
+
 Save the artifact with `upsert_goal.py` at status `draft`. Tell the user the
 file is inert until they run the activation command. The skill does **not** start
 executing slices on its own — activation is the user's explicit decision.
@@ -105,14 +115,29 @@ an explicit checklist the operator can act on without rereading:
 its `Activation:` line; this closeout checklist is the response-side counterpart
 so the operator-facing handoff is as clear as the artifact contract.
 
+### Activation = pursue only (#247)
+
+`/goal @<artifact>` is **pure pursue**: it runs the During loop on the goal as
+given and never shapes. Shaping is the Before-phase's job (invoked via
+`/achieve`); whoever runs `/goal` is responsible for handing it a shaped goal.
+
+Before pursuing, confirm the goal is shaped with
+`check_goal_artifact.py --pursue-ready --goal-path <artifact>`. If it is
+**unshaped** (the Before-phase placeholder marker is still present — e.g. a raw
+handoff-chunker auto-draft that was never `/achieve`'d), **fail-fast**: refuse to
+pursue and route the operator to the Before-phase (`/achieve @<artifact>`). Do
+**not** shape the goal inside `/goal` — that would put shaping back into the
+pursue path, the exact responsibility blur #247 removes.
+
 ## During
 
 The goal artifact becomes the working scratchpad for the active run. Do not use
 `handoff` as the mid-goal memory surface while a goal is active.
 
-When the run begins (the user has activated the goal), flip the status to
-`active` with `upsert_goal.py --status active`; move it to `blocked` or
-`complete` as the run state changes.
+Activation runs only after the pursue-readiness check passes (see
+*Activation = pursue only*). When the run begins (the user has activated the
+goal), flip the status to `active` with `upsert_goal.py --status active`; move
+it to `blocked` or `complete` as the run state changes.
 
 After each slice, append a slice report with `append_slice_log.py`:
 

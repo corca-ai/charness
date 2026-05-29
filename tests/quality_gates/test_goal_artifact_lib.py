@@ -59,6 +59,43 @@ def test_render_slice_block_includes_test_duplication_pressure(tmp_path: Path) -
     assert block.index("Targeted verification") < block.index("Test duplication pressure") < block.index("Critique")
 
 
+def test_pursue_readiness_flags_unshaped_auto_draft() -> None:
+    """#247: a goal still carrying the Before-phase placeholder marker is unshaped,
+    so `/goal` must fail-fast (route to `/achieve`) instead of pursuing it."""
+    unshaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\n*To be filled by the achieve Before-phase interview.*\n\n"
+        "## Agent Verification Plan\n\n*To be filled by the achieve Before-phase interview.*\n"
+    )
+    report = gal.pursue_readiness(unshaped)
+    assert report["pursue_ready"] is False
+    assert report["placeholder_count"] >= 1
+    assert "/achieve" in report["reason"]
+
+
+def test_pursue_readiness_passes_when_shaped() -> None:
+    """A shaped goal (no Before-phase placeholder marker) is safe to pursue."""
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n\n"
+        "## Agent Verification Plan\n\nRun the suite; assert Z.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
+    assert report["placeholder_count"] == 0
+
+
+def test_pursue_readiness_ignores_marker_inside_code_fence() -> None:
+    """A marker quoted inside a fenced block must not trip the detector (fences
+    are masked), so a documentation example cannot force a false unshaped verdict."""
+    fenced = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X.\n\n```\n"
+        "To be filled by the achieve Before-phase interview.\n```\n"
+    )
+    assert gal.pursue_readiness(fenced)["pursue_ready"] is True
+
+
 def test_slugify_neutralizes_path_chars() -> None:
     assert gal.slugify("../../etc/passwd") == "etc-passwd"
     assert gal.slugify("Mixed CASE!!") == "mixed-case"

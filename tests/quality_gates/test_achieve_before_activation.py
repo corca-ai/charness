@@ -39,3 +39,20 @@ def test_achieve_before_phase_pins_activation_closeout_clarity() -> None:
     # The lifecycle reference carries the activation-closeout checklist.
     assert "Activation-closeout clarity" in lifecycle
     assert "Goal file:" in lifecycle and "Activation:" in lifecycle
+
+
+def test_goal_activation_is_pursue_only_and_failfast() -> None:
+    """#247: `/goal` is pure pursue; shaping is the Before-phase's job (`/achieve`);
+    `/goal` fail-fasts on an unshaped goal instead of shaping it. Pin the contract
+    on both surfaces so it cannot silently regress to shape-then-run."""
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+
+    assert "#247" in skill and "#247" in lifecycle
+    # /goal pursues only; the lifecycle states it verbatim.
+    assert "pure pursue" in lifecycle
+    # The deterministic guard the prose leans on is named on both surfaces.
+    assert "pursue-ready" in skill and "pursue-ready" in lifecycle
+    # Unshaped -> fail-fast and route to the Before-phase, never shape in /goal.
+    assert "fail-fast" in skill and "fail-fast" in lifecycle
+    assert "/achieve" in skill and "/achieve" in lifecycle

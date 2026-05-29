@@ -54,6 +54,10 @@ and helper usage.
      plan (low-cost / high-confidence / external-or-live, plus expected proof
      cost and expected test-duplication pressure per slice), slice sequence,
      critique plan, stop conditions, and reporting expectations
+   - when shaping an auto-drafted skeleton, overwrite its
+     `To be filled by the achieve Before-phase` placeholder lines with the real
+     content; a leftover marker leaves the goal reading as unshaped to
+     `--pursue-ready` (#247)
    - save with `upsert_goal.py` at status `draft`
    - tell the user the file is inert until they run `/goal @...`; do not start
      executing slices yourself
@@ -61,6 +65,12 @@ and helper usage.
      `Activation:` line, and state the inert-until-`/goal` status, so the
      operator cannot miss how to activate (#239)
 2. During — slice and record.
+   - activation (`/goal`) is pure pursue: it runs the goal as given and never
+     shapes. Before pursuing, confirm shape with
+     `check_goal_artifact.py --pursue-ready --goal-path <artifact>`; if the goal
+     is unshaped, fail-fast
+     — refuse and route the user to the Before-phase (`/achieve @...`), do not
+     shape inside `/goal` (#247)
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - before a substantial slice, state its objective and expected evidence
    - after each slice, append a report with `append_slice_log.py`; when the
@@ -110,6 +120,8 @@ and helper usage.
 - Do not make `achieve` a generic task runner; it is a goal operator, and it
   does not implement a new execution engine.
 - Do not start executing the goal before the user activates it.
+- Do not shape a goal at `/goal` activation; `/goal` pursues only and
+  fail-fasts on an unshaped goal, routing the operator to `/achieve` (#247).
 - Do not require every short prompt to become a goal.
 - Do not run broad quality gates after every small commit.
 - Do not make `handoff` the normal running scratchpad while a goal is active.
