@@ -111,13 +111,14 @@ def main() -> int:
                 start_index=max((e.index for e in entries), default=0) + 1,
             )
             issue_count = len(issue_entries)
-            entries = chunked_routing_issue_source.union_entries(entries, issue_entries)
+            entries = chunked_routing_issue_source.dedup_and_union(entries, issue_entries)
         payload = {
             "ok": True,
             "handoff_path": str(handoff_path),
             "entry_count": len(entries),
             "handoff_entry_count": handoff_count,
             "issue_entry_count": issue_count,
+            "deduped_issue_count": (issue_count - (len(entries) - handoff_count)) if args.with_issues else 0,
             "entries": [entry.to_dict() for entry in entries],
         }
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")

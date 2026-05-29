@@ -24,6 +24,7 @@ Boundaries this module keeps:
 from __future__ import annotations
 
 import importlib.util
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable
 
@@ -334,23 +335,59 @@ def union_entries(
     """Concatenate handoff and issue entries with collision-free indices.
 
     Handoff entries keep their parser-assigned indices (stable labels); issue
-    entries are re-indexed after the handoff maximum. Dedup of an issue against
-    a handoff entry that already cites it is slice 3, not here.
+    entries are re-indexed after the handoff maximum. Pure concat — dedup of an
+    issue against a handoff entry that cites it lives in ``dedup_and_union``.
     """
     if not issue_entries:
         return list(handoff_entries)
     next_index = (max((e.index for e in handoff_entries), default=0)) + 1
-    reindexed: list[HandoffEntry] = []
-    for offset, entry in enumerate(issue_entries):
-        reindexed.append(
-            HandoffEntry(
-                index=next_index + offset,
-                title=entry.title,
-                body=entry.body,
-                referenced_paths=entry.referenced_paths,
-                referenced_issues=entry.referenced_issues,
-                referenced_skills=entry.referenced_skills,
-                boundary_tokens=entry.boundary_tokens,
-            )
-        )
+    reindexed = [
+        replace(entry, index=next_index + offset)
+        for offset, entry in enumerate(issue_entries)
+    ]
     return list(handoff_entries) + reindexed
+
+
+def dedup_and_union(
+    handoff_entries: list[HandoffEntry],
+    issue_entries: list[HandoffEntry],
+) -> list[HandoffEntry]:
+    """Union handoff + issue entries, merging an issue into a handoff entry
+    that already cites it (#249 dedup) instead of double-counting.
+
+    A handoff entry that cites ``#X`` and the issue entry whose own number is
+    ``X`` are the same work. The issue is merged INTO the citing handoff entry —
+    its surface boundary tokens (labels, title paths) enrich the handoff entry
+    so the merged entry can still cluster by surface — and the standalone issue
+    entry is dropped. Issues no handoff entry cites stay as fresh chunks (the
+    backlog the stale ``## Next Session`` omitted).
+    """
+    # issue_number -> index of the first handoff entry that cites it
+    cited_by: dict[int, int] = {}
+    for he in handoff_entries:
+        for num in he.referenced_issues:
+            cited_by.setdefault(num, he.index)
+
+    extra_tokens: dict[int, list[str]] = {}
+    consumed: set[int] = set()
+    for ie in issue_entries:
+        own = ie.referenced_issues[0] if ie.referenced_issues else None
+        if own is not None and own in cited_by:
+            consumed.add(own)
+            extra_tokens.setdefault(cited_by[own], []).extend(ie.boundary_tokens)
+
+    enriched_handoff: list[HandoffEntry] = []
+    for he in handoff_entries:
+        extra = extra_tokens.get(he.index)
+        if extra:
+            merged = list(he.boundary_tokens) + [
+                t for t in extra if t not in he.boundary_tokens
+            ]
+            he = replace(he, boundary_tokens=tuple(merged))
+        enriched_handoff.append(he)
+
+    remaining = [
+        ie for ie in issue_entries
+        if (ie.referenced_issues[0] if ie.referenced_issues else None) not in consumed
+    ]
+    return union_entries(enriched_handoff, remaining)

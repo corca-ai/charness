@@ -144,6 +144,48 @@ def test_union_with_no_issues_is_identity(lib, src):
     assert src.union_entries(handoff_entries, []) == handoff_entries
 
 
+# --- dedup (slice 3) ------------------------------------------------------
+
+
+def test_dedup_merges_cited_issue_into_handoff_entry(lib, src):
+    """A handoff entry citing #242 + the issue entry for #242 collapse to one;
+    the issue's surface token enriches the handoff entry, the duplicate drops."""
+    handoff_entries = lib.parse_handoff_entries(
+        "## Next Session\n\n"
+        "1. **Mutation work.** triage #242 survivors.\n"
+        "2. **Unrelated.** something else.\n\n"
+        "## End\n"
+    )
+    issue_entries = _entries(src, [
+        {"number": 242, "title": "Mutation regression", "labels": [{"name": "mutation-test"}], "body": ""},
+        {"number": 999, "title": "Brand new untracked issue", "labels": [], "body": ""},
+    ])
+    out = src.dedup_and_union(handoff_entries, issue_entries)
+    # the #242 issue entry is gone; #999 (uncited) remains
+    issue_titled = [e for e in out if e.title.startswith("#")]
+    assert [e.title for e in issue_titled] == ["#999: Brand new untracked issue"]
+    # the citing handoff entry inherited the issue's surface token
+    mutation_entry = next(e for e in out if "#242" in e.body)
+    assert "label/mutation-test" in mutation_entry.boundary_tokens
+    assert len(out) == 3  # 2 handoff + 1 surviving issue (242 merged away)
+
+
+def test_dedup_enriched_entry_then_clusters_with_another_issue(lib, src):
+    """After #242 merges into its handoff entry (gaining label/mutation-test),
+    that handoff entry clusters with another mutation-test issue (#219)."""
+    handoff_entries = lib.parse_handoff_entries(
+        "## Next Session\n\n1. **Mutation.** triage #242.\n\n## End\n"
+    )
+    issue_entries = _entries(src, [
+        {"number": 242, "title": "Mutation regression", "labels": [{"name": "mutation-test"}], "body": ""},
+        {"number": 219, "title": "Mutation regression older", "labels": [{"name": "mutation-test"}], "body": ""},
+    ])
+    out = src.dedup_and_union(handoff_entries, issue_entries)
+    proposal = lib.propose_merges(out)
+    # the enriched handoff entry (index 1) and #219 share label/mutation-test
+    assert any(len(c.entries) == 2 for c in proposal.merged)
+
+
 # --- provider routing (injected runner; no live call) ---------------------
 
 
