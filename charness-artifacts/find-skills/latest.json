@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-28T12:43:54Z",
+  "generated_at": "2026-05-29T10:54:45Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -214,6 +214,7 @@
           "charness:find-skills"
         ],
         "referenced_paths": [
+          "skills/public/find-skills/references/session-start-routing.md",
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/find-skills/adapter.example.yaml",
           "skills/public/find-skills/references/adapter-contract.md",
