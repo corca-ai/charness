@@ -14,6 +14,12 @@
     "terminal_payload"
   ],
   "files": {
+    "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
+      "states": ["disabled"],
+      "visibility": ["local_noop_not_closeout"],
+      "evidence_terms": ["enabled", "doc-only fallback"],
+      "rationale": "When the handoff adapter's issue_source is disabled (or no tracker resolves), build_issue_entries returns [] and the chunker falls back to doc-only chunking. This is a deliberate runtime no-op (the pickup still produces a valid handoff-only ranking), not a quality/release closeout signal; the parse payload surfaces issue_entry_count=0 so the doc-only fallback is visible."
+    },
     "scripts/build_debug_seam_risk_index.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload"],
