@@ -25,6 +25,7 @@ try:
         find_charness_toml_block,
         install_codex_toml_block,
         read_text_or_empty,
+        script_basename,
         uninstall_codex_toml_block,
     )
 except ImportError:  # pragma: no cover - used when invoked as a module from elsewhere
@@ -36,6 +37,7 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
         find_charness_toml_block,
         install_codex_toml_block,
         read_text_or_empty,
+        script_basename,
         uninstall_codex_toml_block,
     )
 
@@ -188,13 +190,29 @@ def _event_entry(command: str, matcher: str = "") -> dict[str, Any]:
 
 
 def _entries_match_command(entry: Any, command: str) -> bool:
+    """True when `entry` already carries this charness hook.
+
+    Matches on logical identity (the `.py` script basename) as well as the exact
+    command string, so the same hook installed from a second checkout — a
+    different absolute path, same basename — is recognized as already present and
+    not double-installed (corca-ai/charness#245). A foreign hook (no charness
+    `.py` basename) only ever exact-matches, so it is never touched.
+    """
     if not isinstance(entry, dict):
         return False
     inner = entry.get("hooks")
     if not isinstance(inner, list):
         return False
+    target_identity = script_basename(command)
     for item in inner:
-        if isinstance(item, dict) and item.get("type") == "command" and item.get("command") == command:
+        if not (isinstance(item, dict) and item.get("type") == "command"):
+            continue
+        existing = item.get("command")
+        if not isinstance(existing, str):
+            continue
+        if existing == command:
+            return True
+        if target_identity is not None and script_basename(existing) == target_identity:
             return True
     return False
 

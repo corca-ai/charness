@@ -9,10 +9,39 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 from pathlib import Path
 from typing import Any
 
 CHARNESS_MARKER = "charness:usage-episodes"
+
+
+def script_basename(command: str) -> str | None:
+    """Logical identity of a charness hook command = its `.py` script basename.
+
+    The same charness hook installed from two checkouts has different absolute
+    paths but the same basename; dedup matches on this so a second checkout does
+    not double-install (corca-ai/charness#245).
+    """
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        parts = command.split()
+    for part in parts:
+        if part.endswith(".py"):
+            return Path(part).name
+    return None
+
+
+def _toml_command_value(stripped_line: str) -> str | None:
+    """Parse the value of a `command = "..."` TOML line, or None."""
+    if not stripped_line.startswith("command ="):
+        return None
+    try:
+        value = json.loads(stripped_line.split("=", 1)[1].strip())
+    except (json.JSONDecodeError, IndexError):
+        return None
+    return value if isinstance(value, str) else None
 
 
 def codex_toml_block(command: str, marker: str = CHARNESS_MARKER) -> str:
@@ -46,9 +75,12 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
 
     A charness-marked block is `# <marker>` immediately followed (optionally with
     blank lines) by `[[hooks.SessionStart]]` plus a `command = ...` line whose
-    value equals the recorded command.
+    script basename matches the recorded command's (#245: a second checkout
+    installs the same hook at a different absolute path — logical identity, not
+    the exact path, is what dedups).
     """
     lines = text.splitlines(keepends=True)
+    target_identity = script_basename(command)
     expected_command_line = f"command = {json.dumps(command, ensure_ascii=False)}"
     index = 0
     while index < len(lines):
@@ -62,12 +94,22 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                 seen_command = False
                 while block_end < len(lines):
                     stripped = lines[block_end].strip()
-                    if stripped.startswith("#") and marker in stripped:
+                    # Stop at the start of ANY charness block, not just this
+                    # marker's — once a second distinct marker exists
+                    # (find-skills vs usage-episodes, #244/#245), breaking only
+                    # on the own marker would run past the next charness block's
+                    # header and swallow it, so uninstalling one block would
+                    # destroy the adjacent one.
+                    if stripped.startswith("# charness:"):
                         break
                     if stripped.startswith("[") and not stripped.startswith("[[hooks.SessionStart"):
                         break
                     if stripped == expected_command_line:
                         seen_command = True
+                    elif target_identity is not None:
+                        existing = _toml_command_value(stripped)
+                        if existing is not None and script_basename(existing) == target_identity:
+                            seen_command = True
                     block_end += 1
                 if seen_command:
                     while block_end > 0 and lines[block_end - 1].strip() == "":

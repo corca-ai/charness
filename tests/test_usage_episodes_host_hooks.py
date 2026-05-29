@@ -548,3 +548,94 @@ def test_find_skills_uninstalled_when_intent_flipped(fake_repo: Path, fake_home:
     actions = lib.reconcile_host_hooks(fake_repo, adapter=disabled, home=fake_home)
     assert actions["find_skills_routing"]["claude"]["result"]["action"] == "removed"
     assert "claude:find_skills_routing" not in lib.read_state(fake_repo)
+
+
+# --- dedup by logical identity across two checkouts (#245) ---
+
+
+def _two_checkouts(tmp_path: Path) -> tuple[Path, Path]:
+    repo_a = tmp_path / "checkout-a"
+    repo_b = tmp_path / "checkout-b"
+    for repo in (repo_a, repo_b):
+        (repo / "scripts").mkdir(parents=True)
+    return repo_a, repo_b
+
+
+def test_install_claude_dedups_across_two_checkouts(tmp_path: Path, fake_home: Path) -> None:
+    repo_a, repo_b = _two_checkouts(tmp_path)
+    first = lib.install_claude_hook(repo_a, home=fake_home)
+    second = lib.install_claude_hook(repo_b, home=fake_home)
+    assert first["action"] == "installed"
+    # Different absolute path, same script basename -> recognized, not duplicated.
+    assert first["command"] != second["command"]
+    assert second["action"] == "noop"
+    entries = _claude_session_start(lib.default_claude_settings_path(fake_home))
+    assert len(entries) == 1
+    assert entries[0]["hooks"][0]["command"] == first["command"]
+
+
+def test_install_codex_toml_dedups_across_two_checkouts(tmp_path: Path, fake_home: Path) -> None:
+    repo_a, repo_b = _two_checkouts(tmp_path)
+    first = lib.install_codex_hook(repo_a, home=fake_home)
+    second = lib.install_codex_hook(repo_b, home=fake_home)
+    assert first["action"] == "installed" and first["kind"] == "codex-toml"
+    assert second["action"] == "noop"
+    text = Path(first["settings_path"]).read_text(encoding="utf-8")
+    assert text.count("# charness:usage-episodes") == 1
+    assert text.count("[[hooks.SessionStart]]") == 1
+
+
+def test_find_skills_dedups_across_two_checkouts(tmp_path: Path, fake_home: Path) -> None:
+    repo_a, repo_b = _two_checkouts(tmp_path)
+    fs.install_find_skills_claude_hook(repo_a, home=fake_home)
+    second = fs.install_find_skills_claude_hook(repo_b, home=fake_home)
+    assert second["action"] == "noop"
+    assert len(_claude_session_start(lib.default_claude_settings_path(fake_home))) == 1
+
+
+def test_foreign_python_hook_is_not_deduped_away(tmp_path: Path, fake_home: Path) -> None:
+    """A foreign SessionStart hook that happens to run a different .py is kept;
+    dedup only collapses entries sharing the charness script basename."""
+    repo_a, _ = _two_checkouts(tmp_path)
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True)
+    settings_path.write_text(
+        json.dumps({"hooks": {"SessionStart": [
+            {"matcher": "", "hooks": [{"type": "command", "command": "python3 /opt/other/foreign_hook.py"}]}
+        ]}}),
+        encoding="utf-8",
+    )
+    lib.install_claude_hook(repo_a, home=fake_home)
+    commands = [e["hooks"][0]["command"] for e in _claude_session_start(settings_path)]
+    assert "python3 /opt/other/foreign_hook.py" in commands
+    assert any(c.endswith("usage_episode_session_start.py --host claude") for c in commands)
+    assert len(commands) == 2
+
+
+def test_codex_toml_uninstall_usage_episodes_preserves_find_skills_block(fake_repo: Path, fake_home: Path) -> None:
+    """Two distinct charness TOML markers can sit adjacent in one config.toml;
+    uninstalling the first (usage-episodes) block must not swallow the
+    following find-skills block (#244/#245 marker-boundary regression)."""
+    lib.install_codex_hook(fake_repo, home=fake_home)
+    fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    settings_path = lib.default_codex_config_toml_path(fake_home)
+    text = settings_path.read_text(encoding="utf-8")
+    assert "# charness:usage-episodes" in text and "# charness:find-skills-routing" in text
+    lib.uninstall_codex_hook(fake_repo, home=fake_home)
+    text = settings_path.read_text(encoding="utf-8")
+    assert "# charness:usage-episodes" not in text
+    assert "# charness:find-skills-routing" in text
+    assert "session_start_find_skills.py" in text
+    assert text.count("[[hooks.SessionStart]]") == 1
+
+
+def test_codex_toml_uninstall_find_skills_preserves_usage_episodes_block(fake_repo: Path, fake_home: Path) -> None:
+    lib.install_codex_hook(fake_repo, home=fake_home)
+    fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    settings_path = lib.default_codex_config_toml_path(fake_home)
+    fs.uninstall_find_skills_codex_hook(fake_repo, home=fake_home)
+    text = settings_path.read_text(encoding="utf-8")
+    assert "# charness:find-skills-routing" not in text
+    assert "# charness:usage-episodes" in text
+    assert "usage_episode_session_start.py" in text
+    assert text.count("[[hooks.SessionStart]]") == 1
