@@ -30,10 +30,10 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` (delivers the new `scripts/session_start_find_skills.py` routing-trigger script into the plugin).
+- Run `charness update` to pull 0.12.0 (handoff chunker v2 - live-backlog input + bare-invocation trigger + #248 stage-script ergonomics).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
-- NOTE - session-start find-skills routing is NOT auto-wired. `charness init`/`charness update` install only the usage-episodes SessionStart hook. To enable the find-skills routing trigger, manually add a user-level SessionStart hook pointing at the installed plugin's `scripts/session_start_find_skills.py` - Claude Code via `~/.claude/settings.json` (`--host claude`), Codex via `~/.codex/config.toml` (`--host codex`).
-- Honest ceiling - the hook injects a directive to call `charness:find-skills`; it strengthens routing via context-recency but does not hard-force the skill invocation.
+- BEHAVIOR CHANGE - 0.12.0 turns the handoff chunker's issue source ON by default. At a bare `/handoff` pickup the chunker unions your LIVE open-issue backlog by shelling out to the resolved issue provider (e.g. `gh issue list`); any provider failure degrades safely to doc-only chunking. To opt out, set `issue_source: {enabled: false}` in your handoff adapter (`.agents/handoff-adapter.yaml`). Exercised live only against `gh`; non-gh backends use the adapter `issue_backend.commands.list_open` override and are not yet proven on a live non-gh host.
+- Carried from 0.11.0 (still applies) - session-start find-skills routing is NOT auto-wired; manually add a user-level SessionStart hook pointing at the installed plugin's `scripts/session_start_find_skills.py` (Claude `~/.claude/settings.json`, Codex `~/.codex/config.toml`). #244 tracks auto-wiring.
 real_host_required_surfaces:
 - integrations-and-control-plane
 real_host_required_path_globs:
