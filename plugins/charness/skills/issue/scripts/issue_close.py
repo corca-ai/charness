@@ -1,10 +1,25 @@
 from __future__ import annotations
 
+import importlib.util
 import json
-import re
-import subprocess
 from pathlib import Path
 from typing import Any
+
+
+def _load_local(module_name: str, alias: str | None = None):
+    module_path = Path(__file__).resolve().parent / f"{module_name}.py"
+    spec = importlib.util.spec_from_file_location(alias or module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_BACKEND = _load_local("issue_backend", "issue_close_backend")
+_run_backend = _BACKEND.run_backend
+_resolve_op = _BACKEND.resolve_op
+BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -38,73 +53,6 @@ GH_VIEW_DEFAULT = [
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
 CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
 VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
-BACKEND_TIMEOUT_SECONDS = 60
-
-_PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
-
-
-def _run_backend(argv: list[str]) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            argv,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=BACKEND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return subprocess.CompletedProcess(
-            argv,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {BACKEND_TIMEOUT_SECONDS}s",
-        )
-
-
-def _resolve_op(
-    backend: dict[str, Any],
-    op: str,
-    default: list[str],
-    allowed: frozenset[str],
-    required: frozenset[str] = frozenset(),
-    **subs: str,
-) -> list[str]:
-    extra_subs = sorted(set(subs) - allowed)
-    if extra_subs:
-        raise RuntimeError(
-            f"_resolve_op({op}): caller passed placeholders {extra_subs!r} "
-            f"not in op's allowlist {sorted(allowed)!r}"
-        )
-    binary = backend.get("binary") or backend.get("id")
-    if not binary:
-        raise RuntimeError(
-            "issue_backend produced no binary; configure issue_backend.id and "
-            "issue_backend.binary in .agents/issue-adapter.yaml."
-        )
-    commands = backend.get("commands") or {}
-    template = commands.get(op)
-    if template is None:
-        if backend.get("id", "gh") != "gh":
-            raise RuntimeError(
-                f"issue_backend.id={backend.get('id')} did not declare commands.{op}; "
-                "configure the adapter command template before calling this op."
-            )
-        template = default
-    used = {match for part in template for match in _PLACEHOLDER_RE.findall(part)}
-    unknown = sorted(used - allowed)
-    if unknown:
-        raise RuntimeError(
-            f"_resolve_op({op}): adapter template uses unknown placeholders {unknown!r}; "
-            f"allowed for {op}: {sorted(allowed)!r}"
-        )
-    missing_required = sorted(required - used)
-    if missing_required:
-        raise RuntimeError(
-            f"_resolve_op({op}): adapter template is missing required placeholders "
-            f"{missing_required!r}"
-        )
-    rendered = [part.format(**subs) if "{" in part else part for part in template]
-    return [binary, *rendered]
 
 
 def close_with_comment(

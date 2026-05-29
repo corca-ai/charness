@@ -24,6 +24,7 @@ ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
 RUNTIME = _load_local("issue_runtime")
 BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
+CREATE = _load_local("issue_create")
 VERIFY = _load_local("issue_verify_closeout")
 newest_open_issue = RUNTIME.newest_open_issue
 parse_selector = RUNTIME.parse_selector
@@ -339,6 +340,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="An existing repository milestone title (fetch via the backend, e.g. `gh api repos/{repo}/milestones`); repeat per milestone",
     )
     milestone.set_defaults(func=command_resolve_milestone)
+
+    CREATE.register_create_subparser(subparsers, cwd_default)
     return parser
 
 
