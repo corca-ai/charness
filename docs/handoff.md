@@ -2,8 +2,10 @@
 
 ## Workflow Trigger
 
-- Pickup = `charness:find-skills` → **invoke `charness:handoff`** (do not just
-  read this file; manual reading is the recurring miss — see Discuss) → read
+- Pickup = `charness:find-skills` → **invoke `charness:handoff`**. A bare
+  `/handoff` now fires chunked routing too (#249), and the chunker unions the
+  **live open-issue backlog** with the entries below — so this list is a
+  curation/sequencing memo, not the full queue. Then read
   [quality latest](../charness-artifacts/quality/latest.md) +
   [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 - Refresh: `git status --short --branch`,
@@ -14,55 +16,45 @@
 
 ## Current State
 
-- **`main` == `origin/main`; `v0.11.0` released + verified** ([release latest](../charness-artifacts/release/latest.md)).
-  The #240/#238/#239 session-start-routing bundle is shipped and the three
-  issues are **CLOSED**.
-- **Session-start routing is gated, installed at USER level** (the recurring
-  prose-fails miss). A dumb SessionStart hook (Claude `~/.claude/settings.json`,
-  Codex `~/.codex/config.toml`) injects a directive to invoke `find-skills`,
-  which now owns driving the routed workflow (pickup → `charness:handoff`).
-  Honest non-claim: the hook strengthens routing via context-recency but does
-  not hard-force a Skill call, and was not observed firing live yet.
-- **Host hooks deduped**: each host now has exactly 1 usage-episode hook +
-  1 find-skills hook (both → the installed plugin source `~/.agents/src/charness`).
-- **Open issues** (`gh issue list`): #245/#244/#243 (usage-episodes),
-  #242+#219 (mutation regression), #233, #232, #241 (create-skill),
-  #237/#236 (achieve/quality UX), #184/#185. (#246, #247 closed this session;
-  `/goal`=pursue-only + fail-fast shipped.)
-- **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`. **Open:** F2
-  narration enforcement (judgment-bound) + issue/release sibling bindings →
-  [closeout contract](./prescribed-skill-closeout-contract.md).
-- **#242** live mutation regression (#235 now closed; **#219** still open).
-- **v0.11.0 real-host proof pending** (Cautilus clean-machine smoke).
+- **`main` ahead of `origin/main` by 9 — UNPUSHED.** This session built
+  **handoff chunker v2** via the now-complete goal
+  [2026-05-29-249-248-handoff-chunker-v2](../charness-artifacts/goals/2026-05-29-249-248-handoff-chunker-v2.md).
+  Nothing pushed; #249/#248 still **OPEN** on GitHub.
+- **#249 + #248 resolved in code.** Chunker unions the live backlog (deduping
+  issues a handoff entry already cites), fires on a bare skill invocation, and
+  its stage scripts compose with loud failure. Gate: 1793 passed / 0 failed.
+- **End-only handoff timing codified** ([operating-contract Session
+  Discipline](./conventions/operating-contract.md) + chunked-routing.md): the
+  baton is written at closeout only. This handoff is the first under that rule.
+- **SessionStart hook (old chunk-1) live-confirmed on Claude** this session;
+  Codex not directly exercised (low-risk). v0.11.0 real-host proof still pending.
 
 ## Next Session
 
-1. **Live-confirm the user-level SessionStart hook**: open a fresh Claude Code
-   session, check the injected "charness session-start routing" directive lands
-   and a bare handoff-doc mention pickup routes through find-skills into
-   `charness:handoff` without re-asking. Codex: same (host: Codex).
-   **/achieve skeleton drafted (unshaped)** → shape first: `/achieve @charness-artifacts/goals/2026-05-29-live-confirm-the-user-level-sessionstart-hook.md` (Before-phase fills acceptance/verification/slices); `/goal @…` activates the run only after shaping (#246).
-2. **usage-episodes follow-ups (filed): #243** (no consumer/report + inconsistent
-   capture → purpose unrealized), **#244** (find-skills hook not auto-wired by
-   `charness update`), **#245** (cross-checkout episode-hook dup). See Discuss.
-3. **#233 remainder.** F2 narration enforcement; wire `evidence_binds_to_context`
-   into `issue` + `release` (still presence-only).
-4. **#242** mutation regression (#235 closed) — triage survivors; reconcile #219 when the run clears.
-5. **#232** issue-skill `gh issue create` body shell-quoting; **v0.11.0 real-host proof**.
-6. **#184/#185** deferred product / AI-ML direction.
+> A bare `/handoff` unions the tracker, so this memo carries only the
+> cross-issue judgment the tracker can't express. Steps are ordered: decide the
+> default BEFORE shipping (hard to walk back).
+
+1. **Decide the issue-source default first.** Built **opt-out** (`--with-issues`
+   shells out to `gh`, adapter-gated, graceful doc-only fallback) but exercised
+   only against `gh`; non-gh backends are stub-tested. Confirm default-on vs
+   default-off+opt-in — this gates step 2 (wrong default is painful to reverse).
+2. **Then push + close #249/#248 + release.** All outward-facing — **await the
+   operator's go-ahead before pushing.** On go-ahead: push, run `issue` closeout
+   to close #249/#248, then bump via `release` (chunker feature ⇒ minor).
+3. **Capability (closeout retro): make `check_python_lengths` a pre-commit gate**
+   (warn ~330 / fail 360 for `skills/public/*/scripts/*.py`). The
+   silent-lib-growth trap has recurred twice — the recurrence is the trigger.
 
 ## Discuss
 
-- **usage-episodes is collected but its purpose is unrealized.** 200 episodes/7d,
-  ~98% session-grouped, `t_status` rich — but **no consumer/report** turns it into
-  the maintainer's answer ("used usefully? value compounding?"), and capture only
-  fires on explicit `run_slice_closeout` (inconsistent; daily counts decay). The
-  dedup stopped the ongoing 2× start-record duplication; ~30 historical orphan
-  session dirs remain (gitignored local cruft). Decision taken: **B (hygiene) +
-  release**; building the consumer + reliable capture is deferred (worth an issue).
+- **Default-on is a behavior change for every consumer on update** (each
+  `--with-issues` pickup calls the provider). Gated + doc-only fallback, but
+  only the `gh` path is proven live. Resolve before release. Full waste /
+  decisions / follow-ups: [closeout retro](../charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md).
 
 ## References
 
 - [quality posture](../charness-artifacts/quality/latest.md),
-  [closeout contract](./prescribed-skill-closeout-contract.md),
-  [release surface](../charness-artifacts/release/latest.md)
+  [chunker contract](./handoff-chunked-routing.md),
+  [goal artifact](../charness-artifacts/goals/2026-05-29-249-248-handoff-chunker-v2.md)
