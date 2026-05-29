@@ -53,7 +53,7 @@ def _render_skill_routing(public_skill_ids: list[str]) -> tuple[str, list[str]]:
         "",
         "Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.",
         "",
-        "When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, run `find-skills --recommend-for-task \"<task>\"` before ad hoc shell or tool use.",
+        "When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use.",
         "",
         "After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.",
         "",

@@ -44,9 +44,20 @@ surface `support/specdown`, and new-worktree requests should surface
 - show the next usable path instead of only saying "not found"
 
 Borrow Jef Raskin-style discoverability discipline: do not turn capability
-search into a routing maze. Surface the smallest obvious next step, keep lifecycle
-boundaries visible, and make it easy for the next operator to tell what to do
-now.
+search into a routing maze. Surface the smallest obvious next step and keep
+lifecycle boundaries visible.
+
+## Drive The Routed Workflow
+
+The inventory is the means, not the end: **drive the routed workflow from your
+result** rather than stopping at the capability map. A `SessionStart` trigger or
+a bare `@docs/handoff.md`-style mention with no explicit task is a **pickup** —
+follow the handoff `Workflow Trigger` and invoke the workflow it names (for the
+default charness handoff, `charness:handoff`; invoke the skill, do not just
+re-read the file). A pure "which skill handles X?" question is the exception:
+the inventory answer is the deliverable. The 2026-05-28/2026-05-29 routing miss
+was the inventory running while the routed workflow did not — owning the
+"what next" here is the fix. See `references/session-start-routing.md`.
 
 ## Bootstrap
 
@@ -66,52 +77,32 @@ sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
 
-Pass `--read-only` when the caller must not mutate the workspace (read-only
-sandbox, routing-only eval, or any context where the durable inventory artifact
-refresh is not part of the contract). The payload still contains the inventory
-on stdout, and `artifacts` reports `read-only` as write status so the consumer can tell
-that no durable artifact was written.
+Pass `--read-only` for routing-only/sandbox callers: the inventory still prints
+on stdout, but no durable artifact is written (`artifacts` reports `read-only`).
 
-If a host-provided installed skill path is missing, resolve the current
-installed path before treating the capability as absent:
+If a host-provided installed skill path is missing, resolve the current path
+before treating the capability as absent (add `--marketplace`/`--plugin` for a
+non-charness plugin cache that rotated after `charness update`):
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --repo-root . --skill-id find-skills --reported-path <missing-path>
 ```
 
-For non-charness plugins whose absolute cache paths went stale after
-`charness update` rotated cache hashes, pass `--marketplace`/`--plugin` to
-search any other Codex plugin's cache:
+Inspect `skills/public/` for workflow concepts and support skills / integration
+manifests for tool-use capability before proposing a new skill; search any
+adapter-advertised trusted skill roots first.
 
-```bash
-python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --skill-id <id> --marketplace <m> --plugin <p> --reported-path <missing-path>
-```
+Default durable artifact: `<repo-root>/charness-artifacts/find-skills/latest.md`
+is the canonical local-first capability inventory only; ad hoc recommendation
+queries stay in command output and do not rewrite query-shaped state into it.
 
-If the user's need sounds like a public workflow, inspect `skills/public/`
-first. If it sounds like a tool-use capability, inspect support skills and
-integration manifests before proposing a new public skill.
-If the adapter advertises trusted skill roots, search those before proposing a
-new local skill.
-
-Default durable artifact:
-
-- `<repo-root>/charness-artifacts/find-skills/latest.md`
-- `latest.*` is the canonical local-first capability inventory only; ad hoc
-  recommendation queries stay in the current command output and do not rewrite
-  query-shaped state into the durable artifact
-
-What you get after one run:
-
-- a local-first capability inventory
-- public/support skill descriptions, canonical paths, trigger phrases, and directly referenced skill files
-- the smallest next usable path across public skills, support seams, and integrations
-- refreshed capability inventory artifacts at `charness-artifacts/find-skills/latest.*`
-- a closeout signal under `artifacts`
-- recommendation-query payloads in command output for task, skill, or route queries
-
-What this does not do:
-
-- arbitrary external skill marketplace search unless the adapter explicitly allows it
+After one run you get a local-first capability inventory (skill descriptions,
+canonical paths, trigger phrases, referenced files), the smallest next usable
+path across public skills, support seams, and integrations, refreshed
+`charness-artifacts/find-skills/latest.*` artifacts, a closeout signal under
+`artifacts`, and recommendation-query payloads for task/skill/route queries. It
+does not do arbitrary external skill marketplace search unless the adapter
+explicitly allows it.
 
 ## Workflow
 
@@ -152,6 +143,11 @@ What this does not do:
    - what is already shipped
    - what is not yet shipped
    - whether an external skill ecosystem search is allowed by the current host
+7. Drive the routed workflow from the result.
+   - on a session-open pickup, follow the handoff `Workflow Trigger` and invoke
+     `charness:handoff` rather than stopping at the inventory
+   - on a named-capability request, start the matched durable work skill
+   - only a pure "which skill handles X?" question ends at the inventory answer
 
 ## Output Shape
 
@@ -181,6 +177,10 @@ The result should usually include:
   skill.
 - If nothing suitable exists yet, say so directly and classify the missing
   capability instead of hand-waving.
+- Do not stop after emitting the inventory when the session opened on a pickup
+  or named a concrete workflow; drive the routed workflow (pickup -> the handoff
+  trigger's `charness:handoff`). Stopping at the map is the routing miss this
+  skill exists to prevent.
 - If the `artifacts` payload reports `requires_repo_closeout: true`, apply the
   host repo's commit or closeout policy for meaningful durable artifact changes
   before final response.
@@ -191,6 +191,7 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/discovery-order.md`
 - `references/support-consumption.md`
+- `references/session-start-routing.md`
 - `../ideation/references/decision-question-response.md`
 - `scripts/list_capabilities.py`
 - `scripts/list_capabilities_lib.py`

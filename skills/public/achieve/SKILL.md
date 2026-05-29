@@ -46,6 +46,10 @@ and helper usage.
 1. Before — shape and save.
    - interview from prose with a small number of high-leverage questions; stop
      when the work has enough shape to save a reviewable artifact
+   - when the request's mode is genuinely ambiguous — an artifact-only goal
+     draft vs. an implementation-continuation run — ask at least one
+     high-leverage question to resolve it before saving; if a strong default
+     settles it, state the assumed mode explicitly instead of asking (#239)
    - establish outcome, non-goals, boundaries, user acceptance, verification
      plan (low-cost / high-confidence / external-or-live, plus expected proof
      cost and expected test-duplication pressure per slice), slice sequence,
@@ -53,6 +57,9 @@ and helper usage.
    - save with `upsert_goal.py` at status `draft`
    - tell the user the file is inert until they run `/goal @...`; do not start
      executing slices yourself
+   - close the before-phase response with the `Goal file:` path and the exact
+     `Activation:` line, and state the inert-until-`/goal` status, so the
+     operator cannot miss how to activate (#239)
 2. During — slice and record.
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - before a substantial slice, state its objective and expected evidence

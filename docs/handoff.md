@@ -14,16 +14,22 @@
 
 ## Current State
 
-- **`main` tracks `origin/main`.** The #233 achieve-F1 binding fix is committed
-  on `main` (see commit log); verify it is pushed before new work.
-- **Open issues**: routing goal bundles #240/#238/#239; also #233, #232, #235,
-  #219, #236/#237 (achieve/quality UX), #184/#185. (`gh issue list` for live.)
-- **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`: cited
-  `Retro:`/`Host log probe:` files must now bind to the goal (slug/issue from
-  the `Activation:` line); fails closed; numeric token anchored; stale-retro
-  attack blocked + tested. **Open:** F2 narration is advisory+prose only
-  (enforcement deferred — judgment-bound) and issue/release sibling bindings
-  deferred → [closeout contract](./prescribed-skill-closeout-contract.md).
+- **`main` ahead of `origin/main` by 1** (commit `e3493cf`, not yet pushed):
+  the #240/#238/#239 session-start-routing goal is COMPLETE. Verify the push
+  before new work.
+- **Session-start routing is now gated** (was the recurring prose-fails miss):
+  a dumb SessionStart hook (wired for Claude + Codex) injects a directive to
+  invoke `find-skills`, which now owns driving the routed workflow (pickup ->
+  `charness:handoff`). Honest non-claim: the hook strengthens routing via
+  context-recency but does not hard-force a Skill call, and was not observed
+  firing live yet. See the
+  [completed goal](../charness-artifacts/goals/2026-05-29-240-session-start-routing-enforcement.md).
+- **Open issues**: #240/#238/#239 resolved this run; still open: #233, #232,
+  #235, #219, #236/#237 (achieve/quality UX), #184/#185. (`gh issue list` for live.)
+- **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve` (cited evidence
+  must bind to the goal; fails closed; tested). **Open:** F2 narration enforcement
+  (judgment-bound) and issue/release sibling bindings deferred →
+  [closeout contract](./prescribed-skill-closeout-contract.md).
 - **#235 is the live mutation regression** (73.7% < 80%); **#219 superseded**
   (its `artifact_closeout_status` survivors no longer appear in #235).
 - **v0.10.0 published**; real-host release proof not yet run
@@ -31,17 +37,12 @@
 
 ## Next Session
 
-1. **Activate the session-start-routing goal** (designed this session, inert
-   until activated):
-   `/goal @charness-artifacts/goals/2026-05-29-240-session-start-routing-enforcement.md`.
-   Scope: a **simple** `SessionStart` hook (Claude Code + Codex) that only
-   triggers `find-skills`, with the routing-to-workflow responsibility moved
-   **into the `find-skills` skill** (drive the workflow from its result;
-   `handoff` on a pickup). Bundles **#240** (routing miss), **#238** (setup
-   names `find-skills` as a skill, not a bare command), **#239** (achieve
-   before-phase question + activation-closeout clarity). Run a fresh plan
-   critique at activation before slice 1. (`UserPromptSubmit` was rejected as
-   over-fire — see the goal's Interview Decisions.)
+1. **Push `e3493cf`** (the completed #240/#238/#239 routing work) to
+   `origin/main`, then **live-confirm the SessionStart hook**: open a fresh
+   Claude Code session here and check the injected "charness session-start
+   routing" directive lands and a bare handoff-doc mention pickup routes through
+   find-skills into `charness:handoff` without re-asking. Codex: confirm the
+   repo hook fires the same directive (host: Codex).
 2. **#233 remainder.** Decide F2 narration enforcement (judgment-bound), then
    wire `evidence_binds_to_context` into `issue` (`issue_verify_closeout.py`)
    and `release` (`publish_release_preflight.py`) — both still call the
@@ -55,13 +56,13 @@
 
 ## Discuss
 
-- **Routing miss CONFIRMED recurring (2026-05-29):** the `handoff` skill again
-  did not auto-trigger on a `@docs/handoff.md` pickup (`find-skills` ran,
-  `handoff` did not), and `achieve` was expected where `issue` was chosen. The
-  confirming recurrence per the
-  [routing-miss retro](../charness-artifacts/retro/2026-05-28-find-skills-handoff-no-auto-trigger.md);
-  acted on via the Next-Session routing goal. Same "prose fails under stimulus,
-  need a gate" pattern as #230/#233.
+- **Routing miss now gated, awaiting live proof.** The recurring miss
+  (`find-skills` ran, `handoff` did not) was converted to a gate this run
+  (SessionStart hook + find-skills routing-drive contract + reciprocal handoff
+  pickup pin), RCA-recorded as `session-start-routing-prose-not-gated`. The
+  remaining open question is purely live confirmation: does the new hook
+  reliably change behavior on a real session open? First proof lands next
+  session. See [routing closeout retro](../charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md).
 
 ## References
 

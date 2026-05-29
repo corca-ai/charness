@@ -1,0 +1,18 @@
+# charness:find-skills session-start routing trigger (#240)
+#
+# Codex parity for the Claude Code .claude/settings.json SessionStart hook.
+# Dumb trigger: it only injects a directive to invoke `charness:find-skills`;
+# the routing-to-workflow contract lives in the find-skills skill, not here.
+# Repo-local hooks resolve the script from the git root (Codex runs commands
+# with the session cwd, which may be a subdirectory). Codex adds the emitted
+# hookSpecificOutput.additionalContext to session context (confirmed 2026-05-29;
+# see charness-artifacts/gather/2026-05-22-codex-hooks-surface.md).
+# Matcher fires on a fresh open, resume, and clear; mid-session `compact` is
+# deliberately excluded to avoid re-routing mid-task.
+[[hooks.SessionStart]]
+matcher = "startup|resume|clear"
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'python3 "$(git rev-parse --show-toplevel)/scripts/session_start_find_skills.py" --host codex'
+statusMessage = "charness: find-skills session-start routing"

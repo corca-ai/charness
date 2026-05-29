@@ -125,6 +125,10 @@ The handoff should usually contain:
 - Do not accumulate dated `This Session (<date>)` sections across sessions;
   replace the old one or spill durable detail into the right sibling artifact.
 - Do not hide the real next workflow behind vague prose.
+- On a session-open pickup — including one routed here by `find-skills` after a
+  bare handoff-doc mention — invoke the workflow named in the `Workflow Trigger`
+  instead of only re-reading the handoff; mention-only reading is the
+  recurring routing miss (#240) this contract guards against.
 - Do not write unverified state as fact.
 - Do not let the handoff drift away from the current repo state.
 - Do not add new top-level sections just to preserve history; prune or move the

@@ -19,8 +19,13 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path) -> 
     assert payload["listed_skill_ids"] == ["find-skills"]
     assert "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration" in payload["markdown"]
     assert "default map of installed public skills, support skills, synced support surfaces, and integrations" in payload["markdown"]
-    assert 'find-skills --recommend-for-task "<task>"' in payload["markdown"]
+    # #238: name find-skills as a skill, not a bare PATH command.
+    assert "ask the `find-skills` skill to recommend a route for the task" in payload["markdown"]
     assert "before ad hoc shell or tool use" in payload["markdown"]
+    # #238 regression guard: no bare-command syntax that reads as a binary.
+    assert "find-skills --recommend-for-task" not in payload["markdown"]
+    assert "find-skills --" not in payload["markdown"]
+    assert "the shared/public charness skill `find-skills`" in payload["markdown"]
     assert "choose the durable work skill that best matches the request" in payload["markdown"]
     assert "External URLs or source links that should become working context" in payload["markdown"]
     assert "route through `gather` before summarizing, implementing, or deciding" in payload["markdown"]

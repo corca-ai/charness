@@ -26,6 +26,20 @@ until the work has enough shape to save a reviewable goal artifact. Establish:
 Ask a small number of high-leverage questions. Do not interrogate the user for
 detail that a strong default or the request wording already settles.
 
+### Mode disambiguation (#239)
+
+One mode question is high-leverage often enough to call out: is this an
+**artifact-only** goal draft (shape and save, then stop) or an
+**implementation-continuation** run (the user expects slices to execute once
+activated)? When the selector or prose is genuinely ambiguous between the two,
+ask at least one question to resolve it before saving — a wrong assumption here
+either strands a draft the user wanted executed or starts executing a draft the
+user wanted only reviewed. When a strong default settles it (explicit `/goal`
+activation already happened, or the prose names the mode), state the assumed
+mode in the artifact and the response instead of asking. This is the
+[#239](https://github.com/corca-ai/charness/issues/239) before-phase
+question-discipline contract.
+
 ### Anti-anchoring probe
 
 For each value confirmed by the user, inherited from issue framing, or
@@ -76,6 +90,20 @@ marker inside the Slice Plan section to opt out.
 Save the artifact with `upsert_goal.py` at status `draft`. Tell the user the
 file is inert until they run the activation command. The skill does **not** start
 executing slices on its own — activation is the user's explicit decision.
+
+### Activation-closeout clarity (#239)
+
+The before-phase response must make activation impossible to miss. Close it with
+an explicit checklist the operator can act on without rereading:
+
+- `Goal file:` — the saved artifact path under `charness-artifacts/goals/`.
+- `Activation:` — the exact `/goal @<path>` line to run.
+- the inert-until-`/goal` status stated in one sentence (nothing runs until
+  the user activates).
+
+`check_goal_artifact.py` already fails closed when the artifact body is missing
+its `Activation:` line; this closeout checklist is the response-side counterpart
+so the operator-facing handoff is as clear as the artifact contract.
 
 ## During
 

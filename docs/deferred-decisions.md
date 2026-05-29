@@ -209,7 +209,7 @@ Reopen trigger:
 - Current choice: Defer. `resolve_codex_target` picks the representation at install time, and the TOML block matcher requires the marker line to be immediately followed (modulo blank lines) by the table header. A user who later creates `~/.codex/hooks.json` will get a second hook installed there without removing the original TOML block; hand-edited markers silently break uninstall.
 - Why now: Slice B closeout enables capture on a single canonical Codex layer; cross-representation churn and hand-edit recovery are not on the current dogfood path.
 - Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/host_hook_codex_toml_lib.py](../scripts/host_hook_codex_toml_lib.py)
-- Reopen trigger: First report of an orphaned Codex hook block after a representation flip, or a hand-edited Codex `config.toml` where uninstall reports `not_installed` while the block is still on disk.
+- Reopen trigger: First report of an orphaned Codex hook block after a representation flip, or a hand-edited Codex TOML hook block where uninstall reports `not_installed` while the block is still on disk.
 
 ### D24. Slice Closeout Emitter Best-Effort Posture
 

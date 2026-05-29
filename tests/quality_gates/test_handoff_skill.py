@@ -23,6 +23,12 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
     assert "changes the next action" in skill_text
     assert "always-loaded host instruction surfaces" in skill_text
     assert "host already injects them automatically" in skill_text
+    # #240 reciprocal pickup contract: find-skills routes a mention-only pickup
+    # here, and handoff must invoke (not just re-read) the named workflow.
+    # Normalize whitespace so the pins survive line-wrapping of the contract.
+    normalized = " ".join(skill_text.split())
+    assert "routed here by `find-skills`" in normalized
+    assert "recurring routing miss" in normalized
     assert "host already injects" in state_selection
     assert "host-injected instruction surfaces" in document_seams
     assert "git log" in spill_targets

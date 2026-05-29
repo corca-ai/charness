@@ -1,9 +1,38 @@
 # Codex Hooks Surface
 
 - Source: https://developers.openai.com/codex/hooks
-- Fetched: 2026-05-22; refreshed 2026-05-23 for precedence details
+- Fetched: 2026-05-22; refreshed 2026-05-23 for precedence details; refreshed
+  2026-05-29 for SessionStart context-injection + repo-local resolution (#240)
 - Access mode: direct public web fetch
-- Use: design context for charness usage-episodes session tracking
+- Use: design context for charness usage-episodes session tracking and the
+  #240 find-skills session-start routing trigger
+
+## SessionStart Context Injection (refreshed 2026-05-29, #240)
+
+The earlier "whether stdout injects context" open gap is now closed by the doc.
+A Codex `SessionStart` command hook **can** inject model-visible context, the
+same way Claude Code does:
+
+- Plain text on `stdout` "is added as extra developer context."
+- Structured JSON `hookSpecificOutput.additionalContext` "text is added as
+  extra developer context." (same field name and shape as Claude Code).
+- Matcher is a regex string filtering on `source`; valid values `startup`,
+  `resume`, `clear`, `compact` (same set as Claude Code).
+
+Repo-local hook resolution (for `<repo>/.codex/config.toml`):
+
+- "Commands run with the session `cwd` as their working directory."
+- The doc recommends resolving from the git root rather than a relative path,
+  because Codex may start in a subdirectory:
+  `command = '/usr/bin/python3 "$(git rev-parse --show-toplevel)/scripts/foo.py"'`.
+- No `$CODEX_PROJECT_DIR`/`$CODEX_WORKSPACE` env var is documented; git-root
+  command substitution is the portable form. (Claude Code's equivalent is the
+  documented `$CLAUDE_PROJECT_DIR`.)
+
+Implication for #240: Codex parity is real, not blocked — the find-skills
+routing trigger uses the **same** `scripts/session_start_find_skills.py` and the
+same `additionalContext` payload across both hosts; only the script-resolution
+seam differs (`$CLAUDE_PROJECT_DIR` vs `$(git rev-parse --show-toplevel)`).
 
 ## Available Lifecycle Hooks
 
@@ -69,11 +98,19 @@ The Codex docs do not mention Claude Code. From repo prior knowledge, Claude Cod
 ## Captured vs Human Confirmation
 
 - Captured: hook list, configuration paths, payload fields, config format.
-- Not yet confirmed: exact JSON schema for each event, behavior under concurrent sessions, what happens when a hook script exits non-zero (cancel turn? warn?), permission boundary of hook scripts.
+- **Resolved 2026-05-29 (#240):** the `SessionStart` event name and the
+  `hookSpecificOutput.additionalContext` injection schema are now confirmed from
+  the doc (see the SessionStart section above). The find-skills routing trigger
+  wires exactly that literal event name and field.
+- Still not confirmed: behavior under concurrent sessions, what happens when a
+  hook script exits non-zero (cancel turn? warn?), permission boundary of hook
+  scripts. (The find-skills trigger sidesteps the non-zero question by being
+  silent-failing and always exiting 0.)
 
 ## Open Gaps
 
-- Exact `hook_event_name` strings (e.g., is it `"SessionStart"` literal or some other form?). Confirm before wiring an emitter.
+- ~~Exact `hook_event_name` strings.~~ Resolved 2026-05-29: `SessionStart` is the
+  literal event name (confirmed before wiring the find-skills emitter).
 - Whether hook scripts can write to the same JSONL safely under concurrent turns/sessions. Likely fine if append-only with a lock, but unverified.
 - Whether `session_id` is stable across `resume` of the same session (vs being a new id on each resume). Critical for session-grouping semantics.
 
