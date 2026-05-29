@@ -67,7 +67,7 @@ repo by created date. It must not use the current session's last created issue.
    selected. Assign only existing repository labels and milestones: gate the
    requested milestone with `issue_tool.py resolve-milestone`, never invent a
    new label or milestone (leave it unassigned and say so, or report a backend
-   capability gap). Do not ask for approval unless the user asks to review.
+   capability gap). Do not ask for approval unless the user explicitly asks to review first.
 6. Verify each created issue through `selected_backend`; render closeout only
    from the verified `{repo, number, url}` ledger with final labels and
    milestone (or "milestone: unassigned"). `create` reports `body_verified`;
