@@ -178,6 +178,32 @@ literal paths (`stryker.log`) are renamed to neutral equivalents (`run.log`)
 and stack-coupled values (`commands.*`) ship empty so the portable-defaults
 preset stays stack-neutral.
 
+## Fixing a changed-line-coverage regression
+
+When a run FAILs on the **blocking** "changed files with uncovered changed
+lines" signal (distinct from a score break — the score can pass while this
+fails), two traps waste time and produce false proof (learned from #251):
+
+- **Reproduce with the gate's own coverage, not a naive `coverage run`.** The
+  gate collects coverage with `parallel = True` + `COVERAGE_PROCESS_START`
+  (`mutation_sampling_lib.run_test_coverage`), so it **captures subprocess-
+  invoked CLI scripts**. A plain `coverage run -m pytest` does not, and will
+  report a subprocess-only script as 0% — a measurement artifact, not the gap.
+  Drive `run_test_coverage` scoped to the file's test surface, then
+  `classify_changed_line_scope_gap`, to see the real blocking verdict.
+- **`workflow_dispatch` cannot prove a changed-line fix.** Only `schedule`
+  events compute `base_sha` (see `mutation-tests.yml`); a dispatch run has zero
+  changed files, so the changed-line classifier is inert. A green dispatch
+  proves only the **score/survivor** path. The blocking-trio fix is confirmed
+  by the **next scheduled run**, or locally by the sampler with explicit
+  `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
+
+The signal is per-run `base..head`, so it can recur on any newly-changed file
+whose changed lines lack coverage; the durable fix is test coverage of those
+lines (not a floor/budget tweak). For a survived *format* mutant (e.g.
+`json.dumps(..., indent=2)`), assert on raw output, not a `json.loads`
+round-trip, which is indentation-agnostic.
+
 ## See Also
 
 - `adapter-contract.md` — full field list and types.

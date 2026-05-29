@@ -1,6 +1,6 @@
 # Achieve Goal: #251: Mutation test regression on main
 
-Status: active
+Status: complete
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-issue-251-251-mutation-test-regression-on-main.md`
 
@@ -343,7 +343,7 @@ The user can confirm completion by:
 - **Failing run:** GH Actions run `26640087939`; base `dc91404401251c1f5fb0935a69005a39c1418cdc`, head `8a21ab1329496f37c8bd4fbccd6451c98e89916c`. Current `main` is past that (`6a70159`), so Slice 1 must re-derive the changed-line set rather than trust the historical range.
 - **Gate config:** `.agents/quality-adapter.yaml` `mutation_testing` (`score_break: 80`; full = cosmic-ray + `npm run test:mutation:js`; summary = `check_mutation_suite_score.py`); workflow `.github/workflows/mutation-tests.yml` (schedule cron `17 */3 * * *`, `workflow_dispatch`, PR=dry-run).
 - **Gate contract:** [skills/public/quality/references/mutation-testing.md](../../skills/public/quality/references/mutation-testing.md) (reachable-mutant denominator; changed-files-with-uncovered-lines is a separate blocking signal from score).
-- **Related backlog:** #219 (same regression class, subsumed), #236 (CI-only failure triage — the verification-cost tension this goal navigates).
+- **Related backlog:** #219 — **NOT subsumed** (resolution critique correction): #219 is a distinct *score* failure (66.1%/76.7% < 80%, **0** blocking changed files) over a different range (`d310c93..59841e0`), not the changed-line-coverage gap #251 was about. Its specific survivors were not independently verified killed by this work, so it is left OPEN. #236 (CI-only failure triage — the verification-cost tension this goal navigates).
 - **Pre-pickup state:** [recent lessons](../retro/recent-lessons.md), [quality latest](../quality/latest.md).
 - Source: handoff entry #4 (#251: Mutation test regression on main) — see [docs/handoff.md](../../docs/handoff.md).
 - Cited path: `com/corca-ai/charness/actions/runs/`
@@ -440,6 +440,21 @@ Reviewer provenance: read goal artifact; `mutation-tests.yml` (L129-151);
 `git diff 8a21ab1..6a70159` (empty over the trio) and `git merge-base
 --is-ancestor` (ancestor confirmed). Did not run the mutation suite/sampler.
 
+**Resolution critique (closeout, fresh-eye subagent).** Three findings, all
+folded:
+
+- **Recurrence guard was promised, not built** → landed the durable note in
+  `mutation-testing.md` (§"Fixing a changed-line-coverage regression"); without
+  it, recurrence-prevention relied only on "remember to add tests."
+- **Closure honesty** → corrected Final Verification: #251 auto-closed by the
+  pre-fix scheduled run's range quirk, not by this fix (dispatch finished ~23 min
+  after the close); the fix makes the coverage durable.
+- **#219 must not be closed as subsumed** → verified #219 is a distinct *score*
+  failure (0 blocking changed files) over a different range; left OPEN and the
+  Context Sources "subsumed" claim corrected. Reviewer read
+  `git show --stat 86ea3ea`, #251/#219 issue bodies + comments, the two run
+  timelines, `check_coverage.py` TARGET_FILES, `.githooks/pre-commit`.
+
 ## Off-Goal Findings
 
 - **Transferable mutation-survivor pattern (not filed):** other `--json` CLIs
@@ -468,16 +483,31 @@ Self-verification against the goal (Deming "study" step — measured vs predicte
   **1784 passed, 4 skipped, 57 deselected**. `check_duplicates` clean (0.98).
   Pre-push quality gate: 68 passed / 0 failed.
 - **Live CI proof (score path):** `workflow_dispatch` run on fix commit
-  `86ea3ea` — https://github.com/corca-ai/charness/actions/runs/26664721232
-  (full mode). Result recorded at closeout.
+  `86ea3ea` — https://github.com/corca-ai/charness/actions/runs/26664721232 —
+  **conclusion: success** (Summarize step success; Fail-on-mutation step
+  skipped; CI full suite 1786 passed). This proves the **score/survivor** path
+  green on the fixed commit.
+- **#251 closure provenance (honest):** #251 was auto-closed by
+  `github-actions[bot]` at 22:14:35 via the **concurrent scheduled run
+  `26664176286` on the *pre-fix* commit `aa14cad`** — that run's `base..head`
+  range did not include the trio, so its changed-line classifier was clean and
+  the score passed → "recovered" → auto-close. My dispatch run finished ~23 min
+  later. So the auto-close was triggered by a range quirk, **not** by this fix;
+  this fix is what makes the trio's coverage **durable** so a future scheduled
+  run whose range *does* include the trio will not re-fail.
 - **Live CI proof (blocking path):** per critique B1, `workflow_dispatch` has no
-  `base_sha` and cannot exercise the changed-line classifier — only the next
-  **scheduled** cron run re-checks it on fixed `main`. That confirmation is
-  asynchronous (≤3h) and is the user's verification step; the deterministic
-  stand-in (local sampler repro above) is the proof produced now.
+  `base_sha` and cannot exercise the changed-line classifier — only a
+  **scheduled** cron run whose range includes the trio re-checks it. That
+  confirmation is asynchronous and is the user's verification step; the
+  deterministic stand-in (local sampler repro above) is the proof produced now.
+- **Recurrence guard (resolution-critique follow-up, DONE):** the durable note
+  promised in the retro is landed in
+  [mutation-testing.md](../../skills/public/quality/references/mutation-testing.md)
+  (§"Fixing a changed-line-coverage regression"): subprocess-capturing repro,
+  dispatch-has-no-base_sha, and the raw-format mutant rule.
 
 Retro: charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md
-Host log probe: charness-artifacts/probe/2026-05-30-issue-251-mutation-coverage.json
+Host log probe: charness-artifacts/probe/2026-05-30-issue-251-251-mutation-test-regression-on-main.json
 
 ### Residual risks & non-claims
 
