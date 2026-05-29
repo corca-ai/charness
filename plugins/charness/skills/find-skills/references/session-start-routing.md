@@ -1,10 +1,12 @@
 # Session-Start Routing
 
 `find-skills` owns the decision of *what to do after the inventory* when a
-session opens. A `SessionStart` hook (Claude Code `.claude/settings.json`, Codex
-`.codex/config.toml`) can only inject a directive to call this skill — it cannot
-invoke a Skill tool or run a workflow on the agent's behalf. So the routing
-intelligence has to live here, not in the hook text.
+session opens. A `SessionStart` hook — installed at **user level**
+(`~/.claude/settings.json` for Claude Code, `~/.codex/config.toml` for Codex),
+not committed into a repo — can only inject a directive to call this skill. It
+cannot invoke a Skill tool or run a workflow on the agent's behalf. So the
+routing intelligence has to live here, not in the hook text. (`charness update`
+does not auto-wire this hook; it is a manual user-level install.)
 
 ## The miss this prevents
 

@@ -30,8 +30,10 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update`.
+- Run `charness update` (delivers the new `scripts/session_start_find_skills.py` routing-trigger script into the plugin).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
+- NOTE - session-start find-skills routing is NOT auto-wired. `charness init`/`charness update` install only the usage-episodes SessionStart hook. To enable the find-skills routing trigger, manually add a user-level SessionStart hook pointing at the installed plugin's `scripts/session_start_find_skills.py` - Claude Code via `~/.claude/settings.json` (`--host claude`), Codex via `~/.codex/config.toml` (`--host codex`).
+- Honest ceiling - the hook injects a directive to call `charness:find-skills`; it strengthens routing via context-recency but does not hard-force the skill invocation.
 real_host_required_surfaces:
 - integrations-and-control-plane
 real_host_required_path_globs:
