@@ -429,41 +429,36 @@ def detect_host_hook_actual(
     }
 
 
-def session_capture_status(
+def _hook_sync_status(
     repo_root: Path,
     *,
-    adapter: dict[str, Any] | None,
+    intents: dict[str, str],
     home: Path,
+    noun: str,
+    drift_prefix: str = "",
+    detect_kwargs: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    adapter_intents = {host: _intent_for(adapter or {}, host) for host in ("claude", "codex")}
+    """Shared intent-vs-actual SessionStart-hook drift status (session capture
+    and find-skills routing differ only in intent section, detect kwargs, and
+    the drift noun/prefix)."""
     drift: list[str] = []
     per_host: dict[str, Any] = {}
-    for host, intent in adapter_intents.items():
-        actual = detect_host_hook_actual(repo_root, host, home=home)
+    for host, intent in intents.items():
+        actual = detect_host_hook_actual(repo_root, host, home=home, **(detect_kwargs or {}).get(host, {}))
         in_sync = (intent == "enabled" and actual["present"]) or (intent == "disabled" and not actual["present"])
         if not in_sync:
-            if intent == "enabled" and not actual["present"]:
-                drift.append(f"{host}: intent=enabled but no charness SessionStart hook found at {actual['settings_path']}")
-            else:
-                drift.append(f"{host}: intent=disabled but charness SessionStart hook still present at {actual['settings_path']}")
-        per_host[host] = {
-            "intent": intent,
-            "actual": actual,
-            "in_sync": in_sync,
-        }
-    return {
-        "in_sync": not drift,
-        "drift": drift,
-        "hosts": per_host,
-    }
+            detail = f"no {noun} found" if intent == "enabled" else f"{noun} still present"
+            drift.append(f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}")
+        per_host[host] = {"intent": intent, "actual": actual, "in_sync": in_sync}
+    return {"in_sync": not drift, "drift": drift, "hosts": per_host}
 
 
-def find_skills_routing_status(
-    repo_root: Path,
-    *,
-    adapter: dict[str, Any] | None,
-    home: Path,
-) -> dict[str, Any]:
+def session_capture_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
+    intents = {host: _intent_for(adapter or {}, host) for host in ("claude", "codex")}
+    return _hook_sync_status(repo_root, intents=intents, home=home, noun="charness SessionStart hook")
+
+
+def find_skills_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
     from host_hook_find_skills import (
         FIND_SKILLS_MARKER,
         FIND_SKILLS_SCRIPT_RELATIVE,
@@ -471,30 +466,8 @@ def find_skills_routing_status(
     )
 
     intents = {host: _intent_for(adapter or {}, host, section=INTENT_SECTION) for host in ("claude", "codex")}
-    drift: list[str] = []
-    per_host: dict[str, Any] = {}
-    for host, intent in intents.items():
-        actual = detect_host_hook_actual(
-            repo_root,
-            host,
-            home=home,
-            state_key=f"{host}:{INTENT_SECTION}",
-            script_relative=FIND_SKILLS_SCRIPT_RELATIVE,
-            toml_marker=FIND_SKILLS_MARKER,
-        )
-        in_sync = (intent == "enabled" and actual["present"]) or (intent == "disabled" and not actual["present"])
-        if not in_sync:
-            if intent == "enabled" and not actual["present"]:
-                drift.append(f"{host}: find_skills_routing intent=enabled but no SessionStart hook found at {actual['settings_path']}")
-            else:
-                drift.append(f"{host}: find_skills_routing intent=disabled but SessionStart hook still present at {actual['settings_path']}")
-        per_host[host] = {
-            "intent": intent,
-            "actual": actual,
-            "in_sync": in_sync,
-        }
-    return {
-        "in_sync": not drift,
-        "drift": drift,
-        "hosts": per_host,
+    detect_kwargs = {
+        host: {"state_key": f"{host}:{INTENT_SECTION}", "script_relative": FIND_SKILLS_SCRIPT_RELATIVE, "toml_marker": FIND_SKILLS_MARKER}
+        for host in ("claude", "codex")
     }
+    return _hook_sync_status(repo_root, intents=intents, home=home, noun="SessionStart hook", drift_prefix="find_skills_routing ", detect_kwargs=detect_kwargs)
