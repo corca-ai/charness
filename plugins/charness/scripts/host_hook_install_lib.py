@@ -386,9 +386,13 @@ def detect_host_hook_actual(
     host: str,
     *,
     home: Path,
+    state_key: str | None = None,
+    script_relative: Path = HOOK_SCRIPT_RELATIVE,
+    toml_marker: str = CHARNESS_MARKER,
 ) -> dict[str, Any]:
     state = read_state(repo_root)
-    state_entry = state.get(host) if isinstance(state.get(host), dict) else None
+    key = state_key or host
+    state_entry = state.get(key) if isinstance(state.get(key), dict) else None
     if host == "claude":
         settings_path = Path(state_entry["settings_path"]) if isinstance(state_entry, dict) and isinstance(state_entry.get("settings_path"), str) else default_claude_settings_path(home)
         kind = "claude-json"
@@ -400,7 +404,7 @@ def detect_host_hook_actual(
             settings_path, kind = resolve_codex_target(home)
     expected_command = state_entry.get("command") if isinstance(state_entry, dict) else None
     if not isinstance(expected_command, str) or not expected_command:
-        expected_command = build_command(repo_root, host=host)
+        expected_command = build_command(repo_root, host=host, script_relative=script_relative)
     present = False
     if kind in {"claude-json", "codex-json"} and settings_path.is_file():
         try:
@@ -415,7 +419,7 @@ def detect_host_hook_actual(
                     present = any(_entries_match_command(entry, expected_command) for entry in entries)
     elif kind == "codex-toml" and settings_path.is_file():
         text = read_text_or_empty(settings_path)
-        present = find_charness_toml_block(text, expected_command) is not None
+        present = find_charness_toml_block(text, expected_command, toml_marker) is not None
     return {
         "settings_path": str(settings_path),
         "kind": kind,
@@ -442,6 +446,48 @@ def session_capture_status(
                 drift.append(f"{host}: intent=enabled but no charness SessionStart hook found at {actual['settings_path']}")
             else:
                 drift.append(f"{host}: intent=disabled but charness SessionStart hook still present at {actual['settings_path']}")
+        per_host[host] = {
+            "intent": intent,
+            "actual": actual,
+            "in_sync": in_sync,
+        }
+    return {
+        "in_sync": not drift,
+        "drift": drift,
+        "hosts": per_host,
+    }
+
+
+def find_skills_routing_status(
+    repo_root: Path,
+    *,
+    adapter: dict[str, Any] | None,
+    home: Path,
+) -> dict[str, Any]:
+    from host_hook_find_skills import (
+        FIND_SKILLS_MARKER,
+        FIND_SKILLS_SCRIPT_RELATIVE,
+        INTENT_SECTION,
+    )
+
+    intents = {host: _intent_for(adapter or {}, host, section=INTENT_SECTION) for host in ("claude", "codex")}
+    drift: list[str] = []
+    per_host: dict[str, Any] = {}
+    for host, intent in intents.items():
+        actual = detect_host_hook_actual(
+            repo_root,
+            host,
+            home=home,
+            state_key=f"{host}:{INTENT_SECTION}",
+            script_relative=FIND_SKILLS_SCRIPT_RELATIVE,
+            toml_marker=FIND_SKILLS_MARKER,
+        )
+        in_sync = (intent == "enabled" and actual["present"]) or (intent == "disabled" and not actual["present"])
+        if not in_sync:
+            if intent == "enabled" and not actual["present"]:
+                drift.append(f"{host}: find_skills_routing intent=enabled but no SessionStart hook found at {actual['settings_path']}")
+            else:
+                drift.append(f"{host}: find_skills_routing intent=disabled but SessionStart hook still present at {actual['settings_path']}")
         per_host[host] = {
             "intent": intent,
             "actual": actual,

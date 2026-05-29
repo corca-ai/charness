@@ -329,6 +329,25 @@ def test_status_reports_drift_when_intent_disabled_but_actual_present(fake_repo:
     assert any("claude" in item for item in status["drift"])
 
 
+def test_find_skills_status_reports_drift(fake_repo: Path, fake_home: Path) -> None:
+    status = lib.find_skills_routing_status(
+        fake_repo,
+        adapter={"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}},
+        home=fake_home,
+    )
+    assert status["in_sync"] is False
+    assert status["hosts"]["claude"]["in_sync"] is False
+    assert any("find_skills_routing" in item for item in status["drift"])
+
+    fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+    status = lib.find_skills_routing_status(
+        fake_repo,
+        adapter={"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}},
+        home=fake_home,
+    )
+    assert status["in_sync"] is True
+
+
 def test_session_start_script_silent_when_disabled(fake_repo: Path, fake_home: Path) -> None:
     _write_adapter(fake_repo, "version: 1\nenabled: false\n")
     script = REPO_ROOT / "scripts" / "usage_episode_session_start.py"
@@ -457,7 +476,14 @@ def test_session_capture_cli_status_exit_codes(fake_home: Path, fake_charness_re
 
 
 def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Path) -> None:
-    _write_adapter(fake_repo, "version: 1\nenabled: true\nhost_hooks:\n  claude: enabled\n")
+    _write_adapter(
+        fake_repo,
+        (
+            "version: 1\nenabled: true\n"
+            "host_hooks:\n  claude: enabled\n"
+            "find_skills_routing:\n  claude: enabled\n"
+        ),
+    )
     runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
     result = subprocess.run(
         [sys.executable, str(runner), "--repo-root", str(fake_repo), "--home", str(fake_home), "--mode", "status"],
@@ -467,8 +493,10 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["in_sync"] is False
+    assert payload["find_skills_routing"]["hosts"]["claude"]["in_sync"] is False
 
     lib.install_claude_hook(fake_repo, home=fake_home)
+    fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
     result = subprocess.run(
         [sys.executable, str(runner), "--repo-root", str(fake_repo), "--home", str(fake_home), "--mode", "status"],
         capture_output=True,

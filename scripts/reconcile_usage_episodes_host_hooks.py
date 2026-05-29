@@ -69,8 +69,16 @@ def main(argv: list[str] | None = None) -> int:
         exit_code = 0
     elif args.mode == "status":
         status = lib.session_capture_status(repo_root, adapter=adapter, home=home)
-        payload = {"mode": "status", **status}
-        exit_code = 0 if status["in_sync"] else 1
+        find_skills_status = lib.find_skills_routing_status(repo_root, adapter=adapter, home=home)
+        payload = {
+            "mode": "status",
+            **status,
+            "find_skills_routing": find_skills_status,
+        }
+        if not find_skills_status["in_sync"]:
+            payload["in_sync"] = False
+            payload["drift"] = [*status["drift"], *find_skills_status["drift"]]
+        exit_code = 0 if payload["in_sync"] else 1
     elif args.mode == "install":
         hosts = [args.host] if args.host else ["claude", "codex"]
         results: dict[str, Any] = {}

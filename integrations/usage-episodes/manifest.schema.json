@@ -106,6 +106,23 @@
         }
       },
       "description": "Per-host install intent for the SessionStart capture hook. Reconciled by charness init/update; surfaced by `charness session-capture status`."
+    },
+    "find_skills_routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claude": {
+          "type": "string",
+          "enum": ["enabled", "disabled"],
+          "description": "Whether charness installs the find-skills SessionStart routing hook into the resolved Claude settings.json. Default disabled."
+        },
+        "codex": {
+          "type": "string",
+          "enum": ["enabled", "disabled"],
+          "description": "Whether charness installs the find-skills SessionStart routing hook into ~/.codex/config.toml (or hooks.json when that file already carries hook entries on the same layer). Default disabled."
+        }
+      },
+      "description": "Per-host install intent for the find-skills SessionStart routing hook. Reconciled by charness init/update and surfaced by `charness session-capture status`."
     }
   }
 }

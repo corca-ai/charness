@@ -25,3 +25,6 @@ rotation:
 host_hooks:
   claude: enabled
   codex: enabled
+find_skills_routing:
+  claude: enabled
+  codex: enabled

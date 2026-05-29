@@ -4069,6 +4069,18 @@ def cmd_session_capture_status(args: argparse.Namespace) -> int:
                 present = actual.get("present") if isinstance(actual, dict) else None
                 settings_path = actual.get("settings_path") if isinstance(actual, dict) else None
                 print(f"{host.upper()}: intent={intent} present={'yes' if present else 'no'} settings={settings_path}")
+        find_skills = payload.get("find_skills_routing")
+        if isinstance(find_skills, dict):
+            find_hosts = find_skills.get("hosts")
+            if isinstance(find_hosts, dict):
+                for host, entry in find_hosts.items():
+                    if not isinstance(entry, dict):
+                        continue
+                    actual = entry.get("actual", {})
+                    intent = entry.get("intent", "?")
+                    present = actual.get("present") if isinstance(actual, dict) else None
+                    settings_path = actual.get("settings_path") if isinstance(actual, dict) else None
+                    print(f"{host.upper()} FIND-SKILLS: intent={intent} present={'yes' if present else 'no'} settings={settings_path}")
         drift = payload.get("drift")
         if isinstance(drift, list) and drift:
             print("DRIFT:")
