@@ -442,8 +442,76 @@ Reviewer provenance: read goal artifact; `mutation-tests.yml` (L129-151);
 
 ## Off-Goal Findings
 
+- **Transferable mutation-survivor pattern (not filed):** other `--json` CLIs
+  whose only tests do `json.loads` round-trips can hide `indent`/format mutants
+  (the critique B3 / `aggregate_rca_ledger.py` smell). Recorded in the retro's
+  `## Sibling Search` as a follow-up audit candidate, not filed as an issue this
+  run (out of #251 scope).
+- **`chunked_routing_issue_source.py` is 335 lines** — within ~5 lines of the
+  ~330 soft warn. Not grown by this goal (tests only), but the next edit there
+  should watch the length gate.
+
 ## Final Verification
+
+Self-verification against the goal (Deming "study" step — measured vs predicted):
+
+- **Defect 1 (blocking trio) — RESOLVED (local-deterministic).** Faithful gate
+  repro (`run_test_coverage` subprocess-capture + `classify_changed_line_scope_gap`)
+  over the failing range `dc91404..8a21ab1`: `BLOCKING: (none)`.
+  issue_backend 100%, issue_source 100%, parse_handoff_entries 93.2% with 0
+  changed-line gaps (was 58.3% / 72.8% / 86.4% with 15 / 44 / 4 uncovered
+  changed lines).
+- **Defect 2 (8 survived mutants) — KILLED (local-deterministic).** Manual
+  mutation harness applied each of the 8 mutations, ran its killing test, and
+  git-restored: **8/8 KILLED**, no equivalent mutants, all files restored clean.
+- **No regression.** Full suite `python3 -m pytest -m 'not release_only' tests`:
+  **1784 passed, 4 skipped, 57 deselected**. `check_duplicates` clean (0.98).
+  Pre-push quality gate: 68 passed / 0 failed.
+- **Live CI proof (score path):** `workflow_dispatch` run on fix commit
+  `86ea3ea` — https://github.com/corca-ai/charness/actions/runs/26664721232
+  (full mode). Result recorded at closeout.
+- **Live CI proof (blocking path):** per critique B1, `workflow_dispatch` has no
+  `base_sha` and cannot exercise the changed-line classifier — only the next
+  **scheduled** cron run re-checks it on fixed `main`. That confirmation is
+  asynchronous (≤3h) and is the user's verification step; the deterministic
+  stand-in (local sampler repro above) is the proof produced now.
+
+Retro: charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md
+Host log probe: charness-artifacts/probe/2026-05-30-issue-251-mutation-coverage.json
+
+### Residual risks & non-claims
+
+- **NOT claimed:** that the CI gate is green for the *blocking-trio* path — that
+  is proven locally and awaits the next scheduled run. A dispatch green proves
+  only the score/survivor path.
+- The local repro pins the historical range; the next scheduled run computes its
+  own base/head. The fix targets durable changed-line coverage of the scripts,
+  so any range over them stays covered — but a *different* newly-changed file
+  could block a future run (a new regression, not this one).
+- StrykerJS survivors (`skill-test-telemetry.mjs`) are out of scope (that slice
+  passed) and untouched.
 
 ## User Verification Instructions
 
+1. Local: `python3 -m pytest -q tests/test_handoff_chunker_issue_source.py tests/test_handoff_chunker_parse.py tests/test_handoff_chunker_cli_unit.py tests/test_rca_ledger.py` → all pass.
+2. CI score path: open the `workflow_dispatch` run linked above → green summary,
+   8 survivors killed, score ≥ 80%.
+3. CI blocking path: the next scheduled (cron) Mutation Tests run on `main`
+   should report **0** "changed files with uncovered changed lines".
+
 ## Auto-Retro
+
+See [retro](../retro/2026-05-30-issue-251-mutation-coverage.md). Highlights:
+
+- **Waste:** a naive `coverage run` showed parse_handoff_entries at 0% (misses
+  subprocess scripts) — corrected by reproducing through the gate's own
+  subprocess-capturing `run_test_coverage`; and a 1GB full-suite coverage run
+  started then abandoned for the cheaper test-scoped repro.
+- **Critical decisions:** faithful gate-predicate repro; plan critique before
+  activation (caught B1/B2/B3); manual mutation harness for deterministic 8/8.
+- **Next improvements:** repro via gate `run_test_coverage` (never naive/full
+  first); a base/head changed-line-coverage helper; fold the two durable traps
+  (subprocess-capture; dispatch has no base_sha) into the mutation-testing ref.
+- **Sibling search:** parsed-form assertions hiding format mutants — follow-up
+  audit candidate, not filed.
+- RCA: one `weak_proof` event (`--source retro`, converted) for the B1 catch.
