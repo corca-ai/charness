@@ -380,6 +380,52 @@ def test_cli_writes_artifact_and_reports_check_goal_ok(tmp_path, lib, chunk_from
     assert "Activation: `/goal @" in text
 
 
+def test_cli_next_step_routes_through_achieve_before_phase(
+    tmp_path, lib, chunk_from_entry_1
+):
+    """#246: an auto-drafted goal is UNSHAPED (placeholder sections), so the
+    drafter must surface the achieve Before-phase shaping step as the
+    operator's next move — not `/goal` activation, which would start the During
+    run on an unshaped goal. The artifact's own `activation` line stays `/goal`
+    (a correct goal-artifact field); `next_step`/`shape_command` route through
+    `/achieve`."""
+    chunk_payload = json.dumps(chunk_from_entry_1.to_dict())
+    result = subprocess.run(
+        [
+            "python3",
+            str(DRAFTER_SCRIPT),
+            "--chunk",
+            "-",
+            "--date",
+            "2026-05-28",
+            "--slug",
+            "test-next-step",
+            "--repo-root",
+            str(tmp_path),
+        ],
+        input=chunk_payload,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    goal_rel = "charness-artifacts/goals/2026-05-28-test-next-step.md"
+    # The artifact's own activation line is unchanged (correct goal field).
+    assert payload["activation"] == f"/goal @{goal_rel}"
+    # The operator's next move must shape via the achieve Before-phase, and
+    # must NOT be a bare `/goal` (that is exactly the #246 regression).
+    assert payload["shape_command"] == f"/achieve @{goal_rel}"
+    next_step = payload["next_step"]
+    assert f"/achieve @{goal_rel}" in next_step
+    assert "Before-phase" in next_step
+    assert not next_step.lstrip().startswith("/goal")
+    # The placeholder sentinels confirm the draft really is unshaped, so the
+    # shape-first routing is load-bearing, not cosmetic.
+    text = Path(payload["path"]).read_text(encoding="utf-8")
+    assert lib.USER_ACCEPTANCE_PLACEHOLDER in text
+
+
 def test_cli_refuses_to_overwrite_existing_artifact(tmp_path, lib, chunk_from_entry_1):
     chunk_payload = json.dumps(chunk_from_entry_1.to_dict())
     args = [

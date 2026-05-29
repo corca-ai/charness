@@ -27,7 +27,8 @@ user then repeats four manual moves every session:
 3. Identify entries that share an artifact / skill / policy boundary and
    could be bundled.
 4. Open the achieve goal artifact template and hand-fill Title + Goal +
-   Non-Goals + Boundaries so `/goal @file` is the next move.
+   Non-Goals + Boundaries so the achieve Before-phase can shape it into a
+   runnable goal.
 
 These four moves are session-repeating cost that the skill should own.
 
@@ -235,7 +236,11 @@ merge.
    [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py)
    to write the goal artifact at
    `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at status
-   `draft`, then runs the auto-draft template described below.
+   `draft`, then runs the auto-draft template described below. The drafter
+   returns `next_step` / `shape_command` (`/achieve @<artifact>`) as the
+   operator's next move: the draft is unshaped, so the achieve Before-phase
+   must fill it before `/goal @<artifact>` (the artifact's `activation`
+   line) starts the During run (#246).
 
 ## Auto-Draft Template
 

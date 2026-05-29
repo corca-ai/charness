@@ -40,7 +40,7 @@
    session, check the injected "charness session-start routing" directive lands
    and a bare handoff-doc mention pickup routes through find-skills into
    `charness:handoff` without re-asking. Codex: same (host: Codex).
-   **/achieve skeleton drafted** → `/goal @charness-artifacts/goals/2026-05-29-live-confirm-the-user-level-sessionstart-hook.md` (Before-phase fills it; #246).
+   **/achieve skeleton drafted (unshaped)** → shape first: `/achieve @charness-artifacts/goals/2026-05-29-live-confirm-the-user-level-sessionstart-hook.md` (Before-phase fills acceptance/verification/slices); `/goal @…` activates the run only after shaping (#246).
 2. **usage-episodes follow-ups (filed): #243** (no consumer/report + inconsistent
    capture → purpose unrealized), **#244** (find-skills hook not auto-wired by
    `charness update`), **#245** (cross-checkout episode-hook dup). See Discuss.

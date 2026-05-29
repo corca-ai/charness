@@ -178,7 +178,21 @@ def main() -> int:
             "path": str(goal_path),
             "slug": slug,
             "status": check["status"],
+            # `activation` is the goal artifact's own activation line, NOT the
+            # operator's immediate next move. The auto-draft is still UNSHAPED
+            # (User Acceptance / Agent Verification Plan / Slice Plan are
+            # placeholders), so surfacing `/goal` as the next action would tell
+            # the operator to start the During run on an unshaped goal. The real
+            # next move is to SHAPE the draft through the achieve Before-phase
+            # first; `/goal` activates the run only afterward (#246).
             "activation": f"/goal @{goal_rel}",
+            "shape_command": f"/achieve @{goal_rel}",
+            "next_step": (
+                f"Shape first: run `/achieve @{goal_rel}` so the achieve "
+                f"Before-phase fills User Acceptance / Agent Verification Plan "
+                f"/ Slice Plan. The draft stays inert until you then run "
+                f"`/goal @{goal_rel}` to activate the run."
+            ),
         }
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         return 0

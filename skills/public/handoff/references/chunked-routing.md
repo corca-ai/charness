@@ -92,8 +92,13 @@ step 3 is the active agent.
    Critique Findings as placeholder lines for the achieve
    Before-phase to fill. The drafter validates the result with
    `check_goal_artifact.check_goal` in-process; an artifact that
-   fails the gate is rolled back. On success, the next move is
-   `/goal @<artifact>`.
+   fails the gate is rolled back. On success the draft is still
+   **unshaped** (User Acceptance / Agent Verification Plan / Slice
+   Plan are placeholders), so the next move is to **shape** it through
+   the achieve Before-phase: surface the drafter's `next_step` /
+   `shape_command` (`/achieve @<artifact>`), not `/goal @<artifact>`.
+   `/goal` is the artifact's `activation` line and starts the During
+   run only after shaping has filled the placeholders (#246).
 
 ## Override UX
 
