@@ -1,0 +1,88 @@
+{
+  "home": "/home/hwidong",
+  "hosts": {
+    "claude": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "detail": "timestamped session events exist",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/d046245e-9009-45b4-9e5e-608f7a878025.jsonl",
+          "status": "derivable"
+        },
+        "token_count": {
+          "detail": "message.usage.input_tokens/output_tokens present",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/d046245e-9009-45b4-9e5e-608f7a878025.jsonl",
+          "status": "available"
+        },
+        "tool_call_count": {
+          "detail": "message.content includes tool_use items",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/d046245e-9009-45b4-9e5e-608f7a878025.jsonl",
+          "status": "derivable"
+        },
+        "turn_count": {
+          "detail": "user/assistant events exist but require pairing heuristics",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/d046245e-9009-45b4-9e5e-608f7a878025.jsonl",
+          "status": "derivable"
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.claude/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "project-jsonl",
+          "path": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/d046245e-9009-45b4-9e5e-608f7a878025.jsonl",
+          "status": "used"
+        }
+      ]
+    },
+    "codex": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "detail": "timestamped runtime log lines exist",
+          "source": "/home/hwidong/.codex/log/codex-tui.log",
+          "status": "derivable"
+        },
+        "token_count": {
+          "detail": "Token-like strings appeared only in ambiguous runtime text; no stable default log signal proven",
+          "source": "/home/hwidong/.codex/log/codex-tui.log",
+          "status": "unavailable"
+        },
+        "tool_call_count": {
+          "detail": "ToolCall lines exist in runtime logs",
+          "source": "/home/hwidong/.codex/log/codex-tui.log",
+          "status": "derivable"
+        },
+        "turn_count": {
+          "detail": "turn.id markers exist in runtime logs",
+          "source": "/home/hwidong/.codex/log/codex-tui.log",
+          "status": "derivable"
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.codex/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "tui-log",
+          "path": "/home/hwidong/.codex/log/codex-tui.log",
+          "status": "used"
+        },
+        {
+          "kind": "sqlite-log",
+          "path": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "available"
+        }
+      ]
+    }
+  },
+  "repo_root": "/home/hwidong/codes/charness",
+  "schema_version": 1
+}

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-29",
-  "source_artifact_count": 81,
-  "candidate_count": 511,
+  "source_artifact_count": 82,
+  "candidate_count": 517,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0fbbb9be748a",
@@ -55,6 +55,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:260cfca91bbc",
+      "kind": "current_focus",
+      "lesson": "Closeout of the `/goal` run for `charness-artifacts/goals/2026-05-29-length-warn-232-244-245.md`: a four-slice arc — (A) advisory file-length WARN tier in `check_python_lengths.py`; (B) #232 issue-body safety via `issue_tool.py create --body-file`; (C) #244 auto-install the find-skills SessionStart hook; (D) #245 dedup SessionStart hooks by logical identity.",
+      "normalized_key": "closeout of the goal run for charness artifacts goals 2026 05 29 length warn",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6a661284a52e",
+      "kind": "next_improvement",
+      "lesson": "**capability:** A \"changed-surface broad-gate subset\" helper (map a changed path to the gates that uniquely cover it) would let slices shift-left without paying the full ~46s gate each time. Not built this run; logged as a quality posture idea (the goal explicitly declined to expand pre-commit).",
+      "normalized_key": "capability a changed surface broad gate subset helper map a changed path to the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a3bfba0900f2",
       "kind": "next_improvement",
       "lesson": "**capability**: Promote `check_python_lengths.py` from informational to a pre-commit gate (warn-at-~330, fail-at-360 for `skills/public/*/scripts/*.py`). This is the second recorded recurrence of the silent-lib-growth trap; the prior retro already recommended it. The recurrence is the evidence to act now.",
@@ -89,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6ef410ef3a65",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Recorded below in Sibling Search + persisted to recent-lessons: the \"scanner correct only because one value existed\" trap, the SKILL.md-contract-snippet trap, and the new-helper attention-state trap.",
+      "normalized_key": "memory recorded below in sibling search persisted to recent lessons the scanner correct only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -191,66 +251,6 @@
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:000567219154",
-      "kind": "repeat_trap",
-      "lesson": "**#248 defect bit the operator first-hand at session start.** The very first chunker run this session failed on a stage-script flag mismatch (`--repo-root` vs `--entries` vs `--merge-proposal`) — the exact ergonomics defect #248 reports. It became Slice 1's regression seed, so the cost was recovered, but it cost one retry on the opening pickup.",
-      "normalized_key": "248 defect bit the operator first hand at session start the very first chunker",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
-          "date": "2026-05-29",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7c22b5daa2a4",
-      "kind": "repeat_trap",
-      "lesson": "A slice-1 self-test assertion broke on a line-wrapped contract phrase (`drive the routed workflow from your\\nresult`); fixed by whitespace- normalizing the test. Avoidable had the test normalized from the start.",
-      "normalized_key": "a slice 1 self test assertion broke on a line wrapped contract phrase drive",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-          "date": "2026-05-29",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:224155efa804",
-      "kind": "repeat_trap",
-      "lesson": "Adding `.codex/config.toml` made `config.toml` a unique repo basename, which tripped `check_doc_links` on a pre-existing, unrelated backtick in `docs/deferred-decisions.md` — a side-effect surfaced only at gate time.",
-      "normalized_key": "adding codex config toml made config toml a unique repo basename which tripped check",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-          "date": "2026-05-29",
-          "section": "Waste"
         }
       ]
     }
@@ -297,6 +297,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:260cfca91bbc",
+      "kind": "current_focus",
+      "lesson": "Closeout of the `/goal` run for `charness-artifacts/goals/2026-05-29-length-warn-232-244-245.md`: a four-slice arc — (A) advisory file-length WARN tier in `check_python_lengths.py`; (B) #232 issue-body safety via `issue_tool.py create --body-file`; (C) #244 auto-install the find-skills SessionStart hook; (D) #245 dedup SessionStart hooks by logical identity.",
+      "normalized_key": "closeout of the goal run for charness artifacts goals 2026 05 29 length warn",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6a661284a52e",
+      "kind": "next_improvement",
+      "lesson": "**capability:** A \"changed-surface broad-gate subset\" helper (map a changed path to the gates that uniquely cover it) would let slices shift-left without paying the full ~46s gate each time. Not built this run; logged as a quality posture idea (the goal explicitly declined to expand pre-commit).",
+      "normalized_key": "capability a changed surface broad gate subset helper map a changed path to the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a3bfba0900f2",
       "kind": "next_improvement",
       "lesson": "**capability**: Promote `check_python_lengths.py` from informational to a pre-commit gate (warn-at-~330, fail-at-360 for `skills/public/*/scripts/*.py`). This is the second recorded recurrence of the silent-lib-growth trap; the prior retro already recommended it. The recurrence is the evidence to act now.",
@@ -331,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6ef410ef3a65",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Recorded below in Sibling Search + persisted to recent-lessons: the \"scanner correct only because one value existed\" trap, the SKILL.md-contract-snippet trap, and the new-helper attention-state trap.",
+      "normalized_key": "memory recorded below in sibling search persisted to recent lessons the scanner correct only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
           "date": "2026-05-29",
           "section": "Next Improvements"
         }
@@ -437,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:44d154d6cb90",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When a slice edits a `SKILL.md` body sentence, run `python3 scripts/run_evals.py` (representative-skill-contracts) before committing — `validate_skills.py` alone does not check required contract snippets. When a slice adds a repo-owned Python helper containing `disabled`/`skipped`/`no_adapter`/`not_configured`, run `validate_attention_state_visibility.py` before committing.",
+      "normalized_key": "workflow when a slice edits a skill md body sentence run python3 scripts run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+          "date": "2026-05-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:000567219154",
       "kind": "repeat_trap",
       "lesson": "**#248 defect bit the operator first-hand at session start.** The very first chunker run this session failed on a stage-script flag mismatch (`--repo-root` vs `--entries` vs `--merge-proposal`) — the exact ergonomics defect #248 reports. It became Slice 1's regression seed, so the cost was recovered, but it cost one retry on the opening pickup.",
@@ -451,6 +531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:afc209afbc55",
+      "kind": "repeat_trap",
+      "lesson": "**A real data-loss blocker my own tests missed.** Slice D's second TOML marker exposed that `find_charness_toml_block`'s block-boundary loop broke only on its *own* marker, so uninstalling one charness TOML block would swallow an adjacent one. My Slice C/D tests exercised each hook in isolation; none placed two charness blocks adjacent and uninstalled one. The fresh-eye critique caught it — the per-slice critique earned its cost here.",
+      "normalized_key": "a real data loss blocker my own tests missed slice d s second toml",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
           "date": "2026-05-29",
           "section": "Waste"
         }
@@ -591,6 +691,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md",
+          "date": "2026-05-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f083c4a990f1",
+      "kind": "repeat_trap",
+      "lesson": "**Two closeout reworks the per-slice checks could not see.** (1) The Slice B markdown-wrap fix shortened a *required* core-contract snippet (`Do not ask for approval unless the user explicitly asks to review first.`), failing `run-evals` + a cautilus scenario; (2) the new C/D helpers introduced `disabled`/`skipped` strings that `validate-attention-state-visibility` requires declared. Both gates are broad-gate / pre-push only, so they surfaced at After-phase closeout rather than at slice time — two extra commits. Not catastrophic (the gates exist and caught it), but the feedback arrived one phase late.",
+      "normalized_key": "two closeout reworks the per slice checks could not see 1 the slice b",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
+      "latest_source_date": "2026-05-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
           "date": "2026-05-29",
           "section": "Waste"
         }

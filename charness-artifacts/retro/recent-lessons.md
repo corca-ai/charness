@@ -8,16 +8,16 @@
 ## Repeat Traps
 
 - **#248 defect bit the operator first-hand at session start.** The very first chunker run this session failed on a stage-script flag mismatch (`--repo-root` vs `--entries` vs `--merge-proposal`) — the exact ergonomics defect #248 reports. It became Slice 1's regression seed, so the cost was recovered, but it cost one retry on the opening pickup. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
+- **A real data-loss blocker my own tests missed.** Slice D's second TOML marker exposed that `find_charness_toml_block`'s block-boundary loop broke only on its *own* marker, so uninstalling one charness TOML block would swallow an adjacent one. My Slice C/D tests exercised each hook in isolation; none placed two charness blocks adjacent and uninstalled one. The fresh-eye critique caught it — the per-slice critique earned its cost here. (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
 - A slice-1 self-test assertion broke on a line-wrapped contract phrase (`drive the routed workflow from your\nresult`); fixed by whitespace- normalizing the test. Avoidable had the test normalized from the start. (source: `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`)
 - Adding `.codex/config.toml` made `config.toml` a unique repo basename, which tripped `check_doc_links` on a pre-existing, unrelated backtick in `docs/deferred-decisions.md` — a side-effect surfaced only at gate time. (source: `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`)
-- **Final broad gate is slow + opaque.** 6m36s, and `pytest -q` buffers output so background polling showed nothing until completion. Minor friction. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
 
 ## Next-Time Checklist
 
+- **capability:** A "changed-surface broad-gate subset" helper (map a changed path to the gates that uniquely cover it) would let slices shift-left without paying the full ~46s gate each time. Not built this run; logged as a quality posture idea (the goal explicitly declined to expand pre-commit). (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
 - **capability**: Promote `check_python_lengths.py` from informational to a pre-commit gate (warn-at-~330, fail-at-360 for `skills/public/*/scripts/*.py`). This is the second recorded recurrence of the silent-lib-growth trap; the prior retro already recommended it. The recurrence is the evidence to act now. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
 - **memory**: end-only handoff timing + the over-merge precision lesson are codified (operating-contract, chunked-routing.md) and captured here for the recent-lessons digest. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
-- SKILL.md files sitting exactly at the 200-line cap are a latent tax on every future contract addition (find-skills is back at exactly 200). A pre-edit headroom signal (e.g. validator warns at ~190) would stop a load-bearing contract line from forcing a trimming sub-task. (source: `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`)
-- the "hook is dumb, skill owns routing" pattern now lives durably in `skills/public/find-skills/references/session-start-routing.md`; the goal artifact + this retro capture the cross-host parity reasoning. (source: `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`)
+- **memory:** Recorded below in Sibling Search + persisted to recent-lessons: the "scanner correct only because one value existed" trap, the SKILL.md-contract-snippet trap, and the new-helper attention-state trap. (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
 
 ## Selection Policy
 
@@ -29,3 +29,4 @@
 
 - `charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md`
 - `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`
+- `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`
