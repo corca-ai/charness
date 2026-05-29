@@ -104,6 +104,18 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 ## Session Discipline
 
 - Update [docs/handoff.md](../handoff.md) when the next session's first move changed.
+- **Handoff timing is closeout-only.** Read the baton at pickup; write it at
+  closeout. A pickup's durable output is the derived goal skeleton (the chunker's
+  forward artifact), never a mid-session rewrite of the handoff doc — the
+  session's own work moves the state again, so a pickup-time rewrite is churn. A stale
+  handoff item discovered at pickup is carried in the conversation and folded
+  into the single closeout write.
+- **`## Next Session` is a curation/sequencing memo, not a synced task queue.**
+  The issue tracker is the source of truth for what is open; the handoff chunker
+  unions the live backlog at pickup (`parse_handoff_entries.py --with-issues`,
+  #249). So `## Next Session` carries only the cross-issue judgment the tracker
+  cannot express — coupling, sequencing rationale, the recommended first move —
+  not a complete, frequently-stale list that duplicates the tracker.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.

@@ -61,11 +61,11 @@ the `Workflow Trigger` first and continue with that workflow.
 
 ## Workflow
 
-1. Chunked routing (conditional). When the user mentions the handoff
-   doc/skill with no explicit task directive, invoke the chunker
-   pipeline before refresh-vs-pickup classification. See
-   `references/chunked-routing.md` for the deterministic trigger rule,
-   pipeline, and auto-draft handoff into `/achieve`.
+1. Chunked routing (conditional). A handoff doc/skill invocation with no task
+   directive — including a bare `/handoff` call (#249), not only a doc mention
+   — fires the chunker before pickup/refresh; it reasons over the live backlog
+   (issues unioned with handoff entries via `--with-issues`). See
+   `references/chunked-routing.md` for the trigger rule, pipeline, end-only write discipline, and `/achieve` draft.
 2. Determine whether this is pickup or refresh.
    - for pickup, treat the workflow trigger as authoritative next-step
      instruction

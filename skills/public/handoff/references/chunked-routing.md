@@ -58,12 +58,21 @@ truth; any divergence between this prose and that fixture is the prose's bug.
 The chunker runs as a five-step pipeline. Steps 1, 2, 4, 5 are scripts;
 step 3 is the active agent.
 
-1. **Parse.** Run
+1. **Parse (+ live backlog).** Run
    [`parse_handoff_entries.py`](../scripts/parse_handoff_entries.py)
    against the resolved handoff artifact. Each numbered entry in
    `## Next Session` becomes a `HandoffEntry` record with title, body,
    referenced paths/issues/skills, and a non-trivial-filtered
-   `boundary_tokens` set.
+   `boundary_tokens` set. Pass `--with-issues` (the pickup default; #249)
+   to also union the live open-issue backlog: each open issue becomes a
+   `HandoffEntry` (boundary tokens from its **title + specific labels**, not
+   its body — body paths over-cluster), routed through the `issue` skill
+   backend seam (no hardcoded provider literal; trackerless hosts fall back
+   to doc-only), gated behind the handoff adapter's optional `issue_source:`
+   block. An issue a handoff entry already cites (`#NNN`) is **merged into
+   that entry**, not double-counted, so the chunker surfaces the open issues
+   the hand-written `## Next Session` omitted without duplicating the ones it
+   names.
 2. **Propose merges.** Pipe the parsed entries to
    [`propose_merges.py`](../scripts/propose_merges.py). The proposer
    computes pairwise `boundary_tokens` overlap and emits a
@@ -121,6 +130,18 @@ The presented ranking is a proposal, not a directive. The user can:
   not bound to take the bundle just because the proposer found a
   shared boundary; the corresponding standalone candidates are
   always present in the same list
+
+## End-Only Write Discipline
+
+The chunker runs at **pickup** and writes exactly one durable artifact: the
+derived goal skeleton (step 5, a forward artifact). It must **never** rewrite
+`handoff.md` at pickup. The baton is written at **closeout** only — a
+pickup-time rewrite is churn because the session's own work moves the state
+again. A stale `## Next Session` item discovered at pickup (already done, or
+now superseded by the live backlog) is carried in the conversation and folded
+into the single closeout write. The owning rule is
+`docs/conventions/operating-contract.md` (Session Discipline); `## Next Session`
+is a curation/sequencing memo, not a synced task queue.
 
 ## Standalone Usefulness
 
