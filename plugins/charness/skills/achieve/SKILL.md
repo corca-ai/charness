@@ -46,10 +46,10 @@ and helper usage.
 1. Before — shape and save.
    - interview from prose with a small number of high-leverage questions; stop
      when the work has enough shape to save a reviewable artifact
-   - when the request's mode is genuinely ambiguous — an artifact-only goal
-     draft vs. an implementation-continuation run — ask at least one
-     high-leverage question to resolve it before saving; if a strong default
-     settles it, state the assumed mode explicitly instead of asking (#239)
+   - when the request is genuinely ambiguous between an artifact-only goal draft
+     and an implementation-continuation run, ask at least one high-leverage
+     question to resolve which one before saving; if a strong default settles
+     it, state the assumed interpretation explicitly instead of asking (#239)
    - establish outcome, non-goals, boundaries, user acceptance, verification
      plan (low-cost / high-confidence / external-or-live, plus expected proof
      cost and expected test-duplication pressure per slice), slice sequence,

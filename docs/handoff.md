@@ -30,9 +30,8 @@
   must bind to the goal; fails closed; tested). **Open:** F2 narration enforcement
   (judgment-bound) and issue/release sibling bindings deferred →
   [closeout contract](./prescribed-skill-closeout-contract.md).
-- **#235 is the live mutation regression** (73.7% < 80%); **#219 superseded**
-  (its `artifact_closeout_status` survivors no longer appear in #235).
-- **v0.10.0 published**; real-host release proof not yet run
+- **#235** live mutation regression (73.7% < 80%); **#219** superseded.
+- **v0.10.0 published**; real-host proof pending
   ([release latest](../charness-artifacts/release/latest.md)).
 
 ## Next Session

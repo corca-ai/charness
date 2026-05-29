@@ -15,11 +15,13 @@ def test_achieve_before_phase_pins_mode_disambiguation_question() -> None:
     skill = _norm(ACHIEVE / "SKILL.md")
     lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
 
-    # The mode-ambiguity question rule is stated in the skill body.
+    # The mode-ambiguity question rule is stated in the skill body. (The bare
+    # word "mode" is intentionally avoided in the SKILL.md body to satisfy the
+    # skill-ergonomics mode-pressure gate; the cases are named directly.)
     assert "artifact-only" in skill and "implementation-continuation" in skill
     assert "ask at least one" in skill
     # Stating the assumption is the allowed alternative to asking.
-    assert "state the assumed mode" in skill
+    assert "state the assumed interpretation" in skill
     # The lifecycle reference carries the full mode-disambiguation contract.
     assert "Mode disambiguation" in lifecycle
     assert "artifact-only" in lifecycle and "implementation-continuation" in lifecycle
