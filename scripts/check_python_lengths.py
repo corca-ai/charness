@@ -20,6 +20,17 @@ TEST_FILE_MAX = 800
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 
+# Advisory file-length warn band (file length only — function limits stay
+# hard-only). A file in ``[warn, limit]`` keeps exit 0 but emits a ``WARN:``
+# line so this saturated codebase gets an early signal before the existing hard
+# fail. The ``WARN:`` prefix is load-bearing: ``run-quality.sh`` only surfaces a
+# *passing* gate's output when it matches
+# ``^(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])`` — an unprefixed advisory is
+# captured to the log but never shown, silently defeating the tier.
+REPO_SCRIPT_FILE_WARN = 432
+SKILL_HELPER_FILE_WARN = 330
+TEST_FILE_WARN = 720
+
 
 class ValidationError(Exception):
     pass
@@ -48,11 +59,31 @@ def file_limit_for(path: Path, root: Path) -> int:
     return SKILL_HELPER_FILE_MAX
 
 
-def validate_file_length(path: Path, root: Path) -> None:
+def file_warn_for(path: Path, root: Path) -> int:
+    relative = path.relative_to(root)
+    if relative.parts[:1] == ("scripts",):
+        return REPO_SCRIPT_FILE_WARN
+    if relative.parts[:1] == ("tests",):
+        return TEST_FILE_WARN
+    return SKILL_HELPER_FILE_WARN
+
+
+def validate_file_length(path: Path, root: Path) -> str | None:
+    """Hard-fail when a file exceeds its limit; otherwise return an advisory
+    ``WARN:`` line when the file sits in the ``[warn, limit]`` band, or ``None``.
+    """
     line_count = len(path.read_text(encoding="utf-8").splitlines())
     limit = file_limit_for(path, root)
     if line_count > limit:
         raise ValidationError(f"{path}: file length {line_count} exceeds limit {limit}")
+    warn = file_warn_for(path, root)
+    if line_count >= warn:
+        relative = path.relative_to(root)
+        return (
+            f"WARN: {relative}: file length {line_count} is within the advisory warn "
+            f"band [{warn}, {limit}]; trim before it reaches the hard limit {limit}."
+        )
+    return None
 
 
 def function_limit_for(path: Path, root: Path) -> int:
@@ -85,14 +116,24 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     targets = iter_python_targets(root, require_git=args.require_git_file_listing)
+    warnings: list[str] = []
     for path in targets:
         try:
-            validate_file_length(path, root)
+            warning = validate_file_length(path, root)
             validate_function_lengths(path, root)
         except (ValidationError, SyntaxError) as exc:
             raise ValidationError(str(exc)) from exc
+        if warning is not None:
+            warnings.append(warning)
 
+    for warning in warnings:
+        print(warning)
     print(f"Validated Python length limits for {len(targets)} file(s).")
+    if warnings:
+        print(
+            f"WARN: {len(warnings)} file(s) within the advisory file-length warn band "
+            "(exit 0; trim before they reach the hard limit)."
+        )
     return 0
 
 

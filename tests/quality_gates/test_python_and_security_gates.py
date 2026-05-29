@@ -623,3 +623,37 @@ def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> 
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "function `test_too_long` length 152 exceeds limit 150" in result.stderr
+
+
+def test_check_python_lengths_warns_for_in_band_files_across_classes(tmp_path: Path) -> None:
+    """A file in each class's advisory ``[warn, limit]`` band keeps exit 0 but
+    emits a line-start ``WARN:`` so ``run-quality.sh`` surfaces it on a pass."""
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    scripts_dir = repo / "scripts"
+    tests_dir = repo / "tests"
+    for directory in (helper_dir, scripts_dir, tests_dir):
+        directory.mkdir(parents=True)
+    # skill helper band [330, 360]; repo script band [432, 480]; test band [720, 800].
+    (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8")
+    (scripts_dir / "tool.py").write_text("\n".join(f"print({i})" for i in range(440)) + "\n", encoding="utf-8")
+    (tests_dir / "test_band.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(730)) + "\n", encoding="utf-8")
+
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
+    assert any("helper.py: file length 340 is within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any("scripts/tool.py: file length 440 is within the advisory warn band [432, 480]" in line for line in warn_lines)
+    assert any("tests/test_band.py: file length 730 is within the advisory warn band [720, 800]" in line for line in warn_lines)
+
+
+def test_check_python_lengths_does_not_warn_just_below_band(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    # 329 lines: one below the skill-helper warn floor of 330.
+    (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(329)) + "\n", encoding="utf-8")
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "WARN:" not in result.stdout
