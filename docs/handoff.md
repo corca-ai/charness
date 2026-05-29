@@ -25,10 +25,10 @@
   not hard-force a Skill call, and was not observed firing live yet.
 - **Host hooks deduped**: each host now has exactly 1 usage-episode hook +
   1 find-skills hook (both → the installed plugin source `~/.agents/src/charness`).
-- **Open issues** (`gh issue list`): #247 (achieve: `/goal`=pursue vs shape —
-  #246 follow-up), #245/#244/#243 (usage-episodes), #242+#219 (mutation
-  regression), #233, #232, #241 (create-skill), #237/#236 (achieve/quality UX),
-  #184/#185. (#246 closed.)
+- **Open issues** (`gh issue list`): #245/#244/#243 (usage-episodes),
+  #242+#219 (mutation regression), #233, #232, #241 (create-skill),
+  #237/#236 (achieve/quality UX), #184/#185. (#246, #247 closed this session;
+  `/goal`=pursue-only + fail-fast shipped.)
 - **#233 — kept OPEN, partial.** F1 binding LANDED for `achieve`. **Open:** F2
   narration enforcement (judgment-bound) + issue/release sibling bindings →
   [closeout contract](./prescribed-skill-closeout-contract.md).
