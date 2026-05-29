@@ -36,12 +36,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_lib")
-
-
-def _read_merge_proposal_json(path_arg: str) -> dict:
-    if path_arg == "-":
-        return json.loads(sys.stdin.read())
-    return json.loads(Path(path_arg).expanduser().resolve().read_text(encoding="utf-8"))
+chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_cli")
 
 
 def _restore_merge_proposal(payload: dict):
@@ -74,12 +69,12 @@ def _restore_merge_proposal(payload: dict):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--merge-proposal",
-        required=True,
-        help=(
-            "Path to a JSON file produced by `propose_merges.py` "
-            "(emitted via MergeProposal.to_dict()), or `-` to read stdin."
+    chunked_routing_cli.add_input_argument(
+        parser,
+        legacy=("--merge-proposal",),
+        help_text=(
+            "A MergeProposal JSON from propose_merges.py "
+            "(MergeProposal.to_dict()). `--merge-proposal` is a kept alias."
         ),
     )
     return parser.parse_args()
@@ -89,7 +84,11 @@ def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="handoff prepare_ranker_packet")
     try:
         args = parse_args()
-        payload = _read_merge_proposal_json(args.merge_proposal)
+        payload = chunked_routing_cli.read_pipeline_json(
+            args.input,
+            stage="prepare_ranker_packet",
+            expects="a MergeProposal JSON from propose_merges.py",
+        )
         merge_proposal = _restore_merge_proposal(payload)
         packet = chunked_routing_lib.build_ranker_packet(merge_proposal)
         sys.stdout.write(json.dumps(packet, ensure_ascii=False, indent=2) + "\n")

@@ -39,8 +39,13 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 
 
 def _resolve_handoff_path(args: argparse.Namespace) -> Path:
-    if args.handoff_path is not None:
-        return args.handoff_path.expanduser().resolve()
+    # Source stage: input is the handoff doc, not pipeline JSON. A positional
+    # path or --handoff-path both name it (positional wins); otherwise resolve
+    # via the adapter from --repo-root. The positional makes the natural
+    # `parse_handoff_entries.py docs/handoff.md` invocation work (#248).
+    explicit = args.handoff if args.handoff is not None else args.handoff_path
+    if explicit is not None:
+        return explicit.expanduser().resolve()
     repo_root = args.repo_root.expanduser().resolve()
     adapter = resolve_adapter.load_adapter(repo_root)
     return (repo_root / adapter["artifact_path"]).resolve()
@@ -48,6 +53,13 @@ def _resolve_handoff_path(args: argparse.Namespace) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "handoff",
+        nargs="?",
+        type=Path,
+        default=None,
+        help="Handoff artifact path (positional convenience; same as --handoff-path).",
+    )
     parser.add_argument(
         "--repo-root",
         type=Path,

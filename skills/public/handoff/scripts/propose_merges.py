@@ -36,12 +36,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_lib")
-
-
-def _read_entries_json(path_arg: str) -> dict:
-    if path_arg == "-":
-        return json.loads(sys.stdin.read())
-    return json.loads(Path(path_arg).expanduser().resolve().read_text(encoding="utf-8"))
+chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_cli")
 
 
 def _restore_entries(payload):
@@ -68,12 +63,12 @@ def _restore_entries(payload):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--entries",
-        required=True,
-        help=(
-            "Path to a JSON file emitted by `parse_handoff_entries.py` "
-            "(the full payload or just the entries array), or `-` to read stdin."
+    chunked_routing_cli.add_input_argument(
+        parser,
+        legacy=("--entries",),
+        help_text=(
+            "A parse_handoff_entries.py payload (with entries[]) or a bare "
+            "entries array. `--entries` is a kept alias."
         ),
     )
     return parser.parse_args()
@@ -83,7 +78,11 @@ def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="handoff propose_merges")
     try:
         args = parse_args()
-        payload = _read_entries_json(args.entries)
+        payload = chunked_routing_cli.read_pipeline_json(
+            args.input,
+            stage="propose_merges",
+            expects="a parse_handoff_entries payload (with entries[]) or an entries array",
+        )
         entries = _restore_entries(payload)
         proposal = chunked_routing_lib.propose_merges(entries)
         sys.stdout.write(json.dumps(proposal.to_dict(), ensure_ascii=False, indent=2) + "\n")

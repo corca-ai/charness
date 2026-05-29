@@ -41,6 +41,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_lib")
+chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_cli")
 
 
 def _load_goal_artifact_lib():
@@ -77,12 +78,6 @@ def _load_goal_artifact_lib():
 GOAL_LIB = _load_goal_artifact_lib()
 
 
-def _read_chunk_json(path_arg: str) -> dict:
-    if path_arg == "-":
-        return json.loads(sys.stdin.read())
-    return json.loads(Path(path_arg).expanduser().resolve().read_text(encoding="utf-8"))
-
-
 def _restore_chunk(payload: dict):
     def restore_entry(entry_dict):
         return chunked_routing_lib.HandoffEntry(
@@ -104,10 +99,10 @@ def _restore_chunk(payload: dict):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--chunk",
-        required=True,
-        help="Path to a ChunkCandidate JSON, or `-` to read stdin.",
+    chunked_routing_cli.add_input_argument(
+        parser,
+        legacy=("--chunk",),
+        help_text="A single ChunkCandidate JSON. `--chunk` is a kept alias.",
     )
     parser.add_argument(
         "--date",
@@ -132,7 +127,11 @@ def main() -> int:
     try:
         args = parse_args()
         repo_root = args.repo_root.expanduser().resolve()
-        chunk_payload = _read_chunk_json(args.chunk)
+        chunk_payload = chunked_routing_cli.read_pipeline_json(
+            args.input,
+            stage="draft_goal_from_chunk",
+            expects="a single ChunkCandidate JSON (ChunkCandidate.to_dict())",
+        )
         chunk = _restore_chunk(chunk_payload)
         slug = args.slug or chunked_routing_lib.auto_draft_slug(chunk)
         goal_path = GOAL_LIB.goal_path(repo_root, args.date, slug)
