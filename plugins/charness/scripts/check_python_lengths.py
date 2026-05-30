@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import json
 import sys
 from pathlib import Path
 
@@ -108,6 +109,34 @@ def validate_function_lengths(path: Path, root: Path) -> None:
             )
 
 
+def headroom_for(paths: list[Path], root: Path) -> list[dict[str, object]]:
+    """Advisory pre-write/closeout headroom report for the gated subset of
+    ``paths``: per file, ``headroom = limit - current`` and whether the file is
+    already inside the warn band. This is the affordance behind #256 — the hard
+    gate (``validate_file_length``) blocks an over-limit *commit*, but the
+    recurring waste is *writing* a large addition into an already-near-limit file
+    and only learning at the gate. Surfacing ``limit - current`` lets a slice
+    decide "new module vs append" before writing. Advisory only; never raises.
+    """
+    targets = select_targets(root, paths=paths, require_git=False)
+    rows: list[dict[str, object]] = []
+    for path in targets:
+        lines = len(path.read_text(encoding="utf-8").splitlines())
+        limit = file_limit_for(path, root)
+        warn = file_warn_for(path, root)
+        rows.append(
+            {
+                "path": path.relative_to(root).as_posix(),
+                "lines": lines,
+                "limit": limit,
+                "warn": warn,
+                "headroom": limit - lines,
+                "near_limit": lines >= warn,
+            }
+        )
+    return rows
+
+
 def select_targets(
     root: Path, *, paths: list[Path] | None, require_git: bool
 ) -> list[Path]:
@@ -142,9 +171,37 @@ def main() -> int:
             "--require-git-file-listing is then irrelevant."
         ),
     )
+    parser.add_argument(
+        "--headroom",
+        action="store_true",
+        help=(
+            "Advisory mode (#256): print `limit - current` headroom per gated file "
+            "instead of gating, so a slice can choose new-module-vs-append before "
+            "writing. Always exit 0; never blocks."
+        ),
+    )
+    parser.add_argument("--json", action="store_true", help="JSON output (with --headroom).")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
+    if args.headroom:
+        rows = headroom_for(args.paths or [], root)
+        if args.json:
+            print(json.dumps({"headroom": rows}, ensure_ascii=False, indent=2))
+        else:
+            for row in rows:
+                flag = " NEAR-LIMIT" if row["near_limit"] else ""
+                print(
+                    f"headroom: {row['path']}: {row['lines']}/{row['limit']} "
+                    f"({row['headroom']} left){flag}"
+                )
+            near = [r["path"] for r in rows if r["near_limit"]]
+            if near:
+                print(
+                    f"WARN: {len(near)} file(s) near the length limit; consider a new "
+                    "module before adding more: " + ", ".join(near)
+                )
+        return 0
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing
     )

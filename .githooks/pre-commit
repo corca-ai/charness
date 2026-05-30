@@ -61,6 +61,17 @@ if printf '%s\n' "${STAGED[@]}" | grep -qE '^integrations/'; then
   python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
 fi
 
+# Staged plugin-mirror drift (#257): if exported source is staged, the
+# regenerated plugins/ mirror must be staged too — else the committed mirror goes
+# stale and only pre-push/validate-packaging-committed catches it (post-commit,
+# forcing a --amend). git write-tree archives the staged index and validates its
+# mirror against its sources, catching both "forgot to sync" and "synced but
+# forgot to stage the mirror" at commit time. Cheap (~0.5s), hard-fail.
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^(scripts|skills|profiles|presets|integrations|plugins|\.claude-plugin|\.codex-plugin|\.agents/plugins)/|^README\.md$|^(runtime_bootstrap|skill_runtime_bootstrap)\.py$'; then
+  echo "charness pre-commit: staged-plugin-mirror-drift"
+  python3 scripts/check_staged_mirror_drift.py --repo-root "$REPO_ROOT"
+fi
+
 # Markdown / doc checks
 if printf '%s\n' "${STAGED[@]}" | grep -qE '\.md$'; then
   echo "charness pre-commit: check-doc-links"

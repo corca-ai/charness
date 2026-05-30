@@ -162,6 +162,14 @@ sample, not the full broad gate, and it carries the test-debt signal forward in
 the goal artifact so a compacted or resumed session does not rediscover the same
 late blocker.
 
+`run_slice_closeout.py` auto-surfaces two recurring-trap signals so they are
+workflow affordances, not agent memory: a **length-headroom advisory** for any
+changed gated file already near its limit (`limit − current`; #256 — choose a new
+module over appending before the hard gate fires), and — via the
+`check_staged_mirror_drift.py` pre-commit gate — a **hard block** when exported
+source is staged without its regenerated `plugins/` mirror (#257). Both are
+owned by `<repo-root>/docs/conventions/implementation-discipline.md`.
+
 Stop and ask the user when an unexpected blocker, an evidence conflict, or a
 policy/product decision appears that cannot be resolved autonomously. Flip the
 status to `blocked`, record the blocker and the paths already attempted, and

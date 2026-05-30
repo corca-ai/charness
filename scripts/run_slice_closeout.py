@@ -30,6 +30,8 @@ _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browse
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 _slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
 emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
+_scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
+headroom_for = _scripts_check_python_lengths.headroom_for
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
 
@@ -224,6 +226,18 @@ def _print_executed_commands(payload: dict[str, object]) -> None:
                 print(step["stderr"], end="" if step["stderr"].endswith("\n") else "\n")
 
 
+def _print_headroom(payload: dict[str, object]) -> None:
+    # Advisory (#256): surface changed gated files already near the length limit
+    # so the next slice chooses new-module-vs-append before writing. Never blocks.
+    rows = payload.get("headroom")
+    near = [row for row in rows if row.get("near_limit")] if isinstance(rows, list) else []
+    if not near:
+        return
+    print("WARN: changed files near the length limit (consider a new module before adding more):")
+    for row in near:
+        print(f"- {row['path']}: {row['lines']}/{row['limit']} ({row['headroom']} left)")
+
+
 def _print_usage_episode(payload: dict[str, object]) -> None:
     usage_episode = payload.get("usage_episode")
     if not isinstance(usage_episode, dict):
@@ -256,6 +270,7 @@ def print_text(payload: dict[str, object]) -> None:
     if isinstance(risk_interrupt_plan, dict) and risk_interrupt_plan.get("status") != "not-applicable":
         _print_risk_interrupt_plan(risk_interrupt_plan)
 
+    _print_headroom(payload)
     _print_executed_commands(payload)
     _print_usage_episode(payload)
 
@@ -344,6 +359,9 @@ def main() -> int:
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
+    # Advisory headroom (#256): auto-surface changed gated files near the length
+    # limit at every slice closeout, so the trap is workflow signal, not memory.
+    payload["headroom"] = headroom_for([Path(p) for p in payload["changed_paths"]], repo_root)
 
     if not payload["changed_paths"]:
         payload["status"] = "noop"
