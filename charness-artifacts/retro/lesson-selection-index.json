@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-30",
-  "source_artifact_count": 87,
-  "candidate_count": 544,
+  "source_artifact_count": 88,
+  "candidate_count": 553,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:8a02e68cef31",
+      "kind": "current_focus",
+      "lesson": "`achieve` run for goal #258 (block review/critique subagents from corrupting the parent worktree git index).",
+      "normalized_key": "achieve run for goal 258 block review critique subagents from corrupting the parent worktree",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:8622e1054005",
       "kind": "current_focus",
@@ -155,6 +175,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6f72793779d5",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Fold \"delayed/batched tool delivery ≠ outage; do not flush-flood; one probe then wait-or-stop; erroring call cancels its parallel batch\" into `recent-lessons.md` so the next session does not relearn it.",
+      "normalized_key": "memory fold delayed batched tool delivery outage do not flush flood one probe then",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4830910d0dac",
       "kind": "next_improvement",
       "lesson": "**memory:** fold \"pre-commit gate family ≠ `pytest`; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit; first gate rejection → run the aggregate, do not fix-and-retry\" into `recent-lessons.md`.",
@@ -199,46 +239,6 @@
       "kind": "next_improvement",
       "lesson": "**memory** — When a change removes or renames a *concept* (not just a code symbol), grep the concept's natural-language name(s) across docs/skills up front to scope reconciliation in one pass. Symbol-grep finds the code; only concept-grep finds the prose that teaches the removed idea. (Captured here + recent-lessons digest.)",
       "normalized_key": "memory when a change removes or renames a concept not just a code symbol",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
-          "date": "2026-05-30",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:15b56ef33e62",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** after `sync_root_plugin_manifests.py`, stage the mirror too (`git add` the `plugins/…` paths, or run `validate_packaging_committed` before committing) — repo `scripts/` + skill `SKILL.md`/`references/` all mirror, so a partial stage passes pre-commit but fails the committed-packaging check.",
-      "normalized_key": "workflow after sync root plugin manifests py stage the mirror too git add the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
-          "date": "2026-05-30",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:57b4fae8c512",
-      "kind": "next_improvement",
-      "lesson": "**workflow (applied at closeout)** — Refresh `docs/handoff.md`'s #255 memo from the rejected \"scope the scan\" framing to the shipped \"removed the exemption\" resolution (F7), as part of the After-phase baton refresh.",
-      "normalized_key": "workflow applied at closeout refresh docs handoff md s 255 memo from the rejected",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
       "latest_source_date": "2026-05-30",
@@ -257,6 +257,26 @@
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:8a02e68cef31",
+      "kind": "current_focus",
+      "lesson": "`achieve` run for goal #258 (block review/critique subagents from corrupting the parent worktree git index).",
+      "normalized_key": "achieve run for goal 258 block review critique subagents from corrupting the parent worktree",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:8622e1054005",
       "kind": "current_focus",
       "lesson": "Closeout of the achieve goal *Goal-doc coordination cues: route via find-skills + gather/release floors* (commit `f55be70`).",
@@ -397,6 +417,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6f72793779d5",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Fold \"delayed/batched tool delivery ≠ outage; do not flush-flood; one probe then wait-or-stop; erroring call cancels its parallel batch\" into `recent-lessons.md` so the next session does not relearn it.",
+      "normalized_key": "memory fold delayed batched tool delivery outage do not flush flood one probe then",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4830910d0dac",
       "kind": "next_improvement",
       "lesson": "**memory:** fold \"pre-commit gate family ≠ `pytest`; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit; first gate rejection → run the aggregate, do not fix-and-retry\" into `recent-lessons.md`.",
@@ -451,6 +491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:80d04f5dae1b",
+      "kind": "next_improvement",
+      "lesson": "**No tooling/gate change proposed for the deliverable itself** — the #258 work passed all gates first try; the gap was operator behavior under a transport anomaly, which is a discipline/memory fix, not a code gate.",
+      "normalized_key": "no tooling gate change proposed for the deliverable itself the 258 work passed all",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
         }
@@ -537,6 +597,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c0cfcd36c3af",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Never place an erroring command (`exit N`, `false`) in a batch with real work — an error cancels the whole queued batch. If a deliberate failure is needed, isolate it in its own single call.",
+      "normalized_key": "workflow never place an erroring command exit n false in a batch with real",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:19d73e0be0a1",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** On an empty or unexpectedly-batched tool result, do not issue more tool calls to \"force\" delivery. Issue at most one cheap probe, then wait; if still stalled, stop and report the symptom to the user. Never flood.",
+      "normalized_key": "workflow on an empty or unexpectedly batched tool result do not issue more tool",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:955b7c317de3",
       "kind": "repeat_trap",
       "lesson": "**A 1GB+ full-suite coverage run kicked off then abandoned.** I started the faithful repro against the full test command before realizing a test-scoped command reproduces the same trio coverage far faster, then killed it (and the `pkill` pattern also caught my replacement run — a second restart). Cost: ~minutes + a stale large artifact.",
@@ -617,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:e037ec82fb15",
+      "kind": "repeat_trap",
+      "lesson": "**Not waste:** the initial context gather (find-skills, goal, gate-family model files) and the gate-failure fix loop (3 failures → fix → re-gate → commit) were phase-appropriate and efficient once I stopped flooding.",
+      "normalized_key": "not waste the initial context gather find skills goal gate family model files and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:b1acf29bf681",
       "kind": "repeat_trap",
       "lesson": "**One full-suite failure that was pure mirror drift.** I fixed N1 in the source *after* the last `sync_root_plugin_manifests.py`, so source≠mirror and `test_plugin_preamble`'s `root_install_surface.ok` went False. Re-sync cleared it. This is the known #257 \"stage the regenerated mirror\" trap recurring as \"re-sync after *any* post-sync source edit\". Low cost (one diagnosis), but a recurrence.",
@@ -651,6 +771,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bab5cc6eee23",
+      "kind": "repeat_trap",
+      "lesson": "**Primary waste — command flooding as a \"flush\" tactic.** When results came back empty, I (mis)diagnosed a *delivery outage* and fired hundreds of no-op commands to force a flush. Root cause of the *symptom* was delayed batched delivery; root cause of the *waste* was my response to it. Cost: hundreds of wasted tool calls, large token burn, and lost user trust (two interrupts).",
+      "normalized_key": "primary waste command flooding as a flush tactic when results came back empty i",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a4afd2277219",
+      "kind": "repeat_trap",
+      "lesson": "**Redundant re-reads.** I re-Read/`cat` the same files (recent-lessons, surfaces, gate scripts) many times because the first results appeared empty — instead of waiting once for the pending result.",
+      "normalized_key": "redundant re reads i re read cat the same files recent lessons surfaces gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6d19abd91347",
+      "kind": "repeat_trap",
+      "lesson": "**Self-inflicted cancellation.** Putting an erroring command (`exit 1`, `exit 5`) in the same parallel batch as real work cancelled the whole batch — so writes/edits I thought I'd done were silently discarded, which I then re-did. The \"nudge to flush\" actively destroyed progress.",
+      "normalized_key": "self inflicted cancellation putting an erroring command exit 1 exit 5 in the same",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
           "date": "2026-05-30",
           "section": "Waste"
         }
