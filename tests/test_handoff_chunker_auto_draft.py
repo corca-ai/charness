@@ -11,11 +11,11 @@ Pins the spec's depth-bounded guarantees:
 - ``User Acceptance``, ``Agent Verification Plan``, ``Interview
   Decisions``, and ``Plan Critique Findings`` contain only the
   placeholder line — no narrative prose, no data rows, no sub-headings.
-- ``Slice Plan`` data row count is 0 so ``is_non_trivial_goal``
-  returns False at write time (the portability gate fires later only
-  when /achieve adds slice rows).
-- ``Single-slice goal:`` exemption marker is NEVER inserted by the
-  writer.
+- ``Slice Plan`` data row count is 0 at write time (the /achieve
+  Before-phase fills the rows).
+- Marker prose quoted from a handoff entry is rendered verbatim and is
+  harmless: #255 removed the trivial-goal exemption, so no phrase can
+  neuter the portability gate.
 - The slice-5 Standalone-Usefulness Invariant: no file under
   ``skills/public/achieve/`` was mutated by the slice (file-mutation
   gate, not import gate).
@@ -136,7 +136,7 @@ def test_auto_drafted_artifact_has_all_required_sections(
         assert f"## {section}" in text, section
 
 
-# Trivial-goal invariant: Slice Plan has 0 data rows ------------------------
+# Auto-draft skeleton invariant: Slice Plan has 0 data rows -----------------
 
 
 def test_slice_plan_data_row_count_is_zero(lib, goal_lib, chunk_from_entry_1):
@@ -145,28 +145,22 @@ def test_slice_plan_data_row_count_is_zero(lib, goal_lib, chunk_from_entry_1):
         date="2026-05-28",
         goal_rel="charness-artifacts/goals/2026-05-28-test.md",
     )
+    # The auto-draft skeleton leaves the Slice Plan empty; the /achieve
+    # Before-phase fills the rows.
     assert goal_lib.slice_plan_data_row_count(text) == 0
-    assert goal_lib.is_non_trivial_goal(text) is False
 
 
-# Single-slice-goal exemption marker MUST NOT appear ------------------------
+# #255: marker prose in a handoff entry is rendered verbatim and is harmless --
 
 
-def test_single_slice_goal_marker_is_never_inserted(lib, chunk_from_entry_1):
-    text = lib.render_auto_draft_artifact(
-        chunk_from_entry_1,
-        date="2026-05-28",
-        goal_rel="charness-artifacts/goals/2026-05-28-test.md",
-    )
-    assert "single-slice goal" not in text.lower()
-
-
-def test_quoted_handoff_body_cannot_poison_trivial_marker(lib, goal_lib):
-    """Slice-5 critique finding 1: the marker regex in
-    goal_artifact_lib.py matches `single-slice goal` as a substring
-    anywhere in the artifact. If a handoff entry's body ever mentions
-    the phrase, the writer must scrub it so the portability gate
-    cannot be silently neutered once /achieve adds slice rows.
+def test_quoted_handoff_marker_prose_is_harmless(lib, goal_lib):
+    """#255 removed the trivial-goal exemption, so there is no marker phrase a
+    quoted handoff entry could use to neuter the portability gate. The former
+    ``_scrub_trivial_goal_marker`` mitigation is therefore gone: marker prose is
+    rendered verbatim (ASCII hyphen, not the old U+2011 escape), the draft still
+    passes ``check_goal`` because the template seeds all three portability
+    headings, and filling slice rows never changes that — the headings are
+    always required, never exempted.
     """
     poison_entry = lib.HandoffEntry(
         index=1,
@@ -174,7 +168,7 @@ def test_quoted_handoff_body_cannot_poison_trivial_marker(lib, goal_lib):
         body=(
             "This residual mentions a previous single-slice goal artifact "
             "by name. Background: we wrote a single-slice goal in May.\n"
-            "Single-Slice Goal is a phrase that should not poison the gate."
+            "Single-Slice Goal is a phrase that no longer affects the gate."
         ),
         referenced_paths=("docs/handoff.md",),
         referenced_issues=(),
@@ -193,17 +187,14 @@ def test_quoted_handoff_body_cannot_poison_trivial_marker(lib, goal_lib):
         date="2026-05-28",
         goal_rel="charness-artifacts/goals/2026-05-28-poison-test.md",
     )
-    # The ASCII-hyphen substring `single-slice goal` must not appear in
-    # the rendered artifact at all (any casing); only the scrubbed
-    # non-breaking-hyphen form is allowed.
-    import re as _re
-
-    assert not _re.search(r"single-slice goal", text, _re.IGNORECASE), (
-        "scrub failed: ASCII-hyphen marker substring leaked into artifact"
-    )
-    # With Slice Plan still at 0 data rows, is_non_trivial_goal is False.
-    assert goal_lib.is_non_trivial_goal(text) is False
-    # Now simulate /achieve filling in two Slice Plan data rows.
+    # Rendered verbatim: the ASCII-hyphen phrase IS present (no scrub), and the
+    # old non-breaking-hyphen escape form is absent.
+    assert "single-slice goal" in text.lower()
+    assert "single‑slice goal" not in text.lower()
+    # The draft passes check_goal at write time (template seeds the 3 headings).
+    assert goal_lib.check_goal(text)["ok"] is True
+    # Filling two Slice Plan data rows does not change the portability outcome:
+    # the headings are present, so the marker prose is irrelevant.
     populated = text.replace(
         "| Slice | Objective | Why Now | Expected Evidence | Status |\n"
         "| --- | --- | --- | --- | --- |\n",
@@ -212,12 +203,8 @@ def test_quoted_handoff_body_cannot_poison_trivial_marker(lib, goal_lib):
         "| 1 | First | Now | Evidence | planned |\n"
         "| 2 | Second | Now | Evidence | planned |\n",
     )
-    # If the marker scrub were removed, is_non_trivial_goal would still
-    # return False here (because the blockquoted phrase would short-
-    # circuit it), and the portability gate would silently pass. The
-    # scrub ensures the gate behaves honestly: a populated Slice Plan
-    # flips non-trivial to True.
-    assert goal_lib.is_non_trivial_goal(populated) is True
+    assert goal_lib.check_goal(populated)["ok"] is True
+    assert goal_lib.check_goal(populated)["portability_missing_sections"] == []
 
 
 # Context Sources is seeded (non-empty) -------------------------------------

@@ -63,7 +63,7 @@ Expected proof cost: low (pure deterministic library + doc change). Expected tes
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Remove the exemption from the core gate (`goal_artifact_lib.py`) + reconcile its docs | Root-cause fix; makes the #255 poisoning structurally impossible | Drops `_TRIVIAL_GOAL_MARKER` + `is_non_trivial_goal`; `check_goal` always checks the 3 headings; failure message + section comments updated; `test_goal_artifact_lib.py` dead tests removed and replaced with "prose can't exempt / missing heading fails" tests; `lifecycle.md` + `docs/prescribed-skill-closeout-contract.md` guidance rewritten; `plugins/` mirror synced; targeted tests green | **done** |
-| 2 | Retire the now-purposeless downstream scrub (handoff auto-draft, #249) | With no marker there is nothing to poison; a silent text-rewrite with no purpose is dead weight | Drops `_scrub_trivial_goal_marker` + `_TRIVIAL_MARKER_PHRASE_RE` + call sites in `chunked_routing_auto_draft.py`; `test_handoff_chunker_auto_draft.py` poison/scrub tests rewritten to the new structural invariant; `docs/handoff-chunked-routing.md` updated; mirror synced; targeted tests green | planned |
+| 2 | Retire the now-purposeless downstream scrub (handoff auto-draft, #249) | With no marker there is nothing to poison; a silent text-rewrite with no purpose is dead weight | Drops `_scrub_trivial_goal_marker` + `_TRIVIAL_MARKER_PHRASE_RE` + call sites in `chunked_routing_auto_draft.py`; `test_handoff_chunker_auto_draft.py` poison/scrub tests rewritten to the new structural invariant; `docs/handoff-chunked-routing.md` updated; mirror synced; targeted tests green | **done** |
 
 ## Slice Log
 
@@ -79,6 +79,20 @@ Expected proof cost: low (pure deterministic library + doc change). Expected tes
 - Critique: Slice-0 plan critique (fresh-eye subagent a5f7cee941b1643b1) folded F1+F2 doc-scope blockers into this slice. Implementation fresh-eye critique runs at the bundle boundary after Slice 2 (the two slices are one cohesive change; reviewing the transiently-red mid-state would be lower-signal).
 - Off-goal findings: None.
 - Lessons carried forward: A fresh-eye plan critique caught that the stale-doc surface was 3 blocks in one file + a wrong fixture path, not the single line the plan named — doc blast-radius is easy to undercount.
+- Metrics: when available
+
+### Slice 2: Retire the now-dead downstream scrub (handoff auto-draft, #249)
+
+- Objective: Remove _scrub_trivial_goal_marker + _TRIVIAL_MARKER_PHRASE_RE + its 5 call sites from chunked_routing_auto_draft.py; rewrite the auto-draft tests that referenced the deleted is_non_trivial_goal/scrub to the new structural invariant.
+- Why this approach: Slice 1 removed the marker mechanism, so the scrub now defends nothing; a silent U+2011 text-rewrite with no purpose is dead weight that could mask a future regression.
+- Commits:
+- What changed: chunked_routing_auto_draft.py: dropped _TRIVIAL_MARKER_PHRASE_RE + _scrub_trivial_goal_marker; unwound the scrub from _quote_entry_body, _render_goal_body (x2), _render_context_sources, render_auto_draft_artifact (x2) — source-chunk text now renders verbatim, with a docstring noting why no scrub is needed. test_handoff_chunker_auto_draft.py: dropped test_single_slice_goal_marker_is_never_inserted; rewrote the poison test -> test_quoted_handoff_marker_prose_is_harmless (verbatim render, no U+2011, check_goal ok before+after slice rows); dropped the is_non_trivial_goal assertion from test_slice_plan_data_row_count_is_zero; updated module docstring. plugins/ mirror synced.
+- Alternatives rejected: Keeping the scrub as defense-in-depth (the initial Before-phase lean): rejected once Slice 1 removed the marker concept — nothing left to defend, and a silent no-op rewrite is confusing dead weight.
+- Targeted verification: pytest tests/test_handoff_chunker_auto_draft.py -> 15 passed. Residual-ref grep over source: only explanatory comments/docstrings + docs/handoff.md (F7, deferred to baton refresh). FULL SUITE (bundle boundary): 1870 passed, 4 skipped in 422s. Mirror verified clean.
+- Test duplication pressure: Low — net test count -1 (removed 2 stale tests, added 1 consolidated invariant test); kept tests reuse the existing HandoffEntry/ChunkCandidate fixtures. No new duplication.
+- Critique: Bundle-boundary fresh-eye implementation critique on the full two-slice diff runs next (covers both slices together; the slices are one cohesive change).
+- Off-goal findings: None.
+- Lessons carried forward: A downstream mitigation (#249 scrub) went fully dead the instant the root cause was removed — a root-cause fix should sweep its now-purposeless guards in the same change, not leave them as confusing dead weight.
 - Metrics: when available
 
 ## Context Sources

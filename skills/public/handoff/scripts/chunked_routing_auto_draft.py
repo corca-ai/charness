@@ -111,34 +111,14 @@ def _objective_from_chunk(chunk: ChunkCandidate) -> str:
     return chunk.objective_summary.strip()
 
 
-_TRIVIAL_MARKER_PHRASE_RE = re.compile(r"single-slice goal", re.IGNORECASE)
-
-
-def _scrub_trivial_goal_marker(text: str) -> str:
-    """Escape the literal `single-slice goal` substring so quoted handoff
-    text cannot accidentally trigger ``goal_artifact_lib._TRIVIAL_GOAL_MARKER``.
-
-    The marker regex in
-    ``skills/public/achieve/scripts/goal_artifact_lib.py`` matches the
-    phrase as a substring anywhere in the artifact (including inside
-    blockquotes) and, when matched, short-circuits ``is_non_trivial_goal``
-    to ``False`` forever — neutering the portability gate. The
-    auto-draft writer blockquotes arbitrary handoff entry prose into the
-    Goal section, so any handoff entry that ever mentions the phrase
-    would silently poison the gate. Slice-5 critique finding 1.
-
-    Mitigation: replace the hyphen between ``single`` and ``slice`` with
-    a non-breaking hyphen (``U+2011``). The regex requires the plain
-    ASCII hyphen, so the match breaks; markdown renders the non-breaking
-    hyphen visually identically.
-    """
-    return _TRIVIAL_MARKER_PHRASE_RE.sub("single‑slice goal", text)
-
-
 def _quote_entry_body(body: str) -> str:
-    """Blockquote a handoff entry's body, with marker-phrase scrub."""
-    scrubbed = _scrub_trivial_goal_marker(body)
-    return "\n".join(f"> {line}" if line else ">" for line in scrubbed.splitlines())
+    """Blockquote a handoff entry's body.
+
+    No marker scrub is needed: #255 removed the trivial-goal exemption from
+    ``goal_artifact_lib``, so the portability gate no longer special-cases any
+    ``single-slice goal`` phrase. Quoted handoff prose is safe verbatim.
+    """
+    return "\n".join(f"> {line}" if line else ">" for line in body.splitlines())
 
 
 def _render_goal_body(chunk: ChunkCandidate) -> str:
@@ -148,13 +128,12 @@ def _render_goal_body(chunk: ChunkCandidate) -> str:
     `**Source…**` header and the entries are separated by a `---`
     divider (slice-5 critique bundle-anyway 2).
     """
-    objective = _scrub_trivial_goal_marker(_objective_from_chunk(chunk))
+    objective = _objective_from_chunk(chunk)
     entries = chunk.entries
     sources = []
     for entry in entries:
-        scrubbed_title = _scrub_trivial_goal_marker(entry.title)
         sources.append(
-            f"**Source handoff entry #{entry.index}: {scrubbed_title}**\n\n"
+            f"**Source handoff entry #{entry.index}: {entry.title}**\n\n"
             f"{_quote_entry_body(entry.body)}"
         )
     separator = "\n\n---\n\n" if len(sources) > 1 else "\n\n"
@@ -198,9 +177,8 @@ def _render_context_sources(chunk: ChunkCandidate) -> str:
     """
     lines: list[str] = []
     for entry in chunk.entries:
-        scrubbed_title = _scrub_trivial_goal_marker(entry.title)
         lines.append(
-            f"- Source: handoff entry #{entry.index} ({scrubbed_title}) — "
+            f"- Source: handoff entry #{entry.index} ({entry.title}) — "
             "see [docs/handoff.md](../../docs/handoff.md)."
         )
     cited = sorted(
@@ -241,19 +219,17 @@ def render_auto_draft_artifact(
     Activation line). The caller is responsible for writing the body to
     that path; this function is pure rendering.
 
-    Every text region that originates in the source chunk (title, goal
-    body, context sources, boundaries' in-scope paths) is scrubbed
-    against the ``single-slice goal`` marker phrase so an unusual
-    handoff entry cannot silently neuter the portability gate after
-    /achieve fills slice rows.
+    Source-chunk text is rendered verbatim: #255 removed the trivial-goal
+    exemption from ``goal_artifact_lib``, so there is no longer a marker
+    phrase a quoted handoff entry could use to neuter the portability gate.
     """
     return _AUTODRAFT_TEMPLATE.format(
-        title=_scrub_trivial_goal_marker(_objective_from_chunk(chunk)),
+        title=_objective_from_chunk(chunk),
         date=date,
         goal_rel=goal_rel,
         goal_body=_render_goal_body(chunk),
         non_goals=_render_non_goals(chunk),
-        boundaries=_scrub_trivial_goal_marker(_render_boundaries(chunk)),
+        boundaries=_render_boundaries(chunk),
         user_acceptance=USER_ACCEPTANCE_PLACEHOLDER,
         agent_verification=AGENT_VERIFICATION_PLACEHOLDER,
         context_sources=_render_context_sources(chunk),
