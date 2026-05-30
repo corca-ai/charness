@@ -38,6 +38,13 @@ def _load_shared_helper():
 # enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
 CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
 
+# #253 rung 1b: in-scope goals (Created >= the disposition rule date) must also
+# carry a bound ``Disposition review: <path>`` line proving a fresh-eye
+# disposition review *ran* (or a ``skipped: host-blocked-subagent: <detail>``).
+# Grandfathered goals do not require it — the name is appended to the required
+# set only when ``disposition_gate_applies`` (threaded in ``check_complete_evidence``).
+DISPOSITION_REVIEW_EVIDENCE = "disposition_review"
+
 # Retro H2 sections whose substance must be narrated to the user, not just
 # persisted to the retro file (#233 F2). The After-phase gate surfaces which of
 # these the retro actually contains so the closeout response can transport them.
@@ -48,8 +55,13 @@ NARRATION_REQUIRED_SECTIONS = (
     "Sibling Search",
 )
 
+# The ``Disposition[- ]review`` arm is load-bearing (round-3 B1): adding the name
+# to CLOSEOUT-style requirements alone would silently drop the line here, so a
+# bound review line would never be parsed and every in-scope goal would be
+# refused. ``_normalize_evidence_name`` maps the captured label to
+# ``disposition_review`` automatically.
 _EVIDENCE_LINE = re.compile(
-    r"^[\s>*-]*(Retro|Host[- ]log[- ]probe)\s*:\s*(.+?)\s*$",
+    r"^[\s>*-]*(Retro|Host[- ]log[- ]probe|Disposition[- ]review)\s*:\s*(.+?)\s*$",
     re.MULTILINE | re.IGNORECASE,
 )
 
@@ -156,16 +168,47 @@ def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
     return parsed
 
 
+def _load_sibling_disposition():
+    """Load the sibling #253 improvement-disposition gate module.
+
+    Kept in its own file (a separable concept, like this module was split from
+    ``goal_artifact_lib.py``) so neither file approaches the single-file line
+    gate. This module depends on it; the dependency is one-directional (the
+    disposition module is a leaf), so there is no circular import.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_disposition",
+        Path(__file__).resolve().parent / "goal_artifact_disposition.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_disposition.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_disposition = _load_sibling_disposition()
+disposition_gate_applies = _disposition.disposition_gate_applies
+apply_disposition_rungs = _disposition.apply_disposition_rungs
+
+
 def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     """Run the shared closeout-evidence helper for an ``achieve`` After-phase.
 
-    The wrapper extracts ``Retro:`` and ``Host log probe:`` lines from the
-    goal artifact body and feeds them as evidence/skip arguments to the
-    portable ``check`` function. The wrapper supplies the contract
-    (CLOSEOUT_EVIDENCE_NAMES); the helper is the gate.
+    The wrapper extracts ``Retro:``, ``Host log probe:``, and (for in-scope
+    goals) ``Disposition review:`` lines from the goal artifact body and feeds
+    them as evidence/skip arguments to the portable ``check`` function. The
+    wrapper supplies the contract; the helper is the gate.
     """
     helper = _load_shared_helper()
     parsed = parse_closeout_evidence(text)
+    # #253 rung 1b: require the review-ran evidence line only for in-scope goals
+    # (grandfather-by-Created gates BOTH rungs — else a grandfathered goal would
+    # still be refused for a Disposition review line it never had).
+    in_scope = disposition_gate_applies(text)
+    required = list(CLOSEOUT_EVIDENCE_NAMES)
+    if in_scope:
+        required.append(DISPOSITION_REVIEW_EVIDENCE)
     evidence: dict[str, str] = {}
     skips: dict[str, str] = {}
     for name, payload in parsed.items():
@@ -175,7 +218,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
             skips[name] = payload["value"]
     report = helper.check(
         repo_root=repo_root,
-        required=list(CLOSEOUT_EVIDENCE_NAMES),
+        required=required,
         evidence=evidence,
         skips=skips,
         kind="achieve-after",
@@ -227,5 +270,11 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
             retro_text = ""
         narration = narration_sections_present(retro_text)
     report["narration_required_sections"] = narration
+
+    # #253 rung 1a: deterministic block-the-blank floor (grandfathered by Created
+    # date; substance is rung 2's job). Rung 1b (the disposition_review line) is
+    # already enforced above via the ``required`` set; 1a fires independently so a
+    # rung-1b skip on a subagent-blocked host still leaves the blank check active.
+    apply_disposition_rungs(report, text, in_scope)
 
     return report

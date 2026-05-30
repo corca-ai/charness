@@ -92,6 +92,11 @@ def main() -> int:
                         entry["name"] for entry in evidence_report["binding_failures"]
                     )
                 )
+            if evidence_report.get("disposition_blank"):
+                missing_bits.append(
+                    "improvement-disposition gate (#253): cited retro lists "
+                    "improvements but ## Auto-Retro is blank and no opt-out is recorded"
+                )
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(missing_bits)

@@ -1,6 +1,6 @@
 # Achieve Goal: Improvement-disposition closeout gate (validator teeth, #253)
 
-Status: draft
+Status: active
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-253-improvement-disposition-gate.md`
 
@@ -267,6 +267,34 @@ What the user can do to verify completion directly:
 ## Slice Log
 
 _No slices yet — the goal is inert until activated with `/goal`._
+
+### Slice 1: Rung-1 deterministic floor (block-the-blank + grandfather + opt-out)
+
+- Objective: Build the offline, clone-safe deterministic floor: grandfather-by-Created-date, Auto-Retro-scoped blank detection, retro Next-Improvements presence (structure only), and the Auto-Retro-scoped reasoning opt-out; wire rung-1a into check_complete_evidence; prove it against the live corpus.
+- Why this approach: The deterministic teeth must be proven against the live corpus (grandfather works, opt-out not poisoned) before rung-1b/rung-2 build on them (round-2/3 R5: regression moved to slice-1 exit criterion).
+- Commits: (bundled with slice 2 in the code commit — both touch check_complete_evidence/_EVIDENCE_LINE; sync barrier means one mutate->sync->verify->publish)
+- What changed: NEW skills/public/achieve/scripts/goal_artifact_disposition.py (leaf module: DISPOSITION_RULE_DATE, goal_created_date, disposition_gate_applies, _section_body, auto_retro_is_blank, retro_lists_improvements, find_disposition_optout, apply_disposition_rungs). goal_artifact_closeout_evidence.py: load sibling + call apply_disposition_rungs at end of check_complete_evidence. NEW audit_disposition_corpus.py corpus runner. NEW tests/quality_gates/test_goal_disposition_gate.py (21 cases).
+- Alternatives rejected: REJECTED inlining the logic into goal_artifact_closeout_evidence.py (the goal's stated home): the rung-1 logic is ~180 lines and pushed that file to 411 (>360 hard limit) and would have wedged slice 2 against the cap — the exact silent-near-limit-file trap recent-lessons flags twice. Extracted to a leaf module instead (same separable-concept split that created closeout_evidence from the lib). goal_artifact_lib.py stays at 358 with ZERO re-export growth.
+- Targeted verification: 48 tests pass (21 new disposition + 27 existing goal-artifact, no regression). check_python_lengths exit 0 on all touched .py (lib unchanged 358; new files well under 360). Corpus runner: 7 pre-rule grandfathered -> 0 rung1a refusals; 0 in-scope blank refusals.
+- Test duplication pressure: Added a dedicated new test file (test_goal_disposition_gate.py, ~190 lines) loading both modules directly; fixture builders (_build_goal/_seed_evidence) shared in-file to limit duplication. New file well under TEST_FILE_WARN 720. No adjacent-duplicate pressure introduced (separate file, distinct fixtures from test_goal_artifact_lib.py).
+- Critique: Self-review caught a section-scan off-by-one (empty Auto-Retro absorbing the next H2) before tests — fixed + regression-tested (test_auto_retro_empty_section_does_not_absorb_next_section). Fresh-eye slice critique deferred to the bundled code commit / After-phase bounded review.
+- Off-goal findings: CALIBRATION DISCOVERY: goal 2026-05-30-issue-251 is Created 2026-05-30 (in-scope by Created-keying) but was closed ~80min BEFORE the rule commit 73d2d34. Its Auto-Retro is non-blank (rung-1a correctly silent) but it lacks a Disposition review line, so rung-1b (slice 2) will show a check_goal_artifact diagnostic on re-check (never a re-refusal: the flip-guard only fires on non-complete->complete). Corpus is 7 pre-rule + 1 in-scope, NOT '8 pre-rule' as User Acceptance phrased it. Accepted per pre-committed Created-keying + R6; documented, not silently exempted.
+- Lessons carried forward: The goal's 'home = closeout_evidence, 231 lines ample' estimate was wrong (additions ~180 lines > headroom). The leaf-module split is the durable fix and keeps both files + the lib off the line gate. Carry into slice 2: add the Disposition[- ]review regex arm + conditionally extend required by disposition_review when in-scope — both small edits to closeout_evidence, no module-size pressure.
+- Metrics: when available (host token/time metrics not surfaced inline)
+
+### Slice 2: Rung-1b review-ran evidence (Disposition review: line)
+
+- Objective: Require in-scope goals to carry a bound 'Disposition review: <path>' (or 'skipped: host-blocked-subagent: <detail>') line so a fresh-eye disposition review provably ran; thread the Created-date grandfather so it gates BOTH rungs.
+- Why this approach: Closes #253's recursion (the apply rung). The _EVIDENCE_LINE regex arm + required-list threading are the two non-obvious wiring points round-3 verified (B1).
+- Commits: (this commit — bundled with slice 1)
+- What changed: goal_artifact_closeout_evidence.py: added Disposition[- ]review arm to _EVIDENCE_LINE (B1: tuple-only silently drops the line); DISPOSITION_REVIEW_EVIDENCE constant; check_complete_evidence computes in_scope once and appends disposition_review to required only when in-scope (gates both rungs); rung-1a call reuses in_scope. goal_artifact_lib.py: reworded refusal note to cover the disposition rungs (NET ZERO lines — stays 358). check_goal_artifact.py: surface disposition_blank in the diagnostic. 7 new rung-1b tests.
+- Alternatives rejected: REJECTED adding disposition_review to the CLOSEOUT_EVIDENCE_NAMES tuple alone (round-3 B1): _EVIDENCE_LINE hard-codes the label alternation, so the line would be silently dropped and every in-scope goal refused. REJECTED keying grandfather on completion date (goal Interview decision): Created-keying grandfathers in-flight goals that had no chance to plan around the rule. REJECTED adding lines to goal_artifact_lib.py (358/360): reworded the note in place.
+- Targeted verification: 58 tests pass (no regression; 2 slice-1 'passes' tests correctly updated to supply a review line now that in-scope goals require one). Smoke: parse+normalize of Disposition review/-review, skip-enum, required-threading, grandfather exemption, binding. check_python_lengths exit 0 (lib still 358, zero growth). Sync + validate_packaging clean; new modules mirrored.
+- Test duplication pressure: 7 cases added to the existing test_goal_disposition_gate.py via shared _build_goal(review_line=...) + _seed_review builders — no new file, no adjacent-duplicate pressure. File still well under TEST_FILE_WARN 720.
+- Critique: Self-review: confirmed rung-1a fires independently of a rung-1b skip (host portability) via test_block_the_blank_fires_independently_of_review_skip; confirmed _normalize_evidence_name composes ('Disposition review' -> disposition_review) without an explicit arm. Fresh-eye bounded review deferred to After-phase.
+- Off-goal findings: Re-ran corpus runner with rung-1b live: 251 now evidence_ok=false (missing Disposition review line) — the documented R6 retroactive-diagnostic case (never a re-refusal; upsert flip-guard only fires non-complete->complete). Pre-rule 7 goals still 0 refusals.
+- Lessons carried forward: Adding a required evidence name retroactively breaks slice-1 'passes' tests that assumed no review line — expected coupling, fixed by supplying a bound review line to isolate each rung. Carry into slice 3: docs must state the per-improvement (two forms) vs per-goal (opt-out) scope distinction and that rung-1b is presence/binding-only (not a content classifier).
+- Metrics: when available
 
 ## Context Sources
 

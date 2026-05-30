@@ -172,13 +172,13 @@ def upsert_goal(
                     "status": read_status(original) or "unknown",
                     "requested_status": status,
                     "note": (
-                        "refused to flip to complete: After-phase prescribed sub-skill "
-                        "evidence missing, invalid, or not bound to this goal. Add "
-                        "`Retro:` and `Host log probe:` lines (path or "
-                        "`skipped: <enum>: <detail>`) to the goal artifact; a cited "
-                        "evidence file must also bind to this goal (its basename or "
-                        "content must reference the goal slug/issue). Then re-run. "
-                        "See docs/prescribed-skill-closeout-contract.md."
+                        "refused to flip to complete: After-phase evidence missing, "
+                        "invalid, unbound, or the #253 improvement-disposition gate is "
+                        "unmet. Add bound `Retro:`/`Host log probe:` lines (path or "
+                        "`skipped: <enum>: <detail>`); in-scope goals also need a bound "
+                        "`Disposition review:` line and a non-blank `## Auto-Retro` "
+                        "(disposition each improvement, or a `Retro dispositions: none — "
+                        "<reason>` opt-out). See evidence_report + the closeout contract."
                     ),
                     "evidence_report": evidence_report,
                 }
