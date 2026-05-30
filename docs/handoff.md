@@ -16,43 +16,31 @@
 
 ## Current State
 
-- **`main` is ahead of `origin/main` by ~10 commits — UNPUSHED.** Local only;
-  push/PR is a maintainer decision.
-- **#255 trivial-goal exemption REMOVED — SHIPPED** (goal
-  [`2026-05-30-255`](../charness-artifacts/goals/2026-05-30-255-remove-trivial-goal-exemption.md),
-  Status: complete). Resolved *not* by the issue's literal "scope the scan"
-  patch but by removing the size/marker portability exemption outright:
-  `is_non_trivial_goal` + `_TRIVIAL_GOAL_MARKER` deleted, `check_goal` now
-  requires the 3 portability headings on every goal, and the now-dead #249
-  `_scrub_trivial_goal_marker` retired. The poisoning bug is structurally
-  impossible. **GitHub #255 still OPEN** — close after push.
-- **#253 improvement-disposition gate SHIPPED** (goal
-  [`2026-05-30-253`](../charness-artifacts/goals/2026-05-30-253-improvement-disposition-gate.md),
-  Status: complete; dogfooded its own closeout). Two-rung "gate + 지능": rung-1
-  deterministic floor (block-the-blank + bound `Disposition review:` line,
-  grandfathered by `Created >= 2026-05-30`) in new leaf module
-  `goal_artifact_disposition.py`; rung-2 fresh-eye reviewer records a
-  per-improvement verdict. **GitHub #253 still OPEN** — close after push.
-- **#256 + #257 SHIPPED + CLOSED** (closeout-ergonomics gates): a length-headroom
-  advisory (`check_python_lengths --headroom`) auto-surfaced by
-  `run_slice_closeout.py` (#256); a hard pre-commit `check_staged_mirror_drift.py`
-  blocking staged source without its synced `plugins/` mirror (#257). pkill
-  command-hygiene recorded in
-  [implementation-discipline.md](./conventions/implementation-discipline.md).
-- **v0.12.0 real-host proof still pending** (clean-machine) — carried forward.
+- **`main` PUSHED + synced; v0.13.0 RELEASED** (tag `v0.13.0`, GitHub release
+  public-verified). Ships the coordination-cues achieve feature + accumulated
+  since-0.12.0 work (#253 disposition gate, #255 portability, #256/#257 closeout
+  gates, #251 mutation, #232, #244/#245 SessionStart hook auto-install) — all
+  CLOSED. Per-item detail lives in the release notes + each goal/retro artifact.
+- **achieve goal-doc coordination cues SHIPPED** (goal
+  [`2026-05-30-coordination-cues`](../charness-artifacts/goals/2026-05-30-coordination-cues-find-skills-routing.md)):
+  a `## Coordination Cues` find-skills routing carrier + gather/release
+  presence-only closeout floors in `goal_artifact_coordination_floors.py`,
+  grandfathered `Created >= 2026-05-31`.
+- **v0.13.0 real-host (clean-machine) proof — maintainer-attested DONE**
+  ([proof artifact](../charness-artifacts/release/2026-05-30-v0.13.0-real-host-proof.md)).
+  Clears the long-carried "real-host proof pending" item; raw `--json` not
+  captured in-session (attestation, not agent-captured record).
 
 ## Next Session
 
 > A bare `/handoff` unions the tracker — so chunk the live backlog rather than
 > trusting this list. This memo carries only cross-issue judgment.
 
-1. **Push the local commits**, then close GitHub #253 + #255 (both shipped
-   locally but unpushed).
-2. **usage-episodes / hooks cluster:** #244 (auto-wire find-skills SessionStart
-   hook), #245 (cross-checkout hook dup), #243 (consumer/report gap). #244+#245
-   both touch the host-hook installer.
-3. **v0.12.0 real-host proof** (Cautilus clean-machine smoke) + remaining
-   backlog: #242/#219 (mutation), #233, #241, #237/#236, #184/#185.
+1. **Backlog** (push/#253/#255/#244/#245/real-host all DONE): #243
+   (usage-episodes consumer/report gap), #242/#219 (mutation), #233, #241,
+   #237/#236, #184/#185, and this session's off-goal finds #258/#259.
+2. Optional: upgrade the v0.13.0 real-host attestation to captured `--json`
+   evidence if a stronger durable record is wanted.
 
 ## Discuss
 
