@@ -10,6 +10,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
 
@@ -23,6 +25,7 @@ def _load(name: str):
 cf = _load("goal_artifact_coordination_floors")
 ce = _load("goal_artifact_closeout_evidence")
 gal = _load("goal_artifact_lib")
+cga = _load("check_goal_artifact")
 
 
 # --- grandfather-by-Created-date -------------------------------------------
@@ -363,3 +366,105 @@ def test_both_floors_can_refuse_together(tmp_path: Path) -> None:
     )
     assert {e["floor"] for e in report["coordination_missing"]} == {"gather", "release"}
     assert report["ok"] is False
+
+
+# --- error / fail-open branches (the #260 changed-line-coverage gap) --------
+#
+# The coordination-cues trio shipped (commit f55be70) with these specific
+# error / fail-open branches test-uncovered. `classify_changed_line_scope_gap`
+# blocks on ANY uncovered changed statement line, so they kept the whole trio
+# out of the mutation sample (#260 blocking signal). The tests below pin them.
+
+
+def test_mask_fences_unbalanced_fence_fails_open() -> None:
+    # An odd number of fence markers leaves `_mask_fences` in an open-fence state
+    # at EOF; it fails OPEN (returns the raw text untouched) rather than masking
+    # the unterminated tail. Covers goal_artifact_coordination_floors.py:110.
+    unbalanced = "## Coordination Cues\n\n```\nGather: charness-artifacts/gather/x.md\n"
+    assert cf._mask_fences(unbalanced) == unbalanced
+
+
+def test_section_span_heading_at_eof_collapses_to_empty_span() -> None:
+    # A watched heading as the final line with no trailing newline makes
+    # `masked.find("\\n", ...)` return -1, so the body span collapses to
+    # (len, len). Covers goal_artifact_coordination_floors.py:129.
+    masked = "## Coordination Cues"  # no trailing newline, heading is the last char
+    assert cf._section_span(masked, "Coordination Cues") == (len(masked), len(masked))
+    # and a downstream body read on that span is empty, never raising
+    assert cf._section_body(masked, "Coordination Cues") == ""
+
+
+def test_load_sibling_coordination_floors_raises_when_spec_missing(monkeypatch) -> None:
+    # The leaf-module loader fails closed with ImportError when the spec cannot be
+    # built (the sibling file is missing). Covers
+    # goal_artifact_closeout_evidence.py:202 (the raise branch), which only runs
+    # when spec_from_file_location returns None.
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    with pytest.raises(ImportError, match="goal_artifact_coordination_floors.py not found"):
+        ce._load_sibling_coordination_floors()
+
+
+# --- check_goal_artifact CLI surfaces an unsatisfied coordination floor -----
+#
+# `check_goal_artifact.py` is otherwise only ever run as a subprocess, so the
+# coverage probe reads it as 0% (NOT TRACKED -> whole-file block, the #260
+# signal for that file). This in-process test exercises `main()` so its changed
+# lines (the coordination-floors missing-bits formatting, L100-107) are covered,
+# and pins the real behavior: a complete goal whose gather floor is unsatisfied
+# is refused with a "coordination floors: gather step missing" issue.
+
+_CLI_SECTIONS = (
+    "Non-Goals",
+    "Boundaries",
+    "User Acceptance",
+    "Agent Verification Plan",
+    "Slice Plan",
+    "Slice Log",
+    "Off-Goal Findings",
+    "User Verification Instructions",
+)
+
+
+def _complete_goal_missing_gather(created: str, slug: str) -> str:
+    sections = "".join(f"## {name}\n\nx\n\n" for name in _CLI_SECTIONS)
+    return (
+        f"# Achieve Goal: T\n\nStatus: complete\nCreated: {created}\n"
+        f"Activation: `/goal @charness-artifacts/goals/{created}-{slug}.md`\n\n"
+        "## Goal\n\nx\n\n"
+        f"## Context Sources\n\n- https://example.com/spec the external design source\n\n"
+        "## Coordination Cues\n\nRouting: see find-skills (no Gather step recorded)\n\n"
+        f"{sections}"
+        "## Final Verification\n\n"
+        f"Retro: charness-artifacts/retro/{created}-{slug}.md\n"
+        f"Host log probe: charness-artifacts/probe/{created}-{slug}.json\n"
+        f"Disposition review: charness-artifacts/critique/{created}-{slug}-disposition.md\n\n"
+        "## Auto-Retro\n\napplied: shipped a gate this run\n"
+    )
+
+
+def test_check_goal_artifact_cli_refuses_complete_goal_with_unsatisfied_gather(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    created = "2026-05-31"
+    slug = "cli-coord"
+    # bind every OTHER closeout gate so the gather floor is the only failure
+    _seed(tmp_path, f"charness-artifacts/retro/{created}-{slug}.md", "# Retro\n\n## Next Improvements\n\nnone\n")
+    _seed(tmp_path, f"charness-artifacts/probe/{created}-{slug}.json", '{"host":"claude-code"}\n')
+    _seed(
+        tmp_path,
+        f"charness-artifacts/critique/{created}-{slug}-disposition.md",
+        f"# Disposition review for {slug}\n\n- improvement 1: applied\n",
+    )
+    goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
+    goal_path.parent.mkdir(parents=True, exist_ok=True)
+    goal_path.write_text(_complete_goal_missing_gather(created, slug), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["check_goal_artifact.py", "--repo-root", str(tmp_path), "--goal-path", str(goal_path)],
+    )
+    rc = cga.main()
+    out = capsys.readouterr().out
+
+    assert rc == 1
+    assert "coordination floors: gather step missing" in out

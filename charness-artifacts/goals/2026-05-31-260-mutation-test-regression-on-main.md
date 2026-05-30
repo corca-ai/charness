@@ -214,30 +214,33 @@ The user can confirm completion by:
 ### Slice 1: Reproduce + locate on current `main`
 
 - Objective: Pin the uncovered changed statement lines + the 22 survivor sites on current `main` before writing tests
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: Faithful gate repro through the gate's own `run_test_coverage` + `classify_changed_line_scope_gap` (#251 B2), not a naive coverage run. Survivor set proven via the cheaper targeted scoped re-run path (Context Sources A1), not by reproducing the CI fill sample.
+- Commits: (recorded with Slice 2)
+- What changed: No source change — investigation only. Goal Slice-Log updated.
+- Alternatives rejected: Reproducing the exact CI fill sample with `MUTATION_SAMPLE_SEED` — rejected as costlier and unnecessary (A1 allows proving survivors killed via the scoped re-run instead).
 - Targeted verification:
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+  - **Drift guard passed:** trio source AND its test files are unchanged `454f7dd..HEAD(105edd2)` (0 diff lines each); changed-line counts over base..head match exactly (check_goal_artifact +8 = L100-107, closeout_evidence +28 = L190-207/212-214/301-307, coordination_floors +283 = L1-283). `f55be70` (added both the trio source AND comprehensive tests) is inside base..head, so the tests were present when CI failed.
+  - **Blocking trio reproduced (all 3 block):** ran the full-suite coverage probe (1849 passed, 388s) then `classify_changed_line_scope_gap` over base `9565b92`..head `454f7dd`. Exact uncovered changed lines: `check_goal_artifact.py` = **whole file NOT TRACKED** (only run via subprocess → coverage reads 0%, the #251 lesson; never executed in-process by pytest); `goal_artifact_closeout_evidence.py` = **L202** (`raise ImportError` in `_load_sibling_coordination_floors`); `goal_artifact_coordination_floors.py` = **L110** (`_mask_fences` unbalanced-fence fail-open `return text`) + **L129** (`_section_span` heading-at-EOF `return (len,len)`). Comprehensive tests exist but miss these specific error/fail-open branches; the classifier blocks on ANY uncovered changed line.
+  - **Survivor set reproduced (scoped cosmic-ray, faithful filter):** scoped config over the 3 fill-sampled files + focused nodeids derived from the same coverage JSON (CI's own mutation-test-command construction). Filter: **115 pending → 14 filtered → 101 executable** (matches CI "Executable: 101"). Result: **80 KILLED, 15 SURVIVED, 6 NO_TEST** (NO_TEST = also not-killed) = 21 not-killed, all in render+glow; `setup_artifact_policy_lib.py` = **0 survivors** (focused setup_inspect tests already kill all its mutants — explains why "main:18" is an aggregate, A3). Map: `render_cli_reference.py` — L102 Div cluster **11** mutants (5 SURVIVED + 6 NO_TEST; else-branch `repo_root / args.output` never runs because the existing test passes an ABSOLUTE `--output`), L103 `parents=True`→False ×1, L57 `check=False`→True ×1, L61 `!=`→`<`/`>` ×2 (run_help, A-confirms `run_help:3`); `check_glow_backend.py` — L13 `or`→`and` ×1 (`_load_render_module`, A2 confirms it lives here not render), L23 `ensure_ascii=False`→True ×1 + `indent=2` NumberReplacer ×2, L24 `==`→`is`/`>=` ×2 (`main`).
+- Test duplication pressure: n/a (no tests added this slice)
+- Critique: The 22-vs-21 count delta is expected — survivor set is sample/seed/test-command-dependent (A1); the local scoped set is the authoritative target for THIS tree. The line-102 cluster is the dominant gap and a single relative-output test kills all 11 (any non-`/` operator on two Paths raises TypeError). Trio newly-covered lines will enter the next run's mutation denominator (#251 dynamic) → Slice 3's re-run must include the trio to confirm those new mutants die too.
+- Off-goal findings: none
+- Lessons carried forward: `check_goal_artifact.py` is NOT TRACKED (whole-file block) because no in-process test exercises it — the Slice-2 test must `import` it and call `main()` in-process, not just shell out (subprocess-only → 0% coverage, #251). The 6 NO_TEST line-102 mutants are not-killed exactly like SURVIVED — both fall to the relative-output test.
+- Metrics: coverage probe 388.46s / 1849 passed, 4 skipped; scoped mutation baseline 115→101 executable, 21 not-killed (when available).
 
 ### Slice 2: Cover the blocking trio
 
 - Objective: Add tests covering every changed statement line in check_goal_artifact / goal_artifact_closeout_evidence / goal_artifact_coordination_floors so none block the gate
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
-- Targeted verification:
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Why this approach: Target exactly the Slice-1 gap lines (not blanket coverage) and pin each as real behavior, not coverage-chasing. All four tests live in `test_goal_coordination_floors.py` (the feature's natural home) so no new test file is needed and the achieve lib gains zero re-export lines (Boundary: single-file gate).
+- Commits: (this slice)
+- What changed: `tests/quality_gates/test_goal_coordination_floors.py` +4 tests: (1) `_mask_fences` unbalanced-fence fail-open → floors L110; (2) `_section_span` heading-at-EOF empty span → floors L129; (3) `_load_sibling_coordination_floors` raises ImportError when spec is None (monkeypatched) → closeout L202; (4) `check_goal_artifact.main()` in-process CLI test refusing a complete goal with an unsatisfied gather floor → makes the whole file TRACKED and covers L100-107. No source changed.
+- Alternatives rejected: A new dedicated test file per script — rejected (would fragment the floors tests and risks a new re-export through the line-gated lib). Running check_goal_artifact via subprocess `run_script` — rejected: subprocess-only execution reads 0% under the gate probe (the #251 / Slice-1 NOT-TRACKED lesson), so it must run `main()` in-process.
+- Targeted verification: `pytest test_goal_coordination_floors.py` 29 passed (was 25). Faithful re-run of the gate predicate over the achieve suite (gate's own `run_test_coverage` → `classify_changed_line_scope_gap`, base 9565b92..head 454f7dd): **0 blocking**; all three trio files report `changed&missing=[]` (check_goal_artifact now TRACKED). The full-suite confirmation is deferred to Slice 5.
+- Test duplication pressure: low — the 4 tests target branches no existing test reaches (error/fail-open/CLI paths); the CLI test reuses the existing `_seed` helper and the established full-goal shape. No near-duplicate of an existing assertion.
+- Critique: The CLI test asserts on the printed issue substring "coordination floors: gather step missing" — a behavior pin, but it couples to that exact phrasing; acceptable since the phrasing is itself the changed-line surface under test. The scoped (achieve-suite) verification could in principle differ from the full-suite gate if a trio line were covered only by a non-achieve test — but here every gap line is covered by the new tests directly, and Slice 5 re-confirms on the full suite.
+- Off-goal findings: none
+- Lessons carried forward: covering these changed lines pulls their mutants into the next run's denominator → Slice 3's targeted mutation re-run must include the trio to confirm the newly-covered lines' mutants die (the #251 dynamic).
+- Metrics: scoped achieve-suite coverage probe 87 passed / ~3s; 0 blocking (when available).
 
 ### Slice 3: Kill all 22 survivors (thorough)
 
