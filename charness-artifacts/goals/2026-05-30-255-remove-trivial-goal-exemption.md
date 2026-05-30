@@ -145,7 +145,12 @@ Slice-0 plan critique by a bounded fresh-eye subagent (general-purpose, agentId 
 
 ## Off-Goal Findings
 
-_None yet._ (Historical artifacts that mention the marker are intentionally left immutable — not a finding to action.)
+Two improvements that surfaced during the run were filed as issues (creation only; not resolved here):
+
+- **#258** — review/critique subagents can corrupt the parent worktree's git index when testing base-commit behavior (silent-regression risk at closeout). Surfaced at *this goal's* closeout: a stale `MM` reversion of `goal_artifact_lib.py` left staged by a review subagent, caught and fixed before the closeout commit.
+- **#259** — removing a public symbol leaves stale doc residue with no cheap detector; proposes a deterministic symbol-residue advisory. Surfaced as this run's repeated doc-undercount waste (the same doc needed three reconciliation passes).
+
+(Historical artifacts that mention the marker are intentionally left immutable — not a finding to action.)
 
 ## Final Verification
 
