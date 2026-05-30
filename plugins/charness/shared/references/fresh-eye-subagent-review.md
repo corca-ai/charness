@@ -76,6 +76,38 @@ word "subagent"; first try the host spawn tool under the repo contract. Only a
 real tool refusal, missing spawn surface, exhausted host budget, or higher
 priority instruction that forbids honoring repo delegation is a blocker.
 
+## Shared-Tree Git Hygiene
+
+Bounded fresh-eye reviewers usually run in the *parent session's* working tree,
+not an isolated checkout. In that shared tree a reviewer that mutates git state
+to "see the old behavior" silently corrupts the operator's pending commit: a
+`git checkout <base> -- <path>` to read pre-change code leaves the parent index
+holding a staged reversion, so the operator's closeout `git add -A && git commit`
+re-commits the old code and undoes the very change under review — with every gate
+still green, because the reverted code is internally self-consistent. This is
+the #258 trap, and it is a hard rule, not a default.
+
+When you review in a shared worktree, treat git as read-only:
+
+- Inspect any prior version through plumbing that does **not** touch the index or
+  worktree: `git show <ref>:<path>`, `git diff <ref> -- <path>`, `git cat-file`.
+- Do **not** run index- or worktree-mutating git commands in the shared tree:
+  no `git checkout -- <path>`, `git checkout <ref> -- <path>`, `git restore`,
+  `git stash`, or `git reset`, and do not `git add` files you touched only to
+  inspect them. Each leaks your inspection into the operator's commit.
+- If a check genuinely needs the old tree on disk, request an isolated worktree
+  (`charness worktree create`) or a fresh clone; never roll the shared tree back
+  under the parent session.
+- Leave the index exactly as you found it. Report findings about prior behavior
+  from the read-only diff, not by staging a reversion.
+
+This section is the canonical owner of the rule; every skill that spawns
+shared-tree reviewers inherits it by citing this section rather than restating
+it. A deterministic pre-commit gate (`check_staged_reversion`) catches
+the unambiguous phantom (`worktree == HEAD` but `index != HEAD`) as a backstop,
+but the gate is rung 2: following this rule is what keeps the index clean in the
+first place.
+
 ## Required Before Declaring The Canonical Path Blocked
 
 1. Attempt the bounded setup the skill calls for.

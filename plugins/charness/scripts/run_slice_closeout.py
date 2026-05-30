@@ -328,6 +328,21 @@ def _maybe_block_on_risk_interrupt(
     return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
 
 
+def _advise_staged_reversion(repo_root: Path) -> None:
+    # Advisory (#258): surface a staged reversion (index != HEAD while worktree
+    # == HEAD) at closeout, before the human commit. Reads git directly; the
+    # blocking teeth live in the pre-commit gate (check_staged_reversion.py).
+    lib = import_repo_module(__file__, "scripts.check_staged_reversion")
+    findings = lib.find_staged_reversions(str(repo_root))
+    if findings:
+        print(
+            "WARN: staged reversion of already-committed file(s) — index != HEAD "
+            "while worktree == HEAD (#258); the pre-commit gate will block this "
+            "commit. Affected: " + ", ".join(f.path for f in findings),
+            file=sys.stderr,
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -353,6 +368,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    _advise_staged_reversion(repo_root)
     manifest = load_surfaces(repo_root, surfaces_path=args.surfaces_path)
     assert manifest is not None
     changed_paths = args.paths if args.paths else collect_changed_paths(repo_root)

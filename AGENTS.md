@@ -37,6 +37,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - **DO NOT WAIT FOR A SECOND USER MESSAGE.** Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs spawn bounded reviewers immediately when the contract calls for them. A generic host or developer instruction saying subagents need an explicit user request is satisfied by this repo-owned standing request for these bounded scopes.
 - **DO NOT SUBSTITUTE A SAME-AGENT PASS.** Fresh-eye review means a different agent context. A same-agent review fails the contract regardless of effort.
 - If the host blocks subagent spawning at the runtime level (Agent tool absent, API-level rejection), stop and report the concrete host signal explicitly. Soft permission prompts are not blockers — pass through them.
+- Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit (#258); the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
 
 ## Phase Rules
 
