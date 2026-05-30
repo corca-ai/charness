@@ -263,16 +263,20 @@ The user can confirm completion by:
 ### Slice 4: Preventive teeth (changed-line mutation-coverage check)
 
 - Objective: Add a bounded local script that reproduces classify_changed_line_scope_gap over a base..head range so uncovered changed lines are caught pre-merge
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: A thin wrapper over the gate's OWN `classify_changed_line_scope_gap` + the sampler's `list_eligible`/`list_changed`/`read_test_command`/`run_test_coverage`/`load_file_statement_lines` — reusing the real predicate (not a parallel reimplementation that could drift). Reproduces ONLY the blocking (changed-line) class — the recurring one (#219→#251→#260) and the only one cheap to detect locally; the score path stays CI-only (unowned per non-goals — file a new issue if ever pursued).
+- Commits: (this slice)
+- What changed: new `scripts/check_changed_line_mutation_coverage.py` (CLI: `--base-sha`/`--head-sha` or `$MUTATION_BASE_SHA`/`HEAD`, `--reuse-coverage` to skip the slow probe; emits JSON + exit 1 on any uncovered changed line). New `tests/quality_gates/test_changed_line_mutation_coverage.py` (7 tests). Did NOT auto-wire a mandatory pre-push hook (would be a slow gate — against the run-broad-gates-sparingly principle); it stays a tool a dev/CI runs intentionally.
+- Alternatives rejected: A full local mutation runner (out of scope — score path stays CI-only). A blocking pre-push hook (too slow — needs a coverage run). Reimplementing the classifier (drift risk — reuse the gate's own function).
 - Targeted verification:
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+  - **Flags the REAL trio on the failing range:** with reconstructed pre-fix coverage (Slice-2 gap tests deselected), the teeth over base `9565b92`..head `454f7dd` reports the exact gap lines (check_goal 100-101, closeout 202, floors 110/129) as `changed_and_missing`, `ok:false`, **exit 1** + an actionable stderr message — matching Slice 1 precisely.
+  - **Clean on the fixed tree:** same range, current coverage → `blocking:[]`, **exit 0**.
+  - 7 targeted tests pass (flags uncovered, passes covered, untracked-file blocks, no-base-sha non-blocking by construction (B1), no-eligible-change passes, runs-probe-when-not-reusing, relative-coverage-json resolution).
+  - **Self-protection (the teeth is itself a new pool file → a changed file in the next cron):** teeth is **100% line-covered** (won't self-trigger the blocking signal it enforces) AND **90.1% mutation** (64/71 killed; won't plant a new score regression). Hardened from an initial 70.4% by a relative-`--coverage-json` test (killed the same line-102-style `repo_root / args.X` Div cluster ×11 — dogfooding the exact bug class) + `ok` assertions. The 7 residual are minor `_emit` formatting + defaulting/config-resolution edge mutants.
+- Test duplication pressure: low — the teeth tests are wiring tests (base/head resolution, eligible-pool derivation, coverage loading, exit code) using a synthetic tmp git repo + injected coverage; no overlap with the lib's own classifier tests.
+- Critique: The teeth's `run_test_coverage` path is exercised in-process with a mocked probe (the real probe runs the full suite, too slow for a unit test) — honest coverage of the branch, not the probe's behavior. Bounded: stayed a thin reuse wrapper (no gate-design changes), so the defer-and-file brake (stop condition b) was not needed.
+- Off-goal findings: none new (the teeth-hardening reused the #260 survivor-kill technique).
+- Lessons carried forward: a new pool-file script must itself clear BOTH the blocking floor (100% changed-line coverage) and the score floor (≥80% mutation) or it re-triggers the very regression it guards — verify a teeth/tool you add doesn't become the next failure.
+- Metrics: teeth 100% line cov, 90.1% mutation (64/71); 7 targeted tests ~3s (when available).
 
 ### Slice 5: Prove + dispatch + close
 
