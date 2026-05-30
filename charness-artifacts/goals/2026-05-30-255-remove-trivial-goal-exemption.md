@@ -1,6 +1,6 @@
 # Achieve Goal: Remove the trivial-goal portability exemption (#255)
 
-Status: active
+Status: complete
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-255-remove-trivial-goal-exemption.md`
 
@@ -139,31 +139,117 @@ Slice-0 plan critique by a bounded fresh-eye subagent (general-purpose, agentId 
 
 - **F7** — `docs/handoff.md:41–45` still describes the rejected literal fix. Disposition: handled in the After-phase handoff baton refresh (the `/handoff` pruning surface), not a Slice-1 code edit.
 
+**Bundle-boundary implementation critique** by a second bounded fresh-eye subagent (general-purpose, agentId `abb898bdb872afa09`) on the full two-slice diff. Verdict: implementation **correct and substantially complete** — gate genuinely always-on (no leftover guard), zero residual production references to the removed symbols, both mirrors byte-identical, tests honestly lock the new behavior (47 passed locally), and the no-regression claim independently re-verified (the one heading-less goal `2026-05-27-226` already failed `check_goal` on the base commit). One minor blocker found and **fixed**:
+
+- **IC-1 (fixed)** — `docs/prescribed-skill-closeout-contract.md:243–244` still said the sections apply "for any non-trivial goal (defined below)", dangling a reference to the `### Trivial Goal Exemption` subsection Slice 1 deleted and contradicting line 255. Rewritten to "on **every** goal before it can be saved at status `draft`". (A missed line in the same F1 doc surface — the plan critique caught the subsection, this pass caught the lead-in sentence.)
+
 ## Off-Goal Findings
 
 _None yet._ (Historical artifacts that mention the marker are intentionally left immutable — not a finding to action.)
 
 ## Final Verification
 
-_Pending: completed in the After phase — self-verification, residual risk, and explicit non-claims (including that no live/provider/release proof applies)._
+**Self-verification (what was proven):**
+
+- **Behavioral root-cause:** `is_non_trivial_goal` + `_TRIVIAL_GOAL_MARKER` deleted; `check_goal` now requires the 3 portability headings on every goal. Dogfood: this goal's own body carries the marker phrase 10× yet `check_goal_artifact.py` returns `ok=True` (it has the headings) — the old code would have exempted it.
+- **Tests:** full suite **1870 passed, 4 skipped** (422s, bundle boundary). Targeted: `test_goal_artifact_lib.py` 32 passed; `test_handoff_chunker_auto_draft.py` 15 passed. New tests lock: size doesn't exempt; prose mention doesn't exempt; missing heading fails; scaffold passes via template headings; auto-draft renders marker prose verbatim + harmless.
+- **Completeness:** zero residual *production* references to the removed symbols across source + the `plugins/` mirror (remaining hits are past-tense explanatory comments + the deliberately-deferred `docs/handoff.md` memo). Both source files' mirrors verified byte-identical.
+- **Two bounded fresh-eye subagent critiques** ran (plan `a5f7cee941b1643b1`; implementation `abb898bdb872afa09`); all surfaced blockers folded/fixed (F1, F2, IC-1).
+- **No regression:** the implementation reviewer independently re-ran the *base-commit* lib and confirmed the one heading-less goal (`2026-05-27-226`) already failed `check_goal` before this change — so zero new breakage; no live gate scans the goals corpus through `check_goal`.
+
+**High-confidence proof:** all pre-commit gates green on both slice commits (`ruff`, `py_compile`, `check-python-lengths`, `validate-skills`, `run-evals` 22 scenarios, `staged-plugin-mirror-drift`, `check-doc-links`, `markdownlint`).
+
+**Live / provider / release proof: NOT RUN because none applies.** This is a deterministic library + docs change with no provider, network, live-host, or release surface. (Not "skipped" — there is no such surface to exercise.)
+
+**Residual risks / non-claims:**
+
+- A goal could still author a portability heading with empty or placeholder content; the gate is heading-*presence* only by design (#253 deterministic-floor philosophy — no prose classification). Not a regression; an accepted scope boundary.
+- `slice_plan_data_row_count` is now test-only (no production caller). Retained as a stable utility; if a future cleanup wants it gone, that is a separate decision.
+- GitHub #255 is **not** closed and the commits are **not** pushed by this run (maintainer decisions).
+
+### Closeout evidence
+
+Retro: charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md
+Host log probe: charness-artifacts/probe/2026-05-30-issue-255-remove-trivial-goal-exemption.json
+Disposition review: charness-artifacts/critique/2026-05-30-issue-255-disposition-review.md
 
 ## User Verification Instructions
 
-_Pending: finalized in the After phase. Expected shape:_
-
 ```bash
-# 1. prose mention no longer exempts a missing heading
-#    (build a goal with a "single-slice goal" prose mention and no Interview Decisions heading)
-python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path <fixture>   # flags missing heading
+# 1. The marker phrase no longer exempts: a goal missing a portability heading
+#    fails even when its prose mentions "single-slice goal". This goal artifact
+#    itself is the live proof — its body has 10 marker-phrase hits yet passes
+#    because it carries the 3 headings:
+python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . \
+  --slug 255-remove-trivial-goal-exemption --date 2026-05-30        # ok: true
 
-# 2. no residual production references
-grep -rn "Single-slice goal\|_TRIVIAL_GOAL_MARKER\|is_non_trivial_goal\|_scrub_trivial_goal_marker" \
-  skills tests docs   # no live hits
+# 2. The behavior is locked by tests (size doesn't exempt; prose doesn't exempt;
+#    missing heading fails; scaffold passes; auto-draft prose harmless):
+python3 -m pytest tests/quality_gates/test_goal_artifact_lib.py \
+  tests/test_handoff_chunker_auto_draft.py -q                       # 47 passed
 
-# 3. suite + mirror
-pytest -q
+# 3. No residual PRODUCTION references (only past-tense comments + the deferred
+#    docs/handoff.md memo remain):
+grep -rn "is_non_trivial_goal\|_TRIVIAL_GOAL_MARKER\|_scrub_trivial_goal_marker\|_TRIVIAL_MARKER_PHRASE_RE" \
+  skills tests docs | grep -v "^plugins/"
+
+# 4. Mirror in sync + full suite (slow ~7min; spawns the quality gate fixture):
+git diff --stat origin/main..HEAD     # review the 3 commits (draft + 2 slices) + closeout
+python3 -m pytest -q                  # 1870 passed, 4 skipped
 ```
 
 ## Auto-Retro
 
-_Pending: produced by `retro` in the After phase; substantive findings narrated inline at closeout (not collapsed to a path reference)._
+Closeout retro: `charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md`
+(recent-lessons digest refreshed). Rung-2 disposition review (fresh-eye):
+`charness-artifacts/critique/2026-05-30-issue-255-disposition-review.md`.
+
+**Retro narration (inline — #233 F2; not collapsed to a path):**
+
+- **Waste.** Doc blast-radius undercounted *twice in the same file*. The
+  Before-phase plan named one line of `docs/prescribed-skill-closeout-contract.md`;
+  plan critique (#1) caught the `### Trivial Goal Exemption` subsection + a wrong
+  `### Self-Test` fixture path; implementation critique (#2) then caught a third
+  stale line (the "non-trivial goal (defined below)" lead-in) in the *same* doc
+  that both prior passes missed. Low cost (no code rework; gates caught it pre-close)
+  but a clear under-scoping: I edited the *line the ticket named* instead of the
+  *concept across the file*.
+- **Critical decisions.** (1) Pivot to full removal over the issue's literal
+  patch — decided on three facts gathered first (template seeds the headings;
+  `check_goal` is heading-presence-only; zero goals use the marker as an intended
+  exemption), making removal safe + simpler + the bug structurally impossible.
+  (2) Flipped the #249 scrub from "keep (defense-in-depth)" to "remove" once full
+  removal made it dead. (3) Bundled the two slices with the full suite deferred to
+  the boundary (treated the transient red window as expected, not a failure).
+- **Sibling search.** The waste pattern (*removing a code symbol but leaving the
+  concept's natural-language name in prose*) is transferable. Four-axis scan of
+  this change's surface: by-symbol (no live source refs remain), by-concept-word
+  (`trivial`/`exemption`/`single-slice`/`defined below` — remaining hits are
+  intentional past-tense notes; the IC-1 dangler was fixed), by-doc-surface (3
+  docs reconciled; `docs/handoff.md` deferred to baton refresh), by-test (dead
+  assertions removed, always-on behavior locked). Residue clean.
+- **Expert counterfactual.** A technical-writer / single-source-of-truth lens
+  would ask "where does this *concept* live?" first and grep the concept's
+  natural-language names across `docs/` *before* the first edit — collapsing the
+  three-pass doc reconciliation into one. (Klein/Kahneman decision lens considered
+  but not forced: the pivot decision was handled well, facts before approach.)
+
+**Improvement disposition (every surfaced improvement — the per-improvement rule):**
+
+- *Concept-grep before doc edits when removing a named concept* (workflow/memory
+  lesson) → **memory (captured)**, **not** a separable `applied:`/`issue` item.
+  This is the retro's capture rung (persisted retro + recent-lessons digest), not
+  a code/gate change. A deterministic "concept-residue" gate would be
+  disproportionate: the two fresh-eye critiques already caught all three stale
+  spots in this very run, so the self-correcting cadence is sufficient. Labeling
+  the memory write itself `applied:` would be the dressed-up-memory-note #253
+  forbids, so it is not.
+- *Refresh `docs/handoff.md`'s #255 memo from the rejected "scope the scan"
+  framing to the shipped "removed the exemption" resolution* (F7) → **applied** —
+  the baton refresh rewrote the #255 Next-Session entry and added a `## Current
+  State` SHIPPED bullet. **Honesty note:** the rung-2 disposition reviewer
+  (`a3be81d53f7f8ad2c`) correctly caught this labeled `applied` *before* the edit
+  existed (token-theater — exactly the #253 trap); the edit was then actually
+  made, so `applied` is now true and verifiable in `docs/handoff.md`.
+
+Off-goal findings during the run: **none** (see Off-Goal Findings).

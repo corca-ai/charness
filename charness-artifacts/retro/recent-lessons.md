@@ -8,9 +8,9 @@
 ## Repeat Traps
 
 - **A 1GB+ full-suite coverage run kicked off then abandoned.** I started the faithful repro against the full test command before realizing a test-scoped command reproduces the same trio coverage far faster, then killed it (and the `pkill` pattern also caught my replacement run — a second restart). Cost: ~minutes + a stale large artifact. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
+- **Doc blast-radius undercounted — twice, in the same file.** The Before-phase plan named only one line of `docs/prescribed-skill-closeout-contract.md`. The plan critique (fresh-eye #1) caught a whole `### Trivial Goal Exemption` subsection + a wrong `### Self-Test` fixture path (F1). The implementation critique (fresh-eye #2) then caught a *third* stale line in the *same* doc — the "non-trivial goal (defined below)" lead-in (IC-1) — that both I and the first critique missed. Same doc surface, three passes. Cost was low (no code rework; the gates caught it before close), but it is a clear under-scoping of doc reconciliation: I edited the line the issue/plan pointed at instead of the *concept* across the file. (source: `charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md`)
+- **Minor (phase-appropriate, not real waste):** the full suite legitimately takes ~7 min (it spawns the quality gate as a subprocess fixture); piping it through `| tail` buffered all output, so progress polling read blind. Writing raw output to a file (no `tail`) would have shown progress. Noted, not counted as waste — the run itself was the correct bundle-boundary gate. (source: `charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md`)
 - Not waste: the broad exploration in Slice 1 was triage-phase scoping (locating the exact predicate), and the plan critique caught a real proof-model error (B1). (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
-- **One self-inflicted measurement detour.** The first coverage read showed `parse_handoff_entries.py` at 0% (whole file uncovered) and I nearly treated that as the gap. The cause: a *naive* `coverage run` does not capture subprocess-invoked scripts, but the gate uses `parallel=True` + `COVERAGE_PROCESS_START` (subprocess capture). Re-running through the gate's own `run_test_coverage` corrected it to 86.4% with only the `--with-issues` branch uncovered. Cost: ~one extra repro cycle. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
-- **#248 defect bit the operator first-hand at session start.** The very first chunker run this session failed on a stage-script flag mismatch (`--repo-root` vs `--entries` vs `--merge-proposal`) — the exact ergonomics defect #248 reports. It became Slice 1's regression seed, so the cost was recovered, but it cost one retry on the opening pickup. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
 
 ## Next-Time Checklist
 
@@ -27,6 +27,6 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`
 - `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`
 - `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`
+- `charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md`

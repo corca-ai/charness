@@ -240,8 +240,8 @@ question first.
 ### Required Sections
 
 [The goal artifact library](../skills/public/achieve/scripts/goal_artifact_lib.py)
-adds three required sections that must be present **before the goal can be
-saved at status `draft`** for any non-trivial goal (defined below):
+adds three required sections that must be present on **every** goal **before it
+can be saved at status `draft`**:
 
 - `Context Sources` — durable references this goal was shaped from; a fresh
   session can reconstruct the originating context by following them in order.

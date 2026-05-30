@@ -16,8 +16,16 @@
 
 ## Current State
 
-- **`main` is ahead of `origin/main` by 5 commits — UNPUSHED.** This session's
-  work is local only; push/PR is a maintainer decision.
+- **`main` is ahead of `origin/main` by ~10 commits — UNPUSHED.** Local only;
+  push/PR is a maintainer decision.
+- **#255 trivial-goal exemption REMOVED — SHIPPED** (goal
+  [`2026-05-30-255`](../charness-artifacts/goals/2026-05-30-255-remove-trivial-goal-exemption.md),
+  Status: complete). Resolved *not* by the issue's literal "scope the scan"
+  patch but by removing the size/marker portability exemption outright:
+  `is_non_trivial_goal` + `_TRIVIAL_GOAL_MARKER` deleted, `check_goal` now
+  requires the 3 portability headings on every goal, and the now-dead #249
+  `_scrub_trivial_goal_marker` retired. The poisoning bug is structurally
+  impossible. **GitHub #255 still OPEN** — close after push.
 - **#253 improvement-disposition gate SHIPPED** (goal
   [`2026-05-30-253`](../charness-artifacts/goals/2026-05-30-253-improvement-disposition-gate.md),
   Status: complete; dogfooded its own closeout). Two-rung "gate + 지능": rung-1
@@ -38,17 +46,12 @@
 > A bare `/handoff` unions the tracker — so chunk the live backlog rather than
 > trusting this list. This memo carries only cross-issue judgment.
 
-1. **#255 — `is_non_trivial_goal` full-text marker poisoning (good `/achieve`
-   candidate).** Pre-existing bug found while shipping #253; well-scoped in the
-   issue (fix: scope the `_TRIVIAL_GOAL_MARKER` scan to the `## Slice Plan`
-   section, mirroring how #253 scoped its opt-out to the Auto-Retro span). Same
-   `goal_artifact_*` surface as #253 — context carries over.
-2. **Push the 5 local commits**, then close GitHub #253 (fix is shipped locally
-   but unpushed).
-3. **usage-episodes / hooks cluster:** #244 (auto-wire find-skills SessionStart
+1. **Push the local commits**, then close GitHub #253 + #255 (both shipped
+   locally but unpushed).
+2. **usage-episodes / hooks cluster:** #244 (auto-wire find-skills SessionStart
    hook), #245 (cross-checkout hook dup), #243 (consumer/report gap). #244+#245
    both touch the host-hook installer.
-4. **v0.12.0 real-host proof** (Cautilus clean-machine smoke) + remaining
+3. **v0.12.0 real-host proof** (Cautilus clean-machine smoke) + remaining
    backlog: #242/#219 (mutation), #233, #241, #237/#236, #184/#185.
 
 ## Discuss
