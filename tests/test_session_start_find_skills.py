@@ -19,15 +19,23 @@ HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
 
 
 def test_directive_is_dumb_and_points_at_find_skills() -> None:
-    """The directive triggers find-skills and defers routing to that skill."""
+    """The directive triggers find-skills and defers ALL routing to that skill.
+
+    It must not re-encode routing rules: find-skills owns the pickup -> handoff
+    decision (see find-skills/references/session-start-routing.md), so the hook
+    text stays fully decoupled from `handoff` and the handoff doc.
+    """
     directive = hook.build_additional_context()
     # Triggers find-skills.
     assert "charness:find-skills" in directive
-    # Names the pickup -> handoff example without re-encoding routing rules.
-    assert "charness:handoff" in directive
-    assert "pickup" in directive
     # Stays dumb: the routing decision lives in the skill, not the hook text.
     assert "routing decision lives in that skill" in directive
+    # Decoupled: the hook must not name handoff, pickup, or the handoff doc —
+    # that routing lives entirely in find-skills.
+    lowered = directive.lower()
+    assert "handoff" not in lowered
+    assert "pickup" not in lowered
+    assert "docs/handoff" not in lowered
 
 
 def test_render_output_claude_emits_session_start_additional_context() -> None:

@@ -38,10 +38,8 @@ import sys
 DIRECTIVE = (
     "charness session-start routing: before acting on the opening message, "
     "invoke the `charness:find-skills` skill once. It maps installed "
-    "capabilities and, per its own contract, drives the routed workflow from "
-    "the result — a pickup (a bare `@docs/handoff.md`-style mention or a "
-    "session opened with no explicit task) continues with `charness:handoff`, "
-    "not just a re-read of the file. This trigger only points you at "
+    "capabilities and, per its own contract, owns the routing decision and "
+    "drives the next step from its result. This trigger only points you at "
     "find-skills; the routing decision lives in that skill."
 )
 
