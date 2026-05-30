@@ -17,7 +17,7 @@
 - **capability:** A tiny repo helper that, given base/head + a file list, prints changed-line coverage + the blocking verdict (wrapping the libs I chained by hand) would remove the bespoke repro script each time. Candidate follow-up issue. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
 - **capability:** the near-limit-file trap has now recurred a 3rd time. The hard `check_python_lengths` gate prevents the *bad commit* but not the *wasted edit*; a pre-write headroom signal (a tiny `limit − current` reporter, or an edit-time warn) would remove the redo. File as a tracked capability follow-up. (source: `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`)
 - **memory:** fold both into `recent-lessons` so the next session inherits the pre-write headroom estimate and the stage-the-mirror habit. (source: `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`)
-- **memory:** fold "pre-commit gate family ≠ pytest; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit" into `recent-lessons.md`. (source: `charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md`)
+- **memory:** fold "pre-commit gate family ≠ `pytest`; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit; first gate rejection → run the aggregate, do not fix-and-retry" into `recent-lessons.md`. (source: `charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md`)
 
 ## Selection Policy
 

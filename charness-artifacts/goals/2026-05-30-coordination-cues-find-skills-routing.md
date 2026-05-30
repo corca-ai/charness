@@ -196,13 +196,15 @@ copy at `charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routi
 Improvement dispositions (per #253 — applied-as-teeth or filed-as-issue, never
 prose-only):
 
-- **workflow — run `scripts/run_slice_closeout.py` (the pre-commit gate aggregate)
-  before the first commit on a multi-validator-family slice.** applied: the
-  enforcing teeth already exist and fired this session — the pre-commit hook
-  family (ruff / `validate-attention-state-visibility` / `check-markdown` /
-  `check_python_lengths` / mirror-drift) rejected every non-compliant commit, so
-  nothing shipped broken. No new gate is warranted; the sequencing habit is folded
-  into recent-lessons (below). The miss was using the existing aggregate earlier.
+- **workflow — the commit-time gate family is a verification surface distinct
+  from `pytest`; verify before commit = the aggregate, and on the first rejection
+  run the aggregate rather than fix-and-retry.** applied (teeth-adjacent): a
+  one-line tightening of achieve's verify→publish boundary in
+  `references/lifecycle.md`, post-session at the user's request — not a new gate
+  (the pre-commit hook family already enforces commit-readiness and fired this
+  run; nothing shipped broken) and not prose-only memory (it lands in the achieve
+  contract + the recent-lessons digest below as a *reactive* trigger, since the
+  proactive "run before commit" form relies on remembering and gets skipped).
 - **memory — "pre-commit gate family ≠ `pytest tests/`; a length-neutral string
   reword can still break `validate-attention-state-visibility`; re-sync the mirror
   after any post-sync source edit."** applied: folded into

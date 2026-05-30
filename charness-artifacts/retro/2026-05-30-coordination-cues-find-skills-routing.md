@@ -89,15 +89,20 @@ is the natural follow-up.
 
 ## Next Improvements
 
-- **workflow:** run `scripts/run_slice_closeout.py --repo-root .` (or the
-  pre-commit hook set) the moment `pytest` is green and *before* the first
-  commit on any slice that spans multiple validator families (ruff /
-  attention-state-visibility / check-markdown / python-lengths / mirror drift
-  are all pre-commit-only, not in `pytest tests/`). The teeth already exist and
-  fired; the miss was sequencing.
-- **memory:** fold "pre-commit gate family ≠ pytest; a length-neutral string
+- **workflow (applied to the achieve contract):** the commit-time gate family
+  (ruff / attention-state-visibility / check-markdown / python-lengths /
+  mirror-drift) is a *distinct verification surface* from `pytest tests/` — none
+  of it runs under the unit suite, so a green suite is not commit-ready. The
+  **proactive** form ("run the aggregate before commit") is weak because it relies
+  on remembering; the **reactive** form is the lever: *on the first commit-time
+  rejection, run `run_slice_closeout.py` to surface all failures at once instead
+  of fix-and-retry*. Applied this run as a one-line tightening of achieve's
+  verify→publish boundary in `references/lifecycle.md` (teeth-adjacent in the
+  achieve contract, not prose-only memory).
+- **memory:** fold "pre-commit gate family ≠ `pytest`; a length-neutral string
   reword can still break `validate-attention-state-visibility`; re-sync the
-  mirror after *any* post-sync source edit" into `recent-lessons.md`.
+  mirror after *any* post-sync source edit; first gate rejection → run the
+  aggregate, do not fix-and-retry" into `recent-lessons.md`.
 
 ## Sibling Search
 

@@ -157,7 +157,7 @@
     {
       "candidate_id": "next_improvement:4830910d0dac",
       "kind": "next_improvement",
-      "lesson": "**memory:** fold \"pre-commit gate family ≠ pytest; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit\" into `recent-lessons.md`.",
+      "lesson": "**memory:** fold \"pre-commit gate family ≠ `pytest`; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit; first gate rejection → run the aggregate, do not fix-and-retry\" into `recent-lessons.md`.",
       "normalized_key": "memory fold pre commit gate family pytest a length neutral string reword can still",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
@@ -399,7 +399,7 @@
     {
       "candidate_id": "next_improvement:4830910d0dac",
       "kind": "next_improvement",
-      "lesson": "**memory:** fold \"pre-commit gate family ≠ pytest; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit\" into `recent-lessons.md`.",
+      "lesson": "**memory:** fold \"pre-commit gate family ≠ `pytest`; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit; first gate rejection → run the aggregate, do not fix-and-retry\" into `recent-lessons.md`.",
       "normalized_key": "memory fold pre commit gate family pytest a length neutral string reword can still",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
@@ -497,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4072475e398a",
+      "kind": "next_improvement",
+      "lesson": "**workflow (applied to the achieve contract):** the commit-time gate family (ruff / attention-state-visibility / check-markdown / python-lengths / mirror-drift) is a *distinct verification surface* from `pytest tests/` — none of it runs under the unit suite, so a green suite is not commit-ready. The **proactive** form (\"run the aggregate before commit\") is weak because it relies on remembering; the **reactive** form is the lever: *on the first commit-time rejection, run `run_slice_closeout.py` to surface all failures at once instead of fix-and-retry*. Applied this run as a one-line tightening of achieve's verify→publish boundary in `references/lifecycle.md` (teeth-adjacent in the achieve contract, not prose-only memory).",
+      "normalized_key": "workflow applied to the achieve contract the commit time gate family ruff attention state",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:bf53a35644c5",
       "kind": "next_improvement",
       "lesson": "**workflow:** For any mutation-gate \"uncovered changed lines\" fix, reproduce via the gate's own `run_test_coverage` (subprocess-capturing) scoped to the files' test surface — never a naive `coverage run` (misses subprocess scripts) and never the full-suite batch first.",
@@ -511,26 +531,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-          "date": "2026-05-30",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:0a1697498c27",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** run `scripts/run_slice_closeout.py --repo-root .` (or the pre-commit hook set) the moment `pytest` is green and *before* the first commit on any slice that spans multiple validator families (ruff / attention-state-visibility / check-markdown / python-lengths / mirror drift are all pre-commit-only, not in `pytest tests/`). The teeth already exist and fired; the miss was sequencing.",
-      "normalized_key": "workflow run scripts run slice closeout py repo root or the pre commit hook",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
         }

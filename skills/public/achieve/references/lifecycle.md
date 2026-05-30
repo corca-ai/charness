@@ -176,6 +176,17 @@ module over appending before the hard gate fires), and — via the
 source is staged without its regenerated `plugins/` mirror (#257). Both are
 owned by `<repo-root>/docs/conventions/implementation-discipline.md`.
 
+The commit-time gate family (ruff, `check_python_lengths`,
+`validate_attention_state_visibility`, `check-markdown`, mirror-drift,
+`validate_skills`, `check_doc_links`) is a **distinct verification surface from
+the unit suite** — none of those gates run under `pytest`, so a green `pytest` is
+necessary but not commit-ready. In the `mutate → sync → verify → publish` rhythm
+the **verify step before a commit is `run_slice_closeout.py` (the pre-commit gate
+aggregate), not the unit suite**. And the reactive trigger: if a commit *is*
+rejected by one of these gates, run the aggregate to surface **all** of them at
+once rather than fix-and-retry one rejection at a time — serial single-gate
+rejections after a green suite are pure waste the aggregate removes.
+
 ### Coordination cues (find-skills routing)
 
 The goal template seeds a `## Coordination Cues` section the agent fills *during*
