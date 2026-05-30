@@ -92,6 +92,14 @@ and helper usage.
    - write final self-verification, residual risks, non-claims, and concrete
      user verification instructions
    - run `retro` for the automatic efficiency review
+   - **disposition every improvement** the retro or the run surfaced: each one
+     is either *applied in-session* (converted to teeth — a gate, hook,
+     validator, test, or code change committed this run) or *filed as a tracked
+     `issue`* for the next session to pick up. Whether to apply now or file is
+     the agent's judgment; leaving an improvement as prose-only retro memory is
+     **not** a valid disposition — decaying, unread lessons are the exact gap
+     this closes. Record each improvement's disposition (`applied: <what>` or
+     `issue #N`) in the goal artifact's Auto-Retro section.
    - run `check_goal_artifact.py`, then flip status to `complete`
 
 ## Coordination
@@ -114,6 +122,8 @@ and helper usage.
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
   verification, residual risk, and non-claims
+- at completion, an explicit disposition for each surfaced improvement
+  (`applied: <what>` or `issue #N`) — never prose-only memory
 
 ## Guardrails
 
@@ -133,6 +143,11 @@ and helper usage.
   retro's substantive findings inline as well as persisting the file
   (the #233 F2 pattern is the recurrence history this guards against;
   see `references/lifecycle.md` After section).
+- Do not leave a surfaced improvement as prose-only retro memory at closeout.
+  Every improvement is dispositioned as applied-in-session (teeth) or a filed
+  `issue` (next-session pickup); the now-vs-next choice is agent judgment, but
+  the disposition itself is mandatory. Capture-and-hope is the loop the goal
+  operator must close, not widen.
 
 ## References
 

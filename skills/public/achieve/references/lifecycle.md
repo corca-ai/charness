@@ -205,6 +205,37 @@ sections, status, and activation line are all present. Flip the status to
 `complete` only after the final report separates what was proven from what
 remains the user's responsibility to verify.
 
+### Improvement disposition
+
+The retro's value is realized only if its improvements change something. The
+loop has three rungs — capture (the retro artifact + `recent-lessons.md`
+digest), surface (the digest is a pull surface other sessions are told to
+read), and apply — and only the first two are automatic. Application does not
+happen on its own: a prose `Next Improvement` left in the retro decays out of
+the digest (recency half-life + slot limits) and is, in practice, lost unless a
+later session both reads it and chooses to act.
+
+So the After-phase must **close the loop, not widen it**. At closeout, give
+every improvement the retro or the run surfaced an explicit disposition — one
+of exactly two:
+
+- **applied-in-session**: converted to *teeth* this run — a gate, hook,
+  validator, test, or code/contract change — and committed. Teeth self-apply on
+  the next run; prose does not. Prefer this when the improvement is small enough
+  to land now or names a recurrence a future session would otherwise repeat.
+- **filed-as-issue**: a tracked `issue` (via the `issue` skill / adapter
+  backend) so the next session picks it up from the live backlog the handoff
+  chunker reasons over. Prefer this when the improvement is real but larger than
+  the current goal's scope, or needs its own design.
+
+Which of the two — apply now vs file for next session — is the **agent's
+judgment**, weighing the improvement's size against the current goal's scope.
+What is **not** optional: leaving an improvement as prose-only retro memory is
+not a valid disposition. Record each improvement's outcome in the Auto-Retro
+section as `applied: <what landed>` or `issue #N`, so a fresh session can audit
+that the loop was closed. (This rule is itself the applied form of the lesson
+that `achieve` captured improvements but never closed the apply rung.)
+
 ### After-phase evidence gate
 
 `upsert_goal.py --status complete` now refuses the flip unless the goal
