@@ -1,6 +1,6 @@
 # Achieve Goal: #260: Mutation test regression on main
 
-Status: draft
+Status: complete
 Created: 2026-05-31
 Activation: `/goal @charness-artifacts/goals/2026-05-31-260-mutation-test-regression-on-main.md`
 
@@ -281,16 +281,20 @@ The user can confirm completion by:
 ### Slice 5: Prove + dispatch + close
 
 - Objective: Confirm no regression, gather the two-proof story, re-check #219, close #260
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: Deterministic local proofs are the closeout evidence (the goal sanctions this); the live `workflow_dispatch` requires pushing the fix to origin/main, which `achieve` does not do (outward-facing — the maintainer's step). Honest Proof Discipline: name the not-run live proof rather than claim it.
+- Commits: (this slice — closeout)
+- What changed: goal artifact Final Verification + User Verification Instructions + Auto-Retro; `Closes #260` staged in the closeout commit body (not pushed).
+- Alternatives rejected: Auto-pushing to origin/main + triggering dispatch — rejected (outward-facing/hard-to-reverse; `achieve` does not push). Closing #260 via `gh` now — rejected (premature: the fix is not on origin and CI has not confirmed; close is staged for the maintainer's push).
 - Targeted verification:
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+  - **No regression:** full `python3 -m pytest -q -m 'not release_only' tests` → **1868 passed, 4 skipped, 57 deselected** (was 1858 pre-goal; +10 new tests).
+  - **Score path (deterministic):** `check_mutation_score.py` on the #260 survivor session dump → **100.0% / 101 executed / PASS** (was 78.2%). Trio hardened (closeout 88.8% / floors 85.0%) and teeth (90.1%) all clear the 80 gate, so the dispatch fill-sampling risk is resolved.
+  - **Blocking path (deterministic stand-in):** `classify_changed_line_scope_gap` over base `9565b92`..head `454f7dd` → **0 blocking** for the trio; the new teeth flags the trio with pre-fix coverage (exit 1) and passes clean on the fixed tree (exit 0). CI confirmation = the next scheduled cron.
+  - **#219 re-checked:** OPEN; its 38 survivors are in `scripts/artifact_closeout_lib.py` (33, mostly equivalent `str | None` annotation `|`-mutants) + `scripts/validate_rca_ledger.py` (5) — files #260 does not touch → **NOT subsumed; left open** (its equivalent-mutant cluster relates to #261's gate-design sub-question).
+- Test duplication pressure: n/a (closeout slice; no new tests)
+- Critique: the suite-score script initially read a stale May-26 dump (unrelated files) reporting 94.2% — not #260's proof; replaced with the #260 survivor dump (100%). The dispatch is NOT RUN (requires push) — honestly marked, not claimed.
+- Off-goal findings: #261 (trio latent survivors); #219 left open (distinct files).
+- Lessons carried forward: `check_mutation_score.py` scores whatever dump is at the canonical path — verify the dump's provenance before quoting its score.
+- Metrics: full suite 1868 passed / 197.77s; #260 survivor score 100.0% (101/101) (when available).
 
 ## Context Sources
 
@@ -406,8 +410,91 @@ and `454f7dd..599c941` over the trio (empty), `gh issue view 219/236/260`. Did
 
 ## Off-Goal Findings
 
+- **#261** — coordination-cues achieve trio has ~70 residual latent mutation
+  survivors (closeout_evidence 23 / coordination_floors 32 / check_goal_artifact
+  15-but-coverage-excluded), incl. ~7 equivalent regex-flag `BitOr→Add` mutants.
+  Surfaced because the trio was never mutation-tested (chronic changed-line
+  blocking). Out of #260 scope (anti-balloon + equivalent-mutant stop conditions);
+  #260 surgically lifted the two fill-eligible files to ≥85% so the gate stays
+  green. Filed for scoped triage + a possible equivalent-mutant gate-design call.
+- **#219** — re-checked, **left OPEN** (not subsumed): its 38 survivors are in
+  `scripts/artifact_closeout_lib.py` (33) + `scripts/validate_rca_ledger.py` (5),
+  files #260 does not touch. Its `artifact_closeout_lib` cluster is the same
+  equivalent `|`-annotation mutant class noted in #261.
+- **#262** — `run_cosmic_ray_mutation.py` should defensively `git checkout` its
+  module-path files on exit/interrupt (a `timeout`-killed exec left a mutation
+  applied this session). Retro improvement, deferred as a next-session teeth.
+
 ## Final Verification
+
+**Both #260 FAIL causes are fixed and locally proven; the live `workflow_dispatch`
+is NOT RUN (requires pushing the fix to origin/main — `achieve` does not push).**
+
+- **Score path (deterministic):** targeted scoped Cosmic Ray re-run on the 3
+  fill-sampled survivor files → `check_mutation_score.py` reports **100.0% /
+  101 executed / PASS** (was 78.2% with 22 survivors). The 22 named survivors are
+  killed: `render_cli_reference.main()` line-102 Div cluster (relative-output
+  test), `run_help` (nonzero + signal-death tests), `check_glow_backend.main()` /
+  `_load_render_module` (mocked-payload tests). `setup_artifact_policy_lib` was
+  already clean.
+- **Blocking path (deterministic stand-in):** `classify_changed_line_scope_gap`
+  over base `9565b92`..head `454f7dd` reports **0 blocking** for the trio; the new
+  teeth flags the trio with pre-fix coverage (exit 1) and passes clean on the
+  fixed tree (exit 0). CI confirmation = the next scheduled cron (the async
+  blocking-path proof, per #251 B1 — `workflow_dispatch` computes no `base_sha`).
+- **#251 dynamic handled:** the trio's newly-covered-from-uncovered gap lines all
+  die in mutation (0 not-killed). The trio's broader pre-existing latent survivors
+  are #261; surgically hardened so closeout 88.8% / floors 85.0% / teeth 90.1% all
+  clear the 80 gate (dispatch fill-sampling risk resolved).
+- **No regression:** full `pytest -m 'not release_only' tests` → **1868 passed,
+  4 skipped**. Cheap gates (`check_python_lengths`, ruff, markdown, plugin-mirror
+  sync) pass on every commit.
+- **NOT claimed:** no `workflow_dispatch` run, no push, #260 not closed via `gh`
+  (the close is staged in the closeout commit body for the maintainer's push). The
+  stale 94.2% suite-score reading was from an unrelated May-26 dump and is **not**
+  cited as #260's proof.
+
+Retro: charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md
+Host log probe: charness-artifacts/probe/2026-05-31-260-mutation-test-regression-on-main.json
 
 ## User Verification Instructions
 
+1. **Read the new behavior tests** that name the previously-unmutated behaviors:
+   `tests/quality_gates/test_command_docs_gate.py`
+   (`test_render_cli_reference_resolves_relative_output_under_repo_root` — the
+   line-102 relative-output branch), the `run_help` tests, and
+   `tests/test_markdown_preview_support.py` glow tests.
+2. **Run the local score proof:** `cosmic-ray dump /tmp/cr-260-surv.sqlite` is
+   gone after the session, so re-derive via the sampler, or trust the committed
+   tests + `python3 -m pytest -q tests/quality_gates/test_command_docs_gate.py
+   tests/test_markdown_preview_support.py` (18 passed).
+3. **Run the preventive teeth** against a base..head range:
+   `python3 scripts/check_changed_line_mutation_coverage.py --repo-root .
+   --base-sha 9565b923d61e525a7f85bd2e5a0fd41430d88011 --head-sha 454f7dd
+   --reuse-coverage` → clean (0 blocking) on the fixed tree;
+   `python3 -m pytest -q tests/quality_gates/test_changed_line_mutation_coverage.py`
+   → 7 passed (incl. the flag-uncovered-changed-lines case).
+4. **The outward steps (maintainer):** push the 4 #260 commits to `origin/main`,
+   then trigger the score-path live proof —
+   `gh workflow run mutation-tests.yml --ref main` — and confirm a green summary
+   with score ≥ 80%. The blocking-path CI proof is the next scheduled cron
+   (`17 */3 * * *`). Closing #260 then lands via the `Closes #260` commit body
+   (or `gh issue close 260`), citing both proofs.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md
+(narrated inline at closeout). Disposition of every surfaced improvement
+(per-improvement applied-or-filed; #253):
+
+- **Defensive restore in `run_cosmic_ray_mutation.py`** (timeout-killed exec left
+  a mutation applied) → **issue #262** (next-session teeth pickup).
+- **New mutation-pool files must clear BOTH the blocking floor (100% changed-line
+  coverage) and the score floor (≥80% mutation) before commit** → **applied: the
+  teeth was verified 100% line-covered + 90.1% mutation this session** (hardened
+  from 70.4%), and the lesson is recorded in recent-lessons.
+- **Persist the transferable lessons to durable memory** → **applied: persisted to
+  `charness-artifacts/retro/recent-lessons.md` + lesson-selection-index** by
+  `persist_retro_artifact.py`.
+
+Disposition review: charness-artifacts/critique/2026-05-31-260-mutation-test-regression-on-main-disposition.md
