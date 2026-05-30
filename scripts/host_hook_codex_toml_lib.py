@@ -44,17 +44,22 @@ def _toml_command_value(stripped_line: str) -> str | None:
     return value if isinstance(value, str) else None
 
 
-def codex_toml_block(command: str, marker: str = CHARNESS_MARKER) -> str:
-    return "\n".join(
+def codex_toml_block(command: str, marker: str = CHARNESS_MARKER, *, matcher: str | None = None) -> str:
+    lines = [
+        f"# {marker}",
+        "[[hooks.SessionStart]]",
+    ]
+    if matcher is not None:
+        lines.append(f"matcher = {json.dumps(matcher, ensure_ascii=False)}")
+    lines.extend(
         [
-            f"# {marker}",
-            "[[hooks.SessionStart]]",
             "[[hooks.SessionStart.hooks]]",
             'type = "command"',
             f"command = {json.dumps(command, ensure_ascii=False)}",
             "",
         ]
     )
+    return "\n".join(lines)
 
 
 def read_text_or_empty(path: Path) -> str:
@@ -94,6 +99,8 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                 seen_command = False
                 while block_end < len(lines):
                     stripped = lines[block_end].strip()
+                    if stripped == "[[hooks.SessionStart]]":
+                        break
                     # Stop at the start of ANY charness block, not just this
                     # marker's — once a second distinct marker exists
                     # (find-skills vs usage-episodes, #244/#245), breaking only
@@ -102,7 +109,7 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                     # destroy the adjacent one.
                     if stripped.startswith("# charness:"):
                         break
-                    if stripped.startswith("[") and not stripped.startswith("[[hooks.SessionStart"):
+                    if stripped.startswith("[") and stripped != "[[hooks.SessionStart.hooks]]":
                         break
                     if stripped == expected_command_line:
                         seen_command = True
@@ -123,11 +130,39 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
     return None
 
 
-def install_codex_toml_block(settings_path: Path, command: str, marker: str = CHARNESS_MARKER) -> dict[str, Any]:
+def _replace_span(existing: str, start: int, end: int, block: str) -> str:
+    before = existing[:start].rstrip("\n")
+    after = existing[end:].lstrip("\n").rstrip("\n")
+    pieces = [piece for piece in (before, block.rstrip("\n"), after) if piece]
+    return "\n\n".join(pieces) + "\n"
+
+
+def _matching_existing_command(block_text: str, command: str) -> str | None:
+    target_identity = script_basename(command)
+    for line in block_text.splitlines():
+        existing = _toml_command_value(line.strip())
+        if existing is None:
+            continue
+        if existing == command:
+            return existing
+        if target_identity is not None and script_basename(existing) == target_identity:
+            return existing
+    return None
+
+
+def install_codex_toml_block(settings_path: Path, command: str, marker: str = CHARNESS_MARKER, *, matcher: str | None = None) -> dict[str, Any]:
     existing = read_text_or_empty(settings_path)
-    if find_charness_toml_block(existing, command, marker) is not None:
-        return {"settings_path": str(settings_path), "action": "noop"}
-    block = codex_toml_block(command, marker)
+    span = find_charness_toml_block(existing, command, marker)
+    if span is not None:
+        start, end = span
+        existing_block = existing[start:end]
+        block_command = _matching_existing_command(existing_block, command) or command
+        block = codex_toml_block(block_command, marker, matcher=matcher)
+        if existing[start:end].strip() == block.strip():
+            return {"settings_path": str(settings_path), "action": "noop"}
+        write_text_atomic(settings_path, _replace_span(existing, start, end, block))
+        return {"settings_path": str(settings_path), "action": "updated"}
+    block = codex_toml_block(command, marker, matcher=matcher)
     if existing and not existing.endswith("\n\n"):
         if not existing.endswith("\n"):
             existing += "\n"

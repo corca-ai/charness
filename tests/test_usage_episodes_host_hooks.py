@@ -566,6 +566,7 @@ def test_find_skills_codex_toml_uses_distinct_marker(fake_repo: Path, fake_home:
     text = Path(result["settings_path"]).read_text(encoding="utf-8")
     assert "# charness:find-skills-routing" in text
     assert "# charness:usage-episodes" not in text
+    assert 'matcher = "startup|resume|clear"' in text
     assert "session_start_find_skills.py" in text
 
 

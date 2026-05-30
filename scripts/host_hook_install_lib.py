@@ -459,15 +459,6 @@ def session_capture_status(repo_root: Path, *, adapter: dict[str, Any] | None, h
 
 
 def find_skills_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    from host_hook_find_skills import (
-        FIND_SKILLS_MARKER,
-        FIND_SKILLS_SCRIPT_RELATIVE,
-        INTENT_SECTION,
-    )
+    from host_hook_find_skills import find_skills_routing_status as _find_skills_routing_status
 
-    intents = {host: _intent_for(adapter or {}, host, section=INTENT_SECTION) for host in ("claude", "codex")}
-    detect_kwargs = {
-        host: {"state_key": f"{host}:{INTENT_SECTION}", "script_relative": FIND_SKILLS_SCRIPT_RELATIVE, "toml_marker": FIND_SKILLS_MARKER}
-        for host in ("claude", "codex")
-    }
-    return _hook_sync_status(repo_root, intents=intents, home=home, noun="SessionStart hook", drift_prefix="find_skills_routing ", detect_kwargs=detect_kwargs)
+    return _find_skills_routing_status(repo_root, adapter=adapter, home=home)
