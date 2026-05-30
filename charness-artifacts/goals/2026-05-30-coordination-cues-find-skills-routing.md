@@ -1,6 +1,6 @@
 # Achieve Goal: Goal-doc coordination cues: route via find-skills + gather/release floors
 
-Status: draft
+Status: active
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-coordination-cues-find-skills-routing.md`
 
@@ -65,13 +65,68 @@ Expected proof cost: medium (goal-artifact evidence-gate code + template + tests
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Carrier + find-skills routing cue (template `## Coordination Cues` slot + Before/During lifecycle instruction to fill it via find-skills; defer which-skill to find-skills) + docs reconciliation | The mechanism that makes any cue reachable mid-run (C8); deferral to find-skills (C12) is the ownership spine | template slot added; lifecycle/coordination.md cue cites find-skills' recommendation engine, no inline skill list; mirror synced; targeted tests | planned |
-| 2 | gather closeout evidence floor (detect external source in `## Context Sources`; require gather reference or opt-out; scoped to active run; presence-only; Created-grandfathered) + tests | gather is the highest-value uncued gap (C1; CLAUDE.md mandates external-source routing) | floor in `goal_artifact_closeout_evidence`-style code; crafted-fixture tests (flag / pass / opt-out); mirror synced | planned |
-| 3 | release closeout evidence floor (detect release-surface change; require release reference or `release: n/a — <reason>`) + tests | release lets achieve flip `complete` with unsynced version/manifest (C2) | floor + release-surface signal; tests; mirror synced | planned |
+| 1 | Carrier + find-skills routing cue (template `## Coordination Cues` slot + Before/During lifecycle instruction to fill it via find-skills; defer which-skill to find-skills) + docs reconciliation | The mechanism that makes any cue reachable mid-run (C8); deferral to find-skills (C12) is the ownership spine | template slot added; lifecycle/coordination.md cue cites find-skills' recommendation engine, no inline skill list; mirror synced; targeted tests | done |
+| 2 | gather closeout evidence floor (detect external source in `## Context Sources`; require gather reference or opt-out; scoped to active run; presence-only; Created-grandfathered) + tests | gather is the highest-value uncued gap (C1; CLAUDE.md mandates external-source routing) | floor in `goal_artifact_closeout_evidence`-style code; crafted-fixture tests (flag / pass / opt-out); mirror synced | done |
+| 3 | release closeout evidence floor (detect release-surface change; require release reference or `release: n/a — <reason>`) + tests | release lets achieve flip `complete` with unsynced version/manifest (C2) | floor + release-surface signal; tests; mirror synced | done |
+
+## Coordination Cues
+
+Dogfood of the carrier this goal ships. This goal is grandfathered for the
+closeout floors (`Created: 2026-05-30` < the `2026-05-31` cutoff), so they are
+inert here — the section is recorded as a worked example of the slot.
+
+- **Routing** — `find-skills` routed this session to `achieve` (the work skill;
+  task named it verbatim) + `critique` (the bounded fresh-eye review) with the
+  `quality` default for validation closeout. No static phase→skill map was
+  consulted; the route came from the recommendation engine.
+- Gather: n/a — every `## Context Sources` reference is a local repo path or a
+  bare issue number; no external URL / Slack / Notion / Docs source to gather.
+- Release: n/a — this run edited skill source and synced the `plugins/` mirror
+  but cut no version bump or install-manifest, so no release proof applies.
 
 ## Slice Log
 
-_Execution has not started. Populated by `append_slice_log.py` after each slice during the During phase._
+### Slice 1: Carrier + find-skills routing cue + docs reconciliation
+
+- Objective: Add a goal-template `## Coordination Cues` slot read mid-run that defers WHICH skill to find-skills (recommendation engine), with no inline phase->skill map; reconcile the concept across lifecycle/coordination/SKILL/goal-artifact references + the closeout contract doc.
+- Why this approach: The mechanism that makes any cue reachable mid-run (critique C8); deferral to find-skills (C12) is the ownership spine. A read-once role table is inert exactly when the cue would fire.
+- Commits:
+- What changed: goal_artifact_template.md (+## Coordination Cues seed); references/lifecycle.md (During 'Coordination cues' subsection); references/coordination.md (find-skills routing + floors section); references/goal-artifact.md (shape block); SKILL.md (After bullet, Output Shape, Guardrail); docs/prescribed-skill-closeout-contract.md.
+- Alternatives rejected:
+- Targeted verification: grep: template cites find-skills, no inline skill enumeration (User Acceptance #4); validate_skills (SKILL.md under 200-line ceiling); template seed inert test.
+- Test duplication pressure:
+- Critique: Folded into the fresh-eye implementation critique run on the whole change (see slices 2/3).
+- Off-goal findings:
+- Lessons carried forward: Seed examples must be inside backticks + line-anchored so the carrier text never parses as a real Gather:/Release: line (template self-poisoning guard).
+- Metrics:
+
+### Slice 2: gather closeout-evidence floor
+
+- Objective: Presence-only floor: when `## Context Sources` names an external http(s):// source, refuse the complete flip unless `## Coordination Cues` records a Gather: step or a Gather: n/a -- <reason> opt-out (>=30 chars). Grandfathered by Created, clone-safe (artifact text only).
+- Why this approach: gather is the highest-value uncued gap (C1); CLAUDE.md mandates routing external sources through gather. Prose-only cues get skipped under context pressure (#233 3x recurrence).
+- Commits:
+- What changed: NEW goal_artifact_coordination_floors.py (leaf, mirrors goal_artifact_disposition.py); wired via goal_artifact_closeout_evidence.apply_coordination_floors; surfaced in check_goal_artifact.py; refusal note in goal_artifact_lib.py (length-neutral).
+- Alternatives rejected: Rejected git-diff detection (not clone-safe); rejected REQUIRED_SECTIONS for Coordination Cues (would break every existing goal).
+- Targeted verification: tests/quality_gates/test_goal_coordination_floors.py: trigger on URL, inert on local paths/#N, scoped to Context Sources, fenced-URL ignored, ref/opt-out/short-opt-out parsing, grandfather; CLI smoke on a crafted external-source-no-gather fixture flags it.
+- Test duplication pressure: New test file 347/800 lines; sits beside the disposition-floor tests, reuses their goal-construction shape rather than cloning fixtures.
+- Critique: Fresh-eye implementation critique (opus subagent a1052f6babb139f00): no blockers; confirmed grandfather/fail-closed/template-inert/report-wiring correct.
+- Off-goal findings:
+- Lessons carried forward: Reference/opt-out detection scoped to Coordination Cues so a goal that merely describes a step line in prose cannot falsely satisfy (the #253 round-2 B-2 poisoning shape).
+- Metrics:
+
+### Slice 3: release closeout-evidence floor
+
+- Objective: Presence-only floor: when the run's recorded work names a release-surface token (bump_version / publish_release / marketplace.json / charness-artifacts/release/), refuse the complete flip unless Coordination Cues records a Release: step or Release: n/a -- <reason>. Coordination Cues span excluded from the token scan.
+- Why this approach: release lets achieve flip complete with an unsynced version/manifest (C2). The token set is precise filenames/actions, never the bare word 'release', so a goal that merely references the release skill as context does not self-trip.
+- Commits:
+- What changed: Same goal_artifact_coordination_floors.py: release_triggered() (token scan minus Coordination Cues span) + the Release: branch of apply_coordination_floors; release ownership allowlist entry in scripts/check_skill_ownership_overlap.allowlist.txt.
+- Alternatives rejected: Rejected detecting marketplace.json/plugin.json as version signal alone (regenerated on every mirror sync -> would over-fire on every skill edit); chose version-bump action + release-artifact tokens.
+- Targeted verification: test_goal_coordination_floors.py: trigger on bump_version/marketplace.json/release-artifact tokens, inert on bare release-skill mention + plugins/ mirror sync, Coordination-Cues-excluded, fenced-token ignored, ref/opt-out, both-floors-together; check_skill_ownership_overlap green.
+- Test duplication pressure:
+- Critique: Same fresh-eye critique. Fixed N1 (order-dependent false refusal: _parse_step took the first step line; now prefers the first SATISFYING line) + added a regression test (25 tests total). Over-fire on mere token mention is the accepted determinism cost, cleared by the one-line opt-out.
+- Off-goal findings:
+- Lessons carried forward: The ownership-overlap gate (check_skill_ownership_overlap) is the sanctioned place to declare an intentional cross-skill reference; the floor's charness-artifacts/release/ token needed an allowlist row, not removal.
+- Metrics:
 
 ## Context Sources
 
@@ -110,11 +165,28 @@ _None yet._
 
 ## Final Verification
 
-_Pending: completed in the After phase next session — self-verification, residual risk, explicit non-claims (incl. that no live/provider/release proof applies)._
+Self-verification against the original goal (Deming "study" step — measured against the prediction):
+
+- **Carrier (Slice 1):** the template seeds `## Coordination Cues` (read mid-run, after Slice Plan) that defers *which* skill to `find-skills`' recommendation engine; grep confirms no inline phase→skill map in the carrier (User Acceptance #4 met). Concept reconciled across `lifecycle.md`, `coordination.md`, `goal-artifact.md`, `SKILL.md` (still < the 200-line ceiling), and `docs/prescribed-skill-closeout-contract.md`.
+- **gather floor (Slice 2):** an external `http(s)://` source in `## Context Sources` refuses the `complete` flip unless `## Coordination Cues` records a `Gather:` step or a `Gather: n/a — <reason>` opt-out (≥30 chars). CLI smoke on a crafted external-source-no-gather fixture flagged it (User Acceptance #1 met).
+- **release floor (Slice 3):** a release-surface token in the run's recorded work (`bump_version`/`publish_release`/`marketplace.json`/`charness-artifacts/release/`) refuses the flip unless a `Release:` step / opt-out is present; tokens are precise so a bare release-skill mention or a `plugins/` mirror sync does not self-trip (User Acceptance #2 met).
+- **No new friction (User Acceptance #3):** a goal with no external source and no release token is inert — `test_clean_goal_no_floors_no_friction` + the grandfather cutoff confirm it.
+- **Tests / parity (User Acceptance #5):** full `pytest tests/` = **1893 passed / 4 skipped / 0 failed** after the mirror re-sync (the single transient failure was mirror drift introduced by the N1 fix, cleared by re-sync — not a logic defect). 25 dedicated floor tests. `validate_skills` / `validate_packaging` / `validate_packaging_committed` / `check_python_lengths` / `check_skill_ownership_overlap` all green; `plugins/` mirror in sync.
+- **Fresh-eye implementation critique:** opus subagent (`a1052f6babb139f00`) — no blockers; found and I fixed **N1** (an order-dependent false refusal in `_parse_step` — it took the first step line; now it prefers the first *satisfying* line), with a regression test.
+
+**Residual risk / non-claims:**
+- The floors are **presence/binding-only** — they prove a step was *recorded*, never that the gather/release work was *good* (`Gather: pending` satisfies presence, same as every #253-family evidence line). Substance is the operator's / fresh-eye reviewer's call, by design.
+- The release floor over-fires on a *mention* of a release token outside Coordination Cues (e.g., a deferred Off-Goal note); the one-line `Release: n/a — <reason>` opt-out is the intended, cheap escape. Accepted determinism cost over the not-clone-safe git-diff alternative.
+- **No live / provider / release proof applies** — this is a deterministic library + template + docs change with no network / provider / live / release surface to exercise. Stated explicitly (not "skipped"), per the External-Or-Live plan.
+- The bidirectional `/issue`–`/debug`-read-the-goal surface (critique C9) is **deferred** to its own effort, as planned.
 
 ## User Verification Instructions
 
-_Pending: finalized at closeout. Will include the crafted-fixture checks from User Acceptance (external-source-no-gather flags; release-surface-no-release flags; clean goal passes) + full suite + mirror parity._
+1. **gather floor flags a missing gather step:** craft a goal with `Created: 2026-05-31`, an `https://…` line under `## Context Sources`, and a `## Coordination Cues` carrying no `Gather:` line; run `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path <file>` on a `Status: complete` copy → `ok:false`, the issues name "coordination floors: gather step missing". Add `Gather: n/a — <≥30-char reason>` → passes.
+2. **release floor flags a missing release step:** same shape, but put a release token (e.g. `ran bump_version.py`) in the Slice Log and no `Release:` line → flagged; add `Release: n/a — <reason>` → passes.
+3. **clean goal, no friction:** a `Created: 2026-05-31` goal with only local Context Sources and no release token flips `complete` with no floor friction.
+4. **carrier:** `grep -n find-skills skills/public/achieve/scripts/goal_artifact_template.md` shows the routing cue; the carrier names no specific phase→skill mapping.
+5. **suite + parity:** `python3 -m pytest tests/ -q` green; `python3 scripts/sync_root_plugin_manifests.py --repo-root .` then `git diff --stat plugins/ .claude-plugin/ .agents/plugins/` empty.
 
 ## Auto-Retro
 

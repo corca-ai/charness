@@ -48,6 +48,8 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Coordination Cues
+
 ## Slice Log
 
 ## Off-Goal Findings

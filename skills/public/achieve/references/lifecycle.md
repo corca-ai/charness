@@ -176,6 +176,19 @@ module over appending before the hard gate fires), and — via the
 source is staged without its regenerated `plugins/` mirror (#257). Both are
 owned by `<repo-root>/docs/conventions/implementation-discipline.md`.
 
+### Coordination cues (find-skills routing)
+
+The goal template seeds a `## Coordination Cues` section the agent fills *during*
+the run — not a phase→skill map baked into `achieve`. Defer *which* skill answers
+a phase or boundary to `find-skills`' recommendation engine — `--recommend-for-task`,
+or `--recommendation-role <runtime|validation> --next-skill-id <skill>` — and
+record the route it returns. `achieve` owns the
+slot and the two closeout floors below; `find-skills` owns the recommendation
+content. Seeding the cue in the artifact (where the agent reads it mid-run), not
+only in a reference read once at `/achieve` shaping, is deliberate: a read-once
+role table is inert exactly when the cue would fire, and an inline map would
+duplicate find-skills' shipped engine as a staler copy.
+
 Stop and ask the user when an unexpected blocker, an evidence conflict, or a
 policy/product decision appears that cannot be resolved autonomously. Flip the
 status to `blocked`, record the blocker and the paths already attempted, and
@@ -353,6 +366,36 @@ issue numbers parsed from the `Activation:` line). A closeout that points
 `Retro:` at an unrelated pre-existing artifact is refused with a
 `binding_failures` entry. Binding is clone-safe (basename/content tokens,
 not mtime — a fresh checkout resets every file's mtime).
+
+### Coordination floors — gather + release
+
+Two presence-only closeout floors give *teeth* to the two routing-cue boundaries
+the prose cue under-serves, implemented in
+`goal_artifact_coordination_floors.py` and wired through the same After-phase
+evidence gate. Each fires only when its trigger is present, and is satisfied by a
+step line in `## Coordination Cues` (a real reference or an explicit opt-out):
+
+- **gather floor** — when `## Context Sources` names an external source (an
+  `http(s)://` URL; Slack / Notion / Google-Docs / Drive links and bare web URLs
+  all qualify), the run must record a `Gather: <ref>` step or a
+  `Gather: n/a — <reason>` opt-out (≥30 chars). `CLAUDE.md` mandates routing
+  external sources through `gather`; a goal shaped from an external URL that never
+  gathered it is the gap this closes.
+- **release floor** — when the run's *recorded work* names a release surface (a
+  version bump or install-manifest edit — detected by precise path/action tokens
+  such as `bump_version` / `publish_release` / `marketplace.json` /
+  `charness-artifacts/release/`, never the bare word "release"), the run must
+  record a `Release: <ref>` step or a `Release: n/a — <reason>` opt-out.
+
+Both are presence/binding-only (they never classify whether prose is "good
+enough"), scoped to `## Coordination Cues` so a goal that merely *describes* a
+step line in prose cannot falsely satisfy them, and **grandfathered by `Created`
+date** (≥ `2026-05-31`; the floors landed 2026-05-30 but several same-day goals
+predate them, so the cutoff grandfathers every in-flight goal). A
+missing/malformed `Created` fails closed. The floors fire at the `complete` flip
+(`upsert_goal.py`) and post-flip (`check_goal_artifact.py`), like the disposition
+gate. `gather` / `release` stay useful standalone — these are operator-side cues
+`achieve` plans into the artifact, never `achieve`-only branches in those skills.
 
 ## Honest Proof Discipline
 

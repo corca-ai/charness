@@ -187,9 +187,30 @@ def _load_sibling_disposition():
     return module
 
 
+def _load_sibling_coordination_floors():
+    """Load the sibling gather/release coordination-floor module.
+
+    A leaf like the disposition module (no sibling imports), kept separate so
+    this wrapper stays under the single-file line gate. One-directional: this
+    module depends on it, never the reverse.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_coordination_floors",
+        Path(__file__).resolve().parent / "goal_artifact_coordination_floors.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_coordination_floors.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 _disposition = _load_sibling_disposition()
 disposition_gate_applies = _disposition.disposition_gate_applies
 apply_disposition_rungs = _disposition.apply_disposition_rungs
+
+_coordination = _load_sibling_coordination_floors()
+apply_coordination_floors = _coordination.apply_coordination_floors
 
 
 def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
@@ -276,5 +297,12 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # already enforced above via the ``required`` set; 1a fires independently so a
     # rung-1b skip on a subagent-blocked host still leaves the blank check active.
     apply_disposition_rungs(report, text, in_scope)
+
+    # Coordination floors (gather + release): presence-only closeout evidence for
+    # the two find-skills-routing boundaries the prose cue under-serves. Mirrors
+    # the disposition floor — grandfathered by Created, block-the-blank at the
+    # flip, explicit opt-out valve. Independent of the disposition scope (its own
+    # rule date), so it runs unconditionally; the module no-ops when inert.
+    apply_coordination_floors(report, text)
 
     return report

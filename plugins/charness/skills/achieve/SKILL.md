@@ -111,6 +111,11 @@ and helper usage.
      That fresh-eye reviewer (rung 2) records the per-improvement verdict a regex
      cannot judge; the substantive call is agent-backed and human-audited, not
      deterministic. Pre-rule goals are grandfathered.
+   - **coordination floors (gather + release), for goals Created ≥ 2026-05-31:**
+     when `## Context Sources` names an external source the flip needs a
+     `Gather:` step (or `Gather: n/a — <reason>`); when the run touched a release
+     surface it needs a `Release:` step (or `Release: n/a — <reason>`).
+     Presence-only, scoped to `## Coordination Cues`, grandfathered by `Created`.
    - run `check_goal_artifact.py`, then flip status to `complete`
 
 ## Coordination
@@ -138,6 +143,10 @@ and helper usage.
   verification, residual risk, and non-claims
 - at completion, an explicit disposition for each surfaced improvement
   (`applied: <what>` or `issue #N`) — never prose-only memory
+- a `## Coordination Cues` section that defers phase routing to `find-skills`
+  (never an inline phase→skill map) and, at completion, a `Gather:` / `Release:`
+  step (or an `n/a — <reason>` opt-out) whenever the gather / release closeout
+  floor is triggered
 
 ## Guardrails
 
@@ -168,6 +177,13 @@ and helper usage.
   classifier. It blocks the blank and proves a review ran; judging whether each
   improvement was *genuinely* disposed is the fresh-eye reviewer's and the
   human's job — a prose word-list over-fires or passes narration.
+- Do not bake a phase→skill map into the `## Coordination Cues` carrier; defer
+  *which* skill answers a boundary to `find-skills`. The two presence-only floors
+  are the only teeth: `gather` when `## Context Sources` names an external source,
+  `release` when the run touches a release surface — record the step or an
+  explicit `n/a — <reason>` opt-out, never prose-only intent. Both are
+  grandfathered by `Created` date and stay presence/binding-only, never a
+  prose-quality classifier.
 
 ## References
 

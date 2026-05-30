@@ -97,6 +97,14 @@ def main() -> int:
                     "improvement-disposition gate (#253): cited retro lists "
                     "improvements but ## Auto-Retro is blank and no opt-out is recorded"
                 )
+            if evidence_report.get("coordination_missing"):
+                missing_bits.append(
+                    "coordination floors: "
+                    + "; ".join(
+                        f"{entry['floor']} step missing"
+                        for entry in evidence_report["coordination_missing"]
+                    )
+                )
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(missing_bits)

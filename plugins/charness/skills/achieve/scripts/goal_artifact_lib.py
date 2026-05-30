@@ -173,12 +173,12 @@ def upsert_goal(
                     "requested_status": status,
                     "note": (
                         "refused to flip to complete: After-phase evidence missing, "
-                        "invalid, unbound, or the #253 improvement-disposition gate is "
-                        "unmet. Add bound `Retro:`/`Host log probe:` lines (path or "
-                        "`skipped: <enum>: <detail>`); in-scope goals also need a bound "
-                        "`Disposition review:` line and a non-blank `## Auto-Retro` "
-                        "(disposition each improvement, or a `Retro dispositions: none — "
-                        "<reason>` opt-out). See evidence_report + the closeout contract."
+                        "invalid, unbound, the #253 disposition gate, or a gather/release "
+                        "coordination floor is unmet. Add bound `Retro:`/`Host log probe:` "
+                        "lines (path or `skipped: <enum>: <detail>`); in-scope goals also need "
+                        "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
+                        "`Retro dispositions: none — <reason>` opt-out), and a `Gather:`/`Release:` "
+                        "step in `## Coordination Cues` when triggered. See the closeout contract."
                     ),
                     "evidence_report": evidence_report,
                 }

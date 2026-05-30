@@ -104,7 +104,7 @@ same F1 shape until they pass tokens too.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`) |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the gather/release **coordination floors** (separate, presence-only, `Created` ≥ 2026-05-31 — see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Gather:`/`Release:` step or `n/a — <reason>` opt-out |
 | `issue-resolution` | `resolution_critique` (one line of the carrier body starting with `Critique:` followed by either an artifact path under `charness-artifacts/critique/` matching `*<issue-number>*.md` or the literal phrase `blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
@@ -154,6 +154,39 @@ narration (proven on the live goal corpus) — so the gate is a deterministic
 *floor* (proves the review ran; catches the blank) **plus** a recorded
 intelligent review (judges substance). Rung 1b is therefore weaker than #253's
 literal ask, by design and named, not by quiet scope-narrowing.
+
+### Coordination Floors (gather + release)
+
+The achieve After-phase carries two further presence-only floors, in
+[`goal_artifact_coordination_floors.py`](../skills/public/achieve/scripts/goal_artifact_coordination_floors.py)
+and wired through the same evidence gate. They give *teeth* to the two
+`find-skills`-routing boundaries the goal-artifact `## Coordination Cues` prose
+cue under-serves (skipping them is silent and costly). Same deterministic-floor
+philosophy as #253: presence/binding-only, clone-safe, block-the-blank, an
+explicit opt-out valve, grandfathered by `Created`.
+
+- **gather floor** — trigger: `## Context Sources` names an external source (an
+  `http(s)://` URL — Slack / Notion / Google-Docs / Drive links and bare web URLs
+  all qualify). Satisfied by a `Gather: <ref>` step in `## Coordination Cues`, or
+  a `Gather: n/a — <reason>` opt-out (≥30 chars). Mirrors `CLAUDE.md`'s
+  external-source routing mandate.
+- **release floor** — trigger: the run's *recorded work* names a release surface,
+  detected by precise path/action tokens (`bump_version`, `publish_release`,
+  `marketplace.json`, `charness-artifacts/release/`) — never the bare word
+  "release", so a goal that merely references the release skill as context does
+  not self-trip. Satisfied by a `Release: <ref>` step or a
+  `Release: n/a — <reason>` opt-out.
+
+Both detect trigger and step from the **artifact text** (not git diff), so the
+signal is clone-safe — a fresh checkout reproduces the verdict. Reference + opt-out
+detection is scoped to `## Coordination Cues` so a goal body that merely
+*describes* a step line in prose cannot falsely satisfy a floor. Grandfather
+cutoff is `Created ≥ 2026-05-31`: the floors land 2026-05-30, but several
+same-day goals predate them, so the cutoff grandfathers every in-flight goal;
+missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
+`find-skills` owns *which* skill answers a boundary (never an inline phase→skill
+map). The bidirectional surface where a standalone `/issue` or `/debug` reads the
+active goal is explicitly **deferred** to its own effort.
 
 ### Integration Points
 
