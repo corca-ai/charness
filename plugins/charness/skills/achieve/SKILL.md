@@ -118,9 +118,12 @@ and helper usage.
 `achieve` reuses existing skills and must keep each useful standalone. See
 `references/coordination.md` for the per-skill roles and the `handoff` boundary.
 
-- `ideation`/`spec` upstream; `impl` for slices; `quality` for verification
-  cadence; `issue` for off-goal findings; `critique` for plan/slice/final
-  review; `retro` for the after-action review.
+- `ideation`/`spec` upstream; `impl` for slices; `debug` for a bug-class goal's
+  root cause before the fix; `quality` for verification cadence; `issue` for
+  off-goal findings *and* staging the originating tracked issue's close at
+  closeout (`Close #N` on the default-branch commit/PR body; `achieve` does not
+  push); `critique`
+  for plan/slice/final review; `retro` for the after-action review.
 - Do not absorb their work or add `achieve`-only branches to them.
 
 ## Output Shape

@@ -10,10 +10,40 @@ artifact. Each coordinated skill must still be useful standalone; do not add
 | `ideation` | clarify the user's intent and upstream decisions before the goal is shaped |
 | `spec` | turn the goal into a living implementation contract when the target is complex enough |
 | `impl` | execute slices; treat an active goal artifact as the slice memory surface |
+| `debug` | for a bug-class goal, drive a falsifiable root-cause *before* the fix slice; record the hypothesis or debug-artifact path in the Slice Plan |
 | `quality` | design verification up front, run cheap checks during, broad gates near final |
-| `issue` | record off-goal findings; only the issue reference and reason go in the goal artifact |
+| `issue` | record off-goal findings (reference + reason only); **and**, when the goal resolves a tracked issue, close it through `issue` at closeout (see *Resolving A Tracked Issue*) |
 | `critique` | review the goal plan before activation, substantial slices, and final proof |
 | `retro` | produce the automatic after-action review focused on time/token/waste |
+
+## Resolving A Tracked Issue
+
+When the goal's outcome is resolving a tracked GitHub issue (its title or
+`Context Sources` name `#N`), coordinate two existing skills the goal's own
+slices would otherwise bypass, and record both in the goal artifact so the run
+does not improvise them:
+
+- **`debug` for bug-class.** If the issue is bug-class (real behavior diverges
+  from a documented or implied contract), drive a falsifiable root-cause through
+  `debug` *before* the fix slice, and record the hypothesis (or debug-artifact
+  path) in the Slice Plan. This mirrors the causal-review discipline the
+  `issue resolve` flow mandates for bug-class issues — an `achieve` goal that
+  fixes the bug with its own `impl` slices does not inherit it automatically.
+- **`issue` to close at closeout.** Stage the originating issue's close through
+  `issue`, not by hand: put the close keyword `Close #N` in the body of the
+  commit (or PR) that lands the fix **on the default branch**, so the
+  maintainer's push auto-closes the issue. Preserve the keyword through squash /
+  rebase / edited-merge bodies (the `issue` skill's closeout-discipline owns this
+  failure mode). At `achieve` closeout the issue is still **OPEN** — it is
+  *staged* to auto-close, not closed; `achieve` does **not** push or run an
+  out-of-band close (push timing stays the maintainer's call). Without the
+  keyword a goal can resolve an issue yet leave it open after push; that gap is
+  what this coordination closes.
+
+This coordination is **operator-side**: `achieve` (the goal operator) plans the
+two steps into the goal artifact — the `debug` step in the Slice Plan, the close
+keyword at closeout — and invokes `debug` and `issue` **as-is**. Neither skill
+gets an `achieve`-only branch, and each stays useful standalone.
 
 ## Activation
 

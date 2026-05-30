@@ -22,6 +22,10 @@ Establish:
   a broad duplicate/length/pressure gate toward its threshold
 - slice sequence
 - critique plan
+- when the goal resolves a tracked issue: the `debug` root-cause step for a
+  bug-class issue (planned *before* the fix slice) and the closeout
+  close-via-`issue` step (`Close #N` on the fix/closeout commit) — see
+  `references/coordination.md` *Resolving A Tracked Issue*
 - stop conditions
 - reporting expectations
 
@@ -195,6 +199,11 @@ At completion the goal artifact should contain:
   that they were not run
 - residual risks and non-claims
 - concrete user verification instructions
+- when the goal resolved a tracked issue: its close is *staged* through `issue`
+  — the default-branch commit/PR body carries `Close #N` so the maintainer's
+  push auto-closes it (it is still OPEN at `achieve` closeout); `achieve` does
+  not push or close out-of-band (see `references/coordination.md` *Resolving A
+  Tracked Issue*)
 - an automatic retro focused on reducing time, tokens, and waste next time
 - a closeout narration that surfaces the retro's `## Waste`,
   `## Critical Decisions`, `## Next Improvements`, and `## Sibling Search`
