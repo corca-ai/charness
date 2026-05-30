@@ -1,13 +1,27 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import stat
 import subprocess
 import sys
+import types
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_check_glow_backend():
+    spec = importlib.util.spec_from_file_location(
+        "check_glow_backend",
+        ROOT / "skills" / "support" / "markdown-preview" / "scripts" / "check_glow_backend.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run_helper(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -256,6 +270,66 @@ def test_markdown_preview_glow_backend_check_exit_codes(tmp_path: Path) -> None:
 
     assert slow.returncode == 1
     assert json.loads(slow.stdout)["status"] == "backend-error"
+
+
+# --- #260 score-path survivors in check_glow_backend -------------------------
+#
+# The subprocess exit-code test above is whitespace/encoding-insensitive
+# (json.loads) and only ever sees "healthy"/"backend-error" statuses, so the
+# ensure_ascii / indent / comparison-operator mutants in main() and the `or`
+# branch in _load_render_module survive. These in-process tests pin them by
+# controlling the payload and inspecting the literal output.
+
+
+def test_glow_check_load_render_module_raises_when_loader_missing(monkeypatch) -> None:
+    # _load_render_module fails closed when the import spec has no loader: with a
+    # non-None spec whose `.loader` is None, `spec is None or spec.loader is None`
+    # raises ImportError, while the `and` mutant would not. Also covers line 14.
+    mod = _load_check_glow_backend()
+    monkeypatch.setattr(
+        importlib.util,
+        "spec_from_file_location",
+        lambda *a, **k: types.SimpleNamespace(loader=None),
+    )
+    with pytest.raises(ImportError):
+        mod._load_render_module()
+
+
+def test_glow_check_main_healthy_emits_raw_unicode_with_two_space_indent(
+    monkeypatch, capsys
+) -> None:
+    # Pins main()'s json.dumps(ensure_ascii=False, indent=2) and the
+    # `== "healthy"` exit decision for a HEALTHY payload. The status is a
+    # non-interned "healthy" so the `is` mutant returns 1 (wrong); the non-ASCII
+    # note keeps the raw char only under ensure_ascii=False; the 2-space indent
+    # pins the NumberReplacer mutants.
+    mod = _load_check_glow_backend()
+    payload = {"status": "healthy ".strip(), "note": "café"}
+    monkeypatch.setattr(
+        mod,
+        "_load_render_module",
+        lambda: types.SimpleNamespace(check_backend=lambda backend: payload),
+    )
+
+    rc = mod.main()
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "café" in out
+    assert '\n  "status"' in out
+
+
+def test_glow_check_main_unhealthy_status_returns_one(monkeypatch, capsys) -> None:
+    # An "unhealthy" status (lexicographically > "healthy") must exit 1. Kills the
+    # `==`->`>=` mutant: "unhealthy" >= "healthy" is True and would wrongly exit 0.
+    mod = _load_check_glow_backend()
+    monkeypatch.setattr(
+        mod,
+        "_load_render_module",
+        lambda: types.SimpleNamespace(check_backend=lambda backend: {"status": "unhealthy"}),
+    )
+
+    assert mod.main() == 1
 
 
 def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path) -> None:

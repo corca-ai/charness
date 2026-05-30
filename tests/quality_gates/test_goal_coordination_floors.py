@@ -384,6 +384,26 @@ def test_mask_fences_unbalanced_fence_fails_open() -> None:
     assert cf._mask_fences(unbalanced) == unbalanced
 
 
+@pytest.mark.parametrize("module", [cf, ce], ids=["floors", "closeout"])
+def test_mask_fences_blanks_fenced_chars_and_preserves_structure(module) -> None:
+    # `_mask_fences` is a duplicated leaf helper in both the floors and closeout
+    # modules. Pin its exact masking so the fence-toggle, the per-char
+    # newline-vs-space decision (incl. a tab, ord 9 < ord '\n' 10), the
+    # `continue`, and the closing `if in_fence` are all mutation-killed:
+    #   - non-fenced lines pass through untouched
+    #   - a fence marker line and the fenced body collapse to spaces (newline kept)
+    #   - a tab (ord 9 < ord '\n' 10) — in BOTH the fence marker line and the
+    #     fenced body — becomes a space, not a kept newline, so `==` cannot be
+    #     mutated to `<=` / `<` without breaking the output
+    text = "keep\n```\t\nab\tc\n```\nkeep2\n"
+    lines = module._mask_fences(text).split("\n")
+    assert lines[0] == "keep"      # non-fenced line untouched
+    assert lines[1] == "    "      # "```\t" fence marker (tab included) -> 4 spaces
+    assert lines[2] == "    "      # "ab\tc" fenced body (tab included) -> 4 spaces
+    assert lines[3] == "   "       # closing ``` -> 3 spaces
+    assert lines[4] == "keep2"     # trailing non-fenced line untouched
+
+
 def test_section_span_heading_at_eof_collapses_to_empty_span() -> None:
     # A watched heading as the final line with no trailing newline makes
     # `masked.find("\\n", ...)` return -1, so the body span collapses to

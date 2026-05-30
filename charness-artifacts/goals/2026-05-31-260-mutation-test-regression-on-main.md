@@ -245,16 +245,20 @@ The user can confirm completion by:
 ### Slice 3: Kill all 22 survivors (thorough)
 
 - Objective: Pin every survived-mutant behavior — render_cli_reference main() path resolution, run_help, _load_render_module, setup_artifact_policy, check_glow_backend
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: In-process tests that exercise the exact mutated branches (the existing subprocess tests are whitespace/encoding-insensitive and only hit the absolute-output / healthy-status paths). One relative-output test kills the whole line-102 Div cluster (any non-`/` op on two Paths raises TypeError). Mocked payloads pin the glow ensure_ascii/indent/`==` decisions. Verified by a faithful scoped cosmic-ray re-run.
+- Commits: (this slice)
+- What changed: `tests/quality_gates/test_command_docs_gate.py` +3 (relative-output resolution kills L102 Div×11 + L103 parents; run_help nonzero-exit + signal-death kill L57 `check=` and L61 `!=` comparisons); `tests/test_markdown_preview_support.py` +3 (`_load_render_module` ImportError kills L13 `or`→`and`+L14; healthy mocked payload with non-interned status + non-ASCII note + 2-space indent kills L23 `ensure_ascii=False`/`indent=2`×2 + L24 `==`→`is`; unhealthy `status="unhealthy"` kills L24 `==`→`>=`). Plus `tests/quality_gates/test_goal_coordination_floors.py` +1 parametrized `_mask_fences` test (kills the trio's 28→4 `_mask_fences` survivor cluster across both modules). No source changed.
+- Alternatives rejected: Reproducing the exact CI seeded fill sample — unnecessary (A1; proved kills via the scoped re-run). Running the render relative-output test via subprocess into the real repo — rejected (would write generated output into the repo); stubbed `render_cli_reference` + tmp repo-root instead. Killing ALL trio latent survivors — out of scope (filed #261; some equivalent).
 - Targeted verification:
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+  - **Survivor files (the 22): scoped cosmic-ray re-run, 115→101 executable → 101 KILLED / 0 SURVIVED / 0 NO_TEST** (was 15 SURVIVED + 6 NO_TEST = 21 not-killed). `setup_artifact_policy_lib.py` was already 0. The score-path FAIL cause is fixed.
+  - **Trio newly-covered-from-uncovered (gap) lines: 0 not-killed.** Trio scoped re-run (654→490 executable) — every mutant on the literal gap lines (check_goal_artifact 100-107 incl. the L103 Add cluster ×11 + L100 AddNot; floors 110/129 + closeout 202 had no executable mutants post-filter) is KILLED. The #251 dynamic (now-covered changed lines must die) is satisfied.
+  - **Surgical trio hardening (user decision):** the trio's broader pre-existing latent survivors (94) clustered in `_mask_fences` (28). A single parametrized `_mask_fences` test (input includes a tab in BOTH the fence marker and the fenced body, distinguishing `==` from `<=`/`<`) killed 24/28 in a focused re-run (48 `_mask_fences` mutants → 44 killed, 4 left). This lifts the two fill-eligible files to **closeout 88.8%, floors 85.0%** (both comfortably above the `score_break: 80` gate, where they sat at 82.0%/80.4% before).
+  - No leftover mutations: `git status` clean on all source after every exec (a `timeout`-killed exec had left one `repo_root >> args.output` mutation on render_cli_reference.py:102 mid-Slice-2 — caught and restored; all later execs ran to completion + defensive `git checkout`).
+- Test duplication pressure: low — the in-process tests target branches no existing test reaches (relative-output, signal-death exit, mocked unhealthy payload, fence-with-tab). They sit beside the existing subprocess tests, which still cover the happy/absolute paths; no assertion is duplicated.
+- Critique: The 4 remaining `_mask_fences` survivors are EQUIVALENT (`char == "\n"`→`char is "\n"`; CPython interns single-char strings) — named, not chased (goal stop condition). The surgical per-file rates (88.8%/85.0%) are derived deterministically: the new test only ADDS `_mask_fences` kills and cannot un-kill other mutants, so a full closeout+floors re-run was not re-paid; the focused `_mask_fences` re-run is the proof. The remaining ~70 trio survivors are pre-existing latent (filed #261).
+- Off-goal findings: **#261** — coordination-cues trio has ~70 residual latent mutation survivors (closeout 23 / floors 32 / check_goal 15-excluded), incl. equivalent regex-flag `BitOr→Add` ×7; surfaced because the trio was never mutation-tested (chronic blocking). Out of #260 scope (anti-balloon + equivalent-mutant). check_goal_artifact (73.3% cov) is fill-EXCLUDED so its 15 don't threaten the gate.
+- Lessons carried forward: line coverage ≠ mutation coverage (line 102 was "executed" yet its else-branch Div mutants survived); a tab (ord 9 < `\n` ord 10) is the key to killing `==`→`<=`/`<` char-comparison mutants; `flag | flag2` ≡ `flag + flag2` for disjoint bits (equivalent). cosmic-ray exec killed by `timeout` leaves the in-flight mutant applied → always `git checkout` source after.
+- Metrics: survivor re-run 101/101 killed; trio re-run 490 exec / 94→70 not-killed after `_mask_fences` fix; closeout 88.8% / floors 85.0% (when available).
 
 ### Slice 4: Preventive teeth (changed-line mutation-coverage check)
 
