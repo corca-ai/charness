@@ -52,18 +52,18 @@ REQUIRED_SECTIONS = (
     "Auto-Retro",
 )
 
-# H2 sections a non-trivial goal must carry so a fresh session can reconstruct
-# the originating context (sources, rejected interview alternatives, and
-# critique reasoning) without consulting the saving session's working memory.
-# A goal is non-trivial when its Slice Plan table has 2+ data rows, or when
-# its Slice Log has 2+ ``### Slice`` headings (execution started).
+# H2 sections every goal must carry so a fresh session can reconstruct the
+# originating context (sources, rejected interview alternatives, and critique
+# reasoning) without consulting the saving session's working memory. Required
+# on every goal regardless of size: a goal that genuinely has nothing for a
+# section keeps the heading and states ``N/A — <reason>``. #255 removed the
+# size/marker exemption (a ``Single-slice goal:`` opt-out scanned over the full
+# body) because the full-text scan was poisoned by prose merely describing it.
 PORTABILITY_SECTIONS = (
     "Context Sources",
     "Interview Decisions",
     "Plan Critique Findings",
 )
-
-_TRIVIAL_GOAL_MARKER = re.compile(r"single-slice goal", re.IGNORECASE)
 
 # Before-phase placeholder marker the handoff auto-draft (#246) leaves until
 # shaping fills it; its presence means `/goal` must fail-fast to `/achieve` (#247).
@@ -213,10 +213,10 @@ def slice_plan_data_row_count(text: str) -> int:
     """Count data rows in the first markdown table inside ``## Slice Plan``.
 
     Data rows start with ``|`` and are neither the header row nor the table
-    separator row (the ``| --- |`` line). Counting against the dominant
-    representation (a markdown table) keeps the portability discriminator
-    honest; the ``### Slice N:`` heading form is execution intent in
-    ``## Slice Log``, not planning intent in ``## Slice Plan``.
+    separator row (the ``| --- |`` line). A standalone row-count utility: the
+    handoff auto-draft invariant tests assert a freshly drafted skeleton has
+    zero data rows. (#255 removed the trivial-goal discriminator that once
+    consumed this count to exempt goals from the portability check.)
     """
     masked = _mask_fences(text)
     headings = list(_H2.finditer(masked))
@@ -251,19 +251,6 @@ def slice_plan_data_row_count(text: str) -> int:
             continue
         data_rows += 1
     return data_rows
-
-
-def is_non_trivial_goal(text: str) -> bool:
-    """A goal is non-trivial when planning intent shows ≥2 slices, when
-    execution started (≥2 ``### Slice`` headings in the Slice Log), or when
-    no explicit ``Single-slice goal:`` exemption marker is present *and* any
-    activity exists. A scaffolded empty goal stays trivial."""
-    if _TRIVIAL_GOAL_MARKER.search(text):
-        return False
-    if slice_plan_data_row_count(text) >= 2:
-        return True
-    masked = _mask_fences(text)
-    return sum(1 for _ in _SLICE_HEADING.finditer(masked)) >= 2
 
 
 def missing_portability_sections(text: str) -> list[str]:
@@ -340,15 +327,13 @@ def check_goal(text: str) -> dict[str, Any]:
         issues.append("missing `Activation:` line")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))
-    portability_missing: list[str] = []
-    if is_non_trivial_goal(text):
-        portability_missing = [section for section in PORTABILITY_SECTIONS if section not in present]
-        if portability_missing:
-            issues.append(
-                "missing portability sections (non-trivial goal): "
-                + ", ".join(portability_missing)
-                + " — add the sections or mark with `Single-slice goal:` to exempt"
-            )
+    portability_missing = [section for section in PORTABILITY_SECTIONS if section not in present]
+    if portability_missing:
+        issues.append(
+            "missing portability sections: "
+            + ", ".join(portability_missing)
+            + " — every goal keeps these headings (use `N/A — <reason>` if a section is empty)"
+        )
     return {
         "ok": not issues,
         "status": status,

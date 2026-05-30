@@ -252,36 +252,24 @@ saved at status `draft`** for any non-trivial goal (defined below):
   folded, and reviewer provenance. Preserves reasoning so a fresh session
   re-verifies folded revisions without re-running critique.
 
-These sections are required for any goal whose Slice Plan has two or more
-slices. Single-slice goals (rare) may use a one-line "Single-slice goal:
-no portability sections required" note in place.
+These sections are required on **every** goal regardless of size. A goal that
+genuinely has nothing for a section keeps the heading and writes
+`N/A — <reason>`. (#255 removed the earlier size/marker exemption: its full-text
+`Single-slice goal:` scan was poisoned by prose merely describing the marker,
+and the goal-artifact template already seeds all three headings, so an exemption
+was both unsafe and redundant.)
 
 ### Self-Test
 
-A new test fixture (`<repo-root>/tests/skills/test_goal_artifact_portability.py`)
-loads a synthetic two-slice goal artifact missing one of the three sections and
+[`tests/quality_gates/test_goal_artifact_lib.py`](../tests/quality_gates/test_goal_artifact_lib.py)
 asserts that [check_goal_artifact.py](../skills/public/achieve/scripts/check_goal_artifact.py)
-fails. A second fixture with all three sections present passes. The test fails
-if the required-sections check is removed.
+fails for a goal missing one of the three sections — including a 1-row Slice
+Plan and a goal whose prose merely mentions "single-slice goal" — and passes
+once all three headings are present. The test fails if the required-sections
+check is removed.
 
-The `check_goal_artifact.py` output gains a `portability_missing_sections`
+The `check_goal_artifact.py` output carries a `portability_missing_sections`
 field so the failure is legible without re-grepping.
-
-### Trivial Goal Exemption
-
-`goal_artifact_lib.py` counts **data rows in the `## Slice Plan` markdown
-table** (lines starting with `|` that are not the header row or the
-separator row); one or fewer rows is `trivial` and exempts the three new
-sections. Two or more is `non-trivial` and requires them.
-
-Counting `### Slice N:` headings would misfire on the dominant
-representation: the
-[goal-artifact template](../skills/public/achieve/scripts/goal_artifact_lib.py)
-ships an empty `## Slice Plan` table and no `### Slice` headings (those
-appear only in `## Slice Log` once the run starts). The slice-2 portability
-fixture must cover both the table form (planning intent) and the heading
-form (execution log) so the discriminator stays honest if a goal author
-chooses heading-only Slice Plan style.
 
 ## Stop Conditions
 

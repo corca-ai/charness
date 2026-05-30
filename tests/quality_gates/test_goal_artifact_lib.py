@@ -198,42 +198,52 @@ def test_slice_plan_table_row_count_table_form() -> None:
     assert gal.slice_plan_data_row_count(two_rows) == 2
 
 
-def test_is_non_trivial_goal_table_form() -> None:
-    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])
-    assert gal.is_non_trivial_goal(one_row) is False
-    two_rows = _goal_with_table([
-        "| 1 | a | now | x | planned |",
-        "| 2 | b | next | y | planned |",
-    ])
-    assert gal.is_non_trivial_goal(two_rows) is True
+def test_single_slice_goal_still_requires_portability() -> None:
+    # #255: size no longer exempts. Even a 1-row Slice Plan must carry the
+    # three portability headings now that the trivial-goal exemption is gone.
+    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])  # no portability
+    result = gal.check_goal(one_row)
+    assert result["ok"] is False
+    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
 
 
-def test_is_non_trivial_goal_heading_form() -> None:
-    # Slice Plan empty but Slice Log carries ≥2 ``### Slice`` headings (a
-    # heading-only style or a run that has executed multiple slices).
-    body = _GOAL_HEAD + _REQUIRED_BODY
-    body += "## Slice Plan\n\n## Slice Log\n\n"
-    body += "### Slice 1: a\n- Objective: x\n\n### Slice 2: b\n- Objective: y\n\n"
-    body += "## Off-Goal Findings\n## Final Verification\n"
-    body += "## User Verification Instructions\n## Auto-Retro\n"
-    assert gal.is_non_trivial_goal(body) is True
-
-
-def test_single_slice_marker_exempts_portability() -> None:
+def test_marker_prose_does_not_exempt_portability() -> None:
+    # #255 regression lock: a goal whose prose merely *mentions* the old
+    # "single-slice goal" marker phrase must still be portability-checked. The
+    # removed full-text _TRIVIAL_GOAL_MARKER scan silently exempted exactly this.
     body = _goal_with_table([
         "| 1 | a | now | x | planned |",
         "| 2 | b | next | y | planned |",
-    ])
+    ])  # no portability sections
     body = body.replace(
         "## Slice Plan\n",
-        "## Slice Plan\n\nSingle-slice goal: research-only one-shot.\n",
+        "## Slice Plan\n\nThis is not a single-slice goal; it has two slices.\n",
         1,
     )
-    assert gal.is_non_trivial_goal(body) is False
-    assert gal.check_goal(body)["portability_missing_sections"] == []
+    result = gal.check_goal(body)
+    assert result["ok"] is False
+    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
 
 
-def test_check_goal_reports_missing_portability_for_non_trivial() -> None:
+def test_marker_prose_with_portability_sections_passes() -> None:
+    # The phrase is inert once the three headings are present: content/prose is
+    # never classified; only heading presence is checked.
+    body = _goal_with_table(
+        [
+            "| 1 | a | now | x | planned |",
+            "| 2 | b | next | y | planned |",
+        ],
+        portability=_PORTABILITY_BODY,
+    )
+    body = body.replace(
+        "## Goal\n", "## Goal\nThis mentions a single-slice goal in prose.\n", 1
+    )
+    result = gal.check_goal(body)
+    assert result["ok"] is True
+    assert result["portability_missing_sections"] == []
+
+
+def test_check_goal_reports_missing_portability() -> None:
     body = _goal_with_table([
         "| 1 | a | now | x | planned |",
         "| 2 | b | next | y | planned |",
@@ -257,9 +267,10 @@ def test_check_goal_passes_with_portability_sections_present() -> None:
     assert result["portability_missing_sections"] == []
 
 
-def test_trivial_scaffold_does_not_demand_portability(tmp_path: Path) -> None:
-    # A freshly scaffolded goal has an empty Slice Plan table; the portability
-    # gate must not fire on this case.
+def test_scaffold_carries_portability_headings(tmp_path: Path) -> None:
+    # A freshly scaffolded goal carries all three portability headings from the
+    # template, so the always-on check passes at draft time. (#255: the check is
+    # always-on; the template — not an exemption — is what keeps it quiet.)
     gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
     text = _goal_text(tmp_path)
     result = gal.check_goal(text)

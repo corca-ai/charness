@@ -1,6 +1,6 @@
 # Achieve Goal: Remove the trivial-goal portability exemption (#255)
 
-Status: draft
+Status: active
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-255-remove-trivial-goal-exemption.md`
 
@@ -62,12 +62,24 @@ Expected proof cost: low (pure deterministic library + doc change). Expected tes
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Remove the exemption from the core gate (`goal_artifact_lib.py`) + reconcile its docs | Root-cause fix; makes the #255 poisoning structurally impossible | Drops `_TRIVIAL_GOAL_MARKER` + `is_non_trivial_goal`; `check_goal` always checks the 3 headings; failure message + section comments updated; `test_goal_artifact_lib.py` dead tests removed and replaced with "prose can't exempt / missing heading fails" tests; `lifecycle.md` + `docs/prescribed-skill-closeout-contract.md` guidance rewritten; `plugins/` mirror synced; targeted tests green | planned |
+| 1 | Remove the exemption from the core gate (`goal_artifact_lib.py`) + reconcile its docs | Root-cause fix; makes the #255 poisoning structurally impossible | Drops `_TRIVIAL_GOAL_MARKER` + `is_non_trivial_goal`; `check_goal` always checks the 3 headings; failure message + section comments updated; `test_goal_artifact_lib.py` dead tests removed and replaced with "prose can't exempt / missing heading fails" tests; `lifecycle.md` + `docs/prescribed-skill-closeout-contract.md` guidance rewritten; `plugins/` mirror synced; targeted tests green | **done** |
 | 2 | Retire the now-purposeless downstream scrub (handoff auto-draft, #249) | With no marker there is nothing to poison; a silent text-rewrite with no purpose is dead weight | Drops `_scrub_trivial_goal_marker` + `_TRIVIAL_MARKER_PHRASE_RE` + call sites in `chunked_routing_auto_draft.py`; `test_handoff_chunker_auto_draft.py` poison/scrub tests rewritten to the new structural invariant; `docs/handoff-chunked-routing.md` updated; mirror synced; targeted tests green | planned |
 
 ## Slice Log
 
-_Execution has not started. Populated by `append_slice_log.py` after each slice during the During phase._
+### Slice 1: Remove exemption from core gate + reconcile docs
+
+- Objective: Delete the size/marker trivial-goal exemption so check_goal requires the 3 portability headings on every goal; reconcile the docs that taught the removed mechanism.
+- Why this approach: Root-cause removal makes the #255 full-text poisoning structurally impossible (no marker to poison) and simplifies the deterministic gate, vs the issue's narrower scope-the-scan patch.
+- Commits:
+- What changed: goal_artifact_lib.py: removed _TRIVIAL_GOAL_MARKER + is_non_trivial_goal(); check_goal() now always checks PORTABILITY_SECTIONS with a marker-free message; updated PORTABILITY_SECTIONS comment + slice_plan_data_row_count docstring (now test-only utility). test_goal_artifact_lib.py: dropped 3 dead is_non_trivial_goal/marker-exempt tests, added 4 always-on tests (size doesn't exempt; prose mention doesn't exempt; prose+headings passes; scaffold passes via template). Docs: lifecycle.md marker guidance, docs/prescribed-skill-closeout-contract.md (removed ### Trivial Goal Exemption + fixed ### Self-Test fixture path), docs/handoff-chunked-routing.md (reframed off is_non_trivial_goal). plugins/ mirror + marketplace manifests synced via sync_root_plugin_manifests.py.
+- Alternatives rejected: Issue's literal patch (scope+anchor marker to ## Slice Plan): rejected — marker has 0 real use, redundant with template-seeded headings, still a footgun. Removing slice_plan_data_row_count: rejected (F4) — kept as a row-count utility the auto-draft invariant tests pin.
+- Targeted verification: pytest tests/quality_gates/test_goal_artifact_lib.py -> 32 passed. Import smoke OK; is_non_trivial_goal gone; file 359->343 lines (under 360 ceiling, F5). DOGFOOD: this goal's own body has 10 'single-slice goal' prose hits yet check_goal_artifact.py returns ok=True (has the 3 headings) — old code would have exempted it. Mirror verified clean. (F3: full suite intentionally NOT run as slice-1 acceptance — auto-draft test file is expected red until Slice 2.)
+- Test duplication pressure: Low — new tests reuse _goal_with_table/_PORTABILITY_BODY fixtures; net test count ~flat (removed 3 dead is_non_trivial_goal tests, added 4 always-on tests). No new fixture duplication introduced.
+- Critique: Slice-0 plan critique (fresh-eye subagent a5f7cee941b1643b1) folded F1+F2 doc-scope blockers into this slice. Implementation fresh-eye critique runs at the bundle boundary after Slice 2 (the two slices are one cohesive change; reviewing the transiently-red mid-state would be lower-signal).
+- Off-goal findings: None.
+- Lessons carried forward: A fresh-eye plan critique caught that the stale-doc surface was 3 blocks in one file + a wrong fixture path, not the single line the plan named — doc blast-radius is easy to undercount.
+- Metrics: when available
 
 ## Context Sources
 
@@ -92,12 +104,26 @@ the originating context by following them in order.
 
 ## Plan Critique Findings
 
-_Produced by the slice-0 plan critique at activation (`/goal`), via the `critique` skill with a bounded fresh-eye reviewer; findings + dispositions recorded here during the During phase._ Angles to probe:
+Slice-0 plan critique by a bounded fresh-eye subagent (general-purpose, agentId `a5f7cee941b1643b1`). Verdict: core engineering **sound** (removal verified safe); needed a doc-scope revision before implementing.
 
-- Does always-requiring the three headings regress any existing in-repo goal, or the #249 auto-draft path?
-- Are there non-test production consumers of `is_non_trivial_goal` / `slice_plan_data_row_count` not surfaced by the pre-flight grep?
-- Does removing the scrub change auto-draft output in a way a test depends on *beyond* the poisoning assertion?
-- Line-length headroom of `goal_artifact_lib.py` after the removal.
+**Blockers folded into Slice 1 (doc scope expanded):**
+
+- **F1** — `docs/prescribed-skill-closeout-contract.md` undercounted. Beyond line ~256 it carries a whole `### Trivial Goal Exemption` subsection (~270–283) describing the deleted mechanism, plus a `### Self-Test` block (~260–267) pointing at a non-existent fixture `tests/skills/test_goal_artifact_portability.py` (the real file is `tests/quality_gates/test_goal_artifact_lib.py`). → Slice 1 rewrites/removes both blocks.
+- **F2** — `docs/handoff-chunked-routing.md:302` prose ("the trivial-goal exemption applies cleanly") and the ~294 `is_non_trivial_goal` link go false. → Slice 1 reframes to "the auto-draft seeds all 3 portability headings, so the always-on check passes at write time" (verified true), not just a line touch.
+
+**Over-worries (raised, not folded):**
+
+- **F3** — Slice 1 alone reds `tests/test_handoff_chunker_auto_draft.py` (it calls the deleted `is_non_trivial_goal`). Both slices ship in one task. Disposition: Slice 1's "targeted tests green" = `test_goal_artifact_lib.py` only; the **full suite is a bundle-boundary (After-phase) gate**, not Slice-1 acceptance. Pre-commit hooks do not run pytest, so the Slice-1 commit is not blocked.
+- **F4** — after removal, `slice_plan_data_row_count` has no production caller (test-only). Disposition: keep it as a stable public row-count utility (auto-draft invariant tests pin it); the note must say "now test-only," not imply a live consumer.
+- **F5** — `goal_artifact_lib.py` is 358/360 (hard ceiling). The reviewer's Slice-1 simulation dropped it to 341 — removal *fixes* the thin margin. Disposition: keep the new failure message short; do not net-add lines.
+
+**Verified safe (headline risk cleared):**
+
+- **F6** — no new regression. Only `2026-05-27-226-reviewer-tier-policy.md` lacks the 3 headings, but it *already* fails `check_goal` today (pre-existing); no live gate scans the goals corpus through `check_goal`; the CLI consumes `check_goal()`'s dict (no message-text dependency); `_scrub_trivial_goal_marker` has no external importer.
+
+**Deferred:**
+
+- **F7** — `docs/handoff.md:41–45` still describes the rejected literal fix. Disposition: handled in the After-phase handoff baton refresh (the `/handoff` pruning surface), not a Slice-1 code edit.
 
 ## Off-Goal Findings
 

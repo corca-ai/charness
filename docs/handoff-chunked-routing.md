@@ -290,18 +290,19 @@ placeholder line:
 
 - **User Acceptance**: `*To be filled by the achieve Before-phase interview.*`
 - **Agent Verification Plan**: same placeholder.
-- **Slice Plan**: header row + separator only, no data rows. This keeps
-  [`is_non_trivial_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py)
-  returning `False` at write time per the goal artifact's slice-5
-  portability decision.
+- **Slice Plan**: header row + separator only, no data rows — the
+  `/achieve` Before-phase fills the slice rows.
 - **Interview Decisions**:
   `*To be filled by the achieve Before-phase interview.*`
 - **Plan Critique Findings**:
   `*To be filled by the achieve plan-critique pass.*`
 
-The writer never inserts a `Single-slice goal:` exemption marker. The
-portability gate fires later only when `/achieve` adds slice rows; until
-then the trivial-goal exemption applies cleanly.
+The auto-draft seeds all three portability headings (`Context Sources`,
+`Interview Decisions`, `Plan Critique Findings`) from the
+[goal-artifact template](../skills/public/achieve/scripts/goal_artifact_template.md),
+so the draft passes the always-on portability check at write time (#255
+removed the trivial-goal exemption; the seeded headings — not an exemption —
+are what keep the check satisfied).
 
 ### Auto-Draft Post-Condition
 

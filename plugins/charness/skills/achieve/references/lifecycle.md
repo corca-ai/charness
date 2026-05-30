@@ -86,10 +86,12 @@ in the template):
   reviewer provenance. Preserves the reasoning so a fresh session does
   not have to re-run critique to verify the folded revisions.
 
-`check_goal_artifact.py` enforces these on any non-trivial goal (Slice
-Plan with 2+ data rows, or Slice Log with 2+ `### Slice` headings). A
-one-shot research-only goal may use a `Single-slice goal: <reason>`
-marker inside the Slice Plan section to opt out.
+`check_goal_artifact.py` enforces these on every goal regardless of
+size. A goal that genuinely has nothing for a section keeps the heading
+and writes `N/A — <reason>`. (#255 removed the old size/marker exemption:
+its full-text `Single-slice goal:` scan was poisoned by prose merely
+describing the marker, and the template already seeds all three headings,
+so the exemption was both unsafe and redundant.)
 
 When shaping an auto-drafted skeleton, overwrite its
 `To be filled by the achieve Before-phase` placeholder lines with the real
