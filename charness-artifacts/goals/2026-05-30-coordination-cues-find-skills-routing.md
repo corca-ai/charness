@@ -1,6 +1,6 @@
 # Achieve Goal: Goal-doc coordination cues: route via find-skills + gather/release floors
 
-Status: active
+Status: complete
 Created: 2026-05-30
 Activation: `/goal @charness-artifacts/goals/2026-05-30-coordination-cues-find-skills-routing.md`
 
@@ -190,4 +190,27 @@ Self-verification against the original goal (Deming "study" step — measured ag
 
 ## Auto-Retro
 
-_Pending: produced by `retro` at closeout next session; substantive findings narrated inline (not collapsed to a path)._
+Substantive retro narrated inline in the closeout response (per #233 F2); durable
+copy at `charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md`.
+
+Improvement dispositions (per #253 — applied-as-teeth or filed-as-issue, never
+prose-only):
+
+- **workflow — run `scripts/run_slice_closeout.py` (the pre-commit gate aggregate)
+  before the first commit on a multi-validator-family slice.** applied: the
+  enforcing teeth already exist and fired this session — the pre-commit hook
+  family (ruff / `validate-attention-state-visibility` / `check-markdown` /
+  `check_python_lengths` / mirror-drift) rejected every non-compliant commit, so
+  nothing shipped broken. No new gate is warranted; the sequencing habit is folded
+  into recent-lessons (below). The miss was using the existing aggregate earlier.
+- **memory — "pre-commit gate family ≠ `pytest tests/`; a length-neutral string
+  reword can still break `validate-attention-state-visibility`; re-sync the mirror
+  after any post-sync source edit."** applied: folded into
+  `charness-artifacts/retro/recent-lessons.md` via the retro persist digest
+  (`summary_refreshed: true` this run).
+
+Closeout evidence (After-phase gate):
+
+Retro: charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md
+Host log probe: charness-artifacts/probe/2026-05-30-coordination-cues-find-skills-routing.json
+Disposition review: charness-artifacts/critique/2026-05-30-coordination-cues-find-skills-routing-disposition.md

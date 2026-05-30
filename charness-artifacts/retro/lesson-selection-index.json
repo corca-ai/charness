@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-30",
-  "source_artifact_count": 86,
-  "candidate_count": 539,
+  "source_artifact_count": 87,
+  "candidate_count": 544,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:8622e1054005",
+      "kind": "current_focus",
+      "lesson": "Closeout of the achieve goal *Goal-doc coordination cues: route via find-skills + gather/release floors* (commit `f55be70`).",
+      "normalized_key": "closeout of the achieve goal goal doc coordination cues route via find skills gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:d46539f342c1",
       "kind": "current_focus",
@@ -135,6 +155,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4830910d0dac",
+      "kind": "next_improvement",
+      "lesson": "**memory:** fold \"pre-commit gate family ≠ pytest; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit\" into `recent-lessons.md`.",
+      "normalized_key": "memory fold pre commit gate family pytest a length neutral string reword can still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:489358868eaf",
       "kind": "next_improvement",
       "lesson": "**memory:** The two durable traps — (1) gate coverage is subprocess-capturing, naive coverage isn't; (2) `workflow_dispatch` has no `base_sha` so it only proves the score path, not the changed-line blocker — belong in the mutation-testing reference so the next fixer inherits them.",
@@ -211,52 +251,32 @@
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:bf53a35644c5",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** For any mutation-gate \"uncovered changed lines\" fix, reproduce via the gate's own `run_test_coverage` (subprocess-capturing) scoped to the files' test surface — never a naive `coverage run` (misses subprocess scripts) and never the full-suite batch first.",
-      "normalized_key": "workflow for any mutation gate uncovered changed lines fix reproduce via the gate s",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-          "date": "2026-05-30",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:955b7c317de3",
-      "kind": "repeat_trap",
-      "lesson": "**A 1GB+ full-suite coverage run kicked off then abandoned.** I started the faithful repro against the full test command before realizing a test-scoped command reproduces the same trio coverage far faster, then killed it (and the `pkill` pattern also caught my replacement run — a second restart). Cost: ~minutes + a stale large artifact.",
-      "normalized_key": "a 1gb full suite coverage run kicked off then abandoned i started the faithful",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-          "date": "2026-05-30",
-          "section": "Waste"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:8622e1054005",
+      "kind": "current_focus",
+      "lesson": "Closeout of the achieve goal *Goal-doc coordination cues: route via find-skills + gather/release floors* (commit `f55be70`).",
+      "normalized_key": "closeout of the achieve goal goal doc coordination cues route via find skills gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d46539f342c1",
       "kind": "current_focus",
       "lesson": "Implemented the #253 improvement-disposition closeout gate for `achieve` as a four-slice `achieve` run: the gate-and-intelligence design — a deterministic rung-1 floor (block-the-blank + a `Disposition review:` review-ran-evidence line, grandfathered by `Created` date) plus a rung-2 fresh-eye reviewer that records a per-improvement verdict.",
@@ -377,6 +397,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4830910d0dac",
+      "kind": "next_improvement",
+      "lesson": "**memory:** fold \"pre-commit gate family ≠ pytest; a length-neutral string reword can still break `validate-attention-state-visibility`; re-sync the mirror after *any* post-sync source edit\" into `recent-lessons.md`.",
+      "normalized_key": "memory fold pre commit gate family pytest a length neutral string reword can still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:489358868eaf",
       "kind": "next_improvement",
       "lesson": "**memory:** The two durable traps — (1) gate coverage is subprocess-capturing, naive coverage isn't; (2) `workflow_dispatch` has no `base_sha` so it only proves the score path, not the changed-line blocker — belong in the mutation-testing reference so the next fixer inherits them.",
@@ -471,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0a1697498c27",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** run `scripts/run_slice_closeout.py --repo-root .` (or the pre-commit hook set) the moment `pytest` is green and *before* the first commit on any slice that spans multiple validator families (ruff / attention-state-visibility / check-markdown / python-lengths / mirror drift are all pre-commit-only, not in `pytest tests/`). The teeth already exist and fired; the miss was sequencing.",
+      "normalized_key": "workflow run scripts run slice closeout py repo root or the pre commit hook",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
         }
@@ -557,6 +617,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:b1acf29bf681",
+      "kind": "repeat_trap",
+      "lesson": "**One full-suite failure that was pure mirror drift.** I fixed N1 in the source *after* the last `sync_root_plugin_manifests.py`, so source≠mirror and `test_plugin_preamble`'s `root_install_surface.ok` went False. Re-sync cleared it. This is the known #257 \"stage the regenerated mirror\" trap recurring as \"re-sync after *any* post-sync source edit\". Low cost (one diagnosis), but a recurrence.",
+      "normalized_key": "one full suite failure that was pure mirror drift i fixed n1 in the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:115d7c87474e",
       "kind": "repeat_trap",
       "lesson": "**One self-inflicted measurement detour.** The first coverage read showed `parse_handoff_entries.py` at 0% (whole file uncovered) and I nearly treated that as the gap. The cause: a *naive* `coverage run` does not capture subprocess-invoked scripts, but the gate uses `parallel=True` + `COVERAGE_PROCESS_START` (subprocess capture). Re-running through the gate's own `run_test_coverage` corrected it to 86.4% with only the `--with-issues` branch uncovered. Cost: ~one extra repro cycle.",
@@ -571,6 +651,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
+          "date": "2026-05-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:96e5f56db6f0",
+      "kind": "repeat_trap",
+      "lesson": "**Three serial pre-commit hook rejections *after* the full test suite was green.** `pytest tests/` passed (1893), so I treated the work as commit-ready and went straight to `git commit`. The commit was then rejected three times in a row — ruff (unused `Path` import), `validate-attention-state-visibility` (my length-neutral reword of the refusal note silently dropped the tracked `skipped: <enum>` term that a quality manifest pins to that file), and `check-markdown` (an inline code span wrapped across two physical lines in lifecycle.md). Each fix → re-sync mirror → retry → next rejection. None of these three gate families run under `pytest tests/`; they are pre-commit-only. Cost: ~3 extra commit cycles + 3 mirror re-syncs. The aggregate that surfaces all of them at once — `scripts/run_slice_closeout.py` — exists and the implementation-discipline doc explicitly says to run it before commit for a slice spanning multiple validator families. I skipped it.",
+      "normalized_key": "three serial pre commit hook rejections after the full test suite was green pytest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
           "date": "2026-05-30",
           "section": "Waste"
         }
