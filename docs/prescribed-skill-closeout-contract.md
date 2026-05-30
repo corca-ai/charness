@@ -104,13 +104,56 @@ same F1 shape until they pass tokens too.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON) | yes, with `skip: <reason>` (e.g., host log not exposed) |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`) |
 | `issue-resolution` | `resolution_critique` (one line of the carrier body starting with `Critique:` followed by either an artifact path under `charness-artifacts/critique/` matching `*<issue-number>*.md` or the literal phrase `blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
 The helper validates that a `skip` reason is non-empty and not in the
 placeholder set (`{tbd, todo, n/a, missing}`). A skip without a substantive
 reason is not honest substitution.
+
+### Improvement-Disposition Gate (#253)
+
+The After-phase requires every retro/run improvement to be dispositioned
+(`applied:` / `issue #N`), not left as prose-only memory. That rule earns
+deterministic teeth from two complementary rungs — the gate-and-intelligence
+split — implemented in
+[`goal_artifact_disposition.py`](../skills/public/achieve/scripts/goal_artifact_disposition.py)
+and wired through the achieve After-phase evidence gate:
+
+- **Rung 1 — deterministic floor** (offline, clone-safe, ungameable):
+  - *block-the-blank* — refuse the `complete` flip when the cited (bound) retro
+    lists actionable `## Next Improvements` but the goal's `## Auto-Retro` is
+    blank and no `Retro dispositions: none — <reason>` opt-out is recorded
+    (Auto-Retro-scoped; a full-text scan is poisoned by goal bodies that merely
+    *describe* the marker). Emptiness only — it never classifies prose.
+  - *review-ran evidence* — require the bound `disposition_review` line above.
+    Presence/binding-only **by design**: it proves a fresh-eye review *ran* and
+    binds to this goal; it never inspects the review's content. Tightening it
+    into a content classifier re-imports the prose word-list trap one level up
+    and is disallowed.
+- **Rung 2 — fresh-eye disposition review** (the intelligence): the bounded
+  closeout reviewer reads the retro's `## Next Improvements` + the goal's
+  `## Auto-Retro` and records a **per-improvement verdict** (dispositioned vs
+  undispositioned) into the artifact the `Disposition review:` line binds. This
+  is the substantive, polarity-aware call a regex cannot make; it is
+  **agent-backed / non-deterministic** and host-dependent, made auditable for a
+  human, not a hidden pass.
+
+Both rungs are **grandfathered by `Created` date** (≥ `2026-05-30` inclusive —
+the rule landing date; missing/malformed `Created` fails closed). Keying on
+`Created` (not completion date) grandfathers goals shaped before the rule existed
+that had no chance to plan around it. The check fires at the `--status complete`
+flip (`upsert_goal.py`) and post-flip (`check_goal_artifact.py`), so it is
+visible from both directions; a goal already `complete` is diagnosed but never
+re-refused.
+
+**Honest limit.** #253 asked for a "deterministic check". A fully deterministic
+*substantive* check is infeasible — a prose word-list over-fires or passes pure
+narration (proven on the live goal corpus) — so the gate is a deterministic
+*floor* (proves the review ran; catches the blank) **plus** a recorded
+intelligent review (judges substance). Rung 1b is therefore weaker than #253's
+literal ask, by design and named, not by quiet scope-narrowing.
 
 ### Integration Points
 

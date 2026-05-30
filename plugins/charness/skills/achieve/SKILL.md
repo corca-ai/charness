@@ -99,7 +99,18 @@ and helper usage.
      the agent's judgment; leaving an improvement as prose-only retro memory is
      **not** a valid disposition — decaying, unread lessons are the exact gap
      this closes. Record each improvement's disposition (`applied: <what>` or
-     `issue #N`) in the goal artifact's Auto-Retro section.
+     `issue #N`) in the goal artifact's Auto-Retro section. These two forms are
+     **per-improvement**; a goal with nothing to act on may instead record one
+     **per-goal** `Retro dispositions: none — <reason>` line (a falsifiable
+     claim, not a third escape) — different scope, no conflict with "exactly two".
+   - **disposition gate (#253), for goals Created ≥ 2026-05-30:** a deterministic
+     floor refuses the flip when the cited retro lists improvements but
+     `## Auto-Retro` is blank (block-the-blank) and requires a bound
+     `Disposition review:` line (or a `host-blocked-subagent` skip) proving a
+     fresh-eye review *ran* — presence/binding-only, never a content classifier.
+     That fresh-eye reviewer (rung 2) records the per-improvement verdict a regex
+     cannot judge; the substantive call is agent-backed and human-audited, not
+     deterministic. Pre-rule goals are grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
 
 ## Coordination
@@ -144,10 +155,16 @@ and helper usage.
   (the #233 F2 pattern is the recurrence history this guards against;
   see `references/lifecycle.md` After section).
 - Do not leave a surfaced improvement as prose-only retro memory at closeout.
-  Every improvement is dispositioned as applied-in-session (teeth) or a filed
-  `issue` (next-session pickup); the now-vs-next choice is agent judgment, but
-  the disposition itself is mandatory. Capture-and-hope is the loop the goal
-  operator must close, not widen.
+  Every improvement is dispositioned per-improvement as applied-in-session
+  (teeth) or a filed `issue` (next-session pickup) — or the run records one
+  per-goal `Retro dispositions: none — <reason>` line when nothing is actionable
+  (a claim the fresh-eye reviewer can falsify, not a silent skip). The now-vs-next
+  choice is agent judgment, but the disposition itself is mandatory.
+  Capture-and-hope is the loop the goal operator must close, not widen.
+- Do not tighten the deterministic disposition floor (#253) into a content
+  classifier. It blocks the blank and proves a review ran; judging whether each
+  improvement was *genuinely* disposed is the fresh-eye reviewer's and the
+  human's job — a prose word-list over-fires or passes narration.
 
 ## References
 

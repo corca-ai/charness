@@ -236,6 +236,56 @@ section as `applied: <what landed>` or `issue #N`, so a fresh session can audit
 that the loop was closed. (This rule is itself the applied form of the lesson
 that `achieve` captured improvements but never closed the apply rung.)
 
+The two forms above are **per-improvement**: each improvement that exists is
+applied or filed. A goal may instead assert, once, that *no actionable
+improvement exists to disposition* — an explicit
+`Retro dispositions: none — <reason>` line inside `## Auto-Retro` (≥30 chars,
+mirroring the skip discipline). This is a **per-goal** assertion at a different
+scope, not a third escape box: it is a factual claim the fresh-eye reviewer can
+**falsify** (it reads the retro and contradicts a false "none"). Use it only
+when the retro genuinely surfaced nothing to act on.
+
+### Disposition gate — two rungs (#253)
+
+The disposition rule above earns teeth from two complementary rungs, each doing
+only what it is good at (the gate-and-intelligence split). A deterministic
+false-positive is worse than a false-negative — it trains token-theater — so the
+deterministic teeth stay narrow and ungameable, and the substantive judgment is
+made by an agent and recorded for a human, never by a regex.
+
+- **Rung 1 — deterministic floor** (in `goal_artifact_disposition.py`, run by the
+  After-phase evidence gate). Two ungameable, offline, clone-safe checks:
+  - *block-the-blank*: refuse the `complete` flip when the cited retro lists
+    actionable `## Next Improvements` but the goal's `## Auto-Retro` is blank and
+    no opt-out is recorded. Emptiness only — it never classifies prose.
+  - *review-ran evidence*: require a bound `Disposition review:` line (below).
+    This is **presence/binding-only by design**: it proves a fresh-eye review
+    *ran* and binds to this goal; it never inspects the review's content. A
+    future maintainer must not tighten it into a content classifier — that
+    re-imports the prose word-list trap one level up.
+- **Rung 2 — the fresh-eye disposition review** (the intelligence). The
+  After-phase already mandates a bounded fresh-eye closeout review; this gives
+  that reviewer an added mandate: read the cited retro's `## Next Improvements`
+  and the goal's `## Auto-Retro`, and record a **per-improvement verdict** —
+  for each improvement, dispositioned (`applied:` / `issue #N` / explicit-none)
+  or undispositioned — into a review artifact the `Disposition review:` line
+  binds. This is the substantive call a regex cannot make (polarity, "filed" vs
+  "not filed", narration-vs-action). It is **non-deterministic by nature** — made
+  visible and auditable for a human, not a hidden pass — and near-zero marginal
+  cost because it scopes an already-required review rather than adding an agent.
+
+**Honest limit.** The deterministic floor proves the *process* ran (a review
+exists and binds) and catches the unambiguous *blank*; it never scores whether a
+non-empty Auto-Retro genuinely disposed each improvement. That substantive
+judgment is rung 2's and the human's. A fully-deterministic *substantive* check
+is infeasible — a prose word-list over-fires or passes pure narration (proven on
+the live corpus) — so #253's literal "deterministic check" is satisfied as a
+deterministic floor **plus** a recorded intelligent review, named honestly, not
+as a quiet scope-narrowing. Narration stays a non-blocking affordance while
+review-*existence* is blocking, for one principled reason: you can ungameably
+check "is there a bound `Disposition review:` line" (offline, clone-safe), but a
+hard transcript gate on whether the agent narrated substance would over-fire.
+
 ### After-phase evidence gate
 
 `upsert_goal.py --status complete` now refuses the flip unless the goal
@@ -251,10 +301,30 @@ whole body):
   `probe_host_logs.py` output (e.g.,
   `charness-artifacts/probe/<date>-<slug>.json`), **or**
   `Host log probe: skipped: <enum>: <detail>`.
+- `Disposition review: <path>` — **for in-scope goals only** (#253; see
+  grandfather rule below) — the fresh-eye disposition-review artifact (rung 2),
+  e.g. under `charness-artifacts/critique/`, **or**
+  `Disposition review: skipped: host-blocked-subagent: <detail>` on a host that
+  cannot spawn the reviewer (graceful degradation to rung 1 only). A
+  `host-blocked-subagent` skip on a host that demonstrably *can* spawn is itself
+  an audit-flag for the human reader, not a clean pass.
+
+The `## Auto-Retro` blank check (rung 1a) and the `Disposition review:`
+requirement (rung 1b) fire only for goals **`Created:` on or after the rule
+landing date `2026-05-30` (inclusive)**. A goal shaped before the rule existed
+had no chance to plan its Auto-Retro/review around it, so keying on `Created`
+(not completion date) grandfathers exactly the in-flight goals; a
+missing/malformed `Created:` fails **closed** (the gate applies) so a goal cannot
+dodge both rungs by corrupting one line. Grandfathering is clone-safe (in-file
+content, not mtime).
 
 `check_goal_artifact.py` runs the same check post-flip when the goal's
 status is already `complete`, so the gate stays visible from both
-directions. The contract lives at
+directions. (A goal closed before the rule but `Created` on/after the landing
+date — e.g. `2026-05-30-issue-251`, closed ~80 min before the rule commit — is
+in-scope and shows a rung-1b diagnostic on re-check, but is never *re-refused*:
+the flip-guard only fires on a non-`complete` → `complete` transition.) The
+contract lives at
 `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
 
 A cited evidence file must also **bind** to this goal (#233 F1): file

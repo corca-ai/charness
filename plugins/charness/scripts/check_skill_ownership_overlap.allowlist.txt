@@ -24,5 +24,6 @@ quality:adapter:usage-episodes:read-only gate -- quality reads .agents/usage-epi
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there
 achieve:artifact:retro:read-only proof -- After-phase closeout binds a retro artifact as the prescribed-skill evidence; lifecycle.md cites retro/ as the evidence namespace, ownership stays retro
 achieve:artifact:probe:read-only proof -- After-phase closeout binds a host-log probe artifact as portability evidence; lifecycle.md cites probe/ as the evidence namespace, ownership stays probe
+achieve:artifact:critique:read-only proof -- After-phase fresh-eye disposition review (rung 2, #253) is bound by the Disposition review: line; lifecycle.md cites critique/ as the review-artifact namespace, ownership stays critique
 handoff:artifact:goals:auto-draft seed -- handoff chunked-routing drafts a goal artifact into charness-artifacts/goals/<date>-<slug>.md for /achieve to consume; achieve still owns the lifecycle after activation
 issue:artifact:critique:read-only proof -- issue closeout-discipline requires a critique artifact path or blocked-host signal as resolution-critique evidence; ownership stays critique
