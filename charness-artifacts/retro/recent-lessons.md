@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Implemented the #253 improvement-disposition closeout gate for `achieve` as a four-slice `achieve` run: the gate-and-intelligence design — a deterministic rung-1 floor (block-the-blank + a `Disposition review:` review-ran-evidence line, grandfathered by `Created` date) plus a rung-2 fresh-eye reviewer that records a per-improvement verdict. (source: `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`)
 - One achieve goal end-to-end: handoff chunker pickup → `/achieve` shaping (with a bounded plan critique) → `/goal` activation → 4-slice fix of the #251 mutation gate regression (subsumes #219). (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
-- Closeout of the achieve goal `2026-05-29-249-248-handoff-chunker-v2`: the handoff chunker now reasons over the live open-issue backlog (#249 input), fires on a bare skill invocation (#249 trigger), composes its stage scripts predictably (#248), and the handoff baton is codified as closeout-only with `## Next Session` reframed as a curation/sequencing memo. (source: `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - **capability:** A tiny repo helper that, given base/head + a file list, prints changed-line coverage + the blocking verdict (wrapping the libs I chained by hand) would remove the bespoke repro script each time. Candidate follow-up issue. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
+- **capability:** the near-limit-file trap has now recurred a 3rd time. The hard `check_python_lengths` gate prevents the *bad commit* but not the *wasted edit*; a pre-write headroom signal (a tiny `limit − current` reporter, or an edit-time warn) would remove the redo. File as a tracked capability follow-up. (source: `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`)
+- **memory:** fold both into `recent-lessons` so the next session inherits the pre-write headroom estimate and the stage-the-mirror habit. (source: `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`)
 - **memory:** The two durable traps — (1) gate coverage is subprocess-capturing, naive coverage isn't; (2) `workflow_dispatch` has no `base_sha` so it only proves the score path, not the changed-line blocker — belong in the mutation-testing reference so the next fixer inherits them. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
-- **workflow:** For any mutation-gate "uncovered changed lines" fix, reproduce via the gate's own `run_test_coverage` (subprocess-capturing) scoped to the files' test surface — never a naive `coverage run` (misses subprocess scripts) and never the full-suite batch first. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
-- **capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom "changed-surface→gate-subset" mechanism needed (pre-commit already does staged-conditional gating). (source: `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`)
 
 ## Selection Policy
 
@@ -28,5 +28,5 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md`
-- `charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md`
 - `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`
+- `charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md`

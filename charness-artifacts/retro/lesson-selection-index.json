@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-30",
-  "source_artifact_count": 84,
-  "candidate_count": 530,
+  "source_artifact_count": 85,
+  "candidate_count": 534,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:d46539f342c1",
+      "kind": "current_focus",
+      "lesson": "Implemented the #253 improvement-disposition closeout gate for `achieve` as a four-slice `achieve` run: the gate-and-intelligence design — a deterministic rung-1 floor (block-the-blank + a `Disposition review:` review-ran-evidence line, grandfathered by `Created` date) plus a rung-2 fresh-eye reviewer that records a per-improvement verdict.",
+      "normalized_key": "implemented the 253 improvement disposition closeout gate for achieve as a four slice achieve",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:95579a337cd3",
       "kind": "current_focus",
@@ -55,6 +75,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7e41d7fa02ab",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the near-limit-file trap has now recurred a 3rd time. The hard `check_python_lengths` gate prevents the *bad commit* but not the *wasted edit*; a pre-write headroom signal (a tiny `limit − current` reporter, or an edit-time warn) would remove the redo. File as a tracked capability follow-up.",
+      "normalized_key": "capability the near limit file trap has now recurred a 3rd time the hard",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c963e74a5dd1",
+      "kind": "next_improvement",
+      "lesson": "**memory:** fold both into `recent-lessons` so the next session inherits the pre-write headroom estimate and the stage-the-mirror habit.",
+      "normalized_key": "memory fold both into recent lessons so the next session inherits the pre write",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:489358868eaf",
       "kind": "next_improvement",
       "lesson": "**memory:** The two durable traps — (1) gate coverage is subprocess-capturing, naive coverage isn't; (2) `workflow_dispatch` has no `base_sha` so it only proves the score path, not the changed-line blocker — belong in the mutation-testing reference so the next fixer inherits them.",
@@ -69,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15b56ef33e62",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** after `sync_root_plugin_manifests.py`, stage the mirror too (`git add` the `plugins/…` paths, or run `validate_packaging_committed` before committing) — repo `scripts/` + skill `SKILL.md`/`references/` all mirror, so a partial stage passes pre-commit but fails the committed-packaging check.",
+      "normalized_key": "workflow after sync root plugin manifests py stage the mirror too git add the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
         }
@@ -173,89 +253,29 @@
           "section": "Context"
         }
       ]
-    },
-    {
-      "candidate_id": "current_focus:c07f54d0d90c",
-      "kind": "current_focus",
-      "lesson": "Closeout of the `achieve` goal `charness-artifacts/goals/2026-05-29-240-session-start-routing-enforcement.md`, run end-to-end this session from `/goal` activation through 5 slices plus the bundled #238 (setup names find-skills as a skill) and #239 (achieve before-phase question + activation clarity).",
-      "normalized_key": "closeout of the achieve goal charness artifacts goals 2026 05 29 240 session start",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-240-session-start-routing-closeout.md",
-          "date": "2026-05-29",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:260cfca91bbc",
-      "kind": "current_focus",
-      "lesson": "Closeout of the `/goal` run for `charness-artifacts/goals/2026-05-29-length-warn-232-244-245.md`: a four-slice arc — (A) advisory file-length WARN tier in `check_python_lengths.py`; (B) #232 issue-body safety via `issue_tool.py create --body-file`; (C) #244 auto-install the find-skills SessionStart hook; (D) #245 dedup SessionStart hooks by logical identity.",
-      "normalized_key": "closeout of the goal run for charness artifacts goals 2026 05 29 length warn",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
-          "date": "2026-05-29",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:040b14ec91f8",
-      "kind": "current_focus",
-      "lesson": "`/handoff` (bare invocation) → chunker fired (#249) → unioned the live open-issue backlog with the `## Next Session` memo → ranked 4 chunks → user picked chunk-1 → `/achieve` shaped a goal skeleton → `/goal` pursued it.",
-      "normalized_key": "handoff bare invocation chunker fired 249 unioned the live open issue backlog with the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-check-python-lengths-precommit-gate-closeout.md",
-          "date": "2026-05-29",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6c2b08fa3087",
-      "kind": "next_improvement",
-      "lesson": "**capability (DONE this follow-up):** Wired `validate-attention-state-visibility` (staged `scripts|skills/*.py`) and `run-evals` (staged `skills/`) into `.githooks/pre-commit`, matching the existing staged-path-conditional pattern. Verified: a broken contract snippet now blocks the commit (HOOK EXIT=1 with the exact missing-snippet error); a clean tree passes. This structurally eliminates both closeout reworks — no manual habit, no custom \"changed-surface→gate-subset\" mechanism needed (pre-commit already does staged-conditional gating).",
-      "normalized_key": "capability done this follow up wired validate attention state visibility staged scripts skills py",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
-      "latest_source_date": "2026-05-29",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-29-length-warn-232-244-245-closeout.md",
-          "date": "2026-05-29",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:d46539f342c1",
+      "kind": "current_focus",
+      "lesson": "Implemented the #253 improvement-disposition closeout gate for `achieve` as a four-slice `achieve` run: the gate-and-intelligence design — a deterministic rung-1 floor (block-the-blank + a `Disposition review:` review-ran-evidence line, grandfathered by `Created` date) plus a rung-2 fresh-eye reviewer that records a per-improvement verdict.",
+      "normalized_key": "implemented the 253 improvement disposition closeout gate for achieve as a four slice achieve",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:95579a337cd3",
       "kind": "current_focus",
@@ -297,6 +317,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7e41d7fa02ab",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the near-limit-file trap has now recurred a 3rd time. The hard `check_python_lengths` gate prevents the *bad commit* but not the *wasted edit*; a pre-write headroom signal (a tiny `limit − current` reporter, or an edit-time warn) would remove the redo. File as a tracked capability follow-up.",
+      "normalized_key": "capability the near limit file trap has now recurred a 3rd time the hard",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c963e74a5dd1",
+      "kind": "next_improvement",
+      "lesson": "**memory:** fold both into `recent-lessons` so the next session inherits the pre-write headroom estimate and the stage-the-mirror habit.",
+      "normalized_key": "memory fold both into recent lessons so the next session inherits the pre write",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:489358868eaf",
       "kind": "next_improvement",
       "lesson": "**memory:** The two durable traps — (1) gate coverage is subprocess-capturing, naive coverage isn't; (2) `workflow_dispatch` has no `base_sha` so it only proves the score path, not the changed-line blocker — belong in the mutation-testing reference so the next fixer inherits them.",
@@ -311,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
+          "date": "2026-05-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15b56ef33e62",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** after `sync_root_plugin_manifests.py`, stage the mirror too (`git add` the `plugins/…` paths, or run `validate_packaging_committed` before committing) — repo `scripts/` + skill `SKILL.md`/`references/` all mirror, so a partial stage passes pre-commit but fails the committed-packaging check.",
+      "normalized_key": "workflow after sync root plugin manifests py stage the mirror too git add the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
+      "latest_source_date": "2026-05-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
           "date": "2026-05-30",
           "section": "Next Improvements"
         }
