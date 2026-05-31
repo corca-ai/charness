@@ -16,37 +16,28 @@
 
 ## Current State
 
-- **`main` local ahead of `origin/main`; not pushed.** The mutation-gate-health
-  achieve goal is complete locally. Final closeout is staged in the branch
-  history: #266 was closed by the staged-hook/predict-commit fix, and the final
-  closeout commit closes #262, #219, and #267 while intentionally leaving #261
-  open for #265.
-- **Mutation gate proof complete locally:** the current next-run changed-line
-  range `6d85aec..HEAD` ended with `blocking=[]`; host-hook debt over
-  `9ee91ff..HEAD` also ended with `blocking=[]`; no push or live GitHub Actions
-  mutation run has been performed.
-- **New follow-ups filed from retro:** #269 guards achieve artifacts against
-  stale mutable-HEAD SHA wording; #270 binds targeted mutant proof to exact
-  gate-reported lines before mutation.
-- Release line is being advanced to **v0.13.1** in this release session; the
-  release is a maintenance patch for mutation-gate closeout hardening, staged
-  commit prediction, and Codex find-skills hook cleanup.
-- **#264 remains the next curated implementation chunk** (follow-up to #250):
-  build the precise portability guard in the skill-portability lib
-  (author-only doc/test cites, with operator-surface allowlist + marker escape
-  hatch), sweep the same-class cross-skill cites, and add the rule sentence to
-  the portable-authoring reference.
+- `main` is aligned with `origin/main` before this handoff refresh; no push or
+  release action is part of the current pickup.
+- A shaped achieve goal is ready:
+  [current autonomous hardening tranche](../charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md).
+  It is `draft`, passes `check_goal_artifact.py`, and passes `--pursue-ready`.
+- The goal intentionally narrows "all autonomous work" to the closed tranche
+  #268, #269, #264, #270, and the mechanical portion of #265/#261. It excludes
+  product/metric work (#184/#185), broad backlog expansion, live issue mutation,
+  push, and release unless a slice stops and re-plans.
+- #268 is the hard first phase gate before later issue-closeout work; #269
+  follows immediately because stale mutable-HEAD wording can affect this goal's
+  own final proof; #270 stays adjacent to #265/#261 mutation triage.
 
 ## Next Session
 
-> Chunk the live backlog rather than trusting this list verbatim.
-
-1. **#264** — portability guard + cross-skill cite sweep (the deferred half of
-   #250). Cheap, well-scoped; the discriminator/allowlist live in the issue body.
-2. **#265 / #261** — residual exhaustive survivor triage and gate-design
-   decision; deliberately left open by the mutation-gate-health closeout.
-3. **#269 / #270** — small process-hardening follow-ups from the latest retro.
-4. Other open: #259, #258, #252, #243, #241, #237, #236, #185, #184.
+1. Activate and pursue:
+   `/goal @charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`.
+2. During slice 0, refresh live issue context and re-run pursue-ready before
+   mutating. Proceed slice-to-slice only after each slice's expected evidence is
+   recorded in the goal `## Slice Log`.
+3. If the goal blocks on a product/gate-policy/live-mutation decision, stop and
+   update this handoff with the exact blocker instead of expanding scope.
 
 ## Discuss
 
@@ -56,10 +47,11 @@
 - This session hit the #258 echo-flood trap again (batched tool calls under
   delayed output → cascade cancels). Prefer serial tool calls when output
   latency is unstable.
+- The autonomous tranche deliberately defers #258/#259/#252/#243/#241/#237/#236;
+  re-rank them after the goal completes or blocks.
 
 ## References
 
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [#264](https://github.com/corca-ai/charness/issues/264) (follow-up scope + allowlist)
-- [mutation-gate-health goal](../charness-artifacts/goals/2026-05-31-mutation-gate-health.md)
+- [current autonomous hardening tranche](../charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md)
