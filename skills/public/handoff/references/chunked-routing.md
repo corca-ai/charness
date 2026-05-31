@@ -10,9 +10,10 @@ state selection, spill targets, or continuation sequence; those still
 own refresh and pickup once the chunker either fires + completes or
 declines to fire.
 
-The implementation contract is
-`<repo-root>/docs/handoff-chunked-routing.md`; this reference owns
-the operator-facing surface.
+This reference owns the operator-facing surface. In the charness source
+repo the full implementation contract lives at
+`docs/handoff-chunked-routing.md` (authoring-repo-internal; not vendored
+with the skill).
 
 ## Deterministic Trigger Rule
 
@@ -49,9 +50,10 @@ When both hold the chunker fires. When the task-directive check fails (the
 user named a specific next task), the chunker steps aside and the rest of the
 handoff workflow runs as usual.
 
-The trigger fixture in
-`<repo-root>/tests/test_handoff_chunker_trigger.py` is the source of
-truth; any divergence between this prose and that fixture is the prose's bug.
+The trigger fixture (in the charness source repo at
+`tests/test_handoff_chunker_trigger.py`; authoring-repo-internal, not
+vendored with the skill) is the source of truth; any divergence between this
+prose and that fixture is the prose's bug.
 
 ## Pipeline
 
@@ -139,8 +141,9 @@ derived goal skeleton (step 5, a forward artifact). It must **never** rewrite
 pickup-time rewrite is churn because the session's own work moves the state
 again. A stale `## Next Session` item discovered at pickup (already done, or
 now superseded by the live backlog) is carried in the conversation and folded
-into the single closeout write. The owning rule is
-`docs/conventions/operating-contract.md` (Session Discipline); `## Next Session`
+into the single closeout write. The owning rule, in the charness source repo, is
+`docs/conventions/operating-contract.md` (Session Discipline;
+authoring-repo-internal, not vendored with the skill); `## Next Session`
 is a curation/sequencing memo, not a synced task queue.
 
 ## Standalone Usefulness
@@ -153,8 +156,8 @@ gate above guarantees that:
   state selection, spill targets, and continuation sequence run as
   normal.
 - `/achieve` without a chunker-drafted skeleton still works. The
-  auto-drafted artifact conforms to
-  `<repo-root>/skills/public/achieve/scripts/check_goal_artifact.py`
+  auto-drafted artifact conforms to the achieve goal-artifact gate
+  (`../../achieve/scripts/check_goal_artifact.py`, skill-relative)
   exactly as a hand-shaped artifact would; a Before-phase interview
   on an auto-drafted skeleton is indistinguishable from one on a
   hand-shaped goal.

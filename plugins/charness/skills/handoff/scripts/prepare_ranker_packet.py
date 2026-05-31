@@ -11,7 +11,9 @@ The packet is a self-contained JSON payload: the agent fills the
 parent calls
 ``chunked_routing_lib.validate_ranker_response`` on the filled payload.
 
-See ``docs/handoff-chunked-routing.md`` for the contract.
+See ``references/chunked-routing.md`` for the contract (in the charness source
+repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
+which is not vendored with the skill).
 """
 import argparse
 import importlib.util

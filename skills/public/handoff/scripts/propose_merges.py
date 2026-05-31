@@ -11,7 +11,9 @@ Reads the JSON payload emitted by ``parse_handoff_entries.py`` (the
 MergeProposal JSON on stdout (standalone candidates + merged candidates
 + shared_boundary_reason map).
 
-See ``docs/handoff-chunked-routing.md`` for the contract.
+See ``references/chunked-routing.md`` for the contract (in the charness source
+repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
+which is not vendored with the skill).
 """
 import argparse
 import importlib.util

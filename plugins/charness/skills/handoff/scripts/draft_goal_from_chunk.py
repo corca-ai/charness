@@ -13,7 +13,9 @@ The input is a single ChunkCandidate JSON (the shape from
 then runs ``check_goal_artifact.check_goal`` against the result; an
 artifact that fails the gate is removed and the failure is reported.
 
-See ``docs/handoff-chunked-routing.md`` for the contract. Importantly,
+See ``references/chunked-routing.md`` for the contract (in the charness source
+repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
+which is not vendored with the skill). Importantly,
 this script must NOT modify any file under ``skills/public/achieve/``;
 it only imports the achieve goal-artifact library to share the gate
 contract.

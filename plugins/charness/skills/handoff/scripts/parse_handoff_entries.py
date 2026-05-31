@@ -8,7 +8,9 @@ CLI surface:
 
 Emits a JSON array of HandoffEntry records on stdout. Used as the first
 step of the handoff chunked-routing pipeline. See
-``docs/handoff-chunked-routing.md`` for the contract.
+``references/chunked-routing.md`` for the contract (in the charness source
+repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
+which is not vendored with the skill).
 """
 from __future__ import annotations
 

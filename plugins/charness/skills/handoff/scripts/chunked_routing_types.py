@@ -9,7 +9,9 @@ Records flow:
 
 The records carry plain-string boundary tokens (full path strings, never
 split components) so the merge proposer can compute overlap honestly. See
-``docs/handoff-chunked-routing.md`` for the contract that owns this shape.
+``references/chunked-routing.md`` for the contract (in the charness source
+repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
+which is not vendored with the skill).
 """
 from dataclasses import asdict, dataclass
 from typing import Any
