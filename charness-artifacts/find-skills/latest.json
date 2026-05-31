@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-31T11:32:56Z",
+  "generated_at": "2026-05-31T12:00:58Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -403,10 +403,10 @@
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/resolution-brief.md",
           "skills/shared/references/rca-ledger-append.md",
-          "skills/shared/references/active-goal-coordination.md",
           "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolve-flow.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/shared/references/active-goal-coordination.md",
           "skills/public/issue/scripts/issue_tool.py",
           "skills/public/issue/scripts/issue_runtime.py",
           "skills/public/issue/scripts/issue_create.py",

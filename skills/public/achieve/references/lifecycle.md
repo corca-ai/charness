@@ -248,6 +248,13 @@ sections, status, and activation line are all present. Flip the status to
 `complete` only after the final report separates what was proven from what
 remains the user's responsibility to verify.
 
+Mutable `HEAD` claims are live-state claims, not durable proof by themselves.
+When a goal artifact says `current HEAD`, `HEAD is`, or equivalent and also
+names an immutable SHA, `check_goal_artifact.py` compares that SHA to local
+`git rev-parse HEAD`. If the SHA is intentionally historical, say so on the
+same line; otherwise prefer recording the executed command with `--head-sha HEAD`
+plus the current `git log origin/main..HEAD` context.
+
 Host-level goal completion is downstream of the artifact, never a substitute
 for it. Before calling a host status tool such as `update_goal(status=complete)`,
 the checked-in goal artifact must already read `Status: complete` and

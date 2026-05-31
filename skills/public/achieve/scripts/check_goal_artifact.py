@@ -24,6 +24,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
+head_freshness = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_head_freshness")
 
 
 def _resolve_goal_path(args) -> Path:
@@ -67,6 +68,19 @@ def main() -> int:
         return 0 if report["pursue_ready"] else 1
     result = goal_lib.check_goal(text)
     result["path"] = str(path)
+    freshness_report = head_freshness.check_head_freshness(
+        text,
+        head_sha=head_freshness.current_head(args.repo_root.expanduser().resolve()),
+    )
+    result["head_freshness"] = freshness_report
+    if not freshness_report["ok"]:
+        result["ok"] = False
+        lines = ", ".join(str(entry["line"]) for entry in freshness_report["findings"])
+        result["issues"].append(
+            "mutable HEAD freshness: current-HEAD wording names stale SHA(s) on line(s) "
+            + lines
+            + "; use `HEAD` in the live command or mark the SHA as historical/proof-targeted"
+        )
     if result.get("status") == "complete":
         evidence_report = goal_lib.check_complete_evidence(args.repo_root.expanduser().resolve(), text)
         result["closeout_evidence"] = evidence_report

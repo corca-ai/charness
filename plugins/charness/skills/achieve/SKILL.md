@@ -115,6 +115,8 @@ and helper usage.
      source in `## Context Sources` needs a `Gather:` step (or `n/a — <reason>`); a
      touched release surface needs a `Release:` step. Presence-only, grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
+   - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
+     the SHA match the live `git rev-parse HEAD` result or mark it historical
    - before any host-level goal completion/status tool call, prove the checked-in
      goal artifact is already `Status: complete` and passes
      `check_goal_artifact.py`; never let a host green signal substitute for the
