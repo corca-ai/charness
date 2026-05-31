@@ -3,9 +3,15 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
-from scripts.staged_commit_gate_plan import staged_commit_gate_plan
+from scripts.staged_commit_gate_plan import (
+    GateCommand,
+    collect_staged_paths,
+    run_predict_commit,
+    staged_commit_gate_plan,
+)
 
 from .support import ROOT, run_script
 
@@ -59,6 +65,51 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     assert "staged-plugin-mirror-drift" in labels
 
 
+def test_gate_command_serializes_to_dict() -> None:
+    assert GateCommand("demo", ("python3", "demo.py")).as_dict() == {
+        "label": "demo",
+        "argv": ["python3", "demo.py"],
+    }
+
+
+def test_collect_staged_paths_reports_git_error(monkeypatch) -> None:
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=1, stderr="no index\n"),
+    )
+
+    try:
+        collect_staged_paths(ROOT)
+    except RuntimeError as exc:
+        assert str(exc) == "no index"
+    else:
+        raise AssertionError("expected RuntimeError")
+
+
+def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
+    labels = _labels(
+        [
+            "skills/public/demo/SKILL.md",
+            "profiles/default/profile.yaml",
+            ".agents/surfaces.json",
+            "presets/default.yaml",
+            "integrations/tool.json",
+            "docs/usage.md",
+        ]
+    )
+
+    assert "validate-skills" in labels
+    assert "run-evals" in labels
+    assert "validate-profiles" in labels
+    assert "validate-adapters" in labels
+    assert "validate-presets" in labels
+    assert "validate-integrations" in labels
+    assert "staged-plugin-mirror-drift" in labels
+    assert "check-doc-links" in labels
+    assert "check-markdown" in labels
+
+
 def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     result = run_script(
         "scripts/run_slice_closeout.py",
@@ -75,6 +126,77 @@ def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     payload = json.loads(result.stdout)
     planned_labels = [command["label"] for command in payload["planned_commands"]]
     assert planned_labels == [command.label for command in staged_commit_gate_plan(ROOT, ["scripts/new_helper.py"])]
+
+
+def test_staged_commit_gate_plan_cli_json_and_text() -> None:
+    json_result = run_script(
+        "scripts/staged_commit_gate_plan.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "README.md",
+        "--json",
+    )
+    assert json_result.returncode == 0, json_result.stderr
+    assert [item["label"] for item in json.loads(json_result.stdout)] == [
+        "staged-plugin-mirror-drift",
+        "check-doc-links",
+        "check-markdown",
+    ]
+
+    text_result = run_script(
+        "scripts/staged_commit_gate_plan.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/new_helper.py",
+        "--no-ruff",
+    )
+    assert text_result.returncode == 0, text_result.stderr
+    assert "check-python-lengths (staged)" in text_result.stdout
+    assert "ruff (staged)" not in text_result.stdout
+
+
+def _payload_sink(payload: dict[str, object], *, as_json: bool) -> int:
+    assert as_json is True
+    assert payload["status"] in {"planned", "failed", "completed"}
+    return 0 if payload["status"] != "failed" else 1
+
+
+def _runner(returncode: int, stdout: str = "", stderr: str = "") -> Callable[[Path, str, str], dict[str, object]]:
+    def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
+        return {"phase": phase, "command": command, "returncode": returncode, "stdout": stdout, "stderr": stderr}
+
+    return run_command
+
+
+def test_run_predict_commit_non_json_plan_empty_fail_and_success(capsys) -> None:
+    assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=True, run_command=_runner(0), emit_payload=_payload_sink) == 0
+    assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=False, run_command=_runner(0), emit_payload=_payload_sink) == 0
+
+    failure_rc = run_predict_commit(
+        ROOT,
+        paths=["README.md"],
+        as_json=False,
+        plan_only=False,
+        run_command=_runner(7, "bad stdout\n", "bad stderr\n"),
+        emit_payload=_payload_sink,
+    )
+    captured = capsys.readouterr()
+    assert failure_rc == 1
+    assert "bad stdout" in captured.out
+    assert "bad stderr" in captured.err
+
+    success_rc = run_predict_commit(
+        ROOT,
+        paths=["README.md"],
+        as_json=False,
+        plan_only=False,
+        run_command=_runner(0),
+        emit_payload=_payload_sink,
+    )
+    assert success_rc == 0
+    assert "charness pre-commit: ok" in capsys.readouterr().out
 
 
 def test_predict_commit_rejects_length_violating_staged_python(tmp_path: Path) -> None:

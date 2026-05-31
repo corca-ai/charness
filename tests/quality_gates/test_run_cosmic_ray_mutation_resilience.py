@@ -157,6 +157,20 @@ def test_read_module_paths_empty_when_unparseable(tmp_path: Path) -> None:
     assert RCRM._read_module_paths(config, tmp_path) == []
 
 
+def test_read_module_paths_empty_when_no_toml_parser(tmp_path: Path) -> None:
+    config = _write_config(tmp_path, "[cosmic-ray]\nmodule-path = ['scripts/a.py']\n")
+
+    real_import = __import__
+
+    def fake_import(name, *args, **kwargs):  # noqa: ANN001
+        if name in {"tomllib", "tomli"}:
+            raise ModuleNotFoundError(name)
+        return real_import(name, *args, **kwargs)
+
+    with patch("builtins.__import__", side_effect=fake_import):
+        assert RCRM._read_module_paths(config, tmp_path) == []
+
+
 def test_restore_module_paths_reverts_mutated_file(tmp_path: Path) -> None:
     """The core #262 reproduction: a module-path file left mutated mid-run is
     reverted to its committed content by the defensive restore."""
@@ -296,6 +310,23 @@ def test_main_full_restores_even_on_timeout(tmp_path: Path) -> None:
 
     assert rc == 0
     marker_mock.assert_called_once()
+    restore_mock.assert_called_once()
+
+
+def test_main_full_returns_dump_failure_after_timeout(tmp_path: Path) -> None:
+    repo = _full_repo(tmp_path)
+    argv = ["run_cosmic_ray_mutation.py", "--repo-root", str(repo), "--mode", "full"]
+    with (
+        patch.object(sys, "argv", argv),
+        patch.object(RCRM, "run"),
+        patch.object(RCRM, "_run_exec_with_timeout", return_value=(True, -1)),
+        patch.object(RCRM, "_dump_session", return_value=4),
+        patch.object(RCRM, "_write_timeout_marker"),
+        patch.object(RCRM, "_restore_module_paths") as restore_mock,
+    ):
+        rc = RCRM.main()
+
+    assert rc == 4
     restore_mock.assert_called_once()
 
 

@@ -34,10 +34,6 @@ def collect_staged_paths(repo_root: Path) -> list[str]:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
-def _matches(path: str, prefix: str | None = None, suffix: str | None = None) -> bool:
-    return (prefix is None or path.startswith(prefix)) and (suffix is None or path.endswith(suffix))
-
-
 def _any_starts(paths: list[str], prefix: str) -> bool:
     return any(path.startswith(prefix) for path in paths)
 
