@@ -28,7 +28,9 @@
 - **New follow-ups filed from retro:** #269 guards achieve artifacts against
   stale mutable-HEAD SHA wording; #270 binds targeted mutant proof to exact
   gate-reported lines before mutation.
-- Release line still **v0.13.0** (no release this session).
+- Release line is being advanced to **v0.13.1** in this release session; the
+  release is a maintenance patch for mutation-gate closeout hardening, staged
+  commit prediction, and Codex find-skills hook cleanup.
 - **#264 remains the next curated implementation chunk** (follow-up to #250):
   build the precise portability guard in the skill-portability lib
   (author-only doc/test cites, with operator-surface allowlist + marker escape
