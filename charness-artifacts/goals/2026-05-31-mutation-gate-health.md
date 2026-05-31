@@ -106,7 +106,9 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
   `validate_attention_state_visibility`) are in its set, run with the hook's
   staged-path argv (not whole-repo scope), and the hook and aggregate share one
   selection implementation.
-- The genuine host-hook coverage gap #267 flagged (over `9ee91ff..dad2d01`) is
+- The genuine host-hook coverage gap #267 flagged (verified over
+  `9ee91ff..HEAD`; production host-hook diff is identical to
+  `9ee91ff..dad2d01`) is
   closed with scoped tests, each mutation-proven; this prevents re-block when
   those files are next touched.
 - #267 is staged to close on the closeout commit; #262 and #219 staged to close;
@@ -130,11 +132,11 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
     `scripts/staged_commit_gate_plan.py`. If any changed line is uncovered,
     cover + mutation-prove it.
   - Slice 3 (#267 debt): get the precise per-file `changed_and_missing` line
-    list via the gate over `--base-sha 9ee91ff --head-sha dad2d01` (the range
-    where the host-hook files show as changed), then write tests targeting only
-    those lines (likely the `uninstall_find_skills_codex_hook` codex-json branch,
-    `scripts/host_hook_find_skills.py:~118-126`). Hand-verify each new test KILLS
-    its target mutant (write mutant → RED; revert → GREEN).
+    list via the gate over `--base-sha 9ee91ff --head-sha HEAD` (the current
+    range where the host-hook files show as changed; production host-hook diff
+    is identical to `9ee91ff..dad2d01`), then write tests targeting only those
+    lines. Hand-verify each new test KILLS its target mutant (write mutant →
+    RED; revert → GREEN).
   - Expected proof cost: minutes (no cosmic-ray exec). Expected
     test-duplication pressure: **MODERATE** on slice 3 — scope tests to the
     gate-reported missing lines, not the whole `7a4cbfe` diff, to avoid
@@ -159,7 +161,7 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 | --- | --- | --- | --- | --- |
 | 1 | #266: introduce a shared staged-path→`(label, argv)` selection module; give `run_slice_closeout` a `--predict-commit` mode that uses it, and refactor `.githooks/pre-commit` to consume the same module (B3) | Folded in first (user): slices 2-3 stage `.py`/test changes that fire the gates the cluster run missed; honest closeout removes the false-green retry tax for the rest of this goal | Synthetic length/attention violation caught pre-commit by predict-commit (RED→fix→GREEN); hook + aggregate provably share one selection (same command plan for a staged set); targeted tests green | completed |
 | 2 | Next-run gate health: run the changed-line gate over the real current next-run range `6d85aec..0707515` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes after slice 1 advanced HEAD; this goal's own new Python surface is also part of the risk | Gate 0-blocking over `6d85aec..0707515`; any uncovered changed line covered + mutation-proven | completed |
-| 3 | #267 debt: enumerate the genuine `changed_and_missing` lines over `9ee91ff..dad2d01` for the two host-hook files, cover only those, mutation-prove | Honest closure of the gap #267 flagged so it cannot re-block when these files are next touched (they are out of next-run scope, so this is debt, not the next-run fix) | Gate 0-blocking for both files over `9ee91ff..dad2d01`; each new test kills its target mutant; no duplication blowup vs the 194-line reconcile test | planned |
+| 3 | #267 debt: enumerate the genuine `changed_and_missing` lines over `9ee91ff..HEAD` for the two host-hook files, cover only those, mutation-prove | Honest closure of the gap #267 flagged so it cannot re-block when these files are next touched (they are out of next-run scope, so this is debt, not the next-run fix) | Gate 0-blocking for both files over `9ee91ff..HEAD`; each new test kills its target mutant; no duplication blowup vs the reconcile test | completed |
 
 ## Slice Log
 
@@ -187,6 +189,20 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 - Targeted verification: PASS: ruff check for touched files; PASS: pytest -q tests/quality_gates/test_staged_commit_gate_plan.py tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py (31 passed); PASS: final fresh python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 6d85aec --head-sha HEAD after full coverage pytest (1905 passed, 4 skipped, 57 deselected) with blocking=[] and changed_pool_files=[scripts/run_cosmic_ray_mutation.py, scripts/run_slice_closeout.py, scripts/staged_commit_gate_plan.py].
 - Test duplication pressure: Expanded two existing focused quality-gate test files rather than adding a new broad fixture; check_python_lengths passed for touched files.
 - Critique: bounded fresh-eye review executed (`parent-delegated`): initial blockers were artifact-only (ahead count and missing commit IDs); fixed before commit. Reviewer independently confirmed reframing from `dad2d01` to current HEAD `0707515` is correct and proof aligns with acceptance.
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 3: Slice 3 (#267 host-hook changed-line debt)
+
+- Objective: Close the genuine host-hook changed-line coverage debt flagged by #267 over the host-hook range.
+- Why this approach: The host-hook files are outside the current next-run scope, but the uncovered changed lines are real debt and would re-block when those files are next touched.
+- Commits: `a77f49b`
+- What changed: Added focused tests for the two gate-reported host-hook lines: Codex TOML matcher returns None for a foreign command with no matching script identity, and Codex JSON find-skills uninstall removes legacy TOML markers from the default config.toml.
+- Alternatives rejected:
+- Targeted verification: PASS: pytest -q tests/test_find_skills_host_hook_reconcile.py (7 passed); PASS: ruff check tests/test_find_skills_host_hook_reconcile.py; PASS: fresh python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 9ee91ff --head-sha HEAD after full coverage pytest (1907 passed, 4 skipped, 57 deselected) with blocking=[] for host-hook range. Targeted kill proof: mutating host_hook_codex_toml_lib._matching_existing_command final return None -> command made test_codex_toml_matching_existing_command_returns_none_for_foreign_command fail; mutating uninstall_find_skills_codex_hook codex-json legacy cleanup path from config.toml to hooks.json made test_find_skills_codex_json_uninstall_cleans_legacy_toml_markers fail.
+- Test duplication pressure: Expanded existing reconcile test file by two scoped tests; no new broad fixture file. check_python_lengths passed for tests/test_find_skills_host_hook_reconcile.py.
+- Critique: bounded fresh-eye review executed (`parent-delegated`): no code/test blockers; reviewer confirmed the two new tests target the exact reported lines and proof aligns with acceptance. Artifact hygiene risks (stale `dad2d01` wording, blank commits, pending critique) fixed before amend.
 - Off-goal findings:
 - Lessons carried forward:
 - Metrics:
