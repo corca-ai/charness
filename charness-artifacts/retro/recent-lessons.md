@@ -3,14 +3,14 @@
 ## Current Focus
 
 - The #260 achieve goal: make the scheduled mutation gate green again on `main` and raise durable mutated-behavior coverage. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
-- `achieve` run for goal #258 (block review/critique subagents from corrupting the parent worktree git index). (source: `charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md`)
+- The mutation-testing backlog cluster (#262 runner restore, #261 trio survivors, #219 stale regression) operated as one `achieve` goal (`charness-artifacts/goals/2026-05-31-262-261-219-mutation-cluster.md`, full-cluster scope chosen by the operator). (source: `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`)
 
 ## Repeat Traps
 
 - **Coarse-grained dump parsing slips.** First dump parse used lowercase `"survived"` (the field is uppercase `SURVIVED`) and read a stale truncated `.jsonl`; one extra analysis cycle. Switched to reading the session sqlite directly (ground truth). (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
+- **Ground-truth shell-function flakiness.** The first survivor ground-truth batch used an inline shell function whose pass/fail reporting mis-fired (it reported clean baseline as "killed"); switched to a Python harness. ~1 cycle. (source: `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`)
 - **Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was "wait for the async job"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
 - **Timeout-killed `cosmic-ray exec` left a mutation applied.** Wrapping `cosmic-ray exec` in the Bash tool's 600s `timeout` killed it mid-mutant; cosmic-ray only restores between mutants, so `render_cli_reference.py:102` was left mutated (`repo_root >> args.output`). Caught by `git status` before the Slice-2 commit and restored. Adopted mid-session: run exec in the background (no tool-timeout kill) + always `git checkout` the module-path files after every exec. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
-- **A 1GB+ full-suite coverage run kicked off then abandoned.** I started the faithful repro against the full test command before realizing a test-scoped command reproduces the same trio coverage far faster, then killed it (and the `pkill` pattern also caught my replacement run — a second restart). Cost: ~minutes + a stale large artifact. (source: `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`)
 
 ## Next-Time Checklist
 
@@ -27,6 +27,6 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md`
 - `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`
 - `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`
+- `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`

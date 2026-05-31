@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-31",
-  "source_artifact_count": 89,
-  "candidate_count": 560,
+  "source_artifact_count": 90,
+  "candidate_count": 563,
   "top_candidates": [
     {
       "candidate_id": "current_focus:3a373250cbd2",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e7fb4e99abe0",
+      "kind": "current_focus",
+      "lesson": "The mutation-testing backlog cluster (#262 runner restore, #261 trio survivors, #219 stale regression) operated as one `achieve` goal (`charness-artifacts/goals/2026-05-31-262-261-219-mutation-cluster.md`, full-cluster scope chosen by the operator).",
+      "normalized_key": "the mutation testing backlog cluster 262 runner restore 261 trio survivors 219 stale regression",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
           "date": "2026-05-31",
           "section": "Context"
         }
@@ -115,6 +135,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:f67f1aa5c59f",
+      "kind": "repeat_trap",
+      "lesson": "**Ground-truth shell-function flakiness.** The first survivor ground-truth batch used an inline shell function whose pass/fail reporting mis-fired (it reported clean baseline as \"killed\"); switched to a Python harness. ~1 cycle.",
+      "normalized_key": "ground truth shell function flakiness the first survivor ground truth batch used an inline",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3ce37eddfc18",
       "kind": "repeat_trap",
       "lesson": "**Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was \"wait for the async job\"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications.",
@@ -149,6 +189,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1d6fbeab15f9",
+      "kind": "repeat_trap",
+      "lesson": "**Two serial pre-commit gate rejections on slice 1.** `run_slice_closeout` (the aggregate the lifecycle calls \"the verify step before a commit\") passed, then the commit was rejected by `check-python-lengths` (per-function) and then `validate-attention-state-visibility` — gates the aggregate had not run. The green aggregate gave false confidence; ~2 fix-retry cycles. This is the recurrence the lifecycle's \"run the aggregate to surface all gates at once\" rule targets, except here the aggregate itself is not a superset of the commit hook. Filed as **#266**.",
+      "normalized_key": "two serial pre commit gate rejections on slice 1 run slice closeout the aggregate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
           "date": "2026-05-31",
           "section": "Waste"
         }
@@ -193,66 +253,6 @@
           "section": "Context"
         }
       ]
-    },
-    {
-      "candidate_id": "current_focus:d46539f342c1",
-      "kind": "current_focus",
-      "lesson": "Implemented the #253 improvement-disposition closeout gate for `achieve` as a four-slice `achieve` run: the gate-and-intelligence design — a deterministic rung-1 floor (block-the-blank + a `Disposition review:` review-ran-evidence line, grandfathered by `Created` date) plus a rung-2 fresh-eye reviewer that records a per-improvement verdict.",
-      "normalized_key": "implemented the 253 improvement disposition closeout gate for achieve as a four slice achieve",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-253-disposition-gate.md",
-          "date": "2026-05-30",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:95579a337cd3",
-      "kind": "current_focus",
-      "lesson": "One achieve goal end-to-end: handoff chunker pickup → `/achieve` shaping (with a bounded plan critique) → `/goal` activation → 4-slice fix of the #251 mutation gate regression (subsumes #219).",
-      "normalized_key": "one achieve goal end to end handoff chunker pickup achieve shaping with a bounded",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md",
-          "date": "2026-05-30",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4b8dddcaf1a6",
-      "kind": "current_focus",
-      "lesson": "Reviews the `/achieve #255` goal run: resolving the `is_non_trivial_goal` full-text marker-poisoning bug.",
-      "normalized_key": "reviews the achieve 255 goal run resolving the is non trivial goal full text",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-issue-255-remove-trivial-goal-exemption.md",
-          "date": "2026-05-30",
-          "section": "Context"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e7fb4e99abe0",
+      "kind": "current_focus",
+      "lesson": "The mutation-testing backlog cluster (#262 runner restore, #261 trio survivors, #219 stale regression) operated as one `achieve` goal (`charness-artifacts/goals/2026-05-31-262-261-219-mutation-cluster.md`, full-cluster scope chosen by the operator).",
+      "normalized_key": "the mutation testing backlog cluster 262 runner restore 261 trio survivors 219 stale regression",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
           "date": "2026-05-31",
           "section": "Context"
         }
@@ -357,6 +377,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:f67f1aa5c59f",
+      "kind": "repeat_trap",
+      "lesson": "**Ground-truth shell-function flakiness.** The first survivor ground-truth batch used an inline shell function whose pass/fail reporting mis-fired (it reported clean baseline as \"killed\"); switched to a Python harness. ~1 cycle.",
+      "normalized_key": "ground truth shell function flakiness the first survivor ground truth batch used an inline",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3ce37eddfc18",
       "kind": "repeat_trap",
       "lesson": "**Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was \"wait for the async job\"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications.",
@@ -391,6 +431,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1d6fbeab15f9",
+      "kind": "repeat_trap",
+      "lesson": "**Two serial pre-commit gate rejections on slice 1.** `run_slice_closeout` (the aggregate the lifecycle calls \"the verify step before a commit\") passed, then the commit was rejected by `check-python-lengths` (per-function) and then `validate-attention-state-visibility` — gates the aggregate had not run. The green aggregate gave false confidence; ~2 fix-retry cycles. This is the recurrence the lifecycle's \"run the aggregate to surface all gates at once\" rule targets, except here the aggregate itself is not a superset of the commit hook. Filed as **#266**.",
+      "normalized_key": "two serial pre commit gate rejections on slice 1 run slice closeout the aggregate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
           "date": "2026-05-31",
           "section": "Waste"
         }
