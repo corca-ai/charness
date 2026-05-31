@@ -47,10 +47,29 @@ evaluator-backed scenario review when installed and configured.
    follow-up gates. Route: `quality`, with `retro` when the lesson should
    persist.
 
+## Long-Running Or Autonomous Goals
+
+Use `achieve` when the work is bigger than one ordinary implementation prompt
+and needs a durable objective, boundaries, slice plan, proof record, and honest
+non-claims.
+
+`achieve` first shapes prose into a reviewable goal artifact under
+`charness-artifacts/goals/` and returns a `/goal @...` activation line for
+hosts that provide that autonomous-run entrypoint. Once activated, the goal
+artifact becomes the running memory surface: slice progress, verification,
+off-goal findings, residual risks, and user verification instructions stay
+there instead of being scattered across chat or handoff.
+
+`achieve` coordinates existing workflows such as `ideation`, `spec`, `impl`,
+`debug`, `quality`, `issue`, `critique`, and `retro`. It does not replace those
+skills, ship the `/goal` host command, or create a separate execution engine.
+
 ## Direct Invocation
 
 Normal prompts should be enough after setup, but direct invocation is useful
 when you already know the workflow.
 
-- Claude Code: `/charness:quality`, `/charness:narrative`, and similar.
-- Codex: `$charness:quality`, `$charness:narrative`, and similar.
+- Claude Code: `/charness:achieve`, `/charness:quality`,
+  `/charness:narrative`, and similar.
+- Codex: `$charness:achieve`, `$charness:quality`, `$charness:narrative`, and
+  similar.

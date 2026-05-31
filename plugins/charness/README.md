@@ -67,11 +67,14 @@ do not need to name a skill.
 - Existing repo: run `setup` if the repo is not initialized, then ask directly
   for implementation, debugging, quality review, story work, handoff, or
   release help.
+- Long-running objective: use `achieve` to shape an auditable goal artifact,
+  then activate it with `/goal` where your host provides it so progress, proof,
+  and non-claims stay visible.
 - Known workflow: call a skill directly when that is clearer. Claude uses
   `/charness:<skill>`; Codex uses `$charness:<skill>`.
 
 For the longer route guide, including retros, Cautilus-backed review, and
-existing-repo examples, see [Workflow Routes](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md).
+long-running goal examples, see [Workflow Routes](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md).
 
 ## Core Concepts
 
@@ -128,6 +131,9 @@ The rest of the public surface groups by intent:
 - raise quality:
   [`quality`](./skills/quality/SKILL.md),
   [`retro`](./skills/retro/SKILL.md)
+- run long goals:
+  [`achieve`](./skills/achieve/SKILL.md) auditable goal lifecycle for
+  autonomous objectives
 - communicate across boundaries:
   [`narrative`](./skills/narrative/SKILL.md) durable truth and story alignment,
   [`announcement`](./skills/announcement/SKILL.md) audience/channel adaptation,
