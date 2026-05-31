@@ -101,6 +101,60 @@ def test_ac1_validate_accepts_committed_ledger() -> None:
     assert result.returncode == 0, result.stderr
 
 
+# #219 Slice 2: kill the validate_rca_ledger main() survivors -----------------
+# The #219 regression (commit 59841e0, source unchanged since) left three live
+# survivors in main(); existing tests asserted returncode/error_count but never
+# the status string, the exact JSON indent, or the text-mode error loop.
+def test_ac1_validate_json_status_field_reflects_validity(tmp_path: Path) -> None:
+    """`"status": "valid" if not errors else "invalid"` survived because no test
+    asserted the status string, so the `not errors` flip (Delete_Not / AddNot)
+    went unnoticed. Pin both polarities."""
+    clean = tmp_path / "clean.jsonl"
+    write_ledger(clean, [event()])
+    ok = run_script("validate_rca_ledger.py", "--ledger", str(clean), "--json")
+    assert ok.returncode == 0, ok.stderr
+    assert json.loads(ok.stdout)["status"] == "valid"
+
+    bad = tmp_path / "bad.jsonl"
+    write_raw(bad, [json.dumps(event(source="slack"))])  # bad enum
+    invalid = run_script("validate_rca_ledger.py", "--ledger", str(bad), "--json")
+    assert invalid.returncode == 1
+    assert json.loads(invalid.stdout)["status"] == "invalid"
+
+
+def test_ac1_validate_json_uses_two_space_indent(tmp_path: Path) -> None:
+    """`print(json.dumps(result, indent=2))` survived because every assertion
+    does `json.loads` (indent-agnostic). Pin the RAW 2-space formatting, the
+    same kill #251 applied to the aggregate output."""
+    bad = tmp_path / "bad.jsonl"
+    write_raw(bad, [json.dumps(event(source="slack"))])
+    result = run_script("validate_rca_ledger.py", "--ledger", str(bad), "--json")
+    raw = result.stdout
+    payload = json.loads(raw)
+    assert raw.rstrip("\n") == json.dumps(payload, indent=2)
+    assert '\n  "' in raw  # a top-level key indented by exactly two spaces
+
+
+def test_ac1_validate_text_mode_prints_each_malformed_line(tmp_path: Path) -> None:
+    """The non-`--json` error branch (`for entry in errors: print(... stderr)`)
+    was never exercised, so the ZeroIterationForLoop mutant survived. Run text
+    mode on a malformed ledger and assert each line's error is printed."""
+    bad = tmp_path / "bad.jsonl"
+    write_raw(
+        bad,
+        [
+            json.dumps(event(source="slack")),  # bad enum
+            json.dumps(event(converted=False, durable_kind="gate")),  # invariant break
+        ],
+    )
+    result = run_script("validate_rca_ledger.py", "--ledger", str(bad))  # no --json
+    assert result.returncode == 1
+    assert "invalid: 2 malformed line(s)" in result.stderr
+    # Each malformed line is reported individually; ZeroIterationForLoop drops these.
+    assert "line 1:" in result.stderr
+    assert "line 2:" in result.stderr
+
+
 # AC2 -------------------------------------------------------------------------
 def test_ac2_aggregate_rate_and_breakdown(tmp_path: Path) -> None:
     ledger = tmp_path / "ledger.jsonl"
