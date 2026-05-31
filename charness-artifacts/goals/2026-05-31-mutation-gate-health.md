@@ -15,11 +15,13 @@ inert until then.
 Restore and protect the scheduled mutation gate on `main`, and make this goal's
 own slice closeouts honest. **The plan-critique corrected the original premise**
 (B1): the scheduled CI resolves the changed-line base as the *head of the most
-recent prior completed run* (`.github/workflows/mutation-tests.yml` ~L141), so
-after the maintainer pushes HEAD (`dad2d01`) the next run scopes
-`6d85aec..dad2d01`. That range contains **only `scripts/run_cosmic_ray_mutation.py`**
-(grown +160 lines by #262's slice 1, `6030306`) and does **not** contain the two
-host-hook files #267 originally flagged — they leave next-run scope on their own.
+recent prior completed run* (`.github/workflows/mutation-tests.yml` ~L141).
+During this goal, slice 1 advanced the unpushed HEAD beyond the original
+`dad2d01` premise, so the current next run scopes **`6d85aec..0707515`**. That
+range contains `scripts/run_cosmic_ray_mutation.py`,
+`scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py`, and
+does **not** contain the two host-hook files #267 originally flagged — they
+leave next-run scope on their own.
 
 1. **#266 (slice 1, folded in first):** eliminate the divergence between
    `run_slice_closeout.py` (the "verify before commit" aggregate) and the
@@ -27,11 +29,11 @@ host-hook files #267 originally flagged — they leave next-run scope on their o
    selection both consume**, so a green aggregate guarantees a green commit.
    Without it, every slice below that stages `.py`/test changes re-hits the
    cluster run's false-green fix-retry waste.
-2. **Next-run gate health (slice 2):** verify the *actual* next-run range
-   `6d85aec..dad2d01` has no uncovered changed lines — primarily
-   `scripts/run_cosmic_ray_mutation.py`; cover any gap so the cluster's own fix
-   does not become the next "regression on main." This is the load-bearing
-   recurrence-prevention work.
+2. **Next-run gate health (slice 2):** verify the *actual* current next-run
+   range `6d85aec..0707515` has no uncovered changed lines across its changed
+   mutation-pool files; cover any gap so this goal's own fixes do not become the
+   next "regression on main." This is the load-bearing recurrence-prevention
+   work.
 3. **#267 host-hook coverage debt (slice 3):** close the genuine uncovered
    changed-line gap in `scripts/host_hook_codex_toml_lib.py` /
    `scripts/host_hook_find_skills.py` that #267 flagged (B2: the gate uses real
@@ -42,8 +44,8 @@ host-hook files #267 originally flagged — they leave next-run scope on their o
    are intact and stage their issue closure; leave #261 open (residual triage
    tracked by #265).
 
-Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
-(`dad2d01`).
+Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
+(`0707515`) after slices 1-2.
 
 ## Non-Goals
 
@@ -66,9 +68,11 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
   `check_python_lengths` and `validate_attention_state_visibility`), and the new
   shared staged-path→`(label, argv)` selection module; their tests under
   `tests/`.
-- **In scope (slice 2 — next-run health):** `scripts/run_cosmic_ray_mutation.py`
-  (the file in the real next-run range `6d85aec..dad2d01`) and any tests needed
-  to cover its uncovered changed lines.
+- **In scope (slice 2 — next-run health):** `scripts/run_cosmic_ray_mutation.py`,
+  `scripts/run_slice_closeout.py`, `scripts/staged_commit_gate_plan.py` (the
+  changed mutation-pool files in the real current next-run range
+  `6d85aec..0707515`) and any tests needed to cover their uncovered changed
+  lines.
 - **In scope (#267 debt, slice 3):** `scripts/host_hook_codex_toml_lib.py`,
   `scripts/host_hook_find_skills.py` (`axis: host` — Codex host-adapter
   surfaces; keep host-specific behavior in the hook, no host-hardcoded test
@@ -89,11 +93,13 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
 
 ## User Acceptance
 
-- The **actual next-scheduled-run range `6d85aec..dad2d01`** has no uncovered
-  changed lines when the changed-line gate is run locally over that exact range
-  (primarily `scripts/run_cosmic_ray_mutation.py`) — so the maintainer's push
-  does not produce the next "regression on main." (Corrected from the original
-  draft's false claim about the host-hook files, which leave next-run scope.)
+- The **actual current next-scheduled-run range `6d85aec..0707515`** has no
+  uncovered changed lines when the changed-line gate is run locally over that
+  exact range (`scripts/run_cosmic_ray_mutation.py`,
+  `scripts/run_slice_closeout.py`, `scripts/staged_commit_gate_plan.py`) — so the
+  maintainer's push does not produce the next "regression on main." (Corrected
+  from the original draft's false claim about the host-hook files, which leave
+  next-run scope.)
 - `run_slice_closeout.py --predict-commit` (or the aligned aggregate) reproduces
   the **exact** pre-commit gate verdict — a green run guarantees a green commit;
   the two gates the cluster missed (`check_python_lengths` per-function and
@@ -116,11 +122,13 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
     change passes (GREEN); ruff + `check_python_lengths` + targeted pytest on
     changed files. Assert the hook and aggregate resolve the **same** command
     plan for a given staged set (one implementation).
-  - Slice 2 (next-run health): run the changed-line gate over the **real
-    next-run range** `--base-sha 6d85aec --head-sha dad2d01` with **freshly
-    generated coverage** (not the stale ~1.2GB `reports/mutation/test-coverage.json`,
-    B2); expect 0 blocking, primarily for `scripts/run_cosmic_ray_mutation.py`.
-    If any changed line is uncovered, cover + mutation-prove it.
+  - Slice 2 (next-run health): run the changed-line gate over the **real current
+    next-run range** `--base-sha 6d85aec --head-sha HEAD` (HEAD=`0707515`) with
+    **freshly generated coverage** (not the stale
+    `reports/mutation/test-coverage.json`, B2); expect 0 blocking for
+    `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and
+    `scripts/staged_commit_gate_plan.py`. If any changed line is uncovered,
+    cover + mutation-prove it.
   - Slice 3 (#267 debt): get the precise per-file `changed_and_missing` line
     list via the gate over `--base-sha 9ee91ff --head-sha dad2d01` (the range
     where the host-hook files show as changed), then write tests targeting only
@@ -150,7 +158,7 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | #266: introduce a shared staged-path→`(label, argv)` selection module; give `run_slice_closeout` a `--predict-commit` mode that uses it, and refactor `.githooks/pre-commit` to consume the same module (B3) | Folded in first (user): slices 2-3 stage `.py`/test changes that fire the gates the cluster run missed; honest closeout removes the false-green retry tax for the rest of this goal | Synthetic length/attention violation caught pre-commit by predict-commit (RED→fix→GREEN); hook + aggregate provably share one selection (same command plan for a staged set); targeted tests green | completed |
-| 2 | Next-run gate health: run the changed-line gate over the real next-run range `6d85aec..dad2d01` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes; the cluster's own +160-line growth is the real risk | Gate 0-blocking over `6d85aec..dad2d01`; any uncovered changed line covered + mutation-proven | planned |
+| 2 | Next-run gate health: run the changed-line gate over the real current next-run range `6d85aec..0707515` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes after slice 1 advanced HEAD; this goal's own new Python surface is also part of the risk | Gate 0-blocking over `6d85aec..0707515`; any uncovered changed line covered + mutation-proven | completed |
 | 3 | #267 debt: enumerate the genuine `changed_and_missing` lines over `9ee91ff..dad2d01` for the two host-hook files, cover only those, mutation-prove | Honest closure of the gap #267 flagged so it cannot re-block when these files are next touched (they are out of next-run scope, so this is debt, not the next-run fix) | Gate 0-blocking for both files over `9ee91ff..dad2d01`; each new test kills its target mutant; no duplication blowup vs the 194-line reconcile test | planned |
 
 ## Slice Log
@@ -159,12 +167,26 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
 
 - Objective: Eliminate divergence between .githooks/pre-commit and run_slice_closeout by routing staged-path command selection through one shared planner and exposing run_slice_closeout --predict-commit.
 - Why this approach: The rest of this goal stages Python/test changes; a green aggregate must predict the commit hook instead of missing check_python_lengths and validate_attention_state_visibility.
-- Commits:
+- Commits: `86a905d`
 - What changed: Added scripts/staged_commit_gate_plan.py and synced plugins/charness/scripts/staged_commit_gate_plan.py; refactored .githooks/pre-commit to delegate to run_slice_closeout --predict-commit; added predict-commit execution in run_slice_closeout; added repo-python surface commands for check_python_lengths and validate_attention_state_visibility; added tests for planner parity, length failure, attention failure, and clean staged Python.
 - Alternatives rejected:
 - Targeted verification: PASS: pytest -q tests/quality_gates/test_staged_commit_gate_plan.py (5 passed); PASS: real staged python3 scripts/run_slice_closeout.py --repo-root . --predict-commit --json; PASS: python3 scripts/run_slice_closeout.py --repo-root . (packaging, surfaces, integrations, maintainer setup, full ruff, full length gate, attention visibility, broad pytest, agent-browser hygiene).
 - Test duplication pressure: Added one focused 119-line quality gate test file. check_python_lengths passes; run_slice_closeout.py is advisory-near-limit at 465/480 and should be trimmed in a later structural cleanup, not expanded further.
 - Critique: bounded fresh-eye review executed (`parent-delegated`): no blockers; proof aligned. Follow-up risk addressed in-session by using one captured staged path list for both the plan and payload; remaining non-blocking import-risk note accepted (hook enters through `run_slice_closeout.py`, so future import-time closeout helper failures could affect commit).
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: Slice 2 (current next-run changed-line health)
+
+- Objective: Verify and cover the actual current next scheduled mutation range after slice-1 commits: 6d85aec..0707515.
+- Why this approach: Slice 1 changed the unpushed head, so current state makes the next scheduled range include run_cosmic_ray_mutation.py, run_slice_closeout.py, and staged_commit_gate_plan.py, not only the old dad2d01 range.
+- Commits: `a49db90`, `0707515`
+- What changed: Added focused tests for run_cosmic_ray_mutation no-TOML-parser and timeout+dump-failure branches; expanded staged_commit_gate_plan tests for serialization, git error reporting, domain and markdown triggers, CLI JSON/text output, non-json plan-only output, empty-plan no-op, failure output propagation, and success output.
+- Alternatives rejected:
+- Targeted verification: PASS: ruff check for touched files; PASS: pytest -q tests/quality_gates/test_staged_commit_gate_plan.py tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py (31 passed); PASS: final fresh python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 6d85aec --head-sha HEAD after full coverage pytest (1905 passed, 4 skipped, 57 deselected) with blocking=[] and changed_pool_files=[scripts/run_cosmic_ray_mutation.py, scripts/run_slice_closeout.py, scripts/staged_commit_gate_plan.py].
+- Test duplication pressure: Expanded two existing focused quality-gate test files rather than adding a new broad fixture; check_python_lengths passed for touched files.
+- Critique: bounded fresh-eye review executed (`parent-delegated`): initial blockers were artifact-only (ahead count and missing commit IDs); fixed before commit. Reviewer independently confirmed reframing from `dad2d01` to current HEAD `0707515` is correct and proof aligns with acceptance.
 - Off-goal findings:
 - Lessons carried forward:
 - Metrics:

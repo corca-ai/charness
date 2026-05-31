@@ -172,6 +172,15 @@ def _runner(returncode: int, stdout: str = "", stderr: str = "") -> Callable[[Pa
 
 def test_run_predict_commit_non_json_plan_empty_fail_and_success(capsys) -> None:
     assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=True, run_command=_runner(0), emit_payload=_payload_sink) == 0
+    assert run_predict_commit(
+        ROOT,
+        paths=["README.md"],
+        as_json=False,
+        plan_only=True,
+        run_command=_runner(0),
+        emit_payload=_payload_sink,
+    ) == 0
+    assert "charness pre-commit: check-doc-links" in capsys.readouterr().out
     assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=False, run_command=_runner(0), emit_payload=_payload_sink) == 0
 
     failure_rc = run_predict_commit(
