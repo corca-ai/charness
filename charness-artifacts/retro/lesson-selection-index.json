@@ -11,9 +11,209 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 92,
-  "candidate_count": 573,
+  "source_artifact_count": 94,
+  "candidate_count": 581,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:3d58258f9af6",
+      "kind": "current_focus",
+      "lesson": "The reviewed unit is the `v0.13.2` release push and the follow-up user correction that the release should have carried GitHub close keywords.",
+      "normalized_key": "the reviewed unit is the v0 13 2 release push and the follow up",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9ea536084d12",
+      "kind": "next_improvement",
+      "lesson": "Add a release preflight that fails or warns when recent goal or release artifacts mention resolved issue numbers but the publish payload has `close_issue_numbers: []`.",
+      "normalized_key": "add a release preflight that fails or warns when recent goal or release artifacts",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8a5e12202e05",
+      "kind": "next_improvement",
+      "lesson": "Before any release that follows a goal or issue-resolution tranche, build a short issue closeout matrix: `close`, `leave open`, `reason`, and map every `close` row to `--close-issue`.",
+      "normalized_key": "before any release that follows a goal or issue resolution tranche build a short",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:956f837c0df0",
+      "kind": "next_improvement",
+      "lesson": "Keep this retro as the recurrence marker for \"avoid-all-closeout\" overcorrection after a reviewer warns not to close some issues.",
+      "normalized_key": "keep this retro as the recurrence marker for avoid all closeout overcorrection after a",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fee69cca985c",
+      "kind": "next_improvement",
+      "lesson": "Teach the release critique packet to include an explicit \"issue closeout subset\" field, not just generic warnings about live issue mutation.",
+      "normalized_key": "teach the release critique packet to include an explicit issue closeout subset field not",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:89247ee6274b",
+      "kind": "repeat_trap",
+      "lesson": "The final answer claimed \"issue close was not requested\" even though the workflow expectation was that resolved issue closeout should be carried by the release commit.",
+      "normalized_key": "the final answer claimed issue close was not requested even though the workflow expectation",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:11c520b371b3",
+      "kind": "repeat_trap",
+      "lesson": "The release artifact briefly held stale `not_requested` state after live closeout had been repaired.",
+      "normalized_key": "the release artifact briefly held stale not requested state after live closeout had been",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:44588f8b9a4c",
+      "kind": "repeat_trap",
+      "lesson": "The release had to be repaired after publication, creating two extra commits and a trust hit.",
+      "normalized_key": "the release had to be repaired after publication creating two extra commits and a",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:5bf706d26b6b",
       "kind": "current_focus",
@@ -93,169 +293,209 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "repeat_trap:55a6e07e9a43",
-      "kind": "repeat_trap",
-      "lesson": "The #265/#261 mutation slice reran the same 514-mutant scoped campaign several times after incremental test additions. This was defensible for proof, but it was the dominant local time cost.",
-      "normalized_key": "the 265 261 mutation slice reran the same 514 mutant scoped campaign several times",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:445858608408",
-      "kind": "repeat_trap",
-      "lesson": "The first survivor summary parser used uppercase outcome names incorrectly, briefly reporting zero survivors. This was caught before decisions were made, but it is a reminder to inspect dump formats before trusting a quick parser.",
-      "normalized_key": "the first survivor summary parser used uppercase outcome names incorrectly briefly reporting zero survivors",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2179f5a3650a",
-      "kind": "repeat_trap",
-      "lesson": "The scoped mutation score helper was invoked without the normal sample manifest, so the summary printed `status: FAIL` despite the scoped inventory being complete and above threshold. The slice log now distinguishes inventory proof from normal scheduled-gate proof.",
-      "normalized_key": "the scoped mutation score helper was invoked without the normal sample manifest so the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:1a80b5106758",
-      "kind": "current_focus",
-      "lesson": "Active achieve goal `charness-artifacts/goals/2026-05-31-mutation-gate-health.md`: align slice closeout with commit hooks (#266), prove current next-run mutation changed-line health, close #267 host-hook debt, and verify #262/#219 cluster closure while leaving #261 open for #265.",
-      "normalized_key": "active achieve goal charness artifacts goals 2026 05 31 mutation gate health md align",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
-      "latest_source_date": "2026-05-31",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
-          "date": "2026-05-31",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:3a373250cbd2",
-      "kind": "current_focus",
-      "lesson": "The #260 achieve goal: make the scheduled mutation gate green again on `main` and raise durable mutated-behavior coverage.",
-      "normalized_key": "the 260 achieve goal make the scheduled mutation gate green again on main and",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-      "latest_source_date": "2026-05-31",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-          "date": "2026-05-31",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:e7fb4e99abe0",
-      "kind": "current_focus",
-      "lesson": "The mutation-testing backlog cluster (#262 runner restore, #261 trio survivors, #219 stale regression) operated as one `achieve` goal (`charness-artifacts/goals/2026-05-31-262-261-219-mutation-cluster.md`, full-cluster scope chosen by the operator).",
-      "normalized_key": "the mutation testing backlog cluster 262 runner restore 261 trio survivors 219 stale regression",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
-      "latest_source_date": "2026-05-31",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
-          "date": "2026-05-31",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:98c947deffed",
-      "kind": "next_improvement",
-      "lesson": "**capability:** `run_cosmic_ray_mutation.py` (or a thin wrapper) should `git checkout` the configured `module-path` files on exit/interrupt (defensive restore via try/finally + signal handling), so a killed exec never leaves a mutated working tree. Candidate teeth → filed as a follow-up.",
-      "normalized_key": "capability run cosmic ray mutation py or a thin wrapper should git checkout the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-      "latest_source_date": "2026-05-31",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-          "date": "2026-05-31",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:555bf0ed7c82",
-      "kind": "next_improvement",
-      "lesson": "**memory:** persist the two transferable lessons (timeout-killed exec leaves a mutation; new pool file must clear both floors) into recent-lessons via this artifact.",
-      "normalized_key": "memory persist the two transferable lessons timeout killed exec leaves a mutation new pool",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-      "latest_source_date": "2026-05-31",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
-          "date": "2026-05-31",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:3d58258f9af6",
+      "kind": "current_focus",
+      "lesson": "The reviewed unit is the `v0.13.2` release push and the follow-up user correction that the release should have carried GitHub close keywords.",
+      "normalized_key": "the reviewed unit is the v0 13 2 release push and the follow up",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9ea536084d12",
+      "kind": "next_improvement",
+      "lesson": "Add a release preflight that fails or warns when recent goal or release artifacts mention resolved issue numbers but the publish payload has `close_issue_numbers: []`.",
+      "normalized_key": "add a release preflight that fails or warns when recent goal or release artifacts",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8a5e12202e05",
+      "kind": "next_improvement",
+      "lesson": "Before any release that follows a goal or issue-resolution tranche, build a short issue closeout matrix: `close`, `leave open`, `reason`, and map every `close` row to `--close-issue`.",
+      "normalized_key": "before any release that follows a goal or issue resolution tranche build a short",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:956f837c0df0",
+      "kind": "next_improvement",
+      "lesson": "Keep this retro as the recurrence marker for \"avoid-all-closeout\" overcorrection after a reviewer warns not to close some issues.",
+      "normalized_key": "keep this retro as the recurrence marker for avoid all closeout overcorrection after a",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fee69cca985c",
+      "kind": "next_improvement",
+      "lesson": "Teach the release critique packet to include an explicit \"issue closeout subset\" field, not just generic warnings about live issue mutation.",
+      "normalized_key": "teach the release critique packet to include an explicit issue closeout subset field not",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:89247ee6274b",
+      "kind": "repeat_trap",
+      "lesson": "The final answer claimed \"issue close was not requested\" even though the workflow expectation was that resolved issue closeout should be carried by the release commit.",
+      "normalized_key": "the final answer claimed issue close was not requested even though the workflow expectation",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:11c520b371b3",
+      "kind": "repeat_trap",
+      "lesson": "The release artifact briefly held stale `not_requested` state after live closeout had been repaired.",
+      "normalized_key": "the release artifact briefly held stale not requested state after live closeout had been",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:44588f8b9a4c",
+      "kind": "repeat_trap",
+      "lesson": "The release had to be repaired after publication, creating two extra commits and a trust hit.",
+      "normalized_key": "the release had to be repaired after publication creating two extra commits and a",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.14,
+      "selection_weight": 1.14,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss-draft.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:5bf706d26b6b",
       "kind": "current_focus",
