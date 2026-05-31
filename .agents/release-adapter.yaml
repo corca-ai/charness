@@ -30,7 +30,7 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.13.1 (maintenance patch: mutation-gate closeout hardening, staged commit gate prediction, Codex find-skills hook cleanup, and handoff/release evidence refresh).
+- Run `charness update` to pull 0.13.2 (maintenance patch: autonomous goal closeout hardening, survivor-test coordination guards, issue/achieve/gather validation floors, and release evidence refresh).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
 - HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
