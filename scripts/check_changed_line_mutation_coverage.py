@@ -42,6 +42,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_numbers,
+    changed_line_scope_gap_targets,
     classify_changed_line_scope_gap,
 )
 from scripts.mutation_sampling_lib import (  # noqa: E402
@@ -111,6 +112,14 @@ def main() -> int:
         statement_lines=statement_lines,
         coverage_enabled=True,
     )
+    blocking_targets = changed_line_scope_gap_targets(
+        repo_root=repo_root,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        changed_before_coverage=changed_before_coverage,
+        statement_lines=statement_lines,
+        coverage_enabled=True,
+    )
 
     blocking_detail: dict[str, object] = {}
     for path in blocking:
@@ -128,11 +137,27 @@ def main() -> int:
         "changed_pool_files": changed_before_coverage,
         "blocking": blocking,
         "blocking_detail": blocking_detail,
+        "blocking_targets": blocking_targets,
+        "targeted_mutant_proof": {
+            "required": bool(blocking),
+            "contract": (
+                "Before hand-mutating, cite/display one blocking_targets path:line "
+                "entry, mutate that exact line, record the failing test, then revert."
+            ),
+        },
     })
     if blocking:
+        missing_targets = sorted(set(blocking) - set(blocking_targets))
+        if missing_targets:
+            sys.stderr.write(
+                "changed-line blocker could not produce exact proof targets for: "
+                f"{', '.join(missing_targets)}\n"
+            )
         sys.stderr.write(
             f"\n{len(blocking)} changed file(s) have uncovered changed lines; the mutation gate "
-            "drops them before mutation (the #260 blocking signal). Cover the listed lines before merge.\n"
+            "drops them before mutation (the #260 blocking signal). Use blocking_targets to bind "
+            "manual mutant proof to the exact path:line before editing, then cover the listed lines "
+            "before merge.\n"
         )
         return 1
     return 0

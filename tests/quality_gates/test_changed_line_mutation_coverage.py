@@ -83,6 +83,12 @@ def test_flags_uncovered_changed_lines(tmp_path: Path) -> None:
     assert payload["ok"] is False
     assert "scripts/foo.py" in payload["blocking"]
     assert payload["blocking_detail"]["scripts/foo.py"]["changed_and_missing"] == [5, 6]
+    assert payload["blocking_targets"]["scripts/foo.py"] == [
+        {"line": 5, "source": "def b():"},
+        {"line": 6, "source": "return 2"},
+    ]
+    assert payload["targeted_mutant_proof"]["required"] is True
+    assert "mutate that exact line" in payload["targeted_mutant_proof"]["contract"]
 
 
 def test_passes_when_changed_lines_are_covered(tmp_path: Path) -> None:
@@ -108,6 +114,10 @@ def test_untracked_changed_file_blocks(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert "scripts/foo.py" in payload["blocking"]
     assert "not tracked" in str(payload["blocking_detail"]["scripts/foo.py"])
+    assert payload["blocking_targets"]["scripts/foo.py"] == [
+        {"line": 5, "source": "def b():"},
+        {"line": 6, "source": "return 2"},
+    ]
 
 
 def test_no_base_sha_is_non_blocking_by_construction(tmp_path: Path) -> None:

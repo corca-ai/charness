@@ -61,6 +61,126 @@ def classify_changed_line_scope_gap(
     return sorted(gaps)
 
 
+def changed_line_scope_gap_targets(
+    *,
+    repo_root: Path,
+    base_sha: str | None,
+    head_sha: str,
+    changed_before_coverage: list[str],
+    statement_lines: dict[str, tuple[set[int], set[int]]],
+    coverage_enabled: bool,
+) -> dict[str, list[dict[str, object]]]:
+    """Exact changed-line targets that make the scope-gap blocker fire.
+
+    Tracked files report changed lines that are also missing coverage. Untracked
+    files report all changed lines because the test suite observed none of the
+    file. The source text is included so manual targeted-mutant proof can bind
+    to a numbered gate target before editing similar nearby code.
+    """
+    if not coverage_enabled or not base_sha:
+        return {}
+    targets: dict[str, list[dict[str, object]]] = {}
+    for path in changed_before_coverage:
+        changed = changed_line_numbers(repo_root, base_sha, head_sha, path)
+        if not changed:
+            continue
+        if path not in statement_lines:
+            target_lines = changed
+        else:
+            _executed, missing = statement_lines[path]
+            target_lines = changed & missing
+        if target_lines:
+            entries = line_source_targets(repo_root, path, target_lines, ref=head_sha)
+            if entries:
+                targets[path] = entries
+    return dict(sorted(targets.items()))
+
+
+def classify_changed_sample_scope(
+    *,
+    repo_root: Path,
+    base_sha: str | None,
+    head_sha: str,
+    changed_before_coverage: list[str],
+    eligible: list[str],
+    coverage_eligible: list[str],
+    statement_lines: dict[str, tuple[set[int], set[int]]],
+    coverage_enabled: bool,
+) -> tuple[list[str], list[str], list[str], list[str], list[str], dict[str, list[dict[str, object]]]]:
+    changed = [path for path in changed_before_coverage if path in set(eligible)]
+    (
+        changed_files_excluded_by_file_coverage,
+        changed_files_excluded_by_mutation_line_coverage,
+        uncovered_changed_files,
+    ) = classify_changed_file_exclusions(
+        changed_before_coverage=changed_before_coverage,
+        coverage_eligible=coverage_eligible,
+        eligible=eligible,
+        coverage_enabled=coverage_enabled,
+    )
+    changed_line_uncovered_changed_files = classify_changed_line_scope_gap(
+        repo_root=repo_root,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        changed_before_coverage=changed_before_coverage,
+        statement_lines=statement_lines,
+        coverage_enabled=coverage_enabled,
+    )
+    changed_line_uncovered_changed_line_targets = changed_line_scope_gap_targets(
+        repo_root=repo_root,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        changed_before_coverage=changed_before_coverage,
+        statement_lines=statement_lines,
+        coverage_enabled=coverage_enabled,
+    )
+    return (
+        changed,
+        changed_files_excluded_by_file_coverage,
+        changed_files_excluded_by_mutation_line_coverage,
+        uncovered_changed_files,
+        changed_line_uncovered_changed_files,
+        changed_line_uncovered_changed_line_targets,
+    )
+
+
+def line_source_targets(
+    repo_root: Path,
+    path: str,
+    line_numbers: set[int],
+    ref: str | None = None,
+) -> list[dict[str, object]]:
+    """Return deterministic ``line`` + ``source`` entries for repo-relative path."""
+    source_lines = line_source_text(repo_root, path, ref)
+    entries: list[dict[str, object]] = []
+    for line_number in sorted(line_numbers):
+        source = source_lines[line_number - 1].strip() if 1 <= line_number <= len(source_lines) else ""
+        if not source:
+            continue
+        entries.append({"line": line_number, "source": source})
+    return entries
+
+
+def line_source_text(repo_root: Path, path: str, ref: str | None = None) -> list[str]:
+    if ref:
+        try:
+            result = subprocess.run(
+                ["git", "show", f"{ref}:{path}"],
+                cwd=repo_root,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            return []
+        return result.stdout.splitlines()
+    source_path = repo_root / path
+    try:
+        return source_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+
+
 def classify_changed_file_exclusions(
     *,
     changed_before_coverage: list[str],

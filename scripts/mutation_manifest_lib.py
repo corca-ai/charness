@@ -38,6 +38,7 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         f"- Changed pool files: {len(manifest.get('changed_files_before_coverage', manifest['changed_files']))}",
         f"- Changed eligible files after coverage/mutation-line filters: {len(manifest['changed_files'])}",
         f"- Changed files with uncovered changed lines (blocking): {len(manifest.get('changed_line_uncovered_changed_files', []))}",
+        f"- Changed-line proof targets: {_changed_line_target_count(manifest)}",
         f"- Changed files excluded by coverage/mutation-line filters (advisory union): {len(manifest.get('uncovered_changed_files', []))}",
         f"- Changed files excluded by file coverage floor: {len(manifest.get('changed_files_excluded_by_file_coverage', []))}",
         f"- Changed files excluded by mutation-line coverage: {len(manifest.get('changed_files_excluded_by_mutation_line_coverage', []))}",
@@ -51,6 +52,10 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
             [f"- `{path}`" for path in manifest.get("changed_line_uncovered_changed_files", [])]
             or ["(none)"]
         ),
+        "",
+        "## Changed-line proof targets",
+        "",
+        *(_changed_line_target_lines(manifest) or ["(none)"]),
         "",
         "## Changed files excluded by file coverage (advisory)",
         "",
@@ -128,6 +133,9 @@ def build_manifest_from_state(state: dict) -> dict:
         ],
         "uncovered_changed_files": state["uncovered_changed_files"],
         "changed_line_uncovered_changed_files": state["changed_line_uncovered_changed_files"],
+        "changed_line_uncovered_changed_line_targets": state.get(
+            "changed_line_uncovered_changed_line_targets", {}
+        ),
         "selection_excluded_changed_files": state["selection_excluded_changed_files"],
         "selection_excluded_fill_files": state["selection_excluded_fill_files"],
         "changed_files": state["changed"],
@@ -144,6 +152,34 @@ def _mutation_line_eligible_count(mutation_line_coverage: dict[str, dict[str, in
         for stats in mutation_line_coverage.values()
         if int(stats.get("mutable", 0)) > 0 and int(stats.get("uncovered", 0)) == 0
     )
+
+
+def _changed_line_target_count(manifest: dict) -> int:
+    targets = manifest.get("changed_line_uncovered_changed_line_targets", {})
+    if not isinstance(targets, dict):
+        return 0
+    return sum(len(entries) for entries in targets.values() if isinstance(entries, list))
+
+
+def _changed_line_target_lines(manifest: dict) -> list[str]:
+    targets = manifest.get("changed_line_uncovered_changed_line_targets", {})
+    if not isinstance(targets, dict):
+        return []
+    lines: list[str] = []
+    for path in sorted(targets):
+        entries = targets[path]
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            line = entry.get("line")
+            source = str(entry.get("source") or "")
+            if not isinstance(line, int):
+                continue
+            suffix = f" `{source}`" if source else ""
+            lines.append(f"- `{path}:{line}`{suffix}")
+    return lines
 
 
 def _build_pool_manifest(state: dict) -> dict[str, dict[str, int]]:

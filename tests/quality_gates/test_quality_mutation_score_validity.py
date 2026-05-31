@@ -434,6 +434,9 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
             {
                 "base_sha": "deadbeef",
                 "changed_line_uncovered_changed_files": ["scripts/changed.py"],
+                "changed_line_uncovered_changed_line_targets": {
+                    "scripts/changed.py": [{"line": 42, "source": "return value"}],
+                },
             }
         )
         + "\n",
@@ -470,6 +473,63 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
     assert "## Changed Files Excluded Before Mutation" in summary
     assert "### Uncovered changed lines" in summary
     assert "`scripts/changed.py`" in summary
+    assert "### Changed-line proof targets" in summary
+    assert "`scripts/changed.py:42 return value`" in summary
+
+
+def test_check_mutation_score_fails_changed_line_blocker_without_exact_targets(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    reports = tmp_path / "reports" / "mutation"
+    reports.mkdir(parents=True)
+    (reports / "sample.json").write_text(
+        json.dumps(
+            {
+                "base_sha": "deadbeef",
+                "changed_line_uncovered_changed_files": ["scripts/changed.py"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}])
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (reports / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: mutation sample manifest changed-line blockers missing exact proof targets" in summary
 
 
 def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(tmp_path: Path) -> None:

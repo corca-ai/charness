@@ -20,8 +20,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.mutation_changed_files_lib import (  # noqa: E402
-    classify_changed_file_exclusions,
-    classify_changed_line_scope_gap,
+    classify_changed_sample_scope,
 )
 from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
@@ -384,24 +383,25 @@ def main() -> int:
         report_no_eligible(coverage_enabled, test_command)
         return 1
     statement_lines = load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
-    all_eligible_set = set(all_eligible)
-    eligible_set = set(eligible)
     changed_before_coverage = [
-        path for path in list_changed(repo_root, base_sha or "", head_sha) if path in all_eligible_set
+        path for path in list_changed(repo_root, base_sha or "", head_sha) if path in set(all_eligible)
     ]
-    changed = [path for path in changed_before_coverage if path in eligible_set]
     (
+        changed,
         changed_files_excluded_by_file_coverage,
         changed_files_excluded_by_mutation_line_coverage,
         uncovered_changed_files,
-    ) = classify_changed_file_exclusions(
-        changed_before_coverage=changed_before_coverage, coverage_eligible=coverage_eligible,
-        eligible=eligible, coverage_enabled=coverage_enabled,
-    )
-    changed_line_uncovered_changed_files = classify_changed_line_scope_gap(
-        repo_root=repo_root, base_sha=base_sha, head_sha=head_sha,
+        changed_line_uncovered_changed_files,
+        changed_line_uncovered_changed_line_targets,
+    ) = classify_changed_sample_scope(
+        repo_root=repo_root,
+        base_sha=base_sha,
+        head_sha=head_sha,
         changed_before_coverage=changed_before_coverage,
-        statement_lines=statement_lines, coverage_enabled=coverage_enabled,
+        eligible=eligible,
+        coverage_eligible=coverage_eligible,
+        statement_lines=statement_lines,
+        coverage_enabled=coverage_enabled,
     )
 
     (

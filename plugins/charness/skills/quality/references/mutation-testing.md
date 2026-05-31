@@ -204,6 +204,12 @@ lines (not a floor/budget tweak). For a survived *format* mutant (e.g.
 `json.dumps(..., indent=2)`), assert on raw output, not a `json.loads`
 round-trip, which is indentation-agnostic.
 
+For manual targeted-mutant proof, bind the edit to the gate target before
+mutating. Use the changed-line helper or sample manifest's changed-line proof
+targets, cite/display the exact `path:line` and source text, mutate that exact
+line, record the failing test, and then revert. A file-level blocker alone is
+not enough proof when nearby returns or branches look similar.
+
 ## See Also
 
 - `adapter-contract.md` — full field list and types.
