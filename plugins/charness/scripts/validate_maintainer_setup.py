@@ -29,16 +29,30 @@ def resolve_hookspath(repo_root: Path, configured: str) -> Path:
     return (repo_root / path).resolve()
 
 
+def is_charness_source_repo(repo_root: Path) -> bool:
+    return (repo_root / "packaging" / "charness.json").is_file() and (repo_root / "plugins" / "charness").is_dir()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    expected_hook = repo_root / ".githooks" / "pre-push"
-    if not expected_hook.exists():
-        print("No checked-in pre-push hook to validate.")
+    hook_names = ["commit-msg"]
+    if is_charness_source_repo(repo_root):
+        hook_names = ["pre-commit", "commit-msg", "pre-push"]
+    expected_hooks = [repo_root / ".githooks" / name for name in hook_names]
+    present_hooks = [path for path in expected_hooks if path.exists()]
+    if not present_hooks:
+        print("No checked-in maintainer hooks to validate.")
         return 0
+    missing_hooks = [str(path.relative_to(repo_root)) for path in expected_hooks if not path.exists()]
+    if missing_hooks:
+        raise ValidationError(
+            "checked-in maintainer hook set is incomplete: "
+            + ", ".join(missing_hooks)
+        )
 
     worktree = run_git(repo_root, "rev-parse", "--is-inside-work-tree")
     if worktree.returncode != 0 or worktree.stdout.strip() != "true":
@@ -48,7 +62,7 @@ def main() -> int:
     configured = run_git(repo_root, "config", "--get", "core.hooksPath")
     if configured.returncode != 0 or not configured.stdout.strip():
         raise ValidationError(
-            "checked-in `.githooks/pre-push` is not active in this clone; run `./scripts/install-git-hooks.sh`"
+            "checked-in `.githooks` maintainer hooks are not active in this clone; run `./scripts/install-git-hooks.sh`"
         )
 
     configured_path = resolve_hookspath(repo_root, configured.stdout.strip())

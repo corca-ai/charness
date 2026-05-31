@@ -66,6 +66,9 @@ For direct-to-default work:
 
 - put explicit close keywords in the commit body, not only the transcript
 - include enough closeout context in that commit body for later issue readers
+- when staging an issue closeout artifact, the repo-owned `commit-msg` hook
+  blocks the commit unless the message body carries the same close keywords and
+  required closeout ledger fields
 - push first, then run `issue_tool.py verify-closeout` with
   `--carrier direct-commit`, `--commit-ref <ref>`, and
   `--expect-state CLOSED` so the carrier and GitHub state are both checked

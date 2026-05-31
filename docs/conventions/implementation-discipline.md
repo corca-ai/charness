@@ -70,5 +70,10 @@ the root instruction file but still apply to Charness maintenance work.
   post-commit at `validate_packaging_committed` (#257). Still stage the
   regenerated mirror (`git add plugins/ .claude-plugin/ .agents/plugins/`)
   alongside the source.
+- A commit-message gate (`check_issue_closeout_commit_msg.py`, wired in
+  `.githooks/commit-msg`) blocks commits that stage issue closeout artifacts
+  with `Close #N` keywords unless the final commit message carries those
+  keywords and the required closeout ledger. `pre-commit` cannot enforce this
+  because it does not see the final message.
 - Machine-local discovery output under `.agents/charness-discovery/` is not a
   checked-in surface; generated local stubs should not be committed as drift.

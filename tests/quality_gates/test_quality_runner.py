@@ -650,6 +650,8 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(ROOT / ".githooks" / "pre-commit", repo / ".githooks" / "pre-commit")
+    shutil.copy2(ROOT / ".githooks" / "commit-msg", repo / ".githooks" / "commit-msg")
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
 
@@ -672,12 +674,47 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     assert hookspath.stdout.strip() == str((repo / ".githooks").resolve())
 
 
+def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    consumer = tmp_path / "consumer"
+    (source / "scripts").mkdir(parents=True)
+    (consumer / ".git").mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh")
+    checker = source / "scripts" / "check_issue_closeout_commit_msg.py"
+    checker.write_text("#!/usr/bin/env python3\nprint('checker')\n", encoding="utf-8")
+    checker.chmod(0o755)
+    subprocess.run(["git", "init"], cwd=consumer, check=True, capture_output=True, text=True)
+
+    result = subprocess.run(
+        ["bash", str(source / "scripts" / "install-git-hooks.sh"), "--repo-root", str(consumer)],
+        cwd=consumer,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    hook = consumer / ".githooks" / "commit-msg"
+    assert hook.is_file()
+    assert str(checker) in hook.read_text(encoding="utf-8")
+    hookspath = subprocess.run(
+        ["git", "config", "--get", "core.hooksPath"],
+        cwd=consumer,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert hookspath.stdout.strip() == str((consumer / ".githooks").resolve())
+
+
 def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "validate_maintainer_setup.py", repo / "scripts" / "validate_maintainer_setup.py")
     shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(ROOT / ".githooks" / "pre-commit", repo / ".githooks" / "pre-commit")
+    shutil.copy2(ROOT / ".githooks" / "commit-msg", repo / ".githooks" / "commit-msg")
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
 
