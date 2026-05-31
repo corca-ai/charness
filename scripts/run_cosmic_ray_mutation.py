@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -129,6 +131,152 @@ def _dump_session(session: Path, dump_path: Path, repo_root: Path) -> int:
     return result.returncode
 
 
+def _read_module_paths(config: Path, repo_root: Path) -> list[Path]:
+    """Resolve the configured ``module-path`` files from the Cosmic Ray config.
+
+    The mutation sampler rewrites ``module-path`` in place, so the defensive
+    restore must read the *current* list rather than hardcode it. Returns the
+    resolved paths, or an empty list (restore degrades to a no-op) when no TOML
+    parser is available or the config cannot be parsed -- a missing parser or a
+    malformed config never breaks an otherwise-working run, and Cosmic Ray
+    surfaces a genuinely broken config itself.
+    """
+    try:
+        import tomllib as toml_reader  # Python 3.11+
+    except ModuleNotFoundError:
+        try:
+            import tomli as toml_reader  # 3.10 backport
+        except ModuleNotFoundError:
+            sys.stdout.write(
+                "no TOML parser (tomllib/tomli) available; "
+                "defensive module-path restore disabled\n"
+            )
+            sys.stdout.flush()
+            return []
+    try:
+        data = toml_reader.loads(config.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        sys.stdout.write(
+            f"could not parse {config} for module-path restore: {exc}\n"
+        )
+        sys.stdout.flush()
+        return []
+    raw = data.get("cosmic-ray", {}).get("module-path", [])
+    if isinstance(raw, str):
+        raw = [raw]
+    return [resolve(repo_root, Path(entry)) for entry in raw]
+
+
+def _restore_module_paths(module_paths: list[Path], repo_root: Path) -> None:
+    """Best-effort ``git checkout`` of the configured module-path files.
+
+    Cosmic Ray restores a mutated source only BETWEEN work units, so a kill
+    mid-unit (external ``timeout``/signal, the internal exec timeout, or a
+    worker crash) leaves the in-progress mutant applied in the working tree
+    (#262). Restoring the module-path files here guarantees a killed exec never
+    leaves a mutated source behind. Best-effort per file: a single failure
+    (file absent, ``git`` not on PATH) is logged and never masks the others or
+    the run's original exit code.
+    """
+    if not module_paths:
+        return
+    for path in module_paths:
+        try:
+            result = subprocess.run(
+                ["git", "checkout", "--", str(path)],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        except FileNotFoundError:
+            sys.stdout.write(
+                "git not found; skipping defensive module-path restore\n"
+            )
+            sys.stdout.flush()
+            return
+        if result.returncode != 0:
+            sys.stdout.write(
+                f"defensive restore of {path} exited {result.returncode}: "
+                f"{result.stderr.strip()}\n"
+            )
+            sys.stdout.flush()
+    sys.stdout.write(
+        f"defensively restored {len(module_paths)} module-path file(s)\n"
+    )
+    sys.stdout.flush()
+
+
+def _build_restore_handler(module_paths: list[Path], repo_root: Path):
+    """Build a SIGINT/SIGTERM handler that defensively restores module-path
+    files, then re-raises the signal so the wrapper still dies with
+    ``128+signum`` (defensive cleanup, not a swallowed signal)."""
+
+    def _handler(signum, frame):  # noqa: ANN001 - signal handler signature
+        _restore_module_paths(module_paths, repo_root)
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    return _handler
+
+
+def _install_restore_handlers(handler) -> dict:
+    """Install ``handler`` for SIGINT/SIGTERM; return the previous handlers so
+    the caller can reinstate them in a ``finally``."""
+    return {
+        signal.SIGINT: signal.signal(signal.SIGINT, handler),
+        signal.SIGTERM: signal.signal(signal.SIGTERM, handler),
+    }
+
+
+def _restore_signal_handlers(previous: dict) -> None:
+    for signum, handler in previous.items():
+        signal.signal(signum, handler)
+
+
+def _run_full_mode(
+    config: Path,
+    session: Path,
+    dump_path: Path,
+    timeout_marker: Path,
+    module_paths: list[Path],
+    repo_root: Path,
+    exec_timeout_seconds: int,
+) -> int:
+    """Execute mutants and dump results, defensively restoring the module-path
+    files on EVERY exec outcome (try/finally) AND on a wrapper interrupt
+    (SIGINT/SIGTERM handler) — Cosmic Ray restores a mutated source only between
+    work units, so a kill mid-unit otherwise leaves the tree mutated (#262).
+    Returns the exit code to propagate (0 = success)."""
+    handler = _build_restore_handler(module_paths, repo_root)
+    previous_handlers = _install_restore_handlers(handler)
+    try:
+        exec_timed_out, exec_returncode = _run_exec_with_timeout(
+            config, session, repo_root, exec_timeout_seconds
+        )
+        if exec_timed_out:
+            _write_timeout_marker(timeout_marker, exec_timeout_seconds)
+        dump_returncode = _dump_session(session, dump_path, repo_root)
+        if dump_returncode == 0:
+            sys.stdout.write(f"dump written to {dump_path}\n")
+        if exec_timed_out:
+            sys.stdout.write(
+                f"exec-timeout marker written to {timeout_marker}; "
+                "downstream summary will report partial-run status\n"
+            )
+        # Surface the exec crash to the caller AFTER the dump attempt so the
+        # downstream summary still has data to score. Dump failure is secondary
+        # signal; preserve the original exec failure if both fired.
+        if exec_returncode not in (0, -1):
+            return exec_returncode
+        if dump_returncode != 0:
+            return dump_returncode
+        return 0
+    finally:
+        _restore_module_paths(module_paths, repo_root)
+        _restore_signal_handlers(previous_handlers)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
@@ -168,6 +316,8 @@ def main() -> int:
         sys.stderr.write(f"Cosmic Ray config not found at {config}\n")
         return 2
 
+    module_paths = _read_module_paths(config, repo_root)
+
     session.parent.mkdir(parents=True, exist_ok=True)
     dump_path.parent.mkdir(parents=True, exist_ok=True)
     if session.exists():
@@ -193,27 +343,17 @@ def main() -> int:
                 filter_command.extend(["--coverage-json", str(coverage_json)])
             run(filter_command, repo_root)
         if args.mode == "full":
-            exec_timed_out, exec_returncode = _run_exec_with_timeout(
-                config, session, repo_root, args.exec_timeout_seconds
+            failure = _run_full_mode(
+                config,
+                session,
+                dump_path,
+                timeout_marker,
+                module_paths,
+                repo_root,
+                args.exec_timeout_seconds,
             )
-            if exec_timed_out:
-                _write_timeout_marker(timeout_marker, args.exec_timeout_seconds)
-            dump_returncode = _dump_session(session, dump_path, repo_root)
-            if dump_returncode == 0:
-                sys.stdout.write(f"dump written to {dump_path}\n")
-            if exec_timed_out:
-                sys.stdout.write(
-                    f"exec-timeout marker written to {timeout_marker}; "
-                    "downstream summary will report partial-run status\n"
-                )
-            # Surface the exec crash to the caller AFTER the dump attempt so
-            # the downstream summary still has data to score. Dump failure is
-            # secondary signal; preserve the original exec failure if both
-            # fired.
-            if exec_returncode not in (0, -1):
-                return exec_returncode
-            if dump_returncode != 0:
-                return dump_returncode
+            if failure:
+                return failure
         else:
             sys.stdout.write("dry-run complete after baseline and session init\n")
     except subprocess.CalledProcessError as exc:

@@ -146,6 +146,12 @@
       "evidence_terms": ["summary_skipped_reason"],
       "rationale": "Retro persistence records skipped summary refresh reasons in payload state."
     },
+    "scripts/run_cosmic_ray_mutation.py": {
+      "states": ["disabled"],
+      "visibility": ["local_noop_not_closeout", "stdout_attention"],
+      "evidence_terms": ["defensive module-path restore disabled"],
+      "rationale": "When no TOML parser (tomllib/tomli) is available the runner cannot read module-path, so the #262 defensive restore is disabled and degrades to a no-op while the mutation run itself proceeds unaffected. A runtime no-op, not a quality/release closeout signal; the message is written to stdout so the disabled safety net is visible rather than silent."
+    },
     "scripts/run_slice_closeout.py": {
       "states": ["disabled"],
       "visibility": ["terminal_payload"],
