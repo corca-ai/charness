@@ -8,6 +8,7 @@ single-file line gate, so the tests must not force a new re-export through it.
 from __future__ import annotations
 
 import importlib.util
+import types
 from pathlib import Path
 
 import pytest
@@ -72,6 +73,10 @@ def test_gather_trigger_is_scoped_to_context_sources() -> None:
     assert cf.gather_triggered(text) is False
 
 
+def test_gather_inert_when_context_sources_section_is_absent() -> None:
+    assert cf.gather_triggered("## Goal\n\nNo context-source section here.\n") is False
+
+
 def test_gather_trigger_ignores_fenced_url() -> None:
     text = "## Context Sources\n\n```\nhttps://example.com/in-a-fence\n```\n- local path only\n"
     assert cf.gather_triggered(text) is False
@@ -108,6 +113,12 @@ def test_release_trigger_excludes_coordination_cues_section() -> None:
 
 def test_release_trigger_ignores_fenced_token() -> None:
     assert cf.release_triggered("## Slice Log\n\n```\nbump_version.py\n```\n") is False
+
+
+def test_section_span_keeps_child_headings_inside_parent_body() -> None:
+    masked = cf._mask_fences("## Parent\nbody\n### Child\nchild body\n## Next\noutside\n")
+    start, end = cf._section_span(masked, "Parent")
+    assert masked[start:end] == "body\n### Child\nchild body\n"
 
 
 # --- step-line parsing (presence-only, line-anchored, opt-out min length) ---
@@ -462,6 +473,18 @@ def test_load_sibling_coordination_floors_raises_when_spec_missing(monkeypatch) 
         ce._load_sibling_coordination_floors()
 
 
+def test_loaders_fail_closed_when_spec_loader_is_missing(monkeypatch) -> None:
+    spec_without_loader = types.SimpleNamespace(loader=None)
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: spec_without_loader)
+
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        cga._load_skill_runtime_bootstrap()
+    with pytest.raises(ImportError, match="scripts/check_prescribed_skill_executed_lib.py not found"):
+        ce._load_shared_helper()
+    with pytest.raises(ImportError, match="goal_artifact_disposition.py not found"):
+        ce._load_sibling_disposition()
+
+
 # --- check_goal_artifact CLI surfaces an unsatisfied coordination floor -----
 #
 # `check_goal_artifact.py` is otherwise only ever run as a subprocess, so the
@@ -526,3 +549,18 @@ def test_check_goal_artifact_cli_refuses_complete_goal_with_unsatisfied_gather(
 
     assert rc == 1
     assert "coordination floors: gather step missing" in out
+
+
+def test_coordination_floors_missing_created_fails_closed_and_runs() -> None:
+    report = {"ok": True}
+    cf.apply_coordination_floors(
+        report,
+        "## Context Sources\n\n- https://example.com/spec\n\n"
+        "## Coordination Cues\n\nRouting: see find-skills\n",
+    )
+
+    assert report["coordination_scope"]["in_scope"] is True
+    assert report["coordination_scope"]["created"] is None
+    assert "fail-closed" in report["coordination_scope"]["reason"]
+    assert report["coordination_missing"][0]["floor"] == "gather"
+    assert report["ok"] is False

@@ -46,6 +46,39 @@ def _goal_with_context(context: str) -> str:
     )
 
 
+def _complete_goal(
+    *,
+    created: str,
+    slug: str,
+    final_verification: str,
+    activation_slug: str | None = None,
+) -> str:
+    sections = (
+        "## Goal\nx\n\n"
+        "## Non-Goals\nx\n\n"
+        "## Boundaries\nx\n\n"
+        "## User Acceptance\nx\n\n"
+        "## Agent Verification Plan\nx\n\n"
+        "## Slice Plan\nx\n\n"
+        "## Slice Log\nx\n\n"
+        "## Off-Goal Findings\nx\n\n"
+        "## User Verification Instructions\nx\n\n"
+        "## Auto-Retro\napplied: no deferred disposition remains\n\n"
+        "## Context Sources\nx\n\n"
+        "## Interview Decisions\nx\n\n"
+        "## Plan Critique Findings\nx\n"
+    )
+    activation = activation_slug or slug
+    return (
+        "# Achieve Goal: T\n\n"
+        "Status: complete\n"
+        f"Created: {created}\n"
+        f"Activation: `/goal @charness-artifacts/goals/{created}-{activation}.md`\n\n"
+        f"{sections}\n\n"
+        f"## Final Verification\n\n{final_verification}\n"
+    )
+
+
 def _init_git(repo: Path) -> str:
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(
@@ -163,3 +196,146 @@ def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path) 
     payload = json.loads(result.stdout)
     assert payload["head_freshness"]["ok"] is False
     assert "mutable HEAD freshness" in payload["issues"][-1]
+
+
+def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path) -> None:
+    ready_path = tmp_path / "ready.md"
+    ready_path.write_text("Status: active\n## Goal\nshaped\n", encoding="utf-8")
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(ready_path),
+        "--pursue-ready",
+    )
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["pursue_ready"] is True
+
+    unshaped_path = tmp_path / "unshaped.md"
+    unshaped_path.write_text(
+        "Status: draft\n## Goal\nto be filled by the achieve before-phase\n",
+        encoding="utf-8",
+    )
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(unshaped_path),
+        "--pursue-ready",
+    )
+    assert result.returncode == 1
+    assert json.loads(result.stdout)["pursue_ready"] is False
+
+
+def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path: Path) -> None:
+    missing = tmp_path / "missing.md"
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(missing),
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["issues"] == [f"goal artifact not found: {missing.resolve()}"]
+
+
+def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path) -> None:
+    created = "2026-05-29"
+    slug = "missing-evidence"
+    goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
+    goal_path.parent.mkdir(parents=True)
+    goal_path.write_text(
+        _complete_goal(
+            created=created,
+            slug=slug,
+            final_verification=(
+                f"Retro: charness-artifacts/retro/{created}-{slug}.md\n"
+                f"Host log probe: charness-artifacts/probe/{created}-{slug}.json\n"
+            ),
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal_path),
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert "missing files: retro_artifact, host_log_probe" in payload["issues"][-1]
+
+
+def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path) -> None:
+    created = "2026-05-29"
+    slug = "invalid-skips"
+    goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
+    goal_path.parent.mkdir(parents=True)
+    goal_path.write_text(
+        _complete_goal(
+            created=created,
+            slug=slug,
+            final_verification=(
+                "Retro: skipped: vague-host-limit\n"
+                "Host log probe: skipped: vague-host-limit\n"
+            ),
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal_path),
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert "invalid skips: retro_artifact, host_log_probe" in payload["issues"][-1]
+
+
+def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path) -> None:
+    created = "2026-05-29"
+    slug = "bind-cli"
+    retro = tmp_path / "charness-artifacts/retro/unrelated.md"
+    probe = tmp_path / "charness-artifacts/probe/unrelated.json"
+    retro.parent.mkdir(parents=True)
+    probe.parent.mkdir(parents=True)
+    retro.write_text("# Retro\n\n## Next Improvements\n\nnone\n", encoding="utf-8")
+    probe.write_text('{"host":"test"}\n', encoding="utf-8")
+    goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
+    goal_path.parent.mkdir(parents=True)
+    goal_path.write_text(
+        _complete_goal(
+            created=created,
+            slug=slug,
+            final_verification=(
+                "Retro: charness-artifacts/retro/unrelated.md\n"
+                "Host log probe: charness-artifacts/probe/unrelated.json\n"
+            ),
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal_path),
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert "evidence not bound to this goal: retro_artifact, host_log_probe" in payload["issues"][-1]

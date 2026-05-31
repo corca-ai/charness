@@ -213,6 +213,20 @@ def test_disposition_review_line_parsed_and_normalized() -> None:
     assert skip["disposition_review"]["kind"] == "skip"
 
 
+def test_derive_goal_tokens_keeps_slug_and_numeric_cluster() -> None:
+    assert ce.derive_goal_tokens(
+        "Activation: `/goal @charness-artifacts/goals/2026-05-31-261-coordination-cues.md`\n"
+    ) == ["261-coordination-cues", "261"]
+    assert ce.derive_goal_tokens(
+        "Activation: `/goal @charness-artifacts/goals/2026-05-31-261.md`\n"
+    ) == ["261"]
+
+
+def test_narration_sections_present_is_exact_and_case_insensitive() -> None:
+    retro = "# Retro\n\n## waste\n\nx\n\n## Other\n\nx\n\n## Next Improvements\n\n- x\n"
+    assert ce.narration_sections_present(retro) == ["Waste", "Next Improvements"]
+
+
 def test_in_scope_goal_refused_without_disposition_review_line(tmp_path: Path) -> None:
     created = "2026-05-30"
     _seed_evidence(tmp_path, created)
@@ -228,6 +242,69 @@ def test_in_scope_goal_flips_with_bound_disposition_review(tmp_path: Path) -> No
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, _FILLED, review_line=review_line))
     assert report["ok"] is True
     assert report["binding_failures"] == []
+
+
+def test_check_complete_evidence_surfaces_retro_narration_sections(tmp_path: Path) -> None:
+    created = "2026-05-30"
+    _seed(
+        tmp_path,
+        f"charness-artifacts/retro/{created}-{_SLUG}.md",
+        "# Retro\n\n## Waste\n\nnone\n\n## Critical Decisions\n\n- kept the gate\n",
+    )
+    _seed(tmp_path, f"charness-artifacts/probe/{created}-{_SLUG}.json", '{"host":"claude-code"}\n')
+    review_line = _seed_review(tmp_path, created)
+
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _build_goal(created, _FILLED, review_line=review_line),
+    )
+
+    assert report["ok"] is True
+    assert report["narration_required_sections"] == ["Waste", "Critical Decisions"]
+
+
+def test_check_complete_evidence_narration_skips_non_retro_evidence_first(
+    tmp_path: Path, monkeypatch
+) -> None:
+    retro = _seed(
+        tmp_path,
+        "charness-artifacts/retro/2026-05-29-loop-order.md",
+        "# Retro\n\n## Waste\n\nnone\n",
+    )
+    probe = _seed(tmp_path, "charness-artifacts/probe/2026-05-29-loop-order.json", '{"host":"test"}\n')
+
+    class FakeHelper:
+        @staticmethod
+        def check(**kwargs):
+            return {
+                "ok": True,
+                "missing": [],
+                "missing_evidence_files": [],
+                "invalid_skips": [],
+                "satisfied": [
+                    {"name": "host_log_probe", "via": "evidence", "path": str(probe)},
+                    {"name": "retro_artifact", "via": "evidence", "path": str(retro)},
+                ],
+            }
+
+        @staticmethod
+        def evidence_binds_to_context(path, *, tokens):
+            return True, "bound for test"
+
+    monkeypatch.setattr(ce, "_load_shared_helper", lambda: FakeHelper)
+    text = (
+        "# Achieve Goal: T\n\n"
+        "Created: 2026-05-29\n"
+        "Activation: `/goal @charness-artifacts/goals/2026-05-29-loop-order.md`\n\n"
+        "## Final Verification\n\n"
+        "Retro: charness-artifacts/retro/2026-05-29-loop-order.md\n"
+        "Host log probe: charness-artifacts/probe/2026-05-29-loop-order.json\n"
+        "## Auto-Retro\n\nx\n"
+    )
+
+    report = ce.check_complete_evidence(tmp_path, text)
+
+    assert report["narration_required_sections"] == ["Waste"]
 
 
 def test_disposition_review_host_blocked_skip_flips(tmp_path: Path) -> None:
