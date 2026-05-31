@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-05-30
+Date: 2026-05-31
 
 ## Scope
 
-Advanced `charness` toward release `0.13.0` (tag `v0.13.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.13.1` (tag `v0.13.1`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.12.0`
-- target version: `0.13.0`
+- previous version: `0.13.0`
+- target version: `0.13.1`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,19 +17,18 @@ Advanced `charness` toward release `0.13.0` (tag `v0.13.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.13.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.13.1`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
@@ -46,11 +45,7 @@ Advanced `charness` toward release `0.13.0` (tag `v0.13.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-05-30-release-v0.13.0-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.13.0`.
+- Review proof: `charness-artifacts/critique/2026-05-31-release-v0.13.1-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -58,12 +53,14 @@ Advanced `charness` toward release `0.13.0` (tag `v0.13.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.13.0 (achieve goal-doc coordination cues + auto-installed find-skills SessionStart hook; also the #253 improvement-disposition gate, #255 portability tightening, and the #256/#257 closeout-ergonomics gates landed since 0.12.0).
+- Run `charness update` to pull 0.13.1 (maintenance patch: mutation-gate closeout hardening, staged commit gate prediction, Codex find-skills hook cleanup, and handoff/release evidence refresh).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
+- No new manual migration is required beyond the normal `charness update` flow.
+- HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
 - AUTO-WIRE WIN (#244/#245) - `charness update` now AUTO-INSTALLS the find-skills SessionStart routing hook and dedups it by logical identity across checkouts. The manual user-level hook wiring required through 0.12.0 is no longer needed; if you hand-added one, you may remove the duplicate.
 - BEHAVIOR CHANGE (achieve coordination floors) - a goal `Created` on/after 2026-05-31 now needs a `## Coordination Cues` step before the `complete` flip - a `Gather:` line (or `Gather: n/a — <reason>`) when `## Context Sources` names an external URL/Slack/Notion/Docs source, and a `Release:` line (or `Release: n/a — <reason>`) when the run touched a release surface. Existing and older goals are grandfathered (unaffected). The floors are presence-only and ship with an explicit opt-out, so they never block a goal that records the step.
 - BEHAVIOR CHANGE (achieve disposition gate, #253) - a goal `Created` on/after 2026-05-30 also needs a non-blank `## Auto-Retro` and a bound `Disposition review:` line at `complete` (or a `host-blocked-subagent` skip), proving the closeout improvement-disposition review ran. Pre-rule goals are grandfathered.
