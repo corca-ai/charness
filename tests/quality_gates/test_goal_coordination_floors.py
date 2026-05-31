@@ -155,6 +155,44 @@ def test_parse_step_ignores_mid_line_inline_example() -> None:
     assert cf._parse_step(body, cf._GATHER_REF) == (None, None)
 
 
+# --- #261 Slice 3: bounded mutation-survivor hardening ----------------------
+# Targeted kills for the live, NON-equivalent survivors confirmed by per-mutant
+# ground-truthing of the coordination-cues trio. Each test was verified to fail
+# (kill) under its mutant and pass on clean code. The remaining ~survivors are
+# equivalent-by-construction (named below) or deferred to the follow-up triage.
+
+
+def test_section_span_body_starts_at_first_content_char() -> None:
+    """`body_start += 1` lands exactly on the first body char (just past the
+    heading line's newline). An off-by-one — `+= 2` drops the first char, `-= 1`
+    keeps the heading's newline — corrupts every downstream section-body scan."""
+    masked = cf._mask_fences("## H\nXfirst\nmore\n## Next\n")
+    start, end = cf._section_span(masked, "H")
+    assert masked[start:end] == "Xfirst\nmore\n"
+
+
+def test_classify_step_optout_floor_is_exactly_thirty_chars() -> None:
+    """The opt-out floor is exactly 30 visible chars (`MIN_OPTOUT_REASON`): a
+    30-char reason satisfies (`optout`), 29 does not (`optout_short`). Pinning the
+    literal kills both the `>=`→`>` operator mutant and the `30`→`31` constant
+    mutant (the latter via the explicit constant assertion)."""
+    assert cf.MIN_OPTOUT_REASON == 30  # the contract the kills below pin
+    at_floor = cf._classify_step("n/a — " + "x" * 30)
+    below_floor = cf._classify_step("n/a — " + "y" * 29)
+    assert at_floor == ("optout", "x" * 30)
+    assert below_floor[0] == "optout_short"
+
+
+def test_classify_step_optout_length_ignores_trailing_whitespace() -> None:
+    """The opt-out reason is stripped before its length is measured, so trailing
+    padding cannot smuggle a too-short reason past the floor. Dropping `.strip()`
+    would let the padded length (>= the floor) wrongly pass as `optout`."""
+    visible = "y" * (cf.MIN_OPTOUT_REASON - 1)  # one below the floor when stripped
+    kind, value = cf._classify_step(f"n/a — {visible}      ")
+    assert kind == "optout_short"
+    assert value == visible  # stored reason is the stripped form
+
+
 # --- template seed is inert (no false trigger / no false satisfy) -----------
 
 
