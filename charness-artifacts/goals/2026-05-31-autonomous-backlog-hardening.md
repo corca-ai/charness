@@ -1,6 +1,6 @@
 # Achieve Goal: Current autonomous hardening tranche
 
-Status: active
+Status: complete
 Created: 2026-05-31
 Activation: `/goal @charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`
 
@@ -367,8 +367,63 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- Equivalent-mutant classification and mutation-standard policy for #261/#265
+  remain intentionally unresolved; the mechanical survivor triage stopped after
+  killing clearly real survivors and recording residual non-claims.
+- Root script cite portability remains deferred as a separate install-surface
+  policy question if future public-skill portability work needs it.
+- Release manual issue closeout has a diagnostic sibling risk from #268 but was
+  not touched by this tranche.
+
 ## Final Verification
+
+Retro: charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md
+Host log probe: charness-artifacts/probe/2026-06-01-autonomous-backlog-hardening.json
+Disposition review: charness-artifacts/critique/2026-06-01-autonomous-backlog-hardening-disposition-review.md
+
+- PASS: Per-slice targeted gates recorded in the slice log for #268, #269,
+  #264, #270, and #265/#261.
+- PASS: final #265/#261 scoped Cosmic Ray inventory: 514/514 executed; 467
+  killed, 47 survived; score 90.9%; remaining survivors recorded as
+  equivalent/low-value or policy-bound non-claims.
+- PASS: `python3 scripts/run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review` (latest slice closeout completed; usage episode
+  `slice-closeout-db1a3456459d4c75ba1cee4deb20271d`).
+- PASS: final artifact closeout `python3 scripts/run_slice_closeout.py
+  --repo-root . --ack-cautilus-skill-review` after complete flip (completed;
+  usage episode `slice-closeout-cd762436aa9a4803829e56f1859110e5`; Cautilus
+  planner reported `next_action: none`).
+- PASS: `python3 skills/public/achieve/scripts/check_goal_artifact.py
+  --repo-root . --goal-path
+  charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` while
+  active.
+- PASS: `./scripts/check-markdown.sh` and `python3 scripts/check_doc_links.py
+  --repo-root .` after final evidence text updates.
+- Not run: remote CI, push, release, live GitHub issue closure, or live GitHub
+  issue body/comment mutation.
 
 ## User Verification Instructions
 
+1. Inspect the local commits with `git log --oneline origin/main..HEAD`.
+2. Re-run `python3 scripts/run_slice_closeout.py --repo-root .
+   --ack-cautilus-skill-review` for the same broad local closeout gate.
+3. Re-run the #265/#261 scoped mutation config from
+   `reports/mutation/coordination-cues.toml` if you need to reproduce the
+   survivor inventory; the report outputs under `reports/mutation/` are ignored
+   and not part of the commit.
+4. Push or close/comment on GitHub issues only as a maintainer action; this goal
+   intentionally did not mutate live GitHub state.
+
 ## Auto-Retro
+
+Retro dispositions:
+
+- workflow improvement applied: Survivor triage now records the bucket boundary
+  in the slice log and final non-claims instead of implying the remaining
+  equivalent/low-value mutants are closed.
+- capability improvement deferred: A standalone scoped survivor inventory helper
+  would reduce ad hoc parsing and repeated reruns, but it is a new tool surface
+  outside this goal's closed tranche.
+- memory improvement applied: The retro and goal log record that scoped mutation
+  score output can be inventory proof even when the normal scheduled-gate
+  wrapper reports failure due to missing sample-manifest context.
