@@ -32,6 +32,8 @@ _slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_clos
 emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
+_staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
+run_predict_commit = _staged_commit_gate_plan.run_predict_commit
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
 
@@ -343,7 +345,7 @@ def _advise_staged_reversion(repo_root: Path) -> None:
         )
 
 
-def main() -> int:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--surfaces-path", type=Path, default=SURFACES_PATH)
@@ -365,9 +367,27 @@ def main() -> int:
         action="store_true",
         help="Proceed even when changed files are not covered by the surfaces manifest.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--predict-commit",
+        action="store_true",
+        help="Run the same staged-path pre-commit command plan consumed by .githooks/pre-commit.",
+    )
+    return parser
 
+
+def main() -> int:
+    args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
+    if args.predict_commit:
+        return run_predict_commit(
+            repo_root,
+            paths=args.paths,
+            as_json=args.json,
+            plan_only=args.plan_only,
+            run_command=run_command,
+            emit_payload=_emit_payload,
+        )
+
     _advise_staged_reversion(repo_root)
     manifest = load_surfaces(repo_root, surfaces_path=args.surfaces_path)
     assert manifest is not None

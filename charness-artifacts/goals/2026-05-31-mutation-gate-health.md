@@ -1,6 +1,6 @@
 # Achieve Goal: Mutation-gate health — cover #267 host-hook changed-line gap, honest slice closeouts (#266), verify/stage cluster closure
 
-Status: draft
+Status: active
 Created: 2026-05-31
 Activation: `/goal @charness-artifacts/goals/2026-05-31-mutation-gate-health.md`
 
@@ -149,11 +149,25 @@ Context: `origin/main` is `6d85aec`; HEAD is 5 unpushed commits ahead
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | #266: introduce a shared staged-path→`(label, argv)` selection module; give `run_slice_closeout` a `--predict-commit` mode that uses it, and refactor `.githooks/pre-commit` to consume the same module (B3) | Folded in first (user): slices 2-3 stage `.py`/test changes that fire the gates the cluster run missed; honest closeout removes the false-green retry tax for the rest of this goal | Synthetic length/attention violation caught pre-commit by predict-commit (RED→fix→GREEN); hook + aggregate provably share one selection (same command plan for a staged set); targeted tests green | planned |
+| 1 | #266: introduce a shared staged-path→`(label, argv)` selection module; give `run_slice_closeout` a `--predict-commit` mode that uses it, and refactor `.githooks/pre-commit` to consume the same module (B3) | Folded in first (user): slices 2-3 stage `.py`/test changes that fire the gates the cluster run missed; honest closeout removes the false-green retry tax for the rest of this goal | Synthetic length/attention violation caught pre-commit by predict-commit (RED→fix→GREEN); hook + aggregate provably share one selection (same command plan for a staged set); targeted tests green | completed |
 | 2 | Next-run gate health: run the changed-line gate over the real next-run range `6d85aec..dad2d01` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes; the cluster's own +160-line growth is the real risk | Gate 0-blocking over `6d85aec..dad2d01`; any uncovered changed line covered + mutation-proven | planned |
 | 3 | #267 debt: enumerate the genuine `changed_and_missing` lines over `9ee91ff..dad2d01` for the two host-hook files, cover only those, mutation-prove | Honest closure of the gap #267 flagged so it cannot re-block when these files are next touched (they are out of next-run scope, so this is debt, not the next-run fix) | Gate 0-blocking for both files over `9ee91ff..dad2d01`; each new test kills its target mutant; no duplication blowup vs the 194-line reconcile test | planned |
 
 ## Slice Log
+
+### Slice 1: Slice 1 (#266 shared staged commit gate)
+
+- Objective: Eliminate divergence between .githooks/pre-commit and run_slice_closeout by routing staged-path command selection through one shared planner and exposing run_slice_closeout --predict-commit.
+- Why this approach: The rest of this goal stages Python/test changes; a green aggregate must predict the commit hook instead of missing check_python_lengths and validate_attention_state_visibility.
+- Commits:
+- What changed: Added scripts/staged_commit_gate_plan.py and synced plugins/charness/scripts/staged_commit_gate_plan.py; refactored .githooks/pre-commit to delegate to run_slice_closeout --predict-commit; added predict-commit execution in run_slice_closeout; added repo-python surface commands for check_python_lengths and validate_attention_state_visibility; added tests for planner parity, length failure, attention failure, and clean staged Python.
+- Alternatives rejected:
+- Targeted verification: PASS: pytest -q tests/quality_gates/test_staged_commit_gate_plan.py (5 passed); PASS: real staged python3 scripts/run_slice_closeout.py --repo-root . --predict-commit --json; PASS: python3 scripts/run_slice_closeout.py --repo-root . (packaging, surfaces, integrations, maintainer setup, full ruff, full length gate, attention visibility, broad pytest, agent-browser hygiene).
+- Test duplication pressure: Added one focused 119-line quality gate test file. check_python_lengths passes; run_slice_closeout.py is advisory-near-limit at 465/480 and should be trimmed in a later structural cleanup, not expanded further.
+- Critique: bounded fresh-eye review executed (`parent-delegated`): no blockers; proof aligned. Follow-up risk addressed in-session by using one captured staged path list for both the plan and payload; remaining non-blocking import-risk note accepted (hook enters through `run_slice_closeout.py`, so future import-time closeout helper failures could affect commit).
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Off-Goal Findings
 
