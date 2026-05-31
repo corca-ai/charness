@@ -3,8 +3,8 @@
 ## Workflow Trigger
 
 - Pickup = `charness:find-skills` → **invoke `charness:handoff`**. A bare
-  `/handoff` now fires chunked routing too (#249), and the chunker unions the
-  **live open-issue backlog** with the entries below — so this list is a
+  `/handoff` fires chunked routing (#249); the chunker unions the **live
+  open-issue backlog** with the list below, so `## Next Session` is a
   curation/sequencing memo, not the full queue. Then read
   [quality latest](../charness-artifacts/quality/latest.md) +
   [recent lessons](../charness-artifacts/retro/recent-lessons.md).
@@ -16,41 +16,41 @@
 
 ## Current State
 
-- **`main` PUSHED + synced; v0.13.0 RELEASED** (tag `v0.13.0`, GitHub release
-  public-verified). Ships the coordination-cues achieve feature + accumulated
-  since-0.12.0 work (#253 disposition gate, #255 portability, #256/#257 closeout
-  gates, #251 mutation, #232, #244/#245 SessionStart hook auto-install) — all
-  CLOSED. Per-item detail lives in the release notes + each goal/retro artifact.
-- **achieve goal-doc coordination cues SHIPPED** (goal
-  [`2026-05-30-coordination-cues`](../charness-artifacts/goals/2026-05-30-coordination-cues-find-skills-routing.md)):
-  a `## Coordination Cues` find-skills routing carrier + gather/release
-  presence-only closeout floors in `goal_artifact_coordination_floors.py`,
-  grandfathered `Created >= 2026-05-31`.
-- **v0.13.0 real-host (clean-machine) proof — maintainer-attested DONE**
-  ([proof artifact](../charness-artifacts/release/2026-05-30-v0.13.0-real-host-proof.md)).
-  Clears the long-carried "real-host proof pending" item; raw `--json` not
-  captured in-session (attestation, not agent-captured record).
+- **`main` PUSHED + synced** (origin/main == HEAD). Release line still
+  **v0.13.0** (no new release this session).
+- **#250 CLOSED this session** (`22597e8`): vendored `handoff` skill no longer
+  cites author-repo-internal files with bare `<repo-root>/`/`docs/` notation
+  that dangles downstream. Narrow handoff-package-only slice (a first
+  flag-everything attempt that marker-spammed operator surfaces was reverted).
+  Critique: [closeout artifact](../charness-artifacts/critique/2026-05-31-250-handoff-portability-closeout.md).
+- **#264 FILED** (follow-up to #250): build the precise portability guard in the
+  skill-portability lib (author-only doc/test cites, with operator-surface
+  allowlist + marker escape hatch), sweep the same-class cross-skill cites, and
+  add the rule sentence to the portable-authoring reference. The discriminator
+  and allowlist are spelled out in the issue body.
 
 ## Next Session
 
-> A bare `/handoff` unions the tracker — so chunk the live backlog rather than
-> trusting this list. This memo carries only cross-issue judgment.
+> Chunk the live backlog rather than trusting this list verbatim.
 
-1. **Backlog** (push/#253/#255/#244/#245/real-host all DONE): #243
-   (usage-episodes consumer/report gap), #242/#219 (mutation), #233, #241,
-   #237/#236, #184/#185, and this session's off-goal finds #258/#259.
-2. Optional: upgrade the v0.13.0 real-host attestation to captured `--json`
-   evidence if a stronger durable record is wanted.
+1. **1순위 (planned, not started): mutation cluster as an `achieve` goal** —
+   #262 (cosmic-ray module-path restore on exit/interrupt), then #261 (latent
+   coordination-cues survivors), #219 (mutation regression on main).
+2. **#264** — portability guard + cross-skill cite sweep (the deferred half of
+   #250). Cheap, well-scoped; the discriminator/allowlist live in the issue body.
+3. Other open: #259, #258, #252, #243, #241, #237, #236, #185, #184.
 
 ## Discuss
 
 - **Issue-source non-gh path is unproven live** (stub-tested only). If a non-gh
   host adopts charness, exercise the `issue_backend.commands.list_open` override
-  before trusting the backlog union there. Full session waste / decisions:
-  [closeout retro](../charness-artifacts/retro/2026-05-29-249-248-handoff-chunker-v2-closeout.md).
+  before trusting the backlog union there.
+- This session hit the #258 echo-flood trap again (batched tool calls under
+  delayed output → cascade cancels). Prefer serial tool calls when output
+  latency is unstable.
 
 ## References
 
-- [quality posture](../charness-artifacts/quality/latest.md),
-  [chunker contract](./handoff-chunked-routing.md),
-  [release latest](../charness-artifacts/release/latest.md)
+- [quality latest](../charness-artifacts/quality/latest.md),
+  [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [#264](https://github.com/corca-ai/charness/issues/264) (follow-up scope + allowlist)
