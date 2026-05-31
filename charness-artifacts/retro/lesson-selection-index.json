@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-31",
-  "source_artifact_count": 90,
-  "candidate_count": 563,
+  "source_artifact_count": 91,
+  "candidate_count": 566,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:1a80b5106758",
+      "kind": "current_focus",
+      "lesson": "Active achieve goal `charness-artifacts/goals/2026-05-31-mutation-gate-health.md`: align slice closeout with commit hooks (#266), prove current next-run mutation changed-line health, close #267 host-hook debt, and verify #262/#219 cluster closure while leaving #261 open for #265.",
+      "normalized_key": "active achieve goal charness artifacts goals 2026 05 31 mutation gate health md align",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+          "date": "2026-05-31",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:3a373250cbd2",
       "kind": "current_focus",
@@ -155,6 +175,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:089c91d761b6",
+      "kind": "repeat_trap",
+      "lesson": "Hand-mutant probing briefly hit the wrong return site before the exact gate-reported line was mutated; this was caught by inspecting the diff, but it cost an avoidable mini-loop.",
+      "normalized_key": "hand mutant probing briefly hit the wrong return site before the exact gate reported",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3ce37eddfc18",
       "kind": "repeat_trap",
       "lesson": "**Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was \"wait for the async job\"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications.",
@@ -169,6 +209,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d385536a5cfd",
+      "kind": "repeat_trap",
+      "lesson": "The goal artifact kept stale intermediate SHA wording (`0707515`, `a77f49b`) after later amendments, and fresh-eye reviewers had to catch it twice. The code work was sound, but the narrative current-state pointer lagged the real git state.",
+      "normalized_key": "the goal artifact kept stale intermediate sha wording 0707515 a77f49b after later amendments and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
           "date": "2026-05-31",
           "section": "Waste"
         }
@@ -193,14 +253,16 @@
           "section": "Waste"
         }
       ]
-    },
+    }
+  ],
+  "candidates": [
     {
-      "candidate_id": "repeat_trap:1d6fbeab15f9",
-      "kind": "repeat_trap",
-      "lesson": "**Two serial pre-commit gate rejections on slice 1.** `run_slice_closeout` (the aggregate the lifecycle calls \"the verify step before a commit\") passed, then the commit was rejected by `check-python-lengths` (per-function) and then `validate-attention-state-visibility` — gates the aggregate had not run. The green aggregate gave false confidence; ~2 fix-retry cycles. This is the recurrence the lifecycle's \"run the aggregate to surface all gates at once\" rule targets, except here the aggregate itself is not a superset of the commit hook. Filed as **#266**.",
-      "normalized_key": "two serial pre commit gate rejections on slice 1 run slice closeout the aggregate",
+      "candidate_id": "current_focus:1a80b5106758",
+      "kind": "current_focus",
+      "lesson": "Active achieve goal `charness-artifacts/goals/2026-05-31-mutation-gate-health.md`: align slice closeout with commit hooks (#266), prove current next-run mutation changed-line health, close #267 host-hook debt, and verify #262/#219 cluster closure while leaving #261 open for #265.",
+      "normalized_key": "active achieve goal charness artifacts goals 2026 05 31 mutation gate health md align",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
       "latest_source_date": "2026-05-31",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -208,54 +270,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
           "date": "2026-05-31",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:8a02e68cef31",
-      "kind": "current_focus",
-      "lesson": "`achieve` run for goal #258 (block review/critique subagents from corrupting the parent worktree git index).",
-      "normalized_key": "achieve run for goal 258 block review critique subagents from corrupting the parent worktree",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-258-staged-reversion-echo-flood.md",
-          "date": "2026-05-30",
           "section": "Context"
         }
       ]
     },
-    {
-      "candidate_id": "current_focus:8622e1054005",
-      "kind": "current_focus",
-      "lesson": "Closeout of the achieve goal *Goal-doc coordination cues: route via find-skills + gather/release floors* (commit `f55be70`).",
-      "normalized_key": "closeout of the achieve goal goal doc coordination cues route via find skills gather",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
-      "latest_source_date": "2026-05-30",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-30-coordination-cues-find-skills-routing.md",
-          "date": "2026-05-30",
-          "section": "Context"
-        }
-      ]
-    }
-  ],
-  "candidates": [
     {
       "candidate_id": "current_focus:3a373250cbd2",
       "kind": "current_focus",
@@ -397,6 +417,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:089c91d761b6",
+      "kind": "repeat_trap",
+      "lesson": "Hand-mutant probing briefly hit the wrong return site before the exact gate-reported line was mutated; this was caught by inspecting the diff, but it cost an avoidable mini-loop.",
+      "normalized_key": "hand mutant probing briefly hit the wrong return site before the exact gate reported",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3ce37eddfc18",
       "kind": "repeat_trap",
       "lesson": "**Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was \"wait for the async job\"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications.",
@@ -411,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md",
+          "date": "2026-05-31",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d385536a5cfd",
+      "kind": "repeat_trap",
+      "lesson": "The goal artifact kept stale intermediate SHA wording (`0707515`, `a77f49b`) after later amendments, and fresh-eye reviewers had to catch it twice. The code work was sound, but the narrative current-state pointer lagged the real git state.",
+      "normalized_key": "the goal artifact kept stale intermediate sha wording 0707515 a77f49b after later amendments and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
+      "latest_source_date": "2026-05-31",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-31-mutation-gate-health.md",
           "date": "2026-05-31",
           "section": "Waste"
         }

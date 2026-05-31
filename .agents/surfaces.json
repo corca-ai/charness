@@ -404,6 +404,21 @@
       ]
     },
     {
+      "surface_id": "probe-artifacts",
+      "description": "Checked-in host/runtime probe JSON artifacts used as closeout evidence.",
+      "source_paths": [
+        "charness-artifacts/probe/*.json"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done"
+      ],
+      "notes": [
+        "Probe artifacts stay machine-readable and bind to the goal, issue, or release that cites them."
+      ]
+    },
+    {
       "surface_id": "cautilus-chatbot-proposals",
       "description": "Checked-in long-context chatbot proposal packets and their current-pointer artifacts.",
       "source_paths": [

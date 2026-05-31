@@ -16,29 +16,35 @@
 
 ## Current State
 
-- **`main` PUSHED + synced** (origin/main == HEAD). Release line still
-  **v0.13.0** (no new release this session).
-- **#250 CLOSED this session** (`22597e8`): vendored `handoff` skill no longer
-  cites author-repo-internal files with bare `<repo-root>/`/`docs/` notation
-  that dangles downstream. Narrow handoff-package-only slice (a first
-  flag-everything attempt that marker-spammed operator surfaces was reverted).
-  Critique: [closeout artifact](../charness-artifacts/critique/2026-05-31-250-handoff-portability-closeout.md).
-- **#264 FILED** (follow-up to #250): build the precise portability guard in the
-  skill-portability lib (author-only doc/test cites, with operator-surface
-  allowlist + marker escape hatch), sweep the same-class cross-skill cites, and
-  add the rule sentence to the portable-authoring reference. The discriminator
-  and allowlist are spelled out in the issue body.
+- **`main` local ahead of `origin/main`; not pushed.** The mutation-gate-health
+  achieve goal is complete locally. Final closeout is staged in the branch
+  history: #266 was closed by the staged-hook/predict-commit fix, and the final
+  closeout commit closes #262, #219, and #267 while intentionally leaving #261
+  open for #265.
+- **Mutation gate proof complete locally:** the current next-run changed-line
+  range `6d85aec..HEAD` ended with `blocking=[]`; host-hook debt over
+  `9ee91ff..HEAD` also ended with `blocking=[]`; no push or live GitHub Actions
+  mutation run has been performed.
+- **New follow-ups filed from retro:** #269 guards achieve artifacts against
+  stale mutable-HEAD SHA wording; #270 binds targeted mutant proof to exact
+  gate-reported lines before mutation.
+- Release line still **v0.13.0** (no release this session).
+- **#264 remains the next curated implementation chunk** (follow-up to #250):
+  build the precise portability guard in the skill-portability lib
+  (author-only doc/test cites, with operator-surface allowlist + marker escape
+  hatch), sweep the same-class cross-skill cites, and add the rule sentence to
+  the portable-authoring reference.
 
 ## Next Session
 
 > Chunk the live backlog rather than trusting this list verbatim.
 
-1. **1순위 (planned, not started): mutation cluster as an `achieve` goal** —
-   #262 (cosmic-ray module-path restore on exit/interrupt), then #261 (latent
-   coordination-cues survivors), #219 (mutation regression on main).
-2. **#264** — portability guard + cross-skill cite sweep (the deferred half of
+1. **#264** — portability guard + cross-skill cite sweep (the deferred half of
    #250). Cheap, well-scoped; the discriminator/allowlist live in the issue body.
-3. Other open: #259, #258, #252, #243, #241, #237, #236, #185, #184.
+2. **#265 / #261** — residual exhaustive survivor triage and gate-design
+   decision; deliberately left open by the mutation-gate-health closeout.
+3. **#269 / #270** — small process-hardening follow-ups from the latest retro.
+4. Other open: #259, #258, #252, #243, #241, #237, #236, #185, #184.
 
 ## Discuss
 
@@ -54,3 +60,4 @@
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [#264](https://github.com/corca-ai/charness/issues/264) (follow-up scope + allowlist)
+- [mutation-gate-health goal](../charness-artifacts/goals/2026-05-31-mutation-gate-health.md)

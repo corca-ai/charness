@@ -1,6 +1,6 @@
 # Achieve Goal: Mutation-gate health — cover #267 host-hook changed-line gap, honest slice closeouts (#266), verify/stage cluster closure
 
-Status: active
+Status: complete
 Created: 2026-05-31
 Activation: `/goal @charness-artifacts/goals/2026-05-31-mutation-gate-health.md`
 
@@ -17,8 +17,8 @@ own slice closeouts honest. **The plan-critique corrected the original premise**
 (B1): the scheduled CI resolves the changed-line base as the *head of the most
 recent prior completed run* (`.github/workflows/mutation-tests.yml` ~L141).
 During this goal, slice 1 advanced the unpushed HEAD beyond the original
-`dad2d01` premise, so the current next run scopes **`6d85aec..0707515`**. That
-range contains `scripts/run_cosmic_ray_mutation.py`,
+`dad2d01` premise, so the current next run scopes **`6d85aec..HEAD`**. The
+changed mutation-pool files in that range are `scripts/run_cosmic_ray_mutation.py`,
 `scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py`, and
 does **not** contain the two host-hook files #267 originally flagged — they
 leave next-run scope on their own.
@@ -30,7 +30,7 @@ leave next-run scope on their own.
    Without it, every slice below that stages `.py`/test changes re-hits the
    cluster run's false-green fix-retry waste.
 2. **Next-run gate health (slice 2):** verify the *actual* current next-run
-   range `6d85aec..0707515` has no uncovered changed lines across its changed
+   range `6d85aec..HEAD` has no uncovered changed lines across its changed
    mutation-pool files; cover any gap so this goal's own fixes do not become the
    next "regression on main." This is the load-bearing recurrence-prevention
    work.
@@ -44,8 +44,8 @@ leave next-run scope on their own.
    are intact and stage their issue closure; leave #261 open (residual triage
    tracked by #265).
 
-Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
-(`0707515`) after slices 1-2.
+Context: `origin/main` is `6d85aec`; HEAD is 10 unpushed commits ahead after
+slices 1-3 (`34d8014` before the final artifact-only closeout commit).
 
 ## Non-Goals
 
@@ -71,7 +71,7 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 - **In scope (slice 2 — next-run health):** `scripts/run_cosmic_ray_mutation.py`,
   `scripts/run_slice_closeout.py`, `scripts/staged_commit_gate_plan.py` (the
   changed mutation-pool files in the real current next-run range
-  `6d85aec..0707515`) and any tests needed to cover their uncovered changed
+  `6d85aec..HEAD`) and any tests needed to cover their uncovered changed
   lines.
 - **In scope (#267 debt, slice 3):** `scripts/host_hook_codex_toml_lib.py`,
   `scripts/host_hook_find_skills.py` (`axis: host` — Codex host-adapter
@@ -93,7 +93,7 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 
 ## User Acceptance
 
-- The **actual current next-scheduled-run range `6d85aec..0707515`** has no
+- The **actual current next-scheduled-run range `6d85aec..HEAD`** has no
   uncovered changed lines when the changed-line gate is run locally over that
   exact range (`scripts/run_cosmic_ray_mutation.py`,
   `scripts/run_slice_closeout.py`, `scripts/staged_commit_gate_plan.py`) — so the
@@ -125,7 +125,7 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
     changed files. Assert the hook and aggregate resolve the **same** command
     plan for a given staged set (one implementation).
   - Slice 2 (next-run health): run the changed-line gate over the **real current
-    next-run range** `--base-sha 6d85aec --head-sha HEAD` (HEAD=`0707515`) with
+    next-run range** `--base-sha 6d85aec --head-sha HEAD` with
     **freshly generated coverage** (not the stale
     `reports/mutation/test-coverage.json`, B2); expect 0 blocking for
     `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and
@@ -160,8 +160,9 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | #266: introduce a shared staged-path→`(label, argv)` selection module; give `run_slice_closeout` a `--predict-commit` mode that uses it, and refactor `.githooks/pre-commit` to consume the same module (B3) | Folded in first (user): slices 2-3 stage `.py`/test changes that fire the gates the cluster run missed; honest closeout removes the false-green retry tax for the rest of this goal | Synthetic length/attention violation caught pre-commit by predict-commit (RED→fix→GREEN); hook + aggregate provably share one selection (same command plan for a staged set); targeted tests green | completed |
-| 2 | Next-run gate health: run the changed-line gate over the real current next-run range `6d85aec..0707515` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes after slice 1 advanced HEAD; this goal's own new Python surface is also part of the risk | Gate 0-blocking over `6d85aec..0707515`; any uncovered changed line covered + mutation-proven | completed |
+| 2 | Next-run gate health: run the changed-line gate over the real current next-run range `6d85aec..HEAD` (fresh coverage); confirm/cover `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and `scripts/staged_commit_gate_plan.py` | The load-bearing recurrence-prevention work (B1): this is what the next scheduled run actually scopes after slice 1 advanced HEAD; this goal's own new Python surface is also part of the risk | Gate 0-blocking over `6d85aec..HEAD`; any uncovered changed line covered + mutation-proven | completed |
 | 3 | #267 debt: enumerate the genuine `changed_and_missing` lines over `9ee91ff..HEAD` for the two host-hook files, cover only those, mutation-prove | Honest closure of the gap #267 flagged so it cannot re-block when these files are next touched (they are out of next-run scope, so this is debt, not the next-run fix) | Gate 0-blocking for both files over `9ee91ff..HEAD`; each new test kills its target mutant; no duplication blowup vs the reconcile test | completed |
+| 4 | Cluster closure verification: verify #262/#219 fixes remain intact, leave #261 open for #265, stage issue-close disposition | The current goal closes the cluster after proving gate health; this must verify rather than redo the earlier cluster work | Runner restore tests, RCA ledger validator/tests, and coordination-floor tests green; closure disposition recorded | completed |
 
 ## Slice Log
 
@@ -181,14 +182,14 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 
 ### Slice 2: Slice 2 (current next-run changed-line health)
 
-- Objective: Verify and cover the actual current next scheduled mutation range after slice-1 commits: 6d85aec..0707515.
+- Objective: Verify and cover the actual current next scheduled mutation range after slice-1 commits: `6d85aec..HEAD`.
 - Why this approach: Slice 1 changed the unpushed head, so current state makes the next scheduled range include run_cosmic_ray_mutation.py, run_slice_closeout.py, and staged_commit_gate_plan.py, not only the old dad2d01 range.
-- Commits: `a49db90`, `0707515`
+- Commits: `a49db90`, `992bfea`
 - What changed: Added focused tests for run_cosmic_ray_mutation no-TOML-parser and timeout+dump-failure branches; expanded staged_commit_gate_plan tests for serialization, git error reporting, domain and markdown triggers, CLI JSON/text output, non-json plan-only output, empty-plan no-op, failure output propagation, and success output.
 - Alternatives rejected:
 - Targeted verification: PASS: ruff check for touched files; PASS: pytest -q tests/quality_gates/test_staged_commit_gate_plan.py tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py (31 passed); PASS: final fresh python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 6d85aec --head-sha HEAD after full coverage pytest (1905 passed, 4 skipped, 57 deselected) with blocking=[] and changed_pool_files=[scripts/run_cosmic_ray_mutation.py, scripts/run_slice_closeout.py, scripts/staged_commit_gate_plan.py].
 - Test duplication pressure: Expanded two existing focused quality-gate test files rather than adding a new broad fixture; check_python_lengths passed for touched files.
-- Critique: bounded fresh-eye review executed (`parent-delegated`): initial blockers were artifact-only (ahead count and missing commit IDs); fixed before commit. Reviewer independently confirmed reframing from `dad2d01` to current HEAD `0707515` is correct and proof aligns with acceptance.
+- Critique: bounded fresh-eye review executed (`parent-delegated`): initial blockers were artifact-only (ahead count and missing commit IDs); fixed before commit. Reviewer independently confirmed reframing from `dad2d01` to current HEAD is correct and proof aligns with acceptance.
 - Off-goal findings:
 - Lessons carried forward:
 - Metrics:
@@ -197,12 +198,26 @@ Context: `origin/main` is `6d85aec`; HEAD is 9 unpushed commits ahead
 
 - Objective: Close the genuine host-hook changed-line coverage debt flagged by #267 over the host-hook range.
 - Why this approach: The host-hook files are outside the current next-run scope, but the uncovered changed lines are real debt and would re-block when those files are next touched.
-- Commits: `a77f49b`
+- Commits: `34d8014`
 - What changed: Added focused tests for the two gate-reported host-hook lines: Codex TOML matcher returns None for a foreign command with no matching script identity, and Codex JSON find-skills uninstall removes legacy TOML markers from the default config.toml.
 - Alternatives rejected:
 - Targeted verification: PASS: pytest -q tests/test_find_skills_host_hook_reconcile.py (7 passed); PASS: ruff check tests/test_find_skills_host_hook_reconcile.py; PASS: fresh python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 9ee91ff --head-sha HEAD after full coverage pytest (1907 passed, 4 skipped, 57 deselected) with blocking=[] for host-hook range. Targeted kill proof: mutating host_hook_codex_toml_lib._matching_existing_command final return None -> command made test_codex_toml_matching_existing_command_returns_none_for_foreign_command fail; mutating uninstall_find_skills_codex_hook codex-json legacy cleanup path from config.toml to hooks.json made test_find_skills_codex_json_uninstall_cleans_legacy_toml_markers fail.
 - Test duplication pressure: Expanded existing reconcile test file by two scoped tests; no new broad fixture file. check_python_lengths passed for tests/test_find_skills_host_hook_reconcile.py.
 - Critique: bounded fresh-eye review executed (`parent-delegated`): no code/test blockers; reviewer confirmed the two new tests target the exact reported lines and proof aligns with acceptance. Artifact hygiene risks (stale `dad2d01` wording, blank commits, pending critique) fixed before amend.
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 4: Cluster closure verification (#262/#219/#261 disposition)
+
+- Objective: Verify the earlier unpushed mutation-cluster fixes remain intact and record issue-close disposition: close #262/#219/#267, leave #261 open for #265.
+- Why this approach: The goal's After phase requires staged closure of the cluster fixes without redoing them; #261 remains bounded-triage-only and is tracked by #265.
+- Commits: n/a — verification/artifact slice to be included in final closeout commit.
+- What changed: No production changes. Verified runner defensive restore tests, RCA ledger validator/tests, and coordination-floor tests; recorded closure/disposition evidence for final closeout.
+- Alternatives rejected:
+- Targeted verification: PASS: python3 scripts/validate_rca_ledger.py --repo-root .; PASS: pytest -q tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py tests/quality_gates/test_quality_mutation_testing.py::test_run_cosmic_ray_mutation_invokes_filter_after_init (22 passed); PASS: pytest -q tests/quality_gates/test_goal_coordination_floors.py tests/test_rca_ledger.py (59 passed).
+- Test duplication pressure: No new tests in this closure slice.
+- Critique: bounded final closeout review executed (`parent-delegated`): code-level evidence supported; artifact blockers were stale superseded SHA references and the slice-4 critique placeholder, both fixed before final closeout commit. Final commit body will close #262/#219/#267 and intentionally not close #261.
 - Off-goal findings:
 - Lessons carried forward:
 - Metrics:
@@ -306,9 +321,67 @@ independently re-verified B1's range facts before folding.
 
 ## Final Verification
 
+- **Slice 1 / #266:** `86a905d` introduced the shared staged-path planner and
+  `run_slice_closeout --predict-commit`; real staged predict-commit passed and
+  final pre-commit invocations used the same path. Focused tests covered
+  length/attention rejection and clean staged Python.
+- **Slice 2 / current next-run health:** fresh changed-line gate
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 6d85aec --head-sha HEAD`
+  passed with `blocking=[]`. The full coverage pytest inside that proof reported
+  `1905 passed, 4 skipped, 57 deselected`; a later current-HEAD reuse check also
+  reported `blocking=[]` for changed pool files
+  `scripts/run_cosmic_ray_mutation.py`, `scripts/run_slice_closeout.py`, and
+  `scripts/staged_commit_gate_plan.py`.
+- **Slice 3 / #267 debt:** fresh gate
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 9ee91ff --head-sha HEAD`
+  passed with `blocking=[]`. Full coverage pytest inside that proof reported
+  `1907 passed, 4 skipped, 57 deselected`; targeted mutant checks failed the new
+  tests at the two gate-reported host-hook lines.
+- **Cluster closure:** `python3 scripts/validate_rca_ledger.py --repo-root .`
+  passed; runner restore tests passed (`22 passed` with the filter-after-init
+  test); coordination/RCA tests passed (`59 passed`). #261 remains open by
+  design for #265.
+- **Final artifact closeout:** staged `run_slice_closeout --predict-commit`
+  passed for the goal artifact; `python3 scripts/run_slice_closeout.py --repo-root .`
+  passed for the final staged artifact slice (doc links, command docs,
+  markdown, secrets, agent-browser hygiene).
+- **Fresh-eye reviews:** slice 1, slice 2, slice 3, and final closeout all ran
+  bounded fresh-eye review. Final blockers were artifact-only stale-SHA and
+  pending-critique fields; fixed before final commit.
+- **Not run:** no live scheduled GitHub Actions mutation run, no push, no full
+  cosmic-ray mutation exec. This matches the goal's non-goals; live proof is the
+  maintainer's post-push step.
+
+Closure staged in final commit body: close #262, close #219, close #267.
+Do **not** close #261; residual exhaustive survivor triage remains tracked by
+#265. #266 was already staged to close by `86a905d`.
+
 ## User Verification Instructions
 
+After pushing the branch, verify the scheduled mutation workflow over `main`:
+
+1. Confirm GitHub closes #262, #219, and #267 from the closeout commit and that
+   #261 remains open.
+2. Let the scheduled mutation workflow run, or manually trigger the scheduled
+   workflow if you want immediate live proof. The local deterministic substitute
+   already passed; this live run is the intentionally skipped external proof.
+3. If live CI disagrees, inspect the changed-line section first; the local
+   current-range checks ended with `blocking=[]` for both `6d85aec..HEAD` and
+   `9ee91ff..HEAD`.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-05-31-mutation-gate-health.md
+Host log probe: charness-artifacts/probe/2026-05-31-mutation-gate-health.json
+Disposition review: charness-artifacts/critique/2026-05-31-mutation-gate-health-disposition-review.md
+
+- Improvement disposition: issue #269 — guard achieve artifacts against stale
+  mutable HEAD SHA wording.
+- Improvement disposition: issue #270 — make targeted mutant proof bind to the
+  exact reported line before mutation.
+- Disposition verdict: bounded final closeout review executed
+  (`parent-delegated`); substantive blockers were artifact-currentness issues,
+  fixed before commit. Retro improvements are tracked in #269 and #270.
 
 ## Coordination Cues
 

@@ -2,15 +2,15 @@
 
 ## Current Focus
 
+- Active achieve goal `charness-artifacts/goals/2026-05-31-mutation-gate-health.md`: align slice closeout with commit hooks (#266), prove current next-run mutation changed-line health, close #267 host-hook debt, and verify #262/#219 cluster closure while leaving #261 open for #265. (source: `charness-artifacts/retro/2026-05-31-mutation-gate-health.md`)
 - The #260 achieve goal: make the scheduled mutation gate green again on `main` and raise durable mutated-behavior coverage. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
-- The mutation-testing backlog cluster (#262 runner restore, #261 trio survivors, #219 stale regression) operated as one `achieve` goal (`charness-artifacts/goals/2026-05-31-262-261-219-mutation-cluster.md`, full-cluster scope chosen by the operator). (source: `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`)
 
 ## Repeat Traps
 
 - **Coarse-grained dump parsing slips.** First dump parse used lowercase `"survived"` (the field is uppercase `SURVIVED`) and read a stale truncated `.jsonl`; one extra analysis cycle. Switched to reading the session sqlite directly (ground truth). (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
 - **Ground-truth shell-function flakiness.** The first survivor ground-truth batch used an inline shell function whose pass/fail reporting mis-fired (it reported clean baseline as "killed"); switched to a Python harness. ~1 cycle. (source: `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`)
+- Hand-mutant probing briefly hit the wrong return site before the exact gate-reported line was mutated; this was caught by inspecting the diff, but it cost an avoidable mini-loop. (source: `charness-artifacts/retro/2026-05-31-mutation-gate-health.md`)
 - **Polling cadence on long async runs.** The trio/survivor mutation runs were ~15–25 min each; monitoring them is legitimate (not redundant work — the triage lock was "wait for the async job"), but several short sleep+poll cycles could have been fewer/coarser by leaning on background-completion notifications. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
-- **Timeout-killed `cosmic-ray exec` left a mutation applied.** Wrapping `cosmic-ray exec` in the Bash tool's 600s `timeout` killed it mid-mutant; cosmic-ray only restores between mutants, so `render_cli_reference.py:102` was left mutated (`repo_root >> args.output`). Caught by `git status` before the Slice-2 commit and restored. Adopted mid-session: run exec in the background (no tool-timeout kill) + always `git checkout` the module-path files after every exec. (source: `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`)
 
 ## Next-Time Checklist
 
@@ -30,3 +30,4 @@
 - `charness-artifacts/retro/2026-05-30-issue-251-mutation-coverage.md`
 - `charness-artifacts/retro/2026-05-31-260-mutation-test-regression-on-main.md`
 - `charness-artifacts/retro/2026-05-31-262-261-219-mutation-cluster.md`
+- `charness-artifacts/retro/2026-05-31-mutation-gate-health.md`
