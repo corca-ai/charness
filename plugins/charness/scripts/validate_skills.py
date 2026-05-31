@@ -16,6 +16,7 @@ count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
 extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
 _scripts_skill_portability_lib_module = import_repo_module(__file__, "scripts.skill_portability_lib")
 find_portability_errors = _scripts_skill_portability_lib_module.find_portability_errors
+find_author_repo_cite_errors = _scripts_skill_portability_lib_module.find_author_repo_cite_errors
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200
@@ -257,6 +258,24 @@ def validate_portable_skill_invocations(root: Path, skill_dir: Path, contents: s
         raise ValidationError("; ".join(errors))
 
 
+def validate_author_repo_cites(markdown_path: Path, contents: str) -> None:
+    errors = find_author_repo_cite_errors(markdown_path, contents)
+    if errors:
+        raise ValidationError(
+            "; ".join(f"{markdown_path.name}: {error}" for error in errors)
+        )
+
+
+def validate_public_portability(root: Path, skill_dir: Path, skill_md: Path, contents: str) -> None:
+    validate_bootstrap_binary_preflight(contents)
+    validate_portable_skill_invocations(root, skill_dir, contents)
+    validate_author_repo_cites(skill_md, contents)
+    references_dir = skill_dir / "references"
+    if references_dir.exists():
+        for reference_path in sorted(path for path in references_dir.iterdir() if path.is_file()):
+            validate_author_repo_cites(reference_path, reference_path.read_text(encoding="utf-8"))
+
+
 def resolve_skill_reference_path(skill_dir: Path, markdown_path: Path, rel_path: str) -> Path:
     if rel_path.startswith("../"):
         return (markdown_path.parent / rel_path).resolve()
@@ -336,8 +355,7 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
         )
 
     if kind == "public":
-        validate_bootstrap_binary_preflight(contents)
-        validate_portable_skill_invocations(root, skill_dir, contents)
+        validate_public_portability(root, skill_dir, skill_md, contents)
 
 
 SKILL_ROOTS = (

@@ -25,6 +25,10 @@ committed. Store repo-root-relative paths in those files. Absolute host paths
 are acceptable in transient stdout diagnostics, but not in durable artifacts a
 different clone or CI job may read later.
 
+Public-skill cites to authoring-repo-only docs, tests, or source-tree skill
+paths must be either skill-relative to files that ship with the vendored skill
+or explicitly marked `authoring-repo-internal` / `not vendored` near the cite.
+
 ## Skill Brief
 
 Write this before editing:

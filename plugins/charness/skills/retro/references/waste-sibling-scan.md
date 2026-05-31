@@ -21,7 +21,7 @@ the selection index — hand edits are reverted) or to the selection index JSON.
 ## Schema
 
 Reuse the four axes and four-decision taxonomy from
-`skills/public/debug/references/sibling-search.md`:
+`../../debug/references/sibling-search.md`:
 
 ```text
 ## Sibling Search

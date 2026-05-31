@@ -237,6 +237,20 @@ Initial routing:
 - Lessons carried forward: Freshness guards should bind findings to claim grammar, not whole physical lines; remediation wording must be executable by the validator.
 - Metrics: Metrics: when available.
 
+### Slice 4: Slice 3 (#264 portability guard and sweep)
+
+- Objective: Add a guard for author-repo-internal public-skill cites and sweep same-class references.
+- Why this approach: This prevents vendored public skills from sending downstream users to source-repo-only docs/tests/skill paths while preserving operator-surface allowlists.
+- Commits: pending
+- What changed: Extended skill_portability_lib.py and validate_skills.py to reject bare author-only docs/tests/source-tree skill cites in public skills; added validator regressions for docs contracts, tests.py nodeids, source-tree skill paths, operator surfaces, charness-artifacts, adapter yaml, marker escapes, fenced examples, and sibling skill-relative paths; swept public-skill references using marker-qualified authoring-repo-internal wording or exported-layout relative paths; updated portable-authoring guidance; synced plugin mirrors; recorded public-skill dogfood/scenario review for the affected skills.
+- Alternatives rejected: Did not parse non-backticked prose or markdown link targets; issue examples and current corpus are backtick-shaped and broad prose parsing risks the reverted overreach. Did not add root scripts/... cites to this guard; that is an adjacent install-surface policy question, not #264's docs/tests/source-tree skill boundary.
+- Targeted verification: PASS: pytest -q tests/quality_gates/test_skill_validation.py (28 passed); PASS: python3 scripts/validate_skills.py --repo-root .; PASS: ruff check scripts/skill_portability_lib.py scripts/validate_skills.py tests/quality_gates/test_skill_validation.py; PASS: python3 scripts/check_doc_links.py --repo-root .; PASS: validate_packaging and validate_packaging_committed earlier in slice; PASS: python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review (completed; broad pytest 1872 passed, 4 skipped; usage episode slice-closeout-8479d7c542444ae8ace5e853bf406ce8).
+- Test duplication pressure: Expanded existing skill validation tests rather than adding a new test file; slice closeout aggregate passed the broad quality/test suite.
+- Critique: Full parent-delegated code critique recorded at charness-artifacts/critique/2026-05-31-264-portability-guard-critique.md. Blockers fixed: nodeid detection, extensionless skill paths, sibling-skill relative paths, remaining retro sibling refs, and missing allowlist tests.
+- Off-goal findings: Root script cite portability remains deferred as a separate policy/install-surface question if needed.
+- Lessons carried forward: Portability guards must distinguish source-tree author-only paths from same-plugin vendored sibling paths; allowlists need exact regression coverage to avoid repeating the reverted over-broad guard.
+- Metrics: Metrics: when available.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

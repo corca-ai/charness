@@ -174,7 +174,8 @@ changed gated file already near its limit (`limit − current`; #256 — choose 
 module over appending before the hard gate fires), and — via the
 `check_staged_mirror_drift.py` pre-commit gate — a **hard block** when exported
 source is staged without its regenerated `plugins/` mirror (#257). Both are
-owned by `<repo-root>/docs/conventions/implementation-discipline.md`.
+owned by the authoring-repo-internal
+`<repo-root>/docs/conventions/implementation-discipline.md`.
 
 The commit-time gate family (ruff, `check_python_lengths`,
 `validate_attention_state_visibility`, `check-markdown`, mirror-drift,
@@ -381,7 +382,7 @@ directions. (A goal closed before the rule but `Created` on/after the landing
 date — e.g. `2026-05-30-issue-251`, closed ~80 min before the rule commit — is
 in-scope and shows a rung-1b diagnostic on re-check, but is never *re-refused*:
 the flip-guard only fires on a non-`complete` → `complete` transition.) The
-contract lives at
+contract lives at the authoring-repo-internal
 `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
 
 A cited evidence file must also **bind** to this goal (#233 F1): file

@@ -35,7 +35,7 @@ canonical record. The recipe is the same in all three cases:
    filename.
 2. Safely refresh the current pointer to reference the new record. Use
    the scripted writer
-   `<repo-root>/skills/public/gather/scripts/write_record.py` so the
+   `../scripts/write_record.py` so the
    pointer-refresh path is symlink-aware. The refresh is unlink-then-write
    (mirrors `<repo-root>/scripts/refresh_current_pointer.py` in shape, not
    strictly POSIX-atomic); the small window is acceptable for gather's

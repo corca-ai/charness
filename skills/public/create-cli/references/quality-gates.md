@@ -42,13 +42,12 @@ declaring the slice complete instead of waiting for the hook.
 Do not invent a parallel rule here. The detection and closeout shape are owned
 by `impl`:
 
-- survey the gate with `skills/public/impl/scripts/survey_verification.py`
+- survey the gate with `../../impl/scripts/survey_verification.py`
   (`lint_gate.detected` / `lint_gate.command`)
 - record the result in the `Lint Gate` closeout field whose states
   (`ran-pass`, `ran-fail-fixed`, `ran-fail-deferred`, `not-detected`,
   `skipped <reason>`) are defined in
-  `skills/public/impl/references/verification-ladder.md` "Lint Gate Closeout
-  Shape"
+  `../../impl/references/verification-ladder.md` "Lint Gate Closeout Shape"
 
 The discipline is disclosure-before-commit, not a new hard gate; the repo's
 own pre-push/pre-commit hook still owns hard-block enforcement.

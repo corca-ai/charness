@@ -154,7 +154,7 @@ strong warning, not as documentation that makes the split acceptable. CI may
 repeat local proof, but CI must not be the first place a required quality
 failure can appear.
 
-Use `skills/public/quality/scripts/inventory_ci_local_gate_parity.py` to
+Use `../scripts/inventory_ci_local_gate_parity.py` to
 inventory parity. The helper takes `--workflow-glob`,
 `--canonical-gate-pattern` (repeatable), and `--ci-only-marker` for detecting
 forbidden CI-only language. With `--require-empty-parity-issues` it returns

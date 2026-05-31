@@ -112,10 +112,10 @@ repo by created date. It must not use the current session's last created issue.
    should not own.
 8. Otherwise, design and implement the smallest complete fix, keeping the
    issue problem statement and the reporter's JTBD as the acceptance boundary.
-   Follow the `mutate -> sync -> verify` order from
-   `docs/conventions/implementation-discipline.md`: sync generated, plugin,
-   and export surfaces before validators. Verify with the strongest honest
-   local gate.
+   Follow the `mutate -> sync -> verify` order from the
+   authoring-repo-internal `docs/conventions/implementation-discipline.md`:
+   sync generated, plugin, and export surfaces before validators. Verify with
+   the strongest honest local gate.
 9. Run a **resolution critique** focused on recurrence by delegating to
    the `critique` skill (which spawns its own bounded angle + counterweight
    subagents). Pass causal-review output via `references/causal-review.md`.

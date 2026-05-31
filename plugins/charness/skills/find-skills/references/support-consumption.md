@@ -63,7 +63,7 @@ The canonical example is `support/specdown` (corca-ai/charness#108):
   reads the field via `_strong_triggers_for` and gates support-skill
   surfacing on it (broad `intent_triggers` populates the match pool;
   `strong_intent_triggers` precision-gates which matches activate the skill)
-- positive routing is exercised by
+- positive routing is exercised by the authoring-repo-internal
   `tests/test_find_skills_task_recommendations.py::test_list_capabilities_recommends_support_skill_from_task_text`,
   which asserts that a task mentioning `docs/specs`, `.spec.md`, `check:jq`,
   and `specdown` returns the support skill, its key references

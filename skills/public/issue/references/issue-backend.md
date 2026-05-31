@@ -186,8 +186,9 @@ Adapter-supplied templates substitute:
 - `{json_fields}` — comma-separated json field list for `view`
 
 The placeholder set is the tested contract: adding a new placeholder requires
-adding a substitution test (see `tests/quality_gates/test_issue_skill.py`) so
-adapter command templates do not silently grow undocumented variables.
+adding a substitution test in the authoring-repo-internal
+`tests/quality_gates/test_issue_skill.py` so adapter command templates do not
+silently grow undocumented variables.
 
 The skill does not sanitize values past what the host CLI already enforces.
 The host backend is responsible for argument quoting, escaping, and audit

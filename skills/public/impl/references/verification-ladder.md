@@ -91,10 +91,9 @@ trap shapes that mocked tests routinely miss.
 Sibling pointers: a filed follow-up should also surface as a
 `follow-up: <url>` entry under the related `## Sibling Search` bullet when the
 debug substrate is the same investigation — see
-`skills/public/debug/references/sibling-search.md` and the matching
-`action: file-issue` field in
-`skills/public/critique/references/counterweight-triage.md` so orchestrators
-do not invent a third schema.
+`../../debug/references/sibling-search.md` and the matching `action: file-issue`
+field in `../../critique/references/counterweight-triage.md` so
+orchestrators do not invent a third schema.
 
 ## Closeout
 

@@ -4,7 +4,8 @@ Closes [#230](https://github.com/corca-ai/charness/issues/230) Waste 1c.
 This gate makes the SKILL.md prose about "do not skip critique for
 task-completing release work" a runtime refusal at the publish boundary,
 not just a convention. The full contract spans achieve / issue / release
-and lives at `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+and lives at the authoring-repo-internal
+`<repo-root>/docs/prescribed-skill-closeout-contract.md`.
 
 ## Rule
 
@@ -18,7 +19,7 @@ and lives at `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
   After the wrapper prefixes the signal with the
   `host-blocked-subagent` enum, the resulting reason must total at
   least 40 characters; terse signals like `host-down` are rejected by
-  the shared closeout helper at
+  the shared closeout helper at the authoring-repo-internal
   `<repo-root>/scripts/check_prescribed_skill_executed_lib.py`.
 
 Both flags supplied together is rejected with `pass exactly one of` so
@@ -60,8 +61,9 @@ the artifact path instead.
 
 ## See Also
 
-- `<repo-root>/skills/shared/references/fresh-eye-subagent-review.md` —
+- `../../../shared/references/fresh-eye-subagent-review.md` —
   owns the blocked-vs-available determination and the reviewer tier
   policy the artifact path encodes.
 - `<repo-root>/docs/prescribed-skill-closeout-contract.md` — the
+  authoring-repo-internal
   closeout contract this gate enforces across achieve / issue / release.

@@ -51,4 +51,4 @@ canonical storage target. It may be empty, a regular file, or a symlink to
 a dated record under the same directory. Writers must never edit the
 pointer path directly — see `asset-refresh.md` for the symlink-aware
 recipe and the scripted writer
-`<repo-root>/skills/public/gather/scripts/write_record.py`.
+`../scripts/write_record.py`.

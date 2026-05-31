@@ -65,7 +65,7 @@ strength tags; the action values name the smallest next move:
 ## Structured Findings
 
 - F1 | bin: act-before-ship | evidence: strong | ref: skills/public/impl/SKILL.md:139 | action: fix | note: closeout omits Lint Gate field
-- F2 | bin: valid-but-defer | evidence: moderate | ref: docs/conventions/operating-contract.md#critique | action: file-issue | note: bin/action coupling for impl handoffs is real but slice-scoped
+- F2 | bin: valid-but-defer | evidence: moderate | ref: references/example.md#critique | action: file-issue | note: bin/action coupling for impl handoffs is real but slice-scoped
 - F3 | bin: over-worry | evidence: weak | ref: n/a | action: document | note: speculative future schema churn
 ```
 

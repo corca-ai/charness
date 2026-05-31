@@ -104,9 +104,9 @@ slice and so do not require a `follow-up:` field:
 `intentional plain-text or non-rendering boundary`.
 
 For schema alignment across skills, see
-`skills/public/critique/references/counterweight-triage.md` (the
-`action: file-issue` field maps to a `follow-up:` URL here) and
-`skills/public/impl/references/verification-ladder.md` (the `Lint Gate`
+`../../critique/references/counterweight-triage.md` (the `action: file-issue`
+field maps to a `follow-up:` URL here) and
+`../../impl/references/verification-ladder.md` (the `Lint Gate`
 `ran-fail-deferred` state takes the same `<issue|anchor>` identifier).
 
 ## Trivial-bug short-circuit

@@ -113,7 +113,8 @@ substrate and skip this gate. The gate is additive — it runs before the
 existing ledger checks (`missing_close_keywords`, `missing_fields`,
 `state_mismatches`, `manual_comment_missing`) and the existing
 `_classification_requirements` field set is **not** extended. The full
-contract lives at `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+contract lives at the authoring-repo-internal
+`<repo-root>/docs/prescribed-skill-closeout-contract.md`.
 
 Release-driven direct-to-default work follows the same linkage. If the
 repo-owned release helper is used, pass resolved issue numbers with

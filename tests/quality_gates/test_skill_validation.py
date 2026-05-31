@@ -257,6 +257,148 @@ def test_validate_skills_accepts_public_skill_with_many_fenced_examples_when_scr
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_skills_rejects_author_repo_internal_doc_cite(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (references_dir / "note.md").write_text(
+        "Read `docs/conventions/implementation-discipline.md` before editing.\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "author-repo-only cite" in result.stderr
+    assert "docs/conventions/implementation-discipline.md" in result.stderr
+
+
+def test_validate_skills_rejects_author_repo_internal_test_and_skill_cites(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (references_dir / "note.md").write_text(
+        "\n".join(
+            [
+                "Regression lives at `tests/test_demo.py::test_case`.",
+                "Source helper lives at `<repo-root>/skills/public/other`.",
+                "Contract lives at `docs/prescribed-skill-closeout-contract.md`.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "tests/test_demo.py::test_case" in result.stderr
+    assert "<repo-root>/skills/public/other" in result.stderr
+    assert "docs/prescribed-skill-closeout-contract.md" in result.stderr
+
+
+def test_validate_skills_allows_authoring_marker_and_operator_surfaces(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    sibling_ref = repo / "skills" / "public" / "impl" / "references"
+    sibling_ref.mkdir(parents=True)
+    (sibling_ref / "verification-ladder.md").write_text("# Ladder\n", encoding="utf-8")
+    (repo / "skills" / "public" / "impl" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: impl",
+                'description: "Impl skill."',
+                "---",
+                "",
+                "# Impl",
+                "",
+                "## References",
+                "",
+                "- `references/verification-ladder.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (references_dir / "note.md").write_text(
+        "\n".join(
+            [
+                "`docs/handoff.md` is a consumer-owned operator surface.",
+                "`docs/roadmap.md` is a consumer-owned operator surface.",
+                "`docs/operator-acceptance.md` is a consumer-owned operator surface.",
+                "`docs/release-notes.md` is a consumer-owned operator surface.",
+                "`charness-artifacts/quality/latest.md` is repo-owned state.",
+                "`docs/release-adapter.yaml` is adapter configuration.",
+                "`.agents/release-adapter.yaml` is adapter configuration.",
+                "`../../impl/references/verification-ladder.md` ships in the same plugin.",
+                "The next cite is authoring-repo-internal, not vendored.",
+                "`tests/test_demo.py` documents the source repo regression.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_skills_allows_many_non_bootstrap_examples_without_scripts(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"

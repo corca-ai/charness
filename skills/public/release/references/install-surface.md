@@ -84,8 +84,9 @@ in `.agents/surfaces.json`; an unresolved id is a broken adapter contract and
 the proof check exits non-zero with a `configuration_status: "broken"`
 payload, not a silent `required: false`. Prefer surface ids for shared seams;
 reserve `real_host_required_path_globs` for narrow repo-specific exceptions.
-The charness-maintained contract and the 4-fixture shape every trigger
-consumer ships live at `docs/conventions/surface-driven-adapter-triggers.md`.
+The charness-maintained authoring-repo-internal contract and the 4-fixture
+shape every trigger consumer ships live at
+`docs/conventions/surface-driven-adapter-triggers.md`.
 
 ## Drift Rule
 
