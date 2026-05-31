@@ -58,7 +58,14 @@ Advanced `charness` toward release `0.13.2` (tag `v0.13.2`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: `verified`.
+- Issue closeout carrier: direct commit `7ffde0e`.
+- `#268`: CLOSED — https://github.com/corca-ai/charness/issues/268
+- `#269`: CLOSED — https://github.com/corca-ai/charness/issues/269
+- `#264`: CLOSED — https://github.com/corca-ai/charness/issues/264
+- `#270`: CLOSED — https://github.com/corca-ai/charness/issues/270
+- Not closed by this release: `#265` and `#261`; the goal artifact records the
+  remaining mutation-survivor policy/equivalence work as non-claims.
 
 ## User Update Steps
 
