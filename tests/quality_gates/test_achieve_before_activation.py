@@ -56,3 +56,15 @@ def test_goal_activation_is_pursue_only_and_failfast() -> None:
     # Unshaped -> fail-fast and route to the Before-phase, never shape in /goal.
     assert "fail-fast" in skill and "fail-fast" in lifecycle
     assert "/achieve" in skill and "/achieve" in lifecycle
+
+
+def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
+    """#268: host green status cannot replace the checked goal artifact floor."""
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+
+    assert "before any host-level goal completion" in skill
+    assert "Status: complete" in skill
+    assert "Host-level goal completion is downstream of the artifact" in lifecycle
+    assert "update_goal(status=complete)" in lifecycle
+    assert "check_goal_artifact.py --goal-path <artifact>" in lifecycle

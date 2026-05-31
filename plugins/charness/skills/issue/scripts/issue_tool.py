@@ -26,11 +26,7 @@ BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 CREATE = _load_local("issue_create")
 VERIFY = _load_local("issue_verify_closeout")
-newest_open_issue = RUNTIME.newest_open_issue
-parse_selector = RUNTIME.parse_selector
-resolve_target = RUNTIME.resolve_target
-close_with_comment = CLOSE.close_with_comment
-verify_closeout = VERIFY.verify_closeout
+VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
 BACKEND_PROBE_TIMEOUT_SECONDS = 60
 
 
@@ -134,7 +130,7 @@ def command_resolve_target(args: argparse.Namespace) -> int:
         emit({"ok": False, "adapter": adapter})
         return 1
     try:
-        target = resolve_target(args.repo_root.resolve(), args.target, adapter["data"])
+        target = RUNTIME.resolve_target(args.repo_root.resolve(), args.target, adapter["data"])
     except ValueError as exc:
         emit({"ok": False, "error": str(exc), "adapter": adapter})
         return 2
@@ -147,11 +143,11 @@ def command_select(args: argparse.Namespace) -> int:
     resolved = _resolve_backend(repo_root)
     backend = resolved["backend"]
     try:
-        numbers = parse_selector(args.selector)
+        numbers = RUNTIME.parse_selector(args.selector)
         issue = None
         source = "selector"
         if numbers is None:
-            issue = newest_open_issue(args.repo, backend)
+            issue = RUNTIME.newest_open_issue(args.repo, backend)
             numbers = [int(issue["number"])]
             source = "github-newest-open"
     except (RuntimeError, ValueError) as exc:
@@ -168,7 +164,7 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
         emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
     try:
-        result = close_with_comment(
+        result = CLOSE.close_with_comment(
             args.repo, args.number, args.body_file.resolve(),
             backend=resolved["backend"], reason=args.reason,
         )
@@ -186,7 +182,7 @@ def command_verify_closeout(args: argparse.Namespace) -> int:
         emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
     try:
-        result = verify_closeout(
+        result = VERIFY.verify_closeout(
             repo_root=args.repo_root.resolve(),
             repo=args.repo,
             numbers=args.number,
@@ -322,6 +318,14 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--expect-state", choices=("CLOSED",), help="Expected backend issue state after closeout")
     verify.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     verify.set_defaults(func=command_verify_closeout)
+
+    VALIDATE_DRAFT.register_validate_closeout_draft_subparser(
+        subparsers,
+        cwd_default,
+        resolve_backend=_resolve_backend,
+        emit=emit,
+        verifier=VERIFY,
+    )
 
     brief = subparsers.add_parser("brief-path", help="Print the durable brief path for an issue number on the given date")
     brief.add_argument("--number", type=int, required=True, help="Issue number whose brief path should be returned")

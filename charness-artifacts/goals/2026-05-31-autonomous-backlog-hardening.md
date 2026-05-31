@@ -1,6 +1,6 @@
 # Achieve Goal: Current autonomous hardening tranche
 
-Status: draft
+Status: active
 Created: 2026-05-31
 Activation: `/goal @charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`
 
@@ -194,6 +194,34 @@ Initial routing:
   necessary.
 
 ## Slice Log
+
+### Slice 1: Slice 0 (activation and live issue refresh)
+
+- Objective: Confirm pursue-readiness and current issue context before mutating.
+- Why this approach: The goal is intentionally broad; slice 0 prevents stale or unshaped state from driving mutation.
+- Commits: n/a — activation/context slice
+- What changed: Goal status flipped from draft to active; live open issue list and #268 body refreshed; find-skills routed current boundary to achieve + issue.
+- Alternatives rejected:
+- Targeted verification: PASS: check_goal_artifact.py --pursue-ready; PASS: gh issue view 268; PASS: gh issue list --state open --limit 50; PASS: find-skills recommendation for #268 returned achieve + issue.
+- Test duplication pressure: No tests added.
+- Critique: Before-phase fresh-eye critique already folded into goal artifact; no new slice critique needed for activation-only context refresh.
+- Off-goal findings: None.
+- Lessons carried forward: Proceed slice-to-slice only after expected evidence is recorded in the goal log.
+- Metrics: Metrics: when available.
+
+### Slice 2: Slice 1 (#268 closeout integrity)
+
+- Objective: Make achieve closeout and issue closeout drafts fail before incomplete host-level completion or GitHub mutation.
+- Why this approach: #268 is the hard first phase gate; later slices will create issue/goal closeout state, so pre-signal and pre-mutation validation must exist first.
+- Commits: pending
+- What changed: Added issue_tool.py validate-closeout-draft via a new issue_validate_closeout_draft helper; documented draft validation before issue closeout carriers are published; documented achieve host-level completion as downstream of a checked Status: complete goal artifact; recorded public-skill dogfood/scenario review for achieve and issue; synced plugin mirrors; added regression tests for issue draft validation, issue closeout discipline, and achieve host completion ordering.
+- Alternatives rejected: Did not make close-with-comment invent classification from body text; closeout classification remains explicit so the verifier applies the right ledger. Did not alter host APIs directly; repo-owned contract now requires artifact completion and check_goal_artifact before host completion signals.
+- Targeted verification: PASS: pytest -q tests/quality_gates/test_issue_closeout_draft_validation.py tests/quality_gates/test_issue_closeout_verifier_critique.py tests/quality_gates/test_achieve_before_activation.py tests/quality_gates/test_issue_closeout_discipline.py (20 passed); PASS: python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py; PASS: python3 scripts/validate_skills.py --repo-root .; PASS: python3 scripts/validate_packaging.py --repo-root .; PASS: python3 scripts/validate_packaging_committed.py --repo-root .; PASS: python3 scripts/check_doc_links.py --repo-root .; PASS: python3 scripts/check_command_docs.py --repo-root .; PASS: ./scripts/check-secrets.sh; PASS: python3 scripts/validate_cautilus_proof.py --repo-root .; PASS: python3 scripts/check_skill_ownership_overlap.py --repo-root .; PASS: python3 scripts/validate_public_skill_validation.py --repo-root .; PASS: python3 scripts/validate_public_skill_dogfood.py --repo-root .; PASS: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts; PASS: python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing (advisory warnings only); PASS: python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support; PASS: ./scripts/check-markdown.sh; PASS: broad pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py (1872 passed, 4 skipped); PASS: python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review (completed; broad pytest 1872 passed, 4 skipped).
+- Test duplication pressure: Added one focused 107-line test file and small assertions in existing test files; issue_tool.py is at 359/360 and must not grow further.
+- Critique: Causal review fresh-eye executed (parent-delegated): classified #268 as bug; root cause is gates attached to helper surfaces rather than every externally visible completion/mutation boundary; detection gap is helper-level tests existed but close-with-comment accepted arbitrary body; sibling release manual-close risk deferred as diagnostic because this slice did not touch release closeout.
+- Off-goal findings: Release manual issue closeout has a diagnostic sibling risk but is deferred unless a later slice touches release closeout.
+- Lessons carried forward: Pre-mutation draft validation should reuse final verifiers without final-state checks; host completion must be downstream of durable artifact completion.
+- Metrics: Metrics: when available.
 
 ## Context Sources
 

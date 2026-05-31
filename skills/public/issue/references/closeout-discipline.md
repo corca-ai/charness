@@ -77,6 +77,14 @@ insufficient, then run `issue_tool.py verify-closeout` with
 `--carrier manual-fallback`, `--manual-fallback-reason <reason>`, and
 `--expect-state CLOSED`. The helper and verifier must re-read GitHub state after comment plus close; they fail unless the final state is `CLOSED`. command success alone is not closeout, and carrier text alone is not closeout.
 
+Before a PR body, direct commit body, or manual close comment is published, run
+`issue_tool.py validate-closeout-draft` against the exact draft body. It uses the
+same ledger, critique, close-keyword, and manual-fallback checks as
+`verify-closeout`, but intentionally omits final GitHub state verification so
+malformed closeout markdown fails before any GitHub mutation. After publish or
+manual close, still run `issue_tool.py verify-closeout --expect-state CLOSED`
+for the source-of-truth state check.
+
 `verify-closeout` returns `carrier_verified` when close keywords and the
 classification ledger are present but no `--expect-state` was provided. That
 status is useful before push or merge, but it is not final closeout. Final

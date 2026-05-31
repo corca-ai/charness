@@ -248,6 +248,13 @@ sections, status, and activation line are all present. Flip the status to
 `complete` only after the final report separates what was proven from what
 remains the user's responsibility to verify.
 
+Host-level goal completion is downstream of the artifact, never a substitute
+for it. Before calling a host status tool such as `update_goal(status=complete)`,
+the checked-in goal artifact must already read `Status: complete` and
+`check_goal_artifact.py --goal-path <artifact>` must pass. If the host tool and
+the artifact disagree, the artifact is the source of truth and the closeout is
+not complete.
+
 ### Improvement disposition
 
 The retro's value is realized only if its improvements change something. The

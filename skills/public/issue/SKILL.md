@@ -124,7 +124,8 @@ repo by created date. It must not use the current session's last created issue.
    deferred. If step 4 was blocked, report blocked state instead of running.
 10. Commit, push, and prefer GitHub auto-close via explicit close keywords
     (`Close #1. Close #2.`) in the PR body or direct-to-default commit body;
-    preserve them in squash/merge bodies. Include the classification closeout
+    run `issue_tool.py validate-closeout-draft` before publishing the carrier.
+    Preserve keywords in squash/merge bodies. Include the classification closeout
     ledger described in `references/closeout-discipline.md`; bug ledgers carry
     `Debug artifact: <path>` plus RCA, sibling, and prevention notes.
     Run `issue_tool.py verify-closeout` after push/merge; final handoff
@@ -178,8 +179,7 @@ repo by created date. It must not use the current session's last created issue.
 - Do not file siblings surfaced by causal review as new issues without first
   asking whether they should be bundled into the current fix.
 - When an active `achieve` goal artifact exists, file or defer off-goal findings
-  here and append only the issue reference and reason to that goal artifact; see
-  `../../shared/references/active-goal-coordination.md`.
+  here and append only the issue reference/reason to that goal artifact.
 
 ## References
 

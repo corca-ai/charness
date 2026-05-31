@@ -88,6 +88,15 @@ def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
     assert "command success alone is not closeout" in closeout
 
 
+def test_issue_closeout_draft_validation_runs_before_mutation() -> None:
+    skill = _read(SKILL)
+    closeout = _read(CLOSEOUT)
+
+    assert "validate-closeout-draft" in skill
+    assert "Before a PR body, direct commit body, or manual close comment is published" in closeout
+    assert "fails before any GitHub mutation" in closeout
+
+
 def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     skill = _read(SKILL)
     closeout = _read(CLOSEOUT)
