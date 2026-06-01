@@ -2,7 +2,11 @@
 
 This document addresses the autonomously researchable investigation portion of
 [#185](https://github.com/corca-ai/charness/issues/185) and complements
-[product-success-metrics.md](./product-success-metrics.md).
+[product-success-metrics.md](./product-success-metrics.md). It dispositions the
+engineering checklist for Charness's current workflow-product boundary; it does
+not close product-success issue #184.
+The closeout-ready necessary-condition summary is recorded in
+[issue-185-ai-ml-engineering-success.md](../charness-artifacts/spec/issue-185-ai-ml-engineering-success.md).
 
 Source note: the originating Slack thread was not re-fetched in this session;
 see the source note in [product-success-metrics.md](./product-success-metrics.md).
@@ -28,10 +32,10 @@ usage signal, not product-success proof.
 
 | Pattern area | Current Charness state | Posture |
 | --- | --- | --- |
-| Evaluation | Deterministic gates are strong; Cautilus is eval-only and adapter-disabled unless planner proof asks for it. Public-skill dogfood and quality artifacts preserve behavior-review state. | Strong for local proof; weak for product outcome measurement. |
-| Experimentation | Specs, issues, critiques, retros, and release artifacts record changes and decisions. Runtime metrics exist for quality gates. | Strong for repo changes; weak for comparing product hypotheses over usage. |
-| Data and feedback | Debug artifacts preserve RCA, detection gaps, and sibling scans. Retros turn corrections into lessons. Usage episodes now have validator and report consumers, with capture gaps made visible. | Strong for incidents; still incomplete for ordinary successful usage. |
-| Operations and observability | Quality runtime signals, release proof, tool doctor, integration manifests, and handoff docs make operator state visible. | Strong for maintainer-local operations; release real-host proof remains deferred. |
+| Evaluation | Deterministic gates are strong; Cautilus is eval-only and adapter-disabled unless planner proof asks for it. Public-skill dogfood, quality artifacts, bounded fresh-eye review, and HITL surfaces preserve behavior-review state. | Strong for local proof and judgment-heavy closeout; weak for product outcome measurement. |
+| Experimentation | Specs, issues, critiques, retros, and release artifacts record workflow, prompt, adapter, and policy changes. Runtime metrics exist for quality gates. | Strong for repo experiments; model/search/sampling experiments must be named in an owning spec when Charness gains that runtime surface. |
+| Data and feedback | Debug artifacts preserve RCA, detection gaps, and sibling scans. Retros turn corrections into lessons. Usage episodes now have validator and report consumers, with capture gaps made visible. | Strong for incidents and local usage episodes; not a labeled training or eval dataset. |
+| Operations and observability | Quality runtime signals, release proof, tool doctor, integration manifests, and handoff docs make operator state visible. | Strong for maintainer-local operations; release real-host proof and cost/latency claims remain deferred unless captured by host/runtime artifacts. |
 | Quality engineering | `run-quality`, coverage, ruff, link checks, supply-chain checks, issue closeout rules, and critique discipline form a mature local gate surface. | Strong, with known risks around docs ergonomics and test fanout. |
 
 ## Patterns To Keep
@@ -64,7 +68,11 @@ usage signal, not product-success proof.
 3. Feedback signals are fragmented.
    Corrections appear in debug/retro/issue history, but ordinary acceptance,
    edits, and follow-up requests are not captured in a common envelope.
-4. Docs ergonomics has weak signal quality.
+4. Model-runtime experiment tracking is not a shipped Charness surface.
+   Charness currently tracks workflow/product experiments, not model/search/
+   sampling grids. If those variables become first-class, the owning spec should
+   name the variable set, comparison method, and rollback/selection criteria.
+5. Docs ergonomics has weak signal quality.
    The latest quality artifact flags README and generated CLI reference noise;
    the next move is ownership cleanup, not a broad docs gate.
 
@@ -86,7 +94,9 @@ usage signal, not product-success proof.
 
 The first candidate was implemented through #188, and the summary consumer was
 added later for #243. Maintainers still own the final product-priority and
-product-success decisions.
+product-success decisions. That boundary is intentional: #185 can close on
+engineering success conditions, while #184 remains open for product-success
+synthesis.
 
 ## Implementation Issue
 

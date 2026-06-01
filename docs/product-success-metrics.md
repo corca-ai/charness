@@ -1,8 +1,10 @@
 # Product Success Criteria And Metrics
 
-This document defines the current Charness success baseline for issues
-[#184](https://github.com/corca-ai/charness/issues/184) and
-[#185](https://github.com/corca-ai/charness/issues/185).
+This document defines the current Charness success baseline that informed
+issues [#184](https://github.com/corca-ai/charness/issues/184) and
+[#185](https://github.com/corca-ai/charness/issues/185). It is not a final
+`#184` product-success closeout; #184 remains open until maintainers synthesize
+the newer product-success framing and refresh the originating Slack source.
 
 Source note: both issues came from the 2026-05-20 Daily Scrum Slack thread
 `slack://C05J5LTFSCU/1778805288.184149`. This session could not re-fetch that
@@ -44,14 +46,15 @@ avoid turning missing context into false confidence.
 
 ## North-Star And First Instrumented Objective
 
-The product north-star is **operator/agent task success and trust**: an operator
-or agent in an installed repo can start from a normal task and trust the harness
-to make the next right workflow move, leaving durable evidence instead of false
-confidence. That is the success definition the [One-Page Summary](#one-page-summary)
-and [Core Success Criteria](#core-success-criteria) describe. It is named here
-but not yet directly measurable, because Charness does not yet capture
-operator-side task outcomes (consumer-repo measurement depends on the deferred
-usage-episode capture surface).
+The current baseline product north-star is **operator/agent task success and
+trust**: an operator or agent in an installed repo can start from a normal task
+and trust the harness to make the next right workflow move, leaving durable
+evidence instead of false confidence. That is the success definition the
+[One-Page Summary](#one-page-summary) and
+[Core Success Criteria](#core-success-criteria) describe. It remains provisional
+for #184 and is not yet directly measurable, because Charness does not yet
+capture operator-side task outcomes (consumer-repo measurement depends on the
+deferred usage-episode capture surface).
 
 The **first instrumented objective** — the one number Charness optimizes today —
 is the **repeated-mistake-to-learning conversion rate**: the share of RCA events
