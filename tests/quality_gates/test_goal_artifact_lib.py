@@ -114,6 +114,7 @@ def test_pursue_readiness_blocks_hidden_consequential_decisions() -> None:
         ("## Boundaries\n\nComplete all four proposed changes.\n", "broad_bundle_scope"),
         ("## Agent Verification Plan\n\nProof non-claim: live proof not run.\n", "proof_nonclaim_or_downgrade"),
         ("## Interview Decisions\n\nIrreversible side effects are allowed.\n", "irreversible_side_effect"),
+        ("## Non-Goals\n\nDo not close #276 until push and remote verification.\n", "issue_close_or_split"),
     ],
 )
 def test_pursue_readiness_discussion_trigger_families(body: str, trigger: str) -> None:
@@ -132,6 +133,30 @@ def test_pursue_readiness_does_not_treat_empty_discussion_label_as_summary() -> 
     )
     report = gal.pursue_readiness(shaped)
     assert report["pursue_ready"] is False
+    assert report["discussion_summary_present"] is False
+
+
+def test_pursue_readiness_does_not_treat_empty_discussion_heading_as_summary() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Agent Verification Plan\n\n"
+        "### Discuss before activation\n\n"
+        "### External Or Live Proof\n\nUse live proof.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is False
+    assert report["discussion_summary_present"] is False
+
+
+def test_pursue_readiness_ignores_stale_discussion_summary_in_slice_log() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Non-Goals\n\nDo not close #276 until push.\n\n"
+        "## Slice Log\n\nDiscuss before activation: close #100 was already discussed.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is False
+    assert report["discussion_required"] is True
     assert report["discussion_summary_present"] is False
 
 
@@ -157,6 +182,17 @@ def test_pursue_readiness_allows_surfaced_consequential_decisions() -> None:
     report = gal.pursue_readiness(shaped)
     assert report["pursue_ready"] is True
     assert report["discussion_required"] is True
+    assert report["discussion_summary_present"] is True
+
+
+def test_pursue_readiness_allows_summary_starting_with_issue_number() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Non-Goals\n\nDo not close #276 until push.\n\n"
+        "Discuss before activation: #276 remains local-only until push verifies closure.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
     assert report["discussion_summary_present"] is True
 
 

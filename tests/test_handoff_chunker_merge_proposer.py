@@ -94,6 +94,36 @@ def test_shared_file_pair_merges_on_full_path(lib):
     assert "scripts/check_doc_links.py" in reason
 
 
+def test_cli_preserves_issue_source_diagnostic(lib):
+    entry = _entry(
+        lib,
+        1,
+        "Live issue fallback",
+        paths=("skills/public/handoff/scripts/parse_handoff_entries.py",),
+    )
+    payload = {
+        "entries": [entry.to_dict()],
+        "issue_source_diagnostic": {
+            "stage": "list_open_issues",
+            "provider_attempted": True,
+            "type": "RuntimeError",
+            "message": "provider listing failed",
+        },
+    }
+
+    result = subprocess.run(
+        ["python3", str(MERGE_SCRIPT)],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    output = json.loads(result.stdout)
+    assert output["issue_source_diagnostic"] == payload["issue_source_diagnostic"]
+
+
 # Shared-skill ---------------------------------------------------------------
 
 

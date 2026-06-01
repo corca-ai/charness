@@ -139,12 +139,13 @@ pursue path, the exact responsibility blur #247 removes.
 
 Structural readiness is not enough when the goal contains consequential
 defaults. Before reporting an artifact as ready for `/goal`, surface a
-non-empty `Discuss before activation:` summary when `Boundaries`,
+non-empty `Discuss before activation:` summary when `Non-Goals`, `Boundaries`,
 `Agent Verification Plan`, `Interview Decisions`, or `Plan Critique Findings`
 contain decisions about live/prod proof, issue close/split, broad bundled scope,
 irreversible side effects, or proof-level non-claims. The deterministic
 `--pursue-ready` gate distinguishes this from placeholder shaping: such a goal
-is shaped, but not operator-ready, until the discussion summary is visible.
+is shaped, but not operator-ready, until the discussion summary is visible before
+the Slice Log.
 
 ## During
 

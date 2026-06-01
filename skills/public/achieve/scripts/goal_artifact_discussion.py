@@ -7,7 +7,7 @@ from typing import Any
 DISCUSSION_LABEL = "Discuss before activation"
 
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
-_SUMMARY_HEADING = re.compile(r"^#{2,4}\s+Discuss before activation\b.*$", re.IGNORECASE | re.MULTILINE)
+_SUMMARY_HEADING = re.compile(r"^(#{2,4})[ \t]+Discuss before activation\b.*$", re.IGNORECASE | re.MULTILINE)
 _SUMMARY_LINE = re.compile(r"^[ \t]*(?:[-*][ \t]*)?Discuss before activation:[ \t]*(.+)$", re.IGNORECASE | re.MULTILINE)
 _N_A = re.compile(r"^(?:n/?a|none|no consequential|not applicable)\b", re.IGNORECASE)
 
@@ -20,6 +20,7 @@ TRIGGERS: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 SECTIONS = (
+    "Non-Goals",
     "Boundaries",
     "Agent Verification Plan",
     "Interview Decisions",
@@ -54,15 +55,27 @@ def _section_bodies(text: str) -> dict[str, str]:
 
 
 def _summary_present(text: str) -> bool:
-    masked = _mask_fences(text)
+    masked = _mask_fences(text).split("\n## Slice Log", 1)[0]
     line = _SUMMARY_LINE.search(masked)
-    if line and not _N_A.match(line.group(1).strip()):
+    if line and _has_summary_content(line.group(1)):
         return True
     heading = _SUMMARY_HEADING.search(masked)
     if heading is None:
         return False
-    body = masked[heading.end():].split("\n## ", 1)[0].strip()
-    return bool(body) and not _N_A.match(body)
+    level = len(heading.group(1))
+    stop = re.search(rf"^#{{1,{level}}}[ \t]+", masked[heading.end():], re.MULTILINE)
+    body_end = heading.end() + stop.start() if stop else len(masked)
+    return _has_summary_content(masked[heading.end():body_end])
+
+
+def _has_summary_content(text: str) -> bool:
+    body = text.strip()
+    if not body or _N_A.match(body):
+        return False
+    return any(
+        line.strip() and not re.match(r"#{1,6}[ \t]+", line.lstrip())
+        for line in body.splitlines()
+    )
 
 
 def discussion_readiness(text: str) -> dict[str, Any]:

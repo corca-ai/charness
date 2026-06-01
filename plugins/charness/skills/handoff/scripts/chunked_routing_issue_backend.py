@@ -25,22 +25,25 @@ GH_LIST_OPEN_ARGS = [
 
 
 def _issue_module_candidates(repo_root: Path, name: str) -> list[Path]:
-    roots: list[Path] = []
-    for root in Path(__file__).resolve().parents:
-        if root not in roots:
-            roots.append(root)
-    script_parts = Path(__file__).resolve().parts
-    installed_first = any(
-        script_parts[index:index + 3] == ("skills", "handoff", "scripts")
-        for index in range(len(script_parts) - 2)
-    )
+    package_root, installed_first = _package_root(Path(__file__).resolve())
     rels = [
         Path("skills/issue/scripts") / f"{name}.py",
         Path("skills/public/issue/scripts") / f"{name}.py",
     ]
     if not installed_first:
         rels.reverse()
-    return [root / rel for root in roots for rel in rels]
+    return [package_root / rel for rel in rels]
+
+
+def _package_root(script_path: Path) -> tuple[Path, bool]:
+    parts = script_path.parts
+    for index in range(len(parts) - 3):
+        if parts[index:index + 4] == ("skills", "public", "handoff", "scripts"):
+            return Path(*parts[:index]), False
+    for index in range(len(parts) - 2):
+        if parts[index:index + 3] == ("skills", "handoff", "scripts"):
+            return Path(*parts[:index]), True
+    raise ImportError(f"cannot resolve handoff package root for {script_path}")
 
 
 def _load_issue_module(repo_root: Path, name: str):

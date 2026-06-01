@@ -481,3 +481,31 @@ def test_draft_goal_help_resolves_installed_achieve_skill_layout(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert "--date" in result.stdout
+
+
+def test_draft_goal_help_prefers_installed_achieve_over_stale_source(tmp_path):
+    _copy_installed_runtime(tmp_path)
+    handoff_scripts = _copy_installed_handoff_scripts(tmp_path)
+    installed = tmp_path / "skills" / "achieve" / "scripts"
+    source = tmp_path / "skills" / "public" / "achieve" / "scripts"
+    installed.mkdir(parents=True)
+    source.mkdir(parents=True)
+    (installed / "goal_artifact_lib.py").write_text(
+        "# Stub is enough for --help import-time portability proof.\n",
+        encoding="utf-8",
+    )
+    (source / "goal_artifact_lib.py").write_text(
+        "raise RuntimeError('stale source achieve loaded')\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["python3", str(handoff_scripts / "draft_goal_from_chunk.py"), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "--date" in result.stdout

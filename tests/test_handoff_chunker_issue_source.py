@@ -480,6 +480,29 @@ def test_load_issue_module_installed_layout_ignores_consumer_repo_shadow(tmp_pat
         installed_backend._load_issue_module(consumer, "issue_runtime")
 
 
+def test_load_issue_module_installed_layout_ignores_ancestor_source_tree(tmp_path):
+    repo_root = tmp_path / "repo"
+    plugin_root = repo_root / "plugins" / "charness"
+    handoff_scripts = plugin_root / "skills" / "handoff" / "scripts"
+    shutil.copytree(SCRIPTS, handoff_scripts, ignore=REPO_COPY_IGNORE)
+    ancestor_issue = repo_root / "skills" / "public" / "issue" / "scripts"
+    ancestor_issue.mkdir(parents=True)
+    (ancestor_issue / "issue_runtime.py").write_text(
+        "VALUE = 'ancestor-source'\n",
+        encoding="utf-8",
+    )
+    spec = importlib.util.spec_from_file_location(
+        "installed_chunked_routing_issue_backend_nested",
+        handoff_scripts / "chunked_routing_issue_backend.py",
+    )
+    assert spec is not None and spec.loader is not None
+    installed_backend = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installed_backend)
+
+    with pytest.raises(ImportError, match="issue_runtime"):
+        installed_backend._load_issue_module(tmp_path / "consumer", "issue_runtime")
+
+
 def test_load_issue_module_installed_layout_prefers_installed_over_stale_source(tmp_path):
     plugin_root = tmp_path / "plugin"
     handoff_scripts = plugin_root / "skills" / "handoff" / "scripts"

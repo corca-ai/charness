@@ -44,11 +44,13 @@ causal reviews plus final code critique in
 
 Prevention: installed-layout fixtures now cover `skills/<id>/` issue and
 achieve lookups, issue-source diagnostics expose pre-provider and provider
-payload failures, and `check_goal_artifact.py --pursue-ready` now blocks
-consequential activation decisions unless a non-empty
-`Discuss before activation:` summary is visible.
+payload failures through parse-to-propose flow, and
+`check_goal_artifact.py --pursue-ready` now blocks consequential activation
+decisions unless a non-empty current `Discuss before activation:` summary is
+visible before the Slice Log.
 
 Critique: charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-resolution.md
+Post-commit critique: charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-postcommit-subagent-critique.md
 
 Close #275.
 Close #276.
@@ -61,7 +63,11 @@ Evidence:
   `charness-artifacts/issue/2026-06-01-reviewer-tier-275-276-closeout.md`
 - Resolution critique:
   `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-resolution.md`
-- Final broad pytest: `1973 passed, 4 skipped in 270.06s`
+- Post-commit subagent critique:
+  `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-postcommit-subagent-critique.md`
+- Final broad pytest: `1980 passed, 4 skipped in 271.87s`
+- Post-critique focused regression tests:
+  `115 passed in 4.07s`
 - Final deterministic validators: packaging, docs, skill validation, Cautilus
   proof policy, critique artifacts, lint, length, attention-state visibility,
   public-skill validation, public-skill dogfood, and py_compile all passed.

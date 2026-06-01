@@ -50,10 +50,12 @@ lifecycle instead of starting a new one.
      stop conditions, and reporting expectations
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready` (#247)
-   - for consequential defaults (live/prod proof, issue close/split, broad
-     bundled scope, irreversible side effects, or proof-level non-claims), add
-     a non-empty `Discuss before activation:` summary before reporting the goal
-     ready to enter; otherwise `--pursue-ready` fails (#276)
+   - for consequential defaults in Non-Goals, Boundaries, verification,
+     interview decisions, or critique findings (live/prod proof,
+     issue close/split, broad bundled scope, irreversible side effects, or
+     proof-level non-claims), add a non-empty `Discuss before activation:`
+     summary before reporting the goal ready to enter; otherwise
+     `--pursue-ready` fails (#276)
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself

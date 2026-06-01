@@ -8,10 +8,10 @@ This file is the living goal scratchpad for the active local closeout run.
 
 ## Active Operating Frame
 
-- Current slice: local carrier complete; remote issue closure pending explicit
-  push request.
-- Next action: commit the local carrier, then wait for the operator's push
-  decision before claiming GitHub issue closure.
+- Current slice: post-commit subagent critique findings are being applied
+  locally; remote issue closure pending explicit push request.
+- Next action: verify and commit the critique fixup carrier, then wait for the
+  operator's push decision before claiming GitHub issue closure.
 - Discuss before activation: #275 and #276 are bundled in one local carrier;
   the carrier includes close keywords but must not be pushed or claimed closed
   until the operator explicitly asks for push, after which GitHub issue state
@@ -262,13 +262,25 @@ Issues or deferred findings discovered during the run.
   final focused achieve rerun passed `63 passed`).
 - Broad tests:
   `pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py`
-  passed: `1973 passed, 4 skipped in 270.06s`.
+  passed before post-commit critique: `1973 passed, 4 skipped in 270.06s`;
+  passed after post-commit critique fixes:
+  `1980 passed, 4 skipped in 271.87s`.
 - Critique: `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-resolution.md`.
 - Retro: `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`.
 - Issue closeout carrier:
   `charness-artifacts/issue/2026-06-01-reviewer-tier-275-276-closeout.md`.
 - Non-claim: GitHub issue closure has not been verified because the carrier has
   not been pushed by explicit operator request.
+- Post-commit subagent critique:
+  `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-postcommit-subagent-critique.md`.
+  Fresh-eye reviewers found four Act Before Ship concerns; the local fixup
+  tightened #276 heading/Non-Goals/Slice Log readiness semantics, preserved
+  #275 issue-source diagnostics through `propose_merges.py`, bounded installed
+  issue lookup to the current package root, and aligned installed achieve lookup
+  preference.
+- Post-critique focused tests:
+  `pytest -q tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_achieve_before_activation.py tests/test_handoff_chunker_issue_source.py tests/test_handoff_chunker_parse.py tests/test_handoff_chunker_merge_proposer.py`
+  passed: `115 passed in 4.07s`.
 
 ## User Verification Instructions
 

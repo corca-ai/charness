@@ -54,27 +54,40 @@ def _load_goal_artifact_lib():
     Standalone-Usefulness Invariant (the gate is on mutation, not read/import).
     """
     here = Path(__file__).resolve()
+    package_root, installed_first = _package_root(here)
     rels = (
-        Path("skills/public/achieve/scripts/goal_artifact_lib.py"),
         Path("skills/achieve/scripts/goal_artifact_lib.py"),
+        Path("skills/public/achieve/scripts/goal_artifact_lib.py"),
     )
-    for ancestor in here.parents:
-        for rel in rels:
-            candidate = ancestor / rel
-            if not candidate.is_file():
-                continue
-            spec = importlib.util.spec_from_file_location(
-                "achieve_goal_artifact_lib", candidate
-            )
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
+    if not installed_first:
+        rels = tuple(reversed(rels))
+    for rel in rels:
+        candidate = package_root / rel
+        if not candidate.is_file():
+            continue
+        spec = importlib.util.spec_from_file_location(
+            "achieve_goal_artifact_lib", candidate
+        )
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
     raise ImportError(
         "achieve goal_artifact_lib.py not found in source-tree "
         "skills/public/achieve/scripts or installed skills/achieve/scripts layout"
     )
+
+
+def _package_root(script_path: Path) -> tuple[Path, bool]:
+    parts = script_path.parts
+    for index in range(len(parts) - 3):
+        if parts[index:index + 4] == ("skills", "public", "handoff", "scripts"):
+            return Path(*parts[:index]), False
+    for index in range(len(parts) - 2):
+        if parts[index:index + 3] == ("skills", "handoff", "scripts"):
+            return Path(*parts[:index]), True
+    raise ImportError(f"cannot resolve handoff package root for {script_path}")
 
 
 GOAL_LIB = _load_goal_artifact_lib()
