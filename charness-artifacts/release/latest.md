@@ -62,7 +62,7 @@ Advanced `charness` toward release `0.13.3` (tag `v0.13.3`) through the repo-own
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.13.2 (maintenance patch: autonomous goal closeout hardening, survivor-test coordination guards, issue/achieve/gather validation floors, and release evidence refresh).
+- Run `charness update` to pull 0.13.3 (maintenance patch: goal-window metric evidence, goal artifact producer contract coverage, and stricter scoped-audit honesty checks).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
 - HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
