@@ -104,10 +104,10 @@ history.
    - expand to four angle subagents only when the change is clearly broad:
      cross-surface, breaking, migration-heavy, or release plus doc cascade
    - choose angles that can disagree meaningfully, not five near-duplicates
-   - the target reference's `Anchor Angle Distribution` section names the
-     anchor-by-anchor weighting; see also `references/angle-selection.md`
+   - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
 3. Run the angle pass.
    - use bounded fresh-eye subagents with one angle each
+   - apply adapter `reviewer_tiers.high-leverage` spawn fields when the host exposes them
    - when the repo's adapter declares ≥1 `packet_sections`, pass the
      prepare-packet markdown render to each subagent and record the
      consumed packet path in the closeout (`references/prepare-packet.md`)

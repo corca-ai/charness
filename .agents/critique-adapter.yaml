@@ -2,6 +2,11 @@ version: 1
 repo: charness
 language: en
 output_dir: charness-artifacts/critique
+reviewer_tiers:
+  high-leverage:
+    model: gpt-5.5
+    reasoning_effort: medium
+    service_tier: priority
 # Declared sections opt this repo into the critique prepare-packet
 # contract. See skills/public/critique/references/prepare-packet.md.
 packet_sections:

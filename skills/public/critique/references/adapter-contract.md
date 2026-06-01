@@ -2,7 +2,11 @@
 
 `critique` reads its repo policy from `.agents/critique-adapter.yaml`.
 The adapter is optional. Without it, `critique` runs with inferred
-defaults and consumes no prepare packet.
+defaults and consumes no prepare packet. Newly scaffolded adapters include the
+Codex `high-leverage` reviewer tier (`model: gpt-5.5`,
+`reasoning_effort: medium`, `service_tier: priority`), so repos adopting the
+adapter get the current Codex default without making adapter-less non-Codex
+hosts inherit a provider-specific model.
 
 ## Lookup Order
 
@@ -67,7 +71,8 @@ Field semantics:
   `service_tier` (all strings, all optional); `reasoning_effort` /
   `service_tier` apply only where the host exposes them. Unknown tier names
   warn; unknown sub-fields error. A host without subagent model overrides
-  ignores it.
+  ignores it. Newly scaffolded adapters default the Codex `high-leverage` tier
+  to `gpt-5.5` with `medium` reasoning.
 
 Each `packet_sections` entry:
 

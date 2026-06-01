@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import subprocess
+
 from scripts.adapter_lib import load_yaml_file
 from scripts.critique_adapter_lib import validate_adapter_data
 
@@ -9,6 +12,7 @@ SHARED_REVIEW = ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-
 CRITIQUE_DIR = ROOT / "skills" / "public" / "critique"
 ADAPTER_EXAMPLE = CRITIQUE_DIR / "adapter.example.yaml"
 ADAPTER_CONTRACT = CRITIQUE_DIR / "references" / "adapter-contract.md"
+INIT_ADAPTER = CRITIQUE_DIR / "scripts" / "init_adapter.py"
 NAMED_SKILLS = ("critique", "quality", "release", "issue")
 PROVIDER_MODEL_TOKENS = ("gpt-5", "sonnet-4")
 
@@ -55,6 +59,51 @@ def test_critique_adapter_validates_reviewer_tiers_example() -> None:
     assert errors == []
     tiers = data.get("reviewer_tiers")
     assert tiers and tiers.get("high-leverage", {}).get("model")
+
+
+def test_live_critique_adapter_pins_codex_high_leverage_default() -> None:
+    raw = load_yaml_file(ROOT / ".agents" / "critique-adapter.yaml")
+    data, errors, _ = validate_adapter_data(raw if isinstance(raw, dict) else {}, ROOT)
+    assert errors == []
+    tier = data["reviewer_tiers"]["high-leverage"]
+    assert tier == {
+        "model": "gpt-5.5",
+        "reasoning_effort": "medium",
+        "service_tier": "priority",
+    }
+
+
+def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
+    result = subprocess.run(
+        ["python3", str(INIT_ADAPTER), "--repo-root", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    raw = load_yaml_file(tmp_path / ".agents" / "critique-adapter.yaml")
+    data, errors, _ = validate_adapter_data(raw if isinstance(raw, dict) else {}, tmp_path)
+    assert errors == []
+    assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-5.5"
+    assert data["reviewer_tiers"]["high-leverage"]["reasoning_effort"] == "medium"
+    assert data["reviewer_tiers"]["high-leverage"]["service_tier"] == "priority"
+
+
+def test_missing_critique_adapter_does_not_infer_host_specific_tier(tmp_path) -> None:
+    result = subprocess.run(
+        [
+            "python3",
+            str(CRITIQUE_DIR / "scripts" / "resolve_adapter.py"),
+            "--repo-root",
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "reviewer_tiers" not in payload["data"]
 
 
 def test_adapter_example_keeps_host_plural_guidance() -> None:

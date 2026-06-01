@@ -14,6 +14,14 @@ SKELETON = """version: 1
 repo: CHANGE_ME
 language: en
 output_dir: charness-artifacts/critique
+# Default Codex mapping for high-leverage fresh-eye reviewers. Hosts that do not
+# expose these fields ignore them; Claude Code repos can replace this tier with
+# their host-specific reviewer model.
+reviewer_tiers:
+  high-leverage:
+    model: gpt-5.5
+    reasoning_effort: medium
+    service_tier: priority
 # Declare sections to opt into the critique prepare-packet contract.
 # Without any entry, critique runs unchanged.
 # See skills/public/critique/references/adapter-contract.md.
