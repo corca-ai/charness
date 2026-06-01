@@ -30,7 +30,7 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.13.4 (maintenance patch: bare handoff pickup now filters local-state preflight, completed goal activation, and cadence/invariant constraints before ranking chunks).
+- Run `charness update` to pull 0.13.5 (maintenance patch: installed handoff can load the live issue source again, achieve now blocks hidden consequential activation decisions, and reviewer-tier guardrails fail earlier before broad verification).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
 - HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
