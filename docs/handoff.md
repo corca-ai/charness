@@ -16,30 +16,31 @@
 
 ## Current State
 
-- Local `main` is ahead of `origin/main` with the autonomous hardening tranche;
-  no push, release, or live GitHub issue mutation has been performed.
+- Local `main` is ahead of `origin/main` with the open-issue closeout tranche;
+  no release is planned. Final carrier publication and live issue state updates
+  are the remaining active-goal work.
 - The active achieve goal is
   [handoff/open-issue generative closeout](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md).
-  Slices 0-3 are complete: #272 report clarity, #265/#261 disposition, and
-  workflow-safety issues #258/#259/#237/#236. Slice evidence lives in the goal
-  `## Slice Log`.
+  Slices 0-6 are complete. Slice 7 final carrier is in progress: final proof,
+  final handoff/goal/retro artifacts, push, and live GitHub close/comment.
 - The current issue matrix covers all 12 open issues: #272, #265, #261, #259,
   #258, #252, #243, #241, #237, #236, #185, and #184. #184 product success is
-  intentionally left open; #185 is limited to necessary engineering-success
-  conditions.
-- Current branch proof after Slice 3: `main...origin/main [ahead 11]`, HEAD
-  `d1970c1 Record workflow safety goal progress`.
+  intentionally left open; #261 mutation-standard policy is intentionally left
+  open; #185 closes on necessary engineering-success conditions only.
+- Current branch proof at Slice 7 start: branch was
+  `main...origin/main [ahead 18]`, HEAD is
+  `517b734 Record AI ML success goal progress`.
 
 ## Next Session
 
 1. Verify the final local state: `git status --short --branch` and
    `git log --oneline origin/main..HEAD`.
-2. Continue the active goal at Slice 4: resolve #252/#241 together by making
-   setup accept compact AGENTS contracts and making create-skill adapter
-   metadata extensible through host-owned fields.
-3. Then handle Slice 5 #243 usage episodes, Slice 6 #185 necessary engineering
-   success while leaving #184 open, and Slice 7 final carrier. Do not push or
-   mutate live GitHub issues before the final carrier.
+2. Continue Slice 7 final carrier from
+   [2026-06-01-open-issue-final-carrier.md](../charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md):
+   run final proof, commit final artifacts, push, then verify/close the live
+   issue rows.
+3. Close #272/#265/#259/#258/#252/#243/#241/#237/#236/#185 through the final
+   carrier. Comment but leave #261 and #184 open intentionally.
 
 ## Discuss
 
