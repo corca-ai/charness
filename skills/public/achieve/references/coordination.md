@@ -39,6 +39,12 @@ does not improvise them:
   out-of-band close (push timing stays the maintainer's call). Without the
   keyword a goal can resolve an issue yet leave it open after push; that gap is
   what this coordination closes.
+- **Record the close-intended ledger.** In `## Coordination Cues`, add
+  `Issue closeout:` with the issue numbers, chosen carrier, close-keyword state,
+  classification/critique evidence, and the exact `validate-closeout-draft` or
+  `verify-closeout` proof. Bundled carriers are allowed, but each issue's
+  critique evidence must be bound through `Critique #N:` or an explicit bundle
+  line owned by the `issue` verifier.
 
 This coordination is **operator-side**: `achieve` (the goal operator) plans the
 two steps into the goal artifact — the `debug` step in the Slice Plan, the close

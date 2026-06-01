@@ -153,7 +153,9 @@ focus. The critique skill already owns its own bounded subagent contract
 (angle reviewers + counterweight). This resolution critique satisfies the
 CLAUDE.md task-completion critique obligation: when `issue resolve` is
 invoked from `impl`, the implementer should declare
-`Critique: full <issue-resolution-artifact>` instead of running a second
+`Critique: <issue-resolution-artifact>` for one selected issue. For bundled
+issues, declare `Critique #N: <issue-resolution-artifact>` or
+`Critique #N #M: <issue-resolution-artifact>` instead of running a second
 generic critique at impl's closeout step.
 
 ### Critique handoff template

@@ -121,7 +121,7 @@ def test_list_capabilities_recommends_support_skill_from_task_text(tmp_path: Pat
     _write_specdown_surface(tmp_path)
 
     task = "Please edit docs/specs/user/foo.spec.md and add a check:jq assertion without a full specdown run."
-    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task)
+    payload = _run_list_capabilities(tmp_path, "--write-artifact", "--recommend-for-task", task)
 
     assert payload["support_recommendation_query"] == {"mode": "task_text", "task_text": task}
     assert payload["support_skill_recommendations"] == [
@@ -364,6 +364,7 @@ def test_recommend_for_task_surfaces_worktree_workflow(tmp_path: Path) -> None:
 
     payload = _run_list_capabilities(
         tmp_path,
+        "--write-artifact",
         "--recommend-for-task",
         "Create a git worktree for a spec slice and prepare it before editing docs.",
     )
@@ -478,7 +479,7 @@ def test_recommend_for_task_surfaces_verbatim_public_skill(tmp_path: Path) -> No
     _write_public_skill(tmp_path, "hitl", "Insert deliberate human judgment into a bounded review loop.")
 
     task = "Let's do a hitl review of docs/specs/index.spec.md."
-    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task)
+    payload = _run_list_capabilities(tmp_path, "--write-artifact", "--recommend-for-task", task)
 
     assert payload["public_recommendation_query"] == {"mode": "task_text", "task_text": task}
     assert payload["public_skill_recommendations"] == [

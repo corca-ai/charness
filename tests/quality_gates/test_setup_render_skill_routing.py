@@ -22,6 +22,8 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path) -> 
     # #238: name find-skills as a skill, not a bare PATH command.
     assert "ask the `find-skills` skill to recommend a route for the task" in payload["markdown"]
     assert "before ad hoc shell or tool use" in payload["markdown"]
+    assert "recommendation-shaped probes are read-only by default" in payload["markdown"]
+    assert "plain inventory refreshes own `charness-artifacts/find-skills/latest.*`" in payload["markdown"]
     # #238 regression guard: no bare-command syntax that reads as a binary.
     assert "find-skills --recommend-for-task" not in payload["markdown"]
     assert "find-skills --" not in payload["markdown"]

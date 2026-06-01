@@ -428,7 +428,7 @@ def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_
     _write_find_skills_adapter(tmp_path)
     _write_cautilus_validation_integration(tmp_path)
 
-    plain_payload = _run_list_capabilities(tmp_path)
+    _run_list_capabilities(tmp_path)
     query_payload = _run_list_capabilities(
         tmp_path,
         "--recommendation-role",
@@ -439,17 +439,40 @@ def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_
     )
     artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
 
+    assert query_payload["artifacts"]["mode"] == "read-only"
     assert query_payload["artifacts"]["updated"] is False
     assert query_payload["artifacts"]["semantic_content_changed"] is False
     assert query_payload["artifacts"]["requires_repo_closeout"] is False
     assert query_payload["artifacts"]["commit_recommended"] is False
-    assert query_payload["artifacts"]["generated_at"] == plain_payload["artifacts"]["generated_at"]
+    assert query_payload["artifacts"]["generated_at"] is None
     assert query_payload["tool_recommendation_query"] == {
         "mode": "recommendation_role",
         "recommendation_role": "validation",
         "next_skill_id": "quality",
         "only_blocking": False,
     }
+    assert query_payload["tool_recommendations"][0]["tool_id"] == "cautilus"
+    assert artifact_json["inventory"]["tool_recommendations"] == []
+    assert artifact_json["inventory"]["tool_recommendation_query"] is None
+
+
+def test_recommendation_queries_can_force_canonical_inventory_refresh(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_cautilus_validation_integration(tmp_path)
+
+    query_payload = _run_list_capabilities(
+        tmp_path,
+        "--write-artifact",
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
+        env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
+    )
+    artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
+
+    assert query_payload["artifacts"]["mode"] == "write"
+    assert query_payload["artifacts"]["updated"] is True
     assert query_payload["tool_recommendations"][0]["tool_id"] == "cautilus"
     assert artifact_json["inventory"]["tool_recommendations"] == []
     assert artifact_json["inventory"]["tool_recommendation_query"] is None

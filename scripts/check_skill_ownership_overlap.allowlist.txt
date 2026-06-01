@@ -13,6 +13,7 @@ setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; r
 setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml via seed_t_events_adapter.py; runtime owns to t-events integration
 setup:adapter:usage-episodes:seed-only -- setup seeds .agents/usage-episodes-adapter.yaml via seed_usage_episodes_adapter.py; runtime owns to usage-episodes integration
 setup:artifact:spec:read-only cite -- seed_t_events_adapter.py template comment cites issue-135 umbrella spec for traceability; runtime owns to spec
+setup:artifact:find-skills:read-only generated prose -- render_skill_routing.py names the canonical find-skills inventory path while find-skills owns writes
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 release:artifact:critique:read-only proof -- release helper validates a tracked critique artifact path before rendering review proof in release/latest.md
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home

@@ -61,8 +61,7 @@ was the inventory running while the routed workflow did not — owning the
 
 ## Bootstrap
 
-Resolve `$SKILL_DIR` and (in split-monorepo hosts) `$CHARNESS_SUPPORT_DIR`
-per `../../shared/references/bootstrap-resolution.md`.
+Resolve `$SKILL_DIR` and `$CHARNESS_SUPPORT_DIR` per `../../shared/references/bootstrap-resolution.md`.
 
 Start local-first:
 
@@ -77,8 +76,9 @@ sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
 
-Pass `--read-only` for routing-only/sandbox callers: the inventory still prints
-on stdout, but no durable artifact is written (`artifacts` reports `read-only`).
+Routing-only callers should stay read-only. Recommendation-shaped calls are
+read-only by default; pass `--write-artifact` only when intentionally refreshing
+the canonical inventory too.
 
 If a host-provided installed skill path is missing, resolve the current path
 before treating the capability as absent (add `--marketplace`/`--plugin` for a
@@ -93,8 +93,8 @@ manifests for tool-use capability before proposing a new skill; search any
 adapter-advertised trusted skill roots first.
 
 Default durable artifact: `<repo-root>/charness-artifacts/find-skills/latest.md`
-is the canonical local-first capability inventory only; ad hoc recommendation
-queries stay in command output and do not rewrite query-shaped state into it.
+is canonical inventory only; recommendation queries stay in command output
+unless `--write-artifact` is explicit.
 
 After one run you get a local-first capability inventory (skill descriptions,
 canonical paths, trigger phrases, referenced files), the smallest next usable

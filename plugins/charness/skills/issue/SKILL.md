@@ -116,12 +116,12 @@ repo by created date. It must not use the current session's last created issue.
    authoring-repo-internal `docs/conventions/implementation-discipline.md`:
    sync generated, plugin, and export surfaces before validators. Verify with
    the strongest honest local gate.
-9. Run a **resolution critique** focused on recurrence by delegating to
-   the `critique` skill (which spawns its own bounded angle + counterweight
-   subagents). Pass causal-review output via `references/causal-review.md`.
-   When invoked from `impl`, declare `Critique: full <issue-resolution-artifact>`.
-   One per fix-unit, not per selector; bundle cheap prevention and record
-   deferred. If step 4 was blocked, report blocked state instead of running.
+9. Run a **resolution critique** focused on recurrence through `critique`.
+   Pass causal-review output via `references/causal-review.md`.
+   Use `Critique: <artifact>` for one issue; use `Critique #N: <artifact>` or
+   `Critique #N #M: <artifact>` for bundles.
+   One per fix-unit, not per selector; bundle cheap prevention and record deferred.
+   If step 4 was blocked, report blocked state instead of running.
 10. Commit, push, and prefer GitHub auto-close via explicit close keywords
     (`Close #1. Close #2.`) in the PR body or direct-to-default commit body;
     run `issue_tool.py validate-closeout-draft` before publishing the carrier.

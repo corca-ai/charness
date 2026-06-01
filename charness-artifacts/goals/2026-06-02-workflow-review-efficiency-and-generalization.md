@@ -1,6 +1,6 @@
 # Achieve Goal: Workflow Review Efficiency And Generalization
 
-Status: draft
+Status: active
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`
 
@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: discuss the activation decisions below with the user; then
-  activate with `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.
+- Current slice: Slice 1 plus user-added #277 closeout binding fix.
+- Next action: finish deterministic issue closeout binding and active-goal
+  handoff hardening, then run focused/broad verification.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -127,8 +127,8 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Discuss and lock activation choices | The user explicitly questioned overuse of `find-skills`, overuse of subagents, and over-coupled fixes | `Discuss before activation` has concrete decisions and this artifact passes `--pursue-ready` | planned |
-| 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | planned |
+| 0 | Discuss and lock activation choices | The user explicitly questioned overuse of `find-skills`, overuse of subagents, and over-coupled fixes | `Discuss before activation` has concrete decisions and this artifact passes `--pursue-ready` | completed |
+| 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | in progress |
 | 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | planned |
 | 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | planned |
 | 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | planned |
@@ -159,6 +159,11 @@ Initial routing:
   per-commit default.
 - Gather: n/a — the context is repo-local conversation, retros, and artifacts.
 - Release: n/a — no release surface is intended.
+- Issue closeout: #277 via direct-commit carrier; close keywords, bug ledger,
+  and `Critique #277:
+  charness-artifacts/critique/2026-06-02-277-closeout-binding-resolution.md`
+  passed `issue_tool.py validate-closeout-draft` before commit; final
+  GitHub-state verification happens after push.
 
 ## Discuss before activation
 
@@ -182,6 +187,18 @@ goal:
 
 ## Slice Log
 
+- 2026-06-02 Slice 1 in progress: kept one startup `find-skills` pass but made
+  recommendation-shaped calls read-only unless `--write-artifact` is explicit;
+  added #277 per-issue resolution-critique binding for issue closeout carriers;
+  filtered active-goal activation entries from handoff chunked routing; recorded
+  public-skill dogfood review for the changed achieve/find-skills/issue/quality
+  /handoff surfaces.
+- 2026-06-02 Fresh-eye review for #277: causal review identified
+  carrier-level critique evidence as the bug; post-implementation reviewers
+  required source/plugin helper inclusion, stale issue carrier wording fixes,
+  setup renderer sync, handoff reference sync, active-goal close-intent cue, and
+  additional bundle/fence regression tests. Folded into the slice.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -192,6 +209,8 @@ the originating context by following them in order.
 - `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`
 - `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-postcommit-subagent-critique.md`
 - `charness-artifacts/critique/2026-06-01-release-v0.13.5-reviewer-tier-critique.md`
+- GitHub issue #277: goal-run issue closeout can miss auto-close carriers and
+  over-satisfy bundled critique evidence.
 - User prompt on 2026-06-02 asking to reduce unnecessary `find-skills`
   surfacing, generalize improvements without strong coupling, avoid excessive
   subagent critique, and set next-session work up as an achieve goal.
@@ -243,7 +262,25 @@ Issues or deferred findings discovered during the run.
 
 - None yet.
 
+- Deterministic enforcement of the new `Issue closeout:` active-goal cue is
+  deferred. The current slice records the cue and uses the issue closeout
+  verifier as the hard gate; a future slice can decide whether goal artifacts
+  need a separate floor.
+
 ## Final Verification
+
+- 2026-06-02 slice closeout aggregate passed with
+  `python3 scripts/run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review`: packaging, committed packaging, doc links,
+  command docs, markdown, secrets, Cautilus proof policy, skill validation,
+  py_compile, ownership overlap, public-skill validation, public-skill dogfood,
+  critique artifacts, integrations, support sync, tool update, ruff, Python
+  lengths, attention-state visibility, broad pytest, and agent-browser runtime
+  guard all passed.
+- 2026-06-02 #277 draft closeout carrier passed
+  `issue_tool.py validate-closeout-draft --repo-root . --repo
+  corca-ai/charness --number 277 --classification bug --carrier pr-body
+  --body-file charness-artifacts/issue/2026-06-02-277-closeout-binding.md`.
 
 ## User Verification Instructions
 

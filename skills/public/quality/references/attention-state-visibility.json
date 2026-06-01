@@ -386,7 +386,7 @@
       "evidence_terms": ["verify_skipped", "verification disabled by caller", "body_verified"],
       "rationale": "issue create emits a stdout payload whose body_verified is null with an explicit verify_skipped/verify_error note when read-back is disabled (verify=False) or not feasible; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
     },
-    "skills/public/issue/scripts/issue_verify_closeout.py": {
+    "skills/public/issue/scripts/issue_resolution_critique.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload", "hard_failure_or_blocker"],
       "evidence_terms": ["skipped_classification", "host-blocked-subagent"],

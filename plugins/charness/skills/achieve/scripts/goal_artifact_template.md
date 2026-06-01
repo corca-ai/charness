@@ -61,6 +61,10 @@ during the run:
 - **Release step** — when this run touches a release surface (a version bump or
   install-manifest edit), add a `Release:` line here pointing at the release
   proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof.
 
 ## Slice Log
 

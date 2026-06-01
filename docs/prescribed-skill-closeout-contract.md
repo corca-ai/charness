@@ -95,17 +95,18 @@ containment is clone-safe; an `mtime >= context-date` rule is deliberately
 **not** used because a fresh `git clone` resets every file's mtime to checkout
 time and would pass every stale file, silently reopening the hole.
 
-The achieve After-phase wrapper wires this now; `issue-resolution`
-(`*<issue-number>*` binding) and `release` (version binding) are recorded as
-follow-ups — they call the same presence-only `check()` today and inherit the
-same F1 shape until they pass tokens too.
+The achieve After-phase wrapper wires this for goal evidence. The
+`issue-resolution` wrapper now also binds resolution-critique evidence to each
+selected issue number, and multi-issue carriers must use explicit `Critique #N:`
+or `Critique #N #M:` lines. `release` (version binding) remains a follow-up and
+still calls the same presence-only `check()` today.
 
 ### Per-Skill Required Evidence
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
 | `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the gather/release **coordination floors** (separate, presence-only, `Created` ≥ 2026-05-31 — see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Gather:`/`Release:` step or `n/a — <reason>` opt-out |
-| `issue-resolution` | `resolution_critique` (one line of the carrier body starting with `Critique:` followed by either an artifact path under `charness-artifacts/critique/` matching `*<issue-number>*.md` or the literal phrase `blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
+| `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
 The helper validates that a `skip` reason is non-empty and not in the
@@ -198,7 +199,7 @@ active goal is explicitly **deferred** to its own effort.
   `feature`, or `deferred-work`. The existing ledger checks
   (`missing_close_keywords`, `missing_fields`, `state_mismatches`,
   `manual_comment_missing`) are unchanged, and
-  [`_classification_requirements`](../skills/public/issue/scripts/issue_verify_closeout.py)
+  [`_classification_requirements`](../skills/public/issue/scripts/issue_verify_closeout_body.py)
   is **not** extended — the new helper reads its own carrier-body header
   (`Critique:` line), independent of the existing per-classification field
   set, so there is one body source of truth per check and no field-list

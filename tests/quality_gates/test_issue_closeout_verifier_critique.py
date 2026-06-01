@@ -118,6 +118,195 @@ def test_bug_closeout_with_critique_artifact_path_is_accepted(tmp_path: Path) ->
     assert via == {"evidence"}
 
 
+def test_bug_bundle_requires_issue_bound_critique_for_each_number(tmp_path: Path) -> None:
+    critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-221.md"
+    critique_path.parent.mkdir(parents=True, exist_ok=True)
+    critique_path.write_text("# Critique\n\nIssue 221 only.\n", encoding="utf-8")
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #184.\nClose #221.",
+            critique_line="Critique #221: charness-artifacts/critique/2026-06-02-issue-221.md",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "184",
+        "--number",
+        "221",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["resolution_critique_check"]["missing_issue_bindings"] == [184]
+
+
+def test_bug_bundle_rejects_unqualified_single_issue_critique(tmp_path: Path) -> None:
+    critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-221.md"
+    critique_path.parent.mkdir(parents=True, exist_ok=True)
+    critique_path.write_text("# Critique\n\nIssue 221 only.\n", encoding="utf-8")
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #184.\nClose #221.",
+            critique_line="Critique: charness-artifacts/critique/2026-06-02-issue-221.md",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "184",
+        "--number",
+        "221",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["resolution_critique_check"]["checks"] == []
+    assert payload["resolution_critique_check"]["missing_issue_bindings"] == [184, 221]
+
+
+def test_bug_bundle_accepts_explicit_multi_issue_critique_binding(tmp_path: Path) -> None:
+    critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-184-221.md"
+    critique_path.parent.mkdir(parents=True, exist_ok=True)
+    critique_path.write_text("# Critique\n\nBundle for #184 and #221.\n", encoding="utf-8")
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #184.\nClose #221.",
+            critique_line="Critique #184 #221: charness-artifacts/critique/2026-06-02-184-221.md",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "184",
+        "--number",
+        "221",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["resolution_critique_check"]["missing_issue_bindings"] == []
+
+
+def test_bug_bundle_rejects_multi_issue_critique_artifact_missing_one_binding(tmp_path: Path) -> None:
+    critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-184.md"
+    critique_path.parent.mkdir(parents=True, exist_ok=True)
+    critique_path.write_text("# Critique\n\nIssue 184 only.\n", encoding="utf-8")
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #184.\nClose #221.",
+            critique_line="Critique #184 #221: charness-artifacts/critique/2026-06-02-issue-184.md",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "184",
+        "--number",
+        "221",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["resolution_critique_check"]["missing_issue_bindings"] == [221]
+    assert payload["resolution_critique_check"]["binding_failures"][0]["number"] == 221
+    assert payload["resolution_critique_check"]["binding_failures"][0]["path"] == str(critique_path)
+    assert "221" in payload["resolution_critique_check"]["binding_failures"][0]["reason"]
+
+
+def test_bug_closeout_ignores_fenced_critique_line(tmp_path: Path) -> None:
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            critique_line=(
+                "```text\n"
+                "Critique: blocked synthetic-test-harness: this fenced example "
+                "does not count as live resolution proof\n"
+                "```"
+            ),
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["resolution_critique_check"]["missing"] == ["resolution_critique"]
+
+
 def test_bug_closeout_with_blocked_critique_too_terse_is_rejected(tmp_path: Path) -> None:
     _seed_commit(
         tmp_path,

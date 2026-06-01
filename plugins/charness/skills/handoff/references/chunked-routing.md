@@ -68,7 +68,7 @@ step 3 is the active agent.
    `boundary_tokens` set, except non-actionable pickup checks are filtered
    before ranking. Local-state preflight entries such as `git status`/`git log`
    checks are operator setup, not user-selectable chunks; goal activation
-   entries pointing at a `Status: complete` goal artifact are stale and are
+   entries pointing at a `Status: active` or `Status: complete` goal artifact are stale and are
    also dropped; `during`/`while` cadence or invariant entries shape the chosen
    chunk instead of becoming standalone candidates. Pass `--with-issues` (the pickup default; #249)
    to also union the live open-issue backlog: each open issue becomes a

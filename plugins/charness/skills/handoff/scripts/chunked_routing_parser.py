@@ -234,13 +234,13 @@ def _goal_status(repo_root: Path | None, referenced_path: str) -> str | None:
     return match.group(1).strip().lower() if match else None
 
 
-def _is_completed_goal_activation(
+def _is_inert_goal_activation(
     raw_text: str,
     referenced_paths: tuple[str, ...],
     *,
     repo_root: Path | None,
 ) -> bool:
-    """Return True when an activation entry points at an already complete goal."""
+    """Return True when an activation entry points at an active/complete goal."""
     normalized = raw_text.lower()
     looks_like_activation = (
         any(token in normalized for token in _GOAL_ACTIVATION_TOKENS)
@@ -251,7 +251,7 @@ def _is_completed_goal_activation(
     for referenced_path in referenced_paths:
         if not referenced_path.startswith("charness-artifacts/goals/"):
             continue
-        if _goal_status(repo_root, referenced_path) == "complete":
+        if _goal_status(repo_root, referenced_path) in {"active", "complete"}:
             return True
     return False
 
@@ -285,7 +285,7 @@ def parse_handoff_entries(
             continue
         if _is_execution_constraint(title, raw_text):
             continue
-        if _is_completed_goal_activation(
+        if _is_inert_goal_activation(
             raw_text, tuple(normalized_paths), repo_root=repo_root
         ):
             continue

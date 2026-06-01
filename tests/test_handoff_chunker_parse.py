@@ -264,6 +264,29 @@ def test_parser_keeps_incomplete_goal_activation(lib, tmp_path):
     )
 
 
+def test_parser_filters_active_goal_activation(lib, tmp_path):
+    goal = tmp_path / "charness-artifacts/goals/2026-06-01-active.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        "# Achieve Goal: Active\n\nStatus: active\n\n## Goal\nIn progress.\n",
+        encoding="utf-8",
+    )
+    text = """# Handoff
+
+## Next Session
+
+1. Continue active goal:
+   `/goal @charness-artifacts/goals/2026-06-01-active.md`.
+2. Pick the next issue explicitly: #184.
+
+## Discuss
+"""
+
+    entries = lib.parse_handoff_entries(text, repo_root=tmp_path)
+
+    assert [entry.index for entry in entries] == [2]
+
+
 def test_parser_cli_explicit_docs_handoff_filters_completed_goal(tmp_path):
     docs = tmp_path / "docs"
     docs.mkdir()

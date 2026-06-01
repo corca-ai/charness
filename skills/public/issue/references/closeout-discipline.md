@@ -98,14 +98,20 @@ issue matched the expected GitHub state.
 
 For `bug`, `feature`, and `deferred-work` classifications, the carrier body
 must carry one of the following lines so `verify-closeout` can prove the
-resolution-critique sub-skill ran (closes the
+resolution-critique sub-skill ran and is bound to the selected issue(s) (closes the
 [#230](https://github.com/corca-ai/charness/issues/230) Waste 1b
 self-substitution pattern):
 
 - `Critique: <path>` — a checked-in critique artifact under
-  `charness-artifacts/critique/` referencing the resolution. The file must
-  exist and be non-empty.
-- `Critique: blocked <host-signal>` — when the host genuinely could not
+  `charness-artifacts/critique/` referencing the resolution. This shorthand is
+  valid only for one selected issue; the file must exist, be non-empty, and bind
+  to that issue number by basename or content.
+- `Critique: blocked <host-signal>` — the single-issue shorthand when the host
+  genuinely could not spawn the bounded fresh-eye subagent.
+- `Critique #N: <path>` or `Critique #N #M: <path>` — issue-bound or explicit
+  bundle critique evidence for multi-issue carriers. Every selected issue must
+  be bound by one of these lines.
+- `Critique #N: blocked <host-signal>` — when the host genuinely could not
   spawn the bounded fresh-eye subagent. The signal text must be specific
   enough that the total skip reason
   (`host-blocked-subagent: <signal>`) exceeds 40 characters; terse

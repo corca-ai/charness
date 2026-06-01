@@ -184,7 +184,16 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Skip durable inventory artifact write; emit inventory payload to stdout only.",
     )
+    parser.add_argument(
+        "--write-artifact",
+        action="store_true",
+        help="Force a durable inventory artifact write even for recommendation-shaped queries.",
+    )
     return parser.parse_args()
+
+
+def _is_recommendation_query(args: argparse.Namespace) -> bool:
+    return bool(args.recommend_for_task or args.recommend_for_skill or args.recommendation_role)
 
 
 def main() -> None:
@@ -265,7 +274,7 @@ def main() -> None:
         public_skill_recommendations=public_skill_recommendations,
         public_recommendation_query=public_recommendation_query,
     )
-    if args.read_only:
+    if args.read_only or (_is_recommendation_query(args) and not args.write_artifact):
         payload["artifacts"] = read_only_inventory_artifacts()
     else:
         try:
