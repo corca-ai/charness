@@ -154,7 +154,7 @@ reason.
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | complete |
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | complete |
 | 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | complete |
-| 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row: product-success frame pending maintainer synthesis and source-thread refresh | pending |
+| 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row: product-success frame pending maintainer synthesis and source-thread refresh | complete |
 | 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | pending |
 
 ## Coordination Cues
@@ -206,7 +206,7 @@ final carrier after local proof and carrier-body validation.
 | #241 | Portability/setup extensibility | Close in final carrier | `ec229ea Support compact setup and adapter extensions` preserves `host_extensions` mappings and top-level `x-*` blocks in `create-skill` adapter resolver output, rejects non-mapping `host_extensions`, and documents the extension namespace |
 | #237 | Closeout/workflow safety | Close in final carrier | `achieve` lifecycle now requires post-apply checkpoint, current `HEAD`, and `runtime-affecting`/`test-only`/`audit-doc-only` classification with uncertainty treated as runtime-affecting |
 | #236 | Closeout/workflow safety | Close in final carrier | `quality` maintainer-local enforcement now carries focused CI-only failure recovery before another broad full-gate push retry |
-| #185 | Usage/engineering success | Close after necessary AI/ML engineering success conditions are recorded and any chosen supporting implementation is complete | Decision artifact plus optional #243-linked usage/report implementation |
+| #185 | Usage/engineering success | Close in final carrier | `aed6470 Record AI ML engineering success conditions` adds `charness-artifacts/spec/issue-185-ai-ml-engineering-success.md` and updates the AI/ML engineering/product-success docs so #185's evaluation, experimentation, data/feedback, operations, and quality areas are dispositioned for Charness's current workflow-product boundary without claiming #184 product success |
 | #184 | Product success | Leave open intentionally | Final carrier note: product-success frame pending maintainer synthesis and source-thread refresh (`slack://C05J5LTFSCU/1778805288.184149`) |
 
 ## Slice Log
@@ -298,6 +298,20 @@ truth._
 - Lessons carried forward: A report added to `run-quality` must be visible on the passing path when its value is the summary itself; exit-zero readiness states such as `no_records` need attention-state tracking before docs call them visible.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-894c1e288b9a4f22953e30542297363c.
 
+### Slice 6: Issues 185 and 184 engineering/product-success boundary
+
+- Objective: Record AI/ML engineering necessary-success conditions for #185 while leaving #184 open for product-success synthesis and source refresh.
+- Why this approach: The maintainer explicitly separated usage/engineering success from product success. #185 can close on an engineering-pattern investigation and dispositioned checklist; #184 cannot close without the newer maintainer product-success framing and a refreshed read of the originating Slack source.
+- Commits: aed6470 Record AI ML engineering success conditions
+- What changed: Added `charness-artifacts/spec/issue-185-ai-ml-engineering-success.md`; updated `docs/ai-ml-engineering-patterns.md` to state that the #185 investigation is scoped to Charness's current workflow-product boundary; updated `docs/product-success-metrics.md` to mark the product north-star baseline provisional for #184. The #185 artifact now dispositions evaluation, experimentation, data/feedback, operations/observability, and quality/engineering without claiming model-runtime experiment tracking, labeled dataset ownership, latency/cost telemetry, or product success.
+- Alternatives rejected: Did not close #184 from the current docs because the issue body requires re-reading the source thread and the user said newer product-success thinking is not yet organized. Did not turn #243 usage report counts into product-success proof; the report and docs keep denominator and non-claim language. Did not add a new implementation surface for model/search/sampling experiments because Charness does not currently ship that runtime boundary.
+- Targeted verification: PASS: gh issue view 185 and 184 read current OPEN issue bodies; PASS: python3 scripts/check_doc_links.py --repo-root .; PASS: python3 scripts/check_changed_surfaces.py --repo-root . classified the diff as repo-markdown only with no sync commands; PASS: python3 scripts/check_command_docs.py --repo-root .; PASS: ./scripts/check-markdown.sh; PASS: ./scripts/check-secrets.sh; PASS: pytest -q tests/test_usage_episodes_report.py tests/quality_gates/test_attention_state_visibility.py tests/quality_gates/test_quality_runner.py::test_run_quality_replays_passing_attention_logs tests/quality_gates/test_quality_runner.py::test_run_quality_surfaces_usage_episode_report tests/quality_gates/test_quality_skill_docs.py::test_quality_skill_runs_usage_episode_validator_even_without_adapter (14 passed); PASS: python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support; PASS: python3 scripts/report_usage_episodes.py --repo-root . printed an advisory report with 316 records, 42 session groups, 313/316 records with session_id, 126 T-signal records, and explicit capture gaps; PASS: python3 scripts/validate_usage_episodes.py --repo-root . validated 316 records.
+- Test duplication pressure: No tests added in this slice. Reused existing usage-report, quality-runner, attention-state, doc-link, markdown, command-doc, and secret checks because the implementation diff was docs/artifact-only.
+- Critique: The requested fresh-eye Slice 6 review scope was applied as a blocker checklist before commit: overclaiming product success, missing #185 area coverage, stale/unsupported source claims, and ambiguous final-carrier disposition. The docs were tightened to say #185 is dispositioned for Charness's current workflow-product boundary, #184 remains open, private Slack was not re-fetched, and cost/latency/model-runtime claims remain non-claims unless captured by owning artifacts. No blockers remained in the final checked diff.
+- Off-goal findings: The OpenAI, Google Cloud, Google Rules of ML, and NIST reference URLs in `docs/product-success-metrics.md` were reachable on 2026-06-01, but this slice did not gather or vendor those external pages because the #185 closeout relies on issue bodies and current repo docs rather than importing new external source content.
+- Lessons carried forward: When engineering-success and product-success issues share source material, close the engineering investigation only with explicit necessary-condition/non-claim language; leave the product-success issue open until the product frame and source freshness are ready.
+- Metrics: No slice-closeout usage episode was emitted for this docs/artifact-only slice; `report_usage_episodes.py` showed the local capture denominator at 316 records during verification.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -336,6 +350,10 @@ the originating context by following them in order.
   --branch` reports `main...origin/main [ahead 15]`; the implementation commit
   is `13b861f Report usage episodes in quality`. These local commits remain
   final-carrier material and are not published early.
+- Current branch proof after Slice 6 documentation: `git status --short
+  --branch` reports `main...origin/main [ahead 17]`; the implementation commit
+  is `aed6470 Record AI ML engineering success conditions`. These local commits
+  remain final-carrier material and are not published early.
 - `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` for the
   completed tranche and its explicit non-claims around live GitHub closure.
 - `charness-artifacts/retro/recent-lessons.md` for the closeout-keyword miss,
@@ -466,9 +484,10 @@ _Not started._
 2. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root .
    --goal-path
    charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`.
-3. To continue the active goal, resume at Slice 6 (#185 necessary engineering
-   success, #184 leave-open note). Do not re-run activation or re-open settled
-   decisions from Slices 0-5 unless live tracker state has changed.
+3. To continue the active goal, resume at Slice 7 final carrier: final gates,
+   critique, retro, handoff refresh, publish/PR decision, and live issue
+   close/comment. Do not re-run activation or re-open settled decisions from
+   Slices 0-6 unless live tracker state has changed.
 4. Expect the agent to stop for maintainer decisions around product-success
    metrics for #184, release surfaces, accepting a lower mutation/quality
    standard, or publishing/live GitHub mutation before the final carrier.
