@@ -156,7 +156,7 @@ timing data:
 Host metric window: started_at=<ISO> completed_at=<ISO> codex_session_file=<path>
 ```
 
-Then run `probe_host_logs.py --goal-path <artifact>` so Codex rollout JSONL
-signals can be filtered to that window. If the source lacks timestamps or a
-session file, say `unavailable` rather than presenting a thread-wide audit as a
-goal total.
+Then run the `retro` host-log probe with `--goal-path <artifact>` so Codex
+rollout JSONL signals can be filtered to that window. If the source lacks
+timestamps or a session file, say `unavailable` rather than presenting a
+thread-wide audit as a goal total.
