@@ -245,6 +245,11 @@ goal:
   Reviewers found no Act Before Ship blockers; they required nuance that F1/F8
   are real coupling smells kept advisory by enforcement tier and consumer
   behavior, not absent coupling. Folded into the audit.
+- 2026-06-02 Slice 4 user-correction follow-up: the phrase "expression
+  difference" underweighted a real source-guard concern. The audit and critique
+  were tightened to say prose-shape matching is coupling; the current
+  no-code-change disposition rests only on the absence of a hard final consumer,
+  not on the absence of coupling.
 
 ## Context Sources
 
@@ -311,6 +316,13 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
+- 2026-06-02 source-guard framing correction proof: `inspect_repo.py
+  --repo-root .` exited 0 and reported no current recommendations or prose-wrap
+  source guards; changed-surface sync ran
+  `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`;
+  markdown links, command docs, markdownlint, secrets, all critique artifacts,
+  retro lesson-selection index check, the new retro artifact validator, and
+  active-goal `check_goal_artifact.py --pursue-ready` all passed.
 - 2026-06-02 Slice 4 focused proof: markdown links, command docs, markdownlint,
   secrets, critique packet validation, critique artifact validation (`--all`),
   active-goal `check_goal_artifact.py --pursue-ready`, and
@@ -382,3 +394,9 @@ Issues or deferred findings discovered during the run.
   improvement was applied, filed, or explicitly rejected/deferred.
 
 ## Auto-Retro
+
+- 2026-06-02 source-guard framing correction: applied. User caught that
+  "expression difference" sounded like a dismissal of prose-shape coupling.
+  The durable audit now separates "coupling exists" from "a hard source guard
+  exists"; no new issue was filed because the reopen condition is already
+  encoded on F1/F8 and no hard consumer was found.

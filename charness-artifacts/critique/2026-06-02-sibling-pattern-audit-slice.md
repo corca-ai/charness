@@ -36,9 +36,9 @@ as first-class.
 - Bundle Anyway: clarify F1/F8 as real coupling smells kept advisory by tier and
   consumer behavior, not as absent coupling. Applied in the audit before
   closeout.
-- Over-Worry: do not promote "expression difference" into a hard source guard
+- Over-Worry: do not promote prose-shape coupling into a hard source guard
   unless a hard gate, validator, carrier parser, or final consumer depends on
-  that wording.
+  that wording. The coupling smell itself is real and should stay visible.
 - Over-Worry: do not create a broad dependency-injection/source-resolution
   framework for F7 without a concrete final-consumer break.
 - Valid but Defer: future consumer drift is real. If another command starts
@@ -50,7 +50,7 @@ as first-class.
 ## Structured Findings
 
 - audit-f1-f8-clarity | bin: bundle-anyway | evidence: strong | ref: charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md | action: document | note: clarified that exact snippet coupling exists but is currently advisory by enforcement tier and setup inspector exit behavior.
-- expression-difference-hard-gate | bin: over-worry | evidence: strong | ref: skills/public/quality/references/adapter-gate-review.md | action: document | note: wording differences should not become hard gates without a structural consumer boundary.
+- prose-shape-coupling-hard-gate | bin: over-worry | evidence: strong | ref: skills/public/quality/references/adapter-gate-review.md | action: document | note: prose-shape coupling should stay visible, but should not become a hard gate without a structural consumer boundary.
 - future-recommendation-consumer-drift | bin: valid-but-defer | evidence: moderate | ref: scripts/setup_inspect_lib.py:176 | action: defer | note: reopen if another consumer treats recommendation statuses as hard failures.
 
 ## Deliberately Not Doing

@@ -23,9 +23,11 @@ or installed-machine proof.
 - Used grep only as a candidate generator. Dispositions below rely on owning
   validators, references, and inventory outputs rather than exact issue-number
   or phrase hits.
-- Treated "expression difference" as evidence only when a phrase detector
-  changes a hard pass/fail outcome. Advisory review queues and bounded
-  recommendations are not blockers by themselves.
+- Treated phrase or snippet matching as a coupling smell whenever it reads
+  prose shape instead of a structured contract. The separate question is
+  whether a hard consumer currently turns that smell into a source guard. This
+  audit found advisory/recommendation consumers, not a pass/fail consumer, for
+  the F1/F8 cases below.
 
 ## Scanned Surfaces
 
@@ -46,14 +48,14 @@ or installed-machine proof.
 
 | ID | Interface Shape | Evidence | Disposition |
 | --- | --- | --- | --- |
-| F1 | Phrase detectors near policy gates | `inventory_adapter_gate_design.py` reported `script.brittle_review_phrase_detector` for `scripts/setup_agent_docs_lib.py` and `scripts/setup_artifact_policy_lib.py`, both `NON_AUTOMATABLE`; `adapter-gate-review.md` says brittle phrase matching should stay advisory unless a sharper invariant appears. Setup inspection can surface `needs_normalization`, but `inspect_repo.py` exits 0 and emits JSON recommendation state. | rejected for code change: do not promote this to a hard gate. Owner: `quality` adapter/gate review. Rationale: this is a real coupling smell, but the current consumer makes it visible advisory/recommendation state, not a hidden source guard that blocks closeout. |
+| F1 | Phrase detectors near policy gates | `inventory_adapter_gate_design.py` reported `script.brittle_review_phrase_detector` for `scripts/setup_agent_docs_lib.py` and `scripts/setup_artifact_policy_lib.py`, both `NON_AUTOMATABLE`; `adapter-gate-review.md` says brittle phrase matching should stay advisory unless a sharper invariant appears. Setup inspection can surface `needs_normalization`, but `inspect_repo.py` exits 0 and emits JSON recommendation state. | rejected for code change, not rejected as harmless: this is real prose-shape coupling and should remain visible as `brittle_hard_gate_smell`. The current evidence does not show a source guard because the final consumer emits reviewable recommendations/status rather than failing the workflow. Owner: `quality` adapter/gate review. Reopen immediately if `needs_normalization` or a related recommendation becomes a hard pass/fail condition. |
 | F2 | Fixed source-guard rows over prose | `inventory_brittle_source_guards.py --json` found `source_guard_count=0`, `fragile_count=0`, `warnings=[]` over bounded roots `AGENTS.md`, `README.md`, `docs`, and `specs`. Public-spec inventory also found `source_guard_row_count=0`. | rejected for code change: no live brittle source guard to fix in this slice. Owner: `quality` source-guard inventory. Reopen if a new fixed row appears or a hard gate starts reading prose-only phrasing. |
 | F3 | Source-guard scanner generalization | `docs/deferred-decisions.md` D19 already defers adapter-resolved current-pointer taint analysis until a second bypassing sibling appears; current helper adoption is the chosen boundary. | deferred-with-owner: owner `scripts/check_current_pointer_writes.py` / `scripts/current_pointer_writer_lib.py`; reopen trigger is D19's second adapter-resolved bypass condition. No new issue filed because the existing deferral is explicit and scoped. |
 | F4 | Placeholder/readiness gates | Achieve readiness now separates structural placeholders from consequential activation discussion via `pursue_ready`, `discussion_ready`, and `placeholder_count`; focused tests cover custom routing and discussion readiness. | applied: prior slices already encoded the invariant. No new code; this audit records that the sibling class is covered by structured fields, not by comparing prose variants. |
 | F5 | Issue/release/goal closeout disposition | Issue closeout verifies carrier text, close keywords, classification ledger, critique line for bug-class work, and backend state when final; achieve coordination floors now include `Issue closeout:`. | applied: #277 and Slice 1 closed the sibling class for the known carrier path. Non-claim: non-`gh` issue backend live proof remains unproven, already recorded in `docs/handoff.md`. |
 | F6 | Diagnostic/status propagation bugs | Debug artifacts now require `## Invariant Proof` with producer proof, final-consumer proof, interface-shape sibling scan, and non-claims; issue causal review cites the same substrate. | applied: Slice 3 owns this class. No broader rewrite because the shared invariant is review-level guidance plus artifact schema, not a framework coupling all skills. |
 | F7 | Cross-skill installed/source resolution | Skill ergonomics inventory reported zero heuristic findings across 23 public/support skills, while still requiring prose review; find-skills records canonical paths and referenced paths, and packaging/mirror drift is owned by changed-surface and packaging validators. | rejected for broad rewrite: no evidence justifies a shared dependency-injection layer. Owner: `find-skills`, packaging validators, and skill ergonomics inventory. |
-| F8 | Recommendation queues becoming hidden gates | Setup inspection emits typed recommendations with `priority`, `confidence`, `enforcement_tier`, and acknowledgement metadata; tests cover acknowledgement scoping and compact routing acceptance/rejection. Current policy keeps contextual recommendations out of hard gates unless the expected response is clear and false positives are rare. | rejected for code change: leave as structured advisory unless a specific recommendation has low-noise failure semantics. Owner: `setup` inspection and `quality` adapter/gate review. Future consumer drift is the risk to watch: if another command starts treating `needs_normalization`, `review_required`, or `brittle_hard_gate_smell` as a hard failure, reopen this disposition. |
+| F8 | Recommendation queues becoming hidden gates | Setup inspection emits typed recommendations with `priority`, `confidence`, `enforcement_tier`, and acknowledgement metadata; tests cover acknowledgement scoping and compact routing acceptance/rejection. Current policy keeps contextual recommendations out of hard gates unless the expected response is clear and false positives are rare. | rejected for code change, but retained as a guardrail risk: a recommendation queue can become a hidden gate if a later command treats advisory states as failure. Owner: `setup` inspection and `quality` adapter/gate review. Future consumer drift is the risk to watch: if another command starts treating `needs_normalization`, `review_required`, or `brittle_hard_gate_smell` as a hard failure, reopen this disposition. |
 
 ## Disposition Summary
 
@@ -70,9 +72,9 @@ or installed-machine proof.
 - This audit does not prove non-`gh` issue backend closeout live behavior.
 - This audit does not prove installed plugin/cache propagation beyond existing
   packaging and changed-surface validators.
-- This audit does not claim wording differences are harmless everywhere; it
-  only rejects treating phrase difference as a hard-failure invariant without a
-  structural consumer boundary.
+- This audit does not claim wording differences are harmless everywhere. It
+  treats prose-shape matching as coupling, then separately asks whether a
+  current final consumer makes that coupling a source guard.
 - This audit does not claim F1/F8 have no coupling. It claims the coupling is
   currently advisory by enforcement tier and consumer behavior.
 
@@ -93,5 +95,5 @@ or installed-machine proof.
 
 Run a bounded fresh-eye critique on this audit, specifically asking whether any
 rejection hides a real hard-gate coupling, whether F3 needs a new tracked issue
-instead of the existing deferral, and whether "expression difference" has been
-underweighted or overweighted.
+instead of the existing deferral, and whether the F1/F8 source-guard risk has
+been underweighted or overweighted.
