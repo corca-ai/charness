@@ -16,11 +16,14 @@
 
 ## Current State
 
-- Local `main` is clean and synced with `origin/main`.
-- The open-issue generative closeout goal is complete:
-  [handoff/open-issue generative closeout](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md).
-  Final carrier closed #272/#265/#259/#258/#252/#243/#241/#237/#236/#185;
-  #261 and #184 remain open intentionally with carry-forward comments.
+- Local `main` contains the #273/#261 mutation gate recovery carrier and should
+  be clean/synced after the closeout push.
+- The mutation recovery goal is complete:
+  [#273/#261 mutation recovery](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md).
+  The carrier closes #273 and leaves #261 open intentionally as a
+  mutation-standard policy question.
+- #261 and #184 remain the live carry-forward issues; #184 needs product-success
+  synthesis from the maintainer's newer thinking and source thread.
 - A new draft achieve goal is ready to activate:
   [achieve long-goal efficiency and effectiveness](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md).
   It targets active-context control, verification cadence, slice review packets,
@@ -30,9 +33,13 @@
 
 1. Verify local state: `git status --short --branch` and
    `git log --oneline origin/main..HEAD`.
-2. Activate the new draft goal when ready:
+2. Pick the next issue explicitly: #184 for product-success synthesis, or #261
+   for the mutation-standard policy decision around equivalent/low-value
+   survivors.
+3. Activate the draft efficiency goal only when broad goal workflow work is the
+   intended next slice:
    `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`.
-3. During that goal, preserve the proof cadence: cheap deterministic checks at
+4. During any broad goal, preserve the proof cadence: cheap deterministic checks at
    commit boundaries, higher-cost critique/validation at slice boundaries, and
    final broad proof.
 
@@ -47,12 +54,13 @@
 - Long goals should treat cached input as a context-pressure signal, not direct
   waste. The stronger efficiency signals are compactions, repeated
   status/diff/check commands, polling, and broad-gate cadence.
-- #184 needs a separate product-success synthesis from the maintainer's newer
-  thinking and the source thread; do not collapse it into #185.
+- #261's remaining coordination-cues survivors are policy residue after the
+  mechanical hardening path, not another #273 coverage fix.
 
 ## References
 
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [completed open-issue closeout goal](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md)
+- [mutation recovery goal](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md),
+  [mutation recovery carrier](../charness-artifacts/issue/2026-06-01-273-261-mutation-gate-recovery.md)
 - [draft achieve efficiency goal](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md)

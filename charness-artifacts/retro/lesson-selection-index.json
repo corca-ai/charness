@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 95,
-  "candidate_count": 596,
+  "source_artifact_count": 96,
+  "candidate_count": 599,
   "top_candidates": [
     {
       "candidate_id": "current_focus:3e4a1d24f386",
@@ -89,6 +89,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6ccd6d711556",
+      "kind": "current_focus",
+      "lesson": "This work bundled the live #273 mutation regression with the #261 survivor policy boundary.",
+      "normalized_key": "this work bundled the live 273 mutation regression with the 261 survivor policy boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -233,26 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:0c7dd8cdfb39",
-      "kind": "next_improvement",
-      "lesson": "applied: Treat cached input and thread-wide token/tool counts as pressure signals, not standalone waste or goal-scoped totals. This run added that wording to `phase-aware-efficiency.md` and the achieve metrics guidance.",
-      "normalized_key": "applied treat cached input and thread wide token tool counts as pressure signals not",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -331,6 +331,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6ccd6d711556",
+      "kind": "current_focus",
+      "lesson": "This work bundled the live #273 mutation regression with the #261 survivor policy boundary.",
+      "normalized_key": "this work bundled the live 273 mutation regression with the 261 survivor policy boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -617,6 +637,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ce1b3f951c57",
+      "kind": "next_improvement",
+      "lesson": "keep the debug-artifact section contract visible when a debug file is used as issue closeout evidence.",
+      "normalized_key": "keep the debug artifact section contract visible when a debug file is used as",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:956f837c0df0",
       "kind": "next_improvement",
       "lesson": "Keep this retro as the recurrence marker for \"avoid-all-closeout\" overcorrection after a reviewer warns not to close some issues.",
@@ -651,6 +691,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:32a7addb6e79",
+      "kind": "next_improvement",
+      "lesson": "validate the issue carrier immediately after adding required fields, before expanding final artifact prose.",
+      "normalized_key": "validate the issue carrier immediately after adding required fields before expanding final artifact prose",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }

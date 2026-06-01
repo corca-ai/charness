@@ -1,6 +1,6 @@
 # Achieve Goal: #273 + #261 mutation gate recovery
 
-Status: active
+Status: complete
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md`
 
@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 active.
-- Next action: commit Slice 1 focused fix, then run changed-line proof against
-  that commit and enumerate the #261 coordination-cues survivor tail.
+- Current slice: Slice 3 closeout active.
+- Next action: run final validation and resolution critique, then publish a
+  carrier that closes #273 and comments the #261 leave-open disposition.
 - Verification cadence: cheap focused tests before commits; targeted mutation or
   mutation-selection proof at slice boundaries; broad read-only quality and
   issue closeout verification at final.
@@ -93,9 +93,9 @@ leave #261 with a concrete policy disposition rather than a vague carry-forward.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Shape combined goal and source context | User selected chunks 4 and 5 together; stale handoff goal text must not steer implementation | Goal passes pursue-ready; #273/#261 current GitHub state read; causal review running | done |
-| 1 | Fix #273 live mutation regression | Mainline mutation gate trust is the first blocker | Focused tests cover changed-line targets; targeted mutation-selection proof no longer reports #273 blockers | in progress |
-| 2 | Disposition #261 survivor/policy boundary | The user explicitly asked to bundle it with #273 | Non-equivalent survivor triage or explicit policy artifact/comment; issue state decision recorded | pending |
-| 3 | Sync, verify, critique, and publish | Repo closeout requires synchronized surfaces, critique, commit, and issue verification | Changed-surface obligations satisfied; quality proof; critique; carrier commit and GitHub verification | pending |
+| 1 | Fix #273 live mutation regression | Mainline mutation gate trust is the first blocker | Focused tests cover changed-line targets; targeted mutation-selection proof no longer reports #273 blockers | done |
+| 2 | Disposition #261 survivor/policy boundary | The user explicitly asked to bundle it with #273 | Non-equivalent survivor triage or explicit policy artifact/comment; issue state decision recorded | done |
+| 3 | Sync, verify, critique, and publish | Repo closeout requires synchronized surfaces, critique, commit, and issue verification | Changed-surface obligations satisfied; quality proof; critique; carrier commit and GitHub verification | in progress |
 
 ## Coordination Cues
 
@@ -136,7 +136,61 @@ leave #261 with a concrete policy disposition rather than a vague carry-forward.
   tests/quality_gates/test_retro_host_log_probe.py` passed;
   `python3 scripts/check_python_lengths.py --repo-root . --paths ...` passed;
   packaging validators and doc-link check passed after plugin sync.
-- Non-claims: targeted mutation/changed-line proof has not run yet.
+- Changed-line proof: `python3 scripts/check_changed_line_mutation_coverage.py
+  --repo-root . --base-sha 36b2c7880331a4942dbd7521dc9cdfbc1d5f95c3
+  --head-sha 8dbfdae` passed after a full mutation-gate coverage probe:
+  `blocking: []`, changed pool file `scripts/portable_artifact_lib.py`.
+- Latest #273 scheduled-range proof: reusing the generated coverage report,
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root .
+  --base-sha dbd9f8a449119451df6e30c201811ef6ce940551 --head-sha
+  aff563f17b204ee120bde875cec9a0524d0ba27a --reuse-coverage` passed with
+  `blocking: []`, including `scripts/host_log_probe_lib.py` in the changed
+  pool.
+- Commit: `8dbfdae Harden mutation gate helper coverage`.
+
+### Slice 2: #261 survivor and policy disposition
+
+- Objective: Resolve the selected chunk's #261 portion without re-paying an
+  already-run survivor campaign or silently deciding a broader mutation policy.
+- What changed: No code changed in this slice. The existing scoped survivor
+  proof and critique were re-read; #261 remains open specifically for the
+  equivalent/low-value mutation-standard policy boundary.
+- Verification: `git merge-base --is-ancestor 765f5d4 HEAD` and
+  `git merge-base --is-ancestor 765f5d4 origin/main` both passed, proving the
+  mechanical survivor-hardening commit is already present locally and upstream.
+  `python3 scripts/check_mutation_score.py --repo-root . --stats
+  reports/mutation/coordination-cues-dump.jsonl --sample-manifest
+  reports/mutation/nonexistent-sample.json` re-rendered 514/514 executed, 467
+  killed, 47 survived, 90.9% reachable score versus 80% threshold; command exit
+  was non-zero only because the intentionally nonexistent sample manifest and
+  uncovered sampled mutants are blocking signals in that archived proof context.
+  `python3 -m pytest -q tests/quality_gates/test_goal_coordination_floors.py
+  tests/quality_gates/test_goal_disposition_gate.py
+  tests/quality_gates/test_goal_head_freshness.py
+  tests/quality_gates/test_achieve_before_activation.py` passed, 85 tests.
+- Critique/provenance: prior fresh-eye critique
+  `charness-artifacts/critique/2026-06-01-265-261-coordination-survivor-triage-critique.md`
+  says the remaining survivors are defensibly equivalent or low-value and the
+  policy decision should stay open.
+- Disposition: close #273 after publication; leave #261 open with a verified
+  comment that points to the existing mechanical hardening and this goal's
+  policy non-claim.
+
+### Slice 3: Final validation and carrier preparation
+
+- Objective: Prove the bundled fix, satisfy issue closeout contracts, and
+  prepare publication.
+- What changed: Added debug, critique, retro, probe, and issue-carrier
+  artifacts; regenerated `charness-artifacts/debug/seam-risk-index.json`.
+- Verification: `issue_tool.py validate-closeout-draft` passed for #273 as
+  bug-class with carrier `pr-body`; `validate_debug_artifact.py` passed;
+  `build_debug_seam_risk_index.py --check` passed;
+  `validate_critique_artifacts.py --all` passed; doc links, command docs,
+  markdown, and secret checks passed; final `./scripts/run-quality.sh
+  --read-only` passed 69/69 in 48.0s.
+- Critique: resolution critique is persisted at
+  `charness-artifacts/critique/2026-06-01-273-261-mutation-gate-recovery-resolution.md`
+  and its Act Before Ship findings were fixed before completion.
 
 ## Context Sources
 
@@ -173,12 +227,39 @@ N/A - none yet.
 
 ## Final Verification
 
-Pending.
+- PASS: focused pytest for `tests/test_portable_artifact_lib.py` and
+  `tests/quality_gates/test_retro_host_log_probe.py` (17 passed).
+- PASS: changed-line classifier for new commit range reported `blocking: []`.
+- PASS: changed-line classifier for latest #273 scheduled failure range,
+  reusing refreshed coverage, reported `blocking: []`.
+- PASS: #261 coordination/disposition focused tests passed (85 passed) and
+  prior scoped survivor proof remains 90.9% reachable score.
+- PASS: final `./scripts/run-quality.sh --read-only` reported 69 passed, 0
+  failed, total 48.0s.
+- PASS: issue closeout draft validation for #273.
+- PASS: debug artifact, debug seam-risk index, critique artifacts, markdown,
+  command docs, docs links, and secrets validators.
+- Retro: charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md
+- Host log probe: charness-artifacts/probe/2026-06-01-273-261-mutation-gate-recovery.json
+- Disposition review: charness-artifacts/critique/2026-06-01-273-261-mutation-gate-recovery-resolution.md
+- Non-claims: remote CI is not proven until after push; #261 remains open; no
+  release was cut.
 
 ## User Verification Instructions
 
-Pending.
+- Inspect the carrier:
+  `charness-artifacts/issue/2026-06-01-273-261-mutation-gate-recovery.md`.
+- After push, verify #273 is closed and #261 has the leave-open comment.
+- Optionally re-run `./scripts/run-quality.sh --read-only`.
 
 ## Auto-Retro
 
-Pending.
+- Waste: closeout-shape iteration around issue carrier fields and debug artifact
+  shape. Existing validators caught it before publication.
+- Critical decisions: fixed #273 with focused branch proof; left #261 open as a
+  policy boundary; used the mutation gate's changed-line classifier for proof.
+- Next improvements: validate carrier/debug evidence immediately after adding
+  required fields, before expanding final prose.
+- Retro dispositions: applied - issue closeout validation, debug validation,
+  seam-risk index validation, and resolution critique were all run before goal
+  completion; no new gate is needed.

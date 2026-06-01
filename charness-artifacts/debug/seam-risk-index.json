@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 48,
-  "indexed_artifact_count": 39,
+  "source_artifact_count": 49,
+  "indexed_artifact_count": 40,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 5,
+    "none": 6,
     "operator-visible-recovery": 12
   },
   "generalization_pressure_counts": {
-    "monitor": 39
+    "monitor": 40
   },
   "entries": [
     {
@@ -532,6 +532,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "this file",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-01-273-mutation-gate-helper-coverage.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-273-mutation-gate-helper-coverage",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "scheduled GitHub mutation workflow samples changed helpers after local",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md",
       "forced": false
     },
     {
