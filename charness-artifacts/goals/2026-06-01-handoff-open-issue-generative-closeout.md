@@ -1,6 +1,6 @@
 # Achieve Goal: Handoff and open issue generative closeout
 
-Status: draft
+Status: active
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`
 
@@ -149,7 +149,7 @@ reason.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184; final-carrier authorization recorded | pending |
+| 0 | Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184; final-carrier authorization recorded | complete |
 | 1 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation report is quality-blocking even though Python survived count is 0, because changed-line blockers excluded changed files before mutation | Root cause/debug record; decide stale vs real blocker; changed-line coverage/selection proof; local mutation/quality proof; issue closeout row | pending |
 | 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | pending |
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
@@ -188,9 +188,46 @@ Initial routing:
 - Release: n/a — no release surface is planned; stop and route through
   `release` if activation discovers a version, manifest, or publication change.
 
+## Issue Closeout Matrix
+
+Slice 0 refreshed the live backlog on 2026-06-01 KST. No new open issues were
+discovered beyond the 12 already shaped into the goal, so no issue is marked
+`out of activated scope`. All live issue close/comment work is deferred to the
+final carrier after local proof and carrier-body validation.
+
+| Issue | Cluster | Intended Disposition | Closeout Carrier / Evidence |
+| --- | --- | --- | --- |
+| #272 | Mutation/report reliability | Close if the report clearly separates score result from changed-line blocker result and the blocker is proven stale, over-strict, or real with targeted proof | Commit/PR body plus issue close/comment explaining `Killed: 78`, `Survived: 0`, score pass, and blocker disposition |
+| #265 | Mutation/report reliability | Close after current-head scoped survivor inventory is refreshed and all real survivors are killed or explicitly dispositioned | Mutation inventory, targeted RED/GREEN proof where applicable, final matrix row |
+| #261 | Mutation/report reliability | Conditional: close only if equivalent/low-value survivor policy/reporting is implemented; otherwise leave open with the exact remaining policy gap | Policy/report implementation proof or leave-open note naming the unimplemented standard |
+| #259 | Closeout/workflow safety | Close after a cheap symbol/concept residue advisory exists for public symbol deletion | Advisory helper/gate proof and docs/skill reference update |
+| #258 | Closeout/workflow safety | Close after shared-worktree reviewer hygiene is enforced or a closeout guard catches staged reversion risk | Fresh-eye reviewer guidance and/or deterministic closeout guard proof |
+| #252 | Portability/setup extensibility | Close after setup accepts a compact AGENTS profile while preserving irreducible host-read-time safety rules | Setup validation tests and compact profile docs |
+| #243 | Usage/engineering success | Close after usage episodes have a consumer/report or the promise is explicitly narrowed; the report may observe necessary engineering-success conditions but must not claim product success | Usage report/consumer tests or narrowed-contract decision |
+| #241 | Portability/setup extensibility | Close after `create-skill` adapter metadata supports a host-owned extension namespace without forking Charness-authored files | Adapter resolver tests and docs for `host_extensions` / `x-*` semantics |
+| #237 | Closeout/workflow safety | Close after achieve closeout guidance classifies commits after live apply/checkpoint conservatively | Achieve guidance/tests for runtime-affecting, test-only, audit-doc-only, and uncertain commits |
+| #236 | Closeout/workflow safety | Close after quality guidance recommends focused CI-only failure triage before repeated full-gate push retries | Quality reference/tests or operator-facing docs with the retry protocol |
+| #185 | Usage/engineering success | Close after necessary AI/ML engineering success conditions are recorded and any chosen supporting implementation is complete | Decision artifact plus optional #243-linked usage/report implementation |
+| #184 | Product success | Leave open intentionally | Final carrier note: product-success frame pending maintainer synthesis and source-thread refresh (`slack://C05J5LTFSCU/1778805288.184149`) |
+
 ## Slice Log
 
-_Not started. This draft is inert until `/goal` activation._
+_Goal activated on 2026-06-01 KST. Slice reports below are the running source of
+truth._
+
+### Slice 1: Slice 0 activation and live backlog refresh
+
+- Objective: Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix.
+- Why this approach: The goal spans the whole live open backlog, so execution must start from current tracker and branch state rather than the shaping snapshot.
+- Commits: n/a — activation/context slice
+- What changed: Goal status flipped to active; Issue Closeout Matrix added; Slice 0 marked complete; activation branch proof updated from ahead 1 to ahead 5.
+- Alternatives rejected: Did not start #272 implementation before recording the matrix; issue closure and publish remain final-carrier work.
+- Targeted verification: PASS: find-skills read-only route recommends achieve/handoff/issue; PASS: check_goal_artifact.py --pursue-ready; PASS: git status --short --branch reports main...origin/main [ahead 5]; PASS: gh issue list shows the same 12 open issues (#272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184); PASS: handoff parser with --with-issues reports 13 entries, 12 issue entries, 2 deduped issue refs.
+- Test duplication pressure: No tests added.
+- Critique: Pre-activation critique already folded into the goal; #258 read-only reviewer guard remains active before any fresh-eye review.
+- Off-goal findings: No new open issues discovered; no out-of-activated-scope rows needed.
+- Lessons carried forward: Keep all live issue mutation and publish work for the final carrier; treat the issue matrix as the source of truth for close vs leave-open decisions.
+- Metrics: Metrics: when available.
 
 ## Context Sources
 
@@ -212,9 +249,10 @@ the originating context by following them in order.
   `parse_handoff_entries.py --repo-root . --handoff-path docs/handoff.md
   --with-issues` reported 13 entries, 3 handoff entries, 12 issue entries, and
   2 deduped issue references (#184/#185 from handoff).
-- Current branch proof at shaping: `git status --short --branch` reported
-  `main...origin/main [ahead 1]`; `git log --oneline origin/main..HEAD` reported
-  `33971f2 Document achieve long-goal route`.
+- Current branch proof at activation: `git status --short --branch` reported
+  `main...origin/main [ahead 5]`; `git log --oneline origin/main..HEAD` reported
+  `15b384b`, `273529d`, `279616f`, `93150d8`, and `33971f2`. These local
+  commits are final-carrier material and are not published early.
 - `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` for the
   completed tranche and its explicit non-claims around live GitHub closure.
 - `charness-artifacts/retro/recent-lessons.md` for the closeout-keyword miss,
