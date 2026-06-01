@@ -18,28 +18,28 @@
 
 - Local `main` is ahead of `origin/main` with the autonomous hardening tranche;
   no push, release, or live GitHub issue mutation has been performed.
-- The active achieve goal is in final closeout:
-  [current autonomous hardening tranche](../charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md).
-  Slices for #268, #269, #264, #270, and the mechanical portion of #265/#261 are
-  complete and recorded in the goal `## Slice Log`.
-- #265/#261 mechanical mutation triage stopped at clearly real survivor kills.
-  Scoped trio inventory finished at 514/514 executed, 467 killed, 47 survived,
-  score 90.9%; remaining survivors are recorded as equivalent/low-value or
-  policy-bound non-claims.
-- Final closeout evidence lives in the goal artifact, retro artifact, host-log
-  probe JSON, and disposition review. Remote CI and live GitHub closure remain
-  explicit non-claims.
+- The active achieve goal is
+  [handoff/open-issue generative closeout](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md).
+  Slices 0-3 are complete: #272 report clarity, #265/#261 disposition, and
+  workflow-safety issues #258/#259/#237/#236. Slice evidence lives in the goal
+  `## Slice Log`.
+- The current issue matrix covers all 12 open issues: #272, #265, #261, #259,
+  #258, #252, #243, #241, #237, #236, #185, and #184. #184 product success is
+  intentionally left open; #185 is limited to necessary engineering-success
+  conditions.
+- Current branch proof after Slice 3: `main...origin/main [ahead 11]`, HEAD
+  `d1970c1 Record workflow safety goal progress`.
 
 ## Next Session
 
 1. Verify the final local state: `git status --short --branch` and
    `git log --oneline origin/main..HEAD`.
-2. If publishing is desired, push the branch and open/prepare a PR from the
-   local commits; do not silently close live GitHub issues without maintainer
-   confirmation.
-3. Re-rank the remaining backlog after this tranche. Product/metric work
-   (#184/#185), equivalent-mutant policy, release policy, and broad backlog
-   grooming remain outside the completed autonomous goal.
+2. Continue the active goal at Slice 4: resolve #252/#241 together by making
+   setup accept compact AGENTS contracts and making create-skill adapter
+   metadata extensible through host-owned fields.
+3. Then handle Slice 5 #243 usage episodes, Slice 6 #185 necessary engineering
+   success while leaving #184 open, and Slice 7 final carrier. Do not push or
+   mutate live GitHub issues before the final carrier.
 
 ## Discuss
 
@@ -49,12 +49,11 @@
 - This session hit the #258 echo-flood trap again (batched tool calls under
   delayed output → cascade cancels). Prefer serial tool calls when output
   latency is unstable.
-- The autonomous tranche deliberately deferred #258/#259/#252/#243/#241/#237/#236;
-  re-rank them after publish/PR handling.
+- #184 needs a separate product-success synthesis from the maintainer's newer
+  thinking and the source thread; do not collapse it into #185.
 
 ## References
 
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [current autonomous hardening tranche](../charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md),
-  [session retro](../charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md)
+- [active open-issue closeout goal](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md)

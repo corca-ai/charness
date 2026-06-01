@@ -56,9 +56,10 @@ reason.
 - New open issues discovered at activation get a matrix row marked
   `out of activated scope` or are explicitly accepted into scope before the run
   proceeds beyond Slice 0.
-- Local branch state matters: activation found `main` ahead of `origin/main` by
-  five local commits, and Slice 1 added `cd9cfc5 Clarify mutation report
-  blockers`. These commits are not published early; they are folded into the
+- Local branch state matters: the run is intentionally accumulating local
+  commits on `main` for a final carrier. After Slice 3, `main` is ahead of
+  `origin/main` by 11 commits through `d1970c1 Record workflow safety goal
+  progress`. These commits are not published early; they are folded into the
   final carrier.
 - Stop and ask the user when a slice requires product metric choices for #184,
   release/version policy, live issue mutation before the final carrier, push/PR
@@ -294,8 +295,11 @@ the originating context by following them in order.
   2 deduped issue references (#184/#185 from handoff).
 - Current branch proof at activation: `git status --short --branch` reported
   `main...origin/main [ahead 5]`; `git log --oneline origin/main..HEAD` reported
-  `15b384b`, `273529d`, `279616f`, `93150d8`, and `33971f2`. These local
-  commits are final-carrier material and are not published early.
+  `15b384b`, `273529d`, `279616f`, `93150d8`, and `33971f2`.
+- Current branch proof after Slice 3: `git status --short --branch` reports
+  `main...origin/main [ahead 11]`; `git log --oneline origin/main..HEAD` adds
+  `b16ca67`, `cd9cfc5`, `c841cfa`, `45fa641`, `d7fb8e4`, and `d1970c1`.
+  These local commits are final-carrier material and are not published early.
 - `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` for the
   completed tranche and its explicit non-claims around live GitHub closure.
 - `charness-artifacts/retro/recent-lessons.md` for the closeout-keyword miss,
@@ -311,10 +315,12 @@ For each Before-phase question: family of options considered, chosen value, and
 rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
 itself so a fresh session sees the design space, not only the closed point.
 
-- Mode family: artifact-only draft vs implementation-continuation. Chosen:
-  artifact-only draft now, then implementation-continuation only after explicit
-  `/goal` activation. Rejected auto-execution because the user asked to set a
-  goal and the achieve contract keeps shaping separate from pursuit.
+- Mode family: artifact-only draft vs implementation-continuation. Historical
+  shaping choice: artifact-only draft, then implementation-continuation after
+  explicit `/goal` activation. Current state: the goal is now active and Slices
+  0-3 have executed; the remaining document job is to keep the active run
+  auditable and make the next slice pickup unambiguous, not to re-present this
+  as an inert draft.
 - Scope family: handoff only, selected issues only, or all currently open
   issues plus handoff sequencing. Chosen: all currently open issues plus
   handoff state, because the user asked to discuss everything needed and close
@@ -419,16 +425,17 @@ _Not started._
 
 ## User Verification Instructions
 
-1. Review this file's issue list and slice order.
+1. Review this file's issue list and remaining slice order, especially Slices
+   4-7.
 2. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root .
    --goal-path
-   charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md
-   --pursue-ready`.
-3. Activate only when ready to execute: `/goal
-   @charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`.
-4. During activation, expect the agent to stop for maintainer decisions around
-   publish/PR, live issue mutation, product metrics, release surfaces, or
-   mutation policy standards.
+   charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`.
+3. To continue the active goal, resume at Slice 4 (#252/#241). Do not re-run
+   activation or re-open settled decisions from Slices 0-3 unless live tracker
+   state has changed.
+4. Expect the agent to stop for maintainer decisions around product-success
+   metrics for #184, release surfaces, accepting a lower mutation/quality
+   standard, or publishing/live GitHub mutation before the final carrier.
 
 ## Auto-Retro
 
