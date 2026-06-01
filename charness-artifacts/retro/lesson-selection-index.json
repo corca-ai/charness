@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 96,
-  "candidate_count": 599,
+  "source_artifact_count": 97,
+  "candidate_count": 606,
   "top_candidates": [
     {
       "candidate_id": "current_focus:3e4a1d24f386",
@@ -49,6 +49,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:5e46f99fd452",
+      "kind": "current_focus",
+      "lesson": "The user pointed out that the handoff chunker again surfaced meaningless pickup choices: local-state verification appeared as a selectable chunk, and an already completed achieve goal was still offered for activation.",
+      "normalized_key": "the user pointed out that the handoff chunker again surfaced meaningless pickup choices local",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -233,26 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:569e00b5bead",
-      "kind": "next_improvement",
-      "lesson": "applied — this retro artifact and the goal Auto-Retro bind the closeout lesson to durable artifacts.",
-      "normalized_key": "applied this retro artifact and the goal auto retro bind the closeout lesson to",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -291,6 +291,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:5e46f99fd452",
+      "kind": "current_focus",
+      "lesson": "The user pointed out that the handoff chunker again surfaced meaningless pickup choices: local-state verification appeared as a selectable chunk, and an already completed achieve goal was still offered for activation.",
+      "normalized_key": "the user pointed out that the handoff chunker again surfaced meaningless pickup choices local",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -637,6 +657,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:61ba19407c05",
+      "kind": "next_improvement",
+      "lesson": "chunker pickup should present only actionable work chunks; setup and constraints shape execution silently.",
+      "normalized_key": "chunker pickup should present only actionable work chunks setup and constraints shape execution silently",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:ce1b3f951c57",
       "kind": "next_improvement",
       "lesson": "keep the debug-artifact section contract visible when a debug file is used as issue closeout evidence.",
@@ -677,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a412b5141962",
+      "kind": "next_improvement",
+      "lesson": "parser now owns the filter with tests, so the rule is executable instead of relying on handoff prose discipline.",
+      "normalized_key": "parser now owns the filter with tests so the rule is executable instead of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e9ef41b4a903",
       "kind": "next_improvement",
       "lesson": "Teach critique packets to include an explicit \"issue closeout subset\" field, not just generic warnings about live issue mutation.",
@@ -691,6 +751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:16cc189ce46d",
+      "kind": "next_improvement",
+      "lesson": "this retro records the miss and points to the structural fix in `skills/public/handoff/scripts/chunked_routing_parser.py`.",
+      "normalized_key": "this retro records the miss and points to the structural fix in skills public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -777,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:d9d93f022720",
+      "kind": "repeat_trap",
+      "lesson": "The chunker treated every numbered `## Next Session` entry as selectable work.",
+      "normalized_key": "the chunker treated every numbered next session entry as selectable work",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:89247ee6274b",
       "kind": "repeat_trap",
       "lesson": "The final answer claimed \"issue close was not requested\" even though the workflow expectation was that resolved issue closeout should be carried by the release commit.",
@@ -857,6 +957,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:391bd30ec49c",
+      "kind": "repeat_trap",
+      "lesson": "The parent ranking pass did not re-check whether an entry was operator setup, stale activation state, or an execution constraint.",
+      "normalized_key": "the parent ranking pass did not re check whether an entry was operator setup",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:11c520b371b3",
       "kind": "repeat_trap",
       "lesson": "The release artifact briefly held stale `not_requested` state after live closeout had been repaired.",
@@ -911,6 +1031,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9c075f395d39",
+      "kind": "repeat_trap",
+      "lesson": "This cost a correction turn and made the handoff output look less trustworthy than the underlying repo state.",
+      "normalized_key": "this cost a correction turn and made the handoff output look less trustworthy than",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
           "date": "2026-06-01",
           "section": "Waste"
         }

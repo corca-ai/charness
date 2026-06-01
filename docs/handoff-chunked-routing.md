@@ -197,7 +197,12 @@ step 3 is the agent.
 
 1. **Parse.** [`parse_handoff_entries.py`](../skills/public/handoff/scripts/parse_handoff_entries.py) reads the resolved handoff
    artifact, finds the `## Next Session` section, splits on numbered
-   bullets, and emits a list of `HandoffEntry` records. Additional
+   bullets, and emits a list of `HandoffEntry` records. It filters numbered
+   local-state preflight checks (`git status`, `git log`, `gh issue list`) and
+   activation entries whose referenced goal artifact is already
+   `Status: complete`; those are pickup setup or stale state, not chunks to ask
+   the user to choose. `During`/`while` cadence or invariant entries are also
+   treated as execution constraints, not standalone choices. Additional
    residual-work sections (e.g., `## Discuss`) are read only if the
    adapter declares them; default scope is `## Next Session` only.
 2. **Propose merges.** [`propose_merges.py`](../skills/public/handoff/scripts/propose_merges.py) consumes the entry list,

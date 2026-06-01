@@ -65,7 +65,12 @@ step 3 is the active agent.
    against the resolved handoff artifact. Each numbered entry in
    `## Next Session` becomes a `HandoffEntry` record with title, body,
    referenced paths/issues/skills, and a non-trivial-filtered
-   `boundary_tokens` set. Pass `--with-issues` (the pickup default; #249)
+   `boundary_tokens` set, except non-actionable pickup checks are filtered
+   before ranking. Local-state preflight entries such as `git status`/`git log`
+   checks are operator setup, not user-selectable chunks; goal activation
+   entries pointing at a `Status: complete` goal artifact are stale and are
+   also dropped; `during`/`while` cadence or invariant entries shape the chosen
+   chunk instead of becoming standalone candidates. Pass `--with-issues` (the pickup default; #249)
    to also union the live open-issue backlog: each open issue becomes a
    `HandoffEntry` (boundary tokens from its **title + specific labels**, not
    its body — body paths over-cluster), routed through the `issue` skill

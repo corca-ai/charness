@@ -24,24 +24,17 @@
   mutation-standard policy question.
 - #261 and #184 remain the live carry-forward issues; #184 needs product-success
   synthesis from the maintainer's newer thinking and source thread.
-- A new draft achieve goal is ready to activate:
+- The achieve long-goal efficiency work is complete:
   [achieve long-goal efficiency and effectiveness](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md).
-  It targets active-context control, verification cadence, slice review packets,
-  and automatic efficiency retro suggestions for intentionally broad goals.
+- The handoff chunker now filters non-actionable pickup entries before ranking:
+  local-state preflight, completed goal activations, and cadence/invariant
+  constraints should shape execution rather than appear as selectable chunks.
 
 ## Next Session
 
-1. Verify local state: `git status --short --branch` and
-   `git log --oneline origin/main..HEAD`.
-2. Pick the next issue explicitly: #184 for product-success synthesis, or #261
+1. Pick the next issue explicitly: #184 for product-success synthesis, or #261
    for the mutation-standard policy decision around equivalent/low-value
    survivors.
-3. Activate the draft efficiency goal only when broad goal workflow work is the
-   intended next slice:
-   `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`.
-4. During any broad goal, preserve the proof cadence: cheap deterministic checks at
-   commit boundaries, higher-cost critique/validation at slice boundaries, and
-   final broad proof.
 
 ## Discuss
 
@@ -56,6 +49,9 @@
   status/diff/check commands, polling, and broad-gate cadence.
 - #261's remaining coordination-cues survivors are policy residue after the
   mechanical hardening path, not another #273 coverage fix.
+- If a future bare handoff pickup offers setup checks, completed goals, or
+  cadence constraints as choices, inspect the parser filter before blaming the
+  handoff prose.
 
 ## References
 
@@ -63,4 +59,5 @@
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [mutation recovery goal](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md),
   [mutation recovery carrier](../charness-artifacts/issue/2026-06-01-273-261-mutation-gate-recovery.md)
-- [draft achieve efficiency goal](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md)
+- [completed achieve efficiency goal](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md),
+  [handoff chunker miss retro](../charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md)

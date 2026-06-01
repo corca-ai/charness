@@ -43,17 +43,39 @@ chunked_routing_issue_source = SKILL_RUNTIME.load_local_skill_module(
 )
 
 
+def _explicit_handoff_path(args: argparse.Namespace) -> Path | None:
+    explicit = args.handoff if args.handoff is not None else args.handoff_path
+    return explicit.expanduser().resolve() if explicit is not None else None
+
+
 def _resolve_handoff_path(args: argparse.Namespace) -> Path:
     # Source stage: input is the handoff doc, not pipeline JSON. A positional
     # path or --handoff-path both name it (positional wins); otherwise resolve
     # via the adapter from --repo-root. The positional makes the natural
     # `parse_handoff_entries.py docs/handoff.md` invocation work (#248).
-    explicit = args.handoff if args.handoff is not None else args.handoff_path
+    explicit = _explicit_handoff_path(args)
     if explicit is not None:
-        return explicit.expanduser().resolve()
-    repo_root = args.repo_root.expanduser().resolve()
+        return explicit
+    repo_root = _repo_root_for_adapter(args)
     adapter = resolve_adapter.load_adapter(repo_root)
     return (repo_root / adapter["artifact_path"]).resolve()
+
+
+def _repo_root_for_adapter(args: argparse.Namespace) -> Path:
+    root = args.repo_root if args.repo_root is not None else Path.cwd()
+    return root.expanduser().resolve()
+
+
+def _repo_root_for_live_filters(args: argparse.Namespace) -> Path | None:
+    if args.repo_root is not None:
+        return args.repo_root.expanduser().resolve()
+    if args.handoff is None and args.handoff_path is None:
+        return Path.cwd().resolve()
+    explicit = _explicit_handoff_path(args)
+    cwd = Path.cwd().resolve()
+    if explicit == cwd / "docs" / "handoff.md":
+        return cwd
+    return None
 
 
 def parse_args() -> argparse.Namespace:
@@ -68,7 +90,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--repo-root",
         type=Path,
-        default=Path.cwd(),
+        default=None,
         help="Repo root used to resolve the handoff adapter (default: cwd)",
     )
     parser.add_argument(
@@ -103,13 +125,14 @@ def main() -> int:
             )
             return 2
         text = handoff_path.read_text(encoding="utf-8")
-        entries = chunked_routing_lib.parse_handoff_entries(text)
+        repo_root = _repo_root_for_live_filters(args)
+        entries = chunked_routing_lib.parse_handoff_entries(text, repo_root=repo_root)
         handoff_count = len(entries)
         issue_count = 0
         if args.with_issues:
-            repo_root = args.repo_root.expanduser().resolve()
+            issue_repo_root = _repo_root_for_adapter(args)
             issue_entries = chunked_routing_issue_source.build_issue_entries(
-                repo_root,
+                issue_repo_root,
                 start_index=max((e.index for e in entries), default=0) + 1,
             )
             issue_count = len(issue_entries)

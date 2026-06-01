@@ -161,6 +161,147 @@ def test_parser_cli_emits_valid_json_with_expected_shape(tmp_path):
         }
 
 
+def test_parser_filters_preflight_and_completed_goal_activation(lib, tmp_path):
+    goal = tmp_path / "charness-artifacts/goals/2026-06-01-done.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        "# Achieve Goal: Done\n\nStatus: complete\n\n## Goal\nDone.\n",
+        encoding="utf-8",
+    )
+    text = """# Handoff
+
+## Next Session
+
+1. Verify local branch state: `git status --short --branch` and
+   `git log --oneline origin/main..HEAD`.
+2. Activate the finished goal only when broad work is intended:
+   `/goal @charness-artifacts/goals/2026-06-01-done.md`.
+3. During any broad goal, follow the proof cadence.
+4. Pick the next issue explicitly: #184 or #261.
+
+## Discuss
+"""
+
+    entries = lib.parse_handoff_entries(text, repo_root=tmp_path)
+
+    assert [entry.index for entry in entries] == [4]
+    assert entries[0].referenced_issues == (184, 261)
+
+
+def test_parser_filters_completed_goal_markdown_link_activation(lib, tmp_path):
+    goal = tmp_path / "charness-artifacts/goals/2026-06-01-done.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        "# Achieve Goal: Done\n\nStatus: complete\n\n## Goal\nDone.\n",
+        encoding="utf-8",
+    )
+    text = """# Handoff
+
+## Next Session
+
+1. Activate completed goal:
+   [done](charness-artifacts/goals/2026-06-01-done.md).
+2. Pick the next issue explicitly: #184.
+
+## Discuss
+"""
+
+    entries = lib.parse_handoff_entries(text, repo_root=tmp_path)
+
+    assert [entry.index for entry in entries] == [2]
+
+
+def test_parser_keeps_incomplete_goal_activation(lib, tmp_path):
+    goal = tmp_path / "charness-artifacts/goals/2026-06-01-draft.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        "# Achieve Goal: Draft\n\nStatus: draft\n\n## Goal\nDraft.\n",
+        encoding="utf-8",
+    )
+    text = """# Handoff
+
+## Next Session
+
+1. Activate the draft goal:
+   `/goal @charness-artifacts/goals/2026-06-01-draft.md`.
+
+## Discuss
+"""
+
+    entries = lib.parse_handoff_entries(text, repo_root=tmp_path)
+
+    assert len(entries) == 1
+    assert entries[0].referenced_paths == (
+        "charness-artifacts/goals/2026-06-01-draft.md",
+    )
+
+
+def test_parser_cli_explicit_docs_handoff_filters_completed_goal(tmp_path):
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    goal = tmp_path / "charness-artifacts/goals/2026-06-01-done.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        "# Achieve Goal: Done\n\nStatus: complete\n\n## Goal\nDone.\n",
+        encoding="utf-8",
+    )
+    handoff = docs / "handoff.md"
+    handoff.write_text(
+        """# Handoff
+
+## Next Session
+
+1. Verify local repo state: `git status --short --branch`.
+2. Activate completed goal:
+   [done](charness-artifacts/goals/2026-06-01-done.md).
+3. Pick the next issue explicitly: #184.
+
+## Discuss
+""",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["python3", str(PARSER_SCRIPT), str(handoff)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [entry["index"] for entry in payload["entries"]] == [3]
+
+
+def test_current_handoff_pipeline_has_single_actionable_candidate():
+    parse = subprocess.run(
+        ["python3", str(PARSER_SCRIPT), "--repo-root", str(REPO_ROOT), "--with-issues"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert parse.returncode == 0, parse.stderr
+    propose = subprocess.run(
+        [
+            "python3",
+            str(
+                REPO_ROOT
+                / "skills/public/handoff/scripts/propose_merges.py"
+            ),
+        ],
+        input=parse.stdout,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert propose.returncode == 0, propose.stderr
+    payload = json.loads(propose.stdout)
+    candidates = payload["standalone"] + payload["merged"]
+    assert len(candidates) == 1
+    assert candidates[0]["entries"][0]["referenced_issues"] == [184, 261]
+
+
 def _load_parser_module():
     spec = importlib.util.spec_from_file_location("parse_handoff_entries", PARSER_SCRIPT)
     assert spec is not None and spec.loader is not None

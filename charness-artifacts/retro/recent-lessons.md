@@ -10,7 +10,7 @@
 - Handoff auto-draft failed the new shape because it has an independent goal renderer. This was not wasted validation: the broad suite caught a real generator-consumer compatibility gap. (source: `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`)
 - JSON dogfood edits briefly landed under `create-cli` before being corrected. The immediate cause was a broad patch anchor in a large repeated JSON structure. (source: `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`)
 - The #265/#261 mutation slice reran the same 514-mutant scoped campaign several times after incremental test additions. This was defensible for proof, but it was the dominant local time cost. (source: `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`)
-- The final answer claimed "issue close was not requested" even though the workflow expectation was that resolved issue closeout should be carried by the release commit. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
+- The chunker treated every numbered `## Next Session` entry as selectable work. (source: `charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md`)
 
 ## Next-Time Checklist
 
@@ -29,4 +29,5 @@
 
 - `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`
 - `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`
+- `charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md`
 - `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`

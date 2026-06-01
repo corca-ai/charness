@@ -35,6 +35,7 @@ _BOLD_TITLE = re.compile(r"^\*\*(.+?)\*\*", re.DOTALL)
 _MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 _ISSUE_REF = re.compile(r"#(\d+)\b")
 _SKILL_PATH = re.compile(r"skills/(?:public|support|profile)/([a-z0-9-]+)")
+_GOAL_STATUS = re.compile(r"^Status:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE)
 _BARE_PATH = re.compile(
     r"(?<![\w/])("
     # file with extension: at least one path segment then file.ext
@@ -45,6 +46,12 @@ _BARE_PATH = re.compile(
     r")"
 )
 _WHITESPACE = re.compile(r"\s+")
+_LOCAL_STATE_COMMANDS = ("git status", "git log", "gh issue list")
+_PREFLIGHT_STATE_TERMS = ("local", "branch", "repo", "worktree", "open issue")
+_GOAL_ACTIVATION_TOKENS = ("`/goal @", "`/achieve @", "/goal @", "/achieve @")
+_ACTIVATION_WORDS = ("activate", "continue", "resume", "run", "start")
+_CONSTRAINT_VERBS = ("enforce", "follow", "keep", "maintain", "preserve", "use")
+_CONSTRAINT_NOUNS = ("cadence", "constraint", "invariant")
 
 
 def extract_next_session_block(text: str) -> str:
@@ -189,7 +196,69 @@ def _build_boundary_tokens(
     return tuple(seen)
 
 
-def parse_handoff_entries(text: str) -> list[HandoffEntry]:
+def _is_operator_preflight(title: str, raw_text: str) -> bool:
+    """Return True for pickup checks that are not selectable work chunks."""
+    normalized = _WHITESPACE.sub(" ", f"{title} {raw_text}".lower())
+    if not any(command in normalized for command in _LOCAL_STATE_COMMANDS):
+        return False
+    title_normalized = _WHITESPACE.sub(" ", title.lower())
+    if not title_normalized.startswith(("verify", "check", "refresh")):
+        return False
+    return any(term in title_normalized for term in _PREFLIGHT_STATE_TERMS)
+
+
+def _is_execution_constraint(title: str, raw_text: str) -> bool:
+    """Return True for sequencing constraints that should shape a chosen chunk."""
+    normalized = _WHITESPACE.sub(" ", f"{title} {raw_text}".lower())
+    if not normalized.startswith(("during ", "while ")):
+        return False
+    return (
+        any(verb in normalized for verb in _CONSTRAINT_VERBS)
+        and any(noun in normalized for noun in _CONSTRAINT_NOUNS)
+    )
+
+
+def _goal_status(repo_root: Path | None, referenced_path: str) -> str | None:
+    if repo_root is None:
+        return None
+    root = repo_root.resolve()
+    path = (root / referenced_path).resolve()
+    try:
+        if root not in path.parents and path != root:
+            return None
+    except RuntimeError:
+        return None
+    if not path.is_file():
+        return None
+    match = _GOAL_STATUS.search(path.read_text(encoding="utf-8"))
+    return match.group(1).strip().lower() if match else None
+
+
+def _is_completed_goal_activation(
+    raw_text: str,
+    referenced_paths: tuple[str, ...],
+    *,
+    repo_root: Path | None,
+) -> bool:
+    """Return True when an activation entry points at an already complete goal."""
+    normalized = raw_text.lower()
+    looks_like_activation = (
+        any(token in normalized for token in _GOAL_ACTIVATION_TOKENS)
+        or any(word in normalized for word in _ACTIVATION_WORDS)
+    )
+    if not looks_like_activation:
+        return False
+    for referenced_path in referenced_paths:
+        if not referenced_path.startswith("charness-artifacts/goals/"):
+            continue
+        if _goal_status(repo_root, referenced_path) == "complete":
+            return True
+    return False
+
+
+def parse_handoff_entries(
+    text: str, *, repo_root: Path | None = None
+) -> list[HandoffEntry]:
     """Parse the ``## Next Session`` block of a handoff markdown body."""
     block = extract_next_session_block(text)
     if not block.strip():
@@ -212,6 +281,14 @@ def parse_handoff_entries(text: str) -> list[HandoffEntry]:
         boundary_tokens = _build_boundary_tokens(
             tuple(normalized_paths), referenced_skills
         )
+        if _is_operator_preflight(title, raw_text):
+            continue
+        if _is_execution_constraint(title, raw_text):
+            continue
+        if _is_completed_goal_activation(
+            raw_text, tuple(normalized_paths), repo_root=repo_root
+        ):
+            continue
         entries.append(
             HandoffEntry(
                 index=index,
