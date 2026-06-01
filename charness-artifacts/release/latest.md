@@ -17,18 +17,19 @@ Advanced `charness` toward release `0.13.5` (tag `v0.13.5`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.13.5`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.13.5`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
 
 ## Real-Host Verification
 
@@ -42,13 +43,24 @@ Advanced `charness` toward release `0.13.5` (tag `v0.13.5`) through the repo-own
 
 - Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.5-reviewer-tier-critique.md`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.13.5`.
+
 ## Fresh Checkout Probes
 
 - No repo-declared fresh checkout probes were configured for this release.
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #275: `CLOSED` (https://github.com/corca-ai/charness/issues/275)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
+- Issue #276: `CLOSED` (https://github.com/corca-ai/charness/issues/276)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
