@@ -7,9 +7,10 @@ Activation: `/goal @charness-artifacts/goals/2026-06-01-handoff-open-issue-gener
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
-Mode: artifact-only draft — this Before-phase shapes the sequence and stops.
-No implementation, push, PR creation, or live issue mutation runs until the
-user activates this file with the `/goal` command above.
+Mode: artifact-only draft with pre-activation decisions captured. This
+Before-phase shapes the sequence and stops. The current session owns discussion
+and decision capture; the next session should activate this file with `/goal`
+and implement the accepted sequence.
 
 ## Goal
 
@@ -22,9 +23,11 @@ reason.
 ## Non-Goals
 
 - Do not close, comment on, relabel, or otherwise mutate live GitHub issues
-  without an explicit maintainer confirmation at the closeout carrier step.
+  before the final carrier. Maintainer authorization is granted for final
+  carrier live close/comment work when the issue matrix, gates, and carrier body
+  are ready.
 - Do not push local commits, open a PR, or cut a release as part of shaping this
-  goal. Publishing is an activation-time decision and must name its carrier.
+  goal. Publishing is deferred to the final carrier.
 - Do not treat product-direction issues (#184/#185) as autonomously closable
   implementation work. They require user discussion and explicit acceptance.
 - Do not collapse all open issues into one grab-bag commit. Each issue gets a
@@ -50,13 +53,15 @@ reason.
   `out of activated scope` or are explicitly accepted into scope before the run
   proceeds beyond Slice 0.
 - Local branch state matters: `main` is currently ahead of `origin/main` by
-  `33971f2 Document achieve long-goal route`. Decide whether that commit is a
-  prerequisite publish/PR carrier before closing issue work that depends on it.
-  Any pre-#272 publish is only a carrier for the already-complete tranche and
-  must carry an explicit #272 non-claim.
+  `33971f2 Document achieve long-goal route` plus the goal-draft commit. These
+  commits are not published early; they are folded into the final carrier.
 - Stop and ask the user when a slice requires product metric choices, AI/ML
   research direction, release/version policy, live issue mutation, push/PR
   publication, or accepting a lower quality/mutation standard.
+- Pre-activation decision rule: decide all product/policy/scope questions in
+  this session before activation. The next session should activate and implement
+  the accepted plan, stopping only when implementation discovers a genuinely new
+  decision not covered here.
 - Bug-class issue slices need a causal/debug step before the fix and an issue
   closeout carrier after proof. The carrier must include close keywords or a
   deliberate leave-open reason.
@@ -82,8 +87,9 @@ reason.
   its documented substitute passes before completion.
 - `docs/handoff.md` is updated only at closeout and names the next first move
   after this run, not a stale full backlog duplicate.
-- Live GitHub closure, remote CI, push, PR, and release proof are named as run
-  or not-run non-claims; none are implied.
+- Live GitHub closure/commenting and publish/PR work happen only in the final
+  carrier, after the matrix and gates are ready. Remote CI and release proof are
+  named as run or not-run non-claims; none are implied.
 
 ## Agent Verification Plan
 
@@ -121,10 +127,12 @@ reason.
 
 ### External Or Live Proof
 
-- Live GitHub issue closure/commenting is a maintainer-confirmed final carrier,
-  not an automatic side effect of this goal.
-- Push/PR creation is a maintainer-confirmed publish step. If skipped, record
-  remote CI and live closure as not run.
+- Live GitHub issue closure/commenting is authorized only as the final carrier,
+  after local proof and the issue matrix are complete. Close/comment exactly the
+  rows marked for live action; leave-open rows get their documented reason.
+- Push/PR creation is deferred to the final carrier. If the repository policy
+  calls for a PR instead of direct push, prepare/open the PR there with the
+  issue closeout body.
 - No release is planned. If a slice touches a release surface, stop and route
   through `release` before proceeding.
 
@@ -132,15 +140,14 @@ reason.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Refresh handoff, branch, and open-issue state; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184 | pending |
-| 1 | Settle the publish/PR carrier for the existing local commit | Handoff says local `main` is ahead; downstream issue closeout should know whether this work is already published | Maintainer decision recorded: defer publish, prepare PR for existing tranche with #272 non-claim, or fold into later carrier; no live issue closure | pending |
-| 2 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation regression on `main` is quality-blocking and can invalidate later proof | Root cause/debug record; targeted fix or stale-issue reclassification; local mutation/quality proof; issue closeout row | pending |
-| 3 | Finish the mutation survivor cluster (#265/#261) only to the current policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions documented; close/leave-open rows for #265/#261 | pending |
-| 4 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
-| 5 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | pending |
-| 6 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this is separate from safety gates and product metrics | Usage report/consumer and capture-gap signal, or a documented decision to narrow/remove the surface | pending |
-| 7 | Discuss and decide product/AI-success work (#184/#185) | These are product judgment issues, not autonomous maintenance fixes | User-approved metric/research decision artifact; implementation follow-up if chosen; close/leave-open rows | pending |
-| 8 | Final carrier: verify, critique, retro, handoff refresh, and issue closeout/publish | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix | pending |
+| 0 | Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184; final-carrier authorization recorded | pending |
+| 1 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation report is quality-blocking even though Python survived count is 0, because changed-line blockers excluded changed files before mutation | Root cause/debug record; decide stale vs real blocker; changed-line coverage/selection proof; local mutation/quality proof; issue closeout row | pending |
+| 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | pending |
+| 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
+| 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | pending |
+| 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this is separate from safety gates and product metrics | Usage report/consumer and capture-gap signal, or a documented decision to narrow/remove the surface | pending |
+| 6 | Implement the pre-decided product/AI-success outcome (#184/#185), or record the accepted decision artifact | These are product judgment issues; this session decides them before activation, then the goal applies that decision | User-approved metric/research decision artifact; implementation follow-up if chosen; close/leave-open rows | pending |
+| 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | pending |
 
 ## Coordination Cues
 
@@ -238,6 +245,24 @@ itself so a fresh session sees the design space, not only the closed point.
 - Release axis: release is not part of the requested closeout goal. Chosen:
   `Release: n/a` unless activation discovers a touched release surface. Rejected
   opportunistic version bump or publication.
+- Publish timing family: early publish of the existing local commits vs final
+  carrier. Chosen: final carrier. Rejected early publish because the user wants
+  all decisions settled in this session and next-session activation to implement
+  the full sequence.
+- Live issue action family: draft-only closeout vs live close/comment at final
+  carrier. Chosen: perform live close/comment in the final carrier when the
+  matrix and proof are ready. Rejected mid-run live mutation because issue rows
+  can still change while implementation proceeds.
+- Product/policy timing family: decide during goal vs decide before activation.
+  Chosen: this session decides #184/#185 and #265/#261 policy boundaries before
+  activation; the next session implements. Rejected activation-time product
+  debate because it would interrupt the intended long run.
+- #272 interpretation: the current report is not failing because Python
+  mutants survived. It reports `Killed: 78`, `Survived: 0`, and `100.0%`
+  reachable score, but still marks FAIL because changed-line blockers excluded
+  changed files before mutation. The implementation slice should debug whether
+  that blocking signal is stale, over-strict, or real uncovered changed-line
+  debt.
 
 ## Plan Critique Findings
 
@@ -262,8 +287,8 @@ re-verifies the folded revisions without re-running critique.
 - Fresh-eye plan critique: executed by bounded read-only reviewer `Copernicus`
   (`019e8053-c853-7950-bf10-fb6f4ed5b26b`). Folded blockers: activation-time
   new issue drift must become explicit `accepted into scope` or
-  `out of activated scope` rows; Slice 1 publish must not imply #272 proof and
-  can only carry the already-complete tranche with a #272 non-claim; #258
+  `out of activated scope` rows; publish must not imply #272 proof and is now
+  deferred to the final carrier; #258
   shared-worktree reviewer safety must be restated before any reviewer-assisted
   activation work even though the full #258 implementation remains Slice 4.
 - Fresh-eye safe-to-leave: product-vs-maintenance boundary for #184/#185 and
