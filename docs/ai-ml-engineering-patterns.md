@@ -19,10 +19,10 @@ source text.
 The highest-leverage proposed next improvement was to implement
 privacy-bounded `usage_episode` emission for one narrow Charness-owned
 workflow, using the vocabulary in
-[product-success-metrics.md](./product-success-metrics.md) while keeping the
-[usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) disabled by
-default. That path now exists for `slice_closeout`; aggregation and default
-enablement remain separate decisions.
+[product-success-metrics.md](./product-success-metrics.md). That path now
+exists for `slice_closeout`, and the repo-owned usage report summarizes counts,
+session grouping, T-signal rate, and capture gaps. This is still an engineering
+usage signal, not product-success proof.
 
 ## Current-State Review
 
@@ -30,7 +30,7 @@ enablement remain separate decisions.
 | --- | --- | --- |
 | Evaluation | Deterministic gates are strong; Cautilus is eval-only and adapter-disabled unless planner proof asks for it. Public-skill dogfood and quality artifacts preserve behavior-review state. | Strong for local proof; weak for product outcome measurement. |
 | Experimentation | Specs, issues, critiques, retros, and release artifacts record changes and decisions. Runtime metrics exist for quality gates. | Strong for repo changes; weak for comparing product hypotheses over usage. |
-| Data and feedback | Debug artifacts preserve RCA, detection gaps, and sibling scans. Retros turn corrections into lessons. Usage episodes are configured but disabled. | Strong for incidents; missing for ordinary successful usage. |
+| Data and feedback | Debug artifacts preserve RCA, detection gaps, and sibling scans. Retros turn corrections into lessons. Usage episodes now have validator and report consumers, with capture gaps made visible. | Strong for incidents; still incomplete for ordinary successful usage. |
 | Operations and observability | Quality runtime signals, release proof, tool doctor, integration manifests, and handoff docs make operator state visible. | Strong for maintainer-local operations; release real-host proof remains deferred. |
 | Quality engineering | `run-quality`, coverage, ruff, link checks, supply-chain checks, issue closeout rules, and critique discipline form a mature local gate surface. | Strong, with known risks around docs ergonomics and test fanout. |
 
@@ -53,10 +53,11 @@ enablement remain separate decisions.
 
 ## Missing Or Weak Patterns
 
-1. Product outcome telemetry is opt-in and disabled in this repo.
+1. Product outcome telemetry is opt-in and incomplete.
    The [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) exists
-   with `enabled: false`, so the current quality posture can report readiness.
-   `slice_closeout` emission is implemented for enabled fixtures or consumers.
+   so the current quality posture can report readiness. `slice_closeout`
+   emission and report aggregation exist, but the denominator is still only
+   captured local records.
 2. First value is not measured across sessions.
    Commits, artifacts, and issue closeouts exist, but no runtime record says
    which one was the first useful output for a user job.
@@ -74,17 +75,18 @@ enablement remain separate decisions.
    adapter is enabled. Validate it with the
    [usage episode validator](../scripts/validate_usage_episodes.py) before any
    maintainer opts this repo into capture.
-2. Add a usage-episode summary to quality review.
-   Once records exist, report counts by `selected_job`, `core_action`,
-   `outcome_status`, `feedback_signal`, and `t_status`; do not include raw
-   prompts, identities, or source text.
+2. Keep the usage-episode summary in quality review.
+   Report counts by `selected_job`, `core_action`, `outcome_status`,
+   `feedback_signal`, and `t_status`, plus session grouping and capture gaps;
+   do not include raw prompts, identities, or source text, and do not treat the
+   report as product-success proof.
 3. Trim README route/procedure duplication after separating generated docs.
    This addresses the quality artifact's docs ergonomics finding without adding
    a noisy gate before ownership is clear.
 
-The first candidate was implemented through #188. The next highest
-effect-to-effort move is a usage-episode summary once real records exist.
-Maintainers still own the final product-priority and default-capture decisions.
+The first candidate was implemented through #188, and the summary consumer was
+added later for #243. Maintainers still own the final product-priority and
+product-success decisions.
 
 ## Implementation Issue
 

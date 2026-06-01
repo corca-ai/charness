@@ -219,10 +219,16 @@
       "rationale": "Non-git worktrees get an explicit skipped maintainer-hook message."
     },
     "scripts/validate_usage_episodes.py": {
-      "states": ["disabled", "no_adapter", "skipped"],
+      "states": ["disabled", "no_adapter", "no_records", "skipped"],
       "visibility": ["structured_warning", "stdout_attention"],
-      "evidence_terms": ["WARNING:", "usage_episodes_adapter_missing"],
+      "evidence_terms": ["WARNING:", "usage_episodes_adapter_missing", "usage_episodes_no_records"],
       "rationale": "Usage episode opt-in absence and disabled state remain non-failing but visible in JSON and normal output."
+    },
+    "scripts/report_usage_episodes.py": {
+      "states": ["disabled", "no_adapter", "no_records", "skipped"],
+      "visibility": ["structured_warning", "stdout_attention"],
+      "evidence_terms": ["WARNING:", "usage_episodes_adapter_missing", "usage_episodes_no_records", "Non-claims:"],
+      "rationale": "Usage episode report absence, disabled state, and empty capture remain non-failing but visible, with explicit non-claims so summaries are not mistaken for product-success proof."
     },
     "scripts/worktree_audit_lib.py": {
       "states": ["skipped"],

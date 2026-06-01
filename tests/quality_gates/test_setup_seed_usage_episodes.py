@@ -99,7 +99,9 @@ def test_usage_episodes_are_skill_level_setup_and_quality_contracts() -> None:
     assert "`<repo-root>/.agents/usage-episodes-adapter.yaml`" in setup_seams
     assert "setup implementation uses" in setup_seams
     assert "not a user-facing API" in setup_seams
-    assert "run `quality` for the validation gate" in setup_seams
+    assert "run `quality` for the\nvalidation/report gate" in setup_seams
     assert "resolve and run the Charness package-root validator `validate_usage_episodes.py`" in quality_skill
-    assert "`no_adapter` and `disabled` are skipped warnings, not failures" in quality_skill
+    assert "and report `report_usage_episodes.py`" in quality_skill
+    assert "`no_adapter`, `disabled`, and `no_records` are skipped warnings" in quality_skill
     assert 'queue_selected "validate-usage-episodes" python3 scripts/validate_usage_episodes.py' in run_quality
+    assert 'queue_selected "report-usage-episodes" python3 scripts/report_usage_episodes.py' in run_quality

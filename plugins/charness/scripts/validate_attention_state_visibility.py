@@ -23,6 +23,7 @@ DEFAULT_SCAN_ROOTS = ("scripts", "skills/public", "skills/support")
 PLUGIN_DECLARATION_PATH = "skills/quality/references/attention-state-visibility.json"
 ATTENTION_TERMS = (
     "no_adapter",
+    "no_records",
     "disabled",
     "not_configured",
     "skipped",

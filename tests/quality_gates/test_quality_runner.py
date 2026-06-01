@@ -286,6 +286,35 @@ def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quali
         assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_surfaces_usage_episode_report(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    report_script = repo / "scripts" / "report_usage_episodes.py"
+    report_script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "print('ADVISORY: usage episode report is an engineering signal, not product-success proof.')",
+                "print('Usage episodes: 4 record(s) across 3 session group(s).')",
+                "print('Capture gaps: ungrouped=2, missing_feedback=1, single_entry_point_only=True, explicit_request_only=True.')",
+                "print('Non-claims:')",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    report_script.chmod(0o755)
+    env["CHARNESS_QUALITY_LABELS"] = "report-usage-episodes"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS report-usage-episodes" in result.stdout
+    assert "--- report-usage-episodes output ---" in result.stdout
+    assert "Usage episodes: 4 record(s) across 3 session group(s)." in result.stdout
+    assert "Capture gaps: ungrouped=2" in result.stdout
+    assert "not product-success proof" in result.stdout
+
+
 def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     warning_script = repo / "scripts" / "validate_skill_ergonomics.py"

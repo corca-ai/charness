@@ -68,7 +68,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - treat migration-time exact-prose guards as temporary bridges; when `inventory_skill_ergonomics.py` is cited, closeout uses `prose review result:` to record judgment separately from script fields
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
-   - resolve and run the Charness package-root validator `validate_usage_episodes.py`; `no_adapter` and `disabled` are skipped warnings, not failures
+   - resolve and run the Charness package-root validator `validate_usage_episodes.py` and report `report_usage_episodes.py`; `no_adapter`, `disabled`, and `no_records` are skipped warnings, not product-success proof or failures
    - keep exit-zero attention states visible with `validate_attention_state_visibility.py`; new skipped/advisory states need warning output, artifact-visible status, or an explicit local-noop declaration
    - run executable-spec overlap or cost guards before proposing more spec
      coverage

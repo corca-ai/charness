@@ -78,6 +78,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-skills", "validate_skills.py"),
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
     ("validate-usage-episodes", "validate_usage_episodes.py"),
+    ("report-usage-episodes", "report_usage_episodes.py"),
     ("check-cli-skill-surface", "check_cli_skill_surface.py"),
     ("validate-surfaces", "validate_surfaces.py"),
     ("validate-public-skill-validation", "validate_public_skill_validation.py"),

@@ -34,8 +34,10 @@ def test_quality_skill_runs_usage_episode_validator_even_without_adapter() -> No
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
 
     assert "resolve and run the Charness package-root validator `validate_usage_episodes.py`" in skill_text
+    assert "and report `report_usage_episodes.py`" in skill_text
     assert "when `.agents/usage-episodes-adapter.yaml` exists" not in skill_text
-    assert "`no_adapter` and `disabled` are skipped warnings, not failures" in skill_text
+    assert "`no_adapter`, `disabled`, and `no_records` are skipped warnings" in skill_text
+    assert "not product-success proof or failures" in skill_text
 
 
 def test_quality_skill_carries_lint_ignore_lens() -> None:

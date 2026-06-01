@@ -109,7 +109,10 @@ seed:
 - `<repo-root>/.agents/usage-episodes-adapter.yaml`
 
 The setup implementation uses `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`,
-but that helper is not a user-facing API. After seeding, run `quality` for the validation gate; `quality` resolves and runs the Charness package-root `validate_usage_episodes.py` validator when the adapter exists.
+but that helper is not a user-facing API. After seeding, run `quality` for the
+validation/report gate; `quality` resolves and runs the Charness package-root
+`validate_usage_episodes.py` validator and `report_usage_episodes.py` report
+when the adapter exists.
 
 Runtime JSONL under `.charness/usage-episodes` remains generated local state.
 Runtime capture and product-specific episode vocabulary stay with the product
