@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+goal_lib = _load(ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py", "goal_artifact_lib")
+handoff_lib = _load(ROOT / "skills/public/handoff/scripts/chunked_routing_lib.py", "chunked_routing_lib")
+
+
+def _assert_goal_shape(text: str) -> None:
+    assert goal_lib.check_goal(text)["ok"] is True
+    assert text.index("## Active Operating Frame") < text.index("## Goal")
+    for section in goal_lib.REQUIRED_SECTIONS:
+        assert f"## {section}" in text, section
+    for section in goal_lib.PORTABILITY_SECTIONS:
+        assert f"## {section}" in text, section
+    assert "Activation: `/goal @" in text
+
+
+def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
+    goal_lib.upsert_goal(
+        tmp_path,
+        date="2026-06-01",
+        slug="producer-contract",
+        title="Producer Contract",
+        goal_body="Exercise the canonical achieve scaffold.",
+    )
+    achieve_text = goal_lib.goal_path(tmp_path, "2026-06-01", "producer-contract").read_text(encoding="utf-8")
+    _assert_goal_shape(achieve_text)
+
+    entry = handoff_lib.HandoffEntry(
+        index=1,
+        title="Continue a shaped goal",
+        body="Use the handoff entry as source material.",
+        referenced_paths=("docs/handoff.md",),
+        referenced_issues=(),
+        referenced_skills=("achieve",),
+        boundary_tokens=("docs/handoff.md",),
+    )
+    chunk = handoff_lib.ChunkCandidate(
+        entries=(entry,),
+        label="chunk-1",
+        objective_summary="Continue a shaped goal from handoff",
+    )
+    handoff_text = handoff_lib.render_auto_draft_artifact(
+        chunk,
+        date="2026-06-01",
+        goal_rel="charness-artifacts/goals/2026-06-01-producer-contract.md",
+    )
+    _assert_goal_shape(handoff_text)
+    assert "run `/achieve @charness-artifacts/goals/2026-06-01-producer-contract.md`" in handoff_text

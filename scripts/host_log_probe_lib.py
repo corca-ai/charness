@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from scripts import codex_session_jsonl_audit
 
 ISO_TS_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+GOAL_WINDOW_LINE = re.compile(r"^Host metric window:\s*(?P<body>.+)$", re.MULTILINE)
 
 
 def metric(status: str, *, source: str | None = None, detail: str | None = None) -> dict[str, str]:
@@ -156,8 +159,13 @@ def _pick_codex_session_log(codex_root: Path) -> Path | None:
     return max(matches, key=lambda path: path.stat().st_mtime)
 
 
-def _codex_session_audit_summary(path: Path) -> dict[str, Any]:
-    audit = codex_session_jsonl_audit.audit_session_jsonl(path, top=20)
+def _codex_session_audit_summary(path: Path, goal_window: dict[str, Any] | None = None) -> dict[str, Any]:
+    audit = codex_session_jsonl_audit.audit_session_jsonl(
+        path,
+        top=20,
+        started_at=(goal_window or {}).get("started_at"),
+        completed_at=(goal_window or {}).get("completed_at"),
+    )
     measured = audit.get("measured") if isinstance(audit.get("measured"), dict) else {}
     proxy = audit.get("proxy") if isinstance(audit.get("proxy"), dict) else {}
     return {
@@ -177,6 +185,7 @@ def _codex_session_audit_summary(path: Path) -> dict[str, Any]:
             "repeated_vcs_commands": proxy.get("repeated_vcs_commands", {}),
         },
         "notes": audit.get("notes", []),
+        "window_filter": audit.get("window_filter", {}),
     }
 
 
@@ -234,12 +243,12 @@ def _codex_tool_detail(session_tool_calls: int, has_tool_call: bool) -> str:
     return "ToolCall lines exist in runtime logs" if has_tool_call else "No ToolCall lines found"
 
 
-def probe_codex(home: Path) -> dict[str, Any]:
+def probe_codex(home: Path, goal_window: dict[str, Any] | None = None) -> dict[str, Any]:
     codex_root = home / ".codex"
     history_path = codex_root / "history.jsonl"
     tui_log = codex_root / "log" / "codex-tui.log"
     sqlite_log = codex_root / "logs_2.sqlite"
-    session_log = _pick_codex_session_log(codex_root)
+    session_log = _goal_window_session_path(goal_window) or _pick_codex_session_log(codex_root)
 
     result: dict[str, Any] = {
         "detected": codex_root.exists(),
@@ -293,6 +302,8 @@ def probe_codex(home: Path) -> dict[str, Any]:
     if session_summary is not None:
         result["sources"].append({"kind": "session-jsonl", "path": str(session_log), "status": "used"})
         result["session_audit"] = session_summary
+        if goal_window and goal_window.get("status") == "parsed":
+            result["goal_window_audit"] = _codex_session_audit_summary(session_log, goal_window)
     session_measured = session_summary.get("measured", {}) if isinstance(session_summary, dict) else {}
     result["metrics"] = _codex_metrics_from_signals(
         log_source=log_source,
@@ -306,13 +317,83 @@ def probe_codex(home: Path) -> dict[str, Any]:
     return result
 
 
-def build_payload(*, home: Path, repo_root: Path) -> dict[str, Any]:
+def parse_goal_metric_window(repo_root: Path, goal_path: Path | None) -> dict[str, Any]:
+    if goal_path is None:
+        return {"status": "not_requested"}
+    path = goal_path.expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    if not path.is_file():
+        return {"status": "missing", "path": str(path)}
+    match = GOAL_WINDOW_LINE.search(path.read_text(encoding="utf-8", errors="replace"))
+    if match is None:
+        return {"status": "absent", "path": str(path)}
+    fields = _parse_window_fields(match.group("body"))
+    issues = [key for key in ("started_at", "completed_at", "codex_session_file") if key not in fields]
+    if issues:
+        return {"status": "invalid", "path": str(path), "missing": issues, "raw": match.group("body")}
+    invalid_timestamps = [key for key in ("started_at", "completed_at") if _parse_window_ts(fields[key]) is None]
+    if invalid_timestamps:
+        return {
+            "status": "invalid",
+            "path": str(path),
+            "invalid_timestamps": invalid_timestamps,
+            "raw": match.group("body"),
+        }
+    session_file = _resolve_window_path(repo_root, fields["codex_session_file"])
+    if not session_file.is_file():
+        return {
+            "status": "invalid",
+            "path": str(path),
+            "missing_session_file": str(session_file),
+            "raw": match.group("body"),
+        }
+    fields["codex_session_file"] = str(session_file)
+    return {"status": "parsed", "path": str(path), **fields}
+
+
+def _parse_window_fields(body: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for part in shlex.split(body):
+        if "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+        fields[key.strip()] = value.strip()
+    return fields
+
+
+def _resolve_window_path(repo_root: Path, value: str) -> Path:
+    path = Path(value).expanduser()
+    return path if path.is_absolute() else repo_root / path
+
+
+def _parse_window_ts(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _goal_window_session_path(goal_window: dict[str, Any] | None) -> Path | None:
+    if not goal_window or goal_window.get("status") != "parsed":
+        return None
+    value = goal_window.get("codex_session_file")
+    if not isinstance(value, str):
+        return None
+    path = Path(value)
+    return path if path.is_file() else None
+
+
+def build_payload(*, home: Path, repo_root: Path, goal_path: Path | None = None) -> dict[str, Any]:
+    goal_window = parse_goal_metric_window(repo_root, goal_path)
     return {
         "schema_version": 1,
         "home": str(home),
         "repo_root": str(repo_root),
+        "goal_metric_window": goal_window,
         "hosts": {
             "claude": probe_claude(home, repo_root),
-            "codex": probe_codex(home),
+            "codex": probe_codex(home, goal_window),
         },
     }

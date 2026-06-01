@@ -116,6 +116,145 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
     assert codex["session_audit"]["measured"]["function_calls"] == 1
 
 
+def test_host_log_probe_reads_goal_metric_window(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    session_dir = home / ".codex" / "sessions" / "2026" / "04" / "14"
+    session_dir.mkdir(parents=True)
+    session_file = session_dir / "rollout-2026-04-14T12-00-00-window.jsonl"
+    session_file.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "timestamp": "2026-04-14T12:00:00Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "function_call",
+                            "name": "exec_command",
+                            "arguments": json.dumps({"cmd": "git status"}),
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "timestamp": "2026-04-14T12:01:00Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "function_call",
+                            "name": "exec_command",
+                            "arguments": json.dumps({"cmd": "pytest -q"}),
+                        },
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    goal = tmp_path / "goal.md"
+    goal.write_text(
+        "Host metric window: started_at=2026-04-14T12:00:30Z "
+        f"completed_at=2026-04-14T12:01:30Z codex_session_file={session_file}\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/probe_host_logs.py",
+        "--home",
+        str(home),
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["goal_metric_window"]["status"] == "parsed"
+    scoped = payload["hosts"]["codex"]["goal_window_audit"]
+    assert scoped["measured"]["function_calls"] == 1
+    assert scoped["window_filter"]["included_records"] == 1
+    assert scoped["window_filter"]["excluded_before"] == 1
+
+
+def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    goal = tmp_path / "goal.md"
+    goal.write_text(
+        "Host metric window: started_at=2026-04-14T12:00:30Z completed_at=2026-04-14T12:01:30Z\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/probe_host_logs.py",
+        "--home",
+        str(home),
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["goal_metric_window"]["status"] == "invalid"
+    assert payload["goal_metric_window"]["missing"] == ["codex_session_file"]
+    assert "goal_window_audit" not in payload["hosts"]["codex"]
+
+
+def test_host_log_probe_rejects_goal_window_with_missing_session_file(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    goal = tmp_path / "goal.md"
+    goal.write_text(
+        "Host metric window: started_at=2026-04-14T12:00:30Z "
+        "completed_at=2026-04-14T12:01:30Z codex_session_file=missing.jsonl\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/probe_host_logs.py",
+        "--home",
+        str(home),
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["goal_metric_window"]["status"] == "invalid"
+    assert payload["goal_metric_window"]["missing_session_file"] == str(tmp_path / "missing.jsonl")
+    assert "goal_window_audit" not in payload["hosts"]["codex"]
+
+
+def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    session_file = tmp_path / "rollout.jsonl"
+    session_file.write_text("{}\n", encoding="utf-8")
+    goal = tmp_path / "goal.md"
+    goal.write_text(
+        f"Host metric window: started_at=not-a-time completed_at=2026-04-14T12:01:30Z codex_session_file={session_file}\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/probe_host_logs.py",
+        "--home",
+        str(home),
+        "--repo-root",
+        str(tmp_path),
+        "--goal-path",
+        str(goal),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["goal_metric_window"]["status"] == "invalid"
+    assert payload["goal_metric_window"]["invalid_timestamps"] == ["started_at"]
+    assert "goal_window_audit" not in payload["hosts"]["codex"]
+
+
 def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path) -> None:
     home = tmp_path / "home"
     home.mkdir()

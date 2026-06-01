@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -76,8 +77,15 @@ def _payload(record: dict[str, Any]) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else record
 
 
-def audit_session_jsonl(path: Path, *, top: int = 20) -> dict[str, Any]:
+def audit_session_jsonl(
+    path: Path,
+    *,
+    top: int = 20,
+    started_at: str | None = None,
+    completed_at: str | None = None,
+) -> dict[str, Any]:
     records, malformed = _iter_records(path)
+    records, window_filter = _filter_records_for_window(records, started_at, completed_at)
 
     event_types: Counter[str] = Counter()
     subtypes: Counter[str] = Counter()
@@ -146,7 +154,83 @@ def audit_session_jsonl(path: Path, *, top: int = 20) -> dict[str, Any]:
         "measured": measured,
         "snapshots": snapshots,
         "proxy": proxy,
+        "window_filter": window_filter,
     }
+
+
+def _filter_records_for_window(
+    records: list[dict[str, Any]],
+    started_at: str | None,
+    completed_at: str | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    start = _parse_ts(started_at)
+    end = _parse_ts(completed_at)
+    invalid_bounds = [
+        key
+        for key, raw, parsed in (("started_at", started_at, start), ("completed_at", completed_at, end))
+        if raw and parsed is None
+    ]
+    if invalid_bounds:
+        return [], {
+            "status": "invalid",
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "invalid_bounds": invalid_bounds,
+            "total_records": len(records),
+            "included_records": 0,
+            "undated_records": 0,
+        }
+    if start is None and end is None:
+        return records, {
+            "status": "not_applied",
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "total_records": len(records),
+            "included_records": len(records),
+            "undated_records": 0,
+        }
+    included: list[dict[str, Any]] = []
+    before = after = undated = 0
+    for record in records:
+        ts = _record_ts(record)
+        if ts is None:
+            undated += 1
+            continue
+        if start is not None and ts < start:
+            before += 1
+            continue
+        if end is not None and ts > end:
+            after += 1
+            continue
+        included.append(record)
+    return included, {
+        "status": "applied",
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "total_records": len(records),
+        "included_records": len(included),
+        "excluded_before": before,
+        "excluded_after": after,
+        "undated_records": undated,
+    }
+
+
+def _parse_ts(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _record_ts(record: dict[str, Any]) -> datetime | None:
+    payload = _payload(record)
+    for value in (record.get("timestamp"), payload.get("timestamp")):
+        if isinstance(value, str) and (parsed := _parse_ts(value)) is not None:
+            return parsed
+    return None
 
 
 def _repeated_broad_gates(families: Counter[str]) -> dict[str, int]:

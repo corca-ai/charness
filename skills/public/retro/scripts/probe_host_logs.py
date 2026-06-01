@@ -37,6 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--home", type=Path, default=Path.home(), help="User home directory to probe for host CLI log locations")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to resolve repo-local log paths")
+    parser.add_argument("--goal-path", type=Path, help="Optional goal artifact carrying a `Host metric window:` evidence line")
     return parser.parse_args()
 
 
@@ -45,6 +46,7 @@ def main() -> int:
     payload = build_payload(
         home=args.home.expanduser().resolve(),
         repo_root=args.repo_root.expanduser().resolve(),
+        goal_path=args.goal_path,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

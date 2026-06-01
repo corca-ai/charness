@@ -64,6 +64,9 @@ Adapter policy:
      JSONL directly instead of the tail-limited sqlite/tui source; it tolerates
      malformed lines and separates measured counts, point-in-time snapshots, and
      proxy signals (including repeated broad gates and repeated VCS/status runs).
+     When a goal artifact carries a `Host metric window:` evidence line, pass
+     `probe_host_logs.py --goal-path <artifact>` to produce a scoped
+     `goal_window_audit` instead of treating the whole thread as the goal cost.
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next

@@ -134,6 +134,11 @@ compacted session can continue from the top of the file without rereading the
 entire historical log. Completed detail belongs in the Slice Log, Final
 Verification, and Auto-Retro sections.
 
+When changing the goal artifact shape, update every goal producer that emits a
+new artifact, not only the primary `achieve` template. The current producer
+contract is pinned by the authoring-repo-internal
+`tests/quality_gates/test_goal_artifact_producers.py`.
+
 ## Metrics Honesty
 
 Slice and final metrics use host-agnostic shallow signals. Prefer
@@ -143,3 +148,15 @@ Codex-specific and best-effort; record `Metrics: when available` instead of
 fabricating numbers. Keep measured counts, proxy signals, and unavailable
 signals separate. Cached input by itself is a context-pressure signal, not a
 waste conclusion.
+
+For long goals, prefer a goal-window evidence line when the host exposes enough
+timing data:
+
+```text
+Host metric window: started_at=<ISO> completed_at=<ISO> codex_session_file=<path>
+```
+
+Then run `probe_host_logs.py --goal-path <artifact>` so Codex rollout JSONL
+signals can be filtered to that window. If the source lacks timestamps or a
+session file, say `unavailable` rather than presenting a thread-wide audit as a
+goal total.

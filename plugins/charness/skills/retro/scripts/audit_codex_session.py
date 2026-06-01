@@ -37,6 +37,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source", choices=("auto", "tui", "sqlite"), default="auto", help="Aggregate log source for thread-level audit (default: auto)")
     parser.add_argument("--session-id", help="Read the full rollout JSONL whose filename contains this session id, instead of the tail-limited sqlite/tui source")
     parser.add_argument("--session-file", help="Explicit path to a Codex rollout JSONL to audit directly (overrides --session-id)")
+    parser.add_argument("--started-at", help="Only include rollout JSONL events at or after this ISO timestamp")
+    parser.add_argument("--completed-at", help="Only include rollout JSONL events at or before this ISO timestamp")
     parser.add_argument("--thread-id", action="append", default=[], help="Restrict the aggregate audit to one or more thread ids (repeatable)")
     parser.add_argument("--list-threads", action="store_true", help="List candidate threads in the aggregate source instead of auditing")
     parser.add_argument("--since", help="Only include log lines at or after this ISO timestamp")
@@ -56,7 +58,12 @@ def run_session_jsonl(args: argparse.Namespace) -> int:
         target = args.session_file or args.session_id
         print(f"No Codex rollout JSONL found for {target!r} under {home}/.codex/sessions")
         return 2
-    payload = jsonl_audit.audit_session_jsonl(path, top=args.top)
+    payload = jsonl_audit.audit_session_jsonl(
+        path,
+        top=args.top,
+        started_at=args.started_at,
+        completed_at=args.completed_at,
+    )
     if args.format == "markdown":
         print(jsonl_audit.render_markdown(payload))
     else:
