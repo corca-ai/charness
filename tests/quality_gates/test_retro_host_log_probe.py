@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts import host_log_probe_lib
+
 from .support import run_script
 
 
@@ -253,6 +255,46 @@ def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Pat
     assert payload["goal_metric_window"]["status"] == "invalid"
     assert payload["goal_metric_window"]["invalid_timestamps"] == ["started_at"]
     assert "goal_window_audit" not in payload["hosts"]["codex"]
+
+
+def test_goal_metric_window_reports_missing_relative_goal_path(tmp_path: Path) -> None:
+    payload = host_log_probe_lib.parse_goal_metric_window(tmp_path, Path("missing-goal.md"))
+
+    assert payload == {"status": "missing", "path": str(tmp_path / "missing-goal.md")}
+
+
+def test_goal_metric_window_reports_absent_window_from_relative_goal_path(tmp_path: Path) -> None:
+    goal = tmp_path / "goal.md"
+    goal.write_text("# Goal\n\nNo host metric window here.\n", encoding="utf-8")
+
+    payload = host_log_probe_lib.parse_goal_metric_window(tmp_path, Path("goal.md"))
+
+    assert payload == {"status": "absent", "path": str(goal)}
+
+
+def test_goal_metric_window_ignores_malformed_field_parts(tmp_path: Path) -> None:
+    goal = tmp_path / "goal.md"
+    goal.write_text(
+        "Host metric window: started_at=2026-04-14T12:00:30Z ignored-token\n",
+        encoding="utf-8",
+    )
+
+    payload = host_log_probe_lib.parse_goal_metric_window(tmp_path, goal)
+
+    assert payload["status"] == "invalid"
+    assert payload["missing"] == ["completed_at", "codex_session_file"]
+
+
+def test_goal_window_session_path_requires_string_value(tmp_path: Path) -> None:
+    session = tmp_path / "rollout.jsonl"
+    session.write_text("{}\n", encoding="utf-8")
+
+    assert host_log_probe_lib._goal_window_session_path(
+        {"status": "parsed", "codex_session_file": str(session)}
+    ) == session
+    assert host_log_probe_lib._goal_window_session_path(
+        {"status": "parsed", "codex_session_file": 123}
+    ) is None
 
 
 def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path) -> None:

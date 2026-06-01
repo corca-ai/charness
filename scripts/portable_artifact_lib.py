@@ -42,19 +42,21 @@ def _sanitize_mapping_value(key: str, value: Any, *, repo_root: Path) -> Any:
     key_lower = key.lower()
     if isinstance(value, str) and _looks_path_key(key_lower):
         return portable_path_value(repo_root, value)
-    if isinstance(value, list) and _looks_path_key(key_lower):
-        sanitized: list[Any] = []
-        for item in value:
-            if isinstance(item, str):
-                sanitized.append(portable_path_value(repo_root, item))
-            else:
-                sanitized.append(sanitize_artifact_json(item, repo_root=repo_root))
-        return sanitized
+    if isinstance(value, list):
+        if _looks_path_key(key_lower):
+            sanitized: list[Any] = []
+            for item in value:
+                if isinstance(item, str):
+                    sanitized.append(portable_path_value(repo_root, item))
+                else:
+                    sanitized.append(sanitize_artifact_json(item, repo_root=repo_root))
+            return sanitized
+        return sanitize_artifact_json(value, repo_root=repo_root)
     return sanitize_artifact_json(value, repo_root=repo_root)
 
 
 def _looks_path_key(key: str) -> bool:
-    return key == "path" or key.endswith("path") or key.endswith("paths") or "path_" in key
+    return key.endswith(("path", "paths")) or "path_" in key
 
 
 def sanitize_diagnostic_text(text: str, *, repo_root: Path) -> str:
@@ -63,6 +65,6 @@ def sanitize_diagnostic_text(text: str, *, repo_root: Path) -> str:
     repo_text = str(repo_root.resolve())
     home_text = str(Path.home())
     sanitized = text.replace(repo_text, ".")
-    if home_text and home_text != os.sep:
+    if len(home_text) > len(os.sep):
         sanitized = sanitized.replace(home_text, "$HOME")
     return sanitized

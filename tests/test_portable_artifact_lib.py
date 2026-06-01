@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts.portable_artifact_lib import (
+    _looks_path_key,
     _sanitize_mapping_value,
     portable_path_value,
     sanitize_artifact_json,
@@ -79,6 +80,25 @@ def test_sanitize_artifact_json_distinguishes_path_keys_from_plain_strings(tmp_p
     }
 
 
+def test_path_key_detection_has_no_redundant_exact_path_branch() -> None:
+    assert _looks_path_key("path") is True
+    assert _looks_path_key("snapshot_path") is True
+    assert _looks_path_key("artifact_paths") is True
+    assert _looks_path_key("label") is False
+
+
+def test_sanitize_artifact_json_leaves_non_path_lists_as_plain_values(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    inside = repo / "docs" / "handoff.md"
+    inside.parent.mkdir()
+    inside.write_text("# handoff\n", encoding="utf-8")
+
+    payload = sanitize_artifact_json({"labels": [str(inside)]}, repo_root=repo)
+
+    assert payload == {"labels": [str(inside)]}
+
+
 def test_sanitize_diagnostic_text_rewrites_repo_and_home_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -90,4 +110,17 @@ def test_sanitize_diagnostic_text_rewrites_repo_and_home_paths(tmp_path: Path) -
 
     assert sanitize_diagnostic_text(text=text, repo_root=repo) == (
         "repo=./logs/trace.txt home=$HOME/cache/tool.log"
+    )
+
+
+def test_sanitize_diagnostic_text_does_not_treat_root_as_home(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(Path, "home", lambda: Path("/"))
+
+    assert (
+        sanitize_diagnostic_text(text="/var/log/tool.log", repo_root=repo)
+        == "/var/log/tool.log"
     )
