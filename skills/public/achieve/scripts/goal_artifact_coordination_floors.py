@@ -1,32 +1,8 @@
-"""Coordination closeout floors for goal artifacts — gather + release.
+"""Presence-only coordination closeout floors for goal artifacts.
 
-Two presence-only closeout-evidence floors that give *teeth* to the two named
-boundaries the find-skills routing cue under-serves, because skipping them is
-silent and costly:
-
-- **gather floor** — when the goal's ``## Context Sources`` names an external
-  source (an ``http(s)://`` URL, which covers Slack / Notion / Google-Docs /
-  Drive links and bare web URLs), the run must record a ``gather`` step in
-  ``## Coordination Cues``: a ``Gather: <ref>`` line, or an explicit
-  ``Gather: n/a — <reason>`` opt-out. ``CLAUDE.md`` mandates routing external
-  sources through ``gather``; a goal that shaped from an external URL but never
-  gathered it is the gap this closes.
-- **release floor** — when the run's *recorded work* touches a release surface
-  (a version bump or install-manifest edit, detected by precise path/action
-  tokens — never the bare word "release"), the run must record a ``release``
-  step: a ``Release: <ref>`` line, or ``Release: n/a — <reason>``. Without it
-  ``achieve`` can flip ``complete`` over an unsynced version / manifest.
-
-Both floors mirror the #253 deterministic-floor philosophy exactly:
-presence/binding-only (they never classify whether prose is "good enough"),
-clone-safe (in-file content, not mtime), block-the-blank at the ``complete``
-flip, an explicit min-length opt-out valve, and grandfathered by ``Created``
-date so goals shaped before the floors existed are not punished.
-
-Kept a leaf module — self-contained ``_mask_fences`` / ``_section_*`` mirrors and
-its own ``Created`` parse, no sibling import, the same convention
-``goal_artifact_disposition.py`` follows — so neither it nor
-``goal_artifact_closeout_evidence.py`` approaches the single-file line gate.
+The floors cover gather, release, and issue-closeout boundaries. Each is
+clone-safe, section-scoped, grandfathered by ``Created``, and satisfied by a
+real step line or explicit opt-out in ``## Coordination Cues``.
 """
 from __future__ import annotations
 
@@ -34,60 +10,52 @@ import re
 from datetime import date
 from typing import Any
 
-# The floors fire only for goals ``Created`` on or after their landing date. The
-# floors land 2026-05-30, but several goals — this floor's own goal plus the
-# same-day #253/#255 work — were already shaped that day *before* the floors
-# existed, so the cutoff is 2026-05-31: every same-day in-flight goal is
-# grandfathered, which is exactly the "not punished for predating the rule"
-# intent. Clone-safe (in-file content, not mtime). Fail-CLOSED on a
-# missing/malformed ``Created`` (mirrors #253) so a goal cannot dodge the floors
-# by corrupting one line.
+# The floors landed around 2026-05-30; the cutoff grandfathers same-day in-flight goals.
 COORDINATION_FLOOR_RULE_DATE = date(2026, 5, 31)
+ISSUE_CLOSEOUT_FLOOR_RULE_DATE = date(2026, 6, 2)
 
-# Opt-out min length mirrors the #253 disposition opt-out / skip discipline: a
-# deliberate "no <step> applies" assertion recorded visibly (the Engelbart
-# "say why if you depart" valve), long enough it cannot be a one-word bypass.
+# Long enough that an opt-out cannot be a one-word bypass.
 MIN_OPTOUT_REASON = 30
 
-# The section that carries the find-skills routing cue and the gather/release
-# step lines. Reference + opt-out detection is SCOPED to this section so a goal
-# body that merely *describes* a ``Gather:`` / ``Release:`` line in prose (this
-# floor's own goal does) cannot falsely satisfy a floor — the poisoning #253 hit
-# with its opt-out (round-2 B-2) and solved by section-scoping.
 COORDINATION_SECTION = "Coordination Cues"
-# The section whose external links the gather floor watches.
 CONTEXT_SOURCES_SECTION = "Context Sources"
+AUTO_RETRO_SECTION = "Auto-Retro"
+RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
 
 _CREATED_LINE = re.compile(
     r"^[\s>*-]*Created\s*:\s*(\d{4}-\d{2}-\d{2})\b",
     re.MULTILINE | re.IGNORECASE,
 )
-# An http(s) URL is the external-source signal: Slack / Notion / Google-Docs /
-# Drive links and bare web URLs are all URLs. Local repo paths and bare ``#N``
-# issue refs are not, so a goal whose Context Sources lists only those is inert.
 _EXTERNAL_URL = re.compile(r"https?://\S", re.IGNORECASE)
 
-# gather/release step lines, anchored at line start (after list / blockquote
-# markers) so a mid-line inline example (`Gather: n/a — <reason>` inside
-# backticks or prose) is never read as a real line. Scoped to the Coordination
-# Cues section on top of that.
+# Step lines are anchored so inline examples never satisfy a floor.
 _GATHER_REF = re.compile(r"^[\s>*-]*Gather\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
 _RELEASE_REF = re.compile(r"^[\s>*-]*Release\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
-# An ``n/a — <reason>`` value marks the line as an explicit opt-out rather than a
-# reference; the reason must clear MIN_OPTOUT_REASON to count.
+_ISSUE_CLOSEOUT_REF = re.compile(
+    r"^[\s>*-]*Issue\s+closeout\s*:\s*(\S.*?)[ \t]*$",
+    re.MULTILINE | re.IGNORECASE,
+)
 _NA_VALUE = re.compile(r"^n/?a\b[ \t]*[—–:-]+[ \t]*(\S.*)$", re.IGNORECASE)
 
-# Release-surface tokens: a version bump or install-manifest edit names one of
-# these in the goal's recorded work. Deliberately precise filenames / script
-# names, never the bare word "release" (which appears in any goal that merely
-# *mentions* the release skill as context — this floor's own goal references
-# ``skills/public/release/`` and must not self-trip). All lowercase for a
-# case-folded substring scan.
+# Deliberately precise; the bare word "release" would over-trigger.
 _RELEASE_SURFACE_TOKENS = (
     "bump_version",
     "publish_release",
     "marketplace.json",
     "charness-artifacts/release/",
+)
+_TRACKED_ISSUE_CONTEXT = re.compile(
+    r"\b(?:"
+    r"(?:github\s+)?(?:tracked\s+)?issues?\s+#\d+"
+    r"|https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+"
+    r"|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+"
+    r")\b",
+    re.IGNORECASE,
+)
+_CLOSE_KEYWORD = re.compile(
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
+    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+\b",
+    re.IGNORECASE,
 )
 
 
@@ -163,6 +131,14 @@ def coordination_floors_apply(text: str) -> bool:
     return created >= COORDINATION_FLOOR_RULE_DATE
 
 
+def issue_closeout_floor_applies(text: str) -> bool:
+    """Whether the issue-closeout floor fires for this goal."""
+    created = goal_created_date(text)
+    if created is None:
+        return True
+    return created >= ISSUE_CLOSEOUT_FLOOR_RULE_DATE
+
+
 def gather_triggered(text: str) -> bool:
     """True when ``## Context Sources`` names an external (http/https) source."""
     body = _section_body(_mask_fences(text), CONTEXT_SOURCES_SECTION)
@@ -185,6 +161,21 @@ def release_triggered(text: str) -> bool:
         masked = masked[: span[0]] + (" " * (span[1] - span[0])) + masked[span[1] :]
     low = masked.lower()
     return any(token in low for token in _RELEASE_SURFACE_TOKENS)
+
+
+def issue_closeout_triggered(text: str) -> bool:
+    """True when the goal records tracked issue resolution work.
+
+    Context Sources can name the tracked issue explicitly. Recorded work can
+    also trigger the floor through close keywords in the sections where achieved
+    work is archived, not in planning/boundary text.
+    """
+    masked = _mask_fences(text)
+    context = _section_body(masked, CONTEXT_SOURCES_SECTION) or ""
+    if _TRACKED_ISSUE_CONTEXT.search(context):
+        return True
+    work = "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
+    return _CLOSE_KEYWORD.search(work) is not None
 
 
 _SATISFYING = frozenset({"ref", "optout"})
@@ -224,12 +215,12 @@ def _parse_step(section_body: str | None, ref_re: "re.Pattern[str]") -> tuple[st
 
 
 def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
-    """Attach the gather/release floor verdicts to ``report`` (mutates in place).
+    """Attach the gather/release/issue floor verdicts to ``report``.
 
     For an in-scope goal (grandfather-by-``Created``): if a floor is *triggered*
-    (external source in Context Sources / release-surface token in recorded work)
+    (external source / release-surface token / issue-closeout signal)
     and the Coordination Cues section carries no satisfying step line (a real
-    ``Gather:``/``Release:`` reference or a ≥30-char ``n/a — <reason>`` opt-out),
+    reference or a ≥30-char ``n/a — <reason>`` opt-out),
     refuse the flip. Presence/binding-only — a real reference's content is never
     judged. Grandfathered goals are inert.
     """
@@ -277,6 +268,27 @@ def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
         )
         report["release_floor"]["reason"] = reason
         missing.append({"floor": "release", "reason": reason})
+
+    i_scope = issue_closeout_floor_applies(text)
+    i_trig = i_scope and issue_closeout_triggered(text)
+    i_kind, _ = _parse_step(section, _ISSUE_CLOSEOUT_REF)
+    i_ok = (not i_trig) or i_kind in _SATISFYING
+    report["issue_closeout_floor"] = {
+        "in_scope": i_scope,
+        "rule_date": ISSUE_CLOSEOUT_FLOOR_RULE_DATE.isoformat(),
+        "triggered": i_trig,
+        "satisfied": i_ok,
+        "evidence": i_kind,
+    }
+    if i_trig and not i_ok:
+        reason = (
+            "this goal names tracked issue closeout work but `## Coordination Cues` records no "
+            "`Issue closeout: <ref>` step and no `Issue closeout: n/a — <reason>` opt-out "
+            "(>=30 chars); stage the close through `issue` and record the verifier proof before "
+            "flipping to complete"
+        )
+        report["issue_closeout_floor"]["reason"] = reason
+        missing.append({"floor": "issue_closeout", "reason": reason})
 
     if missing:
         report["coordination_missing"] = missing

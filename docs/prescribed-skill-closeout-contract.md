@@ -105,7 +105,7 @@ still calls the same presence-only `check()` today.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the gather/release **coordination floors** (separate, presence-only, `Created` ≥ 2026-05-31 — see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Gather:`/`Release:` step or `n/a — <reason>` opt-out |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the gather/release/issue **coordination floors** (separate, presence-only — gather/release `Created` ≥ 2026-05-31; issue `Created` ≥ 2026-06-02; see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Gather:`/`Release:`/`Issue closeout:` step or `n/a — <reason>` opt-out |
 | `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
@@ -156,11 +156,11 @@ narration (proven on the live goal corpus) — so the gate is a deterministic
 intelligent review (judges substance). Rung 1b is therefore weaker than #253's
 literal ask, by design and named, not by quiet scope-narrowing.
 
-### Coordination Floors (gather + release)
+### Coordination Floors (gather + release + issue)
 
-The achieve After-phase carries two further presence-only floors, in
+The achieve After-phase carries further presence-only floors, in
 [`goal_artifact_coordination_floors.py`](../skills/public/achieve/scripts/goal_artifact_coordination_floors.py)
-and wired through the same evidence gate. They give *teeth* to the two
+and wired through the same evidence gate. They give *teeth* to
 `find-skills`-routing boundaries the goal-artifact `## Coordination Cues` prose
 cue under-serves (skipping them is silent and costly). Same deterministic-floor
 philosophy as #253: presence/binding-only, clone-safe, block-the-blank, an
@@ -177,13 +177,20 @@ explicit opt-out valve, grandfathered by `Created`.
   "release", so a goal that merely references the release skill as context does
   not self-trip. Satisfied by a `Release: <ref>` step or a
   `Release: n/a — <reason>` opt-out.
+- **issue-closeout floor** — trigger: `## Context Sources` names a
+  tracked/GitHub issue, or recorded work sections (`## Slice Log` /
+  `## Final Verification`) carry a close keyword such as `Close #N`.
+  Satisfied by an `Issue closeout: <ref>` step or an
+  `Issue closeout: n/a — <reason>` opt-out.
 
-Both detect trigger and step from the **artifact text** (not git diff), so the
+All detect trigger and step from the **artifact text** (not git diff), so the
 signal is clone-safe — a fresh checkout reproduces the verdict. Reference + opt-out
 detection is scoped to `## Coordination Cues` so a goal body that merely
 *describes* a step line in prose cannot falsely satisfy a floor. Grandfather
-cutoff is `Created ≥ 2026-05-31`: the floors land 2026-05-30, but several
-same-day goals predate them, so the cutoff grandfathers every in-flight goal;
+dates are floor-specific: gather/release apply to goals Created ≥ `2026-05-31`,
+and issue closeout applies to goals Created ≥ `2026-06-02`. The gather/release
+floors landed 2026-05-30, but several same-day goals predate them, so the
+2026-05-31 cutoff grandfathers every in-flight goal;
 missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
 `find-skills` owns *which* skill answers a boundary (never an inline phase→skill
 map). The bidirectional surface where a standalone `/issue` or `/debug` reads the

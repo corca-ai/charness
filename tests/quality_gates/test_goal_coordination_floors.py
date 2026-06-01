@@ -37,6 +37,8 @@ def test_grandfather_inclusive_of_rule_date() -> None:
     assert cf.coordination_floors_apply("Created: 2026-06-02\n") is True
     assert cf.coordination_floors_apply("Created: 2026-05-30\n") is False  # same-day, grandfathered
     assert cf.coordination_floors_apply("Created: 2026-05-29\n") is False
+    assert cf.issue_closeout_floor_applies("Created: 2026-06-02\n") is True
+    assert cf.issue_closeout_floor_applies("Created: 2026-06-01\n") is False
 
 
 def test_grandfather_fails_closed_on_missing_or_malformed_created() -> None:
@@ -113,6 +115,62 @@ def test_release_trigger_excludes_coordination_cues_section() -> None:
 
 def test_release_trigger_ignores_fenced_token() -> None:
     assert cf.release_triggered("## Slice Log\n\n```\nbump_version.py\n```\n") is False
+
+
+def test_issue_closeout_triggered_by_tracked_issue_context_source() -> None:
+    text = "## Context Sources\n\n- GitHub issue #277: closeout binding regression\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_triggered_by_github_issue_url_context_source() -> None:
+    text = "## Context Sources\n\n- https://github.com/corca-ai/charness/issues/277\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_triggered_by_repo_qualified_issue_context_source() -> None:
+    text = "## Context Sources\n\n- corca-ai/charness#277\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_triggered_by_close_keyword_in_recorded_work() -> None:
+    text = "## Slice Log\n\n- Commit body carries Close #277 after verifier proof.\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_triggered_by_repo_qualified_close_keyword() -> None:
+    text = "## Slice Log\n\n- Commit body carries Close corca-ai/charness#277.\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_triggered_by_close_keyword_in_final_verification() -> None:
+    text = "## Final Verification\n\n- GitHub auto-close proof saw Close #277 on origin/main.\n"
+    assert cf.issue_closeout_triggered(text) is True
+
+
+def test_issue_closeout_ignores_planning_close_keywords() -> None:
+    text = (
+        "## Non-Goals\n\n- Do not close #276 until push and remote verification.\n\n"
+        "## Slice Plan\n\n| 1 | Close #276 only after carrier proof | planned |\n"
+    )
+    assert cf.issue_closeout_triggered(text) is False
+
+
+def test_issue_closeout_inert_on_generic_issue_and_auto_retro_disposition() -> None:
+    text = (
+        "## Context Sources\n\n- `docs/handoff.md` local source\n\n"
+        "## Slice Log\n\n- ordinary issue discussion with no tracked issue number\n\n"
+        "## Auto-Retro\n\napplied: shipped fix; issue #999 tracks the rest\n"
+    )
+    assert cf.issue_closeout_triggered(text) is False
+
+
+def test_issue_closeout_trigger_excludes_coordination_cues_and_fences() -> None:
+    text = (
+        "## Coordination Cues\n\n"
+        "Issue closeout: charness-artifacts/issue/2026-06-02-277.md\n\n"
+        "## Slice Log\n\n```\nClose #277.\n```\n"
+    )
+    assert cf.issue_closeout_triggered(text) is False
 
 
 def test_section_span_keeps_child_headings_inside_parent_body() -> None:
@@ -218,6 +276,7 @@ def test_template_seed_coordination_cues_is_inert(tmp_path: Path) -> None:
     seed = _coord(text)
     assert cf._parse_step(seed, cf._GATHER_REF) == (None, None)
     assert cf._parse_step(seed, cf._RELEASE_REF) == (None, None)
+    assert cf._parse_step(seed, cf._ISSUE_CLOSEOUT_REF) == (None, None)
     # and check_goal still passes on the fresh scaffold
     assert gal.check_goal(text)["ok"] is True
 
@@ -274,6 +333,7 @@ def test_clean_goal_no_floors_no_friction(tmp_path: Path) -> None:
     assert report["coordination_scope"]["in_scope"] is True
     assert report["gather_floor"]["triggered"] is False
     assert report["release_floor"]["triggered"] is False
+    assert report["issue_closeout_floor"]["triggered"] is False
     assert "coordination_missing" not in report
     assert report["ok"] is True
 
@@ -415,6 +475,105 @@ def test_both_floors_can_refuse_together(tmp_path: Path) -> None:
     )
     assert {e["floor"] for e in report["coordination_missing"]} == {"gather", "release"}
     assert report["ok"] is False
+
+
+def test_issue_closeout_triggered_without_step_refuses(tmp_path: Path) -> None:
+    created = "2026-06-02"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- GitHub issue #277: closeout binding regression\n",
+            coordination="Routing: see find-skills\n",
+        ),
+    )
+    assert report["issue_closeout_floor"]["triggered"] is True
+    assert report["issue_closeout_floor"]["satisfied"] is False
+    assert {e["floor"] for e in report["coordination_missing"]} == {"issue_closeout"}
+    assert report["ok"] is False
+
+
+def test_issue_closeout_satisfied_by_reference(tmp_path: Path) -> None:
+    created = "2026-06-02"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- GitHub issue #277: closeout binding regression\n",
+            coordination="Issue closeout: charness-artifacts/issue/2026-06-02-277.md\n",
+        ),
+    )
+    assert report["issue_closeout_floor"]["satisfied"] is True
+    assert "coordination_missing" not in report
+    assert report["ok"] is True
+
+
+def test_issue_closeout_satisfied_by_optout(tmp_path: Path) -> None:
+    created = "2026-06-02"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- GitHub issue #277: closeout binding regression\n",
+            coordination="Issue closeout: n/a — issue was context only and no tracked issue closes in this goal\n",
+        ),
+    )
+    assert report["issue_closeout_floor"]["satisfied"] is True
+    assert report["ok"] is True
+
+
+def test_issue_closeout_short_optout_refuses(tmp_path: Path) -> None:
+    created = "2026-06-02"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- GitHub issue #277: closeout binding regression\n",
+            coordination="Issue closeout: n/a — too short\n",
+        ),
+    )
+    assert report["issue_closeout_floor"]["triggered"] is True
+    assert report["issue_closeout_floor"]["evidence"] == "optout_short"
+    assert {e["floor"] for e in report["coordination_missing"]} == {"issue_closeout"}
+    assert report["ok"] is False
+
+
+def test_github_issue_url_context_triggers_gather_and_issue_floors(tmp_path: Path) -> None:
+    created = "2026-06-02"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- https://github.com/corca-ai/charness/issues/277\n",
+            coordination="Routing: see find-skills\n",
+        ),
+    )
+    assert report["gather_floor"]["triggered"] is True
+    assert report["issue_closeout_floor"]["triggered"] is True
+    assert {e["floor"] for e in report["coordination_missing"]} == {"gather", "issue_closeout"}
+    assert report["ok"] is False
+
+
+def test_issue_closeout_grandfathers_pre_rule_goal(tmp_path: Path) -> None:
+    created = "2026-06-01"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources="- GitHub issue #277: closeout binding regression\n",
+            coordination="Routing: see find-skills\n",
+        ),
+    )
+    assert report["issue_closeout_floor"]["in_scope"] is False
+    assert report["issue_closeout_floor"]["triggered"] is False
+    assert "coordination_missing" not in report
+    assert report["ok"] is True
 
 
 # --- error / fail-open branches (the #260 changed-line-coverage gap) --------

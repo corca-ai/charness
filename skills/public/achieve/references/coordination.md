@@ -62,21 +62,26 @@ map into the template or this reference. Seeding the cue in the artifact (read
 mid-run), not only in a table read once at shaping, is deliberate: a read-once
 table is inert exactly when the cue would fire.
 
-Two boundaries also earn presence-only closeout floors, because a prose cue alone
-gets skipped under context pressure and the miss is silent and costly:
+Three boundaries also earn presence-only closeout floors, because a prose cue
+alone gets skipped under context pressure and the miss is silent and costly:
 
 - **gather** — when `## Context Sources` names an external source (URL / Slack /
   Notion / Docs / Drive), the run records a `Gather:` step (or
   `Gather: n/a — <reason>`). Mandated by `CLAUDE.md`'s external-source routing.
 - **release** — when the run touches a release surface (version bump / install
   manifest), the run records a `Release:` step (or `Release: n/a — <reason>`).
+- **issue closeout** — when `## Context Sources` names a tracked/GitHub issue or
+  recorded work sections (`## Slice Log` / `## Final Verification`) carry a
+  close keyword, the run records an `Issue closeout:` step (or
+  `Issue closeout: n/a — <reason>`).
 
-Both are enforced by `goal_artifact_coordination_floors.py` at the `complete`
+All are enforced by `goal_artifact_coordination_floors.py` at the `complete`
 flip, grandfathered by `Created` date, presence/binding-only (never
-prose-quality classification). They are operator-side cues `achieve` plans into
-the artifact — `gather` and `release` stay useful standalone, with no
-`achieve`-only branch. See `references/lifecycle.md` After-phase for the full
-contract.
+prose-quality classification). Gather/release apply to goals Created ≥
+2026-05-31; issue closeout applies to goals Created ≥ 2026-06-02. They are
+operator-side cues `achieve` plans into the artifact — `gather`, `release`, and
+`issue` stay useful standalone, with no `achieve`-only branch. See
+`references/lifecycle.md` After-phase for the full contract.
 
 ## Activation
 

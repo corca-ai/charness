@@ -16,9 +16,11 @@
 
 ## Current State
 
-- Local `main` contains the #273/#261 mutation gate recovery carrier plus the
-  active workflow-review slice that also resolves #277. It should be
-  clean/synced after the closeout push.
+- Local `main` has #277 closed on `225898a3`; check live
+  `git status --short --branch` before assuming the worktree is clean. The
+  active workflow-review goal has completed Slice 1's read-only `find-skills`
+  recommendation, issue-closeout binding, active-goal handoff filtering, and
+  deterministic `Issue closeout:` coordination floor.
 - The mutation recovery goal is complete:
   [#273/#261 mutation recovery](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md).
   The carrier closes #273 and leaves #261 open intentionally as a
@@ -27,16 +29,14 @@
   synthesis from the maintainer's newer thinking and source thread.
 - Active workflow-review goal exists:
   [workflow review efficiency and generalization](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md).
-  Current slice covers quieter/read-only `find-skills` recommendations, #277
-  closeout binding, and active-goal handoff filtering.
+  Next slice is critique cadence, then invariant-first bug review.
 
 ## Next Session
 
 1. Continue
    `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.
-   Slice 1 is partly complete; next likely work is deciding whether to promote
-   the `Issue closeout:` cue into a deterministic goal floor, then continuing
-   slice-level critique cadence and invariant-first review guidance.
+   Slice 1 is complete; continue with slice-level critique cadence and
+   invariant-first review guidance.
 2. After that goal is completed or paused, pick #184 for product-success
    synthesis or #261 for the mutation-standard policy decision.
 

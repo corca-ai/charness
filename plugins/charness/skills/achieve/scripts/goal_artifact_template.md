@@ -64,7 +64,9 @@ during the run:
 - **Issue closeout step** — when this goal resolves tracked GitHub issues, add
   an `Issue closeout:` line naming the close-intended issue numbers, carrier
   (`direct-commit`, PR body, release commit, or manual fallback), and
-  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof.
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
 

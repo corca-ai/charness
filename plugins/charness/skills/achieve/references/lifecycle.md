@@ -451,10 +451,10 @@ issue numbers parsed from the `Activation:` line). A closeout that points
 `binding_failures` entry. Binding is clone-safe (basename/content tokens,
 not mtime — a fresh checkout resets every file's mtime).
 
-### Coordination floors — gather + release
+### Coordination floors — gather + release + issue
 
-Two presence-only closeout floors give *teeth* to the two routing-cue boundaries
-the prose cue under-serves, implemented in
+Presence-only closeout floors give *teeth* to routing-cue boundaries the prose
+cue under-serves, implemented in
 `goal_artifact_coordination_floors.py` and wired through the same After-phase
 evidence gate. Each fires only when its trigger is present, and is satisfied by a
 step line in `## Coordination Cues` (a real reference or an explicit opt-out):
@@ -470,15 +470,20 @@ step line in `## Coordination Cues` (a real reference or an explicit opt-out):
   such as `bump_version` / `publish_release` / `marketplace.json` /
   `charness-artifacts/release/`, never the bare word "release"), the run must
   record a `Release: <ref>` step or a `Release: n/a — <reason>` opt-out.
+- **issue-closeout floor** — when `## Context Sources` names a tracked/GitHub
+  issue, or recorded work sections (`## Slice Log` / `## Final Verification`)
+  carry a close keyword such as `Close #N`, the run must record an
+  `Issue closeout: <ref>` step or an
+  `Issue closeout: n/a — <reason>` opt-out.
 
-Both are presence/binding-only (they never classify whether prose is "good
+All are presence/binding-only (they never classify whether prose is "good
 enough"), scoped to `## Coordination Cues` so a goal that merely *describes* a
-step line in prose cannot falsely satisfy them, and **grandfathered by `Created`
-date** (≥ `2026-05-31`; the floors landed 2026-05-30 but several same-day goals
-predate them, so the cutoff grandfathers every in-flight goal). A
-missing/malformed `Created` fails closed. The floors fire at the `complete` flip
-(`upsert_goal.py`) and post-flip (`check_goal_artifact.py`), like the disposition
-gate. `gather` / `release` stay useful standalone — these are operator-side cues
+step line in prose cannot falsely satisfy them, and **grandfathered by
+`Created` date**. Gather/release apply to goals Created ≥ `2026-05-31`; issue
+closeout applies to goals Created ≥ `2026-06-02`. A missing/malformed `Created`
+fails closed. The floors fire at the `complete` flip (`upsert_goal.py`) and
+post-flip (`check_goal_artifact.py`), like the disposition gate. `gather`,
+`release`, and `issue` stay useful standalone — these are operator-side cues
 `achieve` plans into the artifact, never `achieve`-only branches in those skills.
 
 ## Honest Proof Discipline

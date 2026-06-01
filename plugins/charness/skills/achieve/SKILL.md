@@ -102,9 +102,10 @@ lifecycle instead of starting a new one.
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is
      presence/binding-only, never a content classifier; pre-rule goals are
      grandfathered.
-   - **coordination floors (gather + release), Created ≥ 2026-05-31:** an external
-     source in `## Context Sources` needs a `Gather:` step (or `n/a — <reason>`); a
-     touched release surface needs a `Release:` step. Presence-only, grandfathered.
+   - **coordination floors:** external context needs `Gather:` and release work
+     needs `Release:` for goals Created ≥ 2026-05-31; tracked issue sources or
+     closeout work need `Issue closeout:` for goals Created ≥ 2026-06-02.
+     Presence-only, grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
@@ -139,9 +140,9 @@ lifecycle instead of starting a new one.
 - at completion, an explicit disposition for each surfaced improvement
   (`applied: <what>` or `issue #N`) — never prose-only memory
 - a `## Coordination Cues` section that defers phase routing to `find-skills`
-  (never an inline phase→skill map) and, at completion, a `Gather:` / `Release:`
-  step (or an `n/a — <reason>` opt-out) whenever the gather / release closeout
-  floor is triggered
+  (never an inline phase→skill map) and, at completion, a `Gather:` /
+  `Release:` / `Issue closeout:` step (or an `n/a — <reason>` opt-out) whenever
+  the matching closeout floor is triggered
 
 ## Guardrails
 

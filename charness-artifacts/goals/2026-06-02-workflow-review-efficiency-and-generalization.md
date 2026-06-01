@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 plus user-added #277 closeout binding fix.
-- Next action: finish deterministic issue closeout binding and active-goal
-  handoff hardening, then run focused/broad verification.
+- Current slice: Slice 1 closed; Slice 2 critique cadence is next.
+- Next action: encode slice-level critique cadence without turning bounded
+  review into per-commit ritual.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -128,7 +128,7 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Discuss and lock activation choices | The user explicitly questioned overuse of `find-skills`, overuse of subagents, and over-coupled fixes | `Discuss before activation` has concrete decisions and this artifact passes `--pursue-ready` | completed |
-| 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | in progress |
+| 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | completed |
 | 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | planned |
 | 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | planned |
 | 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | planned |
@@ -162,8 +162,8 @@ Initial routing:
 - Issue closeout: #277 via direct-commit carrier; close keywords, bug ledger,
   and `Critique #277:
   charness-artifacts/critique/2026-06-02-277-closeout-binding-resolution.md`
-  passed `issue_tool.py validate-closeout-draft` before commit; final
-  GitHub-state verification happens after push.
+  passed `issue_tool.py validate-closeout-draft` before commit and
+  `issue_tool.py verify-closeout --expect-state CLOSED` after push.
 
 ## Discuss before activation
 
@@ -198,6 +198,15 @@ goal:
   required source/plugin helper inclusion, stale issue carrier wording fixes,
   setup renderer sync, handoff reference sync, active-goal close-intent cue, and
   additional bundle/fence regression tests. Folded into the slice.
+- 2026-06-02 Slice 1 follow-up: promoted the active-goal `Issue closeout:` cue
+  into a deterministic achieve coordination floor for goals Created >=
+  2026-06-02. Existing gather/release floors keep their 2026-05-31 cutoff, so
+  completed historical goals are not retroactively refused.
+- 2026-06-02 Fresh-eye review for the issue-closeout floor:
+  `charness-artifacts/critique/2026-06-02-issue-closeout-goal-floor-critique.md`.
+  Folded blockers for GitHub issue URL / repo-qualified issue refs, overly broad
+  planning-text close-keyword scanning, stale cutoff docs, handoff state, active
+  goal proof, and context-only issue template guidance.
 
 ## Context Sources
 
@@ -262,11 +271,6 @@ Issues or deferred findings discovered during the run.
 
 - None yet.
 
-- Deterministic enforcement of the new `Issue closeout:` active-goal cue is
-  deferred. The current slice records the cue and uses the issue closeout
-  verifier as the hard gate; a future slice can decide whether goal artifacts
-  need a separate floor.
-
 ## Final Verification
 
 - 2026-06-02 slice closeout aggregate passed with
@@ -281,6 +285,33 @@ Issues or deferred findings discovered during the run.
   `issue_tool.py validate-closeout-draft --repo-root . --repo
   corca-ai/charness --number 277 --classification bug --carrier pr-body
   --body-file charness-artifacts/issue/2026-06-02-277-closeout-binding.md`.
+- 2026-06-02 #277 final closeout passed
+  `issue_tool.py verify-closeout --repo-root . --repo corca-ai/charness
+  --number 277 --classification bug --carrier direct-commit --commit-ref
+  225898a3 --expect-state CLOSED`.
+- 2026-06-02 deterministic `Issue closeout:` floor proof: focused coordination
+  floor tests passed (`pytest -q tests/quality_gates/test_goal_coordination_floors.py`),
+  broader achieve evidence tests passed (`pytest -q
+  tests/quality_gates/test_goal_coordination_floors.py
+  tests/quality_gates/test_goal_artifact_lib.py
+  tests/quality_gates/test_achieve_before_activation.py`), markdown,
+  `validate_skills`, `validate_public_skill_dogfood`, JSON syntax, active-goal
+  `check_goal_artifact.py`, and line-headroom checks passed; a historical
+  completed-goal scan produced no issue-floor failures after the 2026-06-02
+  cutoff split.
+- 2026-06-02 issue-closeout floor fresh-eye critique:
+  `charness-artifacts/critique/2026-06-02-issue-closeout-goal-floor-critique.md`;
+  all Act-Before-Ship findings folded before final changed-surface validation.
+- 2026-06-02 issue-closeout floor changed-surface aggregate passed with
+  `python3 scripts/run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review`: packaging, committed packaging, doc links,
+  command docs, markdown, secrets, Cautilus proof policy, skill validation,
+  py_compile, ownership overlap, public-skill validation, public-skill dogfood,
+  critique artifacts, ruff, Python lengths, attention-state visibility, broad
+  pytest, and agent-browser runtime guard all passed. Cautilus planner reported
+  `next_action: none`; `python3 scripts/suggest_public_skill_dogfood.py
+  --repo-root . --skill-id achieve --json` confirmed `achieve` remains the
+  relevant hitl-recommended dogfood scenario.
 
 ## User Verification Instructions
 
