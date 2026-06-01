@@ -1,6 +1,6 @@
 # Achieve Goal: Reviewer tier closeout and issue 275
 
-Status: active
+Status: complete
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-reviewer-tier-closeout-and-issue-275.md`
 
@@ -8,14 +8,12 @@ This file is the living goal scratchpad for the active local closeout run.
 
 ## Active Operating Frame
 
-- Current slice: post-commit subagent critique findings are being applied
-  locally; remote issue closure pending explicit push request.
-- Next action: verify and commit the critique fixup carrier, then wait for the
-  operator's push decision before claiming GitHub issue closure.
-- Discuss before activation: #275 and #276 are bundled in one local carrier;
-  the carrier includes close keywords but must not be pushed or claimed closed
-  until the operator explicitly asks for push, after which GitHub issue state
-  must be verified.
+- Current slice: complete; release `v0.13.5` is published and #275/#276 are
+  verified closed on GitHub.
+- Next action: none for this goal.
+- Discuss before activation: #275 and #276 were bundled in one release carrier;
+  release `v0.13.5` published the carrier and GitHub verified both issue states
+  as `CLOSED`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -132,8 +130,8 @@ during the run:
 - **Release step** — when this run touches a release surface (a version bump or
   install-manifest edit), add a `Release:` line here pointing at the release
   proof, or write `Release: n/a — <reason>`.
-- Release: n/a — no version bump, release publication, or install manifest edit
-  was part of this carrier.
+- Release: `charness-artifacts/release/latest.md` records published
+  `v0.13.5`, public release verification, and #275/#276 issue closeout.
 
 ## Slice Log
 
@@ -157,7 +155,8 @@ during the run:
   implementation fixed #275 consumer shadowing, installed/source preference,
   malformed provider payload diagnostics, #276 empty summary capture, broad
   combined-scope triggers, and proof non-claim over-breadth.
-- Final broad verification passed: `1973 passed, 4 skipped in 270.06s`.
+- Final broad verification passed after post-commit critique fixes:
+  `1980 passed, 4 skipped in 271.87s`.
 
 ## Context Sources
 
@@ -269,8 +268,13 @@ Issues or deferred findings discovered during the run.
 - Retro: `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`.
 - Issue closeout carrier:
   `charness-artifacts/issue/2026-06-01-reviewer-tier-275-276-closeout.md`.
-- Non-claim: GitHub issue closure has not been verified because the carrier has
-  not been pushed by explicit operator request.
+- Release/push: `v0.13.5` published by the repo-owned release helper.
+  Independent checks verified
+  <https://github.com/corca-ai/charness/releases/tag/v0.13.5>.
+- GitHub issue closure: #275 verified `CLOSED` at 2026-06-01T13:47:35Z and
+  #276 verified `CLOSED` at 2026-06-01T13:47:36Z.
+- Current release surface: `current_release.py` reports all package/plugin
+  surfaces at `0.13.5` with no drift.
 - Post-commit subagent critique:
   `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-postcommit-subagent-critique.md`.
   Fresh-eye reviewers found four Act Before Ship concerns; the local fixup
@@ -284,16 +288,20 @@ Issues or deferred findings discovered during the run.
 
 ## User Verification Instructions
 
-- Inspect the local closeout carrier:
-  `charness-artifacts/issue/2026-06-01-reviewer-tier-275-276-closeout.md`.
-- When ready to publish, push the carrier commit and verify #275 and #276 reach
-  `CLOSED` on GitHub.
+- Inspect the published release:
+  <https://github.com/corca-ai/charness/releases/tag/v0.13.5>.
+- Inspect the issue closeout state:
+  <https://github.com/corca-ai/charness/issues/275> and
+  <https://github.com/corca-ai/charness/issues/276>.
 
 ## Auto-Retro
 
 - Retro artifact:
   `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`.
 - Disposition review: `charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-resolution.md`.
+- Retro: charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md
+- Host log probe: charness-artifacts/probe/2026-06-01-reviewer-tier-275-276-closeout.json
+- Disposition review: charness-artifacts/critique/2026-06-01-reviewer-tier-275-276-resolution.md
 - Retro dispositions:
   - applied: plugin export sync rerun after attention-state metadata edits,
     recorded as final verification evidence.
