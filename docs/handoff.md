@@ -16,31 +16,25 @@
 
 ## Current State
 
-- Local `main` is ahead of `origin/main` with the open-issue closeout tranche;
-  no release is planned. Final carrier publication and live issue state updates
-  are the remaining active-goal work.
-- The active achieve goal is
+- Local `main` is clean and synced with `origin/main`.
+- The open-issue generative closeout goal is complete:
   [handoff/open-issue generative closeout](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md).
-  Slices 0-6 are complete. Slice 7 final carrier is in progress: final proof,
-  final handoff/goal/retro artifacts, push, and live GitHub close/comment.
-- The current issue matrix covers all 12 open issues: #272, #265, #261, #259,
-  #258, #252, #243, #241, #237, #236, #185, and #184. #184 product success is
-  intentionally left open; #261 mutation-standard policy is intentionally left
-  open; #185 closes on necessary engineering-success conditions only.
-- Current branch proof at Slice 7 start: branch was
-  `main...origin/main [ahead 18]`, HEAD is
-  `517b734 Record AI ML success goal progress`.
+  Final carrier closed #272/#265/#259/#258/#252/#243/#241/#237/#236/#185;
+  #261 and #184 remain open intentionally with carry-forward comments.
+- A new draft achieve goal is ready to activate:
+  [achieve long-goal efficiency and effectiveness](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md).
+  It targets active-context control, verification cadence, slice review packets,
+  and automatic efficiency retro suggestions for intentionally broad goals.
 
 ## Next Session
 
-1. Verify the final local state: `git status --short --branch` and
+1. Verify local state: `git status --short --branch` and
    `git log --oneline origin/main..HEAD`.
-2. Continue Slice 7 final carrier from
-   [2026-06-01-open-issue-final-carrier.md](../charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md):
-   run final proof, commit final artifacts, push, then verify/close the live
-   issue rows.
-3. Close #272/#265/#259/#258/#252/#243/#241/#237/#236/#185 through the final
-   carrier. Comment but leave #261 and #184 open intentionally.
+2. Activate the new draft goal when ready:
+   `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`.
+3. During that goal, preserve the proof cadence: cheap deterministic checks at
+   commit boundaries, higher-cost critique/validation at slice boundaries, and
+   final broad proof.
 
 ## Discuss
 
@@ -50,6 +44,9 @@
 - This session hit the #258 echo-flood trap again (batched tool calls under
   delayed output → cascade cancels). Prefer serial tool calls when output
   latency is unstable.
+- Long goals should treat cached input as a context-pressure signal, not direct
+  waste. The stronger efficiency signals are compactions, repeated
+  status/diff/check commands, polling, and broad-gate cadence.
 - #184 needs a separate product-success synthesis from the maintainer's newer
   thinking and the source thread; do not collapse it into #185.
 
@@ -57,4 +54,5 @@
 
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [active open-issue closeout goal](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md)
+- [completed open-issue closeout goal](../charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md)
+- [draft achieve efficiency goal](../charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md)
