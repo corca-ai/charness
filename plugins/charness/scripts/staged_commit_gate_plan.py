@@ -49,6 +49,14 @@ def staged_commit_gate_plan(
     ruff = shutil.which("ruff") if ruff_path is None else ruff_path
     plan: list[GateCommand] = []
 
+    if paths:
+        plan.append(
+            GateCommand(
+                "check-staged-reversion",
+                ("python3", "scripts/check_staged_reversion.py", "--repo-root", str(repo_root)),
+            )
+        )
+
     if staged_py:
         plan.append(GateCommand("py_compile (staged)", ("python3", "-m", "py_compile", *staged_py)))
         if ruff:

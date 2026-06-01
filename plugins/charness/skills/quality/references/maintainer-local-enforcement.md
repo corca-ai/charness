@@ -167,6 +167,26 @@ The default canonical-gate patterns cover `npm run verify`, `make verify`,
 `charness verify`. Repos with custom local-gate names should pass
 `--canonical-gate-pattern` to surface their own shape.
 
+### CI-Only Failure Recovery (#236)
+
+When local pre-push or release gates passed and CI still fails, do not pay
+another broad local gate plus push retry before isolating the CI-only delta.
+First run a focused triage:
+
+- name the workflow, job, failed step, failing test, and exact command;
+- compare the CI command, shell, OS image, tool versions, environment variables,
+  and secrets assumptions against the local command that passed;
+- decide whether the next proof should be a targeted local reproduction, a
+  workflow/config fix, or a broad gate rerun after the focused cause is known;
+- treat uncertain shell, path, locale, cache, or tool-version assumptions as
+  likely CI/local parity suspects before editing production logic again.
+
+This protocol does not weaken the initial broad gate. It changes only the
+recovery loop after a CI-only failure so the next push is informed by the failed
+CI step instead of by another expensive full-gate retry. Product repos may add a
+repo-local helper such as `npm run ci:repro`, but the portable `quality`
+contract is the triage shape above.
+
 Workflows that are not per-commit quality gates can declare an explicit
 exemption from this parity contract; see §Scheduled deeper-check workflows
 below.

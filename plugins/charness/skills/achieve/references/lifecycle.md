@@ -263,6 +263,25 @@ the checked-in goal artifact must already read `Status: complete` and
 the artifact disagree, the artifact is the source of truth and the closeout is
 not complete.
 
+### Post-Apply Checkpoint Classification (#237)
+
+When a goal includes a live apply, restart, deployment smoke, or other
+behavioral checkpoint before the final commit, the After-phase closeout must
+make `HEAD != live` legible instead of forcing a blind re-apply. Record:
+
+- the live checkpoint source hash or artifact that was actually applied/smoked;
+- the current `HEAD`;
+- each commit after the checkpoint classified as `runtime-affecting`,
+  `test-only`, or `audit-doc-only`.
+
+Classify conservatively. Code, config, prompt, generated runtime surfaces, and
+spec changes are `runtime-affecting`. Tests and CI harness changes are
+`test-only` when they cannot affect live behavior. Goal logs, retros, probes,
+handoff updates, and proof artifacts are `audit-doc-only`. Any uncertain commit is
+`runtime-affecting`. The final user-facing report can then say which
+post-checkpoint commits require re-apply consideration and which only explain
+why the repository `HEAD` differs from the live instance.
+
 ### Improvement disposition
 
 The retro's value is realized only if its improvements change something. The

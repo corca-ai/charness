@@ -43,6 +43,10 @@ def _write_predict_commit_stubs(repo: Path, *, length_fails: bool = False, atten
         f"#!/usr/bin/env python3\nprint('length gate')\nraise SystemExit({length_exit})\n",
     )
     _write_executable(
+        scripts / "check_staged_reversion.py",
+        "#!/usr/bin/env python3\nprint('staged reversion gate')\n",
+    )
+    _write_executable(
         scripts / "validate_attention_state_visibility.py",
         f"#!/usr/bin/env python3\nprint('attention gate')\nraise SystemExit({attention_exit})\n",
     )
@@ -59,6 +63,7 @@ def _write_predict_commit_stubs(repo: Path, *, length_fails: bool = False, atten
 def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     labels = _labels(["scripts/new_helper.py"])
 
+    assert "check-staged-reversion" in labels
     assert "py_compile (staged)" in labels
     assert "check-python-lengths (staged)" in labels
     assert "validate-attention-state-visibility" in labels
@@ -139,6 +144,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
     )
     assert json_result.returncode == 0, json_result.stderr
     assert [item["label"] for item in json.loads(json_result.stdout)] == [
+        "check-staged-reversion",
         "staged-plugin-mirror-drift",
         "check-doc-links",
         "check-markdown",
@@ -247,4 +253,4 @@ def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "completed"
-    assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0]
+    assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]

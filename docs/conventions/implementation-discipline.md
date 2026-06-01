@@ -27,6 +27,12 @@ the root instruction file but still apply to Charness maintenance work.
   than append. `run_slice_closeout.py` auto-surfaces near-limit *changed* files
   at every slice closeout, so the near-limit trap is workflow signal, not memory
   (#256). The advisory never blocks; the existing length gate is the hard floor.
+- When deleting a public symbol or named concept, run
+  `python3 scripts/check_symbol_residue.py --repo-root .` before closeout. It is
+  advisory by design (#259): it scans deleted Python symbols and common phrase
+  variants across `docs/` and `skills/`, then leaves intentional historical
+  mentions to human judgment. For a concept that is not derivable from a deleted
+  Python name, pass `--concept "<name>"` or `--symbol <name>` explicitly.
 - Never stop a background process with a loose `pkill -f <pattern>` — the pattern
   can match your own replacement/parent command and kill it (observed: a stray
   poll loop's `pkill` killed the in-flight goal flip). Target by PID, or use the
