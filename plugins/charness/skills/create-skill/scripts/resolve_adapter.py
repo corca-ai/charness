@@ -46,8 +46,9 @@ STRING_LIST_FIELDS = (
     "intentional_fork_signals",
     "topology_verification_hints",
 )
+HOST_EXTENSION_FIELD = "host_extensions"
 SUPPORTED_VERSION = 1
-KNOWN_FIELDS = ("version", *STRING_FIELDS, *STRING_LIST_FIELDS)
+KNOWN_FIELDS = ("version", *STRING_FIELDS, *STRING_LIST_FIELDS, HOST_EXTENSION_FIELD)
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -60,6 +61,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "placement_terms": [],
         "intentional_fork_signals": [],
         "topology_verification_hints": [],
+        HOST_EXTENSION_FIELD: {},
     }
 
 
@@ -97,6 +99,17 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         if value is not None:
             validated[field] = value
 
+    if HOST_EXTENSION_FIELD in data:
+        value = data[HOST_EXTENSION_FIELD]
+        if isinstance(value, dict):
+            validated[HOST_EXTENSION_FIELD] = value
+        else:
+            errors.append(f"{HOST_EXTENSION_FIELD} must be a mapping")
+
+    for field, value in data.items():
+        if isinstance(field, str) and field.startswith("x-"):
+            validated[field] = value
+
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
 
@@ -113,7 +126,12 @@ def find_adapter(repo_root: Path) -> Path | None:
 
 
 def _field_state(data: dict[str, Any]) -> dict[str, str]:
-    return {field: _list_field_state(data, field) for field in STRING_LIST_FIELDS}
+    state = {field: _list_field_state(data, field) for field in STRING_LIST_FIELDS}
+    if HOST_EXTENSION_FIELD in data:
+        state[HOST_EXTENSION_FIELD] = "explicit-empty" if data.get(HOST_EXTENSION_FIELD) == {} else "configured"
+    else:
+        state[HOST_EXTENSION_FIELD] = "unset"
+    return state
 
 
 def _mapping_shape_error(adapter_path: Path, data: dict[str, Any]) -> str | None:
@@ -128,7 +146,9 @@ def _mapping_shape_error(adapter_path: Path, data: dict[str, Any]) -> str | None
         return "adapter file must contain a top-level mapping, not a list"
     if not data:
         return "adapter file did not contain supported create-skill adapter mapping entries"
-    if not any(field in data for field in KNOWN_FIELDS):
+    if not any(field in data for field in KNOWN_FIELDS) and not any(
+        isinstance(field, str) and field.startswith("x-") for field in data
+    ):
         return "adapter file did not contain recognized create-skill adapter fields"
     return None
 
@@ -143,7 +163,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "valid": True,
             "path": None,
             "data": data,
-            "field_state": {field: "unset" for field in STRING_LIST_FIELDS},
+            "field_state": _field_state({}),
             "errors": [],
             "warnings": [
                 "No create-skill adapter found. Using generic topology vocabulary.",

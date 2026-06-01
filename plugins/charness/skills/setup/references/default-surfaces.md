@@ -51,6 +51,10 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   is already delegated by the repo contract, agents should not wait for a
   second user message asking for delegation, and host spawn restrictions should
   be reported explicitly instead of replaced with a same-agent pass
+- compact AGENTS profiles may use the shorter standing-request form from
+  `agent-docs-policy.md` instead of the expanded copy-paste wording, as long as
+  they preserve the same host-read-time safety invariant: standing delegation,
+  canonical scopes, concrete host-block reporting, and no same-agent substitute
 - for Charness-managed repos, the same rule should explicitly cover
   task-completing `setup`, `quality`, `critique`, `release`, and GitHub
   `issue` resolution/closeout review runs instead of implying that only one
@@ -60,6 +64,9 @@ The repo root `<repo-root>/AGENTS.md` should answer:
 - after that bootstrap pass, tell the agent to choose the durable work skill
   from the installed charness surface instead of copying a long checked-in
   catalog into `<repo-root>/AGENTS.md`
+- compact AGENTS profiles may compress that routing block to one or two
+  discovery-first lines when installed `find-skills` capability or a
+  SessionStart hook provides the detailed routing surface
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in

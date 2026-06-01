@@ -22,6 +22,11 @@
   tool, or developer policy before any concrete spawn failure, emit an advisory
   finding so the affirmative repo contract stays the dominant signal at agent
   read time
+- compact AGENTS contracts are valid when the section carries the irreducible
+  host-read-time invariant: a `standing delegation request`, `canonical scopes`,
+  concrete host block reporting, and no `same-agent` substitute. The expanded
+  template below remains the safest copy-paste default, but validators should
+  not force every consumer repo to keep the full rationale in root AGENTS.
 - when a repo uses Charness durable artifacts, `<repo-root>/AGENTS.md` should say
   meaningful `charness-artifacts/` changes are commit targets, and
   current-pointer helpers should no-op when canonical content has not changed
@@ -94,6 +99,17 @@ The block above keeps every required substring the inspector checks for:
 `release`, and `issue`. The
 admonition makes the override-priority over upper-level instructions visible
 at agent read time.
+
+Compact form is accepted when a repo deliberately keeps root AGENTS short:
+
+```markdown
+## Subagent Delegation
+
+- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation
+  request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
+  `release`, and GitHub `issue` resolution/closeout review runs. Report a host
+  block explicitly; same-agent substitutes are forbidden.
+```
 
 Do not hide `setup`, `quality`, `critique`, `release`, or `issue` spawn
 authorization under a Critique-only heading or a generic operating list.

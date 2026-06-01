@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Callable
 
@@ -17,6 +18,17 @@ FRESH_EYE_REQUIRED_SNIPPETS = (
     "host blocks",
     "same-agent pass",
 )
+FRESH_EYE_COMPACT_REQUIRED_SNIPPETS = (
+    "standing delegation request",
+    "canonical scopes",
+    "host block",
+)
+FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS = (
+    "same-agent substitutes are forbidden",
+    "no same-agent",
+    "do not substitute a same-agent",
+    "same-agent pass fails",
+)
 FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
     "higher-priority host",
     "developer policy requires explicit user delegation",
@@ -25,6 +37,8 @@ FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
 )
 TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality", "critique", "release", "issue")
 LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"
+COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(call|invoke|run)\s+`?find-skills`?\b")
+COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(call|invoke|run)\s+`?find-skills`?\b")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -97,6 +111,13 @@ def _extract_section(text: str, heading: str) -> str:
             end = index
             break
     return "\n".join(lines[start:end])
+
+
+def _fresh_eye_compact_contract_present(agents_text: str) -> bool:
+    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING)
+    section_lower = section_body.lower()
+    same_agent_forbidden = any(snippet in section_lower for snippet in FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS)
+    return bool(section_body) and same_agent_forbidden and not _missing_snippets(section_body, FRESH_EYE_COMPACT_REQUIRED_SNIPPETS)
 
 
 def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
@@ -194,8 +215,13 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
     lowered = agents_text.lower()
     stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
     has_subagent_delegation_section = FRESH_EYE_SECTION_HEADING.lower() in lowered
-    missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS) if stop_gate_detected else []
-    if stop_gate_detected and not has_subagent_delegation_section:
+    compact_contract_present = stop_gate_detected and _fresh_eye_compact_contract_present(agents_text)
+    missing_required = (
+        _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
+        if stop_gate_detected and not compact_contract_present
+        else []
+    )
+    if stop_gate_detected and not has_subagent_delegation_section and not compact_contract_present:
         missing_required.append(FRESH_EYE_SECTION_HEADING)
     missing_task_review_scopes = (
         [snippet for snippet in TASK_REVIEW_SCOPE_SNIPPETS if snippet not in lowered] if stop_gate_detected else []
@@ -265,6 +291,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         {
             "stop_gate_detected": stop_gate_detected,
             "has_subagent_delegation_section": has_subagent_delegation_section,
+            "compact_contract_present": compact_contract_present,
             "missing_required_snippets": missing_required,
             "missing_task_review_scopes": missing_task_review_scopes,
             "legacy_init_repo_scope_present": legacy_init_repo_scope_present,
@@ -281,7 +308,8 @@ def detect_policy_source_recommendations(
     policy: dict[str, Any],
 ) -> list[dict[str, object]]:
     lowered_agents = agents_text.lower()
-    missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
+    compact_contract_present = _fresh_eye_compact_contract_present(agents_text)
+    missing_required = [] if compact_contract_present else _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
     missing_scopes = [scope for scope in TASK_REVIEW_SCOPE_SNIPPETS if scope not in lowered_agents]
     if not missing_required and not missing_scopes:
         return []
@@ -335,11 +363,26 @@ def _detect_skill_routing_normalization(
     expected_markdown = str(payload.get("markdown", ""))
     missing_expected_snippets: list[str] = []
     matches_compact_block = bool(expected_markdown and expected_markdown in agents_text)
+    section_body = _extract_section(agents_text, "## Skill Routing") if has_skill_routing else ""
+    section_lower = section_body.lower()
+    find_skills_available = "find-skills" in set(payload.get("listed_skill_ids") or payload.get("public_skills") or [])
+    compact_discovery_first_present = any(
+        "find-skills" in line
+        and COMPACT_SKILL_ROUTING_CALL_RE.search(line)
+        and not COMPACT_SKILL_ROUTING_NEGATED_CALL_RE.search(line)
+        and ("startup" in line or "sessionstart" in line or "session start" in line)
+        and ("once" in line or "before broader exploration" in line)
+        and ("discover" in line or "capability" in line or "route" in line)
+        for line in section_lower.splitlines()
+    )
+    accepts_compact_discovery_first = (
+        has_skill_routing and not matches_compact_block and find_skills_available and compact_discovery_first_present
+    )
     recommended_action = str(payload.get("recommended_action", "inspect_manually"))
     decision_needed: str | None = None
     findings: list[dict[str, str]] = []
 
-    if has_skill_routing and expected_markdown and not matches_compact_block:
+    if has_skill_routing and expected_markdown and not matches_compact_block and not accepts_compact_discovery_first:
         expected_lines = tuple(line for line in expected_markdown.splitlines() if line.strip() and line != "## Skill Routing")
         missing_expected_snippets = [line for line in expected_lines if line not in agents_text]
         recommended_action = "review_existing_skill_routing"
@@ -356,6 +399,8 @@ def _detect_skill_routing_normalization(
         {
             "has_skill_routing": has_skill_routing,
             "matches_compact_block": matches_compact_block,
+            "accepts_compact_discovery_first": accepts_compact_discovery_first,
+            "find_skills_available": find_skills_available,
             "recommended_action": recommended_action,
             "decision_needed": decision_needed,
             "missing_expected_snippets": missing_expected_snippets,

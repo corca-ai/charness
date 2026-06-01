@@ -149,6 +149,55 @@ def test_create_skill_adapter_resolver_reports_explicit_empty_lists(tmp_path: Pa
     assert payload["field_state"]["implementation_identity_terms"] == "explicit-empty"
 
 
+def test_create_skill_adapter_resolver_preserves_host_extensions(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "host_extensions:",
+                "  metadata_path: .agents/create-skill-host-metadata.yaml",
+                "  approval_required: true",
+                "x-private-flow:",
+                "  registry_behavior: private-generated-skill",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is True
+    assert payload["data"]["host_extensions"]["metadata_path"] == ".agents/create-skill-host-metadata.yaml"
+    assert payload["data"]["host_extensions"]["approval_required"] is True
+    assert payload["data"]["x-private-flow"]["registry_behavior"] == "private-generated-skill"
+    assert payload["field_state"]["host_extensions"] == "configured"
+
+
+def test_create_skill_adapter_resolver_rejects_non_mapping_host_extensions(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text(
+        "version: 1\nhost_extensions:\n  - metadata_path\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is False
+    assert "host_extensions must be a mapping" in payload["errors"]
+
+
 def test_create_skill_adapter_resolver_warns_on_compatibility_path(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

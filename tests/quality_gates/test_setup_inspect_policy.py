@@ -334,6 +334,61 @@ def test_setup_inspect_accepts_dedicated_subagent_delegation_section(tmp_path: P
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
+def test_setup_inspect_accepts_compact_subagent_delegation_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Subagent Delegation",
+                "",
+                "- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation request. Canonical scopes: task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs. Report a host block explicitly; same-agent substitutes are forbidden.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["has_subagent_delegation_section"] is True
+    assert fresh_eye["compact_contract_present"] is True
+    assert fresh_eye["missing_required_snippets"] == []
+    assert fresh_eye["missing_task_review_scopes"] == []
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_task_review_scope_drift" not in finding_types
+
+
+def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substitute(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Subagent Delegation",
+                "",
+                "- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation request. Canonical scopes: task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs. Report a host block explicitly; same-agent substitutes are allowed.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["compact_contract_present"] is False
+    assert "same-agent pass" in fresh_eye["missing_required_snippets"]
+    assert "fresh_eye_delegation_rule_drift" in finding_types
+
+
 _SUBAGENT_DELEGATION_AFFIRMATIVE = (
     "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.",
     "- Do not wait for a second user message. Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs may spawn bounded reviewers.",
@@ -492,6 +547,100 @@ def test_setup_inspect_requires_decision_for_custom_skill_routing_block(tmp_path
     assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
     assert "skill_routing_block_custom_or_drifted" in finding_types
     assert recommendation_priorities["skill_routing_block_custom_or_drifted"] == "review_required"
+
+
+def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "- At session startup, call `find-skills` once to discover capability routing before broader exploration.",
+                "- Then choose the installed durable work skill that best matches the task.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert skill_routing["matches_compact_block"] is False
+    assert skill_routing["accepts_compact_discovery_first"] is True
+    assert skill_routing["find_skills_available"] is True
+    assert skill_routing["decision_needed"] is None
+    assert "skill_routing_block_custom_or_drifted" not in finding_types
+
+
+def test_setup_inspect_rejects_custom_routing_that_mentions_optional_find_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "- At startup, use custom routing first; find-skills is optional for capability notes.",
+                "- Preserve local routing choices over generated discovery output.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert skill_routing["accepts_compact_discovery_first"] is False
+    assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
+    assert "skill_routing_block_custom_or_drifted" in finding_types
+
+
+def test_setup_inspect_rejects_cross_line_compact_routing_keyword_cooccurrence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "- At startup, run custom routing once before broader exploration.",
+                "- find-skills is optional for capability notes.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert skill_routing["accepts_compact_discovery_first"] is False
+    assert "skill_routing_block_custom_or_drifted" in finding_types
+
+
+def test_setup_inspect_rejects_same_line_bad_compact_routing(tmp_path: Path) -> None:
+    bad_lines = (
+        "- At startup, run custom routing once before broader exploration; find-skills is optional for capability notes.",
+        "- At session startup, do not run find-skills once for capability routing before broader exploration.",
+    )
+    for index, line in enumerate(bad_lines):
+        repo = tmp_path / f"repo-{index}"
+        _seed_normalize_repo(repo, "\n".join(["# Agents", "", "## Skill Routing", "", line, ""]))
+        payload = _run_inspect(repo)
+        skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
+        finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+        assert skill_routing["accepts_compact_discovery_first"] is False
+        assert "skill_routing_block_custom_or_drifted" in finding_types
 
 
 def test_setup_inspect_emits_policy_source_recommendation_without_agents_marker(tmp_path: Path) -> None:

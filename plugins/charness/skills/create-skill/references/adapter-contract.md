@@ -42,6 +42,19 @@ Topology vocabulary fields:
   the agent state whether it created one shared implementation or an
   intentional fork
 
+Host extension fields:
+
+- `host_extensions`: optional mapping reserved for host-owned metadata. The
+  resolver validates only that it is a mapping and passes its contents through
+  unchanged in the resolved adapter JSON.
+- top-level `x-*` fields: optional host-owned extension blocks. The resolver
+  preserves these fields unchanged so a host can add private flow metadata
+  without editing Charness-authored skill files.
+
+Use these extension fields for adapter metadata only. Host-specific behavior
+still belongs in the host adapter, preset, or integration layer that consumes
+the resolved JSON.
+
 Topology glossary:
 
 - `implementation identity`: the file or package location that owns the skill
@@ -80,3 +93,5 @@ missing adapter.
   paths, or topology in the Charness public skill package.
 - Do not require every repo to model multiple placements. Empty lists are valid
   and mean the repo has not declared that vocabulary.
+- Do not require hosts to fork `resolve_adapter.py` for private adapter
+  metadata. Use `host_extensions` or top-level `x-*` blocks instead.

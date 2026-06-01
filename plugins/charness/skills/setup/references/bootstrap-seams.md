@@ -51,6 +51,11 @@ the repo, agents should not wait for a second user message asking for
 delegation, and host spawn restrictions should be reported explicitly instead
 of replaced with a same-agent pass.
 
+For compact AGENTS profiles, the root file may say this as one standing
+delegation request that names canonical scopes and forbids same-agent
+substitution. Keep detailed rationale in this reference or repo docs rather
+than requiring a handbook-length root instruction file.
+
 ## Skill Routing
 
 When installed Charness skills are present, add a short `Skill Routing` block
@@ -59,6 +64,11 @@ to `<repo-root>/AGENTS.md`.
 Keep the block startup-bootstrap-heavy and discovery-first. Use
 `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
 suggestion instead of a silent rewrite.
+
+If a mature repo already has a one- or two-line discovery-first rule that calls
+`find-skills` at session startup, setup normalization may accept it as compact
+routing when the installed `find-skills` capability or SessionStart hook owns
+the fuller catalog.
 
 ## Repo-Owned Skill Proof
 
