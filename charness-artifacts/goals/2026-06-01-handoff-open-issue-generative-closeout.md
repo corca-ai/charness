@@ -153,7 +153,7 @@ reason.
 | 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | complete |
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | complete |
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | complete |
-| 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | pending |
+| 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | complete |
 | 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row: product-success frame pending maintainer synthesis and source-thread refresh | pending |
 | 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | pending |
 
@@ -202,7 +202,7 @@ final carrier after local proof and carrier-body validation.
 | #259 | Closeout/workflow safety | Close in final carrier | `d7fb8e4 Harden workflow safety closeout` adds advisory `check_symbol_residue.py` with deleted-symbol scanning plus explicit `--symbol`/`--concept`; implementation-discipline docs and targeted tests prove the workflow |
 | #258 | Closeout/workflow safety | Close in final carrier | Existing shared reviewer hygiene plus `check_staged_reversion.py` are now wired into the actual `.githooks/pre-commit` predict path via `staged_commit_gate_plan.py`; fresh-eye re-review reported no remaining blockers |
 | #252 | Portability/setup extensibility | Close in final carrier | `ec229ea Support compact setup and adapter extensions` makes setup inspection accept compact Subagent Delegation standing-request wording and compact discovery-first Skill Routing only when the line directly calls/invokes/runs `find-skills`; docs and focused regression tests preserve the no same-agent substitute and no arbitrary custom-routing bypass invariants |
-| #243 | Usage/engineering success | Close after usage episodes have a consumer/report or the promise is explicitly narrowed; the report may observe necessary engineering-success conditions but must not claim product success | Usage report/consumer tests or narrowed-contract decision |
+| #243 | Usage/engineering success | Close in final carrier | `13b861f Report usage episodes in quality` adds `report_usage_episodes.py`, queues it in `run-quality`, surfaces its passing output through an `ADVISORY` line, reports session grouping/T-signal/capture gaps, and records explicit non-claims so the report remains engineering usage signal rather than product-success proof |
 | #241 | Portability/setup extensibility | Close in final carrier | `ec229ea Support compact setup and adapter extensions` preserves `host_extensions` mappings and top-level `x-*` blocks in `create-skill` adapter resolver output, rejects non-mapping `host_extensions`, and documents the extension namespace |
 | #237 | Closeout/workflow safety | Close in final carrier | `achieve` lifecycle now requires post-apply checkpoint, current `HEAD`, and `runtime-affecting`/`test-only`/`audit-doc-only` classification with uncertainty treated as runtime-affecting |
 | #236 | Closeout/workflow safety | Close in final carrier | `quality` maintainer-local enforcement now carries focused CI-only failure recovery before another broad full-gate push retry |
@@ -284,6 +284,20 @@ truth._
 - Lessons carried forward: Compact contracts need affirmative behavioral checks, not broad keyword co-occurrence. Adapter extensibility should preserve host metadata without turning public skill resolvers into host-specific forks.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-d2535647666b4da183e42a9064c4022b.
 
+### Slice 5: Issue 243 usage episode report consumer
+
+- Objective: Make usage episodes useful by adding a consumer/report and capture-gap visibility without claiming product success.
+- Why this approach: #243's substrate was healthy but write-only; a quality-visible report closes the immediate consumer gap while the product-success frame remains intentionally separate under #184.
+- Commits: 13b861f Report usage episodes in quality
+- What changed: Added `scripts/report_usage_episodes.py` and plugin mirror; the report validates enabled JSONL records, aggregates daily/job/action/outcome/feedback/T-status counts, groups explicit `session_id` records and gap-clusters ungrouped records, reports session grouping/T-signal rates, and exposes capture gaps such as ungrouped records, missing feedback, single-entry-point capture, and explicit-request-only capture. `run-quality` now queues `report-usage-episodes`, and the report emits an `ADVISORY` line so passing quality output shows the summary instead of hiding it. The quality attention-state detector now tracks `no_records`; quality/setup docs, product-success docs, AI/ML engineering docs, public-skill dogfood, and focused tests were updated.
+- Alternatives rejected: Did not add a `charness usage` CLI subcommand because the issue allowed a quality-inventory surface and the repo already has `run-quality` as the maintained operator gate. Did not claim usage episodes prove product success; the report's non-claims and docs state that captured records are not the full usage or outcome denominator. Did not wire a post-commit capture hook in this slice; instead, the report makes capture gaps visible while final capture-policy/product-success decisions stay outside #243.
+- Targeted verification: PASS: gh issue view 243 read current OPEN issue body; PASS: pytest -q tests/test_usage_episodes_report.py tests/test_usage_episodes_validator.py tests/quality_gates/test_quality_runner.py tests/quality_gates/test_quality_skill_docs.py tests/quality_gates/test_setup_seed_usage_episodes.py (75 passed); PASS: ruff check touched script/tests; PASS: python3 -m py_compile scripts/report_usage_episodes.py plugins/charness/scripts/report_usage_episodes.py; PASS: python3 scripts/report_usage_episodes.py --repo-root . --json showed 314 captured records, 41 session groups, 311/314 session-id grouped records, 126 T-signal records, and explicit capture gaps; PASS: CHARNESS_QUALITY_LABELS=report-usage-episodes ./scripts/run-quality.sh --read-only surfaced the advisory report output; PASS: python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support; PASS: python3 scripts/validate_public_skill_dogfood.py --repo-root .; PASS: python3 scripts/validate_skills.py --repo-root .; PASS: python3 scripts/validate_packaging_committed.py --repo-root .; PASS: python3 scripts/run_evals.py --repo-root . --scenario-id setup-adapter-bootstrap; PASS: python3 scripts/run_evals.py --repo-root . --scenario-id setup-inspect-states; PASS: python3 scripts/run_evals.py --repo-root . --scenario-id setup-compact-skill-routing-discoverability; PASS: python3 scripts/validate_cautilus_scenarios.py --repo-root .; PASS: python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review (completed, including broad pytest and agent-browser guard).
+- Test duplication pressure: Added one focused test file for the new report and one quality-runner regression for advisory replay. Length closeout now warns that `scripts/report_usage_episodes.py` is 440/480 and `tests/quality_gates/test_quality_runner.py` is 776/800; future work should split before appending.
+- Critique: Fresh-eye reviewer Mill first found that a passing `run-quality` phase would hide the report output and that `no_records` was not tracked by the attention-state detector. Both were fixed by advisory-visible report output, `run-quality` regression coverage, and `no_records` attention-state tracking; follow-up review reported No remaining blockers.
+- Off-goal findings: Cautilus planner reported ask-before-run policy and scenario-review follow-ups for changed `quality`/`setup` surfaces. Deterministic validation, dogfood update, setup scenario inspection, and fresh-eye review owned this slice; no live Cautilus run or scenario registry mutation was made.
+- Lessons carried forward: A report added to `run-quality` must be visible on the passing path when its value is the summary itself; exit-zero readiness states such as `no_records` need attention-state tracking before docs call them visible.
+- Metrics: Usage episode emitted by slice closeout: slice-closeout-894c1e288b9a4f22953e30542297363c.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -318,6 +332,10 @@ the originating context by following them in order.
   --branch` reports `main...origin/main [ahead 13]`; the implementation commit
   is `ec229ea Support compact setup and adapter extensions`. These local
   commits remain final-carrier material and are not published early.
+- Current branch proof after Slice 5 implementation: `git status --short
+  --branch` reports `main...origin/main [ahead 15]`; the implementation commit
+  is `13b861f Report usage episodes in quality`. These local commits remain
+  final-carrier material and are not published early.
 - `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` for the
   completed tranche and its explicit non-claims around live GitHub closure.
 - `charness-artifacts/retro/recent-lessons.md` for the closeout-keyword miss,
@@ -336,7 +354,7 @@ itself so a fresh session sees the design space, not only the closed point.
 - Mode family: artifact-only draft vs implementation-continuation. Historical
   shaping choice: artifact-only draft, then implementation-continuation after
   explicit `/goal` activation. Current state: the goal is now active and Slices
-  0-3 have executed; the remaining document job is to keep the active run
+  0-5 have executed; the remaining document job is to keep the active run
   auditable and make the next slice pickup unambiguous, not to re-present this
   as an inert draft.
 - Scope family: handoff only, selected issues only, or all currently open
@@ -444,13 +462,13 @@ _Not started._
 ## User Verification Instructions
 
 1. Review this file's issue list and remaining slice order, especially Slices
-   4-7.
+   6-7.
 2. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root .
    --goal-path
    charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`.
-3. To continue the active goal, resume at Slice 4 (#252/#241). Do not re-run
-   activation or re-open settled decisions from Slices 0-3 unless live tracker
-   state has changed.
+3. To continue the active goal, resume at Slice 6 (#185 necessary engineering
+   success, #184 leave-open note). Do not re-run activation or re-open settled
+   decisions from Slices 0-5 unless live tracker state has changed.
 4. Expect the agent to stop for maintainer decisions around product-success
    metrics for #184, release surfaces, accepting a lower mutation/quality
    standard, or publishing/live GitHub mutation before the final carrier.
