@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 97,
-  "candidate_count": 606,
+  "source_artifact_count": 98,
+  "candidate_count": 613,
   "top_candidates": [
     {
       "candidate_id": "current_focus:3e4a1d24f386",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ca7b5824bd0e",
+      "kind": "current_focus",
+      "lesson": "Reviewed the follow-up work after the critique adapter default fix: sibling scan for other public skills that directly spawn bounded fresh-eye reviewers, fixes for `quality`, issue causal review, and `setup`, setup scaffold safety, and the handoff live-backlog test adjustment.",
+      "normalized_key": "reviewed the follow up work after the critique adapter default fix sibling scan for",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -195,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1bd299ad031b",
+      "kind": "next_improvement",
+      "lesson": "after a fresh-eye review reports any Act Before Ship item, pause broad verification until each blocker has a targeted regression and a short re-run proves the blocker is closed.",
+      "normalized_key": "after a fresh eye review reports any act before ship item pause broad verification",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:567b0a664b19",
       "kind": "next_improvement",
       "lesson": "applied: Do not make a new generated goal section a global historical `check_goal` requirement without an explicit migration/grandfather policy. This run narrowed `Active Operating Frame` to generated-shape tests and kept old artifacts compatible.",
@@ -209,46 +249,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ef545709fb56",
-      "kind": "next_improvement",
-      "lesson": "applied — `probe_host_logs.py` now audits the latest Codex rollout JSONL by default, so future retros see token-count snapshots, compactions, tool-call pressure, and repeated-command proxies without a manual follow-up search.",
-      "normalized_key": "applied probe host logs py now audits the latest codex rollout jsonl by default",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b9ad7b1f9bf6",
-      "kind": "next_improvement",
-      "lesson": "applied — require leave-open rows to receive live comments and state checks before marking the goal complete.",
-      "normalized_key": "applied require leave open rows to receive live comments and state checks before marking",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ca7b5824bd0e",
+      "kind": "current_focus",
+      "lesson": "Reviewed the follow-up work after the critique adapter default fix: sibling scan for other public skills that directly spawn bounded fresh-eye reviewers, fixes for `quality`, issue causal review, and `setup`, setup scaffold safety, and the handoff live-backlog test adjustment.",
+      "normalized_key": "reviewed the follow up work after the critique adapter default fix sibling scan for",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:9b8e24ba69d0",
       "kind": "current_focus",
       "lesson": "The reviewed unit is the `v0.13.2` push and the follow-up user correction that the commits resolving GitHub issues should have carried close keywords.",
@@ -431,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1bd299ad031b",
+      "kind": "next_improvement",
+      "lesson": "after a fresh-eye review reports any Act Before Ship item, pause broad verification until each blocker has a targeted regression and a short re-run proves the blocker is closed.",
+      "normalized_key": "after a fresh eye review reports any act before ship item pause broad verification",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -717,6 +757,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:413323aee1db",
+      "kind": "next_improvement",
+      "lesson": "keep this retro with the reviewer-tier debug artifact so future prompt-surface sibling scans lock triage before broad pytest.",
+      "normalized_key": "keep this retro with the reviewer tier debug artifact so future prompt surface sibling",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a412b5141962",
       "kind": "next_improvement",
       "lesson": "parser now owns the filter with tests, so the rule is executable instead of relying on handoff prose discipline.",
@@ -797,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f55b6e3b98b3",
+      "kind": "next_improvement",
+      "lesson": "when broad verification surfaces live-state drift unrelated to the current slice, classify it before patching; if fixed now, name it as bundled opportunistic maintenance in the artifact.",
+      "normalized_key": "when broad verification surfaces live state drift unrelated to the current slice classify it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:a4c30d9c22b6",
       "kind": "repeat_trap",
       "lesson": "Handoff auto-draft failed the new shape because it has an independent goal renderer. This was not wasted validation: the broad suite caught a real generator-consumer compatibility gap.",
@@ -811,6 +891,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7c4bad60604d",
+      "kind": "repeat_trap",
+      "lesson": "I changed a live-backlog-sensitive handoff test during this slice because the broad run exposed it. The fix was useful, but it was opportunistic scope expansion triggered by verification rather than part of the reviewer-tier triage lock.",
+      "normalized_key": "i changed a live backlog sensitive handoff test during this slice because the broad",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f70bbaf3b2e6",
+      "kind": "repeat_trap",
+      "lesson": "I skipped the retro closeout until the user asked. That left the main lesson in chat and debug artifacts but not in the retro memory surface.",
+      "normalized_key": "i skipped the retro closeout until the user asked that left the main lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a3764d086ecf",
+      "kind": "repeat_trap",
+      "lesson": "I started broad pytest before fully disposing the fresh-eye blocker. That run was expected to be invalid once the setup scaffold safety issue was found, so it spent verification time before the triage lock was stable.",
+      "normalized_key": "i started broad pytest before fully disposing the fresh eye blocker that run was",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
           "date": "2026-06-01",
           "section": "Waste"
         }
