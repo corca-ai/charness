@@ -149,7 +149,7 @@ reason.
 | --- | --- | --- | --- | --- |
 | 0 | Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184; final-carrier authorization recorded | complete |
 | 1 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation report is quality-blocking even though Python survived count is 0, because changed-line blockers excluded changed files before mutation | Root cause/debug record; decide stale vs real blocker; changed-line coverage/selection proof; local mutation/quality proof; issue closeout row | complete |
-| 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | pending |
+| 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | complete |
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | pending |
 | 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | pending |
@@ -196,8 +196,8 @@ final carrier after local proof and carrier-body validation.
 | Issue | Cluster | Intended Disposition | Closeout Carrier / Evidence |
 | --- | --- | --- | --- |
 | #272 | Mutation/report reliability | Close in final carrier | `cd9cfc5 Clarify mutation report blockers` separates overall status, mutation score, and blocking signals; debug artifact `charness-artifacts/debug/2026-06-01-issue-272-mutation-report-clarity.md`; final PR/issue carrier should explain `Killed: 78`, `Survived: 0`, score pass, and changed-line blocker disposition |
-| #265 | Mutation/report reliability | Close after current-head scoped survivor inventory is refreshed and all real survivors are killed or explicitly dispositioned | Mutation inventory, targeted RED/GREEN proof where applicable, final matrix row |
-| #261 | Mutation/report reliability | Conditional: close only if equivalent/low-value survivor policy/reporting is implemented; otherwise leave open with the exact remaining policy gap | Policy/report implementation proof or leave-open note naming the unimplemented standard |
+| #265 | Mutation/report reliability | Close in final carrier | Existing `765f5d4 Harden coordination survivor tests` is ancestor of HEAD/origin/main; current proof re-rendered the scoped trio dump as 514/514 executed, 467 killed, 47 survived, 90.9% reachable score; focused survivor tests pass |
+| #261 | Mutation/report reliability | Leave open intentionally | Final carrier note/comment should say mechanical survivor triage is done via #265, but equivalent/low-value mutation-standard policy remains open; no gate-design exclusion was implemented in this goal |
 | #259 | Closeout/workflow safety | Close after a cheap symbol/concept residue advisory exists for public symbol deletion | Advisory helper/gate proof and docs/skill reference update |
 | #258 | Closeout/workflow safety | Close after shared-worktree reviewer hygiene is enforced or a closeout guard catches staged reversion risk | Fresh-eye reviewer guidance and/or deterministic closeout guard proof |
 | #252 | Portability/setup extensibility | Close after setup accepts a compact AGENTS profile while preserving irreducible host-read-time safety rules | Setup validation tests and compact profile docs |
@@ -241,6 +241,20 @@ truth._
 - Lessons carried forward: For mutation reports, keep overall gate status, score threshold result, and non-score blockers separate so a correct failure is not misread as a survived-mutant failure.
 - Metrics: Usage episode emitted by slice closeout at `.charness/usage-episodes/usage_episode.jsonl` with episode id `slice-closeout-3dd74c6ba699474d80591f59159b525e`; host token/tool metrics unavailable.
 
+### Slice 2: Issues 265 and 261 survivor disposition
+
+- Objective: Refresh the coordination-cues survivor evidence and decide the close/leave-open boundary for #265/#261 without redoing already-merged mechanical triage.
+- Why this approach: #265 is the residual exhaustive triage pickup for #261; current HEAD already contains the survivor-hardening commit, so the cheapest correct move is to verify that evidence and record which issue is closable versus policy-bound.
+- Commits: 765f5d4 Harden coordination survivor tests (already ancestor of HEAD/origin/main); no new implementation commit in this slice
+- What changed: No code changed. Re-read live #265/#261 issue bodies; confirmed `765f5d4` is an ancestor of HEAD and origin/main; re-rendered the existing scoped Cosmic Ray dump through the clarified #272 summary path; updated the goal matrix so #265 closes in the final carrier and #261 remains open for the equivalent/low-value mutation-standard policy decision.
+- Alternatives rejected: Did not add more low-value survivor tests or implement equivalent-mutant exclusion. Did not close #261 under #265 proof because #261 still owns the mutation-standard policy boundary the user wanted kept separate.
+- Targeted verification: PASS: gh issue view 265 and 261 read current OPEN issue bodies; PASS: git merge-base --is-ancestor 765f5d4 HEAD and origin/main contains 765f5d4; PASS: python3 scripts/check_mutation_score.py --repo-root . --stats reports/mutation/coordination-cues-dump.jsonl --sample-manifest reports/mutation/nonexistent-sample.json re-rendered 514/514 executed, 467 killed, 47 survived, 90.9% reachable score vs 80% threshold; PASS: pytest -q tests/quality_gates/test_goal_coordination_floors.py tests/quality_gates/test_goal_disposition_gate.py tests/quality_gates/test_goal_head_freshness.py tests/quality_gates/test_achieve_before_activation.py (84 passed).
+- Test duplication pressure: No tests added. Reused existing survivor-hardening tests and existing ignored Cosmic Ray dump for evidence refresh.
+- Critique: No new diff to critique. Prior fresh-eye critique for this survivor-hardening unit is recorded at charness-artifacts/critique/2026-06-01-265-261-coordination-survivor-triage-critique.md with no blockers; this slice only maps that proof to the active issue matrix.
+- Off-goal findings: The re-rendered scoped summary still reports blocking signals for sampled mutants without coverage and a deliberately nonexistent sample manifest; these are not new survivor failures and are unsuitable as scheduled-gate closeout proof. They remain context for why #261's mutation-standard policy is left open.
+- Lessons carried forward: Do not re-pay a full mutation campaign when the target files and tests have not changed; record whether the remaining work is mechanical survivor killing or a policy decision.
+- Metrics: Scoped survivor proof remains 514/514 executed, 467 killed, 47 survived, 90.9% reachable score.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -257,6 +271,9 @@ the originating context by following them in order.
   (`slack://C05J5LTFSCU/1778805288.184149`) and says to re-read the source
   before resolving; this goal therefore leaves #184 open rather than forcing a
   stale product-success definition.
+- `gh issue view 265` and `gh issue view 261` read on 2026-06-01 KST. #265 is
+  the residual exhaustive-triage pickup for #261; #261 also carries the
+  equivalent-mutant gate-design policy question.
 - Handoff parser with live issue union:
   `parse_handoff_entries.py --repo-root . --handoff-path docs/handoff.md
   --with-issues` reported 13 entries, 3 handoff entries, 12 issue entries, and
