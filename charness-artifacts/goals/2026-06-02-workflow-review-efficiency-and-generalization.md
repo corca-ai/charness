@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 invariant-first bug review is complete; Slice 4
-  sibling-pattern scan and disposition is next.
-- Next action: audit adjacent workflow-boundary patterns and classify each
-  finding as applied, issue, rejected, or deferred with owner/surface.
+- Current slice: Slice 4 sibling-pattern scan and disposition is complete;
+  Slice 5 validate, critique, and close out is next.
+- Next action: run final validation/critique closeout, refresh this goal and
+  handoff, then complete the goal if proof and dispositions hold.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -133,7 +133,7 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 | 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | completed |
 | 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | completed |
 | 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | completed |
-| 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | planned |
+| 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | completed |
 | 5 | Validate, critique, and close out | Changes affect operating contracts and must not silently increase process cost | Surface sync if needed, focused/broad gate as appropriate, bounded final critique, complete goal artifact, handoff refreshed | planned |
 
 ## Coordination Cues
@@ -232,6 +232,19 @@ goal:
   blockers for missing standalone debug consumer proof, prose-heavy tests,
   incomplete packet context, dogfood date drift, active-goal state, and handoff
   closeout were folded.
+- 2026-06-02 Slice 4 complete: recorded
+  `charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md`
+  as a static repo-local sibling-pattern audit across source resolution,
+  diagnostic/status propagation, placeholder/readiness gates, closeout
+  disposition, and source-guard/phrase-detector coupling. Dispositions are
+  applied (F4-F6), rejected (F1/F2/F7/F8), deferred-with-owner (F3 via
+  `docs/deferred-decisions.md` D19), and issue: none. Fresh-eye review consumed
+  `charness-artifacts/critique/2026-06-02-sibling-pattern-audit-slice-packet.md`
+  and is recorded at
+  `charness-artifacts/critique/2026-06-02-sibling-pattern-audit-slice.md`.
+  Reviewers found no Act Before Ship blockers; they required nuance that F1/F8
+  are real coupling smells kept advisory by enforcement tier and consumer
+  behavior, not absent coupling. Folded into the audit.
 
 ## Context Sources
 
@@ -298,6 +311,13 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
+- 2026-06-02 Slice 4 focused proof: markdown links, command docs, markdownlint,
+  secrets, critique packet validation, critique artifact validation (`--all`),
+  active-goal `check_goal_artifact.py --pursue-ready`, and
+  `check_changed_surfaces.py` all passed. `run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review` passed for the repo-markdown and
+  critique-artifact surfaces; Cautilus planner reported `next_action: none`, so
+  no evaluator run was made for this static audit slice.
 - 2026-06-02 slice closeout aggregate passed with
   `python3 scripts/run_slice_closeout.py --repo-root .
   --ack-cautilus-skill-review`: packaging, committed packaging, doc links,
