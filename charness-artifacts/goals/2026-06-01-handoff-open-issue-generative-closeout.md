@@ -30,7 +30,9 @@ reason.
   goal. Publishing is deferred to the final carrier.
 - Do not close the product-success issue (#184) in this goal. The maintainer has
   active but not-yet-organized product-success thinking; leave #184 open with a
-  precise carry-forward note.
+  precise carry-forward note. Resolving #184 later requires re-reading/gathering
+  its originating Slack thread plus the maintainer's newer product-success
+  framing.
 - Do not treat AI/ML engineering success (#185) as a sufficient product-success
   definition. This goal may close #185 only by recording necessary engineering
   success conditions and, when useful, implementing supporting usage/report
@@ -153,7 +155,7 @@ reason.
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | pending |
 | 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | pending |
-| 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row with carry-forward note | pending |
+| 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row: product-success frame pending maintainer synthesis and source-thread refresh | pending |
 | 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | pending |
 
 ## Coordination Cues
@@ -201,6 +203,11 @@ the originating context by following them in order.
 - `gh issue list --state open --limit 100 --json number,title,labels,updatedAt,url`
   read on 2026-06-01 KST. Open issues at shaping time: #272, #265, #261, #259,
   #258, #252, #243, #241, #237, #236, #185, #184.
+- `gh issue view 184 --json number,title,state,labels,body,updatedAt,url` read
+  on 2026-06-01 KST. #184 explicitly cites an originating Slack thread
+  (`slack://C05J5LTFSCU/1778805288.184149`) and says to re-read the source
+  before resolving; this goal therefore leaves #184 open rather than forcing a
+  stale product-success definition.
 - Handoff parser with live issue union:
   `parse_handoff_entries.py --repo-root . --handoff-path docs/handoff.md
   --with-issues` reported 13 entries, 3 handoff entries, 12 issue entries, and
@@ -244,8 +251,9 @@ itself so a fresh session sees the design space, not only the closed point.
   and recent retro both flag that issue closeout must be deliberate.
 - Product-success axis: #184 is not closed here. Chosen: leave #184 open as a
   separate product-success issue because the maintainer has recent thinking that
-  is not yet organized. Rejected forcing a product-success definition from
-  engineering/usage metrics.
+  is not yet organized and the issue's source thread must be refreshed before
+  resolution. Rejected forcing a product-success definition from engineering or
+  usage metrics.
 - Engineering-success axis: #185 can close here only as necessary conditions,
   not sufficient product success. Chosen necessary-condition set: closeout
   correctness, validation confidence per unit cost, portable host behavior,
