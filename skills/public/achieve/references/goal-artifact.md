@@ -64,6 +64,21 @@ What the user can do to verify completion directly.
 
 ## Slice Log
 
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason.
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance.
+
 ## Off-Goal Findings
 
 ## Final Verification

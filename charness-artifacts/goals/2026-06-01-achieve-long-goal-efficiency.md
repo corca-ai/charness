@@ -1,6 +1,6 @@
 # Achieve Goal: Achieve long-goal efficiency and effectiveness
 
-Status: active
+Status: complete
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`
 
@@ -9,10 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — validate, critique, sync, and close out the improved
-  achieve surface.
-- Next action: commit the implementation bundle, then run final fresh-eye
-  critique and Auto-Retro closeout.
+- Current slice: complete.
+- Next action: none for this goal; user may inspect the changed achieve,
+  handoff auto-draft, and retro guidance surfaces.
 - Verification cadence: cheap deterministic checks before commit; slice-level
   focused tests plus surface validators; final broad quality and fresh-eye
   critique at closeout.
@@ -142,7 +141,7 @@ Make the achieve skill and the goal artifacts it creates help long-running, inte
 | 2 | Make verification cadence explicit in achieve guidance | The desired model is cheap commit-level checks plus heavier slice/final proof, not ad hoc repeated broad gates | `achieve` docs/reference updates; tests or validators ensuring generated artifacts carry cadence language | done |
 | 3 | Define bounded slice review packets for fresh-eye critique | Subagent critique should stay high-signal without requiring the full goal history every time | Reference/template updates; tests or example packet; critique guidance distinguishes slice packet vs final review | done |
 | 4 | Integrate efficiency metrics into After-phase auto-retro | Completion should surface token/tool/context pressure and propose improvements automatically | Retro/probe integration evidence; goal closeout docs require measured/proxy distinction and cached-input non-overclaim | done |
-| 5 | Validate, critique, sync, and publish the improved achieve surface | The changes affect public workflow behavior and checked-in plugin exports | Surface sync; focused tests; broad quality; fresh-eye critique; final goal complete; handoff refreshed if next pickup changes | in progress |
+| 5 | Validate, critique, sync, and publish the improved achieve surface | The changes affect public workflow behavior and checked-in plugin exports | Surface sync; focused tests; broad quality; fresh-eye critique; final goal complete; handoff refreshed if next pickup changes | done |
 
 ## Coordination Cues
 
@@ -180,7 +179,8 @@ Initial routing:
 - Why this approach: The user explicitly asked to make this an achieve goal;
   activation should not reopen the already-settled product/product-success
   boundaries.
-- Commits: pending
+- Commits: implementation commit `fe09061`; final artifact updates are carried
+  by the closeout commit that records this section.
 - What changed: Status flipped from `draft` to `active`; active operating frame
   seeded in this artifact.
 - Alternatives rejected: Shrinking the broad goal or treating cached input as
@@ -226,6 +226,35 @@ Initial routing:
   historical corpus breaker unless the goal explicitly asks for migration.
 - Metrics: full pytest run took 287.64s; slice closeout aggregate pytest took
   272.0s; host token/tool metrics still deferred to final retro/probe.
+
+### Slice 5: Final validation and closeout
+
+- Objective: Prove the improved achieve surface, run fresh-eye disposition
+  review, record auto-retro, and complete the goal artifact.
+- Why this approach: The changes affect public workflow behavior and plugin
+  exports, so closeout needs synced mirrors, deterministic gates, and review
+  evidence rather than only prose.
+- Commits: implementation commit `fe09061`; final artifact updates are carried
+  by the closeout commit that records this section.
+- What changed: Added final retro/probe/critique evidence, fixed the
+  `goal-artifact.md` shape example to include portability sections, and marked
+  this artifact complete.
+- Alternatives rejected: Running live Cautilus proof was rejected by the repo
+  planner result (`next_action: none`); dogfood/scenario review plus
+  deterministic validation was the required closeout path.
+- Targeted verification: focused pytest, markdown/link validation, skill
+  validation, packaging validation, and `check_goal_artifact.py` passed after
+  the fresh-eye doc-drift fix.
+- Test duplication pressure: n/a — closeout added artifacts and reference
+  wording only.
+- Critique: fresh-eye subagent Hume reported non-blocking findings; both were
+  dispositioned before complete status.
+- Off-goal findings: none.
+- Lessons carried forward: Closeout reviews should check documented artifact
+  shape against deterministic helper requirements, not only new behavior.
+- Metrics: host probe available at
+  `charness-artifacts/probe/2026-06-01-achieve-long-goal-efficiency.json`;
+  Codex audit exposes thread-wide pressure signals, not a goal-window total.
 
 ## Context Sources
 
@@ -310,19 +339,70 @@ _None yet._
 
 ## Final Verification
 
-_Not started._
+Retro: charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md
+Host log probe: charness-artifacts/probe/2026-06-01-achieve-long-goal-efficiency.json
+Disposition review: charness-artifacts/critique/2026-06-01-achieve-long-goal-efficiency-disposition.md
+
+- Implementation commit: `fe09061 Improve achieve long-goal operating frame`.
+- Generated achieve goals now include `## Active Operating Frame` near the top
+  with current slice, next action, verification cadence, slice review packet,
+  and history-boundary cues.
+- Handoff chunked-routing auto-draft also emits the active operating frame, so
+  sibling goal generators stay compatible with the new generated shape.
+- `achieve` guidance now separates cheap commit checks, higher-cost/fresh-eye
+  slice proof, and final broad/live proof without reducing the proof bar.
+- `achieve`/`retro` guidance now separates measured, proxy, and unavailable
+  efficiency signals and explicitly says cached input alone is not waste.
+- Dogfood/scenario review recorded in `docs/public-skill-dogfood.json`; no
+  maintained Cautilus scenario changed because routing and adapter behavior did
+  not change.
+- Plugin mirrors were synced with `python3 scripts/sync_root_plugin_manifests.py
+  --repo-root .`.
+- Verification run:
+  - `pytest -q tests/quality_gates tests/control_plane tests/test_*.py
+    tests/charness_cli/test_doctor_cache_selection.py
+    tests/charness_cli/test_tool_lifecycle.py` passed: 1930 passed, 4 skipped.
+  - `python3 scripts/run_slice_closeout.py --repo-root .
+    --ack-cautilus-skill-review` passed.
+  - `pytest -q tests/quality_gates/test_goal_artifact_lib.py
+    tests/quality_gates/test_achieve_before_activation.py
+    tests/test_handoff_chunker_auto_draft.py` passed.
+  - `python3 scripts/validate_skills.py --repo-root .` passed.
+  - `python3 scripts/validate_packaging.py --repo-root .` and
+    `python3 scripts/validate_packaging_committed.py --repo-root .` passed.
+  - `./scripts/check-markdown.sh` and `python3 scripts/check_doc_links.py
+    --repo-root .` passed.
+- Non-claims: no live GitHub issue mutation, release, remote CI, product
+  success, or universal host behavior was proven. Host metrics are local
+  evidence; the Codex probe covers the broader rollout thread and should be read
+  as pressure evidence, not exact per-goal cost.
 
 ## User Verification Instructions
 
-1. Review this artifact and confirm the goal is solving the right problem:
-   long-goal operating efficiency, not reducing the proof bar.
-2. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py
+1. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py
    --repo-root . --goal-path
-   charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md
-   --pursue-ready`.
-3. Activate with:
-   `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`.
+   charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`.
+2. Generate a throwaway goal with `skills/public/achieve/scripts/upsert_goal.py`
+   in a temp repo and confirm `## Active Operating Frame` appears before
+   `## Goal`.
+3. Inspect `skills/public/achieve/references/lifecycle.md` for the verification
+   cadence and bounded slice review packet language.
+4. Inspect `skills/public/retro/references/phase-aware-efficiency.md` and
+   confirm cached input is treated as context pressure, not standalone waste.
 
 ## Auto-Retro
 
-_Not started._
+- applied: Generated achieve goals now carry `## Active Operating Frame`, while
+  historical artifacts remain compatible because this was not added to
+  `REQUIRED_SECTIONS`.
+- applied: Sibling goal generator compatibility was fixed by updating handoff
+  chunked-routing auto-draft and pinning it with tests.
+- applied: Verification cadence and bounded slice review packets are now stated
+  in achieve lifecycle/reference guidance.
+- applied: Efficiency retro guidance now separates measured/proxy/unavailable
+  signals and says cached input alone is not waste.
+- applied: Dogfood/scenario-review decisions for changed public skills were
+  recorded in `docs/public-skill-dogfood.json` before acknowledging slice
+  closeout.
+- applied: Fresh-eye review found two non-blocking closeout issues; both were
+  fixed before completion.

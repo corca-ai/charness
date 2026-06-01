@@ -122,8 +122,9 @@ lifecycle instead of starting a new one.
 - a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with a
   top-level `## Active Operating Frame` plus the required audit sections (Goal,
   Non-Goals, Boundaries, User Acceptance, Agent Verification Plan, Slice Plan,
-  Slice Log, Off-Goal Findings, Final Verification, User Verification
-  Instructions, Auto-Retro)
+  Slice Log, Context Sources, Interview Decisions, Plan Critique Findings,
+  Off-Goal Findings, Final Verification, User Verification Instructions,
+  Auto-Retro)
 - `Status` is one of draft / active / blocked / complete
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
