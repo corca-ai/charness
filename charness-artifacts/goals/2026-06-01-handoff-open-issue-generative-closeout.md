@@ -1,6 +1,6 @@
 # Achieve Goal: Handoff and open issue generative closeout
 
-Status: active
+Status: complete
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`
 
@@ -155,7 +155,7 @@ reason.
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | complete |
 | 5 | Make usage episodes useful or explicitly narrow their promise (#243) | Telemetry is collected but has no consumer; this can observe necessary engineering-success conditions, not prove product success | Usage report/consumer and capture-gap signal tied to closeout correctness, validation cost, portability, continuity, or decision-before-automation; or a documented decision to narrow/remove the surface | complete |
 | 6 | Record and apply AI/ML engineering necessary-success conditions (#185), while leaving product success (#184) open | #185 can be closed by engineering principles and supporting implementation; #184 needs separate product thinking not settled in this goal | Decision artifact for necessary engineering success conditions; optional #243 implementation linkage; #185 closeout row; #184 leave-open row: product-success frame pending maintainer synthesis and source-thread refresh | complete |
-| 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | pending |
+| 7 | Final carrier: verify, critique, retro, handoff refresh, publish, and live issue close/comment | Only after rows are resolved should the run mutate live GitHub state or publish | Final gates; goal complete; retro dispositions; handoff refreshed; close keywords/comments/PR body match matrix; push/PR and live issue actions completed or explicitly blocked | complete |
 
 ## Coordination Cues
 
@@ -312,6 +312,20 @@ truth._
 - Lessons carried forward: When engineering-success and product-success issues share source material, close the engineering investigation only with explicit necessary-condition/non-claim language; leave the product-success issue open until the product frame and source freshness are ready.
 - Metrics: No slice-closeout usage episode was emitted for this docs/artifact-only slice; `report_usage_episodes.py` showed the local capture denominator at 316 records during verification.
 
+### Slice 7: Final carrier and live issue closeout
+
+- Objective: Verify the accumulated closeout, refresh handoff, publish the final carrier, and mutate live GitHub issue state only for the resolved rows.
+- Why this approach: The goal deliberately deferred live issue mutation until the matrix, local proof, carrier validation, and fresh-eye review were complete.
+- Commits: `77350e9 Carry final open issue closeout`
+- What changed: Added final carrier artifact `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`; refreshed `docs/handoff.md` for the actual next pickup; pushed the final carrier to `origin/main`; let GitHub close #272/#265/#259/#258/#252/#243/#241/#237/#236/#185 from the direct-commit close keywords; commented on #261 and #184 with leave-open reasons.
+- Alternatives rejected: Did not close #261 because the mutation-standard policy boundary remains undecided. Did not close #184 because product success needs maintainer synthesis and a fresh source-thread read. Did not cut a release or claim remote CI proof.
+- Targeted verification: PASS: final `./scripts/run-quality.sh --read-only` reported 69 passed / 0 failed in 46.3s and surfaced the usage-episode advisory report; PASS: `issue_tool.py validate-closeout-draft` accepted the intended close set and carrier fields; PASS: `issue_tool.py verify-closeout --carrier direct-commit --commit-ref HEAD` accepted the direct-commit carrier before publication; PASS: final fresh-eye reviewer Ptolemy reported no remaining blockers after close-keyword, artifact-tracking, and handoff-refresh fixes; PASS: after publication, `issue_tool.py verify-closeout --commit-ref 77350e9 --expect-state CLOSED` verified #272/#265/#259/#258/#252/#243/#241/#237/#236/#185 as CLOSED; PASS: live `gh issue view` verified #261 and #184 remain OPEN with carry-forward comments.
+- Test duplication pressure: No tests added in this slice. Final validation reused the broad quality gate, issue closeout verifier, markdown/doc validators, goal validator, and live issue state checks.
+- Critique: Ptolemy first found missing close keywords, an untracked final carrier artifact, and stale handoff pickup. The final carrier body now contains exact close keywords for the close set, the artifact is committed, and `docs/handoff.md` points to the final closeout state. Follow-up review reported no blockers.
+- Off-goal findings: None. The only remaining live issues are intentional carry-forward rows: #261 for mutation-standard policy and #184 for product success.
+- Lessons carried forward: Final carrier closeout must be checked twice: once as a local carrier/draft, and again against live issue state after push. Leave-open rows need live comments and state proof, not only matrix text.
+- Metrics: Final usage-episode advisory reported 317 records, 42 session groups, 314/317 records with `session_id`, 126 T-signal records, and explicit capture gaps: 3 ungrouped records, 317 missing-feedback records, single-entry-point capture, and explicit-request-only capture.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -354,6 +368,13 @@ the originating context by following them in order.
   --branch` reports `main...origin/main [ahead 17]`; the implementation commit
   is `aed6470 Record AI ML engineering success conditions`. These local commits
   remain final-carrier material and are not published early.
+- Final carrier proof: `git status --short --branch` after publication reports
+  `main...origin/main`; the final carrier commit is `77350e9 Carry final open
+  issue closeout`. Live issue list after the carrier shows only #261 and #184
+  open. `issue_tool.py verify-closeout --commit-ref 77350e9 --expect-state
+  CLOSED` verified #272/#265/#259/#258/#252/#243/#241/#237/#236/#185 as closed.
+  `gh issue view 261` and `gh issue view 184` verified both carry-forward
+  issues remain open with comments posted on 2026-06-01.
 - `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md` for the
   completed tranche and its explicit non-claims around live GitHub closure.
 - `charness-artifacts/retro/recent-lessons.md` for the closeout-keyword miss,
@@ -475,23 +496,85 @@ _None yet._
 
 ## Final Verification
 
-_Not started._
+Self-verification on 2026-06-01 KST:
+
+- PASS: `./scripts/run-quality.sh --read-only` completed the final broad gate
+  with 69 passed / 0 failed in 46.3s.
+- PASS: `python3 skills/public/issue/scripts/issue_tool.py
+  validate-closeout-draft ... --body-file
+  charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md` verified the
+  final carrier draft for #272/#265/#259/#258/#252/#243/#241/#237/#236/#185.
+- PASS: `python3 skills/public/issue/scripts/issue_tool.py verify-closeout
+  --carrier direct-commit --commit-ref 77350e9 --expect-state CLOSED` verified
+  all intended close rows as CLOSED on GitHub after publication.
+- PASS: `gh issue list --state open --limit 100 --json
+  number,title,updatedAt,url` returned only #261 and #184 from the activated
+  issue set.
+- PASS: `gh issue view 261 --json number,state,url,comments` and
+  `gh issue view 184 --json number,state,url,comments` verified both issues are
+  OPEN and carry the final leave-open comments.
+- PASS: final fresh-eye reviewer Ptolemy reported no blockers after carrier,
+  handoff, and tracking fixes.
+- PASS: `docs/handoff.md` now points to the completed final carrier state
+  instead of the stale Slice 4 pickup.
+- PASS: `git status --short --branch` after final carrier publication reported
+  `main...origin/main`.
+
+Retro: charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md
+Host log probe: charness-artifacts/probe/2026-06-01-open-issue-generative-closeout.json
+Disposition review: charness-artifacts/critique/2026-06-01-open-issue-generative-closeout-disposition.md
+
+Non-claims:
+
+- No release was cut.
+- No remote CI result is claimed here; local deterministic gates and live issue
+  state are the proven surfaces.
+- #261 and #184 are intentionally still open.
 
 ## User Verification Instructions
 
-1. Review this file's issue list and remaining slice order, especially Slices
-   6-7.
-2. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root .
-   --goal-path
+1. Run `python3 skills/public/achieve/scripts/check_goal_artifact.py
+   --repo-root . --goal-path
    charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`.
-3. To continue the active goal, resume at Slice 7 final carrier: final gates,
-   critique, retro, handoff refresh, publish/PR decision, and live issue
-   close/comment. Do not re-run activation or re-open settled decisions from
-   Slices 0-6 unless live tracker state has changed.
-4. Expect the agent to stop for maintainer decisions around product-success
-   metrics for #184, release surfaces, accepting a lower mutation/quality
-   standard, or publishing/live GitHub mutation before the final carrier.
+2. Run `gh issue list --state open --limit 100 --json number,title,url` and
+   confirm only #261 and #184 remain open from the activated issue set.
+3. Inspect `git log --oneline origin/main..HEAD`; it should be empty after the
+   final publish.
+4. Continue future work from #261 for mutation-standard policy and #184 for
+   product success. Do not reopen this goal unless a final-carrier proof above
+   is found to be false.
 
 ## Auto-Retro
 
-_Not started._
+Mode: session.
+
+Evidence: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`,
+`charness-artifacts/probe/2026-06-01-open-issue-generative-closeout.json`, final
+carrier `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`, and
+the live GitHub close/open state recorded above.
+
+Waste: the main cost was coordination around 12 issue dispositions, especially
+the boundary between #185 engineering success and #184 product success. Keeping
+that boundary explicit prevented an overbroad closeout.
+
+Critical decisions: #185 closed only as necessary AI/ML engineering conditions;
+#184 stayed open for product-success synthesis and source refresh; #261 stayed
+open for mutation-standard policy; live GitHub mutation waited until final
+carrier proof.
+
+Next improvements:
+
+- workflow: applied — run `issue_tool.py verify-closeout --expect-state CLOSED`
+  after final push, not only pre-push carrier validation.
+- workflow: applied — verify leave-open issue comments and OPEN state before
+  marking a broad issue goal complete.
+- memory: applied — durable retro and disposition review artifacts were written
+  for this goal.
+
+Sibling Search: n/a — the issue closeout verifier and goal closeout floor
+already cover the reusable sibling class; this run reinforced ordering rather
+than exposing a new missing validator.
+
+Retro dispositions: applied — all surfaced retro improvements were applied in
+this run through live closeout verification, leave-open state checks, and the
+persisted retro/disposition artifacts.

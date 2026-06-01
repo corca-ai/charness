@@ -3,7 +3,7 @@
 ## Current Focus
 
 - The reviewed unit is the `v0.13.2` push and the follow-up user correction that the commits resolving GitHub issues should have carried close keywords. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
-- This session pursued the active achieve goal `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`, covering the closed autonomous tranche for #268, #269, #264, #270, and the mechanical portion of #265/#261. (source: `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`)
+- This retro covers the 2026-06-01 goal that turned the active handoff plus all 12 open issues into a sequenced closeout run. (source: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - Add a `commit-msg` hook, not a `pre-commit` hook, that recognizes staged issue-closeout artifacts and blocks the commit when the message lacks required close keywords and ledger fields. `pre-commit` can only flag staged context; it cannot validate the final commit message. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
 - Add a small repo-owned survivor inventory helper that parses Cosmic Ray dump outcome casing correctly and emits by-file/by-operator/by-line summaries without ad hoc parsing. (source: `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`)
 - Add release-helper preflight as a specialized instance of the same invariant: when the helper is about to create a direct-to-default commit for a resolved tranche, empty `close_issue_numbers` should require an explicit "no issues close" decision. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
-- Before any task-completing commit/PR that resolves issues, build a short issue closeout matrix: `close`, `leave open`, `reason`, and map every `close` row to the carrier body. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
+- applied — require leave-open rows to receive live comments and state checks before marking the goal complete. (source: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`)
 
 ## Selection Policy
 
@@ -28,4 +28,5 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`
+- `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`
 - `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`

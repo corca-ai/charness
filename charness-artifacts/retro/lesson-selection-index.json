@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 93,
-  "candidate_count": 582,
+  "source_artifact_count": 94,
+  "candidate_count": 586,
   "top_candidates": [
     {
       "candidate_id": "current_focus:9b8e24ba69d0",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d6daffb39749",
+      "kind": "current_focus",
+      "lesson": "This retro covers the 2026-06-01 goal that turned the active handoff plus all 12 open issues into a sequenced closeout run.",
+      "normalized_key": "this retro covers the 2026 06 01 goal that turned the active handoff plus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -109,6 +129,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b9ad7b1f9bf6",
+      "kind": "next_improvement",
+      "lesson": "applied — require leave-open rows to receive live comments and state checks before marking the goal complete.",
+      "normalized_key": "applied require leave open rows to receive live comments and state checks before marking",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:569e00b5bead",
+      "kind": "next_improvement",
+      "lesson": "applied — this retro artifact and the goal Auto-Retro bind the closeout lesson to durable artifacts.",
+      "normalized_key": "applied this retro artifact and the goal auto retro bind the closeout lesson to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f652e9512998",
+      "kind": "next_improvement",
+      "lesson": "applied — use `issue_tool.py verify-closeout --expect-state CLOSED` after final push, not only draft/carrier validation before push.",
+      "normalized_key": "applied use issue tool py verify closeout expect state closed after final push not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -173,86 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:956f837c0df0",
-      "kind": "next_improvement",
-      "lesson": "Keep this retro as the recurrence marker for \"avoid-all-closeout\" overcorrection after a reviewer warns not to close some issues.",
-      "normalized_key": "keep this retro as the recurrence marker for avoid all closeout overcorrection after a",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e9ef41b4a903",
-      "kind": "next_improvement",
-      "lesson": "Teach critique packets to include an explicit \"issue closeout subset\" field, not just generic warnings about live issue mutation.",
-      "normalized_key": "teach critique packets to include an explicit issue closeout subset field not just generic",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:55a6e07e9a43",
-      "kind": "repeat_trap",
-      "lesson": "The #265/#261 mutation slice reran the same 514-mutant scoped campaign several times after incremental test additions. This was defensible for proof, but it was the dominant local time cost.",
-      "normalized_key": "the 265 261 mutation slice reran the same 514 mutant scoped campaign several times",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:89247ee6274b",
-      "kind": "repeat_trap",
-      "lesson": "The final answer claimed \"issue close was not requested\" even though the workflow expectation was that resolved issue closeout should be carried by the release commit.",
-      "normalized_key": "the final answer claimed issue close was not requested even though the workflow expectation",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-          "date": "2026-06-01",
-          "section": "Waste"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d6daffb39749",
+      "kind": "current_focus",
+      "lesson": "This retro covers the 2026-06-01 goal that turned the active handoff plus all 12 open issues into a sequenced closeout run.",
+      "normalized_key": "this retro covers the 2026 06 01 goal that turned the active handoff plus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Context"
         }
@@ -351,6 +371,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b9ad7b1f9bf6",
+      "kind": "next_improvement",
+      "lesson": "applied — require leave-open rows to receive live comments and state checks before marking the goal complete.",
+      "normalized_key": "applied require leave open rows to receive live comments and state checks before marking",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:569e00b5bead",
+      "kind": "next_improvement",
+      "lesson": "applied — this retro artifact and the goal Auto-Retro bind the closeout lesson to durable artifacts.",
+      "normalized_key": "applied this retro artifact and the goal auto retro bind the closeout lesson to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f652e9512998",
+      "kind": "next_improvement",
+      "lesson": "applied — use `issue_tool.py verify-closeout --expect-state CLOSED` after final push, not only draft/carrier validation before push.",
+      "normalized_key": "applied use issue tool py verify closeout expect state closed after final push not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
