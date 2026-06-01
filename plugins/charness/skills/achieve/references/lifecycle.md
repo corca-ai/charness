@@ -192,8 +192,13 @@ late blocker.
 
 Fresh-eye slice critique should receive a bounded slice review packet rather
 than the entire historical goal by default. Include the slice intent, changed
-files, expected invariants, tests/proof already run, non-claims, and the
-specific reviewer questions. Final closeout review can then read across slices
+files and owning/generated surfaces, expected invariants, tests/proof already
+run, non-claims, out-of-scope lines, and the specific reviewer questions.
+Critique cadence is risk-boundary based, not commit-based: one standalone
+fresh-eye critique covers a coherent substantial slice or bundle, and another is
+needed only when later edits introduce a new workflow, prompt, public-skill,
+validator, export, release, issue-closeout, compatibility, host-proof, rename,
+deletion, or migration risk. Final closeout review can then read across slices
 for cross-slice drift and Auto-Retro disposition instead of redoing every slice
 review.
 

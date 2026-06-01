@@ -21,6 +21,9 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     autonomous_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "autonomous-trigger.md"
     ).read_text(encoding="utf-8")
+    cadence_text = (
+        ROOT / "skills" / "public" / "critique" / "references" / "cadence.md"
+    ).read_text(encoding="utf-8")
     handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
         encoding="utf-8"
     )
@@ -71,6 +74,31 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "Proceed autonomously" in autonomous_text
     assert "Ask one concise clarifying question" in autonomous_text
     assert "Do not ask the user to provide a change artifact merely because none was\nsupplied" in autonomous_text
+    assert "risk boundary, not by commit count" in cadence_text
+    assert "The commit is not the review unit." in cadence_text
+    assert "Small local-risk slice" in cadence_text
+    assert "Substantial slice or bundle" in cadence_text
+    assert "Final closeout" in cadence_text
+    assert "changed files and owning/generated surfaces" in cadence_text
+    assert "Counterweight triage stays mandatory" in cadence_text
+    assert "`references/cadence.md`" in skill_text
+    for risk_class in (
+        "workflow",
+        "prompt",
+        "public-skill",
+        "validator",
+        "export",
+        "release",
+        "issue-closeout",
+        "compatibility",
+        "host-proof",
+        "install/update",
+        "rename",
+        "deletion",
+        "design-lock",
+        "migration",
+    ):
+        assert risk_class in cadence_text
 
 
 def test_spec_and_narrative_preserve_rejected_alternatives() -> None:

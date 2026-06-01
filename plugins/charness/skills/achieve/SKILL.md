@@ -69,8 +69,8 @@ lifecycle instead of starting a new one.
      `## Slice Log` remain the archive
    - before a substantial slice, state its objective and expected evidence
    - for fresh-eye slice critique, hand the reviewer a bounded slice packet:
-     intent, changed files, expected invariants, tests/proof, non-claims, and
-     questions
+     intent, changed files and owning/generated surfaces, expected invariants,
+     tests/proof, non-claims, out-of-scope lines, and questions
    - append slice reports with `append_slice_log.py`; when tests are added or
      expanded, include a cheap duplicate-pressure sample via `--test-pressure`
    - use cheap deterministic checks at commit boundaries; use higher-cost proof

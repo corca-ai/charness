@@ -36,6 +36,8 @@ def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     assert gal.check_goal(text)["ok"] is True
     assert text.index("## Active Operating Frame") < text.index("## Goal")
     assert "Verification cadence: cheap deterministic checks at commit boundaries" in text
+    assert "changed\n  files and owning/generated surfaces" in text
+    assert "out-of-scope lines" in text
     assert "History boundary: keep this frame current" in text
 
     bad = gal.check_goal("# Achieve Goal: T\n\nStatus: bogus\n\n## Goal\n")

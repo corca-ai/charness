@@ -56,12 +56,17 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 ## Critique Discipline
 
 - Every task-completing repo change runs critique before closeout. Scale the
-  pass, not the obligation.
+  pass, not the obligation; the review unit is the risk boundary or meaningful
+  slice, not every commit.
 - Small local-risk slices may use a short scoped critique artifact that names
   the decision, the likely misread, counterweight triage, and the next move.
 - Non-trivial design, deletion, rename, release, workflow, compatibility,
   install/update, host-proof, prompt-surface, public-skill, validator, or export
-  decisions use the standalone `critique` skill.
+  decisions use the standalone `critique` skill once per substantial slice or
+  bundle, and rerun it only when later edits introduce a new risk boundary.
+- Slice fresh-eye review consumes a bounded packet: intent, changed files and
+  owning/generated surfaces, expected invariants, tests/proof, non-claims,
+  out-of-scope lines, and reviewer questions.
 - `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record

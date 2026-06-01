@@ -9,14 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 closed; Slice 2 critique cadence is next.
-- Next action: encode slice-level critique cadence without turning bounded
-  review into per-commit ritual.
+- Current slice: Slice 2 critique cadence is complete; Slice 3 invariant-first
+  bug review is next.
+- Next action: encode invariant-first review guidance without coupling it to
+  #275/#276-specific filenames or issue numbers.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed
-  files, expected invariants, tests/proof, non-claims, and reviewer questions.
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to
   `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
 
@@ -129,7 +131,7 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 | --- | --- | --- | --- | --- |
 | 0 | Discuss and lock activation choices | The user explicitly questioned overuse of `find-skills`, overuse of subagents, and over-coupled fixes | `Discuss before activation` has concrete decisions and this artifact passes `--pursue-ready` | completed |
 | 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | completed |
-| 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | planned |
+| 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | completed |
 | 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | planned |
 | 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | planned |
 | 5 | Validate, critique, and close out | Changes affect operating contracts and must not silently increase process cost | Surface sync if needed, focused/broad gate as appropriate, bounded final critique, complete goal artifact, handoff refreshed | planned |
@@ -207,6 +209,16 @@ goal:
   Folded blockers for GitHub issue URL / repo-qualified issue refs, overly broad
   planning-text close-keyword scanning, stale cutoff docs, handoff state, active
   goal proof, and context-only issue template guidance.
+- 2026-06-02 Slice 2 complete: encoded critique cadence by risk boundary rather
+  than commit count in `docs/conventions/operating-contract.md`,
+  `skills/public/critique/references/cadence.md`, `skills/public/critique/SKILL.md`,
+  and the `achieve` lifecycle/scaffold packet guidance. Fresh-eye review
+  consumed
+  `charness-artifacts/critique/2026-06-02-critique-cadence-slice-packet.md`
+  and is recorded at
+  `charness-artifacts/critique/2026-06-02-critique-cadence-slice.md`; blockers
+  for stale packet wording, incomplete risk-class symmetry, active-goal status,
+  handoff pickup state, and package durability were folded.
 
 ## Context Sources
 
@@ -312,6 +324,21 @@ Issues or deferred findings discovered during the run.
   `next_action: none`; `python3 scripts/suggest_public_skill_dogfood.py
   --repo-root . --skill-id achieve --json` confirmed `achieve` remains the
   relevant hitl-recommended dogfood scenario.
+- 2026-06-02 Slice 2 focused proof: `pytest -q
+  tests/quality_gates/test_critique_skill.py
+  tests/quality_gates/test_goal_artifact_lib.py`, `validate_skills`,
+  `check-markdown.sh`, `validate_public_skill_dogfood`, critique artifact
+  validation, critique packet validation, and active-goal
+  `check_goal_artifact.py` passed after folding fresh-eye blockers.
+- 2026-06-02 Slice 2 changed-surface aggregate passed with
+  `python3 scripts/run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review`: packaging, committed packaging, doc links,
+  command docs, markdown, secrets, Cautilus proof policy, skill validation,
+  py_compile, ownership overlap, public-skill validation, public-skill dogfood,
+  critique artifacts, ruff, Python lengths, attention-state visibility, broad
+  pytest, and agent-browser runtime guard all passed. Cautilus planner reported
+  `next_action: none`; `achieve` and `critique` remain hitl-recommended dogfood
+  scenarios and their checked-in dogfood notes were updated.
 
 ## User Verification Instructions
 

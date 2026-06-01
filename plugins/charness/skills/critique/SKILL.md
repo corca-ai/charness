@@ -16,11 +16,8 @@ target reference shapes the angle distribution and output. Decision pre-mortem
 rename critique, and spec critique reuse the same substrate.
 
 Task-completing repo work always records critique before closeout. Scale the
-pass, not the obligation: small local-risk slices may use a short scoped
-critique in the caller's closeout artifact, while non-trivial design,
-deletion, rename, release, workflow, compatibility, install/update,
-host-proof, prompt-surface, public-skill, validator, or export changes use
-this standalone skill.
+pass, not the obligation: use the risk boundary or meaningful slice as the
+review unit, not every commit. See `references/cadence.md`.
 
 When this standalone `critique` skill runs, it always means a fresh bounded
 subagent review. `bounded` limits scope and time box, not execution mode. There
@@ -190,6 +187,7 @@ actually ran.
 - `references/release-critique.md`
 - `references/rename-critique.md`
 - `references/spec-critique.md`
+- `references/cadence.md`
 - `references/autonomous-trigger.md`
 - `references/confirmed-input-over-anchoring.md`
 - `references/angle-selection.md`

@@ -33,7 +33,8 @@ runs the activation command.
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed
-  files, expected invariants, tests/proof, non-claims, and reviewer questions.
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to
   `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
 
