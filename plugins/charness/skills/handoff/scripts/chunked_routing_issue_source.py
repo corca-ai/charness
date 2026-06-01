@@ -71,6 +71,7 @@ DEFAULT_ISSUE_LIMIT = _backend.DEFAULT_ISSUE_LIMIT
 GH_LIST_OPEN_ARGS = _backend.GH_LIST_OPEN_ARGS
 _load_issue_module = _backend._load_issue_module
 list_open_issues = _backend.list_open_issues
+LAST_ISSUE_SOURCE_DIAGNOSTIC: dict[str, Any] | None = None
 
 
 def _label_slug(name: str) -> str:
@@ -235,22 +236,36 @@ def build_issue_entries(
     resolution/listing step fails. Indices start at ``start_index`` so the
     union with handoff entries stays collision-free.
     """
+    global LAST_ISSUE_SOURCE_DIAGNOSTIC
+    LAST_ISSUE_SOURCE_DIAGNOSTIC = None
     config = load_issue_source_config(repo_root)
     if not config["enabled"]:
         return []
+    stage = "load_issue_modules"
+    provider_attempted = False
     try:
         issue_resolver = _load_issue_module(repo_root, "resolve_adapter")
         issue_runtime = _load_issue_module(repo_root, "issue_runtime")
+        stage = "load_issue_adapter"
         adapter = issue_resolver.load_adapter(repo_root)
         adapter_data = adapter.get("data", {})
         backend = adapter_data.get("issue_backend") or {"id": "gh", "binary": "gh", "commands": None}
+        stage = "resolve_target"
         target = issue_runtime.resolve_target(repo_root, config["repo"], adapter_data)
         repo_full = target["full_name"]
         run = runner if runner is not None else issue_runtime._backend_json
+        stage = "list_open_issues"
+        provider_attempted = True
         issues = list_open_issues(
             repo_full, backend=backend, limit=config["limit"], runner=run
         )
-    except Exception:
+    except Exception as exc:
+        LAST_ISSUE_SOURCE_DIAGNOSTIC = {
+            "stage": stage,
+            "provider_attempted": provider_attempted,
+            "type": type(exc).__name__,
+            "message": str(exc),
+        }
         return []
 
     entries: list[HandoffEntry] = []

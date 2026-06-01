@@ -135,6 +135,17 @@ pursue and route the operator to the Before-phase (`/achieve @<artifact>`). Do
 **not** shape the goal inside `/goal` — that would put shaping back into the
 pursue path, the exact responsibility blur #247 removes.
 
+### Consequential discussion before activation (#276)
+
+Structural readiness is not enough when the goal contains consequential
+defaults. Before reporting an artifact as ready for `/goal`, surface a
+non-empty `Discuss before activation:` summary when `Boundaries`,
+`Agent Verification Plan`, `Interview Decisions`, or `Plan Critique Findings`
+contain decisions about live/prod proof, issue close/split, broad bundled scope,
+irreversible side effects, or proof-level non-claims. The deterministic
+`--pursue-ready` gate distinguishes this from placeholder shaping: such a goal
+is shaped, but not operator-ready, until the discussion summary is visible.
+
 ## During
 
 The goal artifact becomes the working scratchpad for the active run. Do not use

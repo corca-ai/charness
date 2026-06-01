@@ -49,21 +49,20 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 def _load_goal_artifact_lib():
     """Import the achieve goal-artifact library without modifying it.
 
-    Walks up to find ``skills/public/achieve/scripts/goal_artifact_lib.py``.
-    Importing is allowed by the slice-5 Standalone-Usefulness Invariant
-    (the gate is on file mutation, not on read/import).
+    Supports both source-tree ``skills/public/achieve`` and installed plugin
+    ``skills/achieve`` layouts. Importing is allowed by the slice-5
+    Standalone-Usefulness Invariant (the gate is on mutation, not read/import).
     """
     here = Path(__file__).resolve()
+    rels = (
+        Path("skills/public/achieve/scripts/goal_artifact_lib.py"),
+        Path("skills/achieve/scripts/goal_artifact_lib.py"),
+    )
     for ancestor in here.parents:
-        candidate = (
-            ancestor
-            / "skills"
-            / "public"
-            / "achieve"
-            / "scripts"
-            / "goal_artifact_lib.py"
-        )
-        if candidate.is_file():
+        for rel in rels:
+            candidate = ancestor / rel
+            if not candidate.is_file():
+                continue
             spec = importlib.util.spec_from_file_location(
                 "achieve_goal_artifact_lib", candidate
             )
@@ -73,7 +72,8 @@ def _load_goal_artifact_lib():
             spec.loader.exec_module(module)
             return module
     raise ImportError(
-        "skills/public/achieve/scripts/goal_artifact_lib.py not found"
+        "achieve goal_artifact_lib.py not found in source-tree "
+        "skills/public/achieve/scripts or installed skills/achieve/scripts layout"
     )
 
 

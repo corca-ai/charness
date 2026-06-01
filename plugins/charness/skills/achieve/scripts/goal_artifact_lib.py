@@ -13,25 +13,27 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_sibling_closeout_evidence():
+def _load_sibling(module_name: str):
     spec = importlib.util.spec_from_file_location(
-        "goal_artifact_closeout_evidence",
-        Path(__file__).resolve().parent / "goal_artifact_closeout_evidence.py",
+        module_name,
+        Path(__file__).resolve().parent / f"{module_name}.py",
     )
     if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_closeout_evidence.py not found beside goal_artifact_lib.py")
+        raise ImportError(f"{module_name}.py not found beside goal_artifact_lib.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_closeout = _load_sibling_closeout_evidence()
+_closeout = _load_sibling("goal_artifact_closeout_evidence")
+_discussion = _load_sibling("goal_artifact_discussion")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
 NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
 parse_closeout_evidence = _closeout.parse_closeout_evidence
 check_complete_evidence = _closeout.check_complete_evidence
 derive_goal_tokens = _closeout.derive_goal_tokens
 narration_sections_present = _closeout.narration_sections_present
+discussion_readiness = _discussion.discussion_readiness
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -266,15 +268,21 @@ def pursue_readiness(text: str) -> dict[str, Any]:
     rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
     """
     placeholders = _UNSHAPED_MARKER.findall(_mask_fences(text))
-    ready = not placeholders
+    discussion = discussion_readiness(text)
+    ready = not placeholders and discussion["discussion_ready"]
     reason = (
-        "shaped: no Before-phase placeholders remain; safe to pursue via `/goal`"
+        "shaped: no Before-phase placeholders remain and activation decisions are surfaced; safe to pursue via `/goal`"
         if ready
-        else f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
-        "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
-        "only and does not shape (#247)"
+        else (
+            f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
+            "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
+            "only and does not shape (#247)"
+            if placeholders
+            else "operator discussion required: consequential activation decisions are present "
+            "but no non-empty `Discuss before activation:` summary was found (#276)"
+        )
     )
-    return {"pursue_ready": ready, "placeholder_count": len(placeholders), "reason": reason}
+    return {"pursue_ready": ready, "placeholder_count": len(placeholders), "reason": reason, **discussion}
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:

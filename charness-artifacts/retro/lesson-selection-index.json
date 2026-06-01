@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-01",
-  "source_artifact_count": 98,
-  "candidate_count": 613,
+  "source_artifact_count": 99,
+  "candidate_count": 618,
   "top_candidates": [
     {
       "candidate_id": "current_focus:3e4a1d24f386",
@@ -115,6 +115,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:630601e56c70",
+      "kind": "current_focus",
+      "lesson": "This session continued the reviewer-tier closeout goal, added #276 at the operator's request, fixed the #275 installed plugin layout regression, and added an achieve activation-discussion gate for #276.",
+      "normalized_key": "this session continued the reviewer tier closeout goal added 276 at the operator s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5bf706d26b6b",
       "kind": "current_focus",
       "lesson": "This session pursued the active achieve goal `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`, covering the closed autonomous tranche for #268, #269, #264, #270, and the mechanical portion of #265/#261.",
@@ -175,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b716ed6b5cdd",
+      "kind": "next_improvement",
+      "lesson": "add a small changed-surface note or validator hint for attention-state metadata edits that says plugin export sync is required.",
+      "normalized_key": "add a small changed surface note or validator hint for attention state metadata edits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b691fa268238",
       "kind": "next_improvement",
       "lesson": "Add a small repo-owned survivor inventory helper that parses Cosmic Ray dump outcome casing correctly and emits by-file/by-operator/by-line summaries without ad hoc parsing.",
@@ -209,46 +249,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1bd299ad031b",
-      "kind": "next_improvement",
-      "lesson": "after a fresh-eye review reports any Act Before Ship item, pause broad verification until each blocker has a targeted regression and a short re-run proves the blocker is closed.",
-      "normalized_key": "after a fresh eye review reports any act before ship item pause broad verification",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:567b0a664b19",
-      "kind": "next_improvement",
-      "lesson": "applied: Do not make a new generated goal section a global historical `check_goal` requirement without an explicit migration/grandfather policy. This run narrowed `Active Operating Frame` to generated-shape tests and kept old artifacts compatible.",
-      "normalized_key": "applied do not make a new generated goal section a global historical check goal",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -357,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:630601e56c70",
+      "kind": "current_focus",
+      "lesson": "This session continued the reviewer-tier closeout goal, added #276 at the operator's request, fixed the #275 installed plugin layout regression, and added an achieve activation-discussion gate for #276.",
+      "normalized_key": "this session continued the reviewer tier closeout goal added 276 at the operator s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5bf706d26b6b",
       "kind": "current_focus",
       "lesson": "This session pursued the active achieve goal `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`, covering the closed autonomous tranche for #268, #269, #264, #270, and the mechanical portion of #265/#261.",
@@ -417,6 +437,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b716ed6b5cdd",
+      "kind": "next_improvement",
+      "lesson": "add a small changed-surface note or validator hint for attention-state metadata edits that says plugin export sync is required.",
+      "normalized_key": "add a small changed surface note or validator hint for attention state metadata edits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b691fa268238",
       "kind": "next_improvement",
       "lesson": "Add a small repo-owned survivor inventory helper that parses Cosmic Ray dump outcome casing correctly and emits by-file/by-operator/by-line summaries without ad hoc parsing.",
@@ -471,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:26d218ac963e",
+      "kind": "next_improvement",
+      "lesson": "after any metadata file under `skills/public/quality/references/` changes, run `sync_root_plugin_manifests.py` before broad pytest, even if the change appears unrelated to packaging.",
+      "normalized_key": "after any metadata file under skills public quality references changes run sync root plugin",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }
@@ -873,6 +933,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f2cf7b59fe96",
+      "kind": "repeat_trap",
+      "lesson": "#276 was added mid-closeout after #275 broad verification had already passed, forcing another full verification cycle. This was correct for scope, but it made the late-stage verification cost explicit.",
+      "normalized_key": "276 was added mid closeout after 275 broad verification had already passed forcing another",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d57f28b0c563",
+      "kind": "repeat_trap",
+      "lesson": "Broad pytest was rerun before a later metadata change was mirrored into the plugin export, producing avoidable packaging-drift failures in installed-CLI tests.",
+      "normalized_key": "broad pytest was rerun before a later metadata change was mirrored into the plugin",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
+          "date": "2026-06-01",
+          "section": "Waste"
         }
       ]
     },

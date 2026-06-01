@@ -374,6 +374,12 @@
       "evidence_terms": ["skipped"],
       "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
     },
+    "skills/public/achieve/scripts/goal_artifact_discussion.py": {
+      "states": ["skipped"],
+      "visibility": ["artifact_visible"],
+      "evidence_terms": ["Discuss before activation", "discussion_summary_present"],
+      "rationale": "Before-phase discussion readiness treats n/a/none summaries as absent when consequential activation decisions are present; a real summary must be visible in the goal artifact before pursue-ready passes."
+    },
     "skills/public/issue/scripts/issue_create.py": {
       "states": ["disabled", "skipped"],
       "visibility": ["terminal_payload"],

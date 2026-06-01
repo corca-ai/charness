@@ -129,6 +129,7 @@ def main() -> int:
         entries = chunked_routing_lib.parse_handoff_entries(text, repo_root=repo_root)
         handoff_count = len(entries)
         issue_count = 0
+        issue_source_diagnostic = None
         if args.with_issues:
             issue_repo_root = _repo_root_for_adapter(args)
             issue_entries = chunked_routing_issue_source.build_issue_entries(
@@ -136,6 +137,11 @@ def main() -> int:
                 start_index=max((e.index for e in entries), default=0) + 1,
             )
             issue_count = len(issue_entries)
+            issue_source_diagnostic = getattr(
+                chunked_routing_issue_source,
+                "LAST_ISSUE_SOURCE_DIAGNOSTIC",
+                None,
+            )
             entries = chunked_routing_issue_source.dedup_and_union(entries, issue_entries)
         payload = {
             "ok": True,
@@ -146,6 +152,8 @@ def main() -> int:
             "deduped_issue_count": (issue_count - (len(entries) - handoff_count)) if args.with_issues else 0,
             "entries": [entry.to_dict() for entry in entries],
         }
+        if args.with_issues:
+            payload["issue_source_diagnostic"] = issue_source_diagnostic
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

@@ -8,9 +8,12 @@ slice.
 from __future__ import annotations
 
 import importlib.util
+import shutil
 from pathlib import Path
 
 import pytest
+
+from tests.repo_copy import REPO_COPY_IGNORE
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
@@ -379,6 +382,11 @@ def test_build_issue_entries_returns_empty_on_listing_failure(src, monkeypatch, 
         raise RuntimeError("provider listing failed")
 
     assert src.build_issue_entries(tmp_path, start_index=1, runner=exploding_runner) == []
+    diagnostic = src.LAST_ISSUE_SOURCE_DIAGNOSTIC
+    assert diagnostic["stage"] == "list_open_issues"
+    assert diagnostic["provider_attempted"] is True
+    assert diagnostic["type"] == "RuntimeError"
+    assert diagnostic["message"] == "provider listing failed"
 
 
 def test_build_issue_entries_skips_malformed_issues(src, monkeypatch, tmp_path):
@@ -428,8 +436,75 @@ def test_load_issue_module_imports_real_issue_runtime(backend):
     assert hasattr(module, "_backend_json")
 
 
+def test_load_issue_module_imports_installed_issue_layout(backend, tmp_path):
+    plugin_root = tmp_path / "plugin"
+    handoff_scripts = plugin_root / "skills" / "handoff" / "scripts"
+    shutil.copytree(
+        SCRIPTS,
+        handoff_scripts,
+        ignore=REPO_COPY_IGNORE,
+    )
+    scripts = plugin_root / "skills" / "issue" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "issue_runtime.py").write_text("VALUE = 'installed'\n", encoding="utf-8")
+    spec = importlib.util.spec_from_file_location(
+        "installed_chunked_routing_issue_backend",
+        handoff_scripts / "chunked_routing_issue_backend.py",
+    )
+    assert spec is not None and spec.loader is not None
+    installed_backend = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installed_backend)
+
+    module = installed_backend._load_issue_module(tmp_path / "consumer", "issue_runtime")
+
+    assert module.VALUE == "installed"
+
+
+def test_load_issue_module_installed_layout_ignores_consumer_repo_shadow(tmp_path):
+    plugin_root = tmp_path / "plugin"
+    consumer = tmp_path / "consumer"
+    handoff_scripts = plugin_root / "skills" / "handoff" / "scripts"
+    shutil.copytree(SCRIPTS, handoff_scripts, ignore=REPO_COPY_IGNORE)
+    consumer_issue = consumer / "skills" / "issue" / "scripts"
+    consumer_issue.mkdir(parents=True)
+    (consumer_issue / "issue_runtime.py").write_text("VALUE = 'consumer'\n", encoding="utf-8")
+    spec = importlib.util.spec_from_file_location(
+        "installed_chunked_routing_issue_backend_no_issue",
+        handoff_scripts / "chunked_routing_issue_backend.py",
+    )
+    assert spec is not None and spec.loader is not None
+    installed_backend = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installed_backend)
+
+    with pytest.raises(ImportError, match="issue_runtime"):
+        installed_backend._load_issue_module(consumer, "issue_runtime")
+
+
+def test_load_issue_module_installed_layout_prefers_installed_over_stale_source(tmp_path):
+    plugin_root = tmp_path / "plugin"
+    handoff_scripts = plugin_root / "skills" / "handoff" / "scripts"
+    shutil.copytree(SCRIPTS, handoff_scripts, ignore=REPO_COPY_IGNORE)
+    installed = plugin_root / "skills" / "issue" / "scripts"
+    source = plugin_root / "skills" / "public" / "issue" / "scripts"
+    installed.mkdir(parents=True)
+    source.mkdir(parents=True)
+    (installed / "issue_runtime.py").write_text("VALUE = 'installed'\n", encoding="utf-8")
+    (source / "issue_runtime.py").write_text("VALUE = 'stale-source'\n", encoding="utf-8")
+    spec = importlib.util.spec_from_file_location(
+        "installed_chunked_routing_issue_backend_both",
+        handoff_scripts / "chunked_routing_issue_backend.py",
+    )
+    assert spec is not None and spec.loader is not None
+    installed_backend = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installed_backend)
+
+    module = installed_backend._load_issue_module(tmp_path / "consumer", "issue_runtime")
+
+    assert module.VALUE == "installed"
+
+
 def test_load_issue_module_missing_raises(backend):
-    with pytest.raises(ImportError, match="issue/scripts/definitely_missing_xyz"):
+    with pytest.raises(ImportError, match="definitely_missing_xyz"):
         backend._load_issue_module(REPO_ROOT, "definitely_missing_xyz")
 
 
@@ -465,3 +540,10 @@ def test_list_open_issues_unwraps_issues_dict(backend):
         "o/r", runner=lambda argv: {"issues": [{"number": 1}]}
     )
     assert out == [{"number": 1}]
+
+
+def test_list_open_issues_raises_on_malformed_payload(backend):
+    with pytest.raises(RuntimeError, match="without list field"):
+        backend.list_open_issues("o/r", runner=lambda argv: {"items": []})
+    with pytest.raises(RuntimeError, match="non-list JSON"):
+        backend.list_open_issues("o/r", runner=lambda argv: "not-json-list")

@@ -58,6 +58,19 @@ def test_goal_activation_is_pursue_only_and_failfast() -> None:
     assert "/achieve" in skill and "/achieve" in lifecycle
 
 
+def test_consequential_defaults_need_discussion_before_activation() -> None:
+    """#276: structural pursue-readiness cannot hide operator decisions."""
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+
+    assert "#276" in skill and "#276" in lifecycle
+    assert "Discuss before activation:" in skill
+    assert "Discuss before activation:" in lifecycle
+    assert "live/prod proof" in skill and "live/prod proof" in lifecycle
+    assert "issue close/split" in skill and "issue close/split" in lifecycle
+    assert "operator-ready" in lifecycle
+
+
 def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
     """#268: host green status cannot replace the checked goal artifact floor."""
     skill = _norm(ACHIEVE / "SKILL.md")

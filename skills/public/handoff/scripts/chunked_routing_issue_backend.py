@@ -24,17 +24,33 @@ GH_LIST_OPEN_ARGS = [
 ]
 
 
+def _issue_module_candidates(repo_root: Path, name: str) -> list[Path]:
+    roots: list[Path] = []
+    for root in Path(__file__).resolve().parents:
+        if root not in roots:
+            roots.append(root)
+    script_parts = Path(__file__).resolve().parts
+    installed_first = any(
+        script_parts[index:index + 3] == ("skills", "handoff", "scripts")
+        for index in range(len(script_parts) - 2)
+    )
+    rels = [
+        Path("skills/issue/scripts") / f"{name}.py",
+        Path("skills/public/issue/scripts") / f"{name}.py",
+    ]
+    if not installed_first:
+        rels.reverse()
+    return [root / rel for root in roots for rel in rels]
+
+
 def _load_issue_module(repo_root: Path, name: str):
     """Import a module from the ``issue`` skill's scripts dir (route reuse).
 
-    Walks up to ``skills/public/issue/scripts/<name>.py``. Read/import across
-    skills is allowed (the same pattern draft_goal_from_chunk uses to import
-    the achieve goal-artifact lib); only file *mutation* across skills is gated.
+    Supports both the source-tree layout (``skills/public/issue``) and the
+    installed plugin layout (``skills/issue``). Read/import across skills is
+    allowed; only file *mutation* across skills is gated.
     """
-    here = Path(__file__).resolve()
-    roots = [repo_root, *here.parents]
-    for ancestor in roots:
-        candidate = ancestor / "skills" / "public" / "issue" / "scripts" / f"{name}.py"
+    for candidate in _issue_module_candidates(repo_root, name):
         if candidate.is_file():
             spec = importlib.util.spec_from_file_location(f"issue_{name}", candidate)
             if spec is None or spec.loader is None:
@@ -42,7 +58,10 @@ def _load_issue_module(repo_root: Path, name: str):
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
-    raise ImportError(f"skills/public/issue/scripts/{name}.py not found")
+    raise ImportError(
+        f"issue skill script {name}.py not found in source-tree "
+        "skills/public/issue/scripts or installed skills/issue/scripts layout"
+    )
 
 
 def list_open_issues(
@@ -76,6 +95,10 @@ def list_open_issues(
         issue_runtime = _load_issue_module(Path.cwd(), "issue_runtime")
         runner = issue_runtime._backend_json
     payload = runner(argv)
-    if isinstance(payload, dict) and "issues" in payload:
-        payload = payload.get("issues")
-    return list(payload) if isinstance(payload, list) else []
+    if isinstance(payload, dict):
+        if "issues" not in payload or not isinstance(payload["issues"], list):
+            raise RuntimeError("issue backend returned an object without list field `issues`")
+        payload = payload["issues"]
+    if not isinstance(payload, list):
+        raise RuntimeError("issue backend returned non-list JSON payload")
+    return list(payload)

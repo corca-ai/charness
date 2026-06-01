@@ -87,6 +87,88 @@ def test_pursue_readiness_passes_when_shaped() -> None:
     report = gal.pursue_readiness(shaped)
     assert report["pursue_ready"] is True
     assert report["placeholder_count"] == 0
+    assert report["discussion_required"] is False
+
+
+def test_pursue_readiness_blocks_hidden_consequential_decisions() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Boundaries\n\n#184 must close inside this bundled goal.\n\n"
+        "## Agent Verification Plan\n\n### External Or Live Proof\n\nUse real GitHub lookup proof, not fixture-only proof.\n\n"
+        "## Interview Decisions\n\nProduction contact is allowed, including apply/restart.\n\n"
+        "## Plan Critique Findings\n\nNo blockers.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is False
+    assert report["placeholder_count"] == 0
+    assert report["discussion_required"] is True
+    assert "issue_close_or_split" in report["discussion_triggers"]
+    assert "operator discussion required" in report["reason"]
+
+
+@pytest.mark.parametrize(
+    ("body", "trigger"),
+    [
+        ("## Agent Verification Plan\n\n### External Or Live Proof\n\nUse live proof in production.\n", "production_or_live_proof"),
+        ("## Boundaries\n\nResolve #275 and #276 together.\n", "broad_bundle_scope"),
+        ("## Boundaries\n\nComplete all four proposed changes.\n", "broad_bundle_scope"),
+        ("## Agent Verification Plan\n\nProof non-claim: live proof not run.\n", "proof_nonclaim_or_downgrade"),
+        ("## Interview Decisions\n\nIrreversible side effects are allowed.\n", "irreversible_side_effect"),
+    ],
+)
+def test_pursue_readiness_discussion_trigger_families(body: str, trigger: str) -> None:
+    report = gal.pursue_readiness(
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n" + body
+    )
+    assert report["pursue_ready"] is False
+    assert trigger in report["discussion_triggers"]
+
+
+def test_pursue_readiness_does_not_treat_empty_discussion_label_as_summary() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "Discuss before activation:\n\n"
+        "## Agent Verification Plan\n\n### External Or Live Proof\n\nUse live proof.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is False
+    assert report["discussion_summary_present"] is False
+
+
+def test_pursue_readiness_does_not_trigger_on_critique_not_yet_run() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Plan Critique Findings\n\nNot yet run. First active slice should run critique.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
+    assert report["discussion_required"] is False
+
+
+def test_pursue_readiness_allows_surfaced_consequential_decisions() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Boundaries\n\n#184 must close inside this bundled goal.\n\n"
+        "Discuss before activation: close #184 in-goal; production contact is allowed with recorded target, preflight, stop condition, and post-proof.\n\n"
+        "## Agent Verification Plan\n\n### External Or Live Proof\n\nUse real GitHub lookup proof.\n\n"
+        "## Interview Decisions\n\nProduction contact is allowed, including apply/restart.\n\n"
+        "## Plan Critique Findings\n\nNo blockers.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
+    assert report["discussion_required"] is True
+    assert report["discussion_summary_present"] is True
+
+
+def test_pursue_readiness_rejects_na_summary_when_decisions_are_consequential() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "Discuss before activation: n/a -- no discussion needed.\n\n"
+        "## Interview Decisions\n\n#220 will use fixture-only proof.\n\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is False
+    assert report["discussion_summary_present"] is False
 
 
 def test_pursue_readiness_ignores_marker_inside_code_fence() -> None:

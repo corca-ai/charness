@@ -50,13 +50,18 @@ lifecycle instead of starting a new one.
      stop conditions, and reporting expectations
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready` (#247)
+   - for consequential defaults (live/prod proof, issue close/split, broad
+     bundled scope, irreversible side effects, or proof-level non-claims), add
+     a non-empty `Discuss before activation:` summary before reporting the goal
+     ready to enter; otherwise `--pursue-ready` fails (#276)
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself
 2. During — slice and record.
    - activation (`/goal`) is pure pursue: check
      `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and fail
-     fast to the Before-phase (`/achieve @...`) if unshaped (#247)
+     fast to the Before-phase (`/achieve @...`) if unshaped or missing a required
+     activation-discussion summary (#247, #276)
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - keep `## Active Operating Frame` current as the short control panel; let
      `## Slice Log` remain the archive
