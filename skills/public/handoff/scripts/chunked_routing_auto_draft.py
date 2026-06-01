@@ -50,6 +50,17 @@ Activation: `/goal @{goal_rel}`
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
+## Active Operating Frame
+
+- Current slice: before shaping.
+- Next action: run `/achieve @{goal_rel}` to fill the Before-phase placeholders;
+  activate only after pursue-readiness passes.
+- Verification cadence: to be filled by the achieve Before-phase interview.
+- Slice review packet: to be filled by the achieve Before-phase interview.
+- History boundary: keep this frame current during the active run; move
+  completed detail to `## Slice Log`, `## Final Verification`, and
+  `## Auto-Retro`.
+
 ## Goal
 
 {goal_body}

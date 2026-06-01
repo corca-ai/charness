@@ -22,6 +22,7 @@ hf = _load("goal_artifact_head_freshness")
 
 def _goal_with_context(context: str) -> str:
     sections = (
+        "## Active Operating Frame\nx\n\n"
         "## Goal\nx\n\n"
         "## Non-Goals\nx\n\n"
         "## Boundaries\nx\n\n"
@@ -54,6 +55,7 @@ def _complete_goal(
     activation_slug: str | None = None,
 ) -> str:
     sections = (
+        "## Active Operating Frame\nx\n\n"
         "## Goal\nx\n\n"
         "## Non-Goals\nx\n\n"
         "## Boundaries\nx\n\n"

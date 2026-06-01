@@ -36,3 +36,4 @@ def test_retro_efficiency_waste_is_phase_aware() -> None:
     assert "measured, proxy, and unavailable signals" in efficiency_text
     assert "audit_codex_session.py" in efficiency_text
     assert "Do not store one session's scope narrowing" in efficiency_text
+    assert "Cached input tokens are not a waste conclusion by themselves" in efficiency_text

@@ -68,3 +68,17 @@ def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
     assert "Host-level goal completion is downstream of the artifact" in lifecycle
     assert "update_goal(status=complete)" in lifecycle
     assert "check_goal_artifact.py --goal-path <artifact>" in lifecycle
+
+
+def test_long_goal_efficiency_contract_is_explicit() -> None:
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    artifact = _norm(ACHIEVE / "references" / "goal-artifact.md")
+
+    assert "Active Operating Frame" in skill
+    assert "Active Operating Frame" in lifecycle
+    assert "Active Operating Frame" in artifact
+    assert "cheap deterministic checks at commit boundaries" in lifecycle
+    assert "Slice review packet" in artifact
+    assert "measured signals" in lifecycle and "proxy signals" in lifecycle
+    assert "Cached input alone is not a waste conclusion" in lifecycle

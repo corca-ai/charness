@@ -38,7 +38,7 @@
         "tells the user the file is inert until activation and does not start executing slices itself"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
+      "reviewed_on": "2026-06-01",
       "observed_evidence": [
         "Static review only: the checked-in core, references, helper scripts, validator suite, and two fresh-eye subagent passes were inspected. `achieve` was not executed end-to-end because `/goal` activation is host-driven and was not run, so no live-run proof is claimed.",
         "Issue #223 (2026-05-27): the duplicate-test-pressure contract additions (Before-phase expected proof cost / test-duplication pressure, the During-phase cheap `--test-pressure` slice sample carried forward across compaction, and the After-phase new-slice-local vs accumulated-suite-debt classification) were reviewed by a 3-angle + counterweight fresh-eye critique. The new `Test duplication pressure` slice field is a backward-compatible additive label (no REQUIRED_SECTIONS change) guarded by `test_render_slice_block_includes_test_duplication_pressure`.",
@@ -52,7 +52,8 @@
         "Issue #268 (2026-05-31): host-level completion is now explicitly downstream of the durable artifact closeout: before any host status tool marks a goal complete, the checked-in goal must already read `Status: complete` and pass `check_goal_artifact.py --goal-path <artifact>`. This preserves the existing dogfood contract (draft artifact is inert until `/goal`; `/goal` pursues only) while preventing host green status from substituting for the artifact evidence floor. Guarded by `test_host_goal_completion_is_downstream_of_artifact_closeout`; no maintained Cautilus scenario change because routing and draft-save behavior are unchanged.",
         "Issue #269 (2026-05-31): `check_goal_artifact.py` now adds a mutable-HEAD freshness report that rejects current-HEAD prose naming a non-HEAD immutable SHA unless the line marks the SHA as historical/proof-targeted or records a live `--head-sha HEAD` command. This adds closeout honesty teeth without changing achieve routing, draft creation, activation, or host-adapter behavior. Guarded by `tests/quality_gates/test_goal_head_freshness.py`; maintained Cautilus scenario unchanged.",
         "Issue #237 (2026-06-01): `achieve` After-phase guidance now requires live apply/checkpoint closeouts to record the applied checkpoint, current `HEAD`, and classify post-checkpoint commits as `runtime-affecting`, `test-only`, or `audit-doc-only`, with uncertainty treated as runtime-affecting. This preserves the existing goal lifecycle contract while making `HEAD != live` explainable without forcing blind re-apply. Guarded by tests/quality_gates/test_workflow_safety_docs.py.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills."
+        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
+        "Long-goal efficiency (2026-06-01): newly scaffolded achieve goals now include `## Active Operating Frame` as a bounded current-state control panel, while the lifecycle explicitly separates cheap commit checks, higher-cost slice proof, final broad/live proof, bounded slice review packets, and measured/proxy efficiency retro signals. This is additive generated-shape guidance, not a retroactive `check_goal` required-section migration, so historical goal artifacts are not invalidated. Guarded by tests/quality_gates/test_goal_artifact_lib.py, tests/quality_gates/test_achieve_before_activation.py, and tests/test_handoff_chunker_auto_draft.py."
       ]
     },
     {
@@ -115,7 +116,7 @@
         "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
+      "reviewed_on": "2026-06-01",
       "observed_evidence": [
         "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, customer-of-this-skill critique, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
         "The checked-in core now resolves the create-skill adapter so repo-local implementation topology terms stay outside portable skill prose while missing adapters remain visible.",
@@ -446,13 +447,14 @@
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
+      "reviewed_on": "2026-06-01",
       "observed_evidence": [
         "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
         "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, `state-selection.md` and `spill-targets.md` push stable metrics and proof detail back to their owning artifacts, and always-loaded host instruction surfaces are now non-default in `References`.",
         "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior.",
         "The handoff skill now treats standing invariants and recurring workflow rules as spill/promote candidates: handoff may leave a short pickup pointer, but the durable rule belongs in the owning skill reference, support-runtime contract, spec, validator, or operator document.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills."
+        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
+        "Long-goal efficiency (2026-06-01): the handoff chunked-routing auto-draft goal renderer now emits the same `## Active Operating Frame` scaffold as achieve-generated goals, with `/achieve @...` as the next shaping action before `/goal` activation. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior are unchanged; this is a generated artifact shape compatibility update. Guarded by tests/test_handoff_chunker_auto_draft.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py."
       ]
     },
     {
@@ -572,13 +574,13 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
+      "reviewed_on": "2026-06-01",
       "observed_evidence": [
         "The checked-in public core now makes a real workflow miss trigger a short `session` retro before resuming work, and it requires the retro to separate local symptom from the workflow or capability change that would prevent the repeat trap.",
         "That persistence rule is reinforced in `skills/public/retro/references/trigger-and-persistence.md`, and the current repo treats `charness-artifacts/retro/recent-lessons.md` as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
         "That keeps `retro-structural-cause-followup` as a reviewed consumer seam worth re-promoting after the `v0.4.1` release follow-up work: pushing past a local explanation toward a structural cause and durable memory update is still explicit checked-in `retro` behavior, not only a conversation style preference.",
         "`persist_retro_artifact.py` now normalizes `--artifact-name` to end in `.md` and refuses to overwrite a non-stub `summary_path` when lesson selection yields zero candidates. `--force-empty-summary` is the named opt-in, and `skills/public/retro/SKILL.md` step 5 records the legacy hand-curated summary case so a first retro after legacy adoption does not silently drop curated lessons.",
-        "`skills/public/retro/references/phase-aware-efficiency.md` now makes efficiency retros distinguish user-intended exploration from post-triage drift, requiring a triage lock with `fix now`, `deferred`, `needs user call`, and `false positive` before broad exploration can be called waste.",
+        "`skills/public/retro/references/phase-aware-efficiency.md` now makes efficiency retros distinguish user-intended exploration from post-triage drift, requiring a triage lock with `fix now`, `deferred`, `needs user call`, and `false positive` before broad exploration can be called waste. The reference now also says cached input tokens are context pressure, not a waste conclusion by themselves; they need pairing evidence such as compactions, repeated commands, polling, or rerun-heavy validation cadence.",
         "`docs/retro-self-improvement-spec.md` preserves the host boundary from #218: Codex SQLite/TUI cost maps are evidence producers with measured/proxy/unavailable semantics, while the portable `retro` rule owns phase-aware waste interpretation.",
         "`skills/public/retro/scripts/audit_codex_session.py` is now the reviewed Codex evidence-producer path for session efficiency detail: it keeps command snippets off by default, reports token data as `snapshot` or `unavailable` instead of full-session totals, and treats unreadable or schema-drifted sqlite sources as unavailable evidence rather than zero-cost sessions.",
         "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills."

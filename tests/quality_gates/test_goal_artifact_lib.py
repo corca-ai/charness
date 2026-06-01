@@ -32,7 +32,11 @@ def test_upsert_creates_then_updates_status_only(tmp_path: Path) -> None:
 
 def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
-    assert gal.check_goal(_goal_text(tmp_path))["ok"] is True
+    text = _goal_text(tmp_path)
+    assert gal.check_goal(text)["ok"] is True
+    assert text.index("## Active Operating Frame") < text.index("## Goal")
+    assert "Verification cadence: cheap deterministic checks at commit boundaries" in text
+    assert "History boundary: keep this frame current" in text
 
     bad = gal.check_goal("# Achieve Goal: T\n\nStatus: bogus\n\n## Goal\n")
     assert bad["ok"] is False
@@ -140,6 +144,7 @@ def test_unbalanced_fence_fails_open_and_still_sees_sections() -> None:
     # An unclosed ``` must not mask every heading to EOF (regression guard).
     doc = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x`\n\n"
+        "## Active Operating Frame\n"
         "## Goal\n```python\nprint(1)\n"  # fence never closed
         "## Non-Goals\n## Boundaries\n## User Acceptance\n## Agent Verification Plan\n"
         "## Slice Plan\n## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
@@ -163,7 +168,7 @@ def test_check_goal_does_not_count_fenced_sections() -> None:
 
 
 _REQUIRED_BODY = (
-    "## Goal\n## Non-Goals\n## Boundaries\n## User Acceptance\n"
+    "## Active Operating Frame\n## Goal\n## Non-Goals\n## Boundaries\n## User Acceptance\n"
     "## Agent Verification Plan\n"
 )
 _TAIL_SECTIONS = (

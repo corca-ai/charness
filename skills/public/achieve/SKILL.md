@@ -58,11 +58,17 @@ lifecycle instead of starting a new one.
      `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and fail
      fast to the Before-phase (`/achieve @...`) if unshaped (#247)
    - treat the active goal artifact as the slice memory surface, not `handoff`
+   - keep `## Active Operating Frame` current as the short control panel; let
+     `## Slice Log` remain the archive
    - before a substantial slice, state its objective and expected evidence
+   - for fresh-eye slice critique, hand the reviewer a bounded slice packet:
+     intent, changed files, expected invariants, tests/proof, non-claims, and
+     questions
    - append slice reports with `append_slice_log.py`; when tests are added or
      expanded, include a cheap duplicate-pressure sample via `--test-pressure`
-   - use targeted deterministic checks per slice; reserve broad gates and
-     expensive proof for bundle boundaries or the final stage
+   - use cheap deterministic checks at commit boundaries; use higher-cost proof
+     at slice boundaries; reserve broad/live proof for bundle boundaries or the
+     final stage
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
@@ -76,6 +82,10 @@ lifecycle instead of starting a new one.
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
    - run `retro` for the automatic efficiency review
+   - when host evidence exists, summarize measured efficiency signals and proxy
+     pressure separately: tokens/time, compactions, tool-call counts, repeated
+     VCS/check commands, polling, and subagent count. Cached input alone is not
+     waste.
    - disposition every surfaced improvement in Auto-Retro: either
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing
@@ -109,10 +119,11 @@ lifecycle instead of starting a new one.
 
 ## Output Shape
 
-- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with the
-  required sections (Goal, Non-Goals, Boundaries, User Acceptance, Agent
-  Verification Plan, Slice Plan, Slice Log, Off-Goal Findings, Final
-  Verification, User Verification Instructions, Auto-Retro)
+- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with a
+  top-level `## Active Operating Frame` plus the required audit sections (Goal,
+  Non-Goals, Boundaries, User Acceptance, Agent Verification Plan, Slice Plan,
+  Slice Log, Off-Goal Findings, Final Verification, User Verification
+  Instructions, Auto-Retro)
 - `Status` is one of draft / active / blocked / complete
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
@@ -134,9 +145,12 @@ lifecycle instead of starting a new one.
 - Do not require every short prompt to become a goal.
 - Do not run broad quality gates after every small commit.
 - Do not make `handoff` the normal running scratchpad while a goal is active.
+- Do not treat the historical slice log as the normal active prompt surface;
+  refresh the active operating frame and archive completed detail below it.
 - Do not claim provider, live, or release proof when only local deterministic
   checks ran; name skipped proof levels in the final report.
 - Do not fabricate token, time, or tool-call metrics the host log does not expose.
+- Do not treat cached input volume alone as waste.
 - Do not collapse `retro` into a path reference; include its substantive findings
   inline and persist the file (see #233 F2 and `references/lifecycle.md`).
 - Do not leave surfaced improvements as prose-only retro memory; disposition

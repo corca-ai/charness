@@ -1,11 +1,25 @@
 # Achieve Goal: Achieve long-goal efficiency and effectiveness
 
-Status: draft
+Status: active
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`
 
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: Slice 5 — validate, critique, sync, and close out the improved
+  achieve surface.
+- Next action: commit the implementation bundle, then run final fresh-eye
+  critique and Auto-Retro closeout.
+- Verification cadence: cheap deterministic checks before commit; slice-level
+  focused tests plus surface validators; final broad quality and fresh-eye
+  critique at closeout.
+- Slice review packet: provide intent, changed files, expected invariants,
+  tests/proof, non-claims, and reviewer questions before fresh-eye critique.
+- History boundary: this frame is the current control panel; completed detail
+  stays in `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
 
 ## Goal
 
@@ -123,12 +137,12 @@ Make the achieve skill and the goal artifacts it creates help long-running, inte
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Lock the long-goal efficiency contract and current evidence | Prevent the implementation from solving the wrong problem, e.g. shrinking broad goals instead of managing them | This goal artifact passes `--pursue-ready`; current retro/probe evidence is cited; scope/non-goals are frozen | pending |
-| 1 | Add active operating frame support to achieve-generated goals | Long goals need a short current-state control panel so agents do not repeatedly re-read full history | Updated template/reference/helper behavior; tests proving new goals include the frame and archival slice-log boundary | pending |
-| 2 | Make verification cadence explicit in achieve guidance | The desired model is cheap commit-level checks plus heavier slice/final proof, not ad hoc repeated broad gates | `achieve` docs/reference updates; tests or validators ensuring generated artifacts carry cadence language | pending |
-| 3 | Define bounded slice review packets for fresh-eye critique | Subagent critique should stay high-signal without requiring the full goal history every time | Reference/template updates; tests or example packet; critique guidance distinguishes slice packet vs final review | pending |
-| 4 | Integrate efficiency metrics into After-phase auto-retro | Completion should surface token/tool/context pressure and propose improvements automatically | Retro/probe integration evidence; goal closeout docs require measured/proxy distinction and cached-input non-overclaim | pending |
-| 5 | Validate, critique, sync, and publish the improved achieve surface | The changes affect public workflow behavior and checked-in plugin exports | Surface sync; focused tests; broad quality; fresh-eye critique; final goal complete; handoff refreshed if next pickup changes | pending |
+| 0 | Lock the long-goal efficiency contract and current evidence | Prevent the implementation from solving the wrong problem, e.g. shrinking broad goals instead of managing them | This goal artifact passes `--pursue-ready`; current retro/probe evidence is cited; scope/non-goals are frozen | done |
+| 1 | Add active operating frame support to achieve-generated goals | Long goals need a short current-state control panel so agents do not repeatedly re-read full history | Updated template/reference/helper behavior; tests proving new goals include the frame and archival slice-log boundary | done |
+| 2 | Make verification cadence explicit in achieve guidance | The desired model is cheap commit-level checks plus heavier slice/final proof, not ad hoc repeated broad gates | `achieve` docs/reference updates; tests or validators ensuring generated artifacts carry cadence language | done |
+| 3 | Define bounded slice review packets for fresh-eye critique | Subagent critique should stay high-signal without requiring the full goal history every time | Reference/template updates; tests or example packet; critique guidance distinguishes slice packet vs final review | done |
+| 4 | Integrate efficiency metrics into After-phase auto-retro | Completion should surface token/tool/context pressure and propose improvements automatically | Retro/probe integration evidence; goal closeout docs require measured/proxy distinction and cached-input non-overclaim | done |
+| 5 | Validate, critique, sync, and publish the improved achieve surface | The changes affect public workflow behavior and checked-in plugin exports | Surface sync; focused tests; broad quality; fresh-eye critique; final goal complete; handoff refreshed if next pickup changes | in progress |
 
 ## Coordination Cues
 
@@ -159,7 +173,59 @@ Initial routing:
 
 ## Slice Log
 
-_Not started. This draft is inert until `/goal` activation._
+### Slice 0: Activate and lock contract
+
+- Objective: Move the shaped long-goal efficiency artifact into active pursue
+  mode and preserve the user-agreed contract.
+- Why this approach: The user explicitly asked to make this an achieve goal;
+  activation should not reopen the already-settled product/product-success
+  boundaries.
+- Commits: pending
+- What changed: Status flipped from `draft` to `active`; active operating frame
+  seeded in this artifact.
+- Alternatives rejected: Shrinking the broad goal or treating cached input as
+  waste by itself.
+- Targeted verification: `check_goal_artifact.py --pursue-ready` planned before
+  the first implementation commit.
+- Test duplication pressure: n/a — no tests added in activation.
+- Critique: same-agent activation check; fresh-eye reserved for final
+  workflow-surface review.
+- Off-goal findings: none.
+- Lessons carried forward: Keep active state near the top and archive completed
+  detail in slice logs.
+- Metrics: when available.
+
+### Slice 1-4: Add long-goal control surfaces
+
+- Objective: Make newly generated achieve goals carry an active operating frame,
+  explicit verification cadence, bounded slice review packet guidance, and
+  measured/proxy efficiency retro language.
+- Why this approach: The user wanted broad goals to stay supported while making
+  long runs cheaper and less ambiguous. The right fix is operating guidance and
+  generated scaffold shape, not reducing proof.
+- Commits: pending; slice closeout passed before commit.
+- What changed: Updated achieve template/reference/SKILL surfaces, retro
+  efficiency guidance, generated plugin mirrors, and handoff auto-draft goal
+  generation so newly drafted goals include the same active frame.
+- Alternatives rejected: Making `Active Operating Frame` a global
+  `check_goal` required section was rejected after review because it would make
+  historical goal artifacts fail retroactively. The generated-shape requirement
+  is enforced by scaffold tests instead.
+- Targeted verification: `pytest -q` focused achieve/goal/retro/handoff tests
+  passed; full pytest passed once before the compatibility narrowing; focused
+  tests passed again after narrowing. `run_slice_closeout.py
+  --ack-cautilus-skill-review` passed after dogfood/scenario review notes were
+  recorded.
+- Test duplication pressure: no duplicate-pressure sample needed; this slice
+  added assertions to existing test modules rather than large new fixtures.
+- Critique: same-agent compatibility critique caught the retroactive
+  `check_goal` risk and narrowed the deterministic contract.
+- Off-goal findings: none.
+- Lessons carried forward: When adding a new generated artifact section, update
+  all generators but avoid turning a generated-shape improvement into a
+  historical corpus breaker unless the goal explicitly asks for migration.
+- Metrics: full pytest run took 287.64s; slice closeout aggregate pytest took
+  272.0s; host token/tool metrics still deferred to final retro/probe.
 
 ## Context Sources
 

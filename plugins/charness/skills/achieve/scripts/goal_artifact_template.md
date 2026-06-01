@@ -7,6 +7,18 @@ Activation: `/goal @{goal_rel}`
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
+## Active Operating Frame
+
+- Current slice: before activation.
+- Next action: activate with `/goal @{goal_rel}`.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files, expected invariants, tests/proof, non-claims, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
 ## Goal
 
 {goal_body}

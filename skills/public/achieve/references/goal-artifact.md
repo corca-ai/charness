@@ -25,6 +25,18 @@ Activation: `/goal @charness-artifacts/goals/<file>.md`
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
+## Active Operating Frame
+
+- Current slice: before activation.
+- Next action: activate with `/goal @charness-artifacts/goals/<file>.md`.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files, expected invariants, tests/proof, non-claims, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
 ## Goal
 
 ## Non-Goals
@@ -101,10 +113,18 @@ The `Slice Plan` table is hand-maintained planning intent; no helper updates its
 execution source of truth. Keep the plan table for the up-front sequence and let
 the log record what actually happened.
 
+The `Active Operating Frame` is the current-state control panel, not another
+archive. Update it at activation and before/after substantial slices so a
+compacted session can continue from the top of the file without rereading the
+entire historical log. Completed detail belongs in the Slice Log, Final
+Verification, and Auto-Retro sections.
+
 ## Metrics Honesty
 
 Slice and final metrics use host-agnostic shallow signals. Prefer
 `retro`'s `probe_host_logs.py` for token / turn / tool-call availability rather
 than asserting counts the host log does not expose. Deep per-session counting is
 Codex-specific and best-effort; record `Metrics: when available` instead of
-fabricating numbers.
+fabricating numbers. Keep measured counts, proxy signals, and unavailable
+signals separate. Cached input by itself is a context-pressure signal, not a
+waste conclusion.

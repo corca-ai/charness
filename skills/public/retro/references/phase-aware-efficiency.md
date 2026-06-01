@@ -57,6 +57,10 @@ For Codex session detail, `$SKILL_DIR/scripts/audit_codex_session.py` may supply
 thread-scoped evidence pointers; its phase labels still require this review
 before anything is called waste.
 
+Cached input tokens are not a waste conclusion by themselves. Treat them as a
+context-pressure signal only when paired with evidence such as compactions,
+high-token turns, repeated commands, polling, or rerun-heavy validation cadence.
+
 ## Counterfactual Prompts
 
 - Was broad exploration explicitly intended by the user?

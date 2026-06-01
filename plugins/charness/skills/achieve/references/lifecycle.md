@@ -145,6 +145,13 @@ Activation runs only after the pursue-readiness check passes (see
 goal), flip the status to `active` with `upsert_goal.py --status active`; move
 it to `blocked` or `complete` as the run state changes.
 
+Keep `## Active Operating Frame` as the short current-state control panel:
+current slice, next action, verification cadence, slice-review packet, and the
+archival boundary. Update it at activation and around substantial slice
+boundaries. Do not make a compacted session reread the whole `## Slice Log` to
+learn what to do next; the log is the archive, while the frame is the active
+prompt surface.
+
 After each slice, append a slice report with `append_slice_log.py`:
 
 - objective and why this slice was chosen now
@@ -160,13 +167,23 @@ After each slice, append a slice report with `append_slice_log.py`:
 - lessons to carry into the next slice
 - a token / time / tool-call snapshot when available
 
-Each slice uses targeted deterministic checks. Broad quality gates and expensive
-proof belong at bundle boundaries or the final stage, not after every commit.
-Subagent critique is slice-level by default, not commit-level. The cheap
+Use the planned verification cadence instead of ad hoc reruns: cheap
+deterministic checks at commit boundaries cover the changed surface; slice
+boundaries get higher-cost proof and fresh-eye critique when required; final
+closeout gets the broad/live proof named in the artifact. A previously passed
+check does not need to rerun until its covered surface changed, unless a policy
+gate or the slice plan names it as a boundary proof. The cheap
 duplicate-pressure sample is the exception that stays slice-local: it is a
 sample, not the full broad gate, and it carries the test-debt signal forward in
 the goal artifact so a compacted or resumed session does not rediscover the same
 late blocker.
+
+Fresh-eye slice critique should receive a bounded slice review packet rather
+than the entire historical goal by default. Include the slice intent, changed
+files, expected invariants, tests/proof already run, non-claims, and the
+specific reviewer questions. Final closeout review can then read across slices
+for cross-slice drift and Auto-Retro disposition instead of redoing every slice
+review.
 
 `run_slice_closeout.py` auto-surfaces two recurring-trap signals so they are
 workflow affordances, not agent memory: a **length-headroom advisory** for any
@@ -230,6 +247,12 @@ At completion the goal artifact should contain:
   not push or close out-of-band (see `references/coordination.md` *Resolving A
   Tracked Issue*)
 - an automatic retro focused on reducing time, tokens, and waste next time
+- an efficiency summary when host evidence exists: measured signals (for
+  example elapsed time, token snapshots, compactions, tool-call counts, or
+  subagent count), proxy signals (for example repeated VCS/check commands,
+  polling, and high-output reads), unavailable signals, and which costs were
+  necessary safety cost versus reducible waste. Cached input alone is not a
+  waste conclusion.
 - a closeout narration that surfaces the retro's `## Waste`,
   `## Critical Decisions`, `## Next Improvements`, and `## Sibling Search`
   (when present) sections inline in the user-facing response — the retro
