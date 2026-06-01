@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-05-31
+Date: 2026-06-01
 
 ## Scope
 
-Advanced `charness` toward release `0.13.2` (tag `v0.13.2`) through the repo-owned release helper.
+Advanced `charness` toward release `0.13.3` (tag `v0.13.3`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.13.1`
-- target version: `0.13.2`
+- previous version: `0.13.2`
+- target version: `0.13.3`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,19 +17,18 @@ Advanced `charness` toward release `0.13.2` (tag `v0.13.2`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.13.2`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.13.3`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
@@ -46,11 +45,7 @@ Advanced `charness` toward release `0.13.2` (tag `v0.13.2`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.2-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.13.2`.
+- Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.3-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -58,14 +53,7 @@ Advanced `charness` toward release `0.13.2` (tag `v0.13.2`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- Issue closeout carrier: direct commit `7ffde0e`.
-- `#268`: CLOSED — https://github.com/corca-ai/charness/issues/268
-- `#269`: CLOSED — https://github.com/corca-ai/charness/issues/269
-- `#264`: CLOSED — https://github.com/corca-ai/charness/issues/264
-- `#270`: CLOSED — https://github.com/corca-ai/charness/issues/270
-- Not closed by this release: `#265` and `#261`; the goal artifact records the
-  remaining mutation-survivor policy/equivalence work as non-claims.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
