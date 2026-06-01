@@ -55,9 +55,9 @@ a bare `@docs/handoff.md`-style mention with no explicit task is a **pickup** �
 follow the handoff `Workflow Trigger` and invoke the workflow it names (for the
 default charness handoff, `charness:handoff`; invoke the skill, do not just
 re-read the file). A pure "which skill handles X?" question is the exception:
-the inventory answer is the deliverable. The 2026-05-28/2026-05-29 routing miss
-was the inventory running while the routed workflow did not — owning the
-"what next" here is the fix. See `references/session-start-routing.md`.
+the inventory answer is the deliverable. The routing-miss class is inventory
+running while the routed workflow does not — owning the "what next" here is the
+fix. See `references/session-start-routing.md`.
 
 ## Bootstrap
 

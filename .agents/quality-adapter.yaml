@@ -110,7 +110,9 @@ domain_language_contract:
         - initialize this repo
         - repo initialization
 skill_ergonomics_gate_rules:
+  - dated_incident_in_core
   - long_core
+  - issue_anchor_in_core
   - mode_option_pressure_terms
   - progressive_disclosure_risk
   - code_fence_without_helper_script

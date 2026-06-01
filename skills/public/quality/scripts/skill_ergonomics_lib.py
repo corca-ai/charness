@@ -11,6 +11,7 @@ DEFAULT_REVIEW_PROMPTS = [
     "Check trigger overlap or undertrigger risk against nearby public skills; a smart model still needs an honest invocation boundary.",
     "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
     "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required.",
+    "Keep issue-number and dated incident anchors out of public `SKILL.md` core; move historical provenance to references, tests, or retro artifacts.",
 ]
 RUNTIME_INSTALL_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
@@ -22,6 +23,20 @@ MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
 BARE_HELPER_PATH_RE = re.compile(r"`scripts/[A-Za-z0-9._/-]+\.(?:py|sh|bash|zsh|js|ts|rb|pl|lua)`")
 SOURCE_TREE_FILE_PATH_RE = re.compile(r"`skills/(?:public|support)/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+\.(?:md|py|sh|bash|zsh|js|ts|rb|pl|lua|yaml|yml|json)`")
+ISSUE_ANCHOR_RE = re.compile(
+    r"(?:"
+    r"\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+\b|"
+    r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+\b|"
+    r"\b(?:issue|bug|pr|pull request)s?\s+#\d+\b|"
+    r"(?<![A-Za-z0-9_])#\d{3,}\b"
+    r")",
+    re.IGNORECASE,
+)
+DATED_INCIDENT_RE = re.compile(
+    r"(?:20\d{2}-\d{2}-\d{2}.{0,80}\b(?:incident|miss|regression|trap|failure|bug|closeout|lesson)s?\b|"
+    r"\b(?:incident|miss|regression|trap|failure|bug|closeout|lesson)s?\b.{0,80}20\d{2}-\d{2}-\d{2})",
+    re.IGNORECASE,
+)
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
@@ -57,6 +72,14 @@ def has_portable_path_ambiguity(lines: list[str]) -> bool:
         if BARE_HELPER_PATH_RE.search(line) or SOURCE_TREE_FILE_PATH_RE.search(line):
             return True
     return False
+
+
+def has_issue_anchor_in_core(lines: list[str]) -> bool:
+    return any(ISSUE_ANCHOR_RE.search(line) for line in lines)
+
+
+def has_dated_incident_in_core(lines: list[str]) -> bool:
+    return any(DATED_INCIDENT_RE.search(line) for line in lines)
 
 
 def strip_inline_code(text: str) -> str:
@@ -105,6 +128,10 @@ def inventory_skill(
         heuristics.append("code_fence_without_helper_script")
     if skill_type != "runtime_install" and has_portable_path_ambiguity(prose_lines):
         heuristics.append("portable_helper_path_ambiguity")
+    if skill_type == "public" and has_issue_anchor_in_core(prose.splitlines()):
+        heuristics.append("issue_anchor_in_core")
+    if skill_type == "public" and has_dated_incident_in_core(prose.splitlines()):
+        heuristics.append("dated_incident_in_core")
     review_prompts = RUNTIME_INSTALL_REVIEW_PROMPTS if skill_type == "runtime_install" else DEFAULT_REVIEW_PROMPTS
     return {
         "skill_id": skill_dir.name,

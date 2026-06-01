@@ -77,12 +77,14 @@ Run `charness worktree cleanup --path <worktree>` after the feature worktree has
 
 ## Manifest contract
 
-The manifest lives at `.agents/worktree-adapter.yaml` in the consumer repo. Schema is at [integrations/worktree/manifest.schema.json](../integrations/worktree/manifest.schema.json) and the canonical example is [integrations/worktree/adapter.example.yaml](../integrations/worktree/adapter.example.yaml).
+The manifest lives at [.agents/worktree-adapter.yaml](../.agents/worktree-adapter.yaml) in the consumer repo. Schema is at [integrations/worktree/manifest.schema.json](../integrations/worktree/manifest.schema.json) and the canonical example is [integrations/worktree/adapter.example.yaml](../integrations/worktree/adapter.example.yaml).
 
 Minimum useful manifest:
 
 ```yaml
 version: 1
+repo: my-repo
+language: en
 prepare:
   commands:
     - id: install-deps

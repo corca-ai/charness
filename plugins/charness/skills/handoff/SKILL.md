@@ -62,7 +62,7 @@ the `Workflow Trigger` first and continue with that workflow.
 ## Workflow
 
 1. Chunked routing (conditional). A handoff doc/skill invocation with no task
-   directive — including a bare `/handoff` call (#249), not only a doc mention
+   directive — including a bare `/handoff` call, not only a doc mention
    — fires the chunker before pickup/refresh; it reasons over the live backlog
    (issues unioned with handoff entries via `--with-issues`). See
    `references/chunked-routing.md` for the trigger rule, pipeline, end-only write discipline, and `/achieve` draft.
@@ -128,7 +128,7 @@ The handoff should usually contain:
 - On a session-open pickup — including one routed here by `find-skills` after a
   bare handoff-doc mention — invoke the workflow named in the `Workflow Trigger`
   instead of only re-reading the handoff; mention-only reading is the
-  recurring routing miss (#240) this contract guards against.
+  recurring routing miss this contract guards against.
 - Do not write unverified state as fact.
 - Do not let the handoff drift away from the current repo state.
 - Do not add new top-level sections just to preserve history; prune or move the

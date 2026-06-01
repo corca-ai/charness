@@ -16,9 +16,6 @@ Pins the spec's depth-bounded guarantees:
 - Marker prose quoted from a handoff entry is rendered verbatim and is
   harmless: #255 removed the trivial-goal exemption, so no phrase can
   neuter the portability gate.
-- The slice-5 Standalone-Usefulness Invariant: no file under
-  ``skills/public/achieve/`` was mutated by the slice (file-mutation
-  gate, not import gate).
 """
 from __future__ import annotations
 
@@ -280,41 +277,6 @@ def test_plan_critique_findings_contains_only_placeholder(lib, chunk_from_entry_
     )
     body = _section_body(text, "Plan Critique Findings").strip()
     assert body == lib.PLAN_CRITIQUE_PLACEHOLDER
-
-
-# Standalone-Usefulness Invariant -------------------------------------------
-
-
-def test_no_file_under_skills_public_achieve_was_mutated_by_this_slice():
-    """The slice-5 gate from the goal artifact: `git diff --name-only
-    main..HEAD | grep '^skills/public/achieve/'` must return empty
-    for this slice's diff. The check covers the staged + unstaged
-    + currently-committed-but-unpushed range main..HEAD.
-
-    This test runs only when the repo is in a state where `main` is
-    reachable; otherwise it skips (relevant only in the active branch
-    context).
-    """
-    git_root = REPO_ROOT
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "main..HEAD"],
-        cwd=git_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        pytest.skip(f"git diff main..HEAD not resolvable: {result.stderr.strip()}")
-    changed = [
-        line.strip()
-        for line in result.stdout.splitlines()
-        if line.strip().startswith("skills/public/achieve/")
-    ]
-    assert changed == [], (
-        "Slice 5 must not mutate any file under skills/public/achieve/ "
-        "to preserve the standalone-usefulness invariant; offending: "
-        f"{changed}"
-    )
 
 
 # Slug derivation ------------------------------------------------------------

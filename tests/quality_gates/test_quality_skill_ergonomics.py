@@ -147,6 +147,112 @@ def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_p
     assert "mode_pressure_terms_present" not in skill["heuristics"]
 
 
+def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "history.md").write_text("# Source History\n\n- #999 belongs here.\n", encoding="utf-8")
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use the 2026-05-28 routing miss as the reason this workflow owns next-step routing.",
+                "Keep the guard from #123 in the active workflow.",
+                "Inline code like `#456` is inert.",
+                "",
+                "## References",
+                "",
+                "- `references/history.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert "issue_anchor_in_core" in skill["heuristics"]
+    assert "dated_incident_in_core" in skill["heuristics"]
+    assert any("issue-number and dated incident anchors" in item for item in skill["review_prompts"])
+
+
+def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explicit_issue_refs(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use option #1 before attempt #2 when ordering local choices.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "issue_anchor_in_core" not in payload["skills"][0]["heuristics"]
+
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Carry forward issue #7 as the reason this workflow owns the guard.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "issue_anchor_in_core" in payload["skills"][0]["heuristics"]
+
+
 def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_root = repo / "packages" / "official-skills" / "ceal-native" / "skills"

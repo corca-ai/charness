@@ -42,6 +42,8 @@ DEFAULT_PROMPT_ASSET_POLICY = {
 }
 DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = [
     "code_fence_without_helper_script",
+    "dated_incident_in_core",
+    "issue_anchor_in_core",
     "long_core",
     "mode_option_pressure_terms",
     "portable_helper_path_ambiguity",

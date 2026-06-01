@@ -41,6 +41,8 @@ RULE_HEURISTICS = {
     "progressive_disclosure_risk": ("progressive_disclosure_risk",),
     "code_fence_without_helper_script": ("code_fence_without_helper_script",),
     "portable_helper_path_ambiguity": ("portable_helper_path_ambiguity",),
+    "issue_anchor_in_core": ("issue_anchor_in_core",),
+    "dated_incident_in_core": ("dated_incident_in_core",),
 }
 
 RULE_MESSAGES = {
@@ -60,6 +62,14 @@ RULE_MESSAGES = {
     "portable_helper_path_ambiguity": (
         "Skill mentions helper paths that look cwd-relative. "
         "Use `$SKILL_DIR` or source-tree-qualified paths so installed bundles stay portable."
+    ),
+    "issue_anchor_in_core": (
+        "Public skill core carries issue-number or dated incident anchors. "
+        "Move provenance to references, tests, or retro artifacts and keep the core rule general."
+    ),
+    "dated_incident_in_core": (
+        "Public skill core carries dated incident wording. "
+        "Name the stable failure class in the core and keep date-specific provenance outside the trigger contract."
     ),
 }
 

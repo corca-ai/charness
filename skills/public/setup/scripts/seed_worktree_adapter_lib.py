@@ -21,6 +21,8 @@ PACKAGE_MANAGER_PRIORITY: tuple[tuple[str, str], ...] = (
 
 @dataclass(frozen=True)
 class WorktreeAdapterDetection:
+    repo_name: str
+    language: str
     package_manager: str | None
     package_manager_evidence: str | None
     package_manager_variant: str | None
@@ -159,6 +161,8 @@ def detect(repo_root: Path) -> WorktreeAdapterDetection:
         pm_token = package_manager or "npm"
         resolved_argv = tuple(pm_token if token == "__pm__" else token for token in install_argv)
     return WorktreeAdapterDetection(
+        repo_name=repo_root.name,
+        language="en",
         package_manager=package_manager,
         package_manager_evidence=pm_evidence,
         package_manager_variant=variant,
@@ -277,6 +281,8 @@ def render_template(detection: WorktreeAdapterDetection) -> str:
         "# parse inline `[a, b]` arrays). Edit the auto-detected commands below if the\n"
         "# detection picked the wrong tool for this repo.\n"
         "version: 1\n"
+        f"repo: {detection.repo_name}\n"
+        f"language: {detection.language}\n"
         "\n"
         "prepare:\n"
         "  commands:\n"

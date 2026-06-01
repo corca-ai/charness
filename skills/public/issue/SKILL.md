@@ -32,7 +32,7 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" preflight --repo-root . --json
 python3 "$SKILL_DIR/scripts/issue_tool.py" resolve-invocation --repo-root . -- <issue-resolve-args>
 # `select` runs only when the user did not pass an issue number to `issue resolve`.
 python3 "$SKILL_DIR/scripts/issue_tool.py" select --repo <org/repo> --selector "<optional-number-or-range>"
-python3 "$SKILL_DIR/scripts/issue_tool.py" create --repo <org/repo> --title "<title>" --body-file <path>  # #232: body via file
+python3 "$SKILL_DIR/scripts/issue_tool.py" create --repo <org/repo> --title "<title>" --body-file <path>  # body via file
 ```
 
 With no selector, `select` queries the newest open GitHub issue for the target
@@ -62,7 +62,7 @@ repo by created date. It must not use the current session's last created issue.
    `A useful outcome might be...`); avoid prescribing.
 5. Create the issue through `selected_backend` with
    `issue_tool.py create --body-file <path>` — never an inline shell-quoted
-   `--body` (the #232 corruption path; see `references/issue-backend.md`
+   `--body` (the body-corruption path; see `references/issue-backend.md`
    "Body Safety"). Never substitute direct `gh` when another backend is
    selected. Assign only existing repository labels and milestones: gate the
    requested milestone with `issue_tool.py resolve-milestone`, never invent a
@@ -155,7 +155,7 @@ repo by created date. It must not use the current session's last created issue.
   report the backend capability gap — never create a new label/milestone to
   make the request fit.
 - Do not build an issue-create command with a raw multi-line body string; use
-  `issue_tool.py create --body-file` so shell quoting cannot corrupt it (#232).
+  `issue_tool.py create --body-file` so shell quoting cannot corrupt it.
 - Do not silently retarget on retry: surface `target_unavailable` instead of
   falling through to another accessible repo.
 - Render `issue new` closeout only from the verified `{repo, number, url}`

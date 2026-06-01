@@ -43,6 +43,8 @@ skill_ergonomics_runtime_install_skill_paths: []
 vendored_paths: []
 skill_ergonomics_gate_rules:
   - code_fence_without_helper_script
+  - dated_incident_in_core
+  - issue_anchor_in_core
   - long_core
   - mode_option_pressure_terms
   - portable_helper_path_ambiguity

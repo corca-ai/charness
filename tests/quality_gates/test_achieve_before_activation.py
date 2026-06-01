@@ -42,13 +42,12 @@ def test_achieve_before_phase_pins_activation_closeout_clarity() -> None:
 
 
 def test_goal_activation_is_pursue_only_and_failfast() -> None:
-    """#247: `/goal` is pure pursue; shaping is the Before-phase's job (`/achieve`);
+    """`/goal` is pure pursue; shaping is the Before-phase's job (`/achieve`);
     `/goal` fail-fasts on an unshaped goal instead of shaping it. Pin the contract
     on both surfaces so it cannot silently regress to shape-then-run."""
     skill = _norm(ACHIEVE / "SKILL.md")
     lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
 
-    assert "#247" in skill and "#247" in lifecycle
     # /goal pursues only; the lifecycle states it verbatim.
     assert "pure pursue" in lifecycle
     # The deterministic guard the prose leans on is named on both surfaces.
@@ -59,11 +58,10 @@ def test_goal_activation_is_pursue_only_and_failfast() -> None:
 
 
 def test_consequential_defaults_need_discussion_before_activation() -> None:
-    """#276: structural pursue-readiness cannot hide operator decisions."""
+    """Structural pursue-readiness cannot hide operator decisions."""
     skill = _norm(ACHIEVE / "SKILL.md")
     lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
 
-    assert "#276" in skill and "#276" in lifecycle
     assert "Discuss before activation:" in skill
     assert "Discuss before activation:" in lifecycle
     assert "live/prod proof" in skill and "live/prod proof" in lifecycle

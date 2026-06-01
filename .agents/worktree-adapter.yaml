@@ -1,0 +1,38 @@
+# charness worktree adapter - declares how `charness worktree prepare` makes a
+# freshly-created git worktree usable, and which extra `charness worktree doctor`
+# checks decide whether the worktree is ready.
+#
+# argv lists must use block-style YAML (charness's repo-local loader does not
+# parse inline `[a, b]` arrays). Edit the auto-detected commands below if the
+# detection picked the wrong tool for this repo.
+version: 1
+repo: charness
+language: en
+
+prepare:
+  commands:
+    # Package manager auto-detected from package-lock.json (pm=npm).
+    - id: install-deps
+      description: "Install workspace dependencies via npm."
+      timeout_seconds: 600
+      argv:
+        - npm
+        - ci
+    # No hook system detected. If your repo installs git hooks per worktree
+    # (lefthook, husky, simple-git-hooks, or a repo-owned `hooks:install`
+    # script), uncomment and adjust the block below.
+    # - id: install-hooks
+    #   description: "Re-run hook installer for this worktree."
+    #   timeout_seconds: 60
+    #   argv:
+    #     - <your-package-manager>
+    #     - exec
+    #     - <your-hook-tool>
+    #     - install
+  skip_if_doctor_passes: true
+
+# Optional manifest-defined doctor checks layered on top of the canonical suite.
+# Add entries here when you have a repo-specific readiness probe; otherwise the
+# canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) is enough.
+# doctor:
+#   checks: []

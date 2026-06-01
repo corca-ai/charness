@@ -292,6 +292,13 @@ output. Current supported rules:
   and `scripts/`.
 - `code_fence_without_helper_script`
   Fail when repeated bootstrap code fences should become a repo-owned helper.
+- `dated_incident_in_core`
+  Fail when a public skill core names dated incident wording instead of a stable
+  failure class.
+- `issue_anchor_in_core`
+  Fail when a public skill core uses issue-number or dated incident anchors as
+  normative instruction instead of keeping provenance in references, tests, or
+  retro artifacts.
 - `portable_helper_path_ambiguity`
   Fail when helper references look cwd-relative instead of install-portable.
 

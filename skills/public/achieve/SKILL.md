@@ -44,18 +44,18 @@ lifecycle instead of starting a new one.
    - interview from prose with a few high-leverage questions; if the request is
      ambiguous between artifact-only and implementation-continuation paths,
      ask at least one question before saving, or state the assumed interpretation
-     when a strong default settles it (#239)
+     when a strong default settles it
    - establish outcome, non-goals, boundaries, user acceptance, verification
      plan, proof cost, test-duplication pressure, slice sequence, critique plan,
      stop conditions, and reporting expectations
    - replace all `To be filled by the achieve Before-phase` placeholders; any
-     leftover marker leaves the goal unshaped to `--pursue-ready` (#247)
+     leftover marker leaves the goal unshaped to `--pursue-ready`
    - for consequential defaults in Non-Goals, Boundaries, verification,
      interview decisions, or critique findings (live/prod proof,
      issue close/split, broad bundled scope, irreversible side effects, or
      proof-level non-claims), add a non-empty `Discuss before activation:`
      summary before reporting the goal ready to enter; otherwise
-     `--pursue-ready` fails (#276)
+     `--pursue-ready` fails
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself
@@ -63,7 +63,7 @@ lifecycle instead of starting a new one.
    - activation (`/goal`) is pure pursue: check
      `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and fail
      fast to the Before-phase (`/achieve @...`) if unshaped or missing a required
-     activation-discussion summary (#247, #276)
+     activation-discussion summary
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - keep `## Active Operating Frame` current as the short control panel; let
      `## Slice Log` remain the archive
@@ -97,15 +97,16 @@ lifecycle instead of starting a new one.
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing
      actionable, record one per-goal `Retro dispositions: none — <reason>` line.
-   - **disposition gate (#253), for goals Created ≥ 2026-05-30:** a deterministic
+   - **disposition gate, for goals created after the rule landed:** a deterministic
      block blank Auto-Retro when cited retro lists improvements and require a
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is
      presence/binding-only, never a content classifier; pre-rule goals are
      grandfathered.
-   - **coordination floors:** external context needs `Gather:` and release work
-     needs `Release:` for goals Created ≥ 2026-05-31; tracked issue sources or
-     closeout work need `Issue closeout:` for goals Created ≥ 2026-06-02.
-     Presence-only, grandfathered.
+   - **coordination floors (gather + release + issue closeout), for goals
+     created after the rules landed:** an external source in
+     `## Context Sources` needs a `Gather:` step (or `n/a — <reason>`); a touched
+     release surface needs a `Release:` step; tracked issue sources or closeout
+     work need an `Issue closeout:` step. Presence-only, grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
@@ -150,7 +151,7 @@ lifecycle instead of starting a new one.
   does not implement a new execution engine.
 - Do not start executing the goal before the user activates it.
 - Do not shape a goal at `/goal` activation; `/goal` pursues only and
-  fail-fasts on an unshaped goal, routing the operator to `/achieve` (#247).
+  fail-fasts on an unshaped goal, routing the operator to `/achieve`.
 - Do not require every short prompt to become a goal.
 - Do not run broad quality gates after every small commit.
 - Do not make `handoff` the normal running scratchpad while a goal is active.
@@ -161,10 +162,10 @@ lifecycle instead of starting a new one.
 - Do not fabricate token, time, or tool-call metrics the host log does not expose.
 - Do not treat cached input volume alone as waste.
 - Do not collapse `retro` into a path reference; include its substantive findings
-  inline and persist the file (see #233 F2 and `references/lifecycle.md`).
+  inline and persist the file (see `references/lifecycle.md`).
 - Do not leave surfaced improvements as prose-only retro memory; disposition
   each one, or record the falsifiable per-goal `none` line.
-- Do not tighten the deterministic disposition floor (#253) into a content
+- Do not tighten the deterministic disposition floor into a content
   classifier; it proves a review ran, and the reviewer/human judges substance.
 - Do not bake a phase→skill map into `## Coordination Cues`; defer routing to
   `find-skills` and record only the `gather` / `release` presence floors or

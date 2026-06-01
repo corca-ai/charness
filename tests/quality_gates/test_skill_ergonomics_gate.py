@@ -133,6 +133,54 @@ def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) 
     assert "skills/public/demo/SKILL.md" in plain.stdout
 
 
+def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - issue_anchor_in_core",
+                "  - dated_incident_in_core",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "The 2026-05-28 routing miss is the reason this workflow owns next-step routing.",
+                "Preserve the active guard from #123.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert [violation["rule"] for violation in payload["violations"]] == [
+        "issue_anchor_in_core",
+        "dated_incident_in_core",
+    ]
+    assert all(violation["skill_id"] == "demo" for violation in payload["violations"])
+
+
 def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=["typo_rule"])
 

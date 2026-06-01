@@ -49,6 +49,9 @@ def test_repo_root_dot_invocation_writes_file_and_exits_zero(tmp_path: Path) -> 
     # resolved absolute path would still trip operators who eyeball it.
     assert str(repo) not in result.stdout
     assert (repo / ".agents" / "worktree-adapter.yaml").is_file()
+    text = (repo / ".agents" / "worktree-adapter.yaml").read_text(encoding="utf-8")
+    assert "repo: repo\n" in text
+    assert "language: en\n" in text
 
 
 def test_existing_file_refuses_without_force(tmp_path: Path) -> None:
@@ -86,6 +89,8 @@ def test_detection_pnpm_lefthook(tmp_path: Path) -> None:
     rendered = LIB.render_template(detection)
 
     assert detection.package_manager == "pnpm"
+    assert detection.repo_name == "repo"
+    assert detection.language == "en"
     assert detection.hook_system == "lefthook"
     assert detection.hook_install_argv == ("pnpm", "exec", "lefthook", "install")
     assert "- pnpm\n        - install\n        - --frozen-lockfile" in rendered
