@@ -549,13 +549,21 @@ Non-claims:
 Mode: session.
 
 Evidence: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`,
-`charness-artifacts/probe/2026-06-01-open-issue-generative-closeout.json`, final
-carrier `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`, and
-the live GitHub close/open state recorded above.
+`charness-artifacts/probe/2026-06-01-open-issue-generative-closeout.json`,
+`charness-artifacts/probe/2026-06-01-open-issue-generative-closeout-codex-audit.json`,
+final carrier `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`,
+and the live GitHub close/open state recorded above.
+
+Measured cost: goal lifecycle counter reported 2,203,327 tokens over 8,058
+seconds, about 2h14m. Codex session audit recorded 4,316 events, 625
+token-count snapshots, 8 context compactions, 942 function calls, 109 custom
+tool calls, 104 patch applications, 747 `exec_command` calls, 142 `write_stdin`
+polls, and 9 subagent spawns.
 
 Waste: the main cost was coordination around 12 issue dispositions, especially
 the boundary between #185 engineering success and #184 product success. Keeping
-that boundary explicit prevented an overbroad closeout.
+that boundary explicit prevented an overbroad closeout, but the compaction and
+tool-call counts show the cost was substantial.
 
 Critical decisions: #185 closed only as necessary AI/ML engineering conditions;
 #184 stayed open for product-success synthesis and source refresh; #261 stayed
@@ -568,6 +576,10 @@ Next improvements:
   after final push, not only pre-push carrier validation.
 - workflow: applied — verify leave-open issue comments and OPEN state before
   marking a broad issue goal complete.
+- capability: applied — `probe_host_logs.py` now audits the latest Codex
+  rollout JSONL by default, so future retros get token-count snapshots,
+  compactions, tool-call pressure, and repeated-command proxies without a
+  manual follow-up search.
 - memory: applied — durable retro and disposition review artifacts were written
   for this goal.
 

@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-06-01",
   "source_artifact_count": 94,
-  "candidate_count": 586,
+  "candidate_count": 587,
   "top_candidates": [
     {
       "candidate_id": "current_focus:9b8e24ba69d0",
@@ -135,6 +135,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ef545709fb56",
+      "kind": "next_improvement",
+      "lesson": "applied — `probe_host_logs.py` now audits the latest Codex rollout JSONL by default, so future retros see token-count snapshots, compactions, tool-call pressure, and repeated-command proxies without a manual follow-up search.",
+      "normalized_key": "applied probe host logs py now audits the latest codex rollout jsonl by default",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b9ad7b1f9bf6",
       "kind": "next_improvement",
       "lesson": "applied — require leave-open rows to receive live comments and state checks before marking the goal complete.",
@@ -219,26 +239,6 @@
       "kind": "next_improvement",
       "lesson": "Before rerunning an expensive scoped mutation campaign, write the survivor bucket plan into the goal slice log or a scratch artifact: real-kill, likely-equivalent, and policy-decision.",
       "normalized_key": "before rerunning an expensive scoped mutation campaign write the survivor bucket plan into the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:0460e9e2d246",
-      "kind": "next_improvement",
-      "lesson": "Carry forward that scoped mutation score output can be useful as inventory proof even when the normal scheduled-gate wrapper reports failure due to missing sample-manifest context.",
-      "normalized_key": "carry forward that scoped mutation score output can be useful as inventory proof even",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
       "latest_source_date": "2026-06-01",
@@ -371,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
+          "date": "2026-06-01",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ef545709fb56",
+      "kind": "next_improvement",
+      "lesson": "applied — `probe_host_logs.py` now audits the latest Codex rollout JSONL by default, so future retros see token-count snapshots, compactions, tool-call pressure, and repeated-command proxies without a manual follow-up search.",
+      "normalized_key": "applied probe host logs py now audits the latest codex rollout jsonl by default",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
+      "latest_source_date": "2026-06-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
           "date": "2026-06-01",
           "section": "Next Improvements"
         }

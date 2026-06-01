@@ -6,6 +6,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from scripts import codex_session_jsonl_audit
+
 ISO_TS_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 
 
@@ -144,11 +146,100 @@ def _codex_non_toolcall_lines(text: str) -> list[str]:
     return [line for line in text.splitlines() if "ToolCall:" not in line]
 
 
+def _pick_codex_session_log(codex_root: Path) -> Path | None:
+    sessions_root = codex_root / "sessions"
+    if not sessions_root.is_dir():
+        return None
+    matches = sorted(sessions_root.glob("**/rollout-*.jsonl"))
+    if not matches:
+        return None
+    return max(matches, key=lambda path: path.stat().st_mtime)
+
+
+def _codex_session_audit_summary(path: Path) -> dict[str, Any]:
+    audit = codex_session_jsonl_audit.audit_session_jsonl(path, top=20)
+    measured = audit.get("measured") if isinstance(audit.get("measured"), dict) else {}
+    proxy = audit.get("proxy") if isinstance(audit.get("proxy"), dict) else {}
+    return {
+        "source": audit.get("source", {"kind": "session-jsonl", "path": str(path)}),
+        "warnings": audit.get("warnings", []),
+        "measured": {
+            "total_events": measured.get("total_events", 0),
+            "token_count_snapshots": measured.get("token_count_snapshots", 0),
+            "context_compactions": measured.get("context_compactions", 0),
+            "function_calls": measured.get("function_calls", 0),
+            "custom_tool_calls": measured.get("custom_tool_calls", 0),
+            "patch_applications": measured.get("patch_applications", 0),
+            "subagent": measured.get("subagent", {}),
+        },
+        "proxy": {
+            "repeated_broad_gates": proxy.get("repeated_broad_gates", {}),
+            "repeated_vcs_commands": proxy.get("repeated_vcs_commands", {}),
+        },
+        "notes": audit.get("notes", []),
+    }
+
+
+def _codex_metrics_from_signals(
+    *,
+    log_source: Path,
+    session_log: Path | None,
+    has_timestamp: bool,
+    has_turn_id: bool,
+    has_tool_call: bool,
+    has_token_signal: bool,
+    session_measured: dict[str, Any],
+) -> dict[str, dict[str, str]]:
+    session_token_snapshots = int(session_measured.get("token_count_snapshots") or 0)
+    session_tool_calls = int(session_measured.get("function_calls") or 0) + int(
+        session_measured.get("custom_tool_calls") or 0
+    )
+    token_source = str(session_log) if session_log is not None else str(log_source)
+    tool_source = str(session_log) if session_tool_calls else str(log_source)
+    return {
+        "duration": metric(
+            "derivable" if has_timestamp else "unavailable",
+            source=str(log_source) if log_source.exists() else None,
+            detail="timestamped runtime log lines exist" if has_timestamp else "No timestamped runtime lines found",
+        ),
+        "turn_count": metric(
+            "derivable" if has_turn_id else "unavailable",
+            source=str(log_source) if log_source.exists() else None,
+            detail="turn.id markers exist in runtime logs" if has_turn_id else "No turn.id markers found",
+        ),
+        "token_count": metric(
+            "available" if session_token_snapshots else "unavailable",
+            source=token_source,
+            detail=_codex_token_detail(session_token_snapshots, has_token_signal),
+        ),
+        "tool_call_count": metric(
+            "derivable" if has_tool_call or session_tool_calls else "unavailable",
+            source=tool_source,
+            detail=_codex_tool_detail(session_tool_calls, has_tool_call),
+        ),
+    }
+
+
+def _codex_token_detail(session_token_snapshots: int, has_token_signal: bool) -> str:
+    if session_token_snapshots:
+        return f"Codex session JSONL exposes {session_token_snapshots} token_count snapshot(s)"
+    if has_token_signal:
+        return "Token-like strings appeared only in ambiguous runtime text; no stable session JSONL token_count events found"
+    return "Default inspected Codex logs did not expose stable token usage fields"
+
+
+def _codex_tool_detail(session_tool_calls: int, has_tool_call: bool) -> str:
+    if session_tool_calls:
+        return f"Codex session JSONL exposes {session_tool_calls} function/custom tool call(s)"
+    return "ToolCall lines exist in runtime logs" if has_tool_call else "No ToolCall lines found"
+
+
 def probe_codex(home: Path) -> dict[str, Any]:
     codex_root = home / ".codex"
     history_path = codex_root / "history.jsonl"
     tui_log = codex_root / "log" / "codex-tui.log"
     sqlite_log = codex_root / "logs_2.sqlite"
+    session_log = _pick_codex_session_log(codex_root)
 
     result: dict[str, Any] = {
         "detected": codex_root.exists(),
@@ -165,7 +256,7 @@ def probe_codex(home: Path) -> dict[str, Any]:
             }
         )
 
-    if not tui_log.exists() and not sqlite_log.exists():
+    if not tui_log.exists() and not sqlite_log.exists() and session_log is None:
         result["metrics"] = {
             "duration": metric("unavailable", detail="No Codex runtime logs found"),
             "turn_count": metric("unavailable", detail="No Codex runtime logs found"),
@@ -175,7 +266,9 @@ def probe_codex(home: Path) -> dict[str, Any]:
         return result
 
     log_source = tui_log if tui_log.exists() else sqlite_log
-    text = _read_text(log_source) if log_source.suffix != ".sqlite" else _read_codex_sqlite_log(log_source)
+    text = _read_text(log_source) if log_source.exists() and log_source.suffix != ".sqlite" else (
+        _read_codex_sqlite_log(log_source) if log_source.exists() else ""
+    )
     non_toolcall_lines = _codex_non_toolcall_lines(text)
     has_timestamp = any(ISO_TS_PREFIX.match(line) for line in non_toolcall_lines)
     has_turn_id = any("turn.id=" in line for line in non_toolcall_lines)
@@ -186,42 +279,30 @@ def probe_codex(home: Path) -> dict[str, Any]:
         for marker in ("tokenUsage/updated", "ThreadTokenUsageUpdated", "input_tokens", "output_tokens")
     )
 
-    result["sources"].append(
-        {
-            "kind": "tui-log" if log_source == tui_log else "sqlite-log",
-            "path": str(log_source),
-            "status": "used",
-        }
-    )
+    if log_source.exists():
+        result["sources"].append(
+            {
+                "kind": "tui-log" if log_source == tui_log else "sqlite-log",
+                "path": str(log_source),
+                "status": "used",
+            }
+        )
     if sqlite_log.exists():
         result["sources"].append({"kind": "sqlite-log", "path": str(sqlite_log), "status": "available"})
-
-    result["metrics"] = {
-        "duration": metric(
-            "derivable" if has_timestamp else "unavailable",
-            source=str(log_source),
-            detail="timestamped runtime log lines exist" if has_timestamp else "No timestamped runtime lines found",
-        ),
-        "turn_count": metric(
-            "derivable" if has_turn_id else "unavailable",
-            source=str(log_source),
-            detail="turn.id markers exist in runtime logs" if has_turn_id else "No turn.id markers found",
-        ),
-        "token_count": metric(
-            "unavailable",
-            source=str(log_source),
-            detail=(
-                "Token-like strings appeared only in ambiguous runtime text; no stable default log signal proven"
-                if has_token_signal
-                else "Default inspected Codex logs did not expose stable token usage fields"
-            ),
-        ),
-        "tool_call_count": metric(
-            "derivable" if has_tool_call else "unavailable",
-            source=str(log_source),
-            detail="ToolCall lines exist in runtime logs" if has_tool_call else "No ToolCall lines found",
-        ),
-    }
+    session_summary = _codex_session_audit_summary(session_log) if session_log is not None else None
+    if session_summary is not None:
+        result["sources"].append({"kind": "session-jsonl", "path": str(session_log), "status": "used"})
+        result["session_audit"] = session_summary
+    session_measured = session_summary.get("measured", {}) if isinstance(session_summary, dict) else {}
+    result["metrics"] = _codex_metrics_from_signals(
+        log_source=log_source,
+        session_log=session_log,
+        has_timestamp=has_timestamp,
+        has_turn_id=has_turn_id,
+        has_tool_call=has_tool_call,
+        has_token_signal=has_token_signal,
+        session_measured=session_measured,
+    )
     return result
 
 

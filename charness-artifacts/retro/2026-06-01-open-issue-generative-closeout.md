@@ -8,11 +8,18 @@ This retro covers the 2026-06-01 goal that turned the active handoff plus all 12
 
 ## Evidence Summary
 
-Evidence used: the goal artifact `charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`, final carrier `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`, final broad `./scripts/run-quality.sh --read-only` pass, `issue_tool.py verify-closeout --expect-state CLOSED`, live `gh issue` state for #261/#184, and final fresh-eye review by Ptolemy.
+Evidence used: the goal artifact `charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`, final carrier `charness-artifacts/issue/2026-06-01-open-issue-final-carrier.md`, final broad `./scripts/run-quality.sh --read-only` pass, `issue_tool.py verify-closeout --expect-state CLOSED`, live `gh issue` state for #261/#184, final fresh-eye review by Ptolemy, goal DB lifecycle counters, and Codex session audit `charness-artifacts/probe/2026-06-01-open-issue-generative-closeout-codex-audit.json`.
+
+## Measured Cost
+
+- Goal lifecycle counter: 2,203,327 tokens over 8,058 seconds, about 2h14m.
+- Codex session audit: 4,316 events, 625 token-count snapshots, 8 context compactions, 942 function calls, 109 custom tool calls, and 104 patch applications.
+- Tool pressure: 747 `exec_command` calls, 142 `write_stdin` polls, 109 `apply_patch` calls, 9 subagent spawns, 16 subagent waits, and 4 subagent closes.
+- Repetition pressure proxies: `git status` 61, `git diff` 40, `./scripts/check-markdown.sh` 23, `pytest` 26, and `ruff` 25. These are proxy counts, not all waste; some are expected across a seven-slice goal.
 
 ## Waste
 
-The main cost was not implementation churn; it was coordination cost from carrying many issue dispositions until the final carrier. The most expensive risk was ambiguity around when engineering success could close #185 while product success #184 stayed open. Resolving that before the final carrier prevented a broad, misleading closeout.
+The main cost was coordination cost from carrying many issue dispositions until the final carrier. That cost is visible in 8 context compactions, 1,051 total tool calls, repeated VCS checks, and repeated broad-gate probes. The most expensive risk was ambiguity around when engineering success could close #185 while product success #184 stayed open. Resolving that before the final carrier prevented a broad, misleading closeout, but it also consumed a large share of the run's 2.2M goal-token budget.
 
 ## Critical Decisions
 
@@ -31,6 +38,7 @@ A Daniel Kahneman base-rate lens would have treated closeout-keyword mistakes an
 
 - workflow: applied — use `issue_tool.py verify-closeout --expect-state CLOSED` after final push, not only draft/carrier validation before push.
 - workflow: applied — require leave-open rows to receive live comments and state checks before marking the goal complete.
+- capability: applied — `probe_host_logs.py` now audits the latest Codex rollout JSONL by default, so future retros see token-count snapshots, compactions, tool-call pressure, and repeated-command proxies without a manual follow-up search.
 - memory: applied — this retro artifact and the goal Auto-Retro bind the closeout lesson to durable artifacts.
 
 ## Sibling Search

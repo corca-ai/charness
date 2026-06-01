@@ -17,7 +17,7 @@
 - Add a `commit-msg` hook, not a `pre-commit` hook, that recognizes staged issue-closeout artifacts and blocks the commit when the message lacks required close keywords and ledger fields. `pre-commit` can only flag staged context; it cannot validate the final commit message. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
 - Add a small repo-owned survivor inventory helper that parses Cosmic Ray dump outcome casing correctly and emits by-file/by-operator/by-line summaries without ad hoc parsing. (source: `charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md`)
 - Add release-helper preflight as a specialized instance of the same invariant: when the helper is about to create a direct-to-default commit for a resolved tranche, empty `close_issue_numbers` should require an explicit "no issues close" decision. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
-- applied — require leave-open rows to receive live comments and state checks before marking the goal complete. (source: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`)
+- applied — `probe_host_logs.py` now audits the latest Codex rollout JSONL by default, so future retros see token-count snapshots, compactions, tool-call pressure, and repeated-command proxies without a manual follow-up search. (source: `charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md`)
 
 ## Selection Policy
 

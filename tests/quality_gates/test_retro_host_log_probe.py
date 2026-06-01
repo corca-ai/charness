@@ -47,6 +47,45 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
     codex_log_dir.mkdir(parents=True)
     (home / ".codex" / "history.jsonl").write_text('{"session_id":"s","text":"prompt"}\n', encoding="utf-8")
     (home / ".codex" / "logs_2.sqlite").write_text("", encoding="utf-8")
+    codex_session_dir = home / ".codex" / "sessions" / "2026" / "04" / "14"
+    codex_session_dir.mkdir(parents=True)
+    (codex_session_dir / "rollout-2026-04-14T12-00-00-demo.jsonl").write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "timestamp": "2026-04-14T12:01:00Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "token_count",
+                            "info": {
+                                "total_token_usage": {
+                                    "input_tokens": 10,
+                                    "cached_input_tokens": 4,
+                                    "output_tokens": 2,
+                                    "reasoning_output_tokens": 1,
+                                    "total_tokens": 12,
+                                }
+                            },
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "timestamp": "2026-04-14T12:01:01Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "function_call",
+                            "name": "exec_command",
+                            "arguments": json.dumps({"cmd": "pytest tests"}),
+                        },
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (codex_log_dir / "codex-tui.log").write_text(
         "\n".join(
             [
@@ -72,7 +111,9 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
     assert codex["metrics"]["duration"]["status"] == "derivable"
     assert codex["metrics"]["turn_count"]["status"] == "derivable"
     assert codex["metrics"]["tool_call_count"]["status"] == "derivable"
-    assert codex["metrics"]["token_count"]["status"] == "unavailable"
+    assert codex["metrics"]["token_count"]["status"] == "available"
+    assert codex["session_audit"]["measured"]["token_count_snapshots"] == 1
+    assert codex["session_audit"]["measured"]["function_calls"] == 1
 
 
 def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path) -> None:

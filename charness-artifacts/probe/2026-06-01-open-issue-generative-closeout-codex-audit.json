@@ -1,0 +1,134 @@
+{
+  "goal_slug": "handoff-open-issue-generative-closeout",
+  "measured": {
+    "context_compactions": 8,
+    "custom_tool_calls": 109,
+    "custom_tool_names": {
+      "apply_patch": 109
+    },
+    "event_types": {
+      "compacted": 4,
+      "event_msg": 1588,
+      "response_item": 2704,
+      "session_meta": 1,
+      "turn_context": 19
+    },
+    "function_call_names": {
+      "close_agent": 4,
+      "exec_command": 747,
+      "get_goal": 1,
+      "resume_agent": 1,
+      "send_input": 7,
+      "spawn_agent": 9,
+      "update_goal": 1,
+      "update_plan": 14,
+      "wait_agent": 16,
+      "write_stdin": 142
+    },
+    "function_calls": 942,
+    "goal_or_plan_updates": 14,
+    "patch_applications": 104,
+    "subagent": {
+      "close": 4,
+      "spawn": 9,
+      "wait": 16
+    },
+    "subtypes": {
+      "event_msg/agent_message": 160,
+      "event_msg/context_compacted": 4,
+      "event_msg/patch_apply_end": 104,
+      "event_msg/task_complete": 13,
+      "event_msg/task_started": 15,
+      "event_msg/thread_goal_updated": 652,
+      "event_msg/thread_rolled_back": 1,
+      "event_msg/token_count": 625,
+      "event_msg/turn_aborted": 1,
+      "event_msg/user_message": 13,
+      "response_item/custom_tool_call": 109,
+      "response_item/custom_tool_call_output": 109,
+      "response_item/function_call": 942,
+      "response_item/function_call_output": 941,
+      "response_item/message": 190,
+      "response_item/reasoning": 405,
+      "response_item/tool_search_call": 4,
+      "response_item/tool_search_output": 4
+    },
+    "task_completions": 13,
+    "token_count_snapshots": 625,
+    "total_events": 4316
+  },
+  "notes": [
+    "patch_applications counts patch_apply_end events; those patches also appear in custom_tool_calls as apply_patch, so the two fields overlap rather than add."
+  ],
+  "proxy": {
+    "command_families": {
+      "./scripts/check-markdown.sh": 23,
+      "SESSION=/home/hwidong/.codex/sessions/2026/06/01/rollout-2026-06-01T08-10-22-019e804d-7b87-7d50-9d6f-bb97691421c6.jsonl;": 9,
+      "gh": 24,
+      "git add": 15,
+      "git diff": 40,
+      "git log": 13,
+      "git status": 61,
+      "ls": 10,
+      "pytest": 26,
+      "python3": 247,
+      "rg": 48,
+      "ruff": 25,
+      "sed": 149,
+      "send_input": 7,
+      "spawn_agent": 9,
+      "sqlite3": 7,
+      "update_plan": 14,
+      "wait_agent": 16,
+      "wc": 10,
+      "write_stdin": 142
+    },
+    "note": "Activity proxies derived from command shape, not measured cost.",
+    "phases": {
+      "delegation": 25,
+      "exploration": 239,
+      "other": 458,
+      "triage": 59,
+      "vcs": 94,
+      "verification": 67
+    },
+    "repeated_broad_gates": {
+      "./scripts/check-markdown.sh": 23,
+      "pytest": 26,
+      "ruff": 25
+    },
+    "repeated_vcs_commands": {
+      "git add": 15,
+      "git diff": 40,
+      "git log": 13,
+      "git show": 3,
+      "git status": 61
+    }
+  },
+  "schema_version": 1,
+  "snapshots": {
+    "last_rate_limits": {
+      "credits": null,
+      "limit_id": "codex",
+      "limit_name": null,
+      "plan_type": "pro",
+      "primary": {
+        "resets_at": 1780297150,
+        "used_percent": 15.0,
+        "window_minutes": 300
+      },
+      "rate_limit_reached_type": null,
+      "secondary": {
+        "resets_at": 1780845727,
+        "used_percent": 7.0,
+        "window_minutes": 10080
+      }
+    },
+    "note": "Point-in-time values; not cumulative totals."
+  },
+  "source": {
+    "kind": "session-jsonl",
+    "path": "/home/hwidong/.codex/sessions/2026/06/01/rollout-2026-06-01T08-10-22-019e804d-7b87-7d50-9d6f-bb97691421c6.jsonl"
+  },
+  "warnings": []
+}
