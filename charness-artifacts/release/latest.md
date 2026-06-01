@@ -3,12 +3,12 @@ Date: 2026-06-01
 
 ## Scope
 
-Advanced `charness` toward release `0.13.4` (tag `v0.13.4`) through the repo-owned release helper.
+Advanced `charness` toward release `0.13.5` (tag `v0.13.5`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.13.3`
-- target version: `0.13.4`
+- previous version: `0.13.4`
+- target version: `0.13.5`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,40 +17,30 @@ Advanced `charness` toward release `0.13.4` (tag `v0.13.4`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.13.4`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.13.5`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- No configured release-time real-host verification trigger matched this slice.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
-- Run `charness tool doctor cautilus --json` before installing `cautilus` and confirm the missing-binary state still surfaces an install document URL instead of a guessed package-manager command.
-- Follow the official Cautilus install script at `https://github.com/corca-ai/cautilus/blob/main/install.sh`, then verify `cautilus --version` and `cautilus version --verbose`.
-- Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
+- No configured release-time real-host proof trigger matched this slice.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.4-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.13.4`.
+- Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.5-reviewer-tier-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -58,11 +48,11 @@ Advanced `charness` toward release `0.13.4` (tag `v0.13.4`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.13.4 (maintenance patch: bare handoff pickup now filters local-state preflight, completed goal activation, and cadence/invariant constraints before ranking chunks).
+- Run `charness update` to pull 0.13.5 (maintenance patch: installed handoff can load the live issue source again, achieve now blocks hidden consequential activation decisions, and reviewer-tier guardrails fail earlier before broad verification).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
 - HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
