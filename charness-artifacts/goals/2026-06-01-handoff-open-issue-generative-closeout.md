@@ -4,13 +4,10 @@ Status: active
 Created: 2026-06-01
 Activation: `/goal @charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md`
 
-This file is the living goal scratchpad. It becomes active only when the user
-runs the activation command.
+This file is the living goal scratchpad. It is active as of 2026-06-01 KST.
 
-Mode: artifact-only draft with pre-activation decisions captured. This
-Before-phase shapes the sequence and stops. The current session owns discussion
-and decision capture; the next session should activate this file with `/goal`
-and implement the accepted sequence.
+Mode: active goal execution. The pre-activation decisions are frozen below; this
+run now implements the accepted sequence and records slice evidence here.
 
 ## Goal
 
@@ -59,9 +56,10 @@ reason.
 - New open issues discovered at activation get a matrix row marked
   `out of activated scope` or are explicitly accepted into scope before the run
   proceeds beyond Slice 0.
-- Local branch state matters: `main` is currently ahead of `origin/main` by
-  `33971f2 Document achieve long-goal route` plus the goal-draft commit. These
-  commits are not published early; they are folded into the final carrier.
+- Local branch state matters: activation found `main` ahead of `origin/main` by
+  five local commits, and Slice 1 added `cd9cfc5 Clarify mutation report
+  blockers`. These commits are not published early; they are folded into the
+  final carrier.
 - Stop and ask the user when a slice requires product metric choices for #184,
   release/version policy, live issue mutation before the final carrier, push/PR
   publication before the final carrier, or accepting a lower quality/mutation
@@ -150,7 +148,7 @@ reason.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix | Prevent stale handoff or tracker state from driving a broad closeout run | Current `gh issue list`, `git status`, `origin/main..HEAD`; matrix rows for #272/#265/#261/#259/#258/#252/#243/#241/#237/#236/#185/#184; final-carrier authorization recorded | complete |
-| 1 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation report is quality-blocking even though Python survived count is 0, because changed-line blockers excluded changed files before mutation | Root cause/debug record; decide stale vs real blocker; changed-line coverage/selection proof; local mutation/quality proof; issue closeout row | pending |
+| 1 | Restore or reclassify the current mutation-gate blocker (#272) | A current mutation report is quality-blocking even though Python survived count is 0, because changed-line blockers excluded changed files before mutation | Root cause/debug record; decide stale vs real blocker; changed-line coverage/selection proof; local mutation/quality proof; issue closeout row | complete |
 | 2 | Finish the mutation survivor cluster (#265/#261) through this session's accepted policy boundary | Survivor triage depends on a trustworthy mutation baseline and can otherwise absorb unlimited effort | Updated survivor inventory; real survivors killed; equivalent/policy decisions applied from this session; close/leave-open rows for #265/#261 | pending |
 | 3 | Close workflow-safety issues that affect future closeout quality (#258/#259/#237/#236) | These reduce risk while working the rest of the backlog: review index safety, symbol residue, live-apply commit classification, CI-only retry discipline | Implemented guards/docs/tests or explicit non-implementation decisions; closeout rows for each issue | pending |
 | 4 | Close setup/portability extension issues (#252/#241) | These share the host-extension/compact-contract boundary and should be designed together | Compact AGENTS/setup contract and create-skill adapter extension path, or scoped split with reasons; targeted validation | pending |
@@ -197,7 +195,7 @@ final carrier after local proof and carrier-body validation.
 
 | Issue | Cluster | Intended Disposition | Closeout Carrier / Evidence |
 | --- | --- | --- | --- |
-| #272 | Mutation/report reliability | Close if the report clearly separates score result from changed-line blocker result and the blocker is proven stale, over-strict, or real with targeted proof | Commit/PR body plus issue close/comment explaining `Killed: 78`, `Survived: 0`, score pass, and blocker disposition |
+| #272 | Mutation/report reliability | Close in final carrier | `cd9cfc5 Clarify mutation report blockers` separates overall status, mutation score, and blocking signals; debug artifact `charness-artifacts/debug/2026-06-01-issue-272-mutation-report-clarity.md`; final PR/issue carrier should explain `Killed: 78`, `Survived: 0`, score pass, and changed-line blocker disposition |
 | #265 | Mutation/report reliability | Close after current-head scoped survivor inventory is refreshed and all real survivors are killed or explicitly dispositioned | Mutation inventory, targeted RED/GREEN proof where applicable, final matrix row |
 | #261 | Mutation/report reliability | Conditional: close only if equivalent/low-value survivor policy/reporting is implemented; otherwise leave open with the exact remaining policy gap | Policy/report implementation proof or leave-open note naming the unimplemented standard |
 | #259 | Closeout/workflow safety | Close after a cheap symbol/concept residue advisory exists for public symbol deletion | Advisory helper/gate proof and docs/skill reference update |
@@ -215,7 +213,7 @@ final carrier after local proof and carrier-body validation.
 _Goal activated on 2026-06-01 KST. Slice reports below are the running source of
 truth._
 
-### Slice 1: Slice 0 activation and live backlog refresh
+### Slice 0: Activation and live backlog refresh
 
 - Objective: Refresh handoff, branch, open-issue state, and pre-activation decisions; build the closeout matrix.
 - Why this approach: The goal spans the whole live open backlog, so execution must start from current tracker and branch state rather than the shaping snapshot.
@@ -228,6 +226,20 @@ truth._
 - Off-goal findings: No new open issues discovered; no out-of-activated-scope rows needed.
 - Lessons carried forward: Keep all live issue mutation and publish work for the final carrier; treat the issue matrix as the source of truth for close vs leave-open decisions.
 - Metrics: Metrics: when available.
+
+### Slice 1: Issue 272 mutation report clarity
+
+- Objective: Resolve the confusing mutation report where overall Status: FAIL appeared alongside Killed: 78, Survived: 0, and a passing reachable score.
+- Why this approach: #272 was a report-interpretation blocker: the gate could fail correctly on changed-line coverage/selection while the single status row made it look like survived mutants caused the failure.
+- Commits: cd9cfc5 Clarify mutation report blockers
+- What changed: Separated mutation summary rendering into Status, Mutation score, and Blocking signals rows; documented how to read score-pass/blocker-fail reports; pinned changed-line blocker and advisory-only PASS report shapes in tests; recorded a debug artifact and refreshed the seam-risk index; synced the plugin mirror and froze the quality dogfood note.
+- Alternatives rejected: Did not weaken or remove the changed-line blocker; did not run live Cautilus because the planner reported no proof kind and deterministic validation owned the slice.
+- Targeted verification: PASS: pytest -q tests/quality_gates/test_quality_mutation_score_validity.py tests/quality_gates/test_check_mutation_score_partial.py (30 passed); PASS: pytest -q tests/quality_gates/test_public_skill_dogfood.py tests/quality_gates/test_quality_mutation_score_validity.py tests/quality_gates/test_check_mutation_score_partial.py (32 passed); PASS: ruff check scripts/check_mutation_score.py tests/quality_gates/test_quality_mutation_score_validity.py; PASS: python3 -m py_compile scripts/check_mutation_score.py; PASS: python3 scripts/validate_debug_artifact.py --repo-root .; PASS: python3 scripts/validate_public_skill_dogfood.py --repo-root .; PASS: python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review (latest run completed, including broad pytest and agent-browser runtime guard).
+- Test duplication pressure: Expanded existing mutation-score validity tests only; no new test file. check_python_lengths passes, with scripts/check_mutation_score.py at 477/480 and in advisory warn band.
+- Critique: Fresh-eye read-only subagent Banach reviewed the diff and reported No findings; it confirmed mutation_metrics/main pass/fail semantics stayed unchanged and the new changed-line label maps to the existing changed_scope_gap_count blocker.
+- Off-goal findings: Cautilus planner reported next_action none / proof_kinds none; routine deterministic validation owns this slice. scripts/check_mutation_score.py is near the hard length limit and should get a helper-module split before more expansion.
+- Lessons carried forward: For mutation reports, keep overall gate status, score threshold result, and non-score blockers separate so a correct failure is not misread as a survived-mutant failure.
+- Metrics: Usage episode emitted by slice closeout at `.charness/usage-episodes/usage_episode.jsonl` with episode id `slice-closeout-3dd74c6ba699474d80591f59159b525e`; host token/tool metrics unavailable.
 
 ## Context Sources
 
