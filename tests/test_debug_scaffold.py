@@ -51,6 +51,11 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "## Interrupt Decision" in payload["template"]
     assert "- Next Step: impl" in payload["template"]
     assert "## Verification" in payload["template"]
+    assert "## Invariant Proof" in payload["template"]
+    assert "- Producer Proof: n/a" in payload["template"]
+    assert "- Final-Consumer Proof: n/a" in payload["template"]
+    assert "- Interface-Shape Sibling Scan: n/a" in payload["template"]
+    assert "- Non-Claims: n/a" in payload["template"]
 
     artifact_path = repo / payload["artifact_path"]
     artifact_path.parent.mkdir(parents=True)

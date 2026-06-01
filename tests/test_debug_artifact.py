@@ -77,6 +77,14 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "root cause",
                 "",
+                "## Invariant Proof",
+                "",
+                "- Invariant: n/a - not a workflow-boundary propagation bug",
+                "- Producer Proof: n/a",
+                "- Final-Consumer Proof: n/a",
+                "- Interface-Shape Sibling Scan: n/a",
+                "- Non-Claims: n/a",
+                "",
                 "## Detection Gap",
                 "",
                 "- test suite | did not assert volatile root exclusion | add `.cautilus` to ignore set",
@@ -146,6 +154,29 @@ def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path
     assert result.returncode == 1
     assert "missing required section `## Seam Risk`" in result.stderr
     assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
+
+
+def test_validate_debug_artifact_requires_invariant_proof_for_latest(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact().replace(
+            "## Invariant Proof\n\n- Invariant: n/a - not a workflow-boundary propagation bug\n- Producer Proof: n/a\n- Final-Consumer Proof: n/a\n- Interface-Shape Sibling Scan: n/a\n- Non-Claims: n/a\n\n",
+            "",
+        ),
+    )
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "missing required section `## Invariant Proof`" in result.stderr
+
+
+def test_validate_debug_artifact_requires_invariant_proof_fields(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact().replace("- Final-Consumer Proof: n/a\n", ""),
+    )
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "missing required line `- Final-Consumer Proof: ...`" in result.stderr
 
 
 def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(tmp_path: Path) -> None:

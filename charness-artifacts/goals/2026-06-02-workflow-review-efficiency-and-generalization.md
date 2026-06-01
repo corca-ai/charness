@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 critique cadence is complete; Slice 3 invariant-first
-  bug review is next.
-- Next action: encode invariant-first review guidance without coupling it to
-  #275/#276-specific filenames or issue numbers.
+- Current slice: Slice 3 invariant-first bug review is complete; Slice 4
+  sibling-pattern scan and disposition is next.
+- Next action: audit adjacent workflow-boundary patterns and classify each
+  finding as applied, issue, rejected, or deferred with owner/surface.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -132,7 +132,7 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 | 0 | Discuss and lock activation choices | The user explicitly questioned overuse of `find-skills`, overuse of subagents, and over-coupled fixes | `Discuss before activation` has concrete decisions and this artifact passes `--pursue-ready` | completed |
 | 1 | Normalize capability-routing guidance | Prevent startup inventory from becoming repeated visible noise while preserving useful routing discovery | Updated owning contract/reference or helper behavior; focused tests/validators for no unnecessary pointer churn or output where applicable | completed |
 | 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | completed |
-| 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | planned |
+| 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | completed |
 | 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | planned |
 | 5 | Validate, critique, and close out | Changes affect operating contracts and must not silently increase process cost | Surface sync if needed, focused/broad gate as appropriate, bounded final critique, complete goal artifact, handoff refreshed | planned |
 
@@ -219,6 +219,19 @@ goal:
   `charness-artifacts/critique/2026-06-02-critique-cadence-slice.md`; blockers
   for stale packet wording, incomplete risk-class symmetry, active-goal status,
   handoff pickup state, and package durability were folded.
+- 2026-06-02 Slice 3 complete: added
+  `skills/public/debug/references/invariant-first-review.md` for
+  producer-to-final-consumer workflow-boundary bugs, wired `debug` and
+  `issue` causal review to consume the invariant substrate, and added
+  `## Invariant Proof` to current debug artifacts through the scaffold and
+  validator. Focused tests cover the artifact consumer path, scaffold output,
+  and section-scoped causal-review references. Fresh-eye review consumed
+  `charness-artifacts/critique/2026-06-02-invariant-first-bug-review-slice-packet.md`
+  and is recorded at
+  `charness-artifacts/critique/2026-06-02-invariant-first-bug-review-slice.md`;
+  blockers for missing standalone debug consumer proof, prose-heavy tests,
+  incomplete packet context, dogfood date drift, active-goal state, and handoff
+  closeout were folded.
 
 ## Context Sources
 

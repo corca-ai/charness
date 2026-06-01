@@ -29,14 +29,14 @@
   synthesis from the maintainer's newer thinking and source thread.
 - Active workflow-review goal exists:
   [workflow review efficiency and generalization](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md).
-  Slice 2 critique cadence is complete; continue with invariant-first bug
-  review.
+  Slice 3 invariant-first bug review is complete; continue with Slice 4
+  sibling-pattern scan and disposition.
 
 ## Next Session
 
 1. Continue
    `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.
-   Continue with Slice 3 invariant-first review guidance.
+   Continue with Slice 4 sibling-pattern scan and disposition findings.
 2. After that goal is completed or paused, pick #184 for product-success
    synthesis or #261 for the mutation-standard policy decision.
 

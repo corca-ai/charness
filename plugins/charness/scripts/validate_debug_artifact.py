@@ -57,6 +57,7 @@ REQUIRED_SECTIONS = (
     "## Prevention",
 )
 CURRENT_DIAGNOSIS_SECTIONS = (
+    "## Invariant Proof",
     "## Detection Gap",
     "## Sibling Search",
 )
@@ -183,6 +184,24 @@ def validate_current_interrupt_sections(lines: list[str]) -> None:
             raise ValidationError("forced risk interrupt must point `Handoff Artifact` at `charness-artifacts/spec/*.md`")
 
 
+def validate_current_invariant_proof(lines: list[str]) -> None:
+    invariant_lines = section_lines(
+        lines,
+        "## Invariant Proof",
+        ("## Invariant Proof", "## Detection Gap", "## Sibling Search", "## Seam Risk"),
+    )
+    extract_prefixed_values(
+        invariant_lines,
+        (
+            "- Invariant: ",
+            "- Producer Proof: ",
+            "- Final-Consumer Proof: ",
+            "- Interface-Shape Sibling Scan: ",
+            "- Non-Claims: ",
+        ),
+    )
+
+
 def validate_debug_artifact(path: Path) -> None:
     lines = read_lines(path)
     validate_title(
@@ -202,6 +221,7 @@ def validate_debug_artifact(path: Path) -> None:
         validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS)
         validate_nonempty_sections(lines, required_sections)
         validate_candidate_causes(lines)
+        validate_current_invariant_proof(lines)
         validate_sibling_followups(lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE)
         validate_current_interrupt_sections(lines)
         return

@@ -38,6 +38,7 @@ SECTIONS = (
     "## Hypothesis",
     "## Verification",
     "## Root Cause",
+    "## Invariant Proof",
     "## Detection Gap",
     "## Sibling Search",
     "## Seam Risk",
@@ -55,6 +56,20 @@ def render_template(*, title: str, date_text: str) -> str:
     for heading in SECTIONS:
         if heading == "## Candidate Causes":
             lines.extend([heading, "", "- TODO", "- TODO", "- TODO", ""])
+            continue
+        if heading == "## Invariant Proof":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- Invariant: n/a - not a workflow-boundary propagation bug",
+                    "- Producer Proof: n/a",
+                    "- Final-Consumer Proof: n/a",
+                    "- Interface-Shape Sibling Scan: n/a",
+                    "- Non-Claims: n/a",
+                    "",
+                ]
+            )
             continue
         if heading == "## Detection Gap":
             lines.extend(

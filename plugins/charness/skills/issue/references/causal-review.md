@@ -11,7 +11,8 @@ Only `bug`-class issues require the full causal review. Other classes use a
 lighter pass:
 
 - `bug`: full three-lens causal review (root cause, detection gap, sibling
-  search), then resolution critique
+  search), plus the invariant-first overlay for workflow-boundary propagation
+  bugs, then resolution critique
 - `feature`: skip causal review, run resolution critique on the design only
 - `question`: usually no implementation, no review pass; respond and close
 - `decision-needed`: discuss with the user before either review pass; the
@@ -33,11 +34,14 @@ The subagent's prompt must:
 
 - restate the issue body and the reporter's JTBD verbatim
 - name the three lenses below and require evidence for each
-- include the three substrate cites
+- include the invariant-first overlay when the issue crosses producer/final
+  consumer workflow boundaries
+- include the substrate cites
   (`../../debug/references/five-whys-causal-chain.md`,
+  `../../debug/references/invariant-first-review.md`,
   `../../debug/references/detection-gap.md`,
   `../../debug/references/sibling-search.md`) and the
-  "do not re-derive the substrate body" guard verbatim for each lens
+  "do not re-derive the substrate body" guard verbatim for each lens or overlay
 - bound the time and scope ("under 600 words", "cite file:line")
 - forbid prescribing the fix; the implementer designs the fix in step 7
 - explicitly tell the subagent it is the bounded fresh-eye reviewer and must
@@ -53,6 +57,19 @@ sibling-search live in different layers — the caller may upgrade to two
 subagents (root-cause + detection together; sibling search separately) and
 add a counterweight. That upgrade is rare; document it in the resolution
 notes when used.
+
+### Workflow-boundary invariant overlay
+
+For propagated diagnostics, readiness decisions, closeout claims, or other
+producer-to-final-consumer workflow bugs, consume the `debug` skill substrate
+(`../../debug/references/invariant-first-review.md`) and triage whether the
+caller named the producer, signal, transport or mirror, and final consumer.
+Producer-only proof is insufficient: the substrate must include final-consumer
+proof, interface-shape sibling scan patterns, and explicit non-claims for
+unproven hosts, adapters, mirrors, providers, or runtime paths. **Do not
+re-derive the invariant-first review body in causal review.** If the substrate
+is missing, weak, or claims end-to-end proof from producer evidence alone,
+return `Causal review: substrate incomplete`.
 
 ### Lens 1 — Root cause (close-ledger triage)
 
@@ -123,6 +140,11 @@ The subagent returns:
   the lens did not invent a structural cause where there was a real symptom
 - `Debug artifact: <path>` when a debug session wrote one; otherwise
   `Debug artifact: none (trivial fix)` or `Debug artifact: cite-only`
+- `Invariant proof` for workflow-boundary propagation bugs (substrate cite from
+  `../../debug/references/invariant-first-review.md`, plus close-ledger triage;
+  do not regrow the overlay; require producer proof, final-consumer proof,
+  interface-shape sibling scan, and non-claims) or
+  `n/a - not a workflow-boundary propagation bug`
 - `Detection gap` (substrate cite from
   `../../debug/references/detection-gap.md`, plus close-ledger triage; do
   not regrow the walk) + `Over-reach check`: simplest evidence the gap is

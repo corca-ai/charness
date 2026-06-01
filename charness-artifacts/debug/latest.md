@@ -75,6 +75,20 @@ status and killed/survived score. The gate was correct to fail because the
 changed-line blocker fired, but the rendered summary made that failure look like
 a score failure even when no Python mutants survived.
 
+## Invariant Proof
+
+- Invariant: When `check_mutation_score.py` emits mutation-score and
+  blocking-signal rows, the scheduled GitHub issue body must surface those rows
+  before claiming gate status.
+- Producer Proof: `test_check_mutation_score_fails_when_changed_lines_uncovered`
+  asserts separate `Mutation score: PASS` and `Blocking signals: FAIL` rows.
+- Final-Consumer Proof: the debug record identifies the local summary producer
+  as the rendered issue source consumed by auto-filed mutation issues.
+- Interface-Shape Sibling Scan: sibling search inspected the JS mutation score
+  summary shape and auto-filed mutation issue body consumer path.
+- Non-Claims: no post-push scheduled workflow or GitHub provider roundtrip was
+  run in this debug record.
+
 ## Detection Gap
 
 - mutation summary rendering | no test asserted the "score passes, blocker

@@ -5,6 +5,7 @@ import re
 from .support import ROOT
 
 REFERENCE_PATH = ROOT / "skills" / "public" / "debug" / "references" / "five-whys-causal-chain.md"
+INVARIANT_FIRST = ROOT / "skills" / "public" / "debug" / "references" / "invariant-first-review.md"
 SIBLING_SEARCH = ROOT / "skills" / "public" / "debug" / "references" / "sibling-search.md"
 DEBUG_SKILL = ROOT / "skills" / "public" / "debug" / "SKILL.md"
 CAUSAL_REVIEW = ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md"
@@ -24,8 +25,36 @@ PROOF_LEVELS = (
 )
 
 
+def markdown_section(text: str, heading: str) -> str:
+    level = heading.split(" ", 1)[0]
+    match = re.search(rf"{re.escape(heading)}\n(.*?)(?=\n{re.escape(level)} |\Z)", text, re.DOTALL)
+    assert match, f"could not locate section {heading}"
+    return match.group(1)
+
+
+def markdown_bullet(section: str, label: str) -> str:
+    match = re.search(rf"^- `{re.escape(label)}`(.*?)(?=\n- `|\Z)", section, re.DOTALL | re.MULTILINE)
+    assert match, f"could not locate bullet `{label}`"
+    return match.group(1)
+
+
 def test_debug_rca_reference_file_exists() -> None:
     assert REFERENCE_PATH.is_file(), f"missing reference: {REFERENCE_PATH}"
+
+
+def test_debug_invariant_first_reference_requires_both_ends() -> None:
+    text = INVARIANT_FIRST.read_text(encoding="utf-8")
+    prove_both_ends = markdown_section(text, "## Prove both ends")
+    output = markdown_section(text, "## Output")
+    assert "Producer proof" in prove_both_ends
+    assert "Final-consumer proof" in prove_both_ends
+    assert "producer-only proof" in prove_both_ends
+    assert "insufficient" in prove_both_ends
+    assert "propagated diagnostics and readiness decisions" in prove_both_ends
+    assert "`Producer proof:`" in output
+    assert "`Final-consumer proof:`" in output
+    assert "`Interface-shape sibling scan:`" in output
+    assert "`Non-claims:`" in output
 
 
 def test_debug_skill_cites_five_whys_causal_chain() -> None:
@@ -109,6 +138,29 @@ def test_debug_workflow_invokes_classified_sibling_scan() -> None:
     assert "classify each sibling decision" in text
     assert "proof level separately from the decision" in text
     assert "wrong mental model" in text
+
+
+def test_debug_workflow_invokes_invariant_first_review() -> None:
+    text = DEBUG_SKILL.read_text(encoding="utf-8")
+    output_shape = markdown_section(text, "## Output Shape")
+    assert "invariant-first-review.md" in text
+    assert "producer-to-final-consumer invariant" in text
+    assert "producer-only proof" in text
+    assert "end-to-end workflow proof" in text
+    assert "`Invariant Proof`" in output_shape
+
+
+def test_causal_review_consumes_invariant_first_substrate() -> None:
+    text = CAUSAL_REVIEW.read_text(encoding="utf-8")
+    overlay = markdown_section(text, "### Workflow-boundary invariant overlay")
+    output_shape = markdown_section(text, "### Output shape (causal review)")
+    invariant_output = markdown_bullet(output_shape, "Invariant proof")
+    assert "invariant-first-review.md" in text
+    assert "Producer-only proof is insufficient" in overlay
+    assert "producer proof" in invariant_output
+    assert "final-consumer proof" in invariant_output
+    assert "interface-shape sibling scan" in invariant_output
+    assert "non-claims" in invariant_output
 
 
 def test_causal_review_preserves_sibling_decisions_and_proof_levels() -> None:

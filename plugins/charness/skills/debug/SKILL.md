@@ -5,12 +5,7 @@ description: "Use when investigating a bug, error, or unexpected behavior. Follo
 
 # Debug
 
-Use this when the goal is to understand and resolve incorrect behavior without
-guessing.
-
-Use George Pólya-style problem-solving discipline here: understand the exact
-problem first, reduce it to the smallest honest failing case, enumerate
-multiple plausible causes, and only then test the next hypothesis.
+Use this when the goal is to understand and resolve incorrect behavior without guessing.
 
 `debug` is part of the execution cluster, but its job is diagnosis before
 repair. A bug investigation without a durable record only solves the current
@@ -116,6 +111,10 @@ as codebase memory rather than as stale trivia.
    - make the smallest change or observation that can verify or falsify it
 6. Resolve and preserve the learning.
    - record root cause and the confirming evidence
+   - for workflow-boundary bugs, propagated diagnostics, or readiness decisions,
+     name the producer-to-final-consumer invariant per
+     `references/invariant-first-review.md`; producer-only proof is not
+     end-to-end workflow proof
    - walk the existing detection surface per `references/detection-gap.md` and
      record which gate did not fire and the smallest change that would have
      fired it; bug-class `issue resolve` invokes the same substrate through
@@ -156,13 +155,13 @@ The durable debug artifact should usually include:
 - `Hypothesis`
 - `Verification`
 - `Root Cause`
+- `Invariant Proof`
 - `Detection Gap`
 - `Sibling Search`
 - `Seam Risk`
 - `Interrupt Decision`
 - `Prevention`
-- `Related Prior Incidents` (optional — include when the incident connects to a
-  prior debug artifact)
+- `Related Prior Incidents` (optional)
 
 The canonical heading pattern is `# ... Debug ...`, and the canonical section
 order is the validator order above for `latest.md`. Historical dated records
@@ -191,6 +190,7 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/adapter-contract.md`
 - `references/five-steps.md`
 - `references/five-whys-causal-chain.md`
+- `references/invariant-first-review.md`
 - `references/detection-gap.md`
 - `references/sibling-search.md`
 - `references/debug-memory.md`
