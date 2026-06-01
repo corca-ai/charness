@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 47,
-  "indexed_artifact_count": 38,
+  "source_artifact_count": 48,
+  "indexed_artifact_count": 39,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 4,
+    "none": 5,
     "operator-visible-recovery": 12
   },
   "generalization_pressure_counts": {
-    "monitor": 38
+    "monitor": 39
   },
   "entries": [
     {
@@ -535,17 +535,31 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "issue-224-219-mutation-annotation-filter",
+      "artifact_path": "charness-artifacts/debug/2026-06-01-issue-272-mutation-report-clarity.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-272-mutation-report-clarity",
       "risk_classes": [
         "none"
       ],
-      "seam": "Cosmic Ray work-item `start_pos` semantics for BitOr mutations",
+      "seam": "GitHub scheduled workflow issue body consumes local summary markdown.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "docs/handoff.md",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-272-mutation-report-clarity",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "GitHub scheduled workflow issue body consumes local summary markdown.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md",
       "forced": false
     }
   ],

@@ -466,6 +466,9 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
 
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
+    assert "- Status: **FAIL**" in summary
+    assert "- Mutation score: **PASS** (100.0% reachable score vs 50% threshold)" in summary
+    assert "- Blocking signals: **FAIL** (changed-line coverage/selection)" in summary
     assert (
         "Blocking signal: changed lines were left test-uncovered, or eligible changed files were dropped by selection/workload budgets, before mutation."
         in summary
@@ -644,5 +647,7 @@ def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_chan
     assert result.returncode == 0, result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert "Status: **PASS**" in summary
+    assert "- Mutation score: **PASS** (100.0% reachable score vs 50% threshold)" in summary
+    assert "- Blocking signals: **PASS** (none)" in summary
     assert "Blocking signal:" not in summary
     assert "## Changed Files Excluded Before Mutation" not in summary

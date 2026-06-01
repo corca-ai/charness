@@ -269,6 +269,22 @@ def mutation_file_completion(
     return not incomplete, incomplete
 
 
+def blocking_signal_labels(metrics: dict[str, float | int | bool | str]) -> list[str]:
+    partial = metrics["exec_timed_out"] or metrics.get("incomplete_exec")
+    checks = (
+        (metrics["pending"], "pending mutants"),
+        (partial, "partial execution"),
+        (partial and not metrics.get("per_file_completion_ok", True), "per-file partial completion"),
+        (metrics["status"] == "PASS-partial", "partial recovery closeout"),
+        (not metrics["reachable"], "no reachable mutants"),
+        (metrics["no_tests"], "no mutation possible"),
+        (metrics.get("scope_gap", 0), "sampled mutants without coverage"),
+        (metrics.get("changed_scope_gap_count", 0), "changed-line coverage/selection"),
+        (not metrics.get("sample_manifest_ok", True), "sample manifest"),
+    )
+    return [label for active, label in checks if active]
+
+
 def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
     if not marker_path.is_file():
         return False, None
@@ -289,11 +305,17 @@ def build_summary_lines(
     repo_root: Path,
     metrics: dict[str, float | int | bool],
 ) -> list[str]:
+    score_result = "PASS" if metrics["reachable"] and float(metrics["score"]) >= float(metrics["score_break"]) else "FAIL"
+    blocking_labels = blocking_signal_labels(metrics)
+    blocking_result = "FAIL" if blocking_labels else "PASS"
+    blocking_detail = ", ".join(blocking_labels) or "none"
     lines = [
         "# Mutation Testing Summary",
         "",
-        f"- Status: **{metrics['status']}** "
+        f"- Status: **{metrics['status']}**",
+        f"- Mutation score: **{score_result}** "
         f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)",
+        f"- Blocking signals: **{blocking_result}** ({blocking_detail})",
         f"- Total mutants: {metrics['total']}",
         f"- Executable mutants: {metrics['executable_total']} (total minus skipped)",
         f"- Executed: {metrics['executed']} ({metrics['executed_ratio']*100:.1f}% of executable total)",

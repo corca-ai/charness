@@ -184,6 +184,13 @@ When a run FAILs on the **blocking** "changed files with uncovered changed
 lines" signal (distinct from a score break — the score can pass while this
 fails), two traps waste time and produce false proof (learned from #251):
 
+- **Read the summary as two results, not one overloaded status.** The top-level
+  status is the overall gate result. The `Mutation score:` row reports only the
+  reachable killed/survived threshold result, and the `Blocking signals:` row
+  reports non-score blockers such as changed-line coverage/selection. A run can
+  therefore show `Status: FAIL`, `Mutation score: PASS`, and
+  `Blocking signals: FAIL` without any survived Python mutants.
+
 - **Reproduce with the gate's own coverage, not a naive `coverage run`.** The
   gate collects coverage with `parallel = True` + `COVERAGE_PROCESS_START`
   (`mutation_sampling_lib.run_test_coverage`), so it **captures subprocess-
