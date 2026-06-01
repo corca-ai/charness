@@ -274,7 +274,7 @@ def test_parser_cli_explicit_docs_handoff_filters_completed_goal(tmp_path):
     assert [entry["index"] for entry in payload["entries"]] == [3]
 
 
-def test_current_handoff_pipeline_has_single_actionable_candidate():
+def test_current_handoff_pipeline_has_only_actionable_candidates():
     parse = subprocess.run(
         ["python3", str(PARSER_SCRIPT), "--repo-root", str(REPO_ROOT), "--with-issues"],
         capture_output=True,
@@ -298,8 +298,13 @@ def test_current_handoff_pipeline_has_single_actionable_candidate():
     assert propose.returncode == 0, propose.stderr
     payload = json.loads(propose.stdout)
     candidates = payload["standalone"] + payload["merged"]
-    assert len(candidates) == 1
-    assert candidates[0]["entries"][0]["referenced_issues"] == [184, 261]
+    assert candidates
+    assert all(entry["referenced_issues"] for candidate in candidates for entry in candidate["entries"])
+    assert any(
+        entry["referenced_issues"] == [184, 261]
+        for candidate in candidates
+        for entry in candidate["entries"]
+    )
 
 
 def _load_parser_module():

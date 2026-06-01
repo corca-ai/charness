@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 49,
-  "indexed_artifact_count": 40,
+  "source_artifact_count": 50,
+  "indexed_artifact_count": 41,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 6,
+    "none": 7,
     "operator-visible-recovery": 12
   },
   "generalization_pressure_counts": {
-    "monitor": 40
+    "monitor": 41
   },
   "entries": [
     {
@@ -560,6 +560,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-01-reviewer-tier-sibling-scan.md",
+      "is_current_pointer": false,
+      "interrupt_id": "reviewer-tier-sibling-scan",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "repo-local public skill instructions and adapter scaffolds",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
       "forced": false
     },
     {

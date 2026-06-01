@@ -14,6 +14,12 @@ ADAPTER_EXAMPLE = CRITIQUE_DIR / "adapter.example.yaml"
 ADAPTER_CONTRACT = CRITIQUE_DIR / "references" / "adapter-contract.md"
 INIT_ADAPTER = CRITIQUE_DIR / "scripts" / "init_adapter.py"
 NAMED_SKILLS = ("critique", "quality", "release", "issue")
+DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES = (
+    ROOT / "skills" / "public" / "quality" / "SKILL.md",
+    ROOT / "skills" / "public" / "setup" / "SKILL.md",
+    ROOT / "skills" / "public" / "issue" / "SKILL.md",
+    ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md",
+)
 PROVIDER_MODEL_TOKENS = ("gpt-5", "sonnet-4")
 
 
@@ -31,12 +37,22 @@ def test_named_skills_reference_shared_reviewer_policy() -> None:
 def test_portable_surfaces_do_not_hardcode_provider_models() -> None:
     surfaces = [SHARED_REVIEW.read_text(encoding="utf-8")]
     surfaces.extend(_skill_md(skill) for skill in NAMED_SKILLS)
+    surfaces.extend(path.read_text(encoding="utf-8") for path in DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES)
     for text in surfaces:
         for token in PROVIDER_MODEL_TOKENS:
             assert token not in text, (
                 f"portable surface must not hardcode provider model `{token}`; "
                 "host-specific values belong in the adapter"
             )
+
+
+def test_direct_fresh_eye_reviewers_apply_high_leverage_tier() -> None:
+    for path in DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES:
+        text = path.read_text(encoding="utf-8")
+        assert "high-leverage" in text, f"{path} must name the reviewer tier"
+        assert "reviewer_tiers.high-leverage" in text, (
+            f"{path} must tell agents to apply host-exposed reviewer-tier fields"
+        )
 
 
 def test_reviewer_tier_policy_is_host_plural() -> None:

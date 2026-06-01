@@ -125,8 +125,10 @@ Then load only the references needed for the detected state:
    - check that the next human operator can tell what to read and what to do
    - for nontrivial source trees, recommend a dead-file advisory detector
      (`vulture` for Python, `knip` for JavaScript/TypeScript)
-   - for task-completing normalization, spawn bounded reviewers for host
-     policy, adapter fit, operator takeover, and any broad new gate surface
+   - for task-completing normalization, spawn `high-leverage` bounded reviewers
+     for host policy, adapter fit, operator takeover, and any broad new gate surface
+   - apply host-exposed `reviewer_tiers.high-leverage` fields and use
+     `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
    - use deterministic inspection as reviewer evidence and emit queued
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`

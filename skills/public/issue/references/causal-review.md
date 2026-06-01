@@ -24,8 +24,10 @@ real bug as a feature is the failure mode that lets recurrence happen.
 
 ## Causal review subagent contract (step 4)
 
-Spawn one bounded fresh-eye subagent. The subagent must not spawn nested
-reviewers. It returns a single triage block the caller can act on directly.
+Spawn one `high-leverage` bounded fresh-eye subagent. Apply host-exposed
+`reviewer_tiers.high-leverage` fields from the shared fresh-eye policy. The
+subagent must not spawn nested reviewers. It returns a single triage block the
+caller can act on directly.
 
 The subagent's prompt must:
 

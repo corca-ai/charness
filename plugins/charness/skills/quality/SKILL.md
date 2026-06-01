@@ -97,10 +97,11 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - implement clear repo-owned automation unless the user asked for review only
    - do not leave dual implementations, duplicated proof, or stale command
      surfaces in an unpriced "keep both for safety" state
-8. Run bounded fresh-eye review after initial inventory and before broad
-   recommendations. Report exactly `Delegated Review: executed|blocked|not_applicable`.
-   Blocked requires a concrete host or tool signal; use
-   `../../shared/references/fresh-eye-subagent-review.md`.
+8. Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations
+   as `high-leverage`, applying host-exposed
+   `reviewer_tiers.high-leverage` fields. Report exactly
+   `Delegated Review: executed|blocked|not_applicable`. Blocked requires a concrete
+   host or tool signal; use `../../shared/references/fresh-eye-subagent-review.md`.
 9. End with a quality posture summary that does not hide `Weak`, `Missing`,
    `Advisory`, delegated-review status, or active recommended next gates just
    because the implemented slice or final gate passed.
@@ -129,7 +130,6 @@ Validators and consumer prompts use these core routing anchors; references carry
 - For external/runtime capability slices, treat readiness-only proof (`surface`, `worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one `provider_roundtrip` is observed; see `../../shared/references/external-capability-proof-ladder.md`.
 - when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, inspect prompt/content bulk. `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline prompt/content bulk inventory should be skipped. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
-- Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations.
 
 ## Output Shape
 

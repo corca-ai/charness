@@ -91,12 +91,12 @@ repo by created date. It must not use the current session's last created issue.
    `feature`/`deferred-work` → step 6 brief; `question`/`decision-needed`
    → step 7 discussion. Record the classification in the resolution notes.
 4. For `bug`-class issues, run a **causal review** before design via a
-   bounded fresh-eye subagent that consumes the `debug` substrate cite-only.
-   It must include **mental-model sibling search**: abstract the mistaken
-   model that allowed the bug, then scan structural siblings beyond keywords
-   or nearby files. See `references/causal-review.md` for shape, evidence,
-   over-reach rules, and trivial-bug handling. If subagent spawning is
-   blocked, stop and report; step 9 is also blocked.
+   `high-leverage` bounded fresh-eye subagent that consumes the `debug`
+   substrate cite-only. Apply host-exposed `reviewer_tiers.high-leverage`
+   fields. It must include **mental-model sibling search**: abstract the
+   mistaken model that allowed the bug, then scan structural siblings beyond
+   keywords or nearby files. See `references/causal-review.md` for shape,
+   evidence, over-reach rules, and trivial-bug handling. If subagent spawning is blocked, stop and report; step 9 is also blocked.
 5. Order resolutions as a generative sequence (Christopher Alexander): the
    move that reduces uncertainty or unlocks the next issue comes first. For
    siblings surfaced by step 4, decide whether to bundle into this commit,
