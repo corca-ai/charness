@@ -196,6 +196,20 @@ private Ceal context or host-command semantics changes are required.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 2: Slice 1 implementation
+
+- Objective: Tighten achieve activation-discussion helper output and guidance so surfaced discussion cannot be read as resolved.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: PASS: python3 -m pytest -q tests/charness_cli/test_goal_helpers.py tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_achieve_before_activation.py (58 passed); PASS: python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review; PASS: python3 scripts/check_duplicates.py --repo-root . --fail-on-match --require-git-file-listing; CLI proof emits activation_discussion_warning for this goal. Fresh-eye critique found no blocker; low CLI-wrapper coverage gap fixed.
+- Test duplication pressure: No duplicates found at threshold 0.98.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 - Source: handoff entry #2 (#279: achieve should surface activation discussion before ready closeout) — see [docs/handoff.md](../../docs/handoff.md).

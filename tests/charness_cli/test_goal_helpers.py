@@ -12,6 +12,20 @@ from .support import (
 GOAL_PATH = "charness-artifacts/goals/2026-06-02-enforce-recent-lessons-broad-gate-lock.md"
 
 
+def _write_discussion_goal(repo: Path) -> Path:
+    goal = repo / "charness-artifacts" / "goals" / "discussion-warning.md"
+    goal.parent.mkdir(parents=True, exist_ok=True)
+    goal.write_text(
+        "# Achieve Goal: Discussion warning\n\n"
+        "Status: draft\n"
+        "Activation: `/goal @charness-artifacts/goals/discussion-warning.md`\n\n"
+        "## Non-Goals\n\nDo not close #279 until proof-bearing closeout.\n\n"
+        "Discuss before activation: confirm issue closeout timing first.\n\n",
+        encoding="utf-8",
+    )
+    return goal
+
+
 def test_goal_check_uses_stable_cli_surface_for_achieve_helper() -> None:
     result = run_cli(
         "goal",
@@ -53,6 +67,48 @@ def test_goal_check_resolves_relative_goal_path_under_target_repo(tmp_path: Path
     payload = json.loads(result.stdout)
     assert payload["pursue_ready"] is True
     assert payload["path"] == str(target_goal.resolve())
+
+
+def test_goal_check_preserves_activation_discussion_warning(tmp_path: Path) -> None:
+    target_repo = tmp_path / "target"
+    target_goal = _write_discussion_goal(target_repo)
+
+    result = run_cli(
+        "goal",
+        "check",
+        "--repo-root",
+        str(target_repo),
+        "--goal-path",
+        "charness-artifacts/goals/discussion-warning.md",
+        "--charness-checkout",
+        str(ROOT),
+        "--pursue-ready",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["pursue_ready"] is True
+    assert payload["path"] == str(target_goal.resolve())
+    assert "not proven resolved" in payload["activation_discussion_warning"]
+    assert "surfaced is not resolved" in payload["reason"]
+
+    concise = run_cli(
+        "goal",
+        "check",
+        "--repo-root",
+        str(target_repo),
+        "--goal-path",
+        "charness-artifacts/goals/discussion-warning.md",
+        "--charness-checkout",
+        str(ROOT),
+        "--pursue-ready",
+    )
+
+    assert concise.returncode == 0, concise.stderr
+    assert "PURSUE_READY: yes" in concise.stdout
+    assert "REASON:" in concise.stdout
+    assert "surfaced is not resolved" in concise.stdout
 
 
 def test_goal_check_help_names_stable_helper_surface() -> None:

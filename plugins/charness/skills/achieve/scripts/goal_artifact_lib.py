@@ -271,8 +271,17 @@ def pursue_readiness(text: str) -> dict[str, Any]:
     placeholders = _UNSHAPED_MARKER.findall(_mask_fences(text))
     discussion = discussion_readiness(text)
     ready = not placeholders and discussion["discussion_ready"]
+    discussion_warning = (
+        "Consequential activation decisions are surfaced but not proven resolved. "
+        "Resolve or explicitly ask about them in the transcript before offering `/goal`."
+        if discussion["discussion_required"] and discussion["discussion_summary_present"]
+        else ""
+    )
     reason = (
-        "shaped: no Before-phase placeholders remain and activation decisions are surfaced; safe to pursue via `/goal`"
+        "shaped: no Before-phase placeholders remain; activation decisions are surfaced, "
+        "but surfaced is not resolved -- resolve or confirm them before offering `/goal`"
+        if ready and discussion_warning
+        else "shaped: no Before-phase placeholders remain; safe to pursue via `/goal`"
         if ready
         else (
             f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
@@ -283,7 +292,13 @@ def pursue_readiness(text: str) -> dict[str, Any]:
             "but no non-empty `Discuss before activation:` summary was found (#276)"
         )
     )
-    return {"pursue_ready": ready, "placeholder_count": len(placeholders), "reason": reason, **discussion}
+    return {
+        "pursue_ready": ready,
+        "placeholder_count": len(placeholders),
+        "reason": reason,
+        "activation_discussion_warning": discussion_warning,
+        **discussion,
+    }
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:

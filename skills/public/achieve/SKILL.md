@@ -54,8 +54,10 @@ lifecycle instead of starting a new one.
      interview decisions, or critique findings (live/prod proof,
      issue close/split, broad bundled scope, irreversible side effects, or
      proof-level non-claims), add a non-empty `Discuss before activation:`
-     summary before reporting the goal ready to enter; otherwise
-     `--pursue-ready` fails
+     summary and resolve or explicitly ask about those items in the transcript
+     before reporting the goal ready to enter or offering activation; otherwise
+     `--pursue-ready` fails, and a present summary is still not proof that the
+     discussion is resolved
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself

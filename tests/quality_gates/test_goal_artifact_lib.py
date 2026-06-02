@@ -185,6 +185,23 @@ def test_pursue_readiness_allows_surfaced_consequential_decisions() -> None:
     assert report["pursue_ready"] is True
     assert report["discussion_required"] is True
     assert report["discussion_summary_present"] is True
+    assert "not proven resolved" in report["activation_discussion_warning"]
+    assert "surfaced is not resolved" in report["reason"]
+
+
+def test_pursue_readiness_warns_summary_is_not_discussion_resolution() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Non-Goals\n\nDo not close #279 until proof-bearing commit lands.\n\n"
+        "Discuss before activation: confirm issue closeout timing before activation.\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
+    assert report["discussion_required"] is True
+    assert report["discussion_summary_present"] is True
+    assert "Resolve or explicitly ask" in report["activation_discussion_warning"]
+    assert "discussion_summary_present" not in report["reason"]
+    assert "resolved" in report["reason"]
 
 
 def test_pursue_readiness_allows_summary_starting_with_issue_number() -> None:

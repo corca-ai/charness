@@ -67,6 +67,9 @@ def test_consequential_defaults_need_discussion_before_activation() -> None:
     assert "live/prod proof" in skill and "live/prod proof" in lifecycle
     assert "issue close/split" in skill and "issue close/split" in lifecycle
     assert "operator-ready" in lifecycle
+    assert "resolve or explicitly ask" in skill
+    assert "resolve or explicitly ask" in lifecycle
+    assert "discussion_summary_present" in lifecycle
 
 
 def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
