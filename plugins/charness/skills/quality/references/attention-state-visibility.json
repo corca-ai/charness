@@ -399,10 +399,10 @@
       "rationale": "Issue closeout verifier reports an explicit skipped_classification payload and refuses closure when a required resolution-critique skip lacks a recognized host-blocked reason."
     },
     "skills/public/release/scripts/publish_release_preflight.py": {
-      "states": ["not_configured", "skipped"],
-      "visibility": ["hard_failure_or_blocker"],
-      "evidence_terms": ["host-blocked-subagent", "honestly skipped", "not_configured"],
-      "rationale": "Release publish preflight refuses without an explicit `--critique-artifact` or `--critique-blocked <host-signal>`; the blocked path is recorded as a skipped standalone-critique reason in the shared closeout payload, and adapter preflight reports not_configured when a changed adapter has no focused commands available."
+      "states": ["not_configured", "not_evaluable", "skipped"],
+      "visibility": ["artifact_visible", "hard_failure_or_blocker"],
+      "evidence_terms": ["host-blocked-subagent", "honestly skipped", "not_configured", "not_evaluable"],
+      "rationale": "Release publish preflight refuses without an explicit `--critique-artifact` or `--critique-blocked <host-signal>`; the blocked path is recorded as a skipped standalone-critique reason in the shared closeout payload, and adapter preflight records not_configured/not_evaluable as release-artifact-visible non-claims when a changed adapter cannot run focused commands."
     }
   }
 }

@@ -94,6 +94,34 @@ def test_release_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> No
     assert _sha(prior) == prior_sha
 
 
+def test_release_artifact_records_adapter_preflight_non_claim(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+
+    relpath = RELEASE_ARTIFACT.write_release_artifact(
+        repo,
+        output_dir="charness-artifacts/release",
+        package_id="demo",
+        previous_version="0.1.0",
+        target_version="0.2.0",
+        remote="origin",
+        branch="main",
+        quality_command="./scripts/run-quality.sh",
+        release_url=None,
+        update_instructions=[],
+        real_host_payload={"required": False},
+        release_adapter_preflight_payload={
+            "status": "not_evaluable",
+            "reason": "release adapter changed, but no previous release tag is available for field diff",
+            "commands": [],
+        },
+    )
+
+    text = (repo / relpath).read_text(encoding="utf-8")
+    assert "## Release Adapter Preflight" in text
+    assert "Release adapter focused preflight status: `not_evaluable`." in text
+    assert "Focused preflight commands: none executed." in text
+
+
 def test_find_skills_inventory_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     output = repo / "charness-artifacts" / "find-skills"

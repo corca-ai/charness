@@ -141,6 +141,7 @@ def write_current_artifact(
         previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
         branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
+        release_adapter_preflight_payload=payload.get("release_adapter_preflight"),
         fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
         tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),

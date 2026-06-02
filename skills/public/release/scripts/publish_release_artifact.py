@@ -46,6 +46,33 @@ def review_proof_lines(review_proof: str | None) -> list[str]:
     return ["", "## Review Status", "", "- Review proof: not recorded in this helper invocation."]
 
 
+def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]:
+    lines = ["", "## Release Adapter Preflight", ""]
+    if payload is None:
+        return lines + ["- Release adapter focused preflight: pending helper execution."]
+    status = payload.get("status", "unknown")
+    lines.append(f"- Release adapter focused preflight status: `{status}`.")
+    if reason := payload.get("reason"):
+        lines.append(f"- Reason: {reason}")
+    if previous_ref := payload.get("previous_ref"):
+        lines.append(f"- Previous release ref: `{previous_ref}`")
+    adapter_paths = payload.get("adapter_paths", [])
+    if adapter_paths:
+        lines.append("- Adapter paths in release delta:")
+        lines.extend(f"  - `{path}`" for path in adapter_paths)
+    changed_fields = payload.get("changed_fields", [])
+    if changed_fields:
+        lines.append("- Changed adapter fields:")
+        lines.extend(f"  - `{field}`" for field in changed_fields)
+    commands = payload.get("commands", [])
+    if commands:
+        lines.append("- Focused preflight commands:")
+        lines.extend(f"  - `{' '.join(command)}`" for command in commands)
+    else:
+        lines.append("- Focused preflight commands: none executed.")
+    return lines
+
+
 def post_publish_proof_lines(resolved_tag: str, public_release_verification: str) -> list[str]:
     if public_release_verification != "verified":
         return []
@@ -78,6 +105,7 @@ def write_release_artifact(
     release_url: str | None,
     update_instructions: list[str],
     real_host_payload: dict[str, Any],
+    release_adapter_preflight_payload: dict[str, Any] | None = None,
     fresh_checkout_payload: dict[str, Any] | None = None,
     issue_closeout: dict[str, Any] | None = None,
     quality_status: str = "passed before publish",
@@ -124,6 +152,7 @@ def write_release_artifact(
         ]
     )
     lines.extend(public_release_verification_lines(public_release_verification, release_url))
+    lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(["", "## Real-Host Verification", ""])
     if real_host_payload.get("required"):
         lines.append(

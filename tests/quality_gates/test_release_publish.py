@@ -764,3 +764,45 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
         capture_output=True,
         text=True,
     ).stdout.strip() == ""
+
+
+def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
+    resolver_path.parent.mkdir(parents=True)
+    _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")
+    test_path = repo / "tests" / "quality_gates" / "test_release_real_host.py"
+    test_path.parent.mkdir(parents=True)
+    test_path.write_text("def test_ok(): pass\n", encoding="utf-8")
+    _write_exec(bin_dir / "pytest", "#!/usr/bin/env bash\nexit 0\n")
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nreal_host_checklist:\n- Verify tokei on a clean temp-home.\n",
+        encoding="utf-8",
+    )
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml", "skills", "tests"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Change release adapter"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
+
+    assert result.returncode == 0, result.stderr
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Release Adapter Preflight" in artifact_text
+    assert "Release adapter focused preflight status: `required`." in artifact_text
+    assert "`real_host_checklist`" in artifact_text
+    assert "`pytest tests/quality_gates/test_release_real_host.py -q`" in artifact_text

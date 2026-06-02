@@ -3,9 +3,10 @@
 """Ensure exit-zero attention states are declared as visible or intentionally local.
 
 This closes the recurrence class behind issue #175: a helper can return
-`no_adapter`, `disabled`, `not_configured`, or `skipped` with exit 0, and the
-state can quietly read as a clean pass unless the command surface makes the
-attention state visible or declares why it is not a closeout signal.
+`no_adapter`, `disabled`, `not_configured`, `not_evaluable`, or `skipped` with
+exit 0, and the state can quietly read as a clean pass unless the command
+surface makes the attention state visible or declares why it is not a closeout
+signal.
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ ATTENTION_TERMS = (
     "no_records",
     "disabled",
     "not_configured",
+    "not_evaluable",
     "skipped",
     "advisory-only",
     "prose_review_status",
