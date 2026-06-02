@@ -68,8 +68,9 @@ itself.
 This objective rests on a **falsifiable assumption**: that the conversion rate
 correlates with operator-observed value (a harness that stops repeating mistakes
 serves its users better). What would disprove it: a rising conversion rate while
-`First valuable artifact` or `Closeout proof strength` stay flat or decline — in
-that case the proxy is wrong and the north-star instrument must be revisited.
+usage-episode feedback, correction/follow-up rate, or closeout proof strength
+stay flat or decline — in that case the proxy is wrong and the north-star
+instrument must be revisited.
 
 The remaining metrics in [Metric Definitions](#metric-definitions) are a
 *monitored* dashboard, not optimization targets, following Google Rules of ML:
@@ -156,7 +157,8 @@ target, and the baseline window opens only as live (non-seed) events accrue.
 | Metric | Definition | Why it matters | Current measurability |
 | --- | --- | --- | --- |
 | Skill routing success | Task-oriented sessions start with the expected skill or explicit capability discovery when required. | Proves Charness is reducing workflow ambiguity. | Partly measurable through Cautilus fixtures, public-skill dogfood artifacts, issue closeout notes, and manual review. |
-| First valuable artifact | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. | Connects agent activity to user-visible value instead of raw tool count. | Capturable for `slice_closeout` when usage episodes are enabled; summarized by `python3 scripts/report_usage_episodes.py --repo-root .`. |
+| First-value evidence floor | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. This is a minimum evidence floor, not satisfaction proof. | Separates "the agent produced something inspectable" from raw activity, while preventing artifact existence from being counted as user satisfaction. | Capturable for `slice_closeout` when usage episodes are enabled; summarized by `python3 scripts/report_usage_episodes.py --repo-root .`. |
+| Satisfaction and friction signals | Observable follow-through after the first-value floor: acceptance, human confirmation, issue closure, release, correction, retry, ignored output, or follow-up request. | Measures whether the artifact was useful enough to accept or reuse, or whether it created more work. | Partly measurable when `feedback_signal` is present; missing feedback remains a veto gap in `report_usage_episodes.py`. |
 | Closeout proof strength | Highest proof level reached before commit or handoff: deterministic local gate, release gate, provider roundtrip, bounded fresh-eye review, or explicit weak proof. | Prevents green-looking but under-proven work. | Measurable from artifacts and command logs; not summarized automatically. |
 | Resume clarity | Whether [handoff](./handoff.md) points to the correct next move and stale completed work is removed. | Measures long-running agent continuity. | Manually reviewable; handoff validators cover structure but not semantic sufficiency. |
 | Quality gate health | [run-quality](../scripts/run-quality.sh) phase count, pass/fail state, runtime hot spots, and warnings. | Keeps the product maintainable as skills and validators grow. | Measured in [quality latest](../charness-artifacts/quality/latest.md) and .charness/quality/runtime-signals.json. |
@@ -216,6 +218,44 @@ session grouping, T-signal rate, and capture gaps; it deliberately reports
 non-claims because records are only the captured denominator, not the full usage
 or outcome denominator.
 
+## Usage-Episode Consume Policy
+
+Usage episodes become product-success evidence only through a review layer, not
+by raw record count.
+
+The review unit is one privacy-safe episode that approximates a user intent
+moving toward first inspectable value. For current self-dev dogfood, the
+implemented `slice_closeout` emitter records that approximation at workflow
+closeout. Future emitters may cover issue closeout, handoff refresh/pickup,
+debug/RCA, gather, quality review, or release proof, but each must keep the same
+privacy boundary: no raw prompt, no transcript, no private source body, and no
+user identity.
+
+Interpret records in four tiers:
+
+1. **Capture coverage**: a session or workflow produced a valid usage episode.
+   Missing capture is a denominator gap, not a success or failure.
+2. **First-value floor**: `first_value_ref` names an inspectable output. This
+   admits the episode into product review, but it does not prove satisfaction;
+   Charness often leaves artifacts even when the user is unhappy or the direction
+   is wrong.
+3. **Satisfaction evidence**: `feedback_signal` values such as `accepted`,
+   `human_confirmed`, `closed_issue`, or `released` show observable acceptance or
+   reuse. These are the first signals that can support a product-value claim.
+4. **Friction evidence**: `feedback_signal` values such as `corrected`,
+   `retried`, `ignored`, or `follow_up_requested`, plus non-delivered
+   `outcome_status` values, show that the artifact floor was not enough.
+   Feedback values outside the documented satisfaction/friction buckets are
+   counted as feedback coverage but remain unclassified and cannot support a
+   strong product-success claim.
+
+Strong product-success claims are vetoed when feedback is missing, when records
+come from only one emitter, entry point, or trigger type, when first-value refs
+are present but satisfaction evidence is absent, when feedback values are
+unclassified, or when correction/follow-up signals rise with the RCA conversion
+rate. In those cases the correct conclusion is "capture exists but user value is
+not proven."
+
 ## Measurement State And Next Actions
 
 Currently measurable:
@@ -225,6 +265,8 @@ Currently measurable:
   [usage episode validator](../scripts/validate_usage_episodes.py)
 - usage-episode counts, session grouping, T-signal rate, and capture gaps
   through the [usage episode report](../scripts/report_usage_episodes.py)
+- usage-episode first-value floor, feedback coverage, satisfaction signals, and
+  friction/follow-up signals through the same report
 - `slice_closeout` emission path when the usage-episodes adapter is enabled in
   a fixture or consumer repo
 - release and quality proof through current artifacts
@@ -236,8 +278,9 @@ Needs implementation before product-success measurement:
 - a maintainer-owned product-success frame for #184
 - a broader denominator for uncaptured sessions, disabled hooks, and non-closeout
   workflows
-- a review summary that connects usage episodes to user outcomes rather than
-  only quality, retro, issue, and release artifacts
+- broader emitter coverage beyond `slice_closeout`
+- stronger feedback capture so satisfaction and friction signals are not mostly
+  missing
 
 ## Review Loops
 
@@ -250,6 +293,8 @@ Weekly:
 - Report `usage-episodes` validator and report status. Treat `disabled`,
   `no_adapter`, and `no_records` as visible capture/readiness states, not as
   product-success conclusions.
+- In the report, separate first-value floor from satisfaction evidence; do not
+  count artifact existence as user satisfaction.
 
 Monthly:
 
@@ -257,5 +302,8 @@ Monthly:
 - Compare AI-quality proof depth with product outcomes: fewer repeated
   corrections, stronger closeout proof, faster resume, and clearer user-facing
   docs.
+- Check whether feedback coverage is high enough to quote any product-success
+  trend. If feedback is missing for most records, keep #184-style claims
+  provisional.
 - Decide whether any passive quality recommendation should become an active
   gate, using the existing-convention check required by recent retros.

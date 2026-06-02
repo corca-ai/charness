@@ -126,11 +126,32 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
     assert payload["capture_gaps"]["inferred_gap_session_count"] == 2
     assert payload["capture_gaps"]["missing_feedback_signal_count"] == 1
     assert payload["capture_gaps"]["explicit_request_only"] is True
+    assert payload["product_evidence"]["first_value_floor_count"] == 4
+    assert payload["product_evidence"]["first_value_floor_rate"] == 1.0
+    assert payload["product_evidence"]["first_value_kind"] == {
+        "github_issue": 1,
+        "product_artifact": 3,
+    }
+    assert payload["product_evidence"]["feedback_coverage_count"] == 3
+    assert payload["product_evidence"]["feedback_coverage_rate"] == 0.75
+    assert payload["product_evidence"]["satisfaction_signal_count"] == 2
+    assert payload["product_evidence"]["satisfaction_signal_rate"] == 0.5
+    assert payload["product_evidence"]["friction_or_followup_signal_count"] == 1
+    assert payload["product_evidence"]["friction_or_followup_signal_rate"] == 0.25
+    assert payload["product_evidence"]["missing_feedback_signal_count"] == 1
+    assert payload["product_evidence"]["unclassified_feedback_signal_count"] == 0
+    assert payload["product_evidence"]["veto_gaps"] == [
+        "missing_feedback",
+        "single_trigger_type",
+    ]
 
     plain = run_report("--repo-root", str(tmp_path))
     assert plain.returncode == 0
     assert "ADVISORY: usage episode report is an engineering signal" in plain.stdout
     assert "Usage episodes: 4 record(s) across 3 session group(s)." in plain.stdout
+    assert "Product evidence: first_value_floor=4/4 (100.0%)" in plain.stdout
+    assert "feedback_coverage=75.0%" in plain.stdout
+    assert "Product-success veto gaps: missing_feedback, single_trigger_type." in plain.stdout
     assert "Non-claims:" in plain.stdout
 
 
@@ -160,3 +181,44 @@ def test_plugin_usage_episode_report_smoke(tmp_path: Path) -> None:
     assert payload["status"] == "valid"
     assert payload["episode_count"] == 1
     assert payload["t_signal_count"] == 1
+    assert payload["product_evidence"]["first_value_floor_count"] == 1
+
+
+def test_report_usage_episodes_vetoes_single_emitter_and_no_satisfaction(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    first = crill_episode()
+    first["feedback_signal"] = "follow_up_requested"
+    second = crill_episode()
+    second["episode_id"] = "crill-episode-002"
+    second["trigger_type"] = "correction"
+    second["entry_point"] = "api"
+    second["feedback_signal"] = "retried"
+    write_records(tmp_path, [first, second])
+
+    result = run_report("--repo-root", str(tmp_path), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["product_evidence"]["first_value_floor_count"] == 2
+    assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
+    assert payload["product_evidence"]["satisfaction_signal_count"] == 0
+    assert payload["product_evidence"]["friction_or_followup_signal_count"] == 2
+    assert payload["product_evidence"]["veto_gaps"] == [
+        "no_satisfaction_signal",
+        "single_emitter",
+    ]
+
+
+def test_report_usage_episodes_flags_unclassified_feedback(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    record = crill_episode()
+    record["feedback_signal"] = "edited"
+    write_records(tmp_path, [record])
+
+    result = run_report("--repo-root", str(tmp_path), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
+    assert payload["product_evidence"]["unclassified_feedback_signal_count"] == 1
+    assert "unclassified_feedback" in payload["product_evidence"]["veto_gaps"]

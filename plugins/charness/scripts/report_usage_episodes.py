@@ -13,6 +13,7 @@ from typing import Any
 
 import jsonschema
 import yaml
+from usage_episode_product_evidence import PRODUCT_EVIDENCE_NON_CLAIM, product_evidence
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -22,6 +23,7 @@ DEFAULT_STORAGE = Path(".charness/usage-episodes")
 EVENT_FILENAME = "usage_episode.jsonl"
 NON_CLAIMS = [
     "Usage episodes are an engineering usage signal, not product-success proof.",
+    PRODUCT_EVIDENCE_NON_CLAIM,
     "Counts cover only records captured under the configured storage_path; missing hooks or disabled adapters are outside the denominator.",
     "The report does not infer raw prompts, transcripts, user identity, or private source content.",
 ]
@@ -240,6 +242,7 @@ def _report_payload(
         "t_signal_count": t_signal_count,
         "t_signal_rate": round(t_signal_count / len(records), 4) if records else 0.0,
         "capture_gaps": _capture_gaps(records, sessions),
+        "product_evidence": product_evidence(records),
         "warnings": [],
         "errors": [],
         "non_claims": NON_CLAIMS,
@@ -295,6 +298,15 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
             f"carry session_id; inferred gap sessions: {sessions['inferred_gap_count']}."
         )
         print(f"T signals: {payload['t_signal_count']} ({payload['t_signal_rate']:.1%}).")
+        evidence = payload["product_evidence"]
+        print(
+            "Product evidence: "
+            f"first_value_floor={evidence['first_value_floor_count']}/{payload['episode_count']} "
+            f"({evidence['first_value_floor_rate']:.1%}), "
+            f"feedback_coverage={evidence['feedback_coverage_rate']:.1%}, "
+            f"satisfaction_signals={evidence['satisfaction_signal_count']}, "
+            f"friction_or_followup={evidence['friction_or_followup_signal_count']}."
+        )
         gaps = payload["capture_gaps"]
         print(
             "Capture gaps: "
@@ -303,6 +315,8 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
             f"single_entry_point_only={gaps['single_entry_point_only']}, "
             f"explicit_request_only={gaps['explicit_request_only']}."
         )
+        if evidence["veto_gaps"]:
+            print("Product-success veto gaps: " + ", ".join(evidence["veto_gaps"]) + ".")
     print("Non-claims:")
     for non_claim in payload.get("non_claims", []):
         print(f"- {non_claim}")

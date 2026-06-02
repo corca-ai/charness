@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This retro covers the #184 usage-episode consume-policy goal. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
 - Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
-- Goal: `charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md` This goal resolved #279 by separating "activation discussion was surfaced" from "activation discussion was resolved" in `achieve` helper output, public skill guidance, lifecycle guidance, CLI wrapper coverage, and checked-in dogfood evidence. (source: `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`)
 
 ## Repeat Traps
 
+- I accidentally ran `upsert_goal.py` without `--date` when activating the existing 2026-06-02 goal. That created a duplicate 2026-06-03 goal artifact, which I had to delete before continuing. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
+- I initially treated `first_value_ref` too much like user-value evidence. The user correctly pushed back that Charness almost always leaves artifacts, so artifact existence cannot stand in for satisfaction. The resulting design is better: first-value is only an evidence floor; satisfaction and friction are separate signals. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
+- The first implementation copied the policy phrase "one emitter" into prose but only checked trigger and entry point in code. Fresh-eye review caught the gap; the final helper now checks `single_emitter`. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
 - **Broad pytest ran before the slice was stable.** The worst instance was closeout: full gate passed, then a fresh-eye review exposed a real `find-skills` output-volume gap, which required code/docs/tests/plugin changes and made the earlier broad run stale. That earlier broad run became mostly diagnostic theater. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
-- **Closeout proof and mutation were interleaved.** After the goal was almost complete, I still mutated `find-skills --summary`, dogfood evidence, handoff, critique artifacts, retro artifacts, and goal evidence. That kept invalidating previous verification results. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
-- **Full pytest was used as readiness discovery.** A later aggregate run found a handoff invariant failure caused by a non-issue `Next Session` entry. That was a real catch, but it was an expensive way to discover a markdown shape issue that a focused handoff parser test found in 3 seconds after the failure. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
-- One full quality run was invoked incorrectly as `python3 scripts/run-quality.sh --read-only`; it failed immediately with a syntax error before running gates. This was command-form waste, not validation feedback. (source: `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`)
 
 ## Next-Time Checklist
 
+- keep product-evidence logic out of the main report script once it grows beyond a simple summary. Disposition: applied by extracting `scripts/usage_episode_product_evidence.py`. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
+- product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
+- when using `upsert_goal.py` on an existing dated artifact, pass the explicit `--date` from the artifact path. Disposition: applied in this run by deleting the accidental duplicate and continuing on the user-provided goal artifact; no code change needed unless this recurs. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
 - add a lightweight `--no-broad` or `--skip-broad-pytest` mode to `run_slice_closeout.py` for pre-lock closeout rehearsal, so agents can prove sync/docs/artifact surfaces without paying the full suite before the slice is stable. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
-- add or document a release preflight that maps changed adapter fields to focused tests, so update-instruction, fresh-checkout-probe, and real-host-checklist edits do not wait for full release quality to find local mismatches. (source: `charness-artifacts/retro/2026-06-02-release-helper-waste.md`)
-- after editing a release adapter, run adapter-specific focused tests before invoking `publish_release.py --execute`. For this repo that includes `pytest tests/quality_gates/test_release_real_host.py -q` when real-host trigger/checklist fields change. (source: `charness-artifacts/retro/2026-06-02-release-helper-waste.md`)
-- applied: Active achieve goals must remove draft-only closeout placeholders before final critique and complete-flip validation. (source: `charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md`)
 
 ## Selection Policy
 
@@ -27,8 +27,6 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md`
-- `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`
 - `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`
-- `charness-artifacts/retro/2026-06-02-release-helper-waste.md`
 - `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`
+- `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`
