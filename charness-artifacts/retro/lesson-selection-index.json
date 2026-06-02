@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-02",
-  "source_artifact_count": 100,
-  "candidate_count": 621,
+  "source_artifact_count": 101,
+  "candidate_count": 627,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:c4c5e0402786",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.",
+      "normalized_key": "closeout retro for charness artifacts goals 2026 06 02 workflow review efficiency and generalization",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:e923556fe80a",
       "kind": "current_focus",
@@ -31,6 +51,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
           "date": "2026-06-02",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4d4719ac2a86",
+      "kind": "next_improvement",
+      "lesson": "applied: Efficiency retros should separate measured host signals from proxy pressure and unavailable goal-window signals. This retro and the host probe use that split instead of treating cached input or session-wide counts as direct waste.",
+      "normalized_key": "applied efficiency retros should separate measured host signals from proxy pressure and unavailable goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a7c5a53249e7",
+      "kind": "next_improvement",
+      "lesson": "applied: Source-guard reviews should record two separate decisions: `coupling present?` and `hard consumer present?`. This was applied in the sibling-pattern audit, source-guard framing retro, and active-goal Auto-Retro.",
+      "normalized_key": "applied source guard reviews should record two separate decisions coupling present and hard consumer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -71,6 +131,66 @@
           "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:026005841c7f",
+      "kind": "repeat_trap",
+      "lesson": "The goal's safety cost was high but mostly deliberate: #277 closeout carrier proof, fresh-eye slice reviews, and broad gates were necessary because the work changed operating contracts and closeout behavior.",
+      "normalized_key": "the goal s safety cost was high but mostly deliberate 277 closeout carrier proof",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8473471f7300",
+      "kind": "repeat_trap",
+      "lesson": "The host metrics are useful but not goal-windowed. The durable probe can show session-wide context pressure, repeated VCS/status commands, and broad gates, but it cannot honestly assign all of that cost to this goal.",
+      "normalized_key": "the host metrics are useful but not goal windowed the durable probe can show",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b3b7eb700655",
+      "kind": "repeat_trap",
+      "lesson": "The source-guard audit initially used \"expression difference\", which blurred the distinction between real prose-shape coupling and a hard source guard. The user caught the weak framing; it required an extra correction commit.",
+      "normalized_key": "the source guard audit initially used expression difference which blurred the distinction between real",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
         }
       ]
     },
@@ -133,129 +253,29 @@
           "section": "Context"
         }
       ]
-    },
-    {
-      "candidate_id": "current_focus:5e46f99fd452",
-      "kind": "current_focus",
-      "lesson": "The user pointed out that the handoff chunker again surfaced meaningless pickup choices: local-state verification appeared as a selectable chunk, and an already completed achieve goal was still offered for activation.",
-      "normalized_key": "the user pointed out that the handoff chunker again surfaced meaningless pickup choices local",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-handoff-chunker-non-actionable-candidates.md",
-          "date": "2026-06-01",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d6daffb39749",
-      "kind": "current_focus",
-      "lesson": "This retro covers the 2026-06-01 goal that turned the active handoff plus all 12 open issues into a sequenced closeout run.",
-      "normalized_key": "this retro covers the 2026 06 01 goal that turned the active handoff plus",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-open-issue-generative-closeout.md",
-          "date": "2026-06-01",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:630601e56c70",
-      "kind": "current_focus",
-      "lesson": "This session continued the reviewer-tier closeout goal, added #276 at the operator's request, fixed the #275 installed plugin layout regression, and added an achieve activation-discussion gate for #276.",
-      "normalized_key": "this session continued the reviewer tier closeout goal added 276 at the operator s",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md",
-          "date": "2026-06-01",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:5bf706d26b6b",
-      "kind": "current_focus",
-      "lesson": "This session pursued the active achieve goal `charness-artifacts/goals/2026-05-31-autonomous-backlog-hardening.md`, covering the closed autonomous tranche for #268, #269, #264, #270, and the mechanical portion of #265/#261.",
-      "normalized_key": "this session pursued the active achieve goal charness artifacts goals 2026 05 31 autonomous",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-autonomous-backlog-hardening.md",
-          "date": "2026-06-01",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:6ccd6d711556",
-      "kind": "current_focus",
-      "lesson": "This work bundled the live #273 mutation regression with the #261 survivor policy boundary.",
-      "normalized_key": "this work bundled the live 273 mutation regression with the 261 survivor policy boundary",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-273-261-mutation-gate-recovery.md",
-          "date": "2026-06-01",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5f8fefaa84a9",
-      "kind": "next_improvement",
-      "lesson": "Add a `commit-msg` hook, not a `pre-commit` hook, that recognizes staged issue-closeout artifacts and blocks the commit when the message lacks required close keywords and ledger fields. `pre-commit` can only flag staged context; it cannot validate the final commit message.",
-      "normalized_key": "add a commit msg hook not a pre commit hook that recognizes staged issue",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-      "latest_source_date": "2026-06-01",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md",
-          "date": "2026-06-01",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:c4c5e0402786",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.",
+      "normalized_key": "closeout retro for charness artifacts goals 2026 06 02 workflow review efficiency and generalization",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:e923556fe80a",
       "kind": "current_focus",
@@ -273,6 +293,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
           "date": "2026-06-02",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4d4719ac2a86",
+      "kind": "next_improvement",
+      "lesson": "applied: Efficiency retros should separate measured host signals from proxy pressure and unavailable goal-window signals. This retro and the host probe use that split instead of treating cached input or session-wide counts as direct waste.",
+      "normalized_key": "applied efficiency retros should separate measured host signals from proxy pressure and unavailable goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a7c5a53249e7",
+      "kind": "next_improvement",
+      "lesson": "applied: Source-guard reviews should record two separate decisions: `coupling present?` and `hard consumer present?`. This was applied in the sibling-pattern audit, source-guard framing retro, and active-goal Auto-Retro.",
+      "normalized_key": "applied source guard reviews should record two separate decisions coupling present and hard consumer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -313,6 +373,66 @@
           "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:026005841c7f",
+      "kind": "repeat_trap",
+      "lesson": "The goal's safety cost was high but mostly deliberate: #277 closeout carrier proof, fresh-eye slice reviews, and broad gates were necessary because the work changed operating contracts and closeout behavior.",
+      "normalized_key": "the goal s safety cost was high but mostly deliberate 277 closeout carrier proof",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8473471f7300",
+      "kind": "repeat_trap",
+      "lesson": "The host metrics are useful but not goal-windowed. The durable probe can show session-wide context pressure, repeated VCS/status commands, and broad gates, but it cannot honestly assign all of that cost to this goal.",
+      "normalized_key": "the host metrics are useful but not goal windowed the durable probe can show",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b3b7eb700655",
+      "kind": "repeat_trap",
+      "lesson": "The source-guard audit initially used \"expression difference\", which blurred the distinction between real prose-shape coupling and a hard source guard. The user caught the weak framing; it required an extra correction commit.",
+      "normalized_key": "the source guard audit initially used expression difference which blurred the distinction between real",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
         }
       ]
     },

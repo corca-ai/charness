@@ -16,10 +16,9 @@
 
 ## Current State
 
-- Local `main` has #277 closed on `225898a3` and the workflow-review goal has
-  completed Slice 4's sibling-pattern audit; check live
-  `git status --short --branch` before assuming the worktree is clean. The
-  audit is
+- Local `main` has #277 closed on `225898a3` and the workflow-review goal is
+  complete; check live `git status --short --branch` before assuming the
+  worktree is clean. The sibling-pattern audit is
   [workflow-review sibling-pattern audit](../charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md)
   and its fresh-eye review is
   [sibling-pattern audit critique](../charness-artifacts/critique/2026-06-02-sibling-pattern-audit-slice.md).
@@ -29,18 +28,15 @@
   mutation-standard policy question.
 - #261 and #184 remain the live carry-forward issues; #184 needs product-success
   synthesis from the maintainer's newer thinking and source thread.
-- Active workflow-review goal exists:
+- Workflow-review goal:
   [workflow review efficiency and generalization](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md).
-  Slice 4 sibling-pattern scan and disposition is complete; continue with
-  Slice 5 validation, final critique, and goal closeout.
+  Closeout added `find-skills --summary` for operator-facing routing probes,
+  final fresh-eye critique, retro, host probe, and disposition review.
 
 ## Next Session
 
-1. Continue
-   `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.
-   Continue with Slice 5 validation, final critique, and goal closeout.
-2. After that goal is completed or paused, pick #184 for product-success
-   synthesis or #261 for the mutation-standard policy decision.
+1. Pick #184 for product-success synthesis or #261 for the mutation-standard
+   policy decision.
 
 ## Discuss
 
@@ -55,10 +51,9 @@
 - If a future bare handoff pickup offers setup checks, completed goals, or
   cadence constraints as choices, inspect the parser filter before blaming the
   handoff prose.
-- For the workflow-improvement goal, decide before activation whether one
-  startup `find-skills` pass stays mandatory but quiet/read-only by default, and
-  whether fresh-eye critique should run at slice/bundle boundaries rather than
-  every commit.
+- For future workflow-improvement goals, one startup `find-skills` pass remains
+  mandatory; use read-only/`--summary` recommendation probes at real routing
+  boundaries and slice/bundle fresh-eye critique instead of per-commit review.
 
 ## References
 

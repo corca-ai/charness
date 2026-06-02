@@ -456,6 +456,35 @@ def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_
     assert artifact_json["inventory"]["tool_recommendation_query"] is None
 
 
+def test_recommendation_role_summary_keeps_tool_route_compact(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_cautilus_validation_integration(tmp_path)
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
+        "--summary",
+        env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
+    )
+
+    assert payload["mode"] == "summary"
+    assert payload["artifacts"]["mode"] == "read-only"
+    assert "public_skills" not in payload
+    assert "integrations" not in payload
+    assert payload["counts"]["integrations"] == 1
+    recommendations = payload["recommendations"]
+    assert recommendations["tool_recommendation_query"] == {
+        "mode": "recommendation_role",
+        "recommendation_role": "validation",
+        "next_skill_id": "quality",
+        "only_blocking": False,
+    }
+    assert [entry["tool_id"] for entry in recommendations["tool_recommendations"]] == ["cautilus"]
+
+
 def test_recommendation_queries_can_force_canonical_inventory_refresh(tmp_path: Path) -> None:
     _write_find_skills_adapter(tmp_path)
     _write_cautilus_validation_integration(tmp_path)

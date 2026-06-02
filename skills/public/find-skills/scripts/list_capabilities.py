@@ -189,11 +189,46 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Force a durable inventory artifact write even for recommendation-shaped queries.",
     )
+    parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Emit a compact JSON summary with counts and recommendation results instead of the full inventory arrays.",
+    )
     return parser.parse_args()
 
 
 def _is_recommendation_query(args: argparse.Namespace) -> bool:
     return bool(args.recommend_for_task or args.recommend_for_skill or args.recommendation_role)
+
+
+def _summary_payload(payload: dict[str, object]) -> dict[str, object]:
+    counts: dict[str, int] = {}
+    for key in (
+        "public_skills",
+        "support_skills",
+        "support_capabilities",
+        "integrations",
+        "workflow_integrations",
+        "trusted_skills",
+    ):
+        value = payload.get(key)
+        counts[key] = len(value) if isinstance(value, list) else 0
+    return {
+        "mode": "summary",
+        "adapter": payload.get("adapter"),
+        "counts": counts,
+        "artifacts": payload.get("artifacts"),
+        "recommendations": {
+            "tool_recommendations": payload.get("tool_recommendations", []),
+            "tool_recommendation_query": payload.get("tool_recommendation_query"),
+            "support_skill_recommendations": payload.get("support_skill_recommendations", []),
+            "support_recommendation_query": payload.get("support_recommendation_query"),
+            "support_recommendation_note": payload.get("support_recommendation_note"),
+            "workflow_recommendations": payload.get("workflow_recommendations", []),
+            "public_skill_recommendations": payload.get("public_skill_recommendations", []),
+            "public_recommendation_query": payload.get("public_recommendation_query"),
+        },
+    }
 
 
 def main() -> None:
@@ -286,6 +321,7 @@ def main() -> None:
         except ValueError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             raise SystemExit(1) from exc
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    output_payload = _summary_payload(payload) if args.summary else payload
+    print(json.dumps(output_payload, ensure_ascii=False, indent=2))
 if __name__ == "__main__":
     main()

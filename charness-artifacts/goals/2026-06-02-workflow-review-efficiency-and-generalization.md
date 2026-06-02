@@ -1,6 +1,6 @@
 # Achieve Goal: Workflow Review Efficiency And Generalization
 
-Status: active
+Status: complete
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`
 
@@ -9,10 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 sibling-pattern scan and disposition is complete;
-  Slice 5 validate, critique, and close out is next.
-- Next action: run final validation/critique closeout, refresh this goal and
-  handoff, then complete the goal if proof and dispositions hold.
+- Current slice: Slice 5 validation, critique, and closeout is complete.
+- Next action: commit and push the checked-in completion proof, then mark the
+  host-level goal complete.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -134,7 +133,7 @@ Improve Charness operating contracts so future sessions catch workflow-boundary 
 | 2 | Encode slice-level critique cadence | The second critique caught real bugs, but per-commit subagents would become waste | Critique/achieve/operating guidance says when fresh-eye is required, when same-agent critique is enough, and what a slice packet must include | completed |
 | 3 | Generalize invariant-first bug review | Future fixes should start from workflow invariants, not issue-specific patch memories | Review checklist/reference and tests that require producer plus final-consumer coverage for propagated diagnostics/readiness decisions | completed |
 | 4 | Scan sibling patterns and disposition findings | The user asked whether similar patterns exist elsewhere and whether all improvements are disposed | Audit artifact lists scanned surfaces, findings, and dispositions as applied / issue / rejected / deferred-with-owner | completed |
-| 5 | Validate, critique, and close out | Changes affect operating contracts and must not silently increase process cost | Surface sync if needed, focused/broad gate as appropriate, bounded final critique, complete goal artifact, handoff refreshed | planned |
+| 5 | Validate, critique, and close out | Changes affect operating contracts and must not silently increase process cost | Surface sync if needed, focused/broad gate as appropriate, bounded final critique, complete goal artifact, handoff refreshed | completed |
 
 ## Coordination Cues
 
@@ -250,6 +249,12 @@ goal:
   were tightened to say prose-shape matching is coupling; the current
   no-code-change disposition rests only on the absence of a hard final consumer,
   not on the absence of coupling.
+- 2026-06-02 Slice 5 complete: final fresh-eye reviewers found the expected
+  closeout-state gaps before the complete flip and one substantive process-cost
+  gap: read-only `find-skills` recommendation calls reduced artifact churn but
+  not visible output volume. Folded by adding opt-in `--summary` output for
+  routing probes, skill docs, plugin mirror sync, public-skill dogfood evidence,
+  and focused tests for task-text and recommendation-role summary output.
 
 ## Context Sources
 
@@ -312,10 +317,50 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-- None yet.
+- Non-`gh` issue backend live closeout remains unproven; existing handoff keeps
+  the live-proof trigger.
+- Goal-windowed host metrics were unavailable. The host probe is session-wide,
+  so efficiency claims use it as proxy pressure, not goal-attributed cost.
 
 ## Final Verification
 
+- Retro: charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md
+- Host log probe: charness-artifacts/probe/2026-06-02-workflow-review-efficiency-and-generalization-host-log-probe.json
+- Disposition review: charness-artifacts/critique/2026-06-02-workflow-review-efficiency-disposition-review.md
+- Final critique: charness-artifacts/critique/2026-06-02-workflow-review-efficiency-final-closeout-critique.md
+- 2026-06-02 final self-verification against User Acceptance: startup
+  capability bootstrap remains mandatory but recommendation probes are
+  read-only/summary-capable at routing boundaries; critique cadence is
+  slice/bundle-scoped; invariant-first review requires producer and final
+  consumer proof; sibling-pattern findings are applied, rejected, or
+  deferred-with-owner; deterministic rules have focused tests, while prose
+  rules document why hard gates would be brittle.
+- 2026-06-02 Slice 5 final proof: changed-surface sync ran
+  `python3 scripts/sync_root_plugin_manifests.py --repo-root .` and
+  `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`.
+  Focused `find-skills` tests passed for compact `--summary` task routing and
+  recommendation-role routing; full `./scripts/run-quality.sh --read-only`
+  passed 69 phases, 0 failed, in 41.6s. Cautilus planner reported
+  `next_action: none`; no evaluator run was made. Scenario review inspected
+  `evals/cautilus/scenarios.json` and `suggest_public_skill_dogfood.py` output:
+  existing `find-skills-local-first` still covers the maintained routing
+  scenario, while the new `--summary` output is frozen in
+  `docs/public-skill-dogfood.json` and focused tests.
+- 2026-06-02 final slice closeout aggregate passed with
+  `python3 scripts/run_slice_closeout.py --repo-root .
+  --ack-cautilus-skill-review` after removing a non-issue handoff candidate
+  exposed by `test_current_handoff_pipeline_has_only_actionable_candidates`.
+  The rerun synced plugin/retro surfaces and passed packaging, doc links,
+  command docs, markdown, secrets, Cautilus proof policy, skill validation,
+  py_compile, ownership overlap, public-skill validation/dogfood, critique
+  artifacts, probe JSON, retro lesson index, ruff, Python lengths,
+  attention-state visibility, broad pytest, and agent-browser runtime guard.
+- 2026-06-02 final fresh-eye critique:
+  `charness-artifacts/critique/2026-06-02-workflow-review-efficiency-final-closeout-critique.md`.
+  Act-Before-Ship findings were folded: missing closeout evidence lines,
+  uncommitted retro/probe evidence, stale Slice 5/handoff state, and the
+  `find-skills` visible-output gap. Bundle Anyway recommendation-role summary
+  regression was folded into `tests/test_find_skills.py`.
 - 2026-06-02 source-guard framing correction proof: `inspect_repo.py
   --repo-root .` exited 0 and reported no current recommendations or prose-wrap
   source guards; changed-surface sync ran
@@ -387,11 +432,16 @@ Issues or deferred findings discovered during the run.
 
 ## User Verification Instructions
 
-- Before activation, review `Discuss before activation` and adjust the defaults
-  if you want a different operating contract.
-- After completion, inspect the final `Off-Goal Findings`, `Final
-  Verification`, and `Auto-Retro` sections to confirm every surfaced
-  improvement was applied, filed, or explicitly rejected/deferred.
+- Inspect `Final Verification` for the full gate, closeout retro, host probe,
+  and fresh-eye critique/disposition review.
+- For the source-guard concern, inspect F1/F8 in
+  `charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md`;
+  the claim is now "coupling exists, no hard consumer found", not "wording
+  difference is harmless".
+- For the `find-skills` cost claim, run
+  `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "create a worktree" --summary`
+  and confirm it emits counts plus recommendations without top-level full
+  inventory arrays.
 
 ## Auto-Retro
 
@@ -400,3 +450,11 @@ Issues or deferred findings discovered during the run.
   The durable audit now separates "coupling exists" from "a hard source guard
   exists"; no new issue was filed because the reopen condition is already
   encoded on F1/F8 and no hard consumer was found.
+- applied: Source-guard reviews now record the two distinct decisions
+  `coupling present?` and `hard consumer present?` in the audit, critique,
+  closeout retro, and this Auto-Retro.
+- applied: Efficiency evidence now separates measured host signals, proxy
+  pressure, and unavailable goal-window signals through the closeout retro and
+  host probe citation.
+- applied: `find-skills` routing probes can now use `--summary` to reduce
+  visible inventory output while preserving the default full JSON contract.

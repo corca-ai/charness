@@ -146,6 +146,23 @@ def test_list_capabilities_recommends_support_skill_from_task_text(tmp_path: Pat
     assert artifact_json["inventory"]["support_recommendation_query"] is None
 
 
+def test_recommend_for_task_summary_keeps_routing_output_compact(tmp_path: Path) -> None:
+    _write_specdown_surface(tmp_path)
+
+    task = "Please edit docs/specs/user/foo.spec.md and add a check:jq assertion."
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task, "--summary")
+
+    assert payload["mode"] == "summary"
+    assert payload["artifacts"]["mode"] == "read-only"
+    assert payload["counts"]["support_skills"] == 1
+    assert "public_skills" not in payload
+    assert "support_skills" not in payload
+    recommendations = payload["recommendations"]
+    assert recommendations["support_recommendation_query"] == {"mode": "task_text", "task_text": task}
+    assert [entry["id"] for entry in recommendations["support_skill_recommendations"]] == ["specdown"]
+    assert not (tmp_path / "charness-artifacts" / "find-skills" / "latest.json").exists()
+
+
 def test_list_capabilities_does_not_recommend_specdown_from_weak_task_text(tmp_path: Path) -> None:
     _write_specdown_surface(tmp_path)
 

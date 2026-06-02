@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
 - The workflow-review sibling-pattern audit described the user's source-guard concern using the phrase "expression difference". (source: `charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md`)
-- Closed the implementation slice for `charness-artifacts/goals/2026-06-01-achieve-long-goal-efficiency.md`. (source: `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`)
 
 ## Repeat Traps
 
+- The goal's safety cost was high but mostly deliberate: #277 closeout carrier proof, fresh-eye slice reviews, and broad gates were necessary because the work changed operating contracts and closeout behavior. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
+- The host metrics are useful but not goal-windowed. The durable probe can show session-wide context pressure, repeated VCS/status commands, and broad gates, but it cannot honestly assign all of that cost to this goal. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
+- The source-guard audit initially used "expression difference", which blurred the distinction between real prose-shape coupling and a hard source guard. The user caught the weak framing; it required an extra correction commit. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
 - #276 was added mid-closeout after #275 broad verification had already passed, forcing another full verification cycle. This was correct for scope, but it made the late-stage verification cost explicit. (source: `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`)
-- Broad pytest was rerun before a later metadata change was mirrored into the plugin export, producing avoidable packaging-drift failures in installed-CLI tests. (source: `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`)
-- Handoff auto-draft failed the new shape because it has an independent goal renderer. This was not wasted validation: the broad suite caught a real generator-consumer compatibility gap. (source: `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`)
-- I changed a live-backlog-sensitive handoff test during this slice because the broad run exposed it. The fix was useful, but it was opportunistic scope expansion triggered by verification rather than part of the reviewer-tier triage lock. (source: `charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md`)
 
 ## Next-Time Checklist
 
+- applied: Efficiency retros should separate measured host signals from proxy pressure and unavailable goal-window signals. This retro and the host probe use that split instead of treating cached input or session-wide counts as direct waste. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
+- applied: Source-guard reviews should record two separate decisions: `coupling present?` and `hard consumer present?`. This was applied in the sibling-pattern audit, source-guard framing retro, and active-goal Auto-Retro. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
 - keep this correction in the active goal Auto-Retro and the sibling audit artifact so final closeout cannot collapse the distinction again. (source: `charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md`)
 - when reviewing source-guard candidates, write the decision as `coupling present?` and `hard consumer present?` rather than using wording like "expression difference". (source: `charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md`)
-- Add a `commit-msg` hook, not a `pre-commit` hook, that recognizes staged issue-closeout artifacts and blocks the commit when the message lacks required close keywords and ledger fields. `pre-commit` can only flag staged context; it cannot validate the final commit message. (source: `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`)
-- add a small changed-surface note or validator hint for attention-state metadata edits that says plugin export sync is required. (source: `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`)
 
 ## Selection Policy
 
@@ -27,8 +27,6 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-06-01-achieve-long-goal-efficiency.md`
-- `charness-artifacts/retro/2026-06-01-release-issue-closeout-miss.md`
 - `charness-artifacts/retro/2026-06-01-reviewer-tier-275-276-closeout.md`
-- `charness-artifacts/retro/2026-06-01-reviewer-tier-sibling-scan-waste.md`
 - `charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md`
+- `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`

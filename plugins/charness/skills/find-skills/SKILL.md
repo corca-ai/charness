@@ -69,16 +69,16 @@ Start local-first:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --read-only
-python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-task "<task summary>"
-python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
-python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id>
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-task "<task summary>" --summary
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id> --summary
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id> --summary
 sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
 
-Routing-only callers should stay read-only. Recommendation-shaped calls are
-read-only by default; pass `--write-artifact` only when intentionally refreshing
-the canonical inventory too.
+Routing-only callers should stay read-only and prefer `--summary`;
+recommendation-shaped calls are read-only by default, and `--write-artifact`
+intentionally refreshes the canonical inventory too.
 
 If a host-provided installed skill path is missing, resolve the current path
 before treating the capability as absent (add `--marketplace`/`--plugin` for a
