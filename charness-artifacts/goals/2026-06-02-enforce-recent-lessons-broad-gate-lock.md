@@ -144,9 +144,8 @@ during the run:
 - Gather: n/a - all shaping context is local repo state and conversation
   summarized into this artifact.
 - Release: n/a - this goal does not bump versions or edit release manifests.
-- Issue closeout: #278 in scope as a feature/deferred-work resolution; stable
-  `charness goal check` helper surface implemented, docs/tests pending final
-  verification and closeout.
+- Issue closeout: #278 verified CLOSED at 2026-06-02T00:58:52Z via direct
+  commit carrier `b2f47cad`.
 
 ## Slice Log
 
@@ -279,6 +278,12 @@ Issues or deferred findings discovered during the run.
   `python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft
   --repo corca-ai/charness --number 278 --classification feature --body-file
   <draft> --carrier pr-body --repo-root .`.
+- PASS: #278 final closeout verified with
+  `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo
+  corca-ai/charness --number 278 --classification feature --carrier
+  direct-commit --commit-ref b2f47cad --body-file <commit-body>
+  --expect-state CLOSED --repo-root .`; GitHub reported
+  `https://github.com/corca-ai/charness/issues/278` state `CLOSED`.
 - Critique: `charness-artifacts/critique/2026-06-02-003849-packet.md`
   parent-delegated; counterweight found no remaining Act Before Ship items.
 - Retro: charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md
