@@ -1,72 +1,71 @@
 # Release Surface Check
-Date: 2026-06-01
+Date: 2026-06-02
 
 ## Scope
 
-Advanced `charness` toward release `0.13.5` (tag `v0.13.5`) through the repo-owned release helper.
+Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.13.4`
-- target version: `0.13.5`
+- previous version: `0.13.5`
+- target version: `0.14.0`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish.
+- `./scripts/run-quality.sh --release` is queued for this publish attempt.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.13.5`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.14.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
+- Run `charness tool doctor tokei --json` before installing `tokei` and confirm the missing-binary state still surfaces the upstream install document URL instead of a guessed package-manager command.
+- Install `tokei` through the manifest-supported path (`charness tool install tokei --json`, `cargo install tokei`, `brew install tokei`, or an upstream release binary), then verify `tokei --version`.
+- Re-run `charness tool doctor tokei --json` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support tokei --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-01-release-v0.13.5-reviewer-tier-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.13.5`.
+- Review proof: `charness-artifacts/critique/2026-06-02-release-v0.14.0-critique.md`.
 
 ## Fresh Checkout Probes
 
-- No repo-declared fresh checkout probes were configured for this release.
+- Fresh-checkout probe status: configured.
+- `./charness --help >/dev/null`
+- `./charness goal check --help >/dev/null`
+- `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #275: `CLOSED` (https://github.com/corca-ai/charness/issues/275)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #276: `CLOSED` (https://github.com/corca-ai/charness/issues/276)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.13.5 (maintenance patch: installed handoff can load the live issue source again, achieve now blocks hidden consequential activation decisions, and reviewer-tier guardrails fail earlier before broad verification).
+- Run `charness update` to pull 0.14.0 (minor release: stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
+- VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.
+- BEHAVIOR CHANGE (broad closeout lock) - `scripts/run_slice_closeout.py` refuses broad pytest unless `--verification-lock` is passed after the mutation set is locked. Use `--skip-broad-pytest` for pre-lock rehearsal of deterministic gates.
+- NEW OPERATOR SURFACE - use `charness goal check --repo-root . --goal-path <path> --pursue-ready` as the stable goal-helper surface instead of invoking versioned plugin-cache helper paths directly.
 - HOST HOOK CLEANUP - stale or duplicate Codex find-skills startup hook markers are cleaned up during hook reconciliation; if you hand-edited those hooks, inspect the generated config after update.
 - AUTO-WIRE WIN (#244/#245) - `charness update` now AUTO-INSTALLS the find-skills SessionStart routing hook and dedups it by logical identity across checkouts. The manual user-level hook wiring required through 0.12.0 is no longer needed; if you hand-added one, you may remove the duplicate.
 - BEHAVIOR CHANGE (achieve coordination floors) - a goal `Created` on/after 2026-05-31 now needs a `## Coordination Cues` step before the `complete` flip - a `Gather:` line (or `Gather: n/a — <reason>`) when `## Context Sources` names an external URL/Slack/Notion/Docs source, and a `Release:` line (or `Release: n/a — <reason>`) when the run touched a release surface. Existing and older goals are grandfathered (unaffected). The floors are presence-only and ship with an explicit opt-out, so they never block a goal that records the step.
