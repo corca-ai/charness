@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-02",
-  "source_artifact_count": 103,
-  "candidate_count": 641,
+  "source_artifact_count": 104,
+  "candidate_count": 650,
   "top_candidates": [
     {
       "candidate_id": "current_focus:c4c5e0402786",
@@ -75,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:103d5ee244c2",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the `v0.14.0` release run.",
+      "normalized_key": "this retro reviews the v0 14 0 release run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:6a7ca334573a",
       "kind": "current_focus",
       "lesson": "This run closed the gap between remembered lessons and executable gates: broad closeout now needs an explicit verification lock, `charness goal check` gives #278 a stable helper surface, and Python file/headroom length checks now use `tokei` code-line counts.",
@@ -109,6 +129,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5f6805ecff56",
+      "kind": "next_improvement",
+      "lesson": "add or document a release preflight that maps changed adapter fields to focused tests, so update-instruction, fresh-checkout-probe, and real-host-checklist edits do not wait for full release quality to find local mismatches.",
+      "normalized_key": "add or document a release preflight that maps changed adapter fields to focused tests",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bbdc29b4534e",
+      "kind": "next_improvement",
+      "lesson": "after editing a release adapter, run adapter-specific focused tests before invoking `publish_release.py --execute`. For this repo that includes `pytest tests/quality_gates/test_release_real_host.py -q` when real-host trigger/checklist fields change.",
+      "normalized_key": "after editing a release adapter run adapter specific focused tests before invoking publish release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -179,66 +239,6 @@
       "kind": "next_improvement",
       "lesson": "carry forward that the 2026-06-01 broad-pytest-before-triage-lock lesson recurred on 2026-06-02; future retros should treat another recurrence as process noncompliance, not a new discovery.",
       "normalized_key": "carry forward that the 2026 06 01 broad pytest before triage lock lesson recurred",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:09848a66d5c1",
-      "kind": "next_improvement",
-      "lesson": "keep this correction in the active goal Auto-Retro and the sibling audit artifact so final closeout cannot collapse the distinction again.",
-      "normalized_key": "keep this correction in the active goal auto retro and the sibling audit artifact",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9196e3dc2707",
-      "kind": "next_improvement",
-      "lesson": "record that closeout evidence should be gathered pre-lock, but final broad proof still needs a concise post-lock evidence append.",
-      "normalized_key": "record that closeout evidence should be gathered pre lock but final broad proof still",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:39b8193594e7",
-      "kind": "next_improvement",
-      "lesson": "require a **focused-failure replay** after broad pytest finds a localized issue. Do not immediately rerun the broad gate; first add or run the smallest target that reproduces the failure, as happened with `test_current_handoff_pipeline_has_only_actionable_candidates`.",
-      "normalized_key": "require a focused failure replay after broad pytest finds a localized issue do not",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
       "latest_source_date": "2026-06-02",
@@ -317,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:103d5ee244c2",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the `v0.14.0` release run.",
+      "normalized_key": "this retro reviews the v0 14 0 release run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:6a7ca334573a",
       "kind": "current_focus",
       "lesson": "This run closed the gap between remembered lessons and executable gates: broad closeout now needs an explicit verification lock, `charness goal check` gives #278 a stable helper surface, and Python file/headroom length checks now use `tokei` code-line counts.",
@@ -351,6 +371,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5f6805ecff56",
+      "kind": "next_improvement",
+      "lesson": "add or document a release preflight that maps changed adapter fields to focused tests, so update-instruction, fresh-checkout-probe, and real-host-checklist edits do not wait for full release quality to find local mismatches.",
+      "normalized_key": "add or document a release preflight that maps changed adapter fields to focused tests",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bbdc29b4534e",
+      "kind": "next_improvement",
+      "lesson": "after editing a release adapter, run adapter-specific focused tests before invoking `publish_release.py --execute`. For this repo that includes `pytest tests/quality_gates/test_release_real_host.py -q` when real-host trigger/checklist fields change.",
+      "normalized_key": "after editing a release adapter run adapter specific focused tests before invoking publish release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -491,6 +551,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9696afb533df",
+      "kind": "next_improvement",
+      "lesson": "the broad-gate lock lesson applies to release helpers too. A release helper's full quality step is not the first place to test a narrow adapter contract.",
+      "normalized_key": "the broad gate lock lesson applies to release helpers too a release helper s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d3663a08380c",
+      "kind": "next_improvement",
+      "lesson": "treat a release helper failure after mutation as a recovery slice: inspect `git status`, understand helper-written surfaces, commit or correct them deliberately, then resume with `--publish-current` only when the target version is already coherent.",
+      "normalized_key": "treat a release helper failure after mutation as a recovery slice inspect git status",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -657,6 +757,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:3a8fa285d8c6",
+      "kind": "repeat_trap",
+      "lesson": "**The first release helper execution became an expensive adapter-contract discovery run.** I changed `.agents/release-adapter.yaml` from a Cautilus real-host checklist to a `tokei` checklist, then let the full release helper discover that the existing real-host test still asserted Cautilus-specific wording.",
+      "normalized_key": "the first release helper execution became an expensive adapter contract discovery run i changed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:026005841c7f",
       "kind": "repeat_trap",
       "lesson": "The goal's safety cost was high but mostly deliberate: #277 closeout carrier proof, fresh-eye slice reviews, and broad gates were necessary because the work changed operating contracts and closeout behavior.",
@@ -691,6 +811,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a408a7df5ad8",
+      "kind": "repeat_trap",
+      "lesson": "**The mutation happened before the focused test replay.** The helper correctly stopped before tag/push, but it had already bumped package/plugin versions and rewrote `charness-artifacts/release/latest.md`. That forced a recovery commit and a second `publish_release.py` execution.",
+      "normalized_key": "the mutation happened before the focused test replay the helper correctly stopped before tag",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2c82f82498a3",
+      "kind": "repeat_trap",
+      "lesson": "**The prior broad-gate lesson was followed partially, not fully.** I avoided arbitrary full pytest loops, but still let a high-cost release gate act as the first verifier for a narrow adapter/test contract change.",
+      "normalized_key": "the prior broad gate lesson was followed partially not fully i avoided arbitrary full",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cc8c6fc28fb6",
+      "kind": "repeat_trap",
+      "lesson": "**The release critique found the right blocker, but I did not convert it into the nearest focused validation before publish.** The counterweight review explicitly identified the stale real-host checklist. The next local action should have been `pytest tests/quality_gates/test_release_real_host.py -q` after editing the adapter, before invoking the release helper.",
+      "normalized_key": "the release critique found the right blocker but i did not convert it into",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
           "date": "2026-06-02",
           "section": "Waste"
         }
