@@ -405,6 +405,7 @@ def test_checked_in_mutation_workflow_installs_length_gate_binary_before_samplin
     assert "cargo install tokei" in body
     assert "tokei --version" in body
     assert body.index("cargo install tokei") < body.index("Select mutation sample")
+    assert body.index("tokei --version") < body.index("Select mutation sample")
 
 
 def test_mutation_workflows_pass_workload_budget_envs() -> None:

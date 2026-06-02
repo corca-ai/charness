@@ -1,6 +1,6 @@
 # Achieve Goal: #274 + #261 mutation regression and standard decision
 
-Status: active
+Status: complete
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md`
 
@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 pending - decide the bounded #261 mutation-standard
-  disposition after the local #274 workflow dependency fix.
-- Next action: read prior #261 hardening/disposition evidence and decide whether
-  #261 can close now or should remain open with a precise policy comment.
+- Current slice: complete - #274 is fixed locally and staged for closeout; #261
+  is left open with a precise mutation-standard disposition.
+- Next action: publish the local carrier when ready, then verify GitHub issue
+  state and any post-fix mutation workflow run before claiming remote proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -129,7 +129,7 @@ mutation-standard decision, or needs a smaller follow-up issue.
 | 0 | Shape #274 + #261 goal | User selected the merged order and invoked achieve | Goal artifact passes `check_goal_artifact.py --pursue-ready`; consequential defaults are visible before activation | done |
 | 1 | Debug and fix #274 live mutation regression | Mainline mutation gate trust is the first blocker and unlocks cleaner #261 policy judgment | Root-cause artifact; focused tests; proof that the StrykerJS report path produces or honestly classifies its JSON report before Python mutation sampling proceeds | done locally |
 | 2 | Decide bounded #261 mutation-standard disposition | User asked to bundle #261 after #274, but not as an exhaustive survivor campaign | Evidence-backed close/defer decision; comment or closeout text names remaining equivalent/low-value/policy residue | in progress |
-| 3 | Verify, critique, and stage issue closeout | Repo closeout requires synchronized surfaces, critique, proof, and issue discipline | Changed-surface obligations; final validation; fresh-eye critique; carrier commit/PR text with #274 closeout and #261 disposition | planned |
+| 3 | Verify, critique, and stage issue closeout | Repo closeout requires synchronized surfaces, critique, proof, and issue discipline | Changed-surface obligations; final validation; fresh-eye critique; carrier commit/PR text with #274 closeout and #261 disposition | done locally |
 
 ## Coordination Cues
 
@@ -154,6 +154,15 @@ checked-in repo artifacts; no external document needs durable gathering.
 
 Release: n/a - no release surface is planned.
 
+Retro:
+charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md
+
+Host log probe:
+charness-artifacts/probe/2026-06-02-274-261-mutation-regression-and-standard-decision.json
+
+Disposition review:
+charness-artifacts/critique/2026-06-02-274-261-mutation-regression-and-standard-decision-disposition.md
+
 ## Slice Log
 
 ### Slice 0: Shape and activate #274 + #261 goal
@@ -172,7 +181,7 @@ Release: n/a - no release surface is planned.
 
 - Objective: Diagnose and fix the latest #274 scheduled mutation failure.
 - Why this approach: The latest issue comments showed StrykerJS JSON missing, but live workflow logs proved the run failed earlier in Select mutation sample because tokei was absent on the GitHub runner.
-- Commits:
+- Commits: `ff5591eb Install mutation workflow length gate dependency`
 - What changed: Added an Install validation binaries step to .github/workflows/mutation-tests.yml that installs tokei before mutation sampling; added test_quality_mutation_testing coverage pinning the ordering; recorded debug evidence in charness-artifacts/debug/latest.md and 2026-06-02-274-mutation-workflow-tokei-dependency.md; regenerated seam-risk index.
 - Alternatives rejected: Did not change StrykerJS config because local Stryker already writes the configured JSON report when executed. Did not change mutation thresholds or skip length-gate tests. Did not fix the secondary misleading summary behavior in this slice; it is now monitored after the dependency fix.
 - Targeted verification: PASS: pytest -q tests/quality_gates/test_quality_mutation_testing.py (39 passed). PASS: check_github_actions, validate_debug_artifact, build_debug_seam_risk_index --check, doc links, command docs, markdown, secrets, adapters, packaging, packaging_committed, ruff, check_python_lengths, attention-state visibility. PASS: run_slice_closeout.py --skip-broad-pytest completed; broad pytest intentionally skipped pre-lock per recent lessons.
@@ -181,6 +190,44 @@ Release: n/a - no release surface is planned.
 - Off-goal findings: Potential diagnostic-reporting follow-up: summary can report missing JS JSON after an upstream sample failure; deferred unless the dependency fix does not recover #274.
 - Lessons carried forward: Latest issue comments can contain downstream symptoms; use workflow job step state to find the earliest failing component before implementing.
 - Metrics: No host goal-window metrics recorded for this slice.
+
+### Slice 2: #261 bounded disposition
+
+- Objective: Decide whether #261 can close after the #274 workflow dependency
+  fix, without expanding into an exhaustive survivor-hardening campaign.
+- Live source update: `gh issue view 261` on 2026-06-02 shows #261 is still open
+  and already carries leave-open comments after the open-issue closeout carrier
+  and the #273 mutation gate recovery carrier.
+- Decision: leave #261 open intentionally. The current #274 evidence proves a
+  workflow dependency/setup failure (`tokei` missing before mutation sampling),
+  not missing coordination-cues survivor hardening or a mutation-standard policy
+  resolution.
+- Carrier: drafted
+  `charness-artifacts/issue/2026-06-02-274-261-mutation-workflow-recovery.md`
+  with #274 closeout text and a #261 leave-open comment.
+- Remaining #261 residue: prior scoped proof remains 514/514 executed, 467
+  killed, 47 survived, 90.9% reachable score; prior critique classifies the
+  remaining survivors as equivalent/low-value mutation-standard policy residue.
+- Non-claims: #261 is not closed by this goal; no new equivalent-mutant exclusion
+  rule or gate threshold change was implemented.
+
+### Slice 3: Verify, critique, and stage closeout
+
+- Objective: Prove the local fix and stage an honest #274/#261 issue carrier.
+- Critique: parent-delegated fresh-eye causal review plus resolution critique
+  recorded in
+  `charness-artifacts/critique/2026-06-02-274-261-mutation-workflow-recovery-resolution.md`.
+- Closeout draft: `issue_tool.py validate-closeout-draft --repo
+  corca-ai/charness --number 274 --classification bug --body-file
+  charness-artifacts/issue/2026-06-02-274-261-mutation-workflow-recovery.md
+  --repo-root .` returned `status: draft_verified`.
+- Final validation: `python3 scripts/run_slice_closeout.py --repo-root .
+  --verification-lock` returned `Closeout status: completed`; broad pytest
+  passed 2027 tests with 4 skipped.
+- Carrier: final commit body should carry `Close #274`; #261 remains open with
+  the drafted leave-open comment.
+- Non-claims: remote GitHub issue state is still open before publication; no
+  post-fix scheduled or manual mutation workflow success has been observed.
 
 ## Context Sources
 
@@ -227,18 +274,40 @@ Release: n/a - no release surface is planned.
 
 ## Off-Goal Findings
 
-N/A - none yet.
+- The mutation summary can still report a missing JS JSON artifact after an
+  upstream sample failure. This is deferred unless the post-fix workflow still
+  fails or keeps producing misleading comments.
+- A broader pre-sample validation-binary setup hook for generated mutation
+  workflow templates may be useful, but it is not required for #274.
 
 ## Final Verification
 
-N/A - not run yet; goal is in draft before activation.
+- PASS: `python3 -m pytest -q
+  tests/quality_gates/test_quality_mutation_testing.py` (39 passed).
+- PASS: `python3 scripts/check_spec_evidence_durability.py --repo-root .`.
+- PASS: `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.13.5/scripts/validate_debug_artifact.py --repo-root .`.
+- PASS: `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.13.5/skills/issue/scripts/issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 274 --classification bug --body-file charness-artifacts/issue/2026-06-02-274-261-mutation-workflow-recovery.md --repo-root .`.
+- PASS: `python3 scripts/run_slice_closeout.py --repo-root .
+  --verification-lock` completed after sync, docs, markdown, secrets, workflow,
+  adapter, packaging, critique, seam-risk, ruff, length, attention visibility,
+  broad pytest, and agent-browser orphan checks.
+- Advisory warnings: `check_python_lengths.py` reported four pre-existing
+  advisory file-length warnings and exited 0.
+- NOT RUN: post-fix GitHub Actions mutation workflow; remote proof remains
+  pending until publication.
 
 ## User Verification Instructions
 
-After activation and completion, inspect the final carrier commit/PR body or
-issue closeout artifact for the #274 closeout language and #261 disposition.
-Before activation, verify this plan matches the intended scope.
+Inspect the final carrier commit/PR body or issue closeout artifact for the
+#274 closeout language and #261 disposition. After publication, verify #274
+closes on GitHub and watch the next mutation workflow before claiming remote
+recovery.
 
 ## Auto-Retro
 
-N/A - not run yet; goal is in draft before activation.
+- Latest issue comments can be downstream symptoms; use workflow job step state
+  to find the earliest failing component before changing reporters or thresholds.
+- Durable debug artifacts must mark gitignored reproduction paths with
+  `<!-- reproduction-source -->` on the same line as the path.
+- Fresh-eye review was useful for distinguishing must-fix closeout integrity
+  from valid-but-deferred workflow template generalization.

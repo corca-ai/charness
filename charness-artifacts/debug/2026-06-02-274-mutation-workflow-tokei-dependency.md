@@ -24,7 +24,7 @@ should not be read as proof that StrykerJS itself failed.
   test-command coverage probe because `scripts/check_python_lengths.py` could
   not find `tokei` on PATH.
 - The same log then ran the summary step, which reported both missing
-  `cosmic-ray-dump.jsonl` and missing `reports/mutation/stryker-js.json`.
+  `cosmic-ray-dump.jsonl` and missing `reports/mutation/stryker-js.json`. <!-- reproduction-source -->
 - `.agents/quality-adapter.yaml` defines `commands.full` as
   `python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full && npm
   run test:mutation:js`, so StrykerJS only runs after the Python full command
@@ -36,9 +36,9 @@ should not be read as proof that StrykerJS itself failed.
   `tokei` and must fail closed when it is unavailable.
 - StrykerJS docs confirm the JSON reporter is enabled by `reporters: ["json"]`
   and `jsonReporter.fileName`; the local `stryker.config.mjs` already sets
-  `reports/mutation/stryker-js.json`.
-- Local `reports/mutation/stryker-js.log` shows StrykerJS can write
-  `reports/mutation/stryker-js.json` when the JS runner actually executes.
+  `reports/mutation/stryker-js.json`. <!-- reproduction-source -->
+- Local `reports/mutation/stryker-js.log` shows StrykerJS can write <!-- reproduction-source -->
+  `reports/mutation/stryker-js.json` when the JS runner actually executes. <!-- reproduction-source -->
 
 ## Reproduction
 
@@ -74,7 +74,7 @@ missing report caused by skipped execution.
   (2 passed).
 - PASS: `python3 scripts/check_github_actions.py --repo-root .`.
 - PASS: local existing StrykerJS log shows `JsonReporter` wrote
-  `reports/mutation/stryker-js.json` in a run where StrykerJS executed.
+  `reports/mutation/stryker-js.json` in a run where StrykerJS executed. <!-- reproduction-source -->
 - NOT RUN: a fresh GitHub scheduled or `workflow_dispatch` mutation run after
   this fix; remote proof remains pending until publication.
 

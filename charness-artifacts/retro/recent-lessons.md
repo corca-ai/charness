@@ -17,7 +17,7 @@
 - add a lightweight `--no-broad` or `--skip-broad-pytest` mode to `run_slice_closeout.py` for pre-lock closeout rehearsal, so agents can prove sync/docs/artifact surfaces without paying the full suite before the slice is stable. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
 - add or document a release preflight that maps changed adapter fields to focused tests, so update-instruction, fresh-checkout-probe, and real-host-checklist edits do not wait for full release quality to find local mismatches. (source: `charness-artifacts/retro/2026-06-02-release-helper-waste.md`)
 - after editing a release adapter, run adapter-specific focused tests before invoking `publish_release.py --execute`. For this repo that includes `pytest tests/quality_gates/test_release_real_host.py -q` when real-host trigger/checklist fields change. (source: `charness-artifacts/retro/2026-06-02-release-helper-waste.md`)
-- applied: Efficiency retros should separate measured host signals from proxy pressure and unavailable goal-window signals. This retro and the host probe use that split instead of treating cached input or session-wide counts as direct waste. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
+- applied: Bind `Retro:`, `Host log probe:`, and `Disposition review:` evidence before marking active achieve goals `complete`. (source: `charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md`)
 
 ## Selection Policy
 
@@ -27,6 +27,7 @@
 
 ## Sources
 
+- `charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md`
 - `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`
 - `charness-artifacts/retro/2026-06-02-release-helper-waste.md`
 - `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`

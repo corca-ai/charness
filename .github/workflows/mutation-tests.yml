@@ -65,6 +65,7 @@ jobs:
       - name: Install validation binaries
         run: |
           if ! command -v tokei >/dev/null 2>&1; then
+            cargo --version
             cargo install tokei
           fi
           tokei --version
