@@ -1,6 +1,6 @@
 # Achieve Goal: #279: achieve should surface activation discussion before ready closeout
 
-Status: draft
+Status: active
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md`
 
@@ -181,6 +181,20 @@ proof-bearing commit/PR; no live Ceal replay by default; stop for user input if
 private Ceal context or host-command semantics changes are required.
 
 ## Slice Log
+
+### Slice 1: Slice 0 RCA
+
+- Objective: Confirm issue #279 as a bug-class workflow gap before implementation.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Debug artifact created and validated: charness-artifacts/debug/2026-06-02-279-achieve-activation-discussion-closeout.md; python3 scripts/validate_debug_artifact.py --repo-root .
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 
