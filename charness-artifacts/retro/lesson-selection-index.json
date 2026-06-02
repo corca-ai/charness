@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-02",
-  "source_artifact_count": 105,
-  "candidate_count": 658,
+  "source_artifact_count": 106,
+  "candidate_count": 665,
   "top_candidates": [
     {
       "candidate_id": "current_focus:c4c5e0402786",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ec3594dac06d",
+      "kind": "current_focus",
+      "lesson": "Goal: `charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md` This goal resolved #279 by separating \"activation discussion was surfaced\" from \"activation discussion was resolved\" in `achieve` helper output, public skill guidance, lifecycle guidance, CLI wrapper coverage, and checked-in dogfood evidence.",
+      "normalized_key": "goal charness artifacts goals 2026 06 02 279 achieve activation discussion closeout md this",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
           "date": "2026-06-02",
           "section": "Context"
         }
@@ -233,26 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:fa25ed11ff09",
-      "kind": "next_improvement",
-      "lesson": "applied: For mutation workflow failures, inspect job-step ordering and skipped steps before changing reporter configuration or mutation gate thresholds.",
-      "normalized_key": "applied for mutation workflow failures inspect job step ordering and skipped steps before changing",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ec3594dac06d",
+      "kind": "current_focus",
+      "lesson": "Goal: `charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md` This goal resolved #279 by separating \"activation discussion was surfaced\" from \"activation discussion was resolved\" in `achieve` helper output, public skill guidance, lifecycle guidance, CLI wrapper coverage, and checked-in dogfood evidence.",
+      "normalized_key": "goal charness artifacts goals 2026 06 02 279 achieve activation discussion closeout md this",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
           "date": "2026-06-02",
           "section": "Context"
         }
@@ -511,6 +531,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:570b28bc8350",
+      "kind": "next_improvement",
+      "lesson": "applied: The CLI wrapper now has a regression test proving the activation discussion warning survives through both JSON and concise output.",
+      "normalized_key": "applied the cli wrapper now has a regression test proving the activation discussion warning",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d6b23286b8d8",
+      "kind": "next_improvement",
+      "lesson": "applied: The debug seam-risk index was regenerated after adding the #279 debug artifact.",
+      "normalized_key": "applied the debug seam risk index was regenerated after adding the 279 debug artifact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6edb27519572",
+      "kind": "next_improvement",
+      "lesson": "applied: The public-skill dogfood record now carries a #279 scenario-review entry for `achieve`.",
+      "normalized_key": "applied the public skill dogfood record now carries a 279 scenario review entry for",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -817,6 +897,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:edf531d140f2",
+      "kind": "repeat_trap",
+      "lesson": "One full quality run was invoked incorrectly as `python3 scripts/run-quality.sh --read-only`; it failed immediately with a syntax error before running gates. This was command-form waste, not validation feedback.",
+      "normalized_key": "one full quality run was invoked incorrectly as python3 scripts run quality sh read",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:fcf452ac6c6a",
       "kind": "repeat_trap",
       "lesson": "**`run_slice_closeout.py` made the right call, but I invoked it too early.** The script is appropriate after code/plugin/test changes. The waste was using it while the evidence bundle and handoff were still moving.",
@@ -877,6 +977,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:bf5ed5ea6c68",
+      "kind": "repeat_trap",
+      "lesson": "The first full quality run after adding the debug artifact found a stale `charness-artifacts/debug/seam-risk-index.json`. That was useful feedback but could have been handled immediately after writing the debug artifact by running `build_debug_seam_risk_index.py --write`.",
+      "normalized_key": "the first full quality run after adding the debug artifact found a stale charness",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3a8fa285d8c6",
       "kind": "repeat_trap",
       "lesson": "**The first release helper execution became an expensive adapter-contract discovery run.** I changed `.agents/release-adapter.yaml` from a Cautilus real-host checklist to a `tokei` checklist, then let the full release helper discover that the existing real-host test still asserted Cautilus-specific wording.",
@@ -891,6 +1011,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-release-helper-waste.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:27e02be01189",
+      "kind": "repeat_trap",
+      "lesson": "The fresh-eye reviewer caught a low test gap in the CLI wrapper after focused helper tests had already passed. The late fix was cheap, but it shows the wrapper is a separate consumer surface from the helper.",
+      "normalized_key": "the fresh eye reviewer caught a low test gap in the cli wrapper after",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
           "date": "2026-06-02",
           "section": "Waste"
         }

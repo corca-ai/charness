@@ -3,14 +3,14 @@
 ## Current Focus
 
 - Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`. (source: `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`)
-- Session retro after the workflow-review efficiency goal was completed and the user called out that full pytest was being run too often. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
+- Goal: `charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md` This goal resolved #279 by separating "activation discussion was surfaced" from "activation discussion was resolved" in `achieve` helper output, public skill guidance, lifecycle guidance, CLI wrapper coverage, and checked-in dogfood evidence. (source: `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`)
 
 ## Repeat Traps
 
 - **Broad pytest ran before the slice was stable.** The worst instance was closeout: full gate passed, then a fresh-eye review exposed a real `find-skills` output-volume gap, which required code/docs/tests/plugin changes and made the earlier broad run stale. That earlier broad run became mostly diagnostic theater. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
 - **Closeout proof and mutation were interleaved.** After the goal was almost complete, I still mutated `find-skills --summary`, dogfood evidence, handoff, critique artifacts, retro artifacts, and goal evidence. That kept invalidating previous verification results. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
 - **Full pytest was used as readiness discovery.** A later aggregate run found a handoff invariant failure caused by a non-issue `Next Session` entry. That was a real catch, but it was an expensive way to discover a markdown shape issue that a focused handoff parser test found in 3 seconds after the failure. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
-- **`run_slice_closeout.py` made the right call, but I invoked it too early.** The script is appropriate after code/plugin/test changes. The waste was using it while the evidence bundle and handoff were still moving. (source: `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`)
+- One full quality run was invoked incorrectly as `python3 scripts/run-quality.sh --read-only`; it failed immediately with a syntax error before running gates. This was command-form waste, not validation feedback. (source: `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`)
 
 ## Next-Time Checklist
 
@@ -28,6 +28,7 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md`
+- `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`
 - `charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md`
 - `charness-artifacts/retro/2026-06-02-release-helper-waste.md`
 - `charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md`

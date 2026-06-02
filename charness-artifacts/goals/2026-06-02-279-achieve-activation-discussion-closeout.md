@@ -172,8 +172,10 @@ runs the activation command.
 - Gather: n/a - GitHub issue #279 is the tracked originating issue, its body is
   copied into this goal, and issue closeout owns final tracker state.
 - Release: n/a - no release surface is planned for this goal.
-- Issue closeout: planned for #279 via `issue` at final closeout; carrier should
-  include `Close #279` only when the fix and proof are ready to land.
+- Issue closeout: #279 closeout carrier validated by
+  `python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number 279 --classification bug --body-file charness-artifacts/issue/2026-06-02-279-achieve-activation-discussion-closeout.md`;
+  final verification after push must run `verify-closeout --carrier direct-commit
+  --commit-ref <final> --expect-state CLOSED`.
 
 Discuss before activation: confirm before offering activation:
 implementation-continuation for #279; stage `Close #279` only on the
@@ -205,6 +207,20 @@ private Ceal context or host-command semantics changes are required.
 - Alternatives rejected:
 - Targeted verification: PASS: python3 -m pytest -q tests/charness_cli/test_goal_helpers.py tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_achieve_before_activation.py (58 passed); PASS: python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review; PASS: python3 scripts/check_duplicates.py --repo-root . --fail-on-match --require-git-file-listing; CLI proof emits activation_discussion_warning for this goal. Fresh-eye critique found no blocker; low CLI-wrapper coverage gap fixed.
 - Test duplication pressure: No duplicates found at threshold 0.98.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 3: Slice 2 closeout preparation
+
+- Objective: Stage #279 issue closeout and final goal proof artifacts.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: PASS: python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number 279 --classification bug --body-file charness-artifacts/issue/2026-06-02-279-achieve-activation-discussion-closeout.md; PASS: python3 scripts/validate_critique_artifacts.py --repo-root .; PASS: python3 -m pytest -q tests/quality_gates/test_debug_seam_risk_index.py.
+- Test duplication pressure:
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
@@ -254,6 +270,36 @@ private Ceal context or host-command semantics changes are required.
 
 ## Final Verification
 
+- Full gate: PASS `./scripts/run-quality.sh --read-only` (69 passed, 0 failed;
+  48.0s) after implementation and before closeout-only artifact updates.
+- Issue closeout draft: PASS
+  `python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number 279 --classification bug --body-file charness-artifacts/issue/2026-06-02-279-achieve-activation-discussion-closeout.md`
+  (`status: draft_verified`, critique bound to
+  `charness-artifacts/critique/2026-06-02-279-achieve-activation-discussion-closeout.md`).
+- Debug seam-risk index regenerated with
+  `python3 scripts/build_debug_seam_risk_index.py --repo-root . --write`;
+  focused `tests/quality_gates/test_debug_seam_risk_index.py` passed.
+- Retro: charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md
+- Host log probe: charness-artifacts/probe/2026-06-02-279-achieve-activation-discussion-closeout-host-log.md
+- Disposition review: charness-artifacts/critique/2026-06-02-279-achieve-activation-discussion-disposition.md
+- Pending after close-keyword push: `verify-closeout --carrier direct-commit
+  --commit-ref <final-carrier> --expect-state CLOSED`.
+
 ## User Verification Instructions
 
+- Inspect `charness goal check --pursue-ready` output for a consequential goal:
+  it should include `activation_discussion_warning` in JSON and a warning-bearing
+  `REASON:` in concise output.
+- After the final commit is pushed, verify GitHub issue #279 is closed by the
+  direct commit carrier.
+
 ## Auto-Retro
+
+- Session retro:
+  `charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md`
+- Retro dispositions: applied — CLI wrapper warning regression test,
+  regenerated debug seam-risk index, and checked-in public-skill dogfood
+  scenario-review evidence.
+- Residual risk: host transcripts can still ignore guidance; this repo fix
+  prevents helper/CLI/prose from implying that surfaced means resolved, but no
+  live Ceal replay was run.
