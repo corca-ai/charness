@@ -87,6 +87,22 @@ producing a sample manifest. Because the full mutation command never ran, the
 later missing StrykerJS JSON report was a downstream symptom, not the root
 failure.
 
+## Invariant Proof
+
+- Invariant: the scheduled mutation workflow must install every validation
+  binary required by its sampled pytest command before sample selection runs.
+- Producer Proof: `.github/workflows/mutation-tests.yml` installs `tokei`
+  before mutation sampling, and the workflow-order regression test pins that
+  setup dependency.
+- Final-Consumer Proof: `python3 scripts/check_github_actions.py --repo-root .`
+  validates the checked-in workflow shape; a fresh GitHub mutation run after
+  publication is not yet available.
+- Interface-Shape Sibling Scan: workflow setup, local gate masking, summary
+  wording, and Stryker reporter configuration were checked as sibling axes.
+- Non-Claims: this does not prove the next scheduled or manual mutation run
+  recovers #274, and it does not fix the summary wording for skipped upstream
+  mutation phases.
+
 ## Detection Gap
 
 - mutation workflow dependency setup | no test asserted that the checked-in
