@@ -63,6 +63,8 @@ commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
 safe_real_host_payload = _preflight.safe_real_host_payload
+release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
+run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
 
@@ -285,9 +287,13 @@ def main() -> None:
     ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
     safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
+    adapter_preflight_payload = release_adapter_preflight_payload(
+        repo_root, release_content_paths=release_content_paths, previous_version=previous_version
+    )
     issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
     payload = build_publish_payload(args, adapter_data, current_version=current_version, previous_version=previous_version, next_version=next_version, branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact)
+    payload["release_adapter_preflight"] = adapter_preflight_payload
     payload["close_issue_numbers"] = args.close_issue
     payload["close_issue_repo"] = issue_repo
     if not args.execute:
@@ -301,6 +307,7 @@ def main() -> None:
     expected_release_url = expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
     preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
+    run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=run)
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 

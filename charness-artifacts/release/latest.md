@@ -33,16 +33,16 @@ Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Captured real-host verification is recorded in `charness-artifacts/release/2026-06-02-v0.14.0-real-host-proof.md`.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
+- Release-time real-host proof: captured.
 - On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
 - Run `charness tool doctor tokei --json` before installing `tokei` and confirm the missing-binary state still surfaces the upstream install document URL instead of a guessed package-manager command.
 - Install `tokei` through the manifest-supported path (`charness tool install tokei --json`, `cargo install tokei`, `brew install tokei`, or an upstream release binary), then verify `tokei --version`.
 - Re-run `charness tool doctor tokei --json` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support tokei --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
+- Run `charness tool sync-support tokei --json` and confirm it reports `skipped` with reason `integration has no support_skill_source`; `tokei` is an integration-only validation binary, not a materialized support skill.
 
 ## Review Proof
 

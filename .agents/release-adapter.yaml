@@ -59,7 +59,7 @@ real_host_checklist:
 - Run `charness tool doctor tokei --json` before installing `tokei` and confirm the missing-binary state still surfaces the upstream install document URL instead of a guessed package-manager command.
 - Install `tokei` through the manifest-supported path (`charness tool install tokei --json`, `cargo install tokei`, `brew install tokei`, or an upstream release binary), then verify `tokei --version`.
 - Re-run `charness tool doctor tokei --json` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support tokei --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
+- Run `charness tool sync-support tokei --json` and confirm it reports `skipped` with reason `integration has no support_skill_source`; `tokei` is an integration-only validation binary, not a materialized support skill.
 fresh_checkout_probes:
 - ./charness --help >/dev/null
 - ./charness goal check --help >/dev/null

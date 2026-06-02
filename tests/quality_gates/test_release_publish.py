@@ -711,3 +711,56 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
     amend_index = git_log.index(["commit", "--amend", "--no-edit"])
     push_index = next(index for index, entry in enumerate(git_log) if entry and entry[0] == "push")
     assert amend_index < push_index
+
+
+def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
+    resolver_path.parent.mkdir(parents=True)
+    _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")
+    test_path = repo / "tests" / "quality_gates" / "test_release_real_host.py"
+    test_path.parent.mkdir(parents=True)
+    test_path.write_text("def test_ok(): pass\n", encoding="utf-8")
+    _write_exec(
+        bin_dir / "pytest",
+        "#!/usr/bin/env bash\n"
+        "echo focused adapter preflight failed >&2\n"
+        "exit 7\n",
+    )
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nreal_host_checklist:\n- Verify tokei on a clean temp-home.\n",
+        encoding="utf-8",
+    )
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml", "skills", "tests"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Change release adapter"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
+
+    assert result.returncode == 1
+    assert "release adapter focused preflight blocked publish before mutation" in result.stderr
+    manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
+    assert manifest["version"] == "0.0.0"
+    assert not (repo / ".quality-ran").exists()
+    assert subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() == ""
