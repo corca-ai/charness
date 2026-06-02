@@ -1,6 +1,6 @@
 # Achieve Goal: #274 + #261 mutation regression and standard decision
 
-Status: draft
+Status: active
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md`
 
@@ -9,8 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md`.
+- Current slice: Slice 2 pending - decide the bounded #261 mutation-standard
+  disposition after the local #274 workflow dependency fix.
+- Next action: read prior #261 hardening/disposition evidence and decide whether
+  #261 can close now or should remain open with a precise policy comment.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -42,12 +44,11 @@ mutation-standard decision, or needs a smaller follow-up issue.
 
 ## Boundaries
 
-- #274 comes first. Treat the latest GitHub issue body as the source of truth:
-  changed-line blockers are in
-  `skills/public/handoff/scripts/chunked_routing_parser.py` and
-  `skills/public/handoff/scripts/parse_handoff_entries.py`; sampled survivors
-  are in `scripts/portable_artifact_lib.py`; StrykerJS survivors are advisory
-  because that slice already passes.
+- #274 comes first. Treat the latest GitHub issue comments as the source of
+  truth. Earlier comments named Python changed-line blockers and
+  `scripts/portable_artifact_lib.py` survivors; the latest comments on
+  2026-06-02 report `StrykerJS JSON report missing` and no mutation sample
+  manifest for runs on `56e9ac59` and `4c3dcbe1`.
 - #261 comes second and stays bounded to mutation-standard disposition:
   classify remaining coordination-cues survivors as implemented, equivalent,
   low-value policy residue, or deferred follow-up with evidence.
@@ -125,9 +126,9 @@ mutation-standard decision, or needs a smaller follow-up issue.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Shape #274 + #261 goal | User selected the merged order and invoked achieve | Goal artifact passes `check_goal_artifact.py --pursue-ready`; consequential defaults are visible before activation | in progress |
-| 1 | Debug and fix #274 live mutation regression | Mainline mutation gate trust is the first blocker and unlocks cleaner #261 policy judgment | Root-cause artifact; focused tests; changed-line proof for handoff parser/CLI wrapper files; survivor proof for portable artifact helper if still live | planned |
-| 2 | Decide bounded #261 mutation-standard disposition | User asked to bundle #261 after #274, but not as an exhaustive survivor campaign | Evidence-backed close/defer decision; comment or closeout text names remaining equivalent/low-value/policy residue | planned |
+| 0 | Shape #274 + #261 goal | User selected the merged order and invoked achieve | Goal artifact passes `check_goal_artifact.py --pursue-ready`; consequential defaults are visible before activation | done |
+| 1 | Debug and fix #274 live mutation regression | Mainline mutation gate trust is the first blocker and unlocks cleaner #261 policy judgment | Root-cause artifact; focused tests; proof that the StrykerJS report path produces or honestly classifies its JSON report before Python mutation sampling proceeds | done locally |
+| 2 | Decide bounded #261 mutation-standard disposition | User asked to bundle #261 after #274, but not as an exhaustive survivor campaign | Evidence-backed close/defer decision; comment or closeout text names remaining equivalent/low-value/policy residue | in progress |
 | 3 | Verify, critique, and stage issue closeout | Repo closeout requires synchronized surfaces, critique, proof, and issue discipline | Changed-surface obligations; final validation; fresh-eye critique; carrier commit/PR text with #274 closeout and #261 disposition | planned |
 
 ## Coordination Cues
@@ -155,7 +156,31 @@ Release: n/a - no release surface is planned.
 
 ## Slice Log
 
-No slices executed yet - this goal is a `draft` pending `/goal` activation.
+### Slice 0: Shape and activate #274 + #261 goal
+
+- Objective: Convert the selected chunk bundle into an auditable active goal.
+- Verification: `check_goal_artifact.py --pursue-ready` passed; goal artifact
+  committed in `69a1762d`.
+- Live source update: `gh issue view 274` on 2026-06-02 shows newer comments
+  than the drafted #274 boundary. Latest failure symptom is `StrykerJS JSON
+  report missing` for runs on `56e9ac59` and `4c3dcbe1`; Slice 1 pivots to that
+  current issue state instead of the older Python changed-line blocker text.
+- Non-claims: no code fix has been implemented yet; #261 disposition has not
+  started.
+
+### Slice 1: #274 workflow validation dependency
+
+- Objective: Diagnose and fix the latest #274 scheduled mutation failure.
+- Why this approach: The latest issue comments showed StrykerJS JSON missing, but live workflow logs proved the run failed earlier in Select mutation sample because tokei was absent on the GitHub runner.
+- Commits:
+- What changed: Added an Install validation binaries step to .github/workflows/mutation-tests.yml that installs tokei before mutation sampling; added test_quality_mutation_testing coverage pinning the ordering; recorded debug evidence in charness-artifacts/debug/latest.md and 2026-06-02-274-mutation-workflow-tokei-dependency.md; regenerated seam-risk index.
+- Alternatives rejected: Did not change StrykerJS config because local Stryker already writes the configured JSON report when executed. Did not change mutation thresholds or skip length-gate tests. Did not fix the secondary misleading summary behavior in this slice; it is now monitored after the dependency fix.
+- Targeted verification: PASS: pytest -q tests/quality_gates/test_quality_mutation_testing.py (39 passed). PASS: check_github_actions, validate_debug_artifact, build_debug_seam_risk_index --check, doc links, command docs, markdown, secrets, adapters, packaging, packaging_committed, ruff, check_python_lengths, attention-state visibility. PASS: run_slice_closeout.py --skip-broad-pytest completed; broad pytest intentionally skipped pre-lock per recent lessons.
+- Test duplication pressure: Added one focused workflow-ordering test; check_duplicates.py --fail-on-match --require-git-file-listing reported no duplicates at threshold 0.98.
+- Critique: Debug artifact sibling scan found the root cause was workflow validation dependency setup, not StrykerJS reporter config. Required slice/final critique still pending before goal closeout.
+- Off-goal findings: Potential diagnostic-reporting follow-up: summary can report missing JS JSON after an upstream sample failure; deferred unless the dependency fix does not recover #274.
+- Lessons carried forward: Latest issue comments can contain downstream symptoms; use workflow job step state to find the earliest failing component before implementing.
+- Metrics: No host goal-window metrics recorded for this slice.
 
 ## Context Sources
 

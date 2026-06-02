@@ -399,6 +399,14 @@ def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
         assert package in requirements
 
 
+def test_checked_in_mutation_workflow_installs_length_gate_binary_before_sampling() -> None:
+    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+
+    assert "cargo install tokei" in body
+    assert "tokei --version" in body
+    assert body.index("cargo install tokei") < body.index("Select mutation sample")
+
+
 def test_mutation_workflows_pass_workload_budget_envs() -> None:
     paths = [
         ROOT / ".github" / "workflows" / "mutation-tests.yml",

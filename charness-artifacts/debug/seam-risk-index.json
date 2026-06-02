@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 50,
-  "indexed_artifact_count": 41,
+  "source_artifact_count": 51,
+  "indexed_artifact_count": 42,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 7,
-    "operator-visible-recovery": 12
+    "none": 6,
+    "operator-visible-recovery": 14
   },
   "generalization_pressure_counts": {
-    "monitor": 41
+    "monitor": 42
   },
   "entries": [
     {
@@ -577,17 +577,31 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "issue-272-mutation-report-clarity",
+      "artifact_path": "charness-artifacts/debug/2026-06-02-274-mutation-workflow-tokei-dependency.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-274-mutation-workflow-tokei-dependency",
       "risk_classes": [
-        "none"
+        "operator-visible-recovery"
       ],
-      "seam": "GitHub scheduled workflow issue body consumes local summary markdown.",
+      "seam": "GitHub Actions runner environment versus local validation environment.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/goals/2026-06-01-handoff-open-issue-generative-closeout.md",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-274-mutation-workflow-tokei-dependency",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "GitHub Actions runner environment versus local validation environment.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
       "forced": false
     }
   ],

@@ -62,6 +62,13 @@ jobs:
       - name: Install JS mutation runner
         run: npm ci
 
+      - name: Install validation binaries
+        run: |
+          if ! command -v tokei >/dev/null 2>&1; then
+            cargo install tokei
+          fi
+          tokei --version
+
       - name: Resolve mutation_testing adapter slots
         id: adapter
         shell: bash
