@@ -39,8 +39,8 @@ def test_headroom_reports_limit_minus_current_and_flags_near_limit(tmp_path: Pat
         str(short),
     )
     assert result.returncode == 0  # advisory: never blocks
-    assert "near.py: 340/360 (20 left) NEAR-LIMIT" in result.stdout
-    assert "short.py: 10/360 (350 left)" in result.stdout
+    assert "near.py: 340/360 code lines (20 left) NEAR-LIMIT" in result.stdout
+    assert "short.py: 10/360 code lines (350 left)" in result.stdout
     assert "WARN:" in result.stdout and "near.py" in result.stdout.split("WARN:")[1]
 
 
@@ -62,6 +62,7 @@ def test_headroom_json_shape(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     row = payload["headroom"][0]
     assert row["lines"] == 340 and row["limit"] == 360 and row["headroom"] == 20
+    assert row["measurement"] == "tokei-python-code-lines"
     assert row["near_limit"] is True
 
 

@@ -14,6 +14,7 @@ commands:
       - uninstall
       - task
       - capability
+      - goal
       - tool
       - worktree
     required_doc_contains:
@@ -139,6 +140,29 @@ commands:
       - charness install <tool>
       - charness sync-support
       - charness update-tools
+  goal:
+    help_command: ./charness goal --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+      - docs/development.md
+    required_help_contains:
+      - check
+    required_doc_contains:
+      - charness goal check
+      - stable goal helper commands
+  goal-check:
+    help_command: ./charness goal check --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+      - docs/development.md
+    required_help_contains:
+      - --goal-path
+      - --pursue-ready
+      - --charness-checkout
+    required_doc_contains:
+      - charness goal check
+      - --charness-checkout
+      - versioned plugin-cache paths
   task-claim:
     help_command: ./charness task claim --help
     doc_paths:

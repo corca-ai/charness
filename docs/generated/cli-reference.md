@@ -9,14 +9,14 @@ Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --outp
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,capability,tool,session-capture,worktree}
+                {init,update,doctor,version,uninstall,reset,task,capability,goal,tool,session-capture,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,capability,tool,session-capture,worktree}
+  {init,update,doctor,version,uninstall,reset,task,capability,goal,tool,session-capture,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -34,6 +34,8 @@ positional arguments:
     capability          Resolve repo-local logical capabilities through
                         `<repo-root>/.charness/local/capability.json` and
                         inspect provider readiness.
+    goal                Run stable goal helper commands without embedding
+                        versioned plugin cache paths.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
     session-capture     Inspect and reconcile the SessionStart hook charness
@@ -432,6 +434,47 @@ options:
                         Inspect repo-local adapter context for this target
                         repo. Defaults to the current working directory.
   --json
+```
+
+## `charness goal`
+
+```text
+usage: charness goal [-h] {check} ...
+
+positional arguments:
+  {check}
+    check     Validate a Charness achieve goal artifact through the installed
+              or source checkout helper.
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `charness goal check`
+
+```text
+usage: charness goal check [-h] [--repo-root REPO_ROOT]
+                           [--goal-path GOAL_PATH] [--slug SLUG] [--date DATE]
+                           [--pursue-ready] [--json] [--home-root HOME_ROOT]
+                           [--repo-url REPO_URL]
+                           [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repo containing the goal artifact. Defaults to the
+                        current working directory.
+  --goal-path GOAL_PATH
+  --slug SLUG
+  --date DATE
+  --pursue-ready
+  --json
+  --home-root HOME_ROOT
+  --repo-url REPO_URL
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit Charness source checkout containing the
+                        achieve helper. Defaults to this CLI checkout or the
+                        managed checkout.
 ```
 
 ## `charness tool`

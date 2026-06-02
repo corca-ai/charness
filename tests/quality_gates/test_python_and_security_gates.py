@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import json
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
+import pytest
+
 from .support import ROOT, init_git_repo, run_script, run_shell_script, write_executable
+
+PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
 
 
 def _copy_script(repo: Path, script_name: str) -> Path:
@@ -578,7 +585,81 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
     (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "file length 361 exceeds limit 360" in result.stderr
+    assert "Python code lines 361 exceed limit 360" in result.stderr
+
+
+def test_check_python_lengths_uses_tokei_code_lines_not_comments_or_blanks(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    physical_lines = ["# generated note" for _ in range(420)]
+    physical_lines.extend(["", "", "print(1)", "print(2)"])
+    (helper_dir / "comment_heavy.py").write_text("\n".join(physical_lines) + "\n", encoding="utf-8")
+
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "comment_heavy.py" not in result.stderr
+    assert "comment_heavy.py" not in result.stdout
+
+
+def test_check_python_lengths_fails_when_tokei_missing_instead_of_falling_back(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    (helper_dir / "helper.py").write_text("print(1)\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "python3").symlink_to(sys.executable)
+    git_path = shutil.which("git")
+    assert git_path is not None
+    (bin_dir / "git").symlink_to(git_path)
+
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        env={"PATH": str(bin_dir)},
+    )
+
+    assert result.returncode == 1
+    assert "tokei binary not found on PATH" in result.stderr
+    assert "does not fall back to physical splitlines totals" in result.stderr
+
+
+def test_tokei_code_counts_rejects_missing_code_field(monkeypatch, tmp_path: Path) -> None:
+    target = tmp_path / "target.py"
+    target.write_text("print(1)\n", encoding="utf-8")
+
+    monkeypatch.setattr(PYTHON_LENGTHS.shutil, "which", lambda _name: "/fake/tokei")
+    monkeypatch.setattr(
+        PYTHON_LENGTHS.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0],
+            0,
+            json.dumps({"Python": {"reports": [{"name": str(target), "stats": {}}]}}),
+            "",
+        ),
+    )
+
+    with pytest.raises(PYTHON_LENGTHS.TokeiError, match="stats.code"):
+        PYTHON_LENGTHS.tokei_code_counts([target])
+
+
+def test_tokei_code_counts_rejects_invalid_json(monkeypatch, tmp_path: Path) -> None:
+    target = tmp_path / "target.py"
+    target.write_text("print(1)\n", encoding="utf-8")
+
+    monkeypatch.setattr(PYTHON_LENGTHS.shutil, "which", lambda _name: "/fake/tokei")
+    monkeypatch.setattr(
+        PYTHON_LENGTHS.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, "{not-json", ""),
+    )
+
+    with pytest.raises(PYTHON_LENGTHS.TokeiError, match="invalid JSON"):
+        PYTHON_LENGTHS.tokei_code_counts([target])
 
 
 def test_check_python_lengths_ignores_gitignored_python_files(tmp_path: Path) -> None:
@@ -608,7 +689,7 @@ def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None
     (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(801)) + "\n", encoding="utf-8")
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "file length 801 exceeds limit 800" in result.stderr
+    assert "Python code lines 801 exceed limit 800" in result.stderr
 
 
 def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> None:
@@ -643,9 +724,9 @@ def test_check_python_lengths_warns_for_in_band_files_across_classes(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("helper.py: file length 340 is within the advisory warn band [330, 360]" in line for line in warn_lines)
-    assert any("scripts/tool.py: file length 440 is within the advisory warn band [432, 480]" in line for line in warn_lines)
-    assert any("tests/test_band.py: file length 730 is within the advisory warn band [720, 800]" in line for line in warn_lines)
+    assert any("helper.py: Python code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any("scripts/tool.py: Python code lines 440 are within the advisory warn band [432, 480]" in line for line in warn_lines)
+    assert any("tests/test_band.py: Python code lines 730 are within the advisory warn band [720, 800]" in line for line in warn_lines)
 
 
 def test_check_python_lengths_does_not_warn_just_below_band(tmp_path: Path) -> None:
@@ -672,7 +753,7 @@ def test_check_python_lengths_paths_mode_rejects_over_limit_staged_file(tmp_path
         "skills/public/demo/scripts/over.py",
     )
     assert result.returncode == 1
-    assert "file length 361 exceeds limit 360" in result.stderr
+    assert "Python code lines 361 exceed limit 360" in result.stderr
 
 
 def test_check_python_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: Path) -> None:
@@ -690,7 +771,7 @@ def test_check_python_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path:
     )
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("band.py: file length 340 is within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any("band.py: Python code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
 
 
 def test_check_python_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) -> None:

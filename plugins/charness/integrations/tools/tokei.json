@@ -87,7 +87,7 @@
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [
-      "Multi-language SLOC inventory cannot run without `tokei`; existing `splitlines()`-based length gates still work but include blank and comment lines.",
+      "Multi-language SLOC inventory and repo Python length gates cannot run without `tokei`; install the binary instead of substituting physical `splitlines()` totals.",
       "Quality must not claim SLOC-based ratio or size measurements without `tokei`; report the inventory as not-run instead of substituting `splitlines()` totals."
     ],
     "when_version_mismatch": [
@@ -95,7 +95,7 @@
     ]
   },
   "host_notes": [
-    "Tokei is a quality validation support binary: it is discovered and installed through the external integration manifest, then consumed by quality SLOC inventory and test-ratio probes when that evidence is needed.",
-    "Repo-internal `splitlines()` gates such as `check_test_production_ratio.py` continue to work without `tokei`; this manifest does not change those gates."
+    "Tokei is a quality validation support binary: it is discovered and installed through the external integration manifest, then consumed by quality SLOC inventory, Python length gates, and test-ratio probes when that evidence is needed.",
+    "`check_python_lengths.py` uses `tokei` Python code-line counts for file/headroom limits and fails closed when the binary or output schema is unavailable. `check_test_production_ratio.py` still defaults to its splitlines engine unless `--engine tokei` is requested."
   ]
 }

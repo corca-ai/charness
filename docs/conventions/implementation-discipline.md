@@ -7,8 +7,11 @@ the root instruction file but still apply to Charness maintenance work.
 
 - Repo-owned diff obligations live in [.agents/surfaces.json](../../.agents/surfaces.json);
   use `python3 scripts/check_changed_surfaces.py --repo-root .` to inspect them.
-- Run `python3 scripts/run_slice_closeout.py --repo-root .` before commit when
-  the slice spans generated surfaces or multiple validator families.
+- Run `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
+  as a pre-lock rehearsal when the slice spans generated surfaces or multiple
+  validator families. Before the final broad closeout, record that the mutation
+  set is locked and rerun with `--verification-lock`; a broad closeout without
+  either flag must refuse before launching broad pytest.
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.
@@ -23,10 +26,13 @@ the root instruction file but still apply to Charness maintenance work.
 
 - Before a large addition to a skill helper or repo script, check headroom with
   `python3 scripts/check_python_lengths.py --headroom --paths <file>`
-  (`limit − current`); if the file is near its limit, start a new module rather
-  than append. `run_slice_closeout.py` auto-surfaces near-limit *changed* files
-  at every slice closeout, so the near-limit trap is workflow signal, not memory
-  (#256). The advisory never blocks; the existing length gate is the hard floor.
+  (`limit − current`, where current is measured by `tokei` Python code lines);
+  if the file is near its limit, start a new module rather than append.
+  `run_slice_closeout.py` auto-surfaces near-limit *changed* files at every
+  slice closeout, so the near-limit trap is workflow signal, not memory (#256).
+  The advisory never blocks on near-limit status; the existing length gate is
+  the hard floor. Function limits remain AST-span based because `tokei` does not
+  report function-level counts.
 - When deleting a public symbol or named concept, run
   `python3 scripts/check_symbol_residue.py --repo-root .` before closeout. It is
   advisory by design (#259): it scans deleted Python symbols and common phrase

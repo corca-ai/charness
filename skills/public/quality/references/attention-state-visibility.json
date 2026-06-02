@@ -153,10 +153,16 @@
       "rationale": "When no TOML parser (tomllib/tomli) is available the runner cannot read module-path, so the #262 defensive restore is disabled and degrades to a no-op while the mutation run itself proceeds unaffected. A runtime no-op, not a quality/release closeout signal; the message is written to stdout so the disabled safety net is visible rather than silent."
     },
     "scripts/run_slice_closeout.py": {
-      "states": ["disabled"],
-      "visibility": ["terminal_payload"],
-      "evidence_terms": ["cautilus_plan"],
-      "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions."
+      "states": ["disabled", "skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["cautilus_plan", "Skipped broad pytest commands", "verification_lock_required"],
+      "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions and prints an explicit skipped broad-pytest summary in pre-lock rehearsal mode."
+    },
+    "scripts/slice_closeout_broad_gate.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["skipped_broad_pytest_commands", "verification_lock_required"],
+      "rationale": "Pre-lock slice closeout can explicitly skip broad pytest while preserving deterministic checks; the payload names skipped_broad_pytest_commands and the lock-required state so skipped broad proof cannot read as full closeout proof."
     },
     "scripts/classify_t_signal.py": {
       "states": ["skipped"],

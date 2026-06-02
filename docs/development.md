@@ -36,6 +36,20 @@ After a release or normal operator cycle, go back to the default managed flow:
 charness update
 ```
 
+## Stable Goal Helper Commands
+
+Use the repo-owned CLI surface for common goal helper checks instead of copying
+versioned plugin-cache paths:
+
+```bash
+charness goal check --repo-root . --goal-path charness-artifacts/goals/<goal>.md --pursue-ready
+```
+
+`--charness-checkout /path/to/charness` points at an explicit source checkout
+when proving local edits. Paths under
+`~/.codex/plugins/cache/local/charness/<version>/...` are host cache internals
+and may rotate after plugin updates.
+
 ## Proof-Only Non-Managed Checkout
 
 If you deliberately want to prove install behavior from a non-managed checkout,

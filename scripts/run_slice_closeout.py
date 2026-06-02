@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 from __future__ import annotations
 
 import argparse
@@ -34,9 +33,10 @@ _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_pyth
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
 run_predict_commit = _staged_commit_gate_plan.run_predict_commit
+_slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
+plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
-
 
 def _progress_interval_seconds() -> float:
     raw = os.environ.get("CHARNESS_CLOSEOUT_PROGRESS_INTERVAL_SECONDS")
@@ -237,7 +237,10 @@ def _print_headroom(payload: dict[str, object]) -> None:
         return
     print("WARN: changed files near the length limit (consider a new module before adding more):")
     for row in near:
-        print(f"- {row['path']}: {row['lines']}/{row['limit']} ({row['headroom']} left)")
+        print(
+            f"- {row['path']}: {row['lines']}/{row['limit']} code lines "
+            f"({row['headroom']} left)"
+        )
 
 
 def _print_usage_episode(payload: dict[str, object]) -> None:
@@ -252,6 +255,17 @@ def _print_usage_episode(payload: dict[str, object]) -> None:
         print(f"- episode_id: {usage_episode['episode_id']}")
     if usage_episode.get("error"):
         print(f"- error: {usage_episode['error']}")
+
+
+def _print_broad_pytest_policy(payload: dict[str, object]) -> None:
+    skipped = payload.get("skipped_broad_pytest_commands")
+    if isinstance(skipped, list) and skipped:
+        print("Skipped broad pytest commands:")
+        for item in skipped:
+            if isinstance(item, dict) and item.get("command"):
+                print(f"- {item['command']}")
+    if payload.get("verification_lock_required"):
+        print("Verification lock required before broad pytest.")
 
 
 def print_text(payload: dict[str, object]) -> None:
@@ -273,6 +287,7 @@ def print_text(payload: dict[str, object]) -> None:
         _print_risk_interrupt_plan(risk_interrupt_plan)
 
     _print_headroom(payload)
+    _print_broad_pytest_policy(payload)
     _print_executed_commands(payload)
     _print_usage_episode(payload)
 
@@ -354,6 +369,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--plan-only", action="store_true", help="Print obligations without executing commands.")
     parser.add_argument("--skip-sync", action="store_true")
     parser.add_argument("--skip-verify", action="store_true")
+    parser.add_argument("--skip-broad-pytest", action="store_true", help="Run deterministic checks but skip broad pytest for pre-lock rehearsal.")
+    parser.add_argument("--verification-lock", action="store_true", help="Acknowledge that the mutation set is locked before broad pytest runs.")
     parser.add_argument(
         "--ack-cautilus-skill-review",
         action="store_true",
@@ -373,7 +390,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Run the same staged-path pre-commit command plan consumed by .githooks/pre-commit.",
     )
     return parser
-
 
 def main() -> int:
     args = _build_parser().parse_args()
@@ -395,8 +411,6 @@ def main() -> int:
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
-    # Advisory headroom (#256): auto-surface changed gated files near the length
-    # limit at every slice closeout, so the trap is workflow signal, not memory.
     payload["headroom"] = headroom_for([Path(p) for p in payload["changed_paths"]], repo_root)
 
     if not payload["changed_paths"]:
@@ -429,12 +443,23 @@ def main() -> int:
         if hygiene_command is not None:
             command_plan.append(("verify", hygiene_command))
 
+    broad_policy = plan_broad_pytest_policy(
+        command_plan,
+        skip_broad_pytest=args.skip_broad_pytest,
+        verification_lock=args.verification_lock,
+    )
+    command_plan = broad_policy.pop("command_plan")
+    payload.update({key: value for key, value in broad_policy.items() if value and key != "block_error"})
+
     if args.plan_only:
         payload["status"] = "planned"
-        payload["planned_commands"] = [
-            {"phase": phase, "command": command} for phase, command in command_plan
-        ]
+        payload["planned_commands"] = [{"phase": phase, "command": command} for phase, command in command_plan]
         return _emit_payload(payload, as_json=args.json)
+
+    if broad_policy["block_error"]:
+        payload["status"] = "blocked"
+        payload["error"] = broad_policy["block_error"]
+        return _emit_payload(payload, as_json=args.json, stderr_message=payload["error"])
 
     unsafe_blockers = _unsafe_command_blockers(command_plan)
     if unsafe_blockers:

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-02",
-  "source_artifact_count": 102,
-  "candidate_count": 637,
+  "source_artifact_count": 103,
+  "candidate_count": 641,
   "top_candidates": [
     {
       "candidate_id": "current_focus:c4c5e0402786",
@@ -69,6 +69,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6a7ca334573a",
+      "kind": "current_focus",
+      "lesson": "This run closed the gap between remembered lessons and executable gates: broad closeout now needs an explicit verification lock, `charness goal check` gives #278 a stable helper surface, and Python file/headroom length checks now use `tokei` code-line counts.",
+      "normalized_key": "this run closed the gap between remembered lessons and executable gates broad closeout now",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
           "date": "2026-06-02",
           "section": "Context"
         }
@@ -195,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9196e3dc2707",
+      "kind": "next_improvement",
+      "lesson": "record that closeout evidence should be gathered pre-lock, but final broad proof still needs a concise post-lock evidence append.",
+      "normalized_key": "record that closeout evidence should be gathered pre lock but final broad proof still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:39b8193594e7",
       "kind": "next_improvement",
       "lesson": "require a **focused-failure replay** after broad pytest finds a localized issue. Do not immediately rerun the broad gate; first add or run the smallest target that reproduces the failure, as happened with `test_current_handoff_pipeline_has_only_actionable_candidates`.",
@@ -211,46 +251,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:cbe96c42b989",
-      "kind": "next_improvement",
-      "lesson": "when reviewing source-guard candidates, write the decision as `coupling present?` and `hard consumer present?` rather than using wording like \"expression difference\".",
-      "normalized_key": "when reviewing source guard candidates write the decision as coupling present and hard consumer",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-source-guard-framing-correction.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cf8fdae39742",
-      "kind": "repeat_trap",
-      "lesson": "**Broad pytest ran before the slice was stable.** The worst instance was closeout: full gate passed, then a fresh-eye review exposed a real `find-skills` output-volume gap, which required code/docs/tests/plugin changes and made the earlier broad run stale. That earlier broad run became mostly diagnostic theater.",
-      "normalized_key": "broad pytest ran before the slice was stable the worst instance was closeout full",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-          "date": "2026-06-02",
-          "section": "Waste"
         }
       ]
     }
@@ -317,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6a7ca334573a",
+      "kind": "current_focus",
+      "lesson": "This run closed the gap between remembered lessons and executable gates: broad closeout now needs an explicit verification lock, `charness goal check` gives #278 a stable helper surface, and Python file/headroom length checks now use `tokei` code-line counts.",
+      "normalized_key": "this run closed the gap between remembered lessons and executable gates broad closeout now",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b2986e7487cd",
       "kind": "next_improvement",
       "lesson": "add a lightweight `--no-broad` or `--skip-broad-pytest` mode to `run_slice_closeout.py` for pre-lock closeout rehearsal, so agents can prove sync/docs/artifact surfaces without paying the full suite before the slice is stable.",
@@ -437,6 +457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9196e3dc2707",
+      "kind": "next_improvement",
+      "lesson": "record that closeout evidence should be gathered pre-lock, but final broad proof still needs a concise post-lock evidence append.",
+      "normalized_key": "record that closeout evidence should be gathered pre lock but final broad proof still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:39b8193594e7",
       "kind": "next_improvement",
       "lesson": "require a **focused-failure replay** after broad pytest finds a localized issue. Do not immediately rerun the broad gate; first add or run the smallest target that reproduces the failure, as happened with `test_current_handoff_pipeline_has_only_actionable_candidates`.",
@@ -451,6 +491,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:05bc0942dd18",
+      "kind": "next_improvement",
+      "lesson": "treat “we have a tool/lesson” as unproven until the specific hard gate path uses it.",
+      "normalized_key": "treat we have a tool lesson as unproven until the specific hard gate path",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2dc37abfd9dc",
+      "kind": "next_improvement",
+      "lesson": "when a support binary is promoted from advisory evidence to a hard gate dependency, update the integration manifest in the same slice.",
+      "normalized_key": "when a support binary is promoted from advisory evidence to a hard gate dependency",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-broad-lock-tokei-helper-session.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }

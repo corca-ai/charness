@@ -29,6 +29,8 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness capability doctor", ("./charness", "capability", "doctor", "--help")),
     ("charness capability env", ("./charness", "capability", "env", "--help")),
     ("charness capability explain", ("./charness", "capability", "explain", "--help")),
+    ("charness goal", ("./charness", "goal", "--help")),
+    ("charness goal check", ("./charness", "goal", "check", "--help")),
     ("charness tool", ("./charness", "tool", "--help")),
     ("charness tool doctor", ("./charness", "tool", "doctor", "--help")),
     ("charness tool sync-support", ("./charness", "tool", "sync-support", "--help")),

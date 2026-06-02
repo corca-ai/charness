@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -21,10 +23,11 @@ TEST_FILE_MAX = 800
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 
-# Advisory file-length warn band (file length only — function limits stay
-# hard-only). A file in ``[warn, limit]`` keeps exit 0 but emits a ``WARN:``
-# line so this saturated codebase gets an early signal before the existing hard
-# fail. The ``WARN:`` prefix is load-bearing: ``run-quality.sh`` only surfaces a
+# Advisory file-length warn band (tokei Python code lines only — function limits
+# stay hard-only and AST-span based because tokei does not report function-level
+# counts). A file in ``[warn, limit]`` keeps exit 0 but emits a ``WARN:`` line so
+# this saturated codebase gets an early signal before the existing hard fail.
+# The ``WARN:`` prefix is load-bearing: ``run-quality.sh`` only surfaces a
 # *passing* gate's output when it matches
 # ``^(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])`` — an unprefixed advisory is
 # captured to the log but never shown, silently defeating the tier.
@@ -35,6 +38,74 @@ TEST_FILE_WARN = 720
 
 class ValidationError(Exception):
     pass
+
+
+class TokeiError(ValidationError):
+    pass
+
+
+def _collect_tokei_reports(payload: object) -> list[dict[str, object]]:
+    if not isinstance(payload, dict):
+        return []
+    reports: list[dict[str, object]] = []
+    python = payload.get("Python")
+    if isinstance(python, dict):
+        raw_reports = python.get("reports")
+        if isinstance(raw_reports, list):
+            reports.extend(report for report in raw_reports if isinstance(report, dict))
+    total = payload.get("Total")
+    if isinstance(total, dict):
+        children = total.get("children")
+        if isinstance(children, dict):
+            raw_reports = children.get("Python")
+            if isinstance(raw_reports, list):
+                reports.extend(report for report in raw_reports if isinstance(report, dict))
+    return reports
+
+
+def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
+    if not paths:
+        return {}
+    if shutil.which("tokei") is None:
+        raise TokeiError(
+            "tokei binary not found on PATH; install per integrations/tools/tokei.json. "
+            "check_python_lengths uses tokei Python code-line counts and does not "
+            "fall back to physical splitlines totals."
+        )
+    requested = {path.resolve(): path for path in paths}
+    completed = subprocess.run(
+        ["tokei", "--output", "json", "--types", "Python", *[str(path) for path in paths]],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise TokeiError(
+            f"tokei exited with status {completed.returncode}: {completed.stderr.strip()}"
+        )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise TokeiError(f"tokei returned invalid JSON: {exc}") from exc
+
+    counts: dict[Path, int] = {}
+    for report in _collect_tokei_reports(payload):
+        name = report.get("name")
+        stats = report.get("stats")
+        if not isinstance(name, str) or not isinstance(stats, dict):
+            continue
+        resolved = Path(name).resolve()
+        if resolved not in requested:
+            continue
+        code = stats.get("code")
+        if not isinstance(code, int):
+            raise TokeiError(f"tokei report for {requested[resolved]} is missing integer `stats.code`")
+        counts[requested[resolved]] = code
+    missing = [path for path in paths if path not in counts]
+    if missing:
+        missing_list = ", ".join(str(path) for path in missing)
+        raise TokeiError(f"tokei did not return Python code-line counts for: {missing_list}")
+    return counts
 
 
 def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
@@ -69,19 +140,18 @@ def file_warn_for(path: Path, root: Path) -> int:
     return SKILL_HELPER_FILE_WARN
 
 
-def validate_file_length(path: Path, root: Path) -> str | None:
-    """Hard-fail when a file exceeds its limit; otherwise return an advisory
+def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | None:
+    """Hard-fail when a file exceeds its code-line limit; otherwise return an advisory
     ``WARN:`` line when the file sits in the ``[warn, limit]`` band, or ``None``.
     """
-    line_count = len(path.read_text(encoding="utf-8").splitlines())
     limit = file_limit_for(path, root)
-    if line_count > limit:
-        raise ValidationError(f"{path}: file length {line_count} exceeds limit {limit}")
+    if code_lines > limit:
+        raise ValidationError(f"{path}: Python code lines {code_lines} exceed limit {limit}")
     warn = file_warn_for(path, root)
-    if line_count >= warn:
+    if code_lines >= warn:
         relative = path.relative_to(root)
         return (
-            f"WARN: {relative}: file length {line_count} is within the advisory warn "
+            f"WARN: {relative}: Python code lines {code_lines} are within the advisory warn "
             f"band [{warn}, {limit}]; trim before it reaches the hard limit {limit}."
         )
     return None
@@ -111,23 +181,27 @@ def validate_function_lengths(path: Path, root: Path) -> None:
 
 def headroom_for(paths: list[Path], root: Path) -> list[dict[str, object]]:
     """Advisory pre-write/closeout headroom report for the gated subset of
-    ``paths``: per file, ``headroom = limit - current`` and whether the file is
-    already inside the warn band. This is the affordance behind #256 — the hard
-    gate (``validate_file_length``) blocks an over-limit *commit*, but the
-    recurring waste is *writing* a large addition into an already-near-limit file
-    and only learning at the gate. Surfacing ``limit - current`` lets a slice
-    decide "new module vs append" before writing. Advisory only; never raises.
+    ``paths``: per file, ``headroom = limit - current`` where ``current`` is the
+    tokei Python code-line count, and whether the file is already inside the warn
+    band. This is the affordance behind #256 — the hard gate
+    (``validate_file_length``) blocks an over-limit *commit*, but the recurring
+    waste is *writing* a large addition into an already-near-limit file and only
+    learning at the gate. Surfacing ``limit - current`` lets a slice decide "new
+    module vs append" before writing. Advisory only; never blocks on length
+    overages, but still fails when the tokei measurement itself is unavailable.
     """
     targets = select_targets(root, paths=paths, require_git=False)
+    counts = tokei_code_counts(targets)
     rows: list[dict[str, object]] = []
     for path in targets:
-        lines = len(path.read_text(encoding="utf-8").splitlines())
+        lines = counts[path]
         limit = file_limit_for(path, root)
         warn = file_warn_for(path, root)
         rows.append(
             {
                 "path": path.relative_to(root).as_posix(),
                 "lines": lines,
+                "measurement": "tokei-python-code-lines",
                 "limit": limit,
                 "warn": warn,
                 "headroom": limit - lines,
@@ -177,7 +251,7 @@ def main() -> int:
         help=(
             "Advisory mode (#256): print `limit - current` headroom per gated file "
             "instead of gating, so a slice can choose new-module-vs-append before "
-            "writing. Always exit 0; never blocks."
+            "writing. Current is measured as tokei Python code lines."
         ),
     )
     parser.add_argument("--json", action="store_true", help="JSON output (with --headroom).")
@@ -192,7 +266,7 @@ def main() -> int:
             for row in rows:
                 flag = " NEAR-LIMIT" if row["near_limit"] else ""
                 print(
-                    f"headroom: {row['path']}: {row['lines']}/{row['limit']} "
+                    f"headroom: {row['path']}: {row['lines']}/{row['limit']} code lines "
                     f"({row['headroom']} left){flag}"
                 )
             near = [r["path"] for r in rows if r["near_limit"]]
@@ -205,10 +279,11 @@ def main() -> int:
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing
     )
+    counts = tokei_code_counts(targets)
     warnings: list[str] = []
     for path in targets:
         try:
-            warning = validate_file_length(path, root)
+            warning = validate_file_length(path, root, code_lines=counts[path])
             validate_function_lengths(path, root)
         except (ValidationError, SyntaxError) as exc:
             raise ValidationError(str(exc)) from exc

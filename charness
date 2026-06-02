@@ -4184,6 +4184,105 @@ def cmd_worktree_create(args: argparse.Namespace) -> int:
     return 2
 
 
+def _resolve_goal_helper_repo_root(args: argparse.Namespace) -> Path:
+    if args.charness_checkout is not None:
+        repo_root = args.charness_checkout.resolve()
+        managed = False
+    elif EMBEDDED_REPO_ROOT is not None:
+        repo_root = EMBEDDED_REPO_ROOT
+        managed = False
+    else:
+        repo_root, managed = resolve_repo_root(args.home_root.resolve(), None)
+    ensure_checkout(
+        repo_root,
+        managed=managed,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )
+    helper = repo_root / "skills" / "public" / "achieve" / "scripts" / "check_goal_artifact.py"
+    if not helper.is_file():
+        raise CharnessError(
+            "missing Charness goal helper `skills/public/achieve/scripts/check_goal_artifact.py`; "
+            f"searched stable source checkout `{repo_root}`. Run `charness update`, or pass "
+            "`--charness-checkout <path>` to a checkout that contains the helper."
+        )
+    return repo_root
+
+
+def _goal_check_script_args(args: argparse.Namespace, target_repo_root: Path) -> list[str]:
+    script_args = ["--repo-root", str(target_repo_root)]
+    if args.goal_path is not None:
+        goal_path = args.goal_path.expanduser()
+        if not goal_path.is_absolute():
+            goal_path = target_repo_root / goal_path
+        script_args.extend(["--goal-path", str(goal_path.resolve())])
+    if args.slug is not None:
+        script_args.extend(["--slug", args.slug])
+    if args.date is not None:
+        script_args.extend(["--date", args.date])
+    if args.pursue_ready:
+        script_args.append("--pursue-ready")
+    return script_args
+
+
+def _print_goal_check_summary(payload: object) -> None:
+    if not isinstance(payload, dict):
+        print("GOAL_CHECK: unknown")
+        return
+    ok = payload.get("ok")
+    pursue_ready = payload.get("pursue_ready")
+    if pursue_ready is not None:
+        print(f"PURSUE_READY: {'yes' if pursue_ready is True else 'no'}")
+    elif ok is not None:
+        print(f"GOAL_CHECK: {'ok' if ok is True else 'failed'}")
+    if payload.get("status"):
+        print(f"STATUS: {payload['status']}")
+    if payload.get("path"):
+        print(f"PATH: {payload['path']}")
+    issues = payload.get("issues")
+    if isinstance(issues, list) and issues:
+        print("ISSUES:")
+        for issue in issues:
+            print(f"  - {issue}")
+    reason = payload.get("reason")
+    if isinstance(reason, str) and reason:
+        print(f"REASON: {reason}")
+
+
+def cmd_goal_check(args: argparse.Namespace) -> int:
+    helper_repo_root = _resolve_goal_helper_repo_root(args)
+    target_repo_root = (args.repo_root or Path.cwd()).resolve()
+    script_args = _goal_check_script_args(args, target_repo_root)
+    python_executable = resolve_repo_python(helper_repo_root)
+    result = run(
+        [
+            python_executable,
+            "skills/public/achieve/scripts/check_goal_artifact.py",
+            *script_args,
+        ],
+        cwd=helper_repo_root,
+    )
+    stdout = result.stdout.strip()
+    payload: object | None = None
+    if stdout:
+        try:
+            payload = json.loads(stdout)
+        except json.JSONDecodeError:
+            payload = None
+    if args.json:
+        if stdout:
+            print(stdout)
+    else:
+        if payload is not None:
+            _print_goal_check_summary(payload)
+        elif stdout:
+            print(stdout)
+        if result.stderr:
+            print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
+    return result.returncode
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Thin charness CLI for managed local install, capability resolution, and external tool install/update/doctor flows."
@@ -4445,6 +4544,35 @@ def build_parser() -> argparse.ArgumentParser:
     capability_explain_parser.add_argument("--json", action="store_true")
     capability_explain_parser.add_argument("skill_id")
     capability_explain_parser.set_defaults(func=cmd_capability_explain)
+
+    goal_parser = subparsers.add_parser(
+        "goal",
+        help="Run stable goal helper commands without embedding versioned plugin cache paths.",
+    )
+    goal_subparsers = goal_parser.add_subparsers(dest="goal_command", required=True)
+
+    goal_check_parser = goal_subparsers.add_parser(
+        "check",
+        help="Validate a Charness achieve goal artifact through the installed or source checkout helper.",
+    )
+    goal_check_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Repo containing the goal artifact. Defaults to the current working directory.",
+    )
+    goal_check_parser.add_argument("--goal-path", type=Path)
+    goal_check_parser.add_argument("--slug")
+    goal_check_parser.add_argument("--date")
+    goal_check_parser.add_argument("--pursue-ready", action="store_true")
+    goal_check_parser.add_argument("--json", action="store_true")
+    goal_check_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    goal_check_parser.add_argument("--repo-url", default=REPO_URL)
+    goal_check_parser.add_argument(
+        "--charness-checkout",
+        type=Path,
+        help="Explicit Charness source checkout containing the achieve helper. Defaults to this CLI checkout or the managed checkout.",
+    )
+    goal_check_parser.set_defaults(func=cmd_goal_check)
 
     tool_parser = subparsers.add_parser(
         "tool",
