@@ -1,6 +1,6 @@
 # Achieve Goal: #279: achieve should surface activation discussion before ready closeout
 
-Status: active
+Status: complete
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md`
 
@@ -282,8 +282,10 @@ private Ceal context or host-command semantics changes are required.
 - Retro: charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md
 - Host log probe: charness-artifacts/probe/2026-06-02-279-achieve-activation-discussion-closeout-host-log.md
 - Disposition review: charness-artifacts/critique/2026-06-02-279-achieve-activation-discussion-disposition.md
-- Pending after close-keyword push: `verify-closeout --carrier direct-commit
-  --commit-ref <final-carrier> --expect-state CLOSED`.
+- Issue closeout final verification: PASS
+  `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo-root . --repo corca-ai/charness --number 279 --classification bug --carrier direct-commit --commit-ref 0bd81c8f --expect-state CLOSED`
+  (`status: verified`; GitHub state `CLOSED`; closed at
+  2026-06-02T08:47:46Z).
 
 ## User Verification Instructions
 
