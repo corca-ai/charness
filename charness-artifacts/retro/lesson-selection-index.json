@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-02",
-  "source_artifact_count": 106,
-  "candidate_count": 665,
+  "source_artifact_count": 107,
+  "candidate_count": 672,
   "top_candidates": [
     {
       "candidate_id": "current_focus:c4c5e0402786",
@@ -69,6 +69,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:435a3431adb9",
+      "kind": "current_focus",
+      "lesson": "Session retro for `charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`.",
+      "normalized_key": "session retro for charness artifacts goals 2026 06 02 261 mutation standard policy decision",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
           "date": "2026-06-02",
           "section": "Context"
         }
@@ -215,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:0d4889579c94",
+      "candidate_id": "next_improvement:df2f4837da72",
       "kind": "next_improvement",
-      "lesson": "applied: Bind `Retro:`, `Host log probe:`, and `Disposition review:` evidence before marking active achieve goals `complete`.",
-      "normalized_key": "applied bind retro host log probe and disposition review evidence before marking active achieve",
+      "lesson": "applied: Active achieve goals must remove draft-only closeout placeholders before final critique and complete-flip validation.",
+      "normalized_key": "applied active achieve goals must remove draft only closeout placeholders before final critique and",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
       "latest_source_date": "2026-06-02",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -228,27 +248,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-          "date": "2026-06-02",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:4d4719ac2a86",
-      "kind": "next_improvement",
-      "lesson": "applied: Efficiency retros should separate measured host signals from proxy pressure and unavailable goal-window signals. This retro and the host probe use that split instead of treating cached input or session-wide counts as direct waste.",
-      "normalized_key": "applied efficiency retros should separate measured host signals from proxy pressure and unavailable goal",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -317,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:435a3431adb9",
+      "kind": "current_focus",
+      "lesson": "Session retro for `charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`.",
+      "normalized_key": "session retro for charness artifacts goals 2026 06 02 261 mutation standard policy decision",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+          "date": "2026-06-02",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:87ab0cf55132",
       "kind": "current_focus",
       "lesson": "Session retro for `charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md`.",
@@ -457,6 +477,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:df2f4837da72",
+      "kind": "next_improvement",
+      "lesson": "applied: Active achieve goals must remove draft-only closeout placeholders before final critique and complete-flip validation.",
+      "normalized_key": "applied active achieve goals must remove draft only closeout placeholders before final critique and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0d4889579c94",
       "kind": "next_improvement",
       "lesson": "applied: Bind `Retro:`, `Host log probe:`, and `Disposition review:` evidence before marking active achieve goals `complete`.",
@@ -471,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:526fb2944431",
+      "kind": "next_improvement",
+      "lesson": "applied: Decision carriers that accept low-value mutation survivors must state that accepted survivors remain report-visible and countable residue unless a real exclusion rule is introduced.",
+      "normalized_key": "applied decision carriers that accept low value mutation survivors must state that accepted survivors",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -511,6 +571,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
+          "date": "2026-06-02",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6e6f2529cedf",
+      "kind": "next_improvement",
+      "lesson": "applied: For no-code issue closure, preserve the carrier/commit distinction: validate the closeout draft locally, then use a direct default-branch commit with `Close #<number>` rather than claiming remote closure before publication.",
+      "normalized_key": "applied for no code issue closure preserve the carrier commit distinction validate the closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
           "date": "2026-06-02",
           "section": "Next Improvements"
         }
@@ -937,6 +1017,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:583251db0e11",
+      "kind": "repeat_trap",
+      "lesson": "The active goal still carried draft-only bottom placeholders after the decision carrier and critique were already staged. This forced an extra closeout pass before the status flip.",
+      "normalized_key": "the active goal still carried draft only bottom placeholders after the decision carrier and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:eca87c739486",
       "kind": "repeat_trap",
       "lesson": "**The existing lesson was not honored.** The 2026-06-01 retro already said broad pytest should wait until after fresh-eye disposition and triage lock. This run repeated the same class of waste, so the failure is not lack of memory; it is failure to obey the memory under closeout pressure.",
@@ -1077,6 +1177,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:c7d0821af92b",
+      "kind": "repeat_trap",
+      "lesson": "The historical mutation-score re-render intentionally reproduced the old blocking-signal shape and wrote an ignored summary artifact. It was useful as context, but not a fresh live mutation proof.",
+      "normalized_key": "the historical mutation score re render intentionally reproduced the old blocking signal shape and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:8473471f7300",
       "kind": "repeat_trap",
       "lesson": "The host metrics are useful but not goal-windowed. The durable probe can show session-wide context pressure, repeated VCS/status commands, and broad gates, but it cannot honestly assign all of that cost to this goal.",
@@ -1191,6 +1311,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
+          "date": "2026-06-02",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dcdfd70ef65c",
+      "kind": "repeat_trap",
+      "lesson": "Without the fresh-eye clarification, \"accepted low-value survivors\" could have read like a hidden filter. The carrier now says they remain report-visible and countable residue.",
+      "normalized_key": "without the fresh eye clarification accepted low value survivors could have read like a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
+      "latest_source_date": "2026-06-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
           "date": "2026-06-02",
           "section": "Waste"
         }

@@ -1,6 +1,6 @@
 # Achieve Goal: #261 mutation-standard policy decision
 
-Status: draft
+Status: complete
 Created: 2026-06-02
 Activation: `/goal @charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`
 
@@ -9,8 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`.
+- Current slice: Slice 3 - final critique, verification, and closeout.
+- Next action: flip the goal to complete after deterministic artifact validation,
+  then commit with direct-commit closeout evidence.
 - Verification cadence: decision brief and focused issue/source reads first;
   cheap deterministic checks at commit boundaries if implementation becomes
   necessary; fresh-eye critique at the policy decision and final closeout
@@ -124,9 +125,9 @@ verified.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Shape #261-only goal | User invoked `charness:achieve #261` after handoff named #261 as the live mutation-standard policy question | Goal artifact passes `check_goal_artifact.py --pursue-ready`; gathered issue snapshot exists; activation discussion names close/split/proof non-claims | done |
-| 1 | Build #261 decision brief | The issue is decision-needed; decide before mutating code or re-running broad mutation proof | Brief classifies accepted residue vs rule/filter vs focused follow-up; open policy decisions are surfaced before design | planned |
-| 2 | Implement only the chosen narrow outcome | Avoid another survivor-hardening campaign unless the brief proves code/tests are required | Either no-change carrier with policy proof, or focused code/tests and deterministic verification for the selected rule | planned |
-| 3 | Critique, verify, and stage issue disposition | Repo closeout requires fresh-eye review, proof, and issue discipline | Fresh-eye critique; final validation or documented substitute; issue carrier/comment draft validated; goal closeout evidence bound | planned |
+| 1 | Build #261 decision brief | The issue is decision-needed; decide before mutating code or re-running broad mutation proof | Brief classifies accepted residue vs rule/filter vs focused follow-up; open policy decisions are surfaced before design | done |
+| 2 | Implement only the chosen narrow outcome | Avoid another survivor-hardening campaign unless the brief proves code/tests are required | Either no-change carrier with policy proof, or focused code/tests and deterministic verification for the selected rule | done |
+| 3 | Critique, verify, and stage issue disposition | Repo closeout requires fresh-eye review, proof, and issue discipline | Fresh-eye critique; final validation or documented substitute; issue carrier/comment draft validated; goal closeout evidence bound | done |
 
 ## Coordination Cues
 
@@ -156,14 +157,47 @@ Gather: charness-artifacts/gather/2026-06-02-github-issue-261-mutation-standard-
 Release: n/a - this goal does not plan a version bump, install-manifest edit,
 or release surface.
 
-Issue closeout: planned - use the `issue` workflow before completion; replace
-this line with a carrier/comment artifact or an explicit leave-open verifier
-before flipping the goal to complete.
+Issue closeout: charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md
+
+Retro: charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md
+
+Host log probe: charness-artifacts/probe/2026-06-02-261-mutation-standard-policy-decision.json
+
+Disposition review: charness-artifacts/critique/2026-06-02-261-mutation-standard-policy-decision-disposition.md
 
 ## Slice Log
 
-No slices executed yet. This goal is draft-only until the user activates it with
-`/goal @charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`.
+### Slice 1: Build #261 decision brief
+
+- Objective: Classify #261 after #265 and decide whether the remaining mutation survivors require code, a global filter, a focused follow-up, or policy closure.
+- Why this approach: The issue is decision-needed; deciding from current issue/proof state prevents another broad survivor-hardening campaign.
+- Commits:
+- What changed: No code changed. Read live #261 and #265, prior #265/#261 proof artifacts, existing mutation-filter code, and the mutation score contract. Drafted the decision boundary in charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md.
+- Alternatives rejected: Rejected a new global equivalent-mutant exclusion rule because the residual classes are target-local implementation details or low-value current-contract mutants, not portable runner semantics. Rejected another full survivor campaign because #265 is closed and prior proof already moved the score to 90.9%.
+- Targeted verification: PASS: gh issue view 261 showed OPEN with no newer comments; PASS: gh issue view 265 showed CLOSED; PASS: git merge-base proves 765f5d4 is ancestor of HEAD and origin/main; PASS: historical mutation score re-render shows 467 killed / 47 survived / 90.9% reachable score, with expected non-zero blocking-signal shape from nonexistent sample manifest; PASS: focused pytest for coordination-cues goal surfaces returned 101 passed.
+- Test duplication pressure: No tests added or expanded in this slice.
+- Critique: Fresh-eye review accepted no-code policy closure and requested
+  explicit report-visible/countable residue wording; the carrier now includes
+  it.
+- Off-goal findings: N/A - no off-goal findings.
+- Lessons carried forward: For #261, policy closure is narrower and safer than creating a broad equivalent-mutant filter for target-local residuals.
+- Metrics: No host goal-window metrics available for this slice.
+
+### Slice 2: Stage no-code #261 issue disposition
+
+- Objective: Stage the selected no-code policy outcome through the issue closeout workflow.
+- Why this approach: The decision brief concludes #261 should close as policy-resolved without changing gate behavior.
+- Commits:
+- What changed: Added charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md with a decision-needed resolution brief, explicit policy decision, close comment, Close #261 keyword, evidence, and non-claims.
+- Alternatives rejected: Did not close GitHub manually; achieve does not push and issue closeout prefers default-branch auto-close. Did not use a manual-fallback close because auto-close remains available after publication.
+- Targeted verification: PASS: issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 261 --classification decision-needed --body-file charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md --repo-root . returned status draft_verified with no missing fields or close keywords.
+- Test duplication pressure: No tests added or expanded in this slice.
+- Critique: Fresh-eye review accepted the decision-needed classification and
+  draft carrier; it required filling goal closeout sections before complete
+  flip and preserving `Close #261` in the final direct-commit body.
+- Off-goal findings: N/A - no off-goal findings.
+- Lessons carried forward: For decision-needed issues, the carrier still needs JTBD, Decision, and close keyword evidence even when no code changed.
+- Metrics: No host goal-window metrics available for this slice.
 
 ## Context Sources
 
@@ -231,15 +265,90 @@ N/A - none during shaping.
 
 ## Final Verification
 
-Pending activation and execution.
+PASS:
+`python3 /home/hwidong/.codex/plugins/cache/local/charness/0.13.5/skills/issue/scripts/issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 261 --classification decision-needed --body-file charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md --repo-root .`
+returned `ok: true`, `status: draft_verified`, no missing fields, and no missing
+close keywords.
+
+PASS:
+`python3 -m pytest -q tests/quality_gates/test_goal_coordination_floors.py tests/quality_gates/test_goal_disposition_gate.py tests/quality_gates/test_goal_head_freshness.py tests/quality_gates/test_achieve_before_activation.py`
+returned `101 passed in 3.13s`.
+
+PASS: changed-surface scan mapped this no-code artifact change to markdown,
+critique-artifact, probe-JSON, and retro-index gates:
+`python3 scripts/check_changed_surfaces.py --repo-root .`.
+
+PASS:
+`python3 scripts/check_doc_links.py --repo-root .`,
+`python3 scripts/check_command_docs.py --repo-root .`,
+`./scripts/check-markdown.sh`, and `./scripts/check-secrets.sh`.
+
+PASS:
+`python3 scripts/validate_critique_artifacts.py --repo-root . --all`
+validated 181 critique artifacts.
+
+PASS:
+`python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`
+then
+`python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`
+wrote and validated the retro lesson selection index.
+
+PASS:
+`for probe_json in charness-artifacts/probe/*.json; do python3 -m json.tool "$probe_json" >/dev/null || exit $?; done`
+validated probe JSON syntax.
+
+PASS:
+`python3 /home/hwidong/.codex/plugins/cache/local/charness/0.13.5/skills/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`
+passed after the complete flip with `closeout_evidence.ok: true`.
+
+Corrected command-form failure:
+`for path in charness-artifacts/probe/*.json; do python3 -m json.tool "$path" >/dev/null || exit $?; done`
+failed in `zsh` because `path` mutates command search state. Re-run with
+`probe_json` passed.
+
+Non-claims:
+
+- No production code, tests, mutation thresholds, mutation filters, or workflow
+  behavior changed in this goal.
+- No fresh live mutation workflow, broad CI run, or full scheduled mutation proof
+  was executed for #261.
+- The historical mutation-score re-render reproduced the existing 467 killed /
+  47 survived / 90.9% reachable context and intentionally retained the old
+  missing-sample-manifest blocking-signal shape; it is not a new pass claim.
+- GitHub issue #261 remains open locally until the closeout commit reaches the
+  repository's default branch and GitHub processes `Close #261`.
 
 ## User Verification Instructions
 
-Pending activation and execution. Before activation, inspect the draft and
-confirm the consequential defaults above, especially that #261 may close only
-with explicit policy proof and that live mutation/GitHub Actions proof is not
-claimed unless observed.
+Inspect
+`charness-artifacts/issue/2026-06-02-261-mutation-standard-policy-decision.md`
+to verify the selected disposition is explicit: close #261 as policy-resolved
+with no code change, while accepted survivors remain report-visible and
+countable residue.
+
+Inspect the final direct-commit body and confirm it includes `Close #261` plus a
+decision-needed ledger. After that commit reaches the default branch, verify
+GitHub issue #261 closes through the auto-close mechanism; until then, remote
+closure is not claimed.
 
 ## Auto-Retro
 
-Pending activation and execution.
+Retro artifact evidence:
+`charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md`
+
+Host log probe evidence:
+`charness-artifacts/probe/2026-06-02-261-mutation-standard-policy-decision.json`
+
+Disposition review evidence:
+`charness-artifacts/critique/2026-06-02-261-mutation-standard-policy-decision-disposition.md`
+
+Retro dispositions:
+
+- applied: The issue carrier now states that accepted low-value survivors remain
+  report-visible and countable residue, not a hidden filter precedent.
+- applied: The active goal's draft-only closeout placeholders are replaced with
+  final verification, user verification, and retro evidence before the complete
+  flip.
+- applied: The closeout path preserves the carrier/commit distinction:
+  `issue_tool.py validate-closeout-draft` verified the local draft, and the
+  final commit body must carry `Close #261` for default-branch auto-close.
