@@ -1,0 +1,55 @@
+{
+  "candidates": [
+    {
+      "behavior_assert": true,
+      "clean_inprocess_targets": [
+        "packages/cli/src/main.ts"
+      ],
+      "has_lib": true,
+      "import_safe_targets": [
+        "packages/cli/src/main.ts"
+      ],
+      "internal_boundary_targets": [],
+      "likely_keep_boundary": false,
+      "test_file": "packages/cli/test/build-command.test.ts"
+    },
+    {
+      "behavior_assert": true,
+      "clean_inprocess_targets": [],
+      "has_lib": true,
+      "import_safe_targets": [
+        "cmd/charness/main.go"
+      ],
+      "internal_boundary_targets": [
+        "cmd/charness/main.go"
+      ],
+      "likely_keep_boundary": false,
+      "test_file": "internal/cli/doctor_test.go"
+    },
+    {
+      "behavior_assert": false,
+      "clean_inprocess_targets": [
+        "packages/cli/src/main.ts"
+      ],
+      "has_lib": true,
+      "import_safe_targets": [
+        "packages/cli/src/main.ts"
+      ],
+      "internal_boundary_targets": [],
+      "likely_keep_boundary": true,
+      "test_file": "packages/cli/test/exit-code-contract.test.ts"
+    }
+  ],
+  "notes": [
+    "Example only: paths are TypeScript/Go-shaped to prove the payload is stack-neutral."
+  ],
+  "schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+  "status": "advisory",
+  "summary": {
+    "candidate_count": 3,
+    "convertible_count": 1,
+    "internal_boundary_count": 1,
+    "keep_boundary_count": 1,
+    "scanned_test_files": 42
+  }
+}

@@ -533,6 +533,20 @@ def test_recommend_for_task_public_match_is_token_bounded(tmp_path: Path) -> Non
     assert payload["public_skill_recommendations"] == []
 
 
+def test_recommend_for_task_routes_testability_to_quality(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "quality", "Understand and improve the current quality bar.")
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommend-for-task",
+        "improve testability with a lazy composable test DSL and a boundary-bypass ratchet",
+    )
+
+    assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["quality"]
+    assert payload["public_skill_recommendations"][0]["matched_triggers"] == ["testability"]
+
+
 def test_recommend_for_task_public_match_suppresses_support_empty_note(tmp_path: Path) -> None:
     _write_browserlike_surface(tmp_path, populate_intent_triggers=False)
     _write_public_skill(tmp_path, "critique", "Before-the-fact critique of a non-trivial change.")

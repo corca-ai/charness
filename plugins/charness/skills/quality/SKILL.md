@@ -85,11 +85,8 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
      by repo-local proof or honestly deferred
    - `operability`: are setup, CI, hooks, docs, install/update flows, runtime
      budgets, and maintenance surfaces honest enough to sustain the bar
-5. Classify each finding by enforcement tier first.
-   - `AUTO_EXISTING`: an existing deterministic gate owns it
-   - `AUTO_CANDIDATE`: a low-noise invariant could own it with a clear
-     structural failure response
-   - `NON_AUTOMATABLE`: judgment, ownership, or product context decides it
+5. Classify each finding by enforcement tier first: `AUTO_EXISTING`,
+   `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
 6. Classify posture as `healthy`, `weak`, `missing`, or `defer`.
 7. Propose concrete next quality moves.
    - tag each recommended next gate as `active` or `passive`
@@ -122,6 +119,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
 - Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles, Pytest Economics, and bounded test-ratio posture.
 - Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, classify hidden broad-test compensation as a design smell rather than only a runtime smell, distinguish structural test cleanup (extract builders/wrappers/runners/shared assertions, keep intent in `.test.*`) from hiding test bodies in support files, and on duplicate/pressure-gate failure name the smallest next structural cleanup instead of only reporting the percentage.
+- Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`: `quality` owns the portable payload, no-increase, and exemption contract; consumer repos own stack-specific probes and DSLs.
 - Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
 - Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule. This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
 - prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
@@ -139,12 +137,10 @@ Validators and consumer prompts use these core routing anchors; references carry
 
 - Do not split bounded repo-local quality setup into another public concept.
 - Do not recommend gates the repo cannot realistically run without saying why.
-- Do not treat a passing metric or green gate as the goal; name the structural
-  simplification or ownership clarification.
+- Do not treat a passing metric or green gate as the goal; name the structural simplification or ownership clarification.
 - Do not leave automatable rules as prose-only guidance.
 - Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`.
-- Do not give generic "add tests" or "improve security" advice without the
-  seam and next setup.
+- Do not give generic "add tests" or "improve security" advice without the seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared
   enforcement is the real gap.
 - Do not stop at producer-side validators when public-skill routing or durable
@@ -162,6 +158,8 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/bootstrap-escalations.md`
 - `references/bootstrap-posture.md`
 - `references/brittle-source-guards.md`
+- `references/boundary-bypass-ratchet.md`
+- `references/boundary-bypass-payload.example.json`
 - `references/cautilus-on-demand.md`
 - `references/behavior-testing.md`
 - `references/cli-ergonomics-smells.md`

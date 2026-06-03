@@ -143,6 +143,39 @@ deferring an expensive late unwind. Charness owns this detection and
 recommendation contract; the duplicate/length gate itself stays a repo-local
 deterministic gate, not a Charness-owned runner.
 
+## Test DSL Ergonomics vs Testability
+
+A lazy, composable, implementation-simple test DSL can improve test-code
+maintainability by removing repeated fixture setup, command-runner boilerplate,
+and assertion wrappers. That is useful, but it is not the same as improving
+production-code testability.
+
+Use this distinction:
+
+- DSL ergonomics are healthy when they keep behavior intent visible at the test
+  site and move only mechanical scaffolding into helpers.
+- DSL ergonomics are weak when they make broad subprocess or browser tests so
+  easy that ordinary behavior stays trapped behind a delivery boundary.
+- A test that needs a heavy repo-builder DSL is a prompt to ask whether the
+  behavior should be reachable through an in-process module, package, function,
+  service, or adapter seam.
+
+`quality` diagnoses and recommends this boundary. It does not author a
+stack-specific DSL as a public skill; consumer repos build their own helper
+APIs when the local language and runner warrant it.
+
+## Boundary-Bypass Ratchets
+
+When a repo repeatedly tests import-safe or package-safe entrypoints through a
+subprocess, use a boundary-bypass inventory plus no-increase ratchet. The
+portable policy lives in [boundary-bypass-ratchet](./boundary-bypass-ratchet.md):
+the repo emits a stack-specific payload, validates the field contract, commits a
+baseline, and fails on new unexempt candidates.
+
+Treat the ratchet as a structural guard, not as a cleanup claim. A passing
+ratchet proves only that the boundary-bypass surface did not grow beyond the
+baseline; it does not prove the existing backlog is healthy.
+
 ## Language Notes
 
 Keep language-specific details here or in sibling references, not in

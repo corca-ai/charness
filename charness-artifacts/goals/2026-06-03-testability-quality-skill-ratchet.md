@@ -17,10 +17,10 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — portable `quality` skillification.
-- Next action: update `quality` references so other repos can adopt the
-  stack-neutral boundary-bypass payload and ratchet policy without copying this
-  repo's Python detector.
+- Current slice: Slice 5 — first backlog conversion cluster.
+- Next action: convert the first clean import-safe `inventory_*` tests from
+  subprocess boundary assertions to in-process calls where the target does not
+  shell out internally, preserving one thin real-boundary smoke where needed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -134,7 +134,7 @@ What the user can do to verify completion directly:
 | 1 | Ratchet-correctness fixes in the advisory probe | Enforcement before correctness would freeze noisy counts | Targeted tests for over-match, candidate naming/count stability, internal-spawn classification | done |
 | 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | done |
 | 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | done |
-| 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | in progress |
+| 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | done |
 | 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | pending |
 | 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | pending |
 
@@ -193,7 +193,7 @@ during the run:
 
 - Objective: Fix boundary-bypass detector correctness before any no-increase ratchet freezes its counts.
 - Why this approach: The advisory probe had known over-reporting and did not distinguish clean in-process conversions from targets that still spawn internally; enforcing it first would create noisy debt.
-- Commits:
+- Commits: `0cab1e5c` Fix boundary-bypass inventory classification.
 - What changed: Parsed spawn-like calls with ast so script paths mentioned only in assertions no longer count; removed raw .read_text( as a behavior assertion signal; added clean_inprocess_targets/internal_boundary_targets plus internal_boundary_count; updated CLI summary wording; removed the now-active ratchet goal from handoff's non-issue Next Session candidates.
 - Alternatives rejected: Regex-only target filtering; keeping convertible_count as candidate_count minus keep-boundary while only adding a note about internal spawns.
 - Targeted verification: python3 -m pytest tests/test_boundary_bypass_inventory.py (7 passed); ruff check scripts/inventory_boundary_bypass_lib.py scripts/inventory_boundary_bypass.py tests/test_boundary_bypass_inventory.py; python3 scripts/inventory_boundary_bypass.py --repo-root . => 96 candidates, 54 clean-convertible, 42 internally-spawning, 23 likely keep-boundary across 235 test files; changed-surface validators including packaging, docs/secrets, integration/control-plane dry-runs, and pytest selected surface (2101 passed, 4 skipped).
@@ -207,7 +207,7 @@ during the run:
 
 - Objective: Commit a repo-local baseline, rationale-bearing exemption file, and no-increase checker for the corrected boundary-bypass payload.
 - Why this approach: The advisory sensor needs a deterministic ratchet before future test code can add new boundary-bypass patterns silently.
-- Commits:
+- Commits: `43e70e4c` Add boundary-bypass no-increase ratchet.
 - What changed: Added boundary_bypass_ratchet_lib.py and check_boundary_bypass_ratchet.py; added scripts/boundary-bypass-baseline.json with current corrected baseline; added empty scripts/boundary-bypass-exemptions.txt requiring '# why:' rationale; added in-process ratchet tests; synced plugin exports.
 - Alternatives rejected: A summary-count-only baseline without candidate keys; prose-only exemptions; wiring directly into run-quality before the ratchet command had focused tests.
 - Targeted verification: python3 -m pytest tests/test_boundary_bypass_inventory.py tests/test_boundary_bypass_ratchet.py (11 passed); ruff/length/attention checks; validate_packaging/validate_packaging_committed; validate_integrations plus sync_support/update_tools dry-runs; python3 scripts/check_boundary_bypass_ratchet.py --repo-root .; selected pytest surface passed (2105 passed, 4 skipped).
@@ -221,7 +221,7 @@ during the run:
 
 - Objective: Make the boundary-bypass no-increase ratchet part of the standing read-only quality gate.
 - Why this approach: A ratchet command outside run-quality still relies on operator memory; standing wiring makes new boundary-bypass tests costly immediately.
-- Commits:
+- Commits: `130bcd3d` Wire boundary-bypass ratchet into run-quality.
 - What changed: Queued check-boundary-bypass-ratchet in scripts/run-quality.sh after test-structure gates; updated the quality-runner test support map; synced plugin run-quality.sh.
 - Alternatives rejected: Leaving the ratchet as a manual command until final closeout; wiring it before the baseline checker had its own tests.
 - Targeted verification: CHARNESS_QUALITY_LABELS=check-boundary-bypass-ratchet ./scripts/run-quality.sh --read-only => Quality summary: 1 passed, 0 failed; focused pytest test_quality_runner + ratchet/inventory tests passed (43 passed); bash -n/check-shell, ruff, length, attention, packaging, integrations/control-plane dry-runs; selected pytest surface passed (2105 passed, 4 skipped).
@@ -230,6 +230,42 @@ during the run:
 - Off-goal findings: None.
 - Lessons carried forward: A no-increase checker only becomes structural when it is queued by the standard read-only quality gate.
 - Metrics: New run-quality label runtime: 493ms in the direct label run.
+
+### Slice 4: Portable quality skillification
+
+- Objective: Make the portable `quality` skill strong enough to guide other
+  repos toward a boundary-bypass payload and no-increase ratchet without
+  exporting this repo's Python detector or pytest DSL.
+- Why this approach: The user asked whether the test-quality DSL/testability
+  work belongs in `quality` or a separate skill; this slice keeps the public
+  concept in `quality` while leaving stack-specific probes and DSLs repo-local.
+- Commits: `b2404442` Skillify boundary-bypass ratchet guidance.
+- What changed: Added a stack-neutral boundary-bypass payload reference, a
+  portable payload example, and a validator script under `quality`; expanded the
+  testability reference to separate DSL ergonomics from structural testability
+  and boundary-bypass ratchets; added a find-skills testability trigger so
+  consumer-style prompts route to `quality`; synced plugin exports.
+- Alternatives rejected: A new public test skill now; exporting the Python
+  boundary-bypass detector as public policy; treating a lazy/composable DSL as
+  sufficient proof of testability without a boundary ratchet.
+- Targeted verification: `validate_boundary_bypass_payload.py` accepted the
+  non-Python-shaped example payload; targeted pytest for payload validator and
+  find-skills recommendation passed; find-skills dogfood prompt returned
+  `quality` with matched trigger `testability`; changed-surface validators
+  passed for packaging, markdown/docs/secrets, Cautilus proof policy, skills,
+  public-skill policy/dogfood, ruff, py_compile, length, and attention-state
+  visibility; selected pytest surface passed (2108 passed, 4 skipped).
+- Test duplication pressure: Added one focused quality-gate test module with 2
+  validator cases and one find-skills recommendation case in an existing module;
+  this covers new portable contract and routing behavior rather than duplicating
+  the repo-local Python detector tests.
+- Critique: No new fresh-eye pass yet; final bounded critique remains scheduled
+  for the ratchet plus skill-boundary bundle before closeout.
+- Off-goal findings: None.
+- Lessons carried forward: `quality` should diagnose test DSL ergonomics and
+  boundary bypass pressure, not author stack-specific DSLs.
+- Metrics: `skills/public/quality/SKILL.md` is 198 lines after adding the new
+  reference, below the 200-line skill cap.
 
 ## Context Sources
 
@@ -294,7 +330,7 @@ None yet.
 
 ## Final Verification
 
-Not run yet. The goal is draft and inactive.
+Not run yet. The goal is active; final broad proof belongs to Slice 6.
 
 ## User Verification Instructions
 
