@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-03",
-  "source_artifact_count": 110,
-  "candidate_count": 693,
+  "source_artifact_count": 111,
+  "candidate_count": 700,
   "top_candidates": [
     {
       "candidate_id": "current_focus:7bf20297bbf0",
@@ -75,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a58ec8b618f9",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active achieve goal `charness-artifacts/goals/2026-06-03-281-automatic-waste-retro-closeout.md`, which fixed the automatic waste-retro closeout gap and closed GitHub issue #281.",
+      "normalized_key": "this retro covers the active achieve goal charness artifacts goals 2026 06 03 281",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:82804c86c0c7",
       "kind": "next_improvement",
       "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
@@ -89,6 +109,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e75d196995ff",
+      "kind": "next_improvement",
+      "lesson": "applied: Declare the new skipped attention state for release-retro closeout so skipped trigger status cannot masquerade as a clean closeout proof.",
+      "normalized_key": "applied declare the new skipped attention state for release retro closeout so skipped trigger",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:dd4a1e30da38",
+      "kind": "next_improvement",
+      "lesson": "applied: Freeze the release-retro trigger behavior with tests that cover commit-range detection, pre-release delta hits, helper-generated packaging path hits, and persisted retro closeout artifacts.",
+      "normalized_key": "applied freeze the release retro trigger behavior with tests that cover commit range detection",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ada8c15257c7",
+      "kind": "next_improvement",
+      "lesson": "applied: Keep new release-helper behavior in helper modules instead of growing `publish_release_cli.py`; this run added `publish_release_plan.py` and `publish_release_retro.py`.",
+      "normalized_key": "applied keep new release helper behavior in helper modules instead of growing publish release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -173,86 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:e37de827734b",
-      "kind": "next_improvement",
-      "lesson": "no new gate needed. Existing fresh-eye critique plus `run_slice_closeout` caught the issue before commit; the right improvement was targeted tests and the dogfood registry note, both committed in this slice.",
-      "normalized_key": "no new gate needed existing fresh eye critique plus run slice closeout caught the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a6f0d5c8acf0",
-      "kind": "next_improvement",
-      "lesson": "product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact.",
-      "normalized_key": "product do not close 184 until maintainer source thread synthesis and feedback baseline evidence",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ff00ceb8ef08",
-      "kind": "next_improvement",
-      "lesson": "record in the goal artifact that the privacy review findings were applied, not deferred. Disposition: applied in the goal slice log.",
-      "normalized_key": "record in the goal artifact that the privacy review findings were applied not deferred",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:05ce48988061",
-      "kind": "next_improvement",
-      "lesson": "when using `upsert_goal.py` on an existing dated artifact, pass the explicit `--date` from the artifact path. Disposition: applied in this run by deleting the accidental duplicate and continuing on the user-provided goal artifact; no code change needed unless this recurs.",
-      "normalized_key": "when using upsert goal py on an existing dated artifact pass the explicit date",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -317,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a58ec8b618f9",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active achieve goal `charness-artifacts/goals/2026-06-03-281-automatic-waste-retro-closeout.md`, which fixed the automatic waste-retro closeout gap and closed GitHub issue #281.",
+      "normalized_key": "this retro covers the active achieve goal charness artifacts goals 2026 06 03 281",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:82804c86c0c7",
       "kind": "next_improvement",
       "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
@@ -331,6 +351,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e75d196995ff",
+      "kind": "next_improvement",
+      "lesson": "applied: Declare the new skipped attention state for release-retro closeout so skipped trigger status cannot masquerade as a clean closeout proof.",
+      "normalized_key": "applied declare the new skipped attention state for release retro closeout so skipped trigger",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:dd4a1e30da38",
+      "kind": "next_improvement",
+      "lesson": "applied: Freeze the release-retro trigger behavior with tests that cover commit-range detection, pre-release delta hits, helper-generated packaging path hits, and persisted retro closeout artifacts.",
+      "normalized_key": "applied freeze the release retro trigger behavior with tests that cover commit range detection",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ada8c15257c7",
+      "kind": "next_improvement",
+      "lesson": "applied: Keep new release-helper behavior in helper modules instead of growing `publish_release_cli.py`; this run added `publish_release_plan.py` and `publish_release_retro.py`.",
+      "normalized_key": "applied keep new release helper behavior in helper modules instead of growing publish release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -557,6 +637,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:4cd84a5cd870",
+      "kind": "repeat_trap",
+      "lesson": "`publish_release_cli.py` briefly exceeded the file/function length limits after the new logic was added. Extracting `publish_release_plan.py` and `publish_release_retro.py` fixed the immediate gate and left a better module boundary.",
+      "normalized_key": "publish release cli py briefly exceeded the file function length limits after the new",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:ff5c64d9e7c3",
       "kind": "repeat_trap",
       "lesson": "Release publishing performs critique, quality, public verification, and issue closeout, but it does not run a post-publish waste retro or preserve the changed-path set for `retro` to evaluate afterward.",
@@ -617,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ae7996e6606a",
+      "kind": "repeat_trap",
+      "lesson": "The first implementation still carried the old mental model in one place: it evaluated release retro triggers only from pre-bump `release_content_paths`, so helper-generated packaging/export paths could still be missed. Fresh-eye review caught this before commit.",
+      "normalized_key": "the first implementation still carried the old mental model in one place it evaluated",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2854e095f550",
       "kind": "repeat_trap",
       "lesson": "The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop.",
@@ -671,6 +791,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:442944ad7b43",
+      "kind": "repeat_trap",
+      "lesson": "The session paid repeated validation cost because the implementation crossed release, retro, skill package, plugin export, and public-skill policy surfaces. Most of that was necessary safety cost; the reducible waste was adding logic to a near-limit CLI before extracting it.",
+      "normalized_key": "the session paid repeated validation cost because the implementation crossed release retro skill package",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
           "date": "2026-06-03",
           "section": "Waste"
         }

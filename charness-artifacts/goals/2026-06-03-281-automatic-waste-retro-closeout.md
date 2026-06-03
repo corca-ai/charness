@@ -1,6 +1,6 @@
 # Achieve Goal: Automatic Waste Retro Closeout
 
-Status: active
+Status: complete
 Created: 2026-06-03
 Activation: `/goal @charness-artifacts/goals/2026-06-03-281-automatic-waste-retro-closeout.md`
 
@@ -83,6 +83,7 @@ The user can verify completion by:
 - Gather: n/a - context sources are local repo artifacts and GitHub issue metadata already read through the issue workflow.
 - Release: n/a - this goal may change release helper behavior but does not publish a release.
 - Issue closeout: #281 must be closed or explicitly staged with unverified-live status before completion.
+- Issue closeout: #281 verified CLOSED after push on 2026-06-03.
 
 ## Slice Log
 
@@ -113,6 +114,16 @@ The user can verify completion by:
   - Ran `suggest_public_skill_dogfood.py` for `quality`, `release`, and `retro`.
   - Decision: existing hitl-recommended consumer prompts remain the right dogfood contract for this slice; targeted release/retro tests freeze the changed behavior directly, so no new evaluator scenario is required.
 - Status: implementation complete; awaiting final fresh-eye critique and issue closeout.
+
+### Slice 2: Push And Issue Closeout
+
+- Objective: push the close-keyword carrier and verify #281 closed.
+- Evidence:
+  - `git push origin main` succeeded (`648bfb5f..e9eda9ce main -> main`).
+  - Pre-push full `./scripts/run-quality.sh --read-only` passed: 69 checks, 0 failures.
+  - `gh issue view 281 --json number,state,url,title` returned `state: CLOSED`.
+  - `git status --short --branch` returned `## main...origin/main`.
+- Status: complete.
 
 ## Context Sources
 
@@ -146,12 +157,41 @@ The user can verify completion by:
 
 ## Final Verification
 
-- Pending.
+- Implementation commit: `e9eda9ce Preserve release retro trigger closeout`.
+- Push proof: `git push origin main` succeeded and `main` is aligned with `origin/main`.
+- Issue proof: GitHub issue #281 is `CLOSED` at `https://github.com/corca-ai/charness/issues/281`.
+- Focused tests:
+  - `pytest -q tests/quality_gates/test_release_publish_retro_trigger.py tests/quality_gates/test_retro_auto_trigger.py` passed.
+  - `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_publish_retro_trigger.py tests/quality_gates/test_retro_auto_trigger.py` passed.
+- Deterministic validators:
+  - packaging, skill validation, public-skill validation/dogfood, docs/command docs, markdown, secrets, ruff, Python length, and attention-state visibility checks passed.
+  - `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review` passed.
+  - Pre-push full read-only quality gate passed: 69 passed, 0 failed.
+- Fresh-eye review:
+  - Initial issue causal review found two Act Before Ship blockers; both were fixed.
+  - Final fresh-eye critique reported no Act Before Ship blockers.
+- Retro: `charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md`.
+- Host log probe: `charness-artifacts/probe/2026-06-03-281-automatic-waste-retro-closeout.json`.
+- Non-claims:
+  - No new release was published for this fix.
+  - Dry-run release payloads cannot include helper-generated bump/export paths because dry-run is intentionally non-mutating; execute payloads do include final release paths.
+  - The host probe is thread/session-level because the goal artifact did not have a `Host metric window:` line before work began.
 
 ## User Verification Instructions
 
-- Pending.
+- Inspect `skills/public/release/scripts/publish_release_retro.py` for the release-trigger closeout behavior.
+- Run `pytest -q tests/quality_gates/test_release_publish_retro_trigger.py tests/quality_gates/test_retro_auto_trigger.py`.
+- Check #281 is closed: `gh issue view 281 --json state,url`.
+- In a future release dry-run, inspect `retro_trigger_evaluation.closeout.status`; in execute mode, matched triggers should write a bounded retro artifact.
 
 ## Auto-Retro
 
-- Pending.
+- Retro: `charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md`.
+- Host log probe: `charness-artifacts/probe/2026-06-03-281-automatic-waste-retro-closeout.json`.
+- Retro: charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md
+- Host log probe: charness-artifacts/probe/2026-06-03-281-automatic-waste-retro-closeout.json
+- applied: Kept new release-helper behavior in helper modules instead of growing `publish_release_cli.py`; this run added `publish_release_plan.py` and `publish_release_retro.py`.
+- applied: Froze release-retro trigger behavior with tests covering commit-range detection, pre-release delta hits, helper-generated packaging path hits, and persisted retro closeout artifacts.
+- applied: Declared the new skipped attention state for release-retro closeout so skipped trigger status cannot masquerade as clean closeout proof.
+- Disposition review: `charness-artifacts/critique/2026-06-03-281-automatic-waste-retro-disposition-review.md`.
+- Disposition review: charness-artifacts/critique/2026-06-03-281-automatic-waste-retro-disposition-review.md
