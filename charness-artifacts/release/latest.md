@@ -3,12 +3,12 @@ Date: 2026-06-03
 
 ## Scope
 
-Advanced `charness` toward release `0.16.0` (tag `v0.16.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.17.0` (tag `v0.17.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.15.0`
-- target version: `0.16.0`
+- previous version: `0.16.0`
+- target version: `0.17.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.16.0` (tag `v0.16.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.16.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.17.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.15.0`
+- Previous release ref: `refs/tags/v0.16.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -43,6 +42,44 @@ Advanced `charness` toward release `0.16.0` (tag `v0.16.0`) through the repo-own
 - Focused preflight commands:
   - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
   - `pytest tests/quality_gates/test_release_narrative_audit.py -q`
+
+## Retro Trigger Evaluation
+
+- Triggered: `True`.
+- Evaluated at: `final_release_paths`.
+- Input mode: `explicit_paths`.
+- Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
+- Closeout status: `written`.
+- Retro artifact: `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`.
+- Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
+- Surface hits: 2.
+  - `checked-in-plugin-export`
+  - `integrations-and-control-plane`
+- Path hits: 2.
+  - `skills/public/find-skills/scripts/list_capabilities.py`
+  - `skills/public/find-skills/scripts/public_skill_recommendations.py`
+- Evaluated changed paths: 80.
+  - `.agents/issue-adapter.yaml`
+  - `.agents/quality-adapter.yaml`
+  - `.agents/release-adapter.yaml`
+  - `.claude-plugin/marketplace.json`
+  - `charness-artifacts/critique/2026-06-03-091616-packet.json`
+  - `charness-artifacts/critique/2026-06-03-091616-packet.md`
+  - `charness-artifacts/critique/2026-06-03-boundary-bypass-probe-critique.md`
+  - `charness-artifacts/critique/2026-06-03-retro-issue-structural-decouple-split-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-03-test-dsl-first-slice-critique.md`
+  - `charness-artifacts/critique/2026-06-03-testability-quality-ratchet-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-04-release-v0.17.0-critique.md`
+  - `charness-artifacts/goals/2026-06-03-retro-issue-structural-decouple-split.md`
+  - `charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md`
+  - `charness-artifacts/probe/2026-06-03-retro-issue-structural-decouple-split.json`
+  - `charness-artifacts/probe/2026-06-03-testability-quality-ratchet-host-log.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/release/v0.17.0-notes.md`
+  - `charness-artifacts/retro/2026-06-03-282-283-release-waste-retro.md`
+  - `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`
+  - ... 60 more
 
 ## Real-Host Verification
 
@@ -59,11 +96,7 @@ Advanced `charness` toward release `0.16.0` (tag `v0.16.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-03-release-v0.16.0-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.16.0`.
+- Review proof: `charness-artifacts/critique/2026-06-04-release-v0.17.0-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -74,16 +107,20 @@ Advanced `charness` toward release `0.16.0` (tag `v0.16.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.16.0 (minor release: provider-safe, goal-scoped closeout metrics for `achieve`/`retro` — #282).
+- Run `charness update` to pull 0.17.0 (minor release: testability quality ratchet and reusable quality routing).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
-- NEW CLOSEOUT BEHAVIOR (#282) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window now surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
-- RELIABILITY (#283) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
-- NEW VALIDATOR MODE - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
+- NEW QUALITY RATCHET - `quality` now owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
+- NEW ROUTING - `find-skills` now routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
+- HANDOFF QUEUE - the checked-in handoff now marks the ratchet goal complete and queues the next session for #284 first, then #286, with #285 only if #286 exposes live-issue fixture brittleness.
+- RUNTIME BUDGET - the local x86_64/default `check-duplicates` budget is now 13.0s, matching the current release-path workload while remaining an enforced budget below the slower aarch64 profile.
+- Carried-forward (0.16.0) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
+- Carried-forward (0.16.0) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
+- Carried-forward (0.16.0) - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
 - Carried-forward (0.15.0) - the Corca-internal `report_usage_product_review.py` usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets remains available (`--execute` stays explicit and redacts target refs in mutating comments by default).
 - Carried-forward from 0.14.0 - stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates remain part of the installed surface.
 - VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.

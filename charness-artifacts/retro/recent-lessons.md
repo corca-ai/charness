@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Goal run implementing the A4-lite contract that turns retro waste findings into **structural, destination-routed** issue proposals instead of incident-coupled ones (shared reference + retro/achieve/issue wiring + issue-adapter `harness_upstream` + presence-only `validate_proposal_fields.py` + tests). (source: `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`)
-- Reviewed the active achieve goal that turned the boundary-bypass advisory probe into a no-increase ratchet, skillified the portable `quality` contract, and converted the first clean `inventory_*` boundary-bypass test in-process. (source: `charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md`)
+- Release publish triggered a configured automatic session retro for `v0.17.0`. (source: `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -33,3 +33,4 @@
 - `charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md`
 - `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`
 - `charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md`
+- `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`
