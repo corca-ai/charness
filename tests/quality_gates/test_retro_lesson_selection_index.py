@@ -1,34 +1,28 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .support import run_script
+from tests.dsl import Repo, run_at
+
+RETRO = Repo().adapter(
+    "retro",
+    {
+        "version": 1,
+        "repo": "demo",
+        "language": "en",
+        "output_dir": "charness-artifacts/retro",
+        "summary_path": "charness-artifacts/retro/recent-lessons.md",
+        "evidence_paths": [],
+        "metrics_commands": [],
+    },
+)
+
+BUILD_INDEX = "scripts/build_retro_lesson_selection_index.py"
+REFRESH = "skills/public/retro/scripts/refresh_recent_lessons.py"
 
 
-def seed_repo(tmp_path: Path, *artifacts: tuple[str, str]) -> Path:
-    repo = tmp_path / "repo"
-    output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    for filename, body in artifacts:
-        (output_dir / filename).write_text(body, encoding="utf-8")
-    return repo
+def artifact(name: str, body: str) -> tuple[str, str]:
+    return (f"charness-artifacts/retro/{name}", body)
 
 
 def retro_artifact(date: str, *, waste: str, improvement: str) -> str:
@@ -56,31 +50,34 @@ def retro_artifact(date: str, *, waste: str, improvement: str) -> str:
 
 
 def test_build_retro_lesson_selection_index_writes_source_linked_candidates(tmp_path: Path) -> None:
-    repo = seed_repo(
-        tmp_path,
-        (
-            "2026-04-01-old.md",
-            retro_artifact(
-                "2026-04-01",
-                waste="Plugin export was verified too late.",
-                improvement="Sync generated surfaces before broad validation.",
-            ),
-        ),
-        (
-            "2026-04-15-new.md",
-            retro_artifact(
-                "2026-04-15",
-                waste="Plugin export was verified too late.",
-                improvement="Validate committed state directly.",
-            ),
-        ),
+    res = (
+        RETRO.file(
+            *artifact(
+                "2026-04-01-old.md",
+                retro_artifact(
+                    "2026-04-01",
+                    waste="Plugin export was verified too late.",
+                    improvement="Sync generated surfaces before broad validation.",
+                ),
+            )
+        )
+        .file(
+            *artifact(
+                "2026-04-15-new.md",
+                retro_artifact(
+                    "2026-04-15",
+                    waste="Plugin export was verified too late.",
+                    improvement="Validate committed state directly.",
+                ),
+            )
+        )
+        .run(tmp_path, BUILD_INDEX, "--write", "--json")
+        .ok()
     )
-    result = run_script("scripts/build_retro_lesson_selection_index.py", "--repo-root", str(repo), "--write", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = res.json
     assert payload["index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
 
-    index = json.loads((repo / payload["index_path"]).read_text(encoding="utf-8"))
+    index = res.file_json(payload["index_path"])
     assert index["kind"] == "retro-lesson-selection-index"
     assert index["selection_policy"]["advisory"] is True
     assert index["selection_policy"]["alpha_t"] == "alpha_base * min(1, source_count / warmup_n)"
@@ -92,72 +89,73 @@ def test_build_retro_lesson_selection_index_writes_source_linked_candidates(tmp_
 
 
 def test_build_retro_lesson_selection_index_check_rejects_stale_index(tmp_path: Path) -> None:
-    repo = seed_repo(
-        tmp_path,
-        (
-            "2026-04-15-new.md",
-            retro_artifact(
-                "2026-04-15",
-                waste="Manual summary refresh was easy to forget.",
-                improvement="Refresh recent lessons through the persistence helper.",
-            ),
-        ),
+    (
+        RETRO.file(
+            *artifact(
+                "2026-04-15-new.md",
+                retro_artifact(
+                    "2026-04-15",
+                    waste="Manual summary refresh was easy to forget.",
+                    improvement="Refresh recent lessons through the persistence helper.",
+                ),
+            )
+        )
+        .file("charness-artifacts/retro/lesson-selection-index.json", "{}\n")
+        .run(tmp_path, BUILD_INDEX, "--check")
+        .failed(1)
+        .stderr_has("retro lesson selection index", "--write")
     )
-    stale = repo / "charness-artifacts" / "retro" / "lesson-selection-index.json"
-    stale.write_text("{}\n", encoding="utf-8")
-    result = run_script("scripts/build_retro_lesson_selection_index.py", "--repo-root", str(repo), "--check")
-    assert result.returncode == 1
-    assert "retro lesson selection index" in result.stderr
-    assert "--write" in result.stderr
 
 
 def test_build_retro_lesson_selection_index_check_rejects_stale_digest(tmp_path: Path) -> None:
-    repo = seed_repo(
-        tmp_path,
-        (
+    repo = RETRO.file(
+        *artifact(
             "2026-04-15-new.md",
             retro_artifact(
                 "2026-04-15",
                 waste="Manual summary refresh was easy to forget.",
                 improvement="Refresh recent lessons through the persistence helper.",
             ),
-        ),
-    )
-    refresh = run_script("skills/public/retro/scripts/refresh_recent_lessons.py", "--repo-root", str(repo))
-    assert refresh.returncode == 0, refresh.stderr
-    summary = repo / "charness-artifacts" / "retro" / "recent-lessons.md"
-    summary.write_text("# Recent Retro Lessons\n\nstale\n", encoding="utf-8")
+        )
+    ).build(tmp_path)
 
-    result = run_script("scripts/build_retro_lesson_selection_index.py", "--repo-root", str(repo), "--check")
-    assert result.returncode == 1
-    assert "recent lessons digest" in result.stderr
-    assert "refresh_recent_lessons.py" in result.stderr
+    run_at(repo, REFRESH).ok()
+    (repo / "charness-artifacts" / "retro" / "recent-lessons.md").write_text(
+        "# Recent Retro Lessons\n\nstale\n", encoding="utf-8"
+    )
+
+    run_at(repo, BUILD_INDEX, "--check").failed(1).stderr_has(
+        "recent lessons digest", "refresh_recent_lessons.py"
+    )
 
 
 def test_refresh_recent_lessons_prefers_index_ranked_repeated_lessons(tmp_path: Path) -> None:
-    repo = seed_repo(
-        tmp_path,
-        (
-            "2026-04-01-old.md",
-            retro_artifact(
-                "2026-04-01",
-                waste="Plugin export was verified too late.",
-                improvement="Sync generated surfaces before broad validation.",
-            ),
-        ),
-        (
-            "2026-04-15-new.md",
-            retro_artifact(
-                "2026-04-15",
-                waste="Plugin export was verified too late.",
-                improvement="Validate committed state directly.",
-            ),
-        ),
+    res = (
+        RETRO.file(
+            *artifact(
+                "2026-04-01-old.md",
+                retro_artifact(
+                    "2026-04-01",
+                    waste="Plugin export was verified too late.",
+                    improvement="Sync generated surfaces before broad validation.",
+                ),
+            )
+        )
+        .file(
+            *artifact(
+                "2026-04-15-new.md",
+                retro_artifact(
+                    "2026-04-15",
+                    waste="Plugin export was verified too late.",
+                    improvement="Validate committed state directly.",
+                ),
+            )
+        )
+        .run(tmp_path, REFRESH)
+        .ok()
     )
-    result = run_script("skills/public/retro/scripts/refresh_recent_lessons.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
 
-    summary_text = (repo / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
+    summary_text = res.file_text("charness-artifacts/retro/recent-lessons.md")
     assert "Plugin export was verified too late." in summary_text
     assert "sources: 2" in summary_text
     assert "## Selection Policy" in summary_text

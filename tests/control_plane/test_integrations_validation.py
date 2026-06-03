@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.dsl import Repo
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import ROOT, run_script, seed_control_plane_repo
@@ -21,39 +22,44 @@ def write_manifest_schema(repo: Path) -> Path:
     )
     return tools_dir
 def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    tools_dir = write_manifest_schema(repo)
-    (tools_dir / "bad.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "bad",
-                "kind": "external_skill",
-                "display_name": "bad",
-                "upstream_repo": "example/bad",
-                "homepage": "https://example.com/bad",
-                "lifecycle": {
-                    "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
-                    "update": {"mode": "manual"},
-                },
-                "checks": {
-                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                },
-                "access_modes": ["binary"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest"},
-                "support_skill_source": {
-                    "source_type": "local_wrapper",
-                    "path": "docs/bad.md",
-                    "ref": "main",
-                },
-            }
-        ),
-        encoding="utf-8",
+    (
+        Repo()
+        .file(
+            "integrations/tools/manifest.schema.json",
+            lambda: (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        )
+        .file(
+            "integrations/tools/bad.json",
+            json.dumps(
+                {
+                    "schema_version": "1",
+                    "tool_id": "bad",
+                    "kind": "external_skill",
+                    "display_name": "bad",
+                    "upstream_repo": "example/bad",
+                    "homepage": "https://example.com/bad",
+                    "lifecycle": {
+                        "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
+                        "update": {"mode": "manual"},
+                    },
+                    "checks": {
+                        "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                        "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    },
+                    "access_modes": ["binary"],
+                    "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                    "support_skill_source": {
+                        "source_type": "local_wrapper",
+                        "path": "docs/bad.md",
+                        "ref": "main",
+                    },
+                }
+            ),
+        )
+        .run(tmp_path, "scripts/validate_integrations.py")
+        .failed(1)
+        .stderr_has("local_wrapper requires wrapper_skill_id")
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "local_wrapper requires wrapper_skill_id" in result.stderr
 
 
 def test_validate_integrations_requires_install_entrypoint_for_support_backed_tools(tmp_path: Path) -> None:
