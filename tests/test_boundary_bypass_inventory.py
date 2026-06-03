@@ -34,6 +34,19 @@ IMPORT_SAFE = "\n".join(
     ]
 )
 NOT_IMPORT_SAFE = "import sys\nprint('side effect at import')\nsys.exit(0)\n"
+IMPORT_SAFE_INTERNAL_BOUNDARY = "\n".join(
+    [
+        "import subprocess",
+        "",
+        "def main() -> int:",
+        "    subprocess.run(['git', 'status'], check=False)",
+        "    return 0",
+        "",
+        "if __name__ == '__main__':",
+        "    raise SystemExit(main())",
+        "",
+    ]
+)
 
 
 def _subprocess_test(*, returncode: int, behavior: bool) -> str:
@@ -63,9 +76,12 @@ def test_flags_subprocess_test_of_import_safe_script(tmp_path: Path) -> None:
     cand = out["candidates"][0]
     assert cand["test_file"] == "tests/test_foo.py"
     assert cand["import_safe_targets"] == ["scripts/foo.py"]
+    assert cand["clean_inprocess_targets"] == ["scripts/foo.py"]
+    assert cand["internal_boundary_targets"] == []
     assert cand["behavior_assert"] is True
     assert cand["likely_keep_boundary"] is False
     assert out["summary"]["convertible_count"] == 1
+    assert out["summary"]["internal_boundary_count"] == 0
 
 
 def test_ignores_in_process_test(tmp_path: Path) -> None:
@@ -105,3 +121,70 @@ def test_flags_exit_contract_test_as_likely_keep_boundary(tmp_path: Path) -> Non
     assert out["candidates"][0]["likely_keep_boundary"] is True
     assert out["summary"]["convertible_count"] == 0
     assert out["summary"]["keep_boundary_count"] == 1
+
+
+def test_ignores_script_path_named_only_in_assertion_string(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("scripts/bar.py", NOT_IMPORT_SAFE)
+        .file(
+            "tests/test_foo.py",
+            "\n".join(
+                [
+                    "from support import run_script",
+                    "def test_x():",
+                    "    result = run_script('scripts/bar.py')",
+                    "    assert 'scripts/foo.py' not in result.stderr",
+                    "",
+                ]
+            ),
+        )
+        .build(tmp_path)
+    )
+    out = LIB.find_boundary_bypass_candidates(repo)
+    assert out["summary"]["candidate_count"] == 0
+
+
+def test_read_text_alone_is_not_behavior_assertion(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file(
+            "tests/test_foo.py",
+            "\n".join(
+                [
+                    "from support import run_script",
+                    "def test_x(tmp_path):",
+                    "    result = run_script('scripts/foo.py')",
+                    "    assert result.returncode == 1",
+                    "    assert 'boom' in result.stderr",
+                    "    assert (tmp_path / 'out.txt').read_text() == 'ok'",
+                    "",
+                ]
+            ),
+        )
+        .build(tmp_path)
+    )
+    out = LIB.find_boundary_bypass_candidates(repo)
+    assert out["summary"]["candidate_count"] == 1
+    assert out["candidates"][0]["behavior_assert"] is False
+    assert out["candidates"][0]["likely_keep_boundary"] is True
+    assert out["summary"]["convertible_count"] == 0
+
+
+def test_flags_internal_boundary_targets_and_excludes_from_convertible_count(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE_INTERNAL_BOUNDARY)
+        .file("tests/test_foo.py", _subprocess_test(returncode=0, behavior=True))
+        .build(tmp_path)
+    )
+    out = LIB.find_boundary_bypass_candidates(repo)
+    assert out["summary"]["candidate_count"] == 1
+    assert out["summary"]["convertible_count"] == 0
+    assert out["summary"]["internal_boundary_count"] == 1
+    cand = out["candidates"][0]
+    assert cand["import_safe_targets"] == ["scripts/foo.py"]
+    assert cand["clean_inprocess_targets"] == []
+    assert cand["internal_boundary_targets"] == ["scripts/foo.py"]

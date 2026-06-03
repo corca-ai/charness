@@ -33,23 +33,15 @@
   goal-metrics rendering, which does not touch the install runtime.
 - Open issues: #283 (awaiting scheduled re-run), #184 (product success — needs
   maintainer judgment). #282/#261/#273/#277 are closed.
-- **Testability + test-DSL initiative** (new, 2026-06-03): shipped a
-  lazy/composable test DSL ([`tests/dsl.py`](../tests/dsl.py), commit `1e857cf0`)
-  and a boundary-bypass advisory probe (134-candidate baseline). The probe is a
-  **sensor with no teeth yet** — the no-increase ratchet is the named next
-  obligation. Full intent/done/remaining + honest non-claims:
-  [testability-dsl-initiative](./testability-dsl-initiative.md).
+- **Testability + test-DSL initiative**: shipped the DSL (`1e857cf0`) and
+  advisory probe (`52d578ca`); the ratchet work now runs under the active
+  [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md).
 
 ## Next Session
 
 1. After the next scheduled mutation run, confirm #283 cleared; otherwise inspect
    any remaining survived definitions.
-2. Pick #184 for product-success synthesis. (Also pending, not issue-linked: the
-   v0.16.0 real-host smoke noted under Current State.)
-3. Testability initiative — next obligation is the boundary-bypass **ratchet**
-   (committed baseline + `no_increase` + exemptions + `run-quality` wiring),
-   then convert the import-safe `inventory_*` cluster subprocess→in-process. See
-   [testability-dsl-initiative](./testability-dsl-initiative.md).
+2. Pick #184 for product-success synthesis; v0.16.0 real-host smoke also remains pending.
 
 ## Discuss
 
@@ -72,7 +64,7 @@
 
 - [quality latest](../charness-artifacts/quality/latest.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [testability + test-DSL initiative](./testability-dsl-initiative.md)
+- [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md)
 - [mutation recovery goal](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md),
   [mutation recovery carrier](../charness-artifacts/issue/2026-06-01-273-261-mutation-gate-recovery.md)
 - [workflow review efficiency goal](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md)

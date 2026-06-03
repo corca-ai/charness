@@ -1,6 +1,6 @@
 # Achieve Goal: Testability Quality Skill Ratchet
 
-Status: draft
+Status: active
 Created: 2026-06-03
 Activation: `/goal @charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md`
 
@@ -17,8 +17,9 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md`.
+- Current slice: Slice 2 — baseline, exemptions, and no-increase policy.
+- Next action: design the committed boundary-bypass baseline/exemption shape and
+  the no-increase checker using the corrected Slice 1 payload.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -128,9 +129,9 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Shape and validate the achieve goal | Prevent scope drift before code changes | This artifact passes normal and pursue-ready validation | pending |
-| 1 | Ratchet-correctness fixes in the advisory probe | Enforcement before correctness would freeze noisy counts | Targeted tests for over-match, candidate naming/count stability, internal-spawn classification | pending |
-| 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | pending |
+| 0 | Shape and validate the achieve goal | Prevent scope drift before code changes | This artifact passes normal and pursue-ready validation | done |
+| 1 | Ratchet-correctness fixes in the advisory probe | Enforcement before correctness would freeze noisy counts | Targeted tests for over-match, candidate naming/count stability, internal-spawn classification | done |
+| 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | in progress |
 | 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | pending |
 | 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | pending |
 | 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | pending |
@@ -166,7 +167,40 @@ during the run:
 
 ## Slice Log
 
-No slices executed yet. This artifact is in Before phase until activated.
+### Slice 0: Shape and validate the achieve goal
+
+- Objective: Create the activation artifact and lock the public-skill boundary
+  before implementation.
+- Why this approach: The user asked to use `achieve` after deciding that
+  portable test-quality diagnosis belongs in `quality`, not a new public test
+  skill.
+- Commits: `afc4d848` Shape testability quality ratchet achieve goal.
+- What changed: Added this goal artifact with scope, non-goals, slice plan,
+  test-pressure expectations, and fresh-eye critique provenance.
+- Alternatives rejected: New public test skill now; stack-specific DSL in
+  public skill prose; raw advisory count enforcement before detector fixes.
+- Targeted verification: `check_goal_artifact.py` normal and `--pursue-ready`,
+  markdown/doc/command/secrets checks, full `check-markdown.sh`.
+- Test duplication pressure: no tests added.
+- Critique: parent-delegated fresh-eye reviewers plus counterweight; Act
+  findings folded before commit.
+- Off-goal findings: none.
+- Lessons carried forward: keep `quality` diagnostic, not DSL-authoring.
+- Metrics: not measured for Slice 0 beyond command outcomes above.
+
+### Slice 1: Ratchet-correctness fixes
+
+- Objective: Fix boundary-bypass detector correctness before any no-increase ratchet freezes its counts.
+- Why this approach: The advisory probe had known over-reporting and did not distinguish clean in-process conversions from targets that still spawn internally; enforcing it first would create noisy debt.
+- Commits:
+- What changed: Parsed spawn-like calls with ast so script paths mentioned only in assertions no longer count; removed raw .read_text( as a behavior assertion signal; added clean_inprocess_targets/internal_boundary_targets plus internal_boundary_count; updated CLI summary wording; removed the now-active ratchet goal from handoff's non-issue Next Session candidates.
+- Alternatives rejected: Regex-only target filtering; keeping convertible_count as candidate_count minus keep-boundary while only adding a note about internal spawns.
+- Targeted verification: python3 -m pytest tests/test_boundary_bypass_inventory.py (7 passed); ruff check scripts/inventory_boundary_bypass_lib.py scripts/inventory_boundary_bypass.py tests/test_boundary_bypass_inventory.py; python3 scripts/inventory_boundary_bypass.py --repo-root . => 96 candidates, 54 clean-convertible, 42 internally-spawning, 23 likely keep-boundary across 235 test files; changed-surface validators including packaging, docs/secrets, integration/control-plane dry-runs, and pytest selected surface (2101 passed, 4 skipped).
+- Test duplication pressure: Expanded one existing focused test file from 4 to 7 cases; no parallel duplicate test module added; tests cover three new failure modes named by the goal.
+- Critique: Slice-level critique deferred to the larger ratchet bundle unless later edits introduce a new risk boundary; Slice 0 fresh-eye already locked the detector-correctness concerns.
+- Off-goal findings: Selected pytest initially exposed a stale handoff non-issue candidate for this ratchet work; fixed by moving that pickup to the active goal artifact and keeping `## Next Session` issue-linked.
+- Lessons carried forward: Do not enforce advisory counts until target extraction and classification semantics are stable.
+- Metrics: Probe line headroom after edits: inventory_boundary_bypass_lib.py 170/480; test file 169/800.
 
 ## Context Sources
 

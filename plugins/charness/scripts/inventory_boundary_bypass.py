@@ -36,7 +36,9 @@ def main() -> int:
         s = payload["summary"]
         print(
             f"boundary-bypass inventory (advisory): {s['candidate_count']} candidates "
-            f"({s['convertible_count']} convertible, {s['keep_boundary_count']} likely keep-boundary) "
+            f"({s['convertible_count']} clean-convertible, "
+            f"{s['internal_boundary_count']} internally-spawning, "
+            f"{s['keep_boundary_count']} likely keep-boundary) "
             f"across {s['scanned_test_files']} test files"
         )
     return 0
