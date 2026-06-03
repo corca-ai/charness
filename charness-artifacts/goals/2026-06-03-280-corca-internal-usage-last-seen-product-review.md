@@ -157,10 +157,16 @@ slice explicitly widens scope.
 
 ## Discuss before activation
 
-Confirm whether the first activated slice should stop at specification/dry-run
-reporting or include a mutating GitHub issue/comment path. Also confirm the
-minimum Corca-internal identity fields allowed for dashboard usefulness:
-repo-only, user-hash, named user reference, or team-level aggregate.
+Resolved before activation:
+
+- The activated goal should include specification, dry-run reporting, and an
+  explicit mutating GitHub issue/comment path. Mutating behavior still needs an
+  explicit flag or consent gate; dry-run/report-only remains available.
+- For Corca-internal mode, named user reference plus repo reference is the useful
+  default identity level because the product-review use case includes human
+  follow-up. This identity is operational contact context, not satisfaction,
+  dissatisfaction, or churn classification.
+- Public/external telemetry remains disabled by default.
 
 ## Slice Log
 
@@ -185,6 +191,12 @@ repo-only, user-hash, named user reference, or team-level aggregate.
   dashboard-visible `last_seen_at`, or ignore usage absence entirely. Chosen:
   expose `last_seen_at` and window summaries; humans interpret later. Rejected:
   automatic stop-using/churn labels because silence has many causes.
+- Corca-internal identity options considered: repo-only, team aggregate,
+  user-hash, or named user reference plus repo reference. Chosen: named user
+  reference plus repo reference for Corca-internal mode because the intended
+  dashboard/review action is human follow-up. Rejected: repo-only and team
+  aggregate are too weak for follow-up; user-hash supports cohort analysis but
+  still needs a lookup path before a human can ask the right person.
 - Satisfaction options considered: update acceptance as satisfaction,
   continued usage as satisfaction, or keep both separate from satisfaction.
   Chosen: keep update acceptance and continued usage separate. They can support
