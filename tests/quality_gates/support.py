@@ -128,6 +128,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-coverage", "check_coverage.py"),
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
+    ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),
     ("run-evals", "run_evals.py"),
     ("check-duplicates", "check_duplicates.py"),
 )

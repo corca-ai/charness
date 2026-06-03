@@ -17,9 +17,10 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — wire the boundary-bypass ratchet into `run-quality`.
-- Next action: add the passing `check_boundary_bypass_ratchet.py` command to the
-  standing read-only quality gate with clear output.
+- Current slice: Slice 4 — portable `quality` skillification.
+- Next action: update `quality` references so other repos can adopt the
+  stack-neutral boundary-bypass payload and ratchet policy without copying this
+  repo's Python detector.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -132,8 +133,8 @@ What the user can do to verify completion directly:
 | 0 | Shape and validate the achieve goal | Prevent scope drift before code changes | This artifact passes normal and pursue-ready validation | done |
 | 1 | Ratchet-correctness fixes in the advisory probe | Enforcement before correctness would freeze noisy counts | Targeted tests for over-match, candidate naming/count stability, internal-spawn classification | done |
 | 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | done |
-| 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | in progress |
-| 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | pending |
+| 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | done |
+| 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | in progress |
 | 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | pending |
 | 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | pending |
 
@@ -215,6 +216,20 @@ during the run:
 - Off-goal findings: None.
 - Lessons carried forward: Baseline enforcement should track stable candidate keys as well as counts so new targets in existing test files cannot hide behind unchanged row counts.
 - Metrics: Baseline: 96 candidate rows, 159 candidate keys, 54 clean-convertible, 42 internally-spawning, 23 likely keep-boundary.
+
+### Slice 3: Run-quality ratchet wiring
+
+- Objective: Make the boundary-bypass no-increase ratchet part of the standing read-only quality gate.
+- Why this approach: A ratchet command outside run-quality still relies on operator memory; standing wiring makes new boundary-bypass tests costly immediately.
+- Commits:
+- What changed: Queued check-boundary-bypass-ratchet in scripts/run-quality.sh after test-structure gates; updated the quality-runner test support map; synced plugin run-quality.sh.
+- Alternatives rejected: Leaving the ratchet as a manual command until final closeout; wiring it before the baseline checker had its own tests.
+- Targeted verification: CHARNESS_QUALITY_LABELS=check-boundary-bypass-ratchet ./scripts/run-quality.sh --read-only => Quality summary: 1 passed, 0 failed; focused pytest test_quality_runner + ratchet/inventory tests passed (43 passed); bash -n/check-shell, ruff, length, attention, packaging, integrations/control-plane dry-runs; selected pytest surface passed (2105 passed, 4 skipped).
+- Test duplication pressure: No new tests added in this slice; updated existing test helper metadata so existing quality-runner tests exercise the new label path.
+- Critique: No new fresh-eye pass yet; ratchet bundle critique remains scheduled before closeout.
+- Off-goal findings: None.
+- Lessons carried forward: A no-increase checker only becomes structural when it is queued by the standard read-only quality gate.
+- Metrics: New run-quality label runtime: 493ms in the direct label run.
 
 ## Context Sources
 
