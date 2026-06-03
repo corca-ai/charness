@@ -538,3 +538,84 @@ def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Pat
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not report a missed review" in result.stderr
+
+
+def _multi_violation_artifact() -> str:
+    # Breaks three independent rules at once: a markdown runtime source, an empty
+    # `none` advisory claim, and a passive next-gate without a `because`/`until`
+    # rationale. Used to exercise --report-all vs the fail-fast default.
+    return (
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-20",
+                "## Scope",
+                "- demo",
+                "## Current Gates",
+                "- gate",
+                "## Runtime Signals",
+                "- runtime source: manual timing copied from `charness-artifacts/quality/latest.md`.",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
+                "## Healthy",
+                "- healthy",
+                "## Weak",
+                "- weak",
+                "## Missing",
+                "- missing",
+                "## Deferred",
+                "- deferred",
+                "## Advisory",
+                "- none",
+                "## Delegated Review",
+                "- status: executed; bounded subagent review ran.",
+                "## Commands Run",
+                "- cmd",
+                "## Recommended Next Gates",
+                "- passive AUTO_CANDIDATE: do later",
+                "## History",
+                "- [archive](history/one.md)",
+            ]
+        )
+        + "\n"
+    )
+
+
+def test_validate_quality_artifact_default_mode_fails_fast(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_artifact())
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    # Default mode raises on the first failing check (runtime signals) only.
+    assert "runtime source must not be markdown" in result.stderr
+    assert "rule violation(s)" not in result.stderr
+    assert "passive recommended next gates" not in result.stderr
+
+
+def test_validate_quality_artifact_report_all_lists_every_violation(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_artifact())
+    result = run_script(
+        "scripts/validate_quality_artifact.py", "--repo-root", str(repo), "--report-all"
+    )
+    assert result.returncode == 1
+    assert "quality artifact rule violation(s)" in result.stderr
+    # All three independent violations surface in one pass.
+    assert "runtime source must not be markdown" in result.stderr
+    assert "none found by inventory" in result.stderr
+    assert "passive recommended next gates must explain" in result.stderr
+
+
+def test_validate_quality_artifact_report_all_passes_clean_artifact(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(
+            runtime_source=(
+                "structured metrics from `artifacts/runtime-timing.jsonl` "
+                "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+            ),
+        ),
+    )
+    result = run_script(
+        "scripts/validate_quality_artifact.py", "--repo-root", str(repo), "--report-all"
+    )
+    assert result.returncode == 0, result.stderr

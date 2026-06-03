@@ -237,31 +237,59 @@ def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
                 )
 
 
-def validate_quality_artifact(path: Path) -> None:
+def validate_quality_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = read_lines(path)
-    if not lines or lines[0].strip() != "# Quality Review":
-        raise ValidationError("quality artifact must start with `# Quality Review`")
-    validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact")
-    validate_date_line(lines)
 
-    validate_section_order(lines, REQUIRED_SECTIONS)
-    validate_runtime_signals_section(lines)
-    validate_advisory_section(lines)
-    validate_delegated_review_section(lines)
-    validate_recommended_next_gates_section(lines)
-    validate_history_section(lines)
-    validate_subagent_blocker_reasoning(lines)
+    def _header() -> None:
+        if not lines or lines[0].strip() != "# Quality Review":
+            raise ValidationError("quality artifact must start with `# Quality Review`")
+
+    checks = (
+        _header,
+        lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact"),
+        lambda: validate_date_line(lines),
+        lambda: validate_section_order(lines, REQUIRED_SECTIONS),
+        lambda: validate_runtime_signals_section(lines),
+        lambda: validate_advisory_section(lines),
+        lambda: validate_delegated_review_section(lines),
+        lambda: validate_recommended_next_gates_section(lines),
+        lambda: validate_history_section(lines),
+        lambda: validate_subagent_blocker_reasoning(lines),
+    )
+
+    if not collect_all:
+        # Default: fail fast on the first violation (unchanged behavior).
+        for check in checks:
+            check()
+        return
+
+    # --report-all: run every check and surface all violations in one pass, so a
+    # multi-rule artifact draft is not fixed one failed run at a time.
+    violations: list[str] = []
+    for check in checks:
+        try:
+            check()
+        except ValidationError as exc:
+            violations.append(str(exc))
+    if violations:
+        joined = "\n".join(f"- {message}" for message in violations)
+        raise ValidationError(f"{len(violations)} quality artifact rule violation(s):\n{joined}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--report-all",
+        action="store_true",
+        help="Report every rule violation in one pass instead of failing on the first.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
     artifact_path = repo_root / adapter["artifact_path"]
-    validate_quality_artifact(artifact_path)
+    validate_quality_artifact(artifact_path, collect_all=args.report_all)
     print(f"Validated quality artifact {artifact_path.relative_to(repo_root)}.")
     return 0
 
