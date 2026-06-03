@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-03",
-  "source_artifact_count": 111,
-  "candidate_count": 700,
+  "source_artifact_count": 112,
+  "candidate_count": 708,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:42530033d4f7",
+      "kind": "current_focus",
+      "lesson": "Reviewing the just-completed `/charness:quality` slice that closed the #283 mutation regression in the Codex session/token reporter (new unit tests + `main` routing/non-ASCII tests, verified by targeted local cosmic-ray, committed as `9fb08f6f`).",
+      "normalized_key": "reviewing the just completed charness quality slice that closed the 283 mutation regression in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:7bf20297bbf0",
       "kind": "current_focus",
@@ -95,6 +115,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8987c07160a6",
+      "kind": "next_improvement",
+      "lesson": "a `--report-all` (collect-all) mode for `validate_quality_artifact.py` and peers would surface every violation in one pass; 21 `validate_*.py` raise on the first error today vs 10 that already collect failures. Optional candidate, not committed here.",
+      "normalized_key": "a report all collect all mode for validate quality artifact py and peers would",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:82804c86c0c7",
       "kind": "next_improvement",
       "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
@@ -169,6 +209,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:383a786e752a",
+      "kind": "next_improvement",
+      "lesson": "Before producing any gate-validated artifact (quality / retro / handoff), read the owning validator's enforced rules once (required sections, max-lines, wording and evidence rules, `passive ... because`, slow-gate lenses) and write a compliant first draft instead of discovering rules one failure at a time.",
+      "normalized_key": "before producing any gate validated artifact quality retro handoff read the owning validator s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -193,69 +253,29 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:7944ea2604ac",
-      "kind": "next_improvement",
-      "lesson": "for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter.",
-      "normalized_key": "for reporter scripts that can mutate external state write edge fixtures before broad happy",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9b3fcb941126",
-      "kind": "next_improvement",
-      "lesson": "In release/goal closeout, run `check_auto_trigger.py --paths <release-delta-paths>` before the tree is cleaned, or persist the changed-path list from the helper so post-publish retro can evaluate the same slice.",
-      "normalized_key": "in release goal closeout run check auto trigger py paths release delta paths before",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ac70fb4d1137",
-      "kind": "next_improvement",
-      "lesson": "keep product-evidence logic out of the main report script once it grows beyond a simple summary. Disposition: applied by extracting `scripts/usage_episode_product_evidence.py`.",
-      "normalized_key": "keep product evidence logic out of the main report script once it grows beyond",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:42530033d4f7",
+      "kind": "current_focus",
+      "lesson": "Reviewing the just-completed `/charness:quality` slice that closed the #283 mutation regression in the Codex session/token reporter (new unit tests + `main` routing/non-ASCII tests, verified by targeted local cosmic-ray, committed as `9fb08f6f`).",
+      "normalized_key": "reviewing the just completed charness quality slice that closed the 283 mutation regression in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:7bf20297bbf0",
       "kind": "current_focus",
@@ -337,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8987c07160a6",
+      "kind": "next_improvement",
+      "lesson": "a `--report-all` (collect-all) mode for `validate_quality_artifact.py` and peers would surface every violation in one pass; 21 `validate_*.py` raise on the first error today vs 10 that already collect failures. Optional candidate, not committed here.",
+      "normalized_key": "a report all collect all mode for validate quality artifact py and peers would",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:82804c86c0c7",
       "kind": "next_improvement",
       "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
@@ -411,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:383a786e752a",
+      "kind": "next_improvement",
+      "lesson": "Before producing any gate-validated artifact (quality / retro / handoff), read the owning validator's enforced rules once (required sections, max-lines, wording and evidence rules, `passive ... because`, slow-gate lenses) and write a compliant first draft instead of discovering rules one failure at a time.",
+      "normalized_key": "before producing any gate validated artifact quality retro handoff read the owning validator s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -517,6 +577,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:abe5d7a35651",
+      "kind": "next_improvement",
+      "lesson": "persist this retro so the contract-first lesson rides the recent-lessons digest into the next session.",
+      "normalized_key": "persist this retro so the contract first lesson rides the recent lessons digest into",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a6f0d5c8acf0",
       "kind": "next_improvement",
       "lesson": "product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact.",
@@ -551,6 +631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:89c8a14ffa31",
+      "kind": "next_improvement",
+      "lesson": "When editing `docs/handoff.md`, pre-check its two known couplings — `check-doc-links` wants markdown links not backticked paths, and `test_handoff_chunker_parse.py` pins the live Next-Session issue refs — before spending a full `run-quality`.",
+      "normalized_key": "when editing docs handoff md pre check its two known couplings check doc links",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -597,6 +697,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ea170ee27912",
+      "kind": "repeat_trap",
+      "lesson": "Handoff edit cascade: editing `docs/handoff.md` broke `check-doc-links` (backticked file paths instead of markdown links) and `test_handoff_chunker_parse.py` (it pins the live Next-Session issue refs at `[184, 261]`, now stale because #261 is closed). That forced one extra full `run-quality` (~51s) plus investigation. Root cause: edited a coupled surface without checking its two known couplings first.",
+      "normalized_key": "handoff edit cascade editing docs handoff md broke check doc links backticked file paths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:229e99ec6ed3",
       "kind": "repeat_trap",
       "lesson": "I accidentally ran `upsert_goal.py` without `--date` when activating the existing 2026-06-02 goal. That created a duplicate 2026-06-03 goal artifact, which I had to delete before continuing.",
@@ -637,6 +757,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:c1c0706814e0",
+      "kind": "repeat_trap",
+      "lesson": "Minor: 4 manual poll/sleep loops waiting on background cosmic-ray, partly redundant with the harness's background-completion notifications.",
+      "normalized_key": "minor 4 manual poll sleep loops waiting on background cosmic ray partly redundant with",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:4cd84a5cd870",
       "kind": "repeat_trap",
       "lesson": "`publish_release_cli.py` briefly exceeded the file/function length limits after the new logic was added. Extracting `publish_release_plan.py` and `publish_release_retro.py` fixed the immediate gate and left a better module boundary.",
@@ -651,6 +791,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1adb4167e032",
+      "kind": "repeat_trap",
+      "lesson": "Quality-artifact validator ping-pong (largest): ~15 `validate_quality_artifact` runs + 11 `wc -l` checks. I wrote a 204-line artifact, then discovered the 140-line cap and fixed six distinct rules one failure at a time (max-lines, `prose review result:` line position, advisory `none` wording, advisory evidence on the first physical line, slow-gate lens naming, `passive ... because`). Root cause: I did not read the validator's full enforced ruleset before writing.",
+      "normalized_key": "quality artifact validator ping pong largest 15 validate quality artifact runs 11 wc l",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
           "date": "2026-06-03",
           "section": "Waste"
         }
