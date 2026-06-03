@@ -101,7 +101,17 @@ def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
         f"charness:{name}",
     ]
     if name == "quality":
-        phrases.extend(["test quality", "testability", "quality gate"])
+        phrases.extend(
+            [
+                "test quality",
+                "testability",
+                "test DSL",
+                "test helper ergonomics",
+                "boundary-bypass ratchet",
+                "boundary bypass",
+                "quality gate",
+            ]
+        )
     if "support" in layer:
         phrases.extend(
             [

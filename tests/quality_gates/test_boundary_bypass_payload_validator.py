@@ -17,6 +17,7 @@ def test_validates_stack_neutral_boundary_bypass_example() -> None:
     payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
     summary = validator.validate_payload(payload)
     assert summary["candidate_count"] == 3
+    assert summary["candidate_key_count"] == 3
     assert summary["internal_boundary_count"] == 1
 
 
@@ -32,3 +33,15 @@ def test_rejects_summary_count_drift(tmp_path: Path) -> None:
         assert "summary.convertible_count" in str(exc)
     else:
         raise AssertionError("expected summary count drift to fail validation")
+
+
+def test_rejects_clean_and_internal_target_overlap() -> None:
+    payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    payload["candidates"][0]["internal_boundary_targets"] = payload["candidates"][0]["clean_inprocess_targets"]
+    payload["summary"]["internal_boundary_count"] = 2
+    try:
+        validator.validate_payload(payload)
+    except validator.ValidationError as exc:
+        assert "both clean and internal-boundary" in str(exc)
+    else:
+        raise AssertionError("expected overlapping clean/internal targets to fail validation")

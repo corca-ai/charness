@@ -508,7 +508,7 @@ def test_recommend_for_task_surfaces_verbatim_public_skill(tmp_path: Path) -> No
             "matched_triggers": ["hitl"],
             "referenced_paths": [],
             "next_step": (
-                "Invoke the `hitl` public skill (the task names it verbatim) "
+                "Invoke the `hitl` public skill (the task matched a registered trigger) "
                 "before routing to an external tool or raw shell."
             ),
         }
@@ -544,7 +544,28 @@ def test_recommend_for_task_routes_testability_to_quality(tmp_path: Path) -> Non
     )
 
     assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["quality"]
-    assert payload["public_skill_recommendations"][0]["matched_triggers"] == ["testability"]
+    assert payload["public_skill_recommendations"][0]["matched_triggers"] == [
+        "testability",
+        "test DSL",
+        "boundary-bypass ratchet",
+    ]
+
+
+def test_recommend_for_task_routes_test_dsl_boundary_prompt_to_quality(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "quality", "Understand and improve the current quality bar.")
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommend-for-task",
+        "build a lazy composable test DSL and boundary-bypass ratchet for this repo",
+    )
+
+    assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["quality"]
+    assert payload["public_skill_recommendations"][0]["matched_triggers"] == [
+        "test DSL",
+        "boundary-bypass ratchet",
+    ]
 
 
 def test_recommend_for_task_public_match_suppresses_support_empty_note(tmp_path: Path) -> None:

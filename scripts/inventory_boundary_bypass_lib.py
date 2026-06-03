@@ -168,6 +168,11 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
             candidates.append(row)
     keep_boundary = sum(1 for c in candidates if c["likely_keep_boundary"])
     internal_boundary = sum(1 for c in candidates if c["internal_boundary_targets"])
+    candidate_keys = {
+        f"{c['test_file']}::{target}"
+        for c in candidates
+        for target in c["import_safe_targets"]
+    }
     convertible = sum(
         1
         for c in candidates
@@ -179,6 +184,7 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
         "summary": {
             "scanned_test_files": scanned,
             "candidate_count": len(candidates),
+            "candidate_key_count": len(candidate_keys),
             "convertible_count": convertible,
             "keep_boundary_count": keep_boundary,
             "internal_boundary_count": internal_boundary,

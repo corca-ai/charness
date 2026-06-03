@@ -52,7 +52,7 @@ def public_skill_recommendations_for_task(
                 "matched_triggers": matched,
                 "referenced_paths": entry.get("referenced_paths", []),
                 "next_step": (
-                    f"Invoke the `{entry['id']}` public skill (the task names it verbatim) "
+                    f"Invoke the `{entry['id']}` public skill (the task matched a registered trigger) "
                     "before routing to an external tool or raw shell."
                 ),
             }

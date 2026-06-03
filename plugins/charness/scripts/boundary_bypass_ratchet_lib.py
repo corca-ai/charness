@@ -117,6 +117,14 @@ def load_baseline(path: Path) -> dict[str, Any]:
 
 
 def check_payload(payload: dict[str, Any], baseline: dict[str, Any], exemptions: dict[str, str]) -> dict[str, Any]:
+    schema_mismatch = None
+    baseline_inventory_schema = baseline.get("inventory_schemaVersion")
+    current_inventory_schema = payload.get("schemaVersion")
+    if baseline_inventory_schema != current_inventory_schema:
+        schema_mismatch = {
+            "baseline": baseline_inventory_schema,
+            "current": current_inventory_schema,
+        }
     current_keys = [key for key in candidate_keys(payload) if key not in exemptions]
     baseline_keys = {str(key) for key in baseline.get("candidate_keys", [])}
     current_summary = filtered_summary(payload, exemptions)
@@ -128,8 +136,9 @@ def check_payload(payload: dict[str, Any], baseline: dict[str, Any], exemptions:
     }
     new_keys = sorted(set(current_keys) - baseline_keys)
     return {
-        "ok": not count_increases and not new_keys,
+        "ok": not schema_mismatch and not count_increases and not new_keys,
         "policy": "no_increase",
+        "schema_mismatch": schema_mismatch,
         "summary": current_summary,
         "baseline_summary": {field: int(baseline_summary.get(field, 0)) for field in COUNT_FIELDS},
         "new_candidate_keys": new_keys,

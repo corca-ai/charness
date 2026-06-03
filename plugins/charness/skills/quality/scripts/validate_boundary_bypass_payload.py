@@ -13,6 +13,7 @@ SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v1"
 SUMMARY_FIELDS = (
     "scanned_test_files",
     "candidate_count",
+    "candidate_key_count",
     "convertible_count",
     "keep_boundary_count",
     "internal_boundary_count",
@@ -56,9 +57,14 @@ def _validate_candidate(row: Any, index: int) -> dict[str, Any]:
         raise ValidationError(f"`candidates[{index}].clean_inprocess_targets` must be a subset of import_safe_targets")
     if not set(internal).issubset(import_safe):
         raise ValidationError(f"`candidates[{index}].internal_boundary_targets` must be a subset of import_safe_targets")
-    _bool(row.get("has_lib"), f"candidates[{index}].has_lib")
+    overlap = sorted(set(clean).intersection(internal))
+    if overlap:
+        raise ValidationError(
+            f"`candidates[{index}]` target(s) cannot be both clean and internal-boundary: {', '.join(overlap)}"
+        )
     _bool(row.get("behavior_assert"), f"candidates[{index}].behavior_assert")
     return {
+        "keys": [f"{test_file}::{target}" for target in import_safe],
         "likely_keep_boundary": _bool(row.get("likely_keep_boundary"), f"candidates[{index}].likely_keep_boundary"),
         "clean": clean,
         "internal": internal,
@@ -82,8 +88,10 @@ def validate_payload(payload: dict[str, Any]) -> dict[str, int]:
     keep_boundary = 0
     convertible = 0
     internal_boundary = 0
+    candidate_keys: set[str] = set()
     for index, row in enumerate(candidates):
         candidate = _validate_candidate(row, index)
+        candidate_keys.update(candidate["keys"])
         if candidate["likely_keep_boundary"]:
             keep_boundary += 1
         if (not candidate["likely_keep_boundary"]) and candidate["clean"]:
@@ -93,6 +101,7 @@ def validate_payload(payload: dict[str, Any]) -> dict[str, int]:
 
     derived = {
         "candidate_count": len(candidates),
+        "candidate_key_count": len(candidate_keys),
         "convertible_count": convertible,
         "keep_boundary_count": keep_boundary,
         "internal_boundary_count": internal_boundary,

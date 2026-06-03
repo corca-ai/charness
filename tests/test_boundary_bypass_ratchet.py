@@ -72,6 +72,18 @@ def test_new_unexempt_candidate_fails_no_increase(tmp_path: Path) -> None:
     assert report["count_increases"]["candidate_count"] == {"baseline": 0, "current": 1}
 
 
+def test_inventory_schema_mismatch_fails(tmp_path: Path) -> None:
+    payload = INVENTORY.find_boundary_bypass_candidates(_repo_with_candidate(tmp_path))
+    baseline = RATCHET.build_baseline(payload)
+    payload["schemaVersion"] = "different.schema.v2"
+    report = RATCHET.check_payload(payload, baseline, {})
+    assert report["ok"] is False
+    assert report["schema_mismatch"] == {
+        "baseline": "charness.quality.boundary_bypass_inventory.v1",
+        "current": "different.schema.v2",
+    }
+
+
 def test_exemption_requires_why_rationale(tmp_path: Path) -> None:
     path = tmp_path / "exemptions.txt"
     path.write_text("tests/test_foo.py::scripts/foo.py\n", encoding="utf-8")

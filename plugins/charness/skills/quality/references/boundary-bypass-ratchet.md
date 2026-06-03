@@ -26,6 +26,7 @@ The stack-specific probe emits JSON with:
 - `status`: `advisory` or `ratchet`
 - `summary.scanned_test_files`
 - `summary.candidate_count`
+- `summary.candidate_key_count`
 - `summary.convertible_count`
 - `summary.internal_boundary_count`
 - `summary.keep_boundary_count`
@@ -37,7 +38,6 @@ Each candidate row has:
 - `import_safe_targets`
 - `clean_inprocess_targets`
 - `internal_boundary_targets`
-- `has_lib`
 - `behavior_assert`
 - `likely_keep_boundary`
 
@@ -47,6 +47,15 @@ in-process target and are not likely boundary-contract tests.
 subprocesses, shell commands, network calls, or git internally. Converting those
 tests may still be useful, but it moves the boundary inward rather than removing
 it.
+`candidate_key_count` is the number of unique derived candidate keys. The key
+shape is:
+
+```text
+<test_file>::<target>
+```
+
+Ratchet baselines compare these derived keys so a new target inside an existing
+test file cannot hide behind unchanged row counts.
 
 Validate examples and repo-emitted payloads with:
 
@@ -64,15 +73,8 @@ The default enforcement shape is `no_increase`:
 - fail when enforced counts increase above the baseline
 - allow improvements to reduce counts without requiring an immediate baseline
   rewrite
-- require every exemption to include a `# why:` rationale with an owner or
-  revisit condition
-
-Candidate keys should be stable enough to catch a new target inside an existing
-test file. A good key shape is:
-
-```text
-<test_file>::<target>
-```
+- require every exemption to include a `# why:` rationale; include an owner or
+  revisit condition when the exemption is not self-evidently temporary or local
 
 Exemptions are for intentional real-boundary tests, not for ordinary behavior
 assertions that are merely inconvenient to move lower.
