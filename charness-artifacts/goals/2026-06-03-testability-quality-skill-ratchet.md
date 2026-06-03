@@ -239,7 +239,7 @@ during the run:
 - Why this approach: The user asked whether the test-quality DSL/testability
   work belongs in `quality` or a separate skill; this slice keeps the public
   concept in `quality` while leaving stack-specific probes and DSLs repo-local.
-- Commits: `b2404442` Skillify boundary-bypass ratchet guidance.
+- Commits: `5035a2f7` Skillify boundary-bypass ratchet guidance.
 - What changed: Added a stack-neutral boundary-bypass payload reference, a
   portable payload example, and a validator script under `quality`; expanded the
   testability reference to separate DSL ergonomics from structural testability
