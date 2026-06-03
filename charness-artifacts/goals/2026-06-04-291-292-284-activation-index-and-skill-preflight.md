@@ -1,23 +1,25 @@
-# Achieve Goal: 292 and 284 pre-push index isolation and skill preflight
+# Achieve Goal: 291 292 284 activation readiness, index isolation, and skill preflight
 
 Status: draft
 Created: 2026-06-04
-Activation: `/goal @charness-artifacts/goals/2026-06-04-292-284-pre-push-index-and-skill-preflight.md`
+Activation: `/goal @charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
 
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
-Discuss before activation: surfaced in-thread on 2026-06-04. The user selected
-the handoff first chunk `(292 284)`, so this goal assumes a bundled
-implementation-continuation run: resolve #292 first, then #284; close both
-tracked issues only after the pushed carrier verifies; do not claim release,
-real-host update, scheduled CI, or live proof unless a later slice explicitly
-runs and records it.
+Discuss before activation: RESOLVED in-thread on 2026-06-04. The user selected
+the handoff first chunk `(292 284)`, identified the activation-discussion
+mismatch as #291, asked to include it in this goal, and agreed to the surfaced
+activation decisions. This goal is a bundled implementation-continuation run:
+resolve #291 first so activation readiness blocks unresolved consequential
+discussion, then #292, then #284; close tracked issues only after the pushed
+carrier verifies; do not claim release, real-host update, scheduled CI, or live
+proof unless a later slice explicitly runs and records it.
 
 ## Active Operating Frame
 
 - Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-292-284-pre-push-index-and-skill-preflight.md`.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -29,13 +31,18 @@ runs and records it.
 
 ## Goal
 
-Resolve the first handoff chunk from [docs/handoff.md](../../docs/handoff.md):
-remove the real-repo git-index flake from parallel pre-push quality tests, then
-add a cheap skill-surface pre-edit preflight that reports headroom and known
-coupling hazards before broad quality closeout.
+Resolve #291 plus the first handoff chunk from
+[docs/handoff.md](../../docs/handoff.md): first make `achieve` activation
+readiness block unresolved consequential activation discussion, then remove the
+real-repo git-index flake from parallel pre-push quality tests, then add a cheap
+skill-surface pre-edit preflight that reports headroom and known coupling
+hazards before broad quality closeout.
 
-The useful outcome is two-part:
+The useful outcome is three-part:
 
+- #291 is fixed so `check_goal_artifact.py --pursue-ready` no longer returns a
+  plain activation-ready signal when `Discuss before activation` is merely
+  surfaced but not resolved.
 - #292 is fixed so parallel pre-push quality tests no longer call
   `git write-tree` against the shared parent worktree/index while `git push`
   and its hook are active.
@@ -55,11 +62,15 @@ The useful outcome is two-part:
   early-slice signal.
 - Do not claim real-host `charness update`, release checklist, scheduled CI, or
   live release proof unless those commands are actually run in this goal.
-- Do not close #184, #285, #286, #287, #288, #289, or #291; they may remain
+- Do not close #184, #285, #286, #287, #288, or #289; they may remain
   context or follow-up work.
 
 ## Boundaries
 
+- #291 is bug-class issue resolution because current checker behavior diverges
+  from the documented `achieve` contract. Before mutation, run the issue/debug
+  causal path or record a host-blocked reviewer signal if the required bounded
+  fresh-eye path is unavailable.
 - #292 is bug-class issue resolution. Before mutation, run the issue/debug
   causal path or record a host-blocked reviewer signal if the required bounded
   fresh-eye path is unavailable.
@@ -77,11 +88,17 @@ The useful outcome is two-part:
 - Any new helper must preserve host portability: provider- or host-specific
   behavior belongs in adapters, manifests, presets, or repo-local scripts, not
   hidden inside public skill prose.
+- This goal must not activate future work by treating `pursue_ready: true` plus
+  a warning as sufficient. Once #291 is fixed, activation readiness should have
+  a machine-readable state that prevents that misread.
 
 ## User Acceptance
 
 What the user can do to verify completion directly:
 
+- Run a goal-artifact fixture with unresolved consequential
+  `Discuss before activation` content and see that the checker blocks or
+  clearly separates activation readiness from shaped/discussion readiness.
 - Run the previously flaky quality/pre-push test path and see that no parallel
   pytest worker reads the live parent worktree index with `git write-tree`.
 - Inspect the #292 fix and confirm the staged mirror drift behavior is still
@@ -91,7 +108,7 @@ What the user can do to verify completion directly:
   editing or before a broad quality gate.
 - Inspect the #284 implementation and confirm it is a cheap authoring aid, not
   a broad quality replacement or a prose-only reminder.
-- Verify #292 and #284 are closed only after the pushed carrier contains the
+- Verify #291, #292, and #284 are closed only after the pushed carrier contains the
   fix and `issue_tool.py verify-closeout` confirms GitHub state.
 
 ## Agent Verification Plan
@@ -100,14 +117,15 @@ What the user can do to verify completion directly:
 
 - `find-skills` routing probes at phase boundaries, especially validation
   routing before closeout.
-- `issue_tool.py preflight` and issue resolution reads for #292 and #284.
-- Targeted pytest for the index-isolation regression and the new preflight
-  helper behavior.
+- `issue_tool.py preflight` and issue resolution reads for #291, #292, and
+  #284.
+- Targeted pytest for activation discussion readiness, the index-isolation
+  regression, and the new preflight helper behavior.
 - `ruff check` and `python3 scripts/check_python_lengths.py --headroom --paths`
   for changed Python helpers before large additions.
 - Targeted markdown/docs/skill validators for any changed skill-surface files.
 - Goal artifact validation:
-  `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.14.0/skills/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-06-04-292-284-pre-push-index-and-skill-preflight.md`.
+  `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.14.0/skills/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`.
 
 ### High-Confidence Checks
 
@@ -116,9 +134,10 @@ What the user can do to verify completion directly:
   surfaces.
 - `./scripts/run-quality.sh --read-only` before final completion unless a
   concrete environment blocker is recorded.
-- Bounded fresh-eye critique for the #292 isolation fix and #284 preflight
-  bundle, with a packet covering intent, changed files, generated/plugin
-  surfaces, invariants, proof, non-claims, and reviewer questions.
+- Bounded fresh-eye critique for the #291 activation-readiness fix plus the
+  #292 isolation and #284 preflight bundle, with a packet covering intent,
+  changed files, generated/plugin surfaces, invariants, proof, non-claims, and
+  reviewer questions.
 - `issue_tool.py validate-closeout-draft` before publishing a close-intended
   carrier and `issue_tool.py verify-closeout --expect-state CLOSED` after
   push/merge/manual fallback.
@@ -131,29 +150,33 @@ What the user can do to verify completion directly:
 - External/live proof is not planned by default. No release, real-host update,
   scheduled CI, or install-machine proof is claimed unless explicitly run and
   recorded during the goal.
-- GitHub issue-state verification is required if the final carrier closes #292
-  or #284.
+- GitHub issue-state verification is required if the final carrier closes #291,
+  #292, or #284.
 
 ## Slice Plan
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Shape and validate the achieve goal | Prevent the handoff chunk from turning into an ad hoc issue bundle | This artifact passes normal and pursue-ready validation | done |
-| 1 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | pending |
-| 2 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | pending |
-| 3 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | pending |
-| 4 | Implement #284 preflight | Add the authoring signal while reusing existing validators and preserving portability | Helper/CLI behavior, tests for headroom and coupling output, generated/plugin sync | pending |
-| 5 | Bundle critique, broad verification, issue closeout, handoff refresh | Close the tracked issues only after the proof and next-session state are durable | Fresh-eye critique, run-quality, issue closeout validation/verification, updated handoff if needed | pending |
+| 1 | Resolve #291 activation-readiness contract | The current checker can greenlight pursuit while warning discussion is unresolved | Issue/debug causal review, contract decision, failing/regression fixture | pending |
+| 2 | Implement #291 checker and guidance fix | The rest of this goal should operate under the stricter activation-readiness model | Updated checker fields/behavior, achieve guidance, targeted tests | pending |
+| 3 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | pending |
+| 4 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | pending |
+| 5 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | pending |
+| 6 | Implement #284 preflight | Add the authoring signal while reusing existing validators and preserving portability | Helper/CLI behavior, tests for headroom and coupling output, generated/plugin sync | pending |
+| 7 | Bundle critique, broad verification, issue closeout, handoff refresh | Close the tracked issues only after the proof and next-session state are durable | Fresh-eye critique, run-quality, issue closeout validation/verification, updated handoff if needed | pending |
 
 Test-duplication pressure expectation:
 
-- Slices 1-2 should add or adjust focused regression tests for index isolation,
+- Slices 1-2 should add or adjust focused activation-readiness tests so
+  unresolved consequential discussion cannot be mistaken for activation-ready.
+- Slices 3-4 should add or adjust focused regression tests for index isolation,
   preferably by changing existing tests instead of adding parallel broad
   coverage.
-- Slices 3-4 may add focused preflight tests because #284 introduces new
+- Slices 5-6 may add focused preflight tests because #284 introduces new
   behavior; each slice log should record duplicate-pressure evidence if tests
   expand.
-- Slice 5 must classify any broad duplicate/length/pressure finding before
+- Slice 7 must classify any broad duplicate/length/pressure finding before
   final completion.
 
 ## Coordination Cues
@@ -171,31 +194,33 @@ during the run:
   Notion, Docs, or Drive source needs to become a gathered repo asset.
 - **Release step** — Release: n/a - no version bump, install manifest edit, or
   release surface is planned.
-- **Issue closeout step** — Issue closeout: planned for #292 and #284 if the
+- **Issue closeout step** — Issue closeout: planned for #291, #292, and #284 if the
   activated run completes their acceptance criteria. Preferred carrier:
-  direct-to-main commit or PR body with `Close #292. Close #284.` plus the
-  required closeout ledger; run `issue_tool.py validate-closeout-draft` before
-  publishing and `issue_tool.py verify-closeout --expect-state CLOSED` after
-  push/merge/manual fallback.
+  direct-to-main commit or PR body with `Close #291. Close #292. Close #284.`
+  plus the required closeout ledger; run `issue_tool.py validate-closeout-draft`
+  before publishing and `issue_tool.py verify-closeout --expect-state CLOSED`
+  after push/merge/manual fallback.
 
 ## Slice Log
 
 ### Slice 0: Shape the handoff first-chunk goal
 
-- Objective: Create a pursue-ready goal artifact for the selected #292/#284
+- Objective: Create a pursue-ready goal artifact for the selected #291/#292/#284
   handoff chunk without starting implementation.
 - Why this approach: The user invoked `achieve` for the handoff first chunk, and
   `/goal` is the explicit activation boundary for execution.
 - Commits: none yet.
 - What changed: This goal artifact records the bundle scope, issue boundaries,
-  non-claims, verification plan, slice plan, coordination floors, and
+  non-claims, verification plan, slice plan, coordination floors, and resolved
   activation-discussion summary.
 - Alternatives rejected: starting implementation during `/achieve`; treating
-  #292 and #284 as unrelated sessions; closing issues without GitHub
+  #291, #292, and #284 as unrelated sessions; closing issues without GitHub
   verification.
-- Targeted verification: `check_goal_artifact.py` normal passed; `--pursue-ready`
-  passed with the expected activation-discussion warning for issue closeout,
-  bundled scope, and proof non-claims.
+- Targeted verification: initial `check_goal_artifact.py` normal passed;
+  `--pursue-ready` passed with the expected activation-discussion warning for
+  issue closeout, bundled scope, and proof non-claims. After the user identified
+  #291 and approved the activation decisions, the artifact was reshaped to
+  include #291 and mark the discussion resolved.
 - Test duplication pressure: no tests added.
 - Critique: Before-phase same-agent critique folded below; fresh-eye critique
   is scheduled for the activated implementation bundle.
@@ -219,6 +244,8 @@ the originating context by following them in order:
   <https://github.com/corca-ai/charness/issues/292>.
 - GitHub issue #284:
   <https://github.com/corca-ai/charness/issues/284>.
+- GitHub issue #291:
+  <https://github.com/corca-ai/charness/issues/291>.
 - [docs/conventions/implementation-discipline.md](../../docs/conventions/implementation-discipline.md)
   - sync-before-verify and headroom discipline.
 - [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md)
@@ -230,11 +257,16 @@ the originating context by following them in order:
   user invoked `achieve` on the handoff first chunk and named the issue pair.
   Execution still waits for `/goal`; starting slices during `/achieve` was
   rejected because activation is the pursue boundary.
-- Bundle: #292 then #284 in one goal. Chosen because the handoff explicitly says
-  to pick them together, and #292's live-index hazard should become part of
-  #284's preflight hazard list. Rejected alternatives: split #292 and #284 into
-  separate goals, or start with #284 before fixing the current flake.
-- Issue closeout: close #292 and #284 only when the activated run proves their
+- Bundle: #291 then #292 then #284 in one goal. Chosen because the user
+  identified the activation-readiness concern as #291 and asked to include it;
+  #291 should land first so the rest of this goal cannot repeat the warning-only
+  activation-readiness mistake. Rejected alternatives: leave #291 as a separate
+  follow-up, split #292 and #284 into separate goals, or start with #284 before
+  fixing the current flake.
+- Activation discussion: the user agreed to the surfaced decisions in-thread on
+  2026-06-04. Chosen value: proceed only after this explicit agreement, and
+  treat future warning-only activation-readiness as the #291 bug to fix.
+- Issue closeout: close #291, #292, and #284 only when the activated run proves their
   acceptance criteria and verifies GitHub state. Rejected alternatives: leave
   issues open after complete proof, or close from local proof without
   push/state verification.
@@ -249,6 +281,10 @@ the originating context by following them in order:
 
 ## Plan Critique Findings
 
+- Folded blocker: the goal could start by relying on the very warning-only
+  `pursue_ready` behavior that #291 says is wrong. Slice order now fixes #291
+  first, and the activation discussion is explicitly marked resolved by user
+  agreement before offering activation.
 - Folded blocker: #292 can be "fixed" unsafely by weakening or deleting the real
   mirror-drift behavior check. Boundary added: preserve staged mirror drift
   coverage while isolating index access.
@@ -281,7 +317,7 @@ Pending activation and execution.
 
 After completion, verify by running the commands recorded in `## Final
 Verification`, checking the new preflight on representative skill-surface files,
-and confirming #292/#284 are closed only after the pushed carrier verifies.
+and confirming #291/#292/#284 are closed only after the pushed carrier verifies.
 
 ## Auto-Retro
 
