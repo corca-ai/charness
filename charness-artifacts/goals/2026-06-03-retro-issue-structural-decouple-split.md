@@ -1,6 +1,6 @@
 # Achieve Goal: Generalized, Destination-Split Retro Issue Proposals
 
-Status: active
+Status: complete
 Created: 2026-06-03
 Activation: `/goal @charness-artifacts/goals/2026-06-03-retro-issue-structural-decouple-split.md`
 
@@ -27,10 +27,10 @@ resolution is the in-thread answers folded into Boundaries / Slice Plan below.
 
 ## Active Operating Frame
 
-- Current slice: before activation — forks resolved, shaped and pursue-ready.
-- Next action: user activates with
-  `/goal @charness-artifacts/goals/2026-06-03-retro-issue-structural-decouple-split.md`;
-  first slice is the two-axis contract (A4-lite) across retro/achieve/issue.
+- Status: COMPLETE. Shipped in `6432d6c1` + a review-fix commit; dogfood issues
+  #284 (upstream-harness) and #285 (repo-local) filed and verified OPEN.
+- Next action: none — see `## Final Verification` and `## Auto-Retro`. Follow-up
+  work lives in #284/#285, not this goal.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -232,6 +232,34 @@ during the run:
 - Lessons carried forward:
 - Metrics:
 
+### Slice 5: Dogfood: persist retro + file generalized split issues (F2)
+
+- Objective: Run the After-phase session retro, persist it, and dogfood the new contract by filing the generalized, destination-split proposals as real issues (collapse mode: this repo IS charness)
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: retro persisted to charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md (+recent-lessons/index refresh); both proposals pass validate_proposal_fields.py (ok, correct destination); resolve-destination=collapse; filed #284 (upstream-harness) + #285 (repo-local), both verified OPEN with Structural pattern + Destination fields in body
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 6: Fresh-eye bounded review + fix
+
+- Objective: Run a different-context bounded reviewer over commit 6432d6c1 + closeout; fold its findings
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Reviewer verdict ship-with-nits. Real bug fixed: validate_proposal_fields regex used \s (matched newline) so an empty field value stole the next line — now horizontal-whitespace only; added regression test (empty value -> missing); fixed two docstring ref-depths. 9/9 proposal tests pass; empty-value smoke now ok=False; dogfood proposals still pass; py_compile/ruff/check-markdown green. Invariants confirmed OK by reviewer: B1/E1 resolver, mirror fidelity, issue SKILL unbloated (byte-identical to base), presence-only not a classifier
+- Test duplication pressure: added test_empty_value_treated_as_missing; closes the present-but-empty gap the reviewer flagged; no duplication with existing cases
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -341,12 +369,84 @@ recorded before activation so a fresh session re-verifies rather than re-derives
 
 ## Final Verification
 
-(pending — goal is a draft for discussion, not complete)
+- Implementation commit: `6432d6c1 Add generalized, destination-split retro issue proposals`
+  plus a follow-up review-fix commit (regex presence bug + regression test +
+  docstring depths).
+- Self-verification (high-confidence, ran):
+  - Targeted gates green: `validate_skills`, `validate_adapters`,
+    `validate_skill_ergonomics`, `check-markdown`, `check_doc_links`,
+    `check_references_link_inventory`, `check_skill_contracts` all exit 0.
+  - Pytest: `test_issue_proposal_fields.py` 9/9 (present-vague pass, bullet pass,
+    missing-field fail, **empty-value-treated-as-missing** fail, bad-enum fail,
+    resolve-destination collapse/consumer/unknown); plus
+    `test_issue_skill`/`test_retro_skill`/`test_achieve_before_activation`/
+    `test_goal_disposition_gate` and the previously-failing
+    `test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor`.
+  - Broad read-only gate `run-quality.sh --read-only`: after fixes, the only
+    residual fails are environmental (see Non-claims), not feature defects.
+  - Backward compat: bare `resolve_adapter.py` still dumps the adapter; new
+    `resolve-destination` subcommand returns collapse for this repo.
+- Fresh-eye review: a different-context bounded reviewer (verdict
+  `ship-with-nits`) confirmed B1/E1 resolver correctness, mirror fidelity,
+  unbloated `issue/SKILL.md`, and presence-only (non-classifier) semantics; it
+  caught one real presence bug, which was fixed + regression-tested before
+  closeout. Recorded in
+  `charness-artifacts/critique/2026-06-03-retro-issue-structural-decouple-split-disposition-review.md`.
+- Live proof (dogfood, ran): filed #284 (upstream-harness) and #285 (repo-local)
+  to `corca-ai/charness`; both verified `OPEN` with the presence fields in body.
+- Retro: `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`.
+- Host log probe: `charness-artifacts/probe/2026-06-03-retro-issue-structural-decouple-split.json`.
+- Non-claims (not proven):
+  - The **consumer-repo** path (current repo ≠ `harness_upstream`) is unit-tested
+    only; it was not exercised live, because this run is in the charness repo
+    itself (E1 collapse). The first non-charness adopter should exercise it.
+  - `validate_proposal_fields.py` is an **advisory** presence check; it is not
+    wired into a blocking gate, so it informs proposal authoring but does not
+    enforce it at commit time.
+  - Deep per-session token/turn counts are not asserted; the host probe is
+    thread/session-level (no `Host metric window:` line existed before work).
+  - No release was cut; no existing tracked issue was closed (this run *creates*
+    follow-up issues).
 
 ## User Verification Instructions
 
-(pending — see User Acceptance; finalize after the forks resolve)
+- Read `skills/shared/references/retro-issue-destination-split.md` for the two
+  axes and the D1/B1/E1 rules.
+- Confirm presence-only behavior:
+  `printf 'Structural pattern:\nTriggering instance(s): x\nDestination: repo-local\n' | python3 skills/public/issue/scripts/validate_proposal_fields.py`
+  returns `ok:false` (empty value treated as missing), while a vague-but-present
+  value returns `ok:true`.
+- Confirm collapse routing for this repo:
+  `python3 skills/public/issue/scripts/resolve_adapter.py --repo-root . resolve-destination --current corca-ai/charness`
+  → `mode: collapse`, both targets `corca-ai/charness`.
+- Run `python3 -m pytest tests/quality_gates/test_issue_proposal_fields.py -q`.
+- Inspect the filed issues: `gh issue view 284 --json state,title`;
+  `gh issue view 285 --json state,title`.
 
 ## Auto-Retro
 
-(pending — runs in the After phase)
+Cited retro: `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`
+(substantive findings inline below; the file carries the full Waste / Critical
+Decisions / Expert Counterfactuals / Sibling Search).
+
+- Waste this run: edited skill surfaces at the conciseness/ergonomics ceiling
+  with no pre-edit headroom signal, forcing a revert (issue body) + trims +
+  re-syncs after the broad gate; reference-depth and wrapped-span fixes added two
+  more gate cycles.
+- Critical decisions: A4-lite distribution (each skill standalone), presence-only
+  validator (respect the disposition-floor guardrail), B1 adapter pointer + E1
+  collapse over prompt inference.
+
+Dispositions (each surfaced improvement is `applied` or `issue #N`):
+
+- applied: the feature itself — shared contract + retro/achieve/issue wiring +
+  `harness_upstream` resolver + presence-only validator + tests (commit `6432d6c1`).
+- applied: fixed the validator presence bug the fresh-eye review caught and added
+  `test_empty_value_treated_as_missing` (this run).
+- issue #284: pre-edit preflight for skill-surface edits (headroom / known
+  couplings / markdown spans) — Destination: upstream-harness.
+- issue #285: stop hard-pinning live issue numbers in repo test fixtures —
+  Destination: repo-local.
+- Retro: charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md
+- Host log probe: charness-artifacts/probe/2026-06-03-retro-issue-structural-decouple-split.json
+- Disposition review: charness-artifacts/critique/2026-06-03-retro-issue-structural-decouple-split-disposition-review.md

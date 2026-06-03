@@ -82,7 +82,7 @@ def _parse_harness_upstream(raw: Any, errors: list[str]) -> str | None:
 
     Optional: absent means the destination split has no configured upstream and
     callers fall back to keeping findings repo-local (see
-    ../../shared/references/retro-issue-destination-split.md).
+    ../../../shared/references/retro-issue-destination-split.md).
     """
     if raw is None:
         return None

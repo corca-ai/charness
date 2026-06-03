@@ -25,6 +25,14 @@ Triggering instance(s): it happened once.
 Destination: repo-local
 """
 
+# Label present but value blank: must be treated as MISSING, not silently steal
+# the next line's text as the value (regression guard for the presence contract).
+EMPTY_STRUCTURAL_VALUE = """\
+Structural pattern:
+Triggering instance(s): it happened once.
+Destination: repo-local
+"""
+
 BAD_DESTINATION = """\
 Structural pattern: a real generalized pattern.
 Triggering instance(s): the incident.
@@ -63,6 +71,18 @@ def test_missing_structural_pattern_fails(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is False
     assert "Structural pattern" in payload["missing"]
+
+
+def test_empty_value_treated_as_missing(tmp_path: Path) -> None:
+    # A blank value must not backtrack across the newline and capture the next
+    # line as the field value.
+    result = _run_validator(tmp_path, EMPTY_STRUCTURAL_VALUE)
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "Structural pattern" in payload["missing"]
+    # the stolen-value bug would have set this to "Triggering instance(s):"
+    assert "Structural pattern" not in payload["present"]
 
 
 def test_bad_destination_enum_fails(tmp_path: Path) -> None:

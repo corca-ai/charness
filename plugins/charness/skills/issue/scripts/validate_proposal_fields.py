@@ -7,7 +7,7 @@ is one of the allowed values. This is presence/enum only by design: a
 present-but-vague pattern passes; only a missing field or an out-of-enum
 destination fails. It never judges whether the generalization is good — that is
 the reviewer's job, mirroring the achieve disposition floor. See
-../../shared/references/retro-issue-destination-split.md.
+../../../shared/references/retro-issue-destination-split.md.
 """
 from __future__ import annotations
 
@@ -29,8 +29,10 @@ def _field_value(text: str, label: str) -> str | None:
     `**Structural pattern:** <value>`. Returns the stripped value, or None when
     the field is absent or has an empty value.
     """
+    # Horizontal-whitespace-only classes ([ \t], not \s) so an empty value cannot
+    # backtrack across the newline and steal the next line's text as its value.
     pattern = re.compile(
-        r"^[\s\-\*#>]*\**\s*" + re.escape(label) + r"\**\s*:\s*(?P<value>.*)$",
+        r"^[ \t\-\*#>]*\**[ \t]*" + re.escape(label) + r"\**[ \t]*:[ \t]*(?P<value>.*)$",
         re.IGNORECASE | re.MULTILINE,
     )
     match = pattern.search(text)
