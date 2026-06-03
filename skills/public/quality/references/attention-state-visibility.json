@@ -338,6 +338,12 @@
       "evidence_terms": ["No repo-declared fresh checkout probes were configured"],
       "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
     },
+    "skills/public/release/scripts/publish_release_retro.py": {
+      "states": ["skipped"],
+      "visibility": ["artifact_visible", "terminal_payload"],
+      "evidence_terms": ["closeout", "retro trigger did not match"],
+      "rationale": "Release-triggered retro closeout records skipped trigger evaluations in the release payload/artifact, while matched triggers persist a bounded retro artifact."
+    },
     "skills/public/release/scripts/resolve_adapter.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload"],

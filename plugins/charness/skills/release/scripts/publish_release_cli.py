@@ -24,7 +24,6 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
-_bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
 _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
@@ -34,9 +33,10 @@ _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_pr
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
+_release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
+_release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
-bump_part = _bump_version.bump_part
 build_real_host_payload = _check_real_host.build_payload
 build_review_gate_payload = _check_review_gate.build_payload
 build_fresh_checkout_payload = _fresh_checkout.build_payload
@@ -44,18 +44,13 @@ build_narrative_audit_payload = _audit_narrative.build_payload
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
-current_branch = _helpers.current_branch
 changed_paths = _helpers.changed_paths
-unreleased_paths = _helpers.unreleased_paths
 write_release_artifact = _artifact.write_release_artifact
 backend_command = _helpers.backend_command
 create_release = _helpers.create_release
 expected_github_release_url = _helpers.expected_github_release_url
 amend_fresh_checkout_artifact = _helpers.amend_fresh_checkout_artifact
 commit_post_publish_artifact = _helpers.commit_post_publish_artifact
-release_previous_version = _helpers.release_previous_version
-ensure_release_target_available = _helpers.ensure_release_target_available
-github_repo_slug = _issue_closeout.github_repo_slug
 release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
@@ -67,6 +62,8 @@ release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
+build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
+build_publish_plan = _release_plan.build_publish_plan
 
 
 def parse_args() -> argparse.Namespace:
@@ -85,13 +82,6 @@ def parse_args() -> argparse.Namespace:
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
     group.add_argument("--set-version", help="Explicit version string to set before publishing")
     return parser.parse_args()
-def target_version(args: argparse.Namespace, current_version: str) -> str:
-    if args.publish_current:
-        return current_version
-    if args.set_version:
-        return args.set_version
-    assert args.part is not None
-    return bump_part(current_version, args.part)
 def run_requested_review_gate(repo_root: Path) -> None:
     review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
     if review_gate_payload["status"] == "blocked":
@@ -146,6 +136,7 @@ def write_current_artifact(
         tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
         review_proof=payload.get("critique_artifact"),
+        retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
     )
 
 
@@ -176,37 +167,6 @@ def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Pa
             "public release notes preflight blocked publish:\n"
             + "\n".join(f"- {blocker}" for blocker in notes_blockers)
         )
-
-
-def build_publish_payload(
-    args: argparse.Namespace,
-    adapter_data: dict[str, Any],
-    *,
-    current_version: str,
-    previous_version: str,
-    next_version: str,
-    branch: str,
-    tag_name: str,
-    title: str,
-    critique_artifact: str | None,
-) -> dict[str, Any]:
-    return {
-        "package_id": adapter_data["package_id"],
-        "current_version": current_version,
-        "target_version": next_version,
-        "previous_version": previous_version,
-        "remote": args.remote,
-        "branch": branch,
-        "tag_name": tag_name,
-        "title": title,
-        "mode": "publish-current" if args.publish_current else "bump-and-publish",
-        "quality_command": adapter_data["quality_command"],
-        "fresh_checkout_probes": adapter_data["fresh_checkout_probes"],
-        "commit_message": f"Release {adapter_data['package_id']} {next_version}",
-        "notes_mode": "notes-file" if args.notes_file else "generate-notes",
-        "critique_artifact": critique_artifact,
-        "execute": args.execute,
-    }
 
 
 def finalize_release_payload(
@@ -275,28 +235,16 @@ def main() -> None:
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
 
-    current_payload = build_release_payload(repo_root)
-    current_version = current_payload["surface_versions"]["packaging_manifest"]
-    if not isinstance(current_version, str):
-        raise SystemExit("current_release did not report a packaging manifest version")
-    next_version = target_version(args, current_version)
-    previous_version = release_previous_version(repo_root, args.publish_current, current_version, next_version, args.remote)
-    branch = current_branch(repo_root)
-    tag_name = f"v{next_version}"
-    title = args.title or tag_name
-    backend = adapter_data["release_backend"]
-    ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
-    release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
-    safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
-    adapter_preflight_payload = release_adapter_preflight_payload(
-        repo_root, release_content_paths=release_content_paths, previous_version=previous_version
-    )
-    issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
-
-    payload = build_publish_payload(args, adapter_data, current_version=current_version, previous_version=previous_version, next_version=next_version, branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact)
-    payload["release_adapter_preflight"] = adapter_preflight_payload
-    payload["close_issue_numbers"] = args.close_issue
-    payload["close_issue_repo"] = issue_repo
+    plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run)
+    payload = plan["payload"]
+    next_version = plan["next_version"]
+    branch = plan["branch"]
+    tag_name = plan["tag_name"]
+    title = plan["title"]
+    backend = plan["backend"]
+    release_content_paths = plan["release_content_paths"]
+    adapter_preflight_payload = plan["adapter_preflight_payload"]
+    issue_repo = plan["issue_repo"]
     if not args.execute:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
@@ -312,7 +260,15 @@ def main() -> None:
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 
-    host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))), build_payload=build_real_host_payload)
+    final_release_paths = sorted(set(release_content_paths + changed_paths(repo_root)))
+    host_payload = safe_real_host_payload(repo_root, final_release_paths, build_payload=build_real_host_payload)
+    payload["retro_trigger_evaluation"] = build_retro_trigger_evaluation(
+        repo_root,
+        final_release_paths,
+        evaluated_at="final_release_paths",
+        tag_name=tag_name,
+        execute=True,
+    )
     fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
     write_current_artifact(repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url, quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan)
     run_requested_review_gate(repo_root)

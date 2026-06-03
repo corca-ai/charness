@@ -5,6 +5,7 @@ import argparse
 import fnmatch
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -47,6 +48,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for auto-retro trigger surfaces and path globs")
     parser.add_argument("--paths", nargs="*", help="Changed paths to evaluate against trigger surfaces (defaults to git diff)")
+    parser.add_argument("--base-ref", help="Base git ref for explicit commit-range path discovery")
+    parser.add_argument("--head-ref", default="HEAD", help="Head git ref for --base-ref path discovery (default: HEAD)")
     return parser.parse_args()
 
 
@@ -94,6 +97,26 @@ def surface_error_payload(error: str) -> dict[str, object]:
     }
 
 
+def collect_range_paths(repo_root: Path, *, base_ref: str, head_ref: str) -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--name-only", f"{base_ref}..{head_ref}"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SurfaceError(
+            "git diff failed while collecting auto-retro trigger paths\n"
+            f"base_ref: {base_ref}\n"
+            f"head_ref: {head_ref}\n"
+            f"exit_code: {result.returncode}\n"
+            f"STDOUT:\n{result.stdout}\n"
+            f"STDERR:\n{result.stderr}"
+        )
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
 def broken_trigger_config_payload(
     unresolved: list[str], manifest_path: str
 ) -> dict[str, object]:
@@ -112,35 +135,60 @@ def broken_trigger_config_payload(
     }
 
 
-def main() -> int:
-    args = parse_args()
-    repo_root = args.repo_root.resolve()
+def _input_paths(
+    repo_root: Path,
+    *,
+    paths: list[str] | None = None,
+    base_ref: str | None = None,
+    head_ref: str = "HEAD",
+) -> tuple[list[str], dict[str, object]]:
+    if paths is not None and base_ref:
+        raise SurfaceError("--paths and --base-ref are mutually exclusive")
+    if base_ref:
+        return collect_range_paths(repo_root, base_ref=base_ref, head_ref=head_ref), {
+            "mode": "commit_range",
+            "base_ref": base_ref,
+            "head_ref": head_ref,
+        }
+    if paths is not None:
+        return paths, {"mode": "explicit_paths"}
+    return collect_changed_paths(repo_root), {"mode": "working_tree_diff"}
+
+
+def build_payload(
+    repo_root: Path,
+    *,
+    paths: list[str] | None = None,
+    base_ref: str | None = None,
+    head_ref: str = "HEAD",
+) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     trigger_surfaces = adapter["data"].get("auto_session_trigger_surfaces", [])
     trigger_globs = adapter["data"].get("auto_session_trigger_path_globs", [])
+    if not trigger_surfaces and not trigger_globs and paths is None and not base_ref:
+        payload = no_config_payload([], adapter.get("field_state", {}))
+        payload["input"] = {"mode": "working_tree_diff"}
+        return payload
+    changed_paths, input_payload = _input_paths(
+        repo_root, paths=paths, base_ref=base_ref, head_ref=head_ref
+    )
     if not trigger_surfaces and not trigger_globs:
-        no_config_paths = args.paths if args.paths is not None else []
-        print(json.dumps(no_config_payload(no_config_paths, adapter.get("field_state", {})), ensure_ascii=False, indent=2))
-        return 0
+        payload = no_config_payload(changed_paths, adapter.get("field_state", {}))
+        payload["input"] = input_payload
+        return payload
 
     surfaces_manifest = load_surfaces(repo_root)
     assert surfaces_manifest is not None
     resolved_trigger_surfaces = resolve_trigger_surfaces(surfaces_manifest, trigger_surfaces)
     if resolved_trigger_surfaces["unresolved"]:
-        print(
-            json.dumps(
-                broken_trigger_config_payload(
-                    resolved_trigger_surfaces["unresolved"], surfaces_manifest["path"]
-                ),
-                ensure_ascii=False,
-                indent=2,
-            ),
-            file=sys.stderr,
+        payload = broken_trigger_config_payload(
+            resolved_trigger_surfaces["unresolved"], surfaces_manifest["path"]
         )
-        return 1
+        payload["input"] = input_payload
+        payload["changed_paths"] = changed_paths
+        return payload
     declared_trigger_surfaces = set(resolved_trigger_surfaces["declared"])
 
-    changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
     matched = match_surfaces(surfaces_manifest, changed_paths)
 
     surface_hits = [
@@ -156,12 +204,28 @@ def main() -> int:
         "surface_hits": surface_hits,
         "path_hits": path_hits,
         "suggested_mode": "session" if triggered else None,
+        "input": input_payload,
         "reason": (
             "Changed surfaces hit configured install/update/support/export/discovery retro triggers."
             if triggered
             else "No configured auto-retro trigger matched the current slice."
         ),
     }
+    return payload
+
+
+def main() -> int:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    payload = build_payload(
+        repo_root,
+        paths=args.paths,
+        base_ref=args.base_ref,
+        head_ref=args.head_ref,
+    )
+    if payload.get("configuration_status") == "broken":
+        print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
+        return 1
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 
