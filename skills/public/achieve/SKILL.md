@@ -99,6 +99,13 @@ lifecycle instead of starting a new one.
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing
      actionable, record one per-goal `Retro dispositions: none — <reason>` line.
+   - when a disposition routes an improvement to `issue #N`, the proposed issue
+     must carry the generalized `Structural pattern:`, its `Triggering instance(s):`
+     (incident as evidence, not scope), and a resolved `Destination:`
+     (`upstream-harness`/`repo-local`/`both`). Default to one destination; file an
+     upstream+local pair only for a genuine dual finding. The axes, split rule,
+     and presence-only check are owned by
+     `../../shared/references/retro-issue-destination-split.md`.
    - **disposition gate, for goals created after the rule landed:** a deterministic
      block blank Auto-Retro when cited retro lists improvements and require a
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is

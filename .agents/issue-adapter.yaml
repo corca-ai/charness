@@ -1,0 +1,11 @@
+# Issue skill adapter for the charness repo.
+# Only overrides what differs from inferred defaults (default_org=corca-ai,
+# current-repo inference, gh backend). See skills/public/issue/references/issue-backend.md.
+version: 1
+repo: charness
+
+# This repo *is* the charness upstream, so retro-derived destination splits
+# collapse (E1): upstream-harness and repo-local findings both target this repo,
+# distinguished by label/section rather than by destination repo.
+# See skills/shared/references/retro-issue-destination-split.md.
+harness_upstream: corca-ai/charness
