@@ -276,19 +276,21 @@ def pursue_readiness(text: str) -> dict[str, Any]:
     """
     placeholders = _UNSHAPED_MARKER.findall(_mask_fences(text))
     discussion = discussion_readiness(text)
-    ready = not placeholders and discussion["discussion_ready"]
+    shape_ready = not placeholders
+    activation_ready = shape_ready and discussion["discussion_ready"]
     discussion_warning = (
-        "Consequential activation decisions are surfaced but not proven resolved. "
-        "Resolve or explicitly ask about them in the transcript before offering `/goal`."
-        if discussion["discussion_required"] and discussion["discussion_summary_present"]
+        "Consequential activation decisions are surfaced but unresolved. "
+        "Resolve or explicitly ask about them in the transcript before offering `/goal`, "
+        "then mark the summary `RESOLVED`, `CONFIRMED`, or `APPROVED`."
+        if discussion["discussion_required"] and discussion["discussion_summary_present"] and not discussion["discussion_resolved"]
         else ""
     )
     reason = (
-        "shaped: no Before-phase placeholders remain; activation decisions are surfaced, "
-        "but surfaced is not resolved -- resolve or confirm them before offering `/goal`"
-        if ready and discussion_warning
+        "operator discussion unresolved: consequential activation decisions are surfaced "
+        "but not marked resolved -- resolve or confirm them before offering `/goal`"
+        if shape_ready and discussion_warning
         else "shaped: no Before-phase placeholders remain; safe to pursue via `/goal`"
-        if ready
+        if activation_ready
         else (
             f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
             "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
@@ -299,7 +301,9 @@ def pursue_readiness(text: str) -> dict[str, Any]:
         )
     )
     return {
-        "pursue_ready": ready,
+        "pursue_ready": activation_ready,
+        "shape_ready": shape_ready,
+        "activation_ready": activation_ready,
         "placeholder_count": len(placeholders),
         "reason": reason,
         "activation_discussion_warning": discussion_warning,

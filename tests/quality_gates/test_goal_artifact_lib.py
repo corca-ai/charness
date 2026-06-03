@@ -172,7 +172,7 @@ def test_pursue_readiness_does_not_trigger_on_critique_not_yet_run() -> None:
     assert report["discussion_required"] is False
 
 
-def test_pursue_readiness_allows_surfaced_consequential_decisions() -> None:
+def test_pursue_readiness_blocks_surfaced_but_unresolved_decisions() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
         "## Boundaries\n\n#184 must close inside this bundled goal.\n\n"
@@ -182,37 +182,60 @@ def test_pursue_readiness_allows_surfaced_consequential_decisions() -> None:
         "## Plan Critique Findings\n\nNo blockers.\n"
     )
     report = gal.pursue_readiness(shaped)
-    assert report["pursue_ready"] is True
+    assert report["pursue_ready"] is False
+    assert report["shape_ready"] is True
+    assert report["activation_ready"] is False
     assert report["discussion_required"] is True
     assert report["discussion_summary_present"] is True
-    assert "not proven resolved" in report["activation_discussion_warning"]
-    assert "surfaced is not resolved" in report["reason"]
+    assert report["discussion_resolved"] is False
+    assert "unresolved" in report["activation_discussion_warning"]
+    assert "not marked resolved" in report["reason"]
 
 
-def test_pursue_readiness_warns_summary_is_not_discussion_resolution() -> None:
+def test_pursue_readiness_blocks_summary_that_is_not_discussion_resolution() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
         "## Non-Goals\n\nDo not close #279 until proof-bearing commit lands.\n\n"
         "Discuss before activation: confirm issue closeout timing before activation.\n"
     )
     report = gal.pursue_readiness(shaped)
-    assert report["pursue_ready"] is True
+    assert report["pursue_ready"] is False
+    assert report["activation_ready"] is False
     assert report["discussion_required"] is True
     assert report["discussion_summary_present"] is True
+    assert report["discussion_resolved"] is False
     assert "Resolve or explicitly ask" in report["activation_discussion_warning"]
     assert "discussion_summary_present" not in report["reason"]
-    assert "resolved" in report["reason"]
+    assert "unresolved" in report["reason"]
 
 
-def test_pursue_readiness_allows_summary_starting_with_issue_number() -> None:
+def test_pursue_readiness_blocks_summary_starting_with_issue_number_without_resolution_marker() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
         "## Non-Goals\n\nDo not close #276 until push.\n\n"
         "Discuss before activation: #276 remains local-only until push verifies closure.\n"
     )
     report = gal.pursue_readiness(shaped)
-    assert report["pursue_ready"] is True
+    assert report["pursue_ready"] is False
     assert report["discussion_summary_present"] is True
+    assert report["discussion_resolved"] is False
+
+
+def test_pursue_readiness_allows_explicitly_resolved_consequential_decisions() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Boundaries\n\n#184 must close inside this bundled goal.\n\n"
+        "Discuss before activation: RESOLVED in-thread. Close #184 in-goal; production contact is allowed with recorded target, preflight, stop condition, and post-proof.\n\n"
+        "## Agent Verification Plan\n\n### External Or Live Proof\n\nUse real GitHub lookup proof.\n\n"
+        "## Interview Decisions\n\nProduction contact is allowed, including apply/restart.\n\n"
+    )
+    report = gal.pursue_readiness(shaped)
+    assert report["pursue_ready"] is True
+    assert report["activation_ready"] is True
+    assert report["discussion_required"] is True
+    assert report["discussion_summary_present"] is True
+    assert report["discussion_resolved"] is True
+    assert report["activation_discussion_warning"] == ""
 
 
 def test_pursue_readiness_rejects_na_summary_when_decisions_are_consequential() -> None:

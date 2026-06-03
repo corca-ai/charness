@@ -1,6 +1,6 @@
 # Achieve Goal: 291 292 284 activation readiness, index isolation, and skill preflight
 
-Status: draft
+Status: active
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
 
@@ -18,8 +18,9 @@ proof unless a later slice explicitly runs and records it.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`.
+- Current slice: Slice 3, #292 root cause and containment design.
+- Next action: read #292 current tracker state, run the required bug-class
+  issue/debug causal path, and design the index-isolation fix before mutation.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -158,8 +159,8 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Shape and validate the achieve goal | Prevent the handoff chunk from turning into an ad hoc issue bundle | This artifact passes normal and pursue-ready validation | done |
-| 1 | Resolve #291 activation-readiness contract | The current checker can greenlight pursuit while warning discussion is unresolved | Issue/debug causal review, contract decision, failing/regression fixture | pending |
-| 2 | Implement #291 checker and guidance fix | The rest of this goal should operate under the stricter activation-readiness model | Updated checker fields/behavior, achieve guidance, targeted tests | pending |
+| 1 | Resolve #291 activation-readiness contract | The current checker can greenlight pursuit while warning discussion is unresolved | Issue/debug causal review, contract decision, failing/regression fixture | done |
+| 2 | Implement #291 checker and guidance fix | The rest of this goal should operate under the stricter activation-readiness model | Updated checker fields/behavior, achieve guidance, targeted tests | done |
 | 3 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | pending |
 | 4 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | pending |
 | 5 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | pending |
@@ -228,6 +229,20 @@ during the run:
 - Lessons carried forward: Make real-index access, skill headroom, markdown
   spans, link depth, and mirror sync explicit preflight hazards instead of
   relying on broad-gate discovery.
+
+### Slice 1: Resolve #291 activation readiness
+
+- Objective: Make unresolved consequential activation discussion fail the pursue-ready gate instead of returning warning-only success.
+- Why this approach: #291 blocks the rest of this goal from relying on the same misleading activation signal.
+- Commits: pending
+- What changed: Updated achieve discussion/readiness helpers, achieve prose, plugin mirrors, CLI/helper tests, debug RCA artifact, debug seam-risk index, and this goal artifact.
+- Alternatives rejected: Keeping pursue_ready true with a warning; adding activation_ready while leaving CLI exit 0; treating any summary text as resolved.
+- Targeted verification: Focused pytest: 55 passed; active goal local check reports shape_ready=true, activation_ready=true, pursue_ready=true; packaging, skills, ruff, debug artifact/index, markdown/docs/secrets, public skill policy/dogfood, attention visibility, and length checks passed.
+- Test duplication pressure: Expanded existing focused test files only; no broad duplicate sample run yet. Added cases distinguish hidden, surfaced-unresolved, issue-number-leading, and explicitly resolved discussions.
+- Critique: Bounded fresh-eye causal review executed by subagent Mencius; root cause and sibling scan recorded in debug artifact.
+- Off-goal findings: None.
+- Lessons carried forward: Readiness fields must name the consumer boundary they prove: shape-ready for Before-phase continuation, activation-ready for /goal.
+- Metrics: Headroom before edit: goal_artifact_lib.py 43 lines left; discussion helper 283 lines left. Kept most new logic in discussion helper.
 
 ## Context Sources
 

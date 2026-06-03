@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 52,
-  "indexed_artifact_count": 43,
+  "source_artifact_count": 53,
+  "indexed_artifact_count": 44,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 7,
-    "operator-visible-recovery": 14
+    "operator-visible-recovery": 15
   },
   "generalization_pressure_counts": {
-    "monitor": 43
+    "monitor": 44
   },
   "entries": [
     {
@@ -602,6 +602,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-04-291-achieve-pursue-ready-activation-discussion.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-291-achieve-pursue-ready-activation-discussion",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "goal artifact checker output to operator activation behavior.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
       "forced": false
     },
     {

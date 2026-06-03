@@ -10,6 +10,7 @@ _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _SUMMARY_HEADING = re.compile(r"^(#{2,4})[ \t]+Discuss before activation\b.*$", re.IGNORECASE | re.MULTILINE)
 _SUMMARY_LINE = re.compile(r"^[ \t]*(?:[-*][ \t]*)?Discuss before activation:[ \t]*(.+)$", re.IGNORECASE | re.MULTILINE)
 _N_A = re.compile(r"^(?:n/?a|none|no consequential|not applicable)\b", re.IGNORECASE)
+_RESOLVED = re.compile(r"^(?:resolved|confirmed|approved)\b", re.IGNORECASE)
 
 TRIGGERS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("production_or_live_proof", re.compile(r"\b(prod(?:uction)?|live proof|real github lookup|apply/restart|restart|deploy)\b", re.IGNORECASE)),
@@ -54,18 +55,18 @@ def _section_bodies(text: str) -> dict[str, str]:
     return bodies
 
 
-def _summary_present(text: str) -> bool:
+def _summary_content(text: str) -> str:
     masked = _mask_fences(text).split("\n## Slice Log", 1)[0]
     line = _SUMMARY_LINE.search(masked)
-    if line and _has_summary_content(line.group(1)):
-        return True
+    if line:
+        return line.group(1).strip()
     heading = _SUMMARY_HEADING.search(masked)
     if heading is None:
-        return False
+        return ""
     level = len(heading.group(1))
     stop = re.search(rf"^#{{1,{level}}}[ \t]+", masked[heading.end():], re.MULTILINE)
     body_end = heading.end() + stop.start() if stop else len(masked)
-    return _has_summary_content(masked[heading.end():body_end])
+    return masked[heading.end():body_end].strip()
 
 
 def _has_summary_content(text: str) -> bool:
@@ -83,10 +84,13 @@ def discussion_readiness(text: str) -> dict[str, Any]:
     combined = "\n".join(bodies.get(section, "") for section in SECTIONS)
     triggers = [name for name, pattern in TRIGGERS if pattern.search(combined)]
     required = bool(triggers)
-    present = _summary_present(text)
+    summary = _summary_content(text)
+    present = _has_summary_content(summary)
+    resolved = (not required) or (present and bool(_RESOLVED.match(summary)))
     return {
         "discussion_required": required,
-        "discussion_ready": (not required) or present,
+        "discussion_ready": resolved,
+        "discussion_resolved": resolved,
         "discussion_summary_present": present,
         "discussion_triggers": triggers,
     }

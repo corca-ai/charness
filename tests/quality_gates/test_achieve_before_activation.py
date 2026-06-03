@@ -69,7 +69,9 @@ def test_consequential_defaults_need_discussion_before_activation() -> None:
     assert "operator-ready" in lifecycle
     assert "resolve or explicitly ask" in skill
     assert "resolve or explicitly ask" in lifecycle
-    assert "discussion_summary_present" in lifecycle
+    assert "shape_ready" in lifecycle
+    assert "activation_ready" in lifecycle
+    assert "must be false while consequential discussion is only surfaced" in lifecycle
 
 
 def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:

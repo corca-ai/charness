@@ -145,12 +145,12 @@ contain decisions about live/prod proof, issue close/split, broad bundled scope,
 irreversible side effects, or proof-level non-claims. The deterministic
 `--pursue-ready` gate distinguishes this from placeholder shaping: such a goal
 is shaped, but not operator-ready, until the discussion summary is visible before
-the Slice Log. A visible summary is a floor, not completion: before offering
-activation or reporting the goal ready, bring those items into the transcript
-and resolve or explicitly ask about them. Helper output may say
-`pursue_ready: true` because the artifact is structurally shaped, but
-`discussion_summary_present` must never be treated as proof that discussion is
-resolved.
+the Slice Log and explicitly marked resolved, confirmed, or approved. A visible
+summary is a floor, not completion: before offering activation or reporting the
+goal ready, bring those items into the transcript and resolve or explicitly ask
+about them. Helper output separates `shape_ready` from `activation_ready`;
+`pursue_ready` is the activation-ready signal and must be false while
+consequential discussion is only surfaced.
 
 ## During
 

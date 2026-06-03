@@ -9,7 +9,7 @@ from .support import (
     run_cli,
 )
 
-GOAL_PATH = "charness-artifacts/goals/2026-06-02-enforce-recent-lessons-broad-gate-lock.md"
+GOAL_PATH = "charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md"
 
 
 def _write_discussion_goal(repo: Path) -> Path:
@@ -69,7 +69,7 @@ def test_goal_check_resolves_relative_goal_path_under_target_repo(tmp_path: Path
     assert payload["path"] == str(target_goal.resolve())
 
 
-def test_goal_check_preserves_activation_discussion_warning(tmp_path: Path) -> None:
+def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> None:
     target_repo = tmp_path / "target"
     target_goal = _write_discussion_goal(target_repo)
 
@@ -86,12 +86,15 @@ def test_goal_check_preserves_activation_discussion_warning(tmp_path: Path) -> N
         "--json",
     )
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 1, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["pursue_ready"] is True
+    assert payload["pursue_ready"] is False
+    assert payload["activation_ready"] is False
+    assert payload["shape_ready"] is True
+    assert payload["discussion_resolved"] is False
     assert payload["path"] == str(target_goal.resolve())
-    assert "not proven resolved" in payload["activation_discussion_warning"]
-    assert "surfaced is not resolved" in payload["reason"]
+    assert "unresolved" in payload["activation_discussion_warning"]
+    assert "not marked resolved" in payload["reason"]
 
     concise = run_cli(
         "goal",
@@ -105,10 +108,10 @@ def test_goal_check_preserves_activation_discussion_warning(tmp_path: Path) -> N
         "--pursue-ready",
     )
 
-    assert concise.returncode == 0, concise.stderr
-    assert "PURSUE_READY: yes" in concise.stdout
+    assert concise.returncode == 1, concise.stderr
+    assert "PURSUE_READY: no" in concise.stdout
     assert "REASON:" in concise.stdout
-    assert "surfaced is not resolved" in concise.stdout
+    assert "not marked resolved" in concise.stdout
 
 
 def test_goal_check_help_names_stable_helper_surface() -> None:
