@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-06-02
+Date: 2026-06-03
 
 ## Scope
 
-Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.15.0` (tag `v0.15.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.13.5`
-- target version: `0.14.0`
+- previous version: `0.14.0`
+- target version: `0.15.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,27 +17,41 @@ Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.14.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.15.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
+
+## Release Adapter Preflight
+
+- Release adapter focused preflight status: `required`.
+- Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
+- Previous release ref: `refs/tags/v0.14.0`
+- Adapter paths in release delta:
+  - `.agents/release-adapter.yaml`
+- Changed adapter fields:
+  - `real_host_checklist`
+  - `update_instructions`
+- Focused preflight commands:
+  - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
+  - `pytest tests/quality_gates/test_release_real_host.py -q`
+  - `pytest tests/quality_gates/test_release_narrative_audit.py -q`
 
 ## Real-Host Verification
 
-- Captured real-host verification is recorded in `charness-artifacts/release/2026-06-02-v0.14.0-real-host-proof.md`.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
-- Release-time real-host proof: captured.
+- Release-time real-host proof is required for this slice.
 - On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
 - Run `charness tool doctor tokei --json` before installing `tokei` and confirm the missing-binary state still surfaces the upstream install document URL instead of a guessed package-manager command.
 - Install `tokei` through the manifest-supported path (`charness tool install tokei --json`, `cargo install tokei`, `brew install tokei`, or an upstream release binary), then verify `tokei --version`.
@@ -46,11 +60,7 @@ Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-02-release-v0.14.0-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.14.0`.
+- Review proof: `charness-artifacts/critique/2026-06-03-release-v0.15.0-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -61,13 +71,15 @@ Advanced `charness` toward release `0.14.0` (tag `v0.14.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.14.0 (minor release: stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates).
+- Run `charness update` to pull 0.15.0 (minor release: Corca-internal usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
+- NEW OPERATOR SURFACE - use `python3 scripts/report_usage_product_review.py --repo-root . --release-version <version> --json` to inspect privacy-safe last-seen usage review payloads. Add `--friction-threshold` or `--missed-detection-threshold` to preview reporter-only issue/comment packets; `--execute` remains explicit and redacts target refs in mutating comments by default.
+- Carried-forward from 0.14.0 - stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates remain part of the installed surface.
 - VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.
 - BEHAVIOR CHANGE (broad closeout lock) - `scripts/run_slice_closeout.py` refuses broad pytest unless `--verification-lock` is passed after the mutation set is locked. Use `--skip-broad-pytest` for pre-lock rehearsal of deterministic gates.
 - NEW OPERATOR SURFACE - use `charness goal check --repo-root . --goal-path <path> --pursue-ready` as the stable goal-helper surface instead of invoking versioned plugin-cache helper paths directly.
