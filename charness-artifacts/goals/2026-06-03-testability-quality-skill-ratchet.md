@@ -239,7 +239,8 @@ during the run:
 - Why this approach: The user asked whether the test-quality DSL/testability
   work belongs in `quality` or a separate skill; this slice keeps the public
   concept in `quality` while leaving stack-specific probes and DSLs repo-local.
-- Commits: `5035a2f7` Skillify boundary-bypass ratchet guidance.
+- Commits: `5035a2f7` Skillify boundary-bypass ratchet guidance;
+  `c6358960` Keep boundary-bypass payload tests in-process.
 - What changed: Added a stack-neutral boundary-bypass payload reference, a
   portable payload example, and a validator script under `quality`; expanded the
   testability reference to separate DSL ergonomics from structural testability
@@ -254,7 +255,9 @@ during the run:
   `quality` with matched trigger `testability`; changed-surface validators
   passed for packaging, markdown/docs/secrets, Cautilus proof policy, skills,
   public-skill policy/dogfood, ruff, py_compile, length, and attention-state
-  visibility; selected pytest surface passed (2108 passed, 4 skipped).
+  visibility; selected pytest surface passed (2108 passed, 4 skipped);
+  follow-up ratchet verification passed after converting the new payload
+  validator tests to in-process calls.
 - Test duplication pressure: Added one focused quality-gate test module with 2
   validator cases and one find-skills recommendation case in an existing module;
   this covers new portable contract and routing behavior rather than duplicating
