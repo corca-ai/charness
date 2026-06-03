@@ -16,28 +16,31 @@
 
 ## Current State
 
-- A rigorous `quality` pass closed the #283 mutation-regression hot spot in the
-  Codex session/token reporter: new direct unit tests
-  ([test_codex_session_audit_tokens.py](../tests/quality_gates/test_codex_session_audit_tokens.py))
-  plus `main` routing + non-ASCII tests in
-  [test_retro_codex_session_audit.py](../tests/quality_gates/test_retro_codex_session_audit.py).
-  Verified with targeted local cosmic-ray (tokens survivors 23→12, audit `main`
-  6→4; all residual are equivalent/annotation mutants). No production source
-  changed. Fresh artifact:
-  [quality latest](../charness-artifacts/quality/latest.md) (prior 2026-05-24 review
-  archived to `history/`).
-- #283 stays OPEN until the next scheduled mutation run on `main` confirms recovery
-  above the 80% threshold; the `mutation-tests.yml` auto-issue owns close/reopen.
-- Open issues: #283 (awaiting scheduled re-run), #282 (provider-safe goal closeout
-  metrics — closeout/retro design slice), #184 (product success metrics — needs
-  maintainer product judgment). #261/#273/#277 are closed.
+- Released **v0.16.0** ([release](../charness-artifacts/release/latest.md),
+  verified public) — resolved **#282** (provider-safe goal closeout metrics, now
+  CLOSED): deterministic `Host metric window:` recorder, standardized
+  provider-safe measured-vs-proxy renderer
+  (`probe_host_logs.py --format markdown`), a broad-gate attestation hook, and a
+  non-blocking `metric_window` closeout signal. Critiques:
+  [resolution](../charness-artifacts/critique/2026-06-03-issue-282-provider-safe-closeout-metrics-critique.md),
+  [release](../charness-artifacts/critique/2026-06-03-release-v0.16.0-critique.md).
+- The #283 mutation-survivor fix (`9fb08f6f`) shipped in v0.16.0. #283 stays OPEN
+  until the next scheduled `mutation-tests.yml` run on `main` confirms recovery
+  above 80%; that auto-issue owns close/reopen.
+- **Open release follow-up:** the v0.16.0 real-host checklist (clean
+  `charness update`, `tokei` doctor/install) is unrun — flagged by the
+  conservative `integrations-and-control-plane` trigger; the shipped code is
+  goal-metrics rendering, which does not touch the install runtime.
+- Open issues: #283 (awaiting scheduled re-run), #184 (product success — needs
+  maintainer judgment). #282/#261/#273/#277 are closed.
 
 ## Next Session
 
 1. After the next scheduled mutation run, confirm #283 cleared; otherwise inspect
    any remaining survived definitions.
-2. Pick #184 for product-success synthesis or #282 for the closeout/retro metrics
-   design slice.
+2. Run the v0.16.0 real-host smoke (clean `charness update` + `tokei`
+   doctor/install) on a second machine, or record an explicit waiver.
+3. Pick #184 for product-success synthesis.
 
 ## Discuss
 
