@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-03",
-  "source_artifact_count": 109,
-  "candidate_count": 685,
+  "source_artifact_count": 110,
+  "candidate_count": 693,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:7bf20297bbf0",
+      "kind": "current_focus",
+      "lesson": "The user pointed out that waste retros still appear not to happen automatically.",
+      "normalized_key": "the user pointed out that waste retros still appear not to happen automatically",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:0bdc6ddfb163",
       "kind": "current_focus",
@@ -55,6 +75,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:82804c86c0c7",
+      "kind": "next_improvement",
+      "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
+      "normalized_key": "add an explicit release helper handoff field such as retro trigger evaluation that records",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e7572d16f645",
+      "kind": "next_improvement",
+      "lesson": "Filed issue #281 so this does not remain a prose-only retro lesson.",
+      "normalized_key": "filed issue 281 so this does not remain a prose only retro lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7944ea2604ac",
       "kind": "next_improvement",
       "lesson": "for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter.",
@@ -69,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9b3fcb941126",
+      "kind": "next_improvement",
+      "lesson": "In release/goal closeout, run `check_auto_trigger.py --paths <release-delta-paths>` before the tree is cleaned, or persist the changed-path list from the helper so post-publish retro can evaluate the same slice.",
+      "normalized_key": "in release goal closeout run check auto trigger py paths release delta paths before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -171,92 +251,32 @@
           "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:229e99ec6ed3",
-      "kind": "repeat_trap",
-      "lesson": "I accidentally ran `upsert_goal.py` without `--date` when activating the existing 2026-06-02 goal. That created a duplicate 2026-06-03 goal artifact, which I had to delete before continuing.",
-      "normalized_key": "i accidentally ran upsert goal py without date when activating the existing 2026 06",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c1b5b357c7a1",
-      "kind": "repeat_trap",
-      "lesson": "I initially treated `first_value_ref` too much like user-value evidence. The user correctly pushed back that Charness almost always leaves artifacts, so artifact existence cannot stand in for satisfaction. The resulting design is better: first-value is only an evidence floor; satisfaction and friction are separate signals.",
-      "normalized_key": "i initially treated first value ref too much like user value evidence the user",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:fd846b282430",
-      "kind": "repeat_trap",
-      "lesson": "The first implementation copied the policy phrase \"one emitter\" into prose but only checked trigger and entry point in code. Fresh-eye review caught the gap; the final helper now checks `single_emitter`.",
-      "normalized_key": "the first implementation copied the policy phrase one emitter into prose but only checked",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2854e095f550",
-      "kind": "repeat_trap",
-      "lesson": "The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop.",
-      "normalized_key": "the first reporter version reached fresh eye review with several privacy and execution edge",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
-          "date": "2026-06-03",
-          "section": "Waste"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:7bf20297bbf0",
+      "kind": "current_focus",
+      "lesson": "The user pointed out that waste retros still appear not to happen automatically.",
+      "normalized_key": "the user pointed out that waste retros still appear not to happen automatically",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0bdc6ddfb163",
       "kind": "current_focus",
       "lesson": "This retro covers the #184 usage-episode consume-policy goal.",
@@ -297,6 +317,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:82804c86c0c7",
+      "kind": "next_improvement",
+      "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
+      "normalized_key": "add an explicit release helper handoff field such as retro trigger evaluation that records",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e7572d16f645",
+      "kind": "next_improvement",
+      "lesson": "Filed issue #281 so this does not remain a prose-only retro lesson.",
+      "normalized_key": "filed issue 281 so this does not remain a prose only retro lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7944ea2604ac",
       "kind": "next_improvement",
       "lesson": "for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter.",
@@ -311,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9b3fcb941126",
+      "kind": "next_improvement",
+      "lesson": "In release/goal closeout, run `check_auto_trigger.py --paths <release-delta-paths>` before the tree is cleaned, or persist the changed-path list from the helper so post-publish retro can evaluate the same slice.",
+      "normalized_key": "in release goal closeout run check auto trigger py paths release delta paths before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -417,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:16f2aa5c0bbe",
+      "kind": "repeat_trap",
+      "lesson": "`check_auto_trigger.py` is state-sensitive: once a helper commits and pushes the release, the current diff is empty and the trigger cannot reconstruct the just-finished slice.",
+      "normalized_key": "check auto trigger py is state sensitive once a helper commits and pushes the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:229e99ec6ed3",
       "kind": "repeat_trap",
       "lesson": "I accidentally ran `upsert_goal.py` without `--date` when activating the existing 2026-06-02 goal. That created a duplicate 2026-06-03 goal artifact, which I had to delete before continuing.",
@@ -457,6 +557,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ff5c64d9e7c3",
+      "kind": "repeat_trap",
+      "lesson": "Release publishing performs critique, quality, public verification, and issue closeout, but it does not run a post-publish waste retro or preserve the changed-path set for `retro` to evaluate afterward.",
+      "normalized_key": "release publishing performs critique quality public verification and issue closeout but it does not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c76f23dd825d",
+      "kind": "repeat_trap",
+      "lesson": "The final user-facing report can honestly say the goal retro exists while still failing to explain the structural waste pattern that appeared during the release/publish tail.",
+      "normalized_key": "the final user facing report can honestly say the goal retro exists while still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:fd846b282430",
       "kind": "repeat_trap",
       "lesson": "The first implementation copied the policy phrase \"one emitter\" into prose but only checked trigger and entry point in code. Fresh-eye review caught the gap; the final helper now checks `single_emitter`.",
@@ -491,6 +631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4d1f13dd1e3f",
+      "kind": "repeat_trap",
+      "lesson": "The phrase \"automatic retro\" is overloaded. In `achieve`, it means a required After-phase step for goal operators. In `retro`, it means a narrow adapter-triggered check over current changed paths. Those are not the same mechanism.",
+      "normalized_key": "the phrase automatic retro is overloaded in achieve it means a required after phase",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
           "date": "2026-06-03",
           "section": "Waste"
         }

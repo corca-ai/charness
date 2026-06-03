@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- The user pointed out that waste retros still appear not to happen automatically. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 - This retro covers the #184 usage-episode consume-policy goal. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
-- This retro covers the #280 goal slice that added a Corca-internal last-seen product-review reporter for usage episodes. (source: `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`)
 
 ## Repeat Traps
 
+- `check_auto_trigger.py` is state-sensitive: once a helper commits and pushes the release, the current diff is empty and the trigger cannot reconstruct the just-finished slice. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 - I accidentally ran `upsert_goal.py` without `--date` when activating the existing 2026-06-02 goal. That created a duplicate 2026-06-03 goal artifact, which I had to delete before continuing. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
 - I initially treated `first_value_ref` too much like user-value evidence. The user correctly pushed back that Charness almost always leaves artifacts, so artifact existence cannot stand in for satisfaction. The resulting design is better: first-value is only an evidence floor; satisfaction and friction are separate signals. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
-- The first implementation copied the policy phrase "one emitter" into prose but only checked trigger and entry point in code. Fresh-eye review caught the gap; the final helper now checks `single_emitter`. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
-- The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop. (source: `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`)
+- Release publishing performs critique, quality, public verification, and issue closeout, but it does not run a post-publish waste retro or preserve the changed-path set for `retro` to evaluate afterward. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 
 ## Next-Time Checklist
 
+- Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
+- Filed issue #281 so this does not remain a prose-only retro lesson. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 - for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter. (source: `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`)
-- keep product-evidence logic out of the main report script once it grows beyond a simple summary. Disposition: applied by extracting `scripts/usage_episode_product_evidence.py`. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
-- no new gate needed. Existing fresh-eye critique plus `run_slice_closeout` caught the issue before commit; the right improvement was targeted tests and the dogfood registry note, both committed in this slice. (source: `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`)
-- product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact. (source: `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`)
+- In release/goal closeout, run `check_auto_trigger.py --paths <release-delta-paths>` before the tree is cleaned, or persist the changed-path list from the helper so post-publish retro can evaluate the same slice. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 
 ## Selection Policy
 
@@ -29,3 +29,4 @@
 
 - `charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md`
 - `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`
+- `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`
