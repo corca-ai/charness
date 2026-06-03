@@ -277,7 +277,7 @@ during the run:
   only prevent new debt. The current clean `inventory_*` backlog had one
   candidate: `tests/quality_gates/test_quality_handoff_inventory.py` calling
   `scripts/inventory_quality_handoff.py` via `run_script`.
-- Commits:
+- Commits: `03ff7d9a` Convert quality handoff inventory tests in-process.
 - What changed: Loaded `inventory_quality_handoff.py` in-process with
   `spec_from_file_location` and called `inventory_quality_handoff()` directly
   on the temporary artifact text; removed subprocess result/stdout assertions
