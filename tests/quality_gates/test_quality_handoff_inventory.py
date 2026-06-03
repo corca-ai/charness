@@ -1,9 +1,19 @@
 from __future__ import annotations
 
-import json
+import importlib.util
+import sys
 from pathlib import Path
 
-from .support import run_script
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+SPEC = importlib.util.spec_from_file_location(
+    "inventory_quality_handoff", SCRIPTS / "inventory_quality_handoff.py"
+)
+assert SPEC is not None and SPEC.loader is not None
+inventory = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(inventory)
 
 
 def test_inventory_quality_handoff_reports_missing_fields(tmp_path: Path) -> None:
@@ -26,10 +36,7 @@ def test_inventory_quality_handoff_reports_missing_fields(tmp_path: Path) -> Non
         encoding="utf-8",
     )
 
-    result = run_script("scripts/inventory_quality_handoff.py", "--artifact", str(artifact), "--json")
-
-    assert result.returncode == 0, result.stderr
-    report = json.loads(result.stdout)
+    report = inventory.inventory_quality_handoff(artifact.read_text(encoding="utf-8"), str(artifact))
     assert report["status"] == "advisory"
     assert report["findings"][0]["type"] == "missing_hitl_handoff"
     assert "review_question" in report["findings"][0]["missing_fields"]
@@ -58,8 +65,5 @@ def test_inventory_quality_handoff_accepts_hitl_handoff_shape(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script("scripts/inventory_quality_handoff.py", "--artifact", str(artifact), "--json")
-
-    assert result.returncode == 0, result.stderr
-    report = json.loads(result.stdout)
+    report = inventory.inventory_quality_handoff(artifact.read_text(encoding="utf-8"), str(artifact))
     assert report["findings"] == []

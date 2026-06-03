@@ -17,10 +17,9 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — first backlog conversion cluster.
-- Next action: convert the first clean import-safe `inventory_*` tests from
-  subprocess boundary assertions to in-process calls where the target does not
-  shell out internally, preserving one thin real-boundary smoke where needed.
+- Current slice: Slice 6 — sync, critique, broad verification, closeout.
+- Next action: run the final bounded critique and broad quality proof, then
+  complete the goal artifact with honest non-claims and retro dispositions.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -135,7 +134,7 @@ What the user can do to verify completion directly:
 | 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | done |
 | 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | done |
 | 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | done |
-| 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | pending |
+| 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | done |
 | 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | pending |
 
 Test-duplication pressure expectation:
@@ -269,6 +268,41 @@ during the run:
   boundary bypass pressure, not author stack-specific DSLs.
 - Metrics: `skills/public/quality/SKILL.md` is 198 lines after adding the new
   reference, below the 200-line skill cap.
+
+### Slice 5: First backlog conversion cluster
+
+- Objective: Convert the first clean import-safe `inventory_*` boundary-bypass
+  test from subprocess execution to an in-process call.
+- Why this approach: The ratchet should point to real structural cleanup, not
+  only prevent new debt. The current clean `inventory_*` backlog had one
+  candidate: `tests/quality_gates/test_quality_handoff_inventory.py` calling
+  `scripts/inventory_quality_handoff.py` via `run_script`.
+- Commits:
+- What changed: Loaded `inventory_quality_handoff.py` in-process with
+  `spec_from_file_location` and called `inventory_quality_handoff()` directly
+  on the temporary artifact text; removed subprocess result/stdout assertions
+  from the two focused tests.
+- Alternatives rejected: Exempting the test as a boundary contract; keeping a
+  CLI smoke in the same file. These tests assert advisory finding semantics, not
+  packaging, exit code, stderr, or process environment.
+- Targeted verification: `python3 -m pytest
+  tests/quality_gates/test_quality_handoff_inventory.py
+  tests/quality_gates/test_boundary_bypass_payload_validator.py` (4 passed);
+  `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed with
+  95 candidates and 53 clean-convertible; the clean `inventory_*` candidate
+  query returned 0; full ruff, Python length, attention-state visibility, and
+  selected pytest surface passed (2108 passed, 4 skipped).
+- Test duplication pressure: No new tests added; this was an in-place
+  subprocess-to-in-process conversion of two existing assertions.
+- Critique: Final bounded critique remains scheduled for Slice 6.
+- Off-goal findings: Slice 4 initially added one boundary-bypass candidate in
+  the new payload validator tests; fixed in the Slice 4 follow-up before this
+  conversion started.
+- Lessons carried forward: New quality-gate tests should import the behavior
+  seam first and reserve subprocess execution for explicit CLI contracts.
+- Metrics: Boundary-bypass ratchet improved from baseline 96 candidates / 54
+  clean-convertible to 95 candidates / 53 clean-convertible; clean
+  `inventory_*` backlog is now 0.
 
 ## Context Sources
 
