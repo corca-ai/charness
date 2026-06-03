@@ -51,13 +51,12 @@ lifecycle instead of starting a new one.
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`
    - for consequential defaults in Non-Goals, Boundaries, verification,
-     interview decisions, or critique findings (live/prod proof,
-     issue close/split, broad bundled scope, irreversible side effects, or
-     proof-level non-claims), add a non-empty `Discuss before activation:`
-     summary and resolve or explicitly ask about those items in the transcript
-     before reporting the goal ready to enter or offering activation; otherwise
-     `--pursue-ready` fails, and a present summary is still not proof that the
-     discussion is resolved
+     interview decisions, or critique findings (live/prod proof, issue
+     close/split, broad scope, irreversible side effects, or proof-level
+     non-claims), add a non-empty `Discuss before activation:` summary and
+     resolve or explicitly ask before reporting the goal ready or offering
+     activation; `--pursue-ready` fails on missing/unresolved activation
+     discussion, and a present summary is not proof of resolution
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself

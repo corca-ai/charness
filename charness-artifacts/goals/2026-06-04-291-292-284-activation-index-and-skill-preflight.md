@@ -18,9 +18,10 @@ proof unless a later slice explicitly runs and records it.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5, #284 pre-edit preflight contract.
-- Next action: read #284 current tracker state and emit the feature/deferred-work
-  resolution brief before mutation.
+- Current slice: Slice 7, bundle critique, broad verification, issue closeout,
+  and handoff refresh.
+- Next action: finish surface-driven validators for the #284 helper, commit the
+  slice, then run final critique and broad verification.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -163,8 +164,8 @@ What the user can do to verify completion directly:
 | 2 | Implement #291 checker and guidance fix | The rest of this goal should operate under the stricter activation-readiness model | Updated checker fields/behavior, achieve guidance, targeted tests | done |
 | 3 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | done |
 | 4 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | done |
-| 5 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | pending |
-| 6 | Implement #284 preflight | Add the authoring signal while reusing existing validators and preserving portability | Helper/CLI behavior, tests for headroom and coupling output, generated/plugin sync | pending |
+| 5 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | done |
+| 6 | Implement #284 preflight | Add the authoring signal while reusing existing validators and preserving portability | Helper/CLI behavior, tests for headroom and coupling output, generated/plugin sync | done |
 | 7 | Bundle critique, broad verification, issue closeout, handoff refresh | Close the tracked issues only after the proof and next-session state are durable | Fresh-eye critique, run-quality, issue closeout validation/verification, updated handoff if needed | pending |
 
 Test-duplication pressure expectation:
@@ -234,7 +235,7 @@ during the run:
 
 - Objective: Make unresolved consequential activation discussion fail the pursue-ready gate instead of returning warning-only success.
 - Why this approach: #291 blocks the rest of this goal from relying on the same misleading activation signal.
-- Commits: pending
+- Commits: b7c62cf1
 - What changed: Updated achieve discussion/readiness helpers, achieve prose, plugin mirrors, CLI/helper tests, debug RCA artifact, debug seam-risk index, and this goal artifact.
 - Alternatives rejected: Keeping pursue_ready true with a warning; adding activation_ready while leaving CLI exit 0; treating any summary text as resolved.
 - Targeted verification: Focused pytest: 55 passed; active goal local check reports shape_ready=true, activation_ready=true, pursue_ready=true; packaging, skills, ruff, debug artifact/index, markdown/docs/secrets, public skill policy/dogfood, attention visibility, and length checks passed.
@@ -248,7 +249,7 @@ during the run:
 
 - Objective: Remove real parent repo index access from the staged mirror drift e2e quality test while preserving staged-index gate coverage.
 - Why this approach: The pre-push flake came from standing pytest running git write-tree against the shared parent worktree during git hook/push state.
-- Commits: pending
+- Commits: d2a0e9fa
 - What changed: Replaced the real-ROOT staged mirror drift e2e test with an isolated seeded Charness git repo copy; added a static regression guard against reintroducing check_staged_mirror_drift.py with --repo-root str(ROOT); added #292 debug RCA artifact and refreshed seam-risk index.
 - Alternatives rejected: Changing the production gate to use HEAD; marking the real-index e2e serial only; removing e2e coverage.
 - Targeted verification: Focused pytest: tests/quality_gates/test_closeout_headroom_and_mirror_gate.py (7 passed); ruff on the test file; length headroom 141/800; markdown/docs/secrets; debug artifact and seam-risk index validation.
@@ -257,6 +258,20 @@ during the run:
 - Off-goal findings: #284 should carry real parent repo index access as a preflight hazard; already in the active goal.
 - Lessons carried forward: A test can be filesystem read-only but still unsafe for shared git state; index-sensitive git commands need private repo roots in standing pytest.
 - Metrics: No broad duplicate sample yet; this slice changed one test file and one debug artifact plus generated seam-risk index.
+
+### Slice 3: Implement #284 skill-surface preflight
+
+- Objective: Add a cheap pre-edit command for skill-surface edits that reports SKILL.md total/core headroom and known coupling hazards before broad quality.
+- Why this approach: #284 is deferred-work quality tooling; a repo-local helper gives authors an early signal without changing public skill behavior or replacing broad quality.
+- Commits: pending
+- What changed: Added scripts/check_skill_surface_preflight.py with human/JSON output, preview-delta blocking for SKILL.md additions, optional targeted check execution, coupling output for validate-skills, markdown inline spans, doc links, plugin mirror sync, reference link depth, and staged-index hazards. Added focused tests and documented the preflight in implementation discipline. Trimmed achieve/SKILL.md back to core 160 after the new helper exposed the current #291 prose breach, then synced plugin mirrors.
+- Alternatives rejected: Changing validate_skill_ergonomics into a broader mode; running staged mirror drift against the shared repo as part of preflight; making the helper prose-only without an executable signal.
+- Targeted verification: Focused pytest tests/quality_gates/test_skill_surface_preflight.py: 3 passed; ruff on new helper/test: passed; validate_skills: 23 packages; preflight on skills/public/achieve/SKILL.md: total 190/200, core 160/160, status ok; markdown inline spans and doc links passed.
+- Test duplication pressure: Added one focused test module for a new command surface; cases cover SKILL.md ceiling blocking, references preview not consuming SKILL.md headroom, and invalid non-skill paths.
+- Critique: Same-slice causal check: the helper caught an existing achieve core breach before broad quality, proving the pre-edit signal targets the intended waste class. Fresh-eye bundle critique remains scheduled for final closeout.
+- Off-goal findings: None.
+- Lessons carried forward: A useful preflight should block only previewed breaches, but still report zero headroom loudly enough that authors avoid adding to saturated SKILL.md core.
+- Metrics: New script headroom: 235/480 code lines; new test headroom: 100/800 code lines.
 
 ## Context Sources
 

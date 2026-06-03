@@ -33,6 +33,11 @@ the root instruction file but still apply to Charness maintenance work.
   The advisory never blocks on near-limit status; the existing length gate is
   the hard floor. Function limits remain AST-span based because `tokei` does not
   report function-level counts.
+- Before adding prose to `skills/public/*/SKILL.md`, `skills/support/*/SKILL.md`,
+  or their `references/*.md`, run
+  `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <planned-lines>`;
+  it reports SKILL.md total/core headroom plus markdown, doc-link, mirror-sync,
+  and staged-index couplings before the broad gate.
 - When deleting a public symbol or named concept, run
   `python3 scripts/check_symbol_residue.py --repo-root .` before closeout. It is
   advisory by design (#259): it scans deleted Python symbols and common phrase
