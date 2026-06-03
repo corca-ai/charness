@@ -30,12 +30,16 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.16.0 (minor release: provider-safe, goal-scoped closeout metrics for `achieve`/`retro` — #282).
+- Run `charness update` to pull 0.17.0 (minor release: testability quality ratchet and reusable quality routing).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
-- NEW CLOSEOUT BEHAVIOR (#282) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window now surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
-- RELIABILITY (#283) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
-- NEW VALIDATOR MODE - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
+- NEW QUALITY RATCHET - `quality` now owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
+- NEW ROUTING - `find-skills` now routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
+- HANDOFF QUEUE - the checked-in handoff now marks the ratchet goal complete and queues the next session for #284 first, then #286, with #285 only if #286 exposes live-issue fixture brittleness.
+- RUNTIME BUDGET - the local x86_64/default `check-duplicates` budget is now 13.0s, matching the current release-path workload while remaining an enforced budget below the slower aarch64 profile.
+- Carried-forward (0.16.0) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
+- Carried-forward (0.16.0) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
+- Carried-forward (0.16.0) - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
 - Carried-forward (0.15.0) - the Corca-internal `report_usage_product_review.py` usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets remains available (`--execute` stays explicit and redacts target refs in mutating comments by default).
 - Carried-forward from 0.14.0 - stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates remain part of the installed surface.
 - VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.
