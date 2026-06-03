@@ -11,184 +11,9 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-03",
-  "source_artifact_count": 116,
+  "source_artifact_count": 115,
   "candidate_count": 726,
   "top_candidates": [
-    {
-      "candidate_id": "current_focus:8b5ee64b708f",
-      "kind": "current_focus",
-      "lesson": "Reviewed the active achieve goal that turned the boundary-bypass advisory probe into a no-increase ratchet, skillified the portable `quality` contract, and converted the first clean `inventory_*` boundary-bypass test in-process.",
-      "normalized_key": "reviewed the active achieve goal that turned the boundary bypass advisory probe into a",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Context"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7d76259270d0",
-      "kind": "next_improvement",
-      "lesson": "applied: Encode portable boundary-bypass invariants as validator-enforced fields, not only reference prose.",
-      "normalized_key": "applied encode portable boundary bypass invariants as validator enforced fields not only reference prose",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a3851135759b",
-      "kind": "next_improvement",
-      "lesson": "applied: Keep new quality-gate tests in-process by default; subprocess tests need an explicit CLI-contract reason.",
-      "normalized_key": "applied keep new quality gate tests in process by default subprocess tests need an",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2def501f266d",
-      "kind": "next_improvement",
-      "lesson": "applied: Make fresh-eye critique precede the final broad gate when the critique can still change prompt/public contract surfaces.",
-      "normalized_key": "applied make fresh eye critique precede the final broad gate when the critique can",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:1e61d35c7a08",
-      "kind": "repeat_trap",
-      "lesson": "I ran a broad final gate before the fresh-eye critique was consumed, then had to rerun it after real critique findings changed the public contract.",
-      "normalized_key": "i ran a broad final gate before the fresh eye critique was consumed then",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cc025dce0e0c",
-      "kind": "repeat_trap",
-      "lesson": "The first public payload contract under-specified two machine invariants already used by the repo-local ratchet: candidate keys and clean/internal target disjointness.",
-      "normalized_key": "the first public payload contract under specified two machine invariants already used by the",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:34aa0f350476",
-      "kind": "repeat_trap",
-      "lesson": "The first Slice 4 payload validator test accidentally added a new boundary-bypass candidate, proving the new ratchet was useful but costing an extra correction pass.",
-      "normalized_key": "the first slice 4 payload validator test accidentally added a new boundary bypass candidate",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
     {
       "candidate_id": "current_focus:cd23cf174ad3",
       "kind": "current_focus",
@@ -204,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:8b5ee64b708f",
+      "kind": "current_focus",
+      "lesson": "Reviewed the active achieve goal that turned the boundary-bypass advisory probe into a no-increase ratchet, skillified the portable `quality` contract, and converted the first clean `inventory_*` boundary-bypass test in-process.",
+      "normalized_key": "reviewed the active achieve goal that turned the boundary bypass advisory probe into a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
           "date": "2026-06-03",
           "section": "Context"
         }
@@ -288,184 +133,129 @@
           "section": "Context"
         }
       ]
+    },
+    {
+      "candidate_id": "current_focus:a58ec8b618f9",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active achieve goal `charness-artifacts/goals/2026-06-03-281-automatic-waste-retro-closeout.md`, which fixed the automatic waste-retro closeout gap and closed GitHub issue #281.",
+      "normalized_key": "this retro covers the active achieve goal charness artifacts goals 2026 06 03 281",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:895405ea3179",
+      "kind": "current_focus",
+      "lesson": "검토 대상: 이번 세션에서 #282(provider-safe goal closeout metrics) 해결, #283 뮤테이션 수정 푸시, v0.16.0 릴리스 발행, 두 번의 fresh-eye 서브에이전트 크리틱.",
+      "normalized_key": "검토 대상 이번 세션에서 282 provider safe goal closeout metrics 해결 283 뮤테이션 수정",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-282-283-release-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-282-283-release-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ad6738377346",
+      "kind": "current_focus",
+      "lesson": "다음에 중요한 것: 같은 결합면(handoff·near-limit 헬퍼) 편집에서 반복되는 재작업을 줄이는 것.",
+      "normalized_key": "다음에 중요한 것 같은 결합면 handoff near limit 헬퍼 편집에서 반복되는 재작업을 줄이는 것",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-282-283-release-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-282-283-release-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8987c07160a6",
+      "kind": "next_improvement",
+      "lesson": "a `--report-all` (collect-all) mode for `validate_quality_artifact.py` and peers would surface every violation in one pass; 21 `validate_*.py` raise on the first error today vs 10 that already collect failures. Optional candidate, not committed here.",
+      "normalized_key": "a report all collect all mode for validate quality artifact py and peers would",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:82804c86c0c7",
+      "kind": "next_improvement",
+      "lesson": "Add an explicit release-helper handoff field such as `retro_trigger_evaluation` that records `triggered`, `paths`, and whether a bounded session retro was written or intentionally skipped.",
+      "normalized_key": "add an explicit release helper handoff field such as retro trigger evaluation that records",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e75d196995ff",
+      "kind": "next_improvement",
+      "lesson": "applied: Declare the new skipped attention state for release-retro closeout so skipped trigger status cannot masquerade as a clean closeout proof.",
+      "normalized_key": "applied declare the new skipped attention state for release retro closeout so skipped trigger",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
     }
   ],
   "candidates": [
-    {
-      "candidate_id": "current_focus:8b5ee64b708f",
-      "kind": "current_focus",
-      "lesson": "Reviewed the active achieve goal that turned the boundary-bypass advisory probe into a no-increase ratchet, skillified the portable `quality` contract, and converted the first clean `inventory_*` boundary-bypass test in-process.",
-      "normalized_key": "reviewed the active achieve goal that turned the boundary bypass advisory probe into a",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Context"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7d76259270d0",
-      "kind": "next_improvement",
-      "lesson": "applied: Encode portable boundary-bypass invariants as validator-enforced fields, not only reference prose.",
-      "normalized_key": "applied encode portable boundary bypass invariants as validator enforced fields not only reference prose",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a3851135759b",
-      "kind": "next_improvement",
-      "lesson": "applied: Keep new quality-gate tests in-process by default; subprocess tests need an explicit CLI-contract reason.",
-      "normalized_key": "applied keep new quality gate tests in process by default subprocess tests need an",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2def501f266d",
-      "kind": "next_improvement",
-      "lesson": "applied: Make fresh-eye critique precede the final broad gate when the critique can still change prompt/public contract surfaces.",
-      "normalized_key": "applied make fresh eye critique precede the final broad gate when the critique can",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Next Improvements"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:1e61d35c7a08",
-      "kind": "repeat_trap",
-      "lesson": "I ran a broad final gate before the fresh-eye critique was consumed, then had to rerun it after real critique findings changed the public contract.",
-      "normalized_key": "i ran a broad final gate before the fresh eye critique was consumed then",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cc025dce0e0c",
-      "kind": "repeat_trap",
-      "lesson": "The first public payload contract under-specified two machine invariants already used by the repo-local ratchet: candidate keys and clean/internal target disjointness.",
-      "normalized_key": "the first public payload contract under specified two machine invariants already used by the",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:34aa0f350476",
-      "kind": "repeat_trap",
-      "lesson": "The first Slice 4 payload validator test accidentally added a new boundary-bypass candidate, proving the new ratchet was useful but costing an extra correction pass.",
-      "normalized_key": "the first slice 4 payload validator test accidentally added a new boundary bypass candidate",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-      "latest_source_date": "2026-06-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.14,
-      "selection_weight": 1.14,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/.tmp-testability-quality-ratchet-retro.md",
-          "date": null,
-          "section": "Waste"
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste"
-        }
-      ]
-    },
     {
       "candidate_id": "current_focus:cd23cf174ad3",
       "kind": "current_focus",
@@ -481,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:8b5ee64b708f",
+      "kind": "current_focus",
+      "lesson": "Reviewed the active achieve goal that turned the boundary-bypass advisory probe into a no-increase ratchet, skillified the portable `quality` contract, and converted the first clean `inventory_*` boundary-bypass test in-process.",
+      "normalized_key": "reviewed the active achieve goal that turned the boundary bypass advisory probe into a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
           "date": "2026-06-03",
           "section": "Context"
         }
@@ -687,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7d76259270d0",
+      "kind": "next_improvement",
+      "lesson": "applied: Encode portable boundary-bypass invariants as validator-enforced fields, not only reference prose.",
+      "normalized_key": "applied encode portable boundary bypass invariants as validator enforced fields not only reference prose",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:dd4a1e30da38",
       "kind": "next_improvement",
       "lesson": "applied: Freeze the release-retro trigger behavior with tests that cover commit-range detection, pre-release delta hits, helper-generated packaging path hits, and persisted retro closeout artifacts.",
@@ -707,6 +537,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a3851135759b",
+      "kind": "next_improvement",
+      "lesson": "applied: Keep new quality-gate tests in-process by default; subprocess tests need an explicit CLI-contract reason.",
+      "normalized_key": "applied keep new quality gate tests in process by default subprocess tests need an",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:ada8c15257c7",
       "kind": "next_improvement",
       "lesson": "applied: Keep new release-helper behavior in helper modules instead of growing `publish_release_cli.py`; this run added `publish_release_plan.py` and `publish_release_retro.py`.",
@@ -721,6 +571,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2def501f266d",
+      "kind": "next_improvement",
+      "lesson": "applied: Make fresh-eye critique precede the final broad gate when the critique can still change prompt/public contract surfaces.",
+      "normalized_key": "applied make fresh eye critique precede the final broad gate when the critique can",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -1147,6 +1017,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:1e61d35c7a08",
+      "kind": "repeat_trap",
+      "lesson": "I ran a broad final gate before the fresh-eye critique was consumed, then had to rerun it after real critique findings changed the public contract.",
+      "normalized_key": "i ran a broad final gate before the fresh eye critique was consumed then",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:c1c0706814e0",
       "kind": "repeat_trap",
       "lesson": "Minor: 4 manual poll/sleep loops waiting on background cosmic-ray, partly redundant with the harness's background-completion notifications.",
@@ -1287,6 +1177,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:cc025dce0e0c",
+      "kind": "repeat_trap",
+      "lesson": "The first public payload contract under-specified two machine invariants already used by the repo-local ratchet: candidate keys and clean/internal target disjointness.",
+      "normalized_key": "the first public payload contract under specified two machine invariants already used by the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2854e095f550",
       "kind": "repeat_trap",
       "lesson": "The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop.",
@@ -1301,6 +1211,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:34aa0f350476",
+      "kind": "repeat_trap",
+      "lesson": "The first Slice 4 payload validator test accidentally added a new boundary-bypass candidate, proving the new ratchet was useful but costing an extra correction pass.",
+      "normalized_key": "the first slice 4 payload validator test accidentally added a new boundary bypass candidate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md",
           "date": "2026-06-03",
           "section": "Waste"
         }

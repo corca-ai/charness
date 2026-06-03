@@ -17,31 +17,31 @@
 ## Current State
 
 - Released **v0.16.0** ([release](../charness-artifacts/release/latest.md),
-  verified public) — resolved **#282** (provider-safe goal closeout metrics, now
-  CLOSED): deterministic `Host metric window:` recorder, standardized
-  provider-safe measured-vs-proxy renderer
-  (`probe_host_logs.py --format markdown`), a broad-gate attestation hook, and a
-  non-blocking `metric_window` closeout signal. Critiques:
-  [resolution](../charness-artifacts/critique/2026-06-03-issue-282-provider-safe-closeout-metrics-critique.md),
-  [release](../charness-artifacts/critique/2026-06-03-release-v0.16.0-critique.md).
-- The #283 mutation-survivor fix (`9fb08f6f`) shipped in v0.16.0. #283 stays OPEN
-  until the next scheduled `mutation-tests.yml` run on `main` confirms recovery
-  above 80%; that auto-issue owns close/reopen.
+  verified public) — resolved #282 and shipped the #283 mutation-survivor fix.
 - **Open release follow-up:** the v0.16.0 real-host checklist (clean
   `charness update`, `tokei` doctor/install) is unrun — flagged by the
   conservative `integrations-and-control-plane` trigger; the shipped code is
   goal-metrics rendering, which does not touch the install runtime.
-- Open issues: #283 (awaiting scheduled re-run), #184 (product success — needs
-  maintainer judgment). #282/#261/#273/#277 are closed.
-- **Testability + test-DSL initiative**: shipped the DSL (`1e857cf0`) and
-  advisory probe (`52d578ca`); the ratchet work now runs under the active
-  [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md).
+- Open issues: #289/#288/#287/#286/#285/#284 plus #184. #283 is no longer in
+  the live open-issue list.
+- **Testability + test-DSL initiative**: completed the
+  [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md):
+  boundary-bypass no-increase ratchet is wired into quality, the portable
+  `quality` payload/ratchet contract is skillified, and the first clean
+  `inventory_*` bypass cluster is converted in-process.
 
 ## Next Session
 
-1. After the next scheduled mutation run, confirm #283 cleared; otherwise inspect
-   any remaining survived definitions.
-2. Pick #184 for product-success synthesis; v0.16.0 real-host smoke also remains pending.
+1. Pick **#284** first: add a pre-edit preflight for skill-surface edits
+   (headroom, coupling, markdown spans, mirror sync) so the ratchet-goal waste
+   does not repeat.
+2. Then pick **#286**: make handoff chunker propose agentic work packages, not
+   ranked issue lists.
+3. Then pick **#285** if #286 exposes live-issue fixture brittleness: stop
+   hard-pinning live issue numbers in tests.
+4. Keep **#184** for product-success synthesis after the workflow-hardening
+   pair above; v0.16.0 real-host smoke also remains pending unless the release
+   closeout updates it.
 
 ## Discuss
 
@@ -53,9 +53,6 @@
   status/diff/check commands, polling, and broad-gate cadence.
 - #261's remaining coordination-cues survivors are policy residue after the
   mechanical hardening path, not another #273 coverage fix.
-- If a future bare handoff pickup offers setup checks, completed goals, or
-  cadence constraints as choices, inspect the parser filter before blaming the
-  handoff prose.
 - For future workflow-improvement goals, one startup `find-skills` pass remains
   mandatory; use read-only/`--summary` recommendation probes at real routing
   boundaries and slice/bundle fresh-eye critique instead of per-commit review.
@@ -67,4 +64,3 @@
 - [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md)
 - [mutation recovery goal](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md),
   [mutation recovery carrier](../charness-artifacts/issue/2026-06-01-273-261-mutation-gate-recovery.md)
-- [workflow review efficiency goal](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md)
