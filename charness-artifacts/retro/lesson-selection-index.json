@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-03",
-  "source_artifact_count": 108,
-  "candidate_count": 679,
+  "source_artifact_count": 109,
+  "candidate_count": 685,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0bdc6ddfb163",
@@ -31,6 +31,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
           "date": "2026-06-03",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:398d2b3dee6e",
+      "kind": "current_focus",
+      "lesson": "This retro covers the #280 goal slice that added a Corca-internal last-seen product-review reporter for usage episodes.",
+      "normalized_key": "this retro covers the 280 goal slice that added a corca internal last seen",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7944ea2604ac",
+      "kind": "next_improvement",
+      "lesson": "for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter.",
+      "normalized_key": "for reporter scripts that can mutate external state write edge fixtures before broad happy",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -55,6 +95,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e37de827734b",
+      "kind": "next_improvement",
+      "lesson": "no new gate needed. Existing fresh-eye critique plus `run_slice_closeout` caught the issue before commit; the right improvement was targeted tests and the dogfood registry note, both committed in this slice.",
+      "normalized_key": "no new gate needed existing fresh eye critique plus run slice closeout caught the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a6f0d5c8acf0",
       "kind": "next_improvement",
       "lesson": "product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact.",
@@ -69,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ff00ceb8ef08",
+      "kind": "next_improvement",
+      "lesson": "record in the goal artifact that the privacy review findings were applied, not deferred. Disposition: applied in the goal slice log.",
+      "normalized_key": "record in the goal artifact that the privacy review findings were applied not deferred",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -155,102 +235,22 @@
       ]
     },
     {
-      "candidate_id": "current_focus:c4c5e0402786",
-      "kind": "current_focus",
-      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md`.",
-      "normalized_key": "closeout retro for charness artifacts goals 2026 06 02 workflow review efficiency and generalization",
+      "candidate_id": "repeat_trap:2854e095f550",
+      "kind": "repeat_trap",
+      "lesson": "The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop.",
+      "normalized_key": "the first reporter version reached fresh eye review with several privacy and execution edge",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-workflow-review-efficiency-closeout.md",
-          "date": "2026-06-02",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:ec3594dac06d",
-      "kind": "current_focus",
-      "lesson": "Goal: `charness-artifacts/goals/2026-06-02-279-achieve-activation-discussion-closeout.md` This goal resolved #279 by separating \"activation discussion was surfaced\" from \"activation discussion was resolved\" in `achieve` helper output, public skill guidance, lifecycle guidance, CLI wrapper coverage, and checked-in dogfood evidence.",
-      "normalized_key": "goal charness artifacts goals 2026 06 02 279 achieve activation discussion closeout md this",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-279-achieve-activation-discussion-closeout.md",
-          "date": "2026-06-02",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f15335fa0d7a",
-      "kind": "current_focus",
-      "lesson": "Session retro after the workflow-review efficiency goal was completed and the user called out that full pytest was being run too often.",
-      "normalized_key": "session retro after the workflow review efficiency goal was completed and the user called",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-hard-waste-full-pytest-reruns.md",
-          "date": "2026-06-02",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:435a3431adb9",
-      "kind": "current_focus",
-      "lesson": "Session retro for `charness-artifacts/goals/2026-06-02-261-mutation-standard-policy-decision.md`.",
-      "normalized_key": "session retro for charness artifacts goals 2026 06 02 261 mutation standard policy decision",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-261-mutation-standard-policy-decision.md",
-          "date": "2026-06-02",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:87ab0cf55132",
-      "kind": "current_focus",
-      "lesson": "Session retro for `charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md`.",
-      "normalized_key": "session retro for charness artifacts goals 2026 06 02 274 261 mutation regression and",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-      "latest_source_date": "2026-06-02",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-          "date": "2026-06-02",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Waste"
         }
       ]
     }
@@ -277,6 +277,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:398d2b3dee6e",
+      "kind": "current_focus",
+      "lesson": "This retro covers the #280 goal slice that added a Corca-internal last-seen product-review reporter for usage episodes.",
+      "normalized_key": "this retro covers the 280 goal slice that added a corca internal last seen",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7944ea2604ac",
+      "kind": "next_improvement",
+      "lesson": "for reporter scripts that can mutate external state, write edge fixtures before broad happy-path tests: empty window/no data, missing binary, partial/multi-action failure, and privacy redaction. Disposition: applied in `tests/test_usage_episodes_report.py` for this reporter.",
+      "normalized_key": "for reporter scripts that can mutate external state write edge fixtures before broad happy",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:ac70fb4d1137",
       "kind": "next_improvement",
       "lesson": "keep product-evidence logic out of the main report script once it grows beyond a simple summary. Disposition: applied by extracting `scripts/usage_episode_product_evidence.py`.",
@@ -297,6 +337,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e37de827734b",
+      "kind": "next_improvement",
+      "lesson": "no new gate needed. Existing fresh-eye critique plus `run_slice_closeout` caught the issue before commit; the right improvement was targeted tests and the dogfood registry note, both committed in this slice.",
+      "normalized_key": "no new gate needed existing fresh eye critique plus run slice closeout caught the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a6f0d5c8acf0",
       "kind": "next_improvement",
       "lesson": "product: do not close #184 until maintainer/source-thread synthesis and feedback/baseline evidence exist. Disposition: applied by leaving #184 open and recording non-claims in the goal artifact.",
@@ -311,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
+          "date": "2026-06-03",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ff00ceb8ef08",
+      "kind": "next_improvement",
+      "lesson": "record in the goal artifact that the privacy review findings were applied, not deferred. Disposition: applied in the goal slice log.",
+      "normalized_key": "record in the goal artifact that the privacy review findings were applied not deferred",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
           "date": "2026-06-03",
           "section": "Next Improvements"
         }
@@ -391,6 +471,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-184-usage-episode-product-success-consume-policy.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2854e095f550",
+      "kind": "repeat_trap",
+      "lesson": "The first reporter version reached fresh-eye review with several privacy and execution edge cases still open: empty windows read as `usage_observed`, `classification_skipped` alone could become actionable, target refs could be posted into mutating comments, and `gh`/window errors were not structured. The critique caught these before commit, so this was not shipped waste, but it did push the slice through another implementation/test/sync loop.",
+      "normalized_key": "the first reporter version reached fresh eye review with several privacy and execution edge",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+          "date": "2026-06-03",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a0579422ec55",
+      "kind": "repeat_trap",
+      "lesson": "The public-skill dogfood acknowledgement surfaced only at `run_slice_closeout`. That was the right gate, but the attention-state reference edit made `quality` dogfood review predictable earlier from the changed-surface map.",
+      "normalized_key": "the public skill dogfood acknowledgement surfaced only at run slice closeout that was the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+      "latest_source_date": "2026-06-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
           "date": "2026-06-03",
           "section": "Waste"
         }

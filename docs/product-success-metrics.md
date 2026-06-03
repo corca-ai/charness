@@ -256,6 +256,52 @@ unclassified, or when correction/follow-up signals rise with the RCA conversion
 rate. In those cases the correct conclusion is "capture exists but user value is
 not proven."
 
+## Corca-Internal Last-Seen Product Review
+
+Issue [#280](https://github.com/corca-ai/charness/issues/280) adds a narrower
+review loop for Corca-internal usage evidence. The review layer may show when a
+Corca repo/user was last observed using Charness, but it must not classify
+silence as churn, dissatisfaction, or a `stopped_using_candidate`.
+
+The local reporter is
+[report_usage_product_review.py](../scripts/report_usage_product_review.py). It
+reads the same privacy-bounded usage episode records as
+`report_usage_episodes.py` and emits reporter-only packets with:
+
+- `first_seen_at`, `last_seen_at`, `usage_count`, product counts, trigger counts,
+  outcome counts, and feedback counts for the review window
+- release/version context plus `update_prompt_state`, with the explicit
+  non-claim that update prompts are not satisfaction evidence
+- optional Corca-internal `repo_ref` and `user_ref` fields supplied at report
+  time, not stored in public episode records
+- thresholded `friction_threshold` and `missed_detection_candidate` packets only
+  when the operator supplies the corresponding threshold flags
+- triage questions and non-claims instead of root-cause diagnosis or suggested
+  fixes
+
+Example dry-run:
+
+```bash
+python3 scripts/report_usage_product_review.py \
+  --repo-root . \
+  --release-version 0.14.0 \
+  --update-prompt-state prompted \
+  --corca-internal \
+  --repo-ref corca-ai/charness \
+  --user-ref <corca-user-ref> \
+  --friction-threshold 2 \
+  --missed-detection-threshold 1
+```
+
+The command is report-only by default. `--execute` can post thresholded
+issue-comment packets through GitHub only when `--github-repo` and
+`--issue-number` are provided. Mutating comments redact `repo_ref` and
+`user_ref` by default; pass `--include-target-refs-in-comments` only for an
+approved Corca-internal destination. The command refuses to post a comment when
+no friction or missed-detection threshold crossed. Usage observed, raw episode
+count growth, first-value artifacts, last-seen staleness, and update prompts
+alone remain dashboard/review context rather than auto-filed findings.
+
 ## Measurement State And Next Actions
 
 Currently measurable:
@@ -267,6 +313,9 @@ Currently measurable:
   through the [usage episode report](../scripts/report_usage_episodes.py)
 - usage-episode first-value floor, feedback coverage, satisfaction signals, and
   friction/follow-up signals through the same report
+- Corca-internal review-window `first_seen_at` / `last_seen_at` summaries and
+  dry-run reporter packets through
+  [report_usage_product_review.py](../scripts/report_usage_product_review.py)
 - `slice_closeout` emission path when the usage-episodes adapter is enabled in
   a fixture or consumer repo
 - release and quality proof through current artifacts

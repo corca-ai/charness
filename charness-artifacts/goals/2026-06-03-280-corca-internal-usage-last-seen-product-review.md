@@ -1,6 +1,6 @@
 # Achieve Goal: Issue 280 Corca internal usage last-seen product review
 
-Status: draft
+Status: complete
 Created: 2026-06-03
 Activation: `/goal @charness-artifacts/goals/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`
 
@@ -9,8 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`.
+- Current slice: complete; release routing remains the next workflow step.
+- Next action: commit the completed goal and implementation, then route the
+  user-requested push release through `release`.
 - Verification cadence: cheap deterministic checks for schema/report/doc changes;
   focused tests for reporter semantics; fresh-eye critique before enabling any
   auto-filing or Corca-internal collection path.
@@ -123,10 +124,10 @@ classifying inactivity as churn or prescribing fixes.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Lock the product-review boundary | The user changed the model from stop-using signal to last-seen review field | Updated #280 wording, accepted non-goals, and this shaped goal artifact | completed |
-| 1 | Specify the reporter packet and data contract | Implementation needs a stable boundary before code | Docs or spec define fields, non-claims, thresholds, and dry-run/mutating modes | pending |
-| 2 | Implement the smallest reporter/dry-run surface | A policy without a runnable reporter will not improve review behavior | Command output or helper emits release-window/review-window packets without filing | pending |
-| 3 | Add thresholded issue/comment path if still warranted | Auto mutation is useful only after reporter semantics are proven | Dry-run plus optional mutating path with tests and GitHub proof if enabled | pending |
-| 4 | Review privacy/product-readiness | Corca-internal collection changes trust boundaries | Fresh-eye critique, validation, non-claims, and clear keep-open/next-split decision | pending |
+| 1 | Specify the reporter packet and data contract | Implementation needs a stable boundary before code | Docs or spec define fields, non-claims, thresholds, and dry-run/mutating modes | completed |
+| 2 | Implement the smallest reporter/dry-run surface | A policy without a runnable reporter will not improve review behavior | Command output or helper emits release-window/review-window packets without filing | completed |
+| 3 | Add thresholded issue/comment path if still warranted | Auto mutation is useful only after reporter semantics are proven | Dry-run plus optional mutating path with tests and GitHub proof if enabled | completed |
+| 4 | Review privacy/product-readiness | Corca-internal collection changes trust boundaries | Fresh-eye critique, validation, non-claims, and clear keep-open/next-split decision | completed |
 
 ## Coordination Cues
 
@@ -151,9 +152,13 @@ the issue backend; no private external source is required for this draft. If a
 Corca-internal API/source is introduced during implementation, route that source
 through `gather` or record why it is unavailable.
 
-Release: n/a for the draft — the goal should report release-window usage but
-should not touch release version or install-manifest surfaces unless a later
-slice explicitly widens scope.
+Release: pending after goal completion — the user requested "push release" after
+this goal completes; route final version/tag/public-release proof through
+`release` after this artifact is committed.
+
+Issue closeout: pending release carrier — #280 is the tracked implementation
+issue and should be closed by the commit/release carrier. #184 remains open by
+design as the broader product-success synthesis issue.
 
 ## Discuss before activation
 
@@ -169,6 +174,62 @@ Resolved before activation:
 - Public/external telemetry remains disabled by default.
 
 ## Slice Log
+
+### 2026-06-03 — Reporter contract and implementation
+
+- Implemented `scripts/report_usage_product_review.py` as the local
+  product-review CLI and `scripts/usage_episode_product_review.py` as the
+  packet builder.
+- Added docs in `docs/product-success-metrics.md` for the Corca-internal
+  last-seen review loop, including `first_seen_at`, `last_seen_at`, release
+  context, update prompt non-claims, thresholded friction/missed-detection
+  packets, dry-run behavior, and default target-ref redaction for mutating
+  GitHub comments.
+- Synced checked-in plugin exports with
+  `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
+- Focused proof after implementation: `pytest -q
+  tests/test_usage_episodes_report.py tests/test_usage_episodes_schema.py`
+  passed, 64 tests after the multi-packet execute proof was added.
+- Local reporter proof: `python3 scripts/report_usage_product_review.py
+  --repo-root . --release-version local --update-prompt-state unknown
+  --friction-threshold 1 --missed-detection-threshold 1 --json` returned
+  `status=valid`, `usage_count=409`, `first_seen_at=2026-05-22T23:00:38Z`,
+  `last_seen_at=2026-06-03T00:45:08Z`, `actionable_packet_count=0`.
+
+### 2026-06-03 — Fresh-eye critique and fixes
+
+Fresh-eye satisfaction: parent-delegated. Three bounded read-only reviewers ran
+privacy/product semantics, CLI failure-mode, and packaging/validation angles.
+
+Act Before Ship findings and dispositions:
+
+- Empty review windows were labeled `usage_observed`. Applied:
+  `no_usage_observed` is emitted when the filtered window is empty, and tests
+  cover the neutral empty-window packet.
+- `repo_ref`/`user_ref` could be posted into mutating GitHub comments. Applied:
+  target refs now require `--corca-internal`; mutating comments redact target
+  refs by default and require `--include-target-refs-in-comments` to include
+  them.
+- `classification_skipped` alone could become a missed-detection issue comment.
+  Applied: missed-detection threshold records now require friction/non-delivery
+  plus `classification_skipped` or `t_status=none`.
+- Missing `gh` could traceback under `--execute --json`. Applied:
+  `gh_unavailable` structured payload and test.
+- Multi-packet execute was non-atomic and could hide partial comments. Applied:
+  execute posts one combined comment for all actionable packets and records
+  packet count separately.
+- Invalid/reversed windows could traceback or silently become empty. Applied:
+  `invalid_window` structured payload and tests.
+- Attention-state visibility missed the wrapper readiness states. Applied:
+  wrapper-visible state constants plus attention-state reference entry; gate
+  passed for 67 files.
+- Executed comments could carry stale `filing_mode=execute_ready`. Applied:
+  executable packet bodies regenerate with `filing_mode=executed`; fake-`gh`
+  test asserts the posted body.
+
+Bundle Anyway findings applied in this slice: plugin product-review CLI smoke,
+window filtering test, target-ref gating test, and docs note for mutating
+comment redaction.
 
 ## Context Sources
 
@@ -232,17 +293,75 @@ Resolved before activation:
 
 ## Final Verification
 
-- Not run; this is a draft goal artifact.
+- Implemented reporter surface:
+  `scripts/report_usage_product_review.py` and
+  `scripts/usage_episode_product_review.py`.
+- Synced checked-in plugin mirror:
+  `plugins/charness/scripts/report_usage_product_review.py`,
+  `plugins/charness/scripts/usage_episode_product_review.py`, and
+  `plugins/charness/skills/quality/references/attention-state-visibility.json`.
+- Product-success docs now document the Corca-internal last-seen review loop,
+  thresholded reporter packets, dry-run default, update prompt non-claim, and
+  default target-ref redaction for mutating comments.
+- Focused tests passed: `pytest -q tests/test_usage_episodes_report.py
+  tests/test_usage_episodes_schema.py` — 64 tests.
+- Local reporter proof passed: `python3 scripts/report_usage_product_review.py
+  --repo-root . --release-version local --update-prompt-state unknown
+  --friction-threshold 1 --missed-detection-threshold 1 --json` returned
+  `status=valid`, `usage_count=409`,
+  `first_seen_at=2026-05-22T23:00:38Z`,
+  `last_seen_at=2026-06-03T00:45:08Z`, and `actionable_packet_count=0`.
+- Plugin reporter smoke passed through the focused test suite.
+- Fresh-eye critique completed with parent-delegated reviewers for
+  privacy/product semantics, CLI failure modes, and packaging/validation.
+  Act Before Ship findings were applied and covered by tests.
+- Public-skill dogfood review completed for the touched `quality` reference:
+  `python3 scripts/suggest_public_skill_dogfood.py --repo-root .
+  --skill-id quality --json`; resulting consumer-contract note was added to
+  `docs/public-skill-dogfood.json`.
+- Closeout rehearsal passed:
+  `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest
+  --ack-cautilus-skill-review`.
+- Verification-lock closeout passed:
+  `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock
+  --ack-cautilus-skill-review`, including broad pytest in 277.4s and all
+  changed-surface sync/docs/packaging/skill/integration/lint/length/
+  attention-state gates.
+- Live GitHub mutation proof was not run because no issue/comment was posted;
+  the mutating path is tested with fake `gh`, default target-ref redaction, and
+  structured missing-`gh` failure.
+- Corca-internal API proof was not run because this slice did not implement a
+  collection API seam.
+- No public/external telemetry proof was required or claimed.
 
 ## User Verification Instructions
 
-- Review the `Goal`, `Non-Goals`, `Boundaries`, `User Acceptance`, and
-  `Discuss before activation` sections.
-- If acceptable, activate with:
-  `/goal @charness-artifacts/goals/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`
-- Before activation, decide whether the first slice should be spec/dry-run only
-  or include mutating GitHub issue/comment behavior.
+- Run `python3 scripts/report_usage_product_review.py --repo-root .
+  --release-version <version> --update-prompt-state unknown --json` to inspect
+  a review-window payload.
+- Add `--friction-threshold <n>` or `--missed-detection-threshold <n>` to preview
+  reporter-only issue/comment packets in dry-run mode.
+- Use `--execute --github-repo <owner/repo> --issue-number <n>` only for an
+  approved Corca-internal destination; target refs are redacted in mutating
+  comments unless `--include-target-refs-in-comments` is explicitly passed.
 
 ## Auto-Retro
 
-- Not run; this goal has not been activated.
+- Retro: `charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md`.
+- Host log probe: charness-artifacts/probe/2026-06-03-280-corca-internal-usage-last-seen-host-log-probe.json
+- Disposition review: charness-artifacts/critique/2026-06-03-280-corca-internal-usage-disposition-review.md
+- Retro: charness-artifacts/retro/2026-06-03-280-corca-internal-usage-last-seen-product-review.md
+- Recent lessons refreshed through the retro persistence helper:
+  `charness-artifacts/retro/recent-lessons.md` and
+  `charness-artifacts/retro/lesson-selection-index.json`.
+- Main finding: mutating reporter paths need edge fixtures before broad happy
+  paths — empty/no-data windows, missing external binary, multi-action failure,
+  and privacy redaction. Disposition: applied in
+  `tests/test_usage_episodes_report.py`.
+- Dogfood/attention-state finding: public-skill reference edits can trigger
+  dogfood review even when routing is unchanged. Disposition: applied in
+  `docs/public-skill-dogfood.json`.
+- Sibling search: no other thresholded product-review reporter path found; no
+  follow-up issue needed.
+- Retro dispositions: applied — targeted tests, dogfood registry note, and goal
+  slice-log critique dispositions are committed with this work.

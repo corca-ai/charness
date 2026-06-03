@@ -236,6 +236,18 @@
       "evidence_terms": ["WARNING:", "usage_episodes_adapter_missing", "usage_episodes_no_records", "Non-claims:"],
       "rationale": "Usage episode report absence, disabled state, and empty capture remain non-failing but visible, with explicit non-claims so summaries are not mistaken for product-success proof."
     },
+    "scripts/report_usage_product_review.py": {
+      "states": ["disabled", "no_adapter", "no_records"],
+      "visibility": ["structured_warning", "stdout_attention"],
+      "evidence_terms": ["usage_episodes_adapter_missing", "usage_episodes_no_records", "product-review report unavailable"],
+      "rationale": "The product-review reporter reuses usage-episode adapter readiness states and renders them as explicit warnings or unavailable status instead of treating missing capture as last-seen product-review proof."
+    },
+    "scripts/usage_episode_product_review.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["classification_skipped"],
+      "rationale": "Missed-detection candidate reporting treats `classification_skipped` as evidence in a reporter payload, not as a silent clean state."
+    },
     "scripts/worktree_audit_lib.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary", "terminal_payload"],

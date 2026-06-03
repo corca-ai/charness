@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "repo_root": "/home/hwidong/codes/charness",
+  "goal_metric_window": {
+    "path": "/home/hwidong/codes/charness/charness-artifacts/goals/2026-06-03-280-corca-internal-usage-last-seen-product-review.md",
+    "status": "absent"
+  },
+  "hosts": {
+    "codex": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "status": "unavailable",
+          "detail": "No timestamped runtime lines found"
+        },
+        "token_count": {
+          "status": "available",
+          "detail": "Codex session JSONL exposes 76 token_count snapshots"
+        },
+        "tool_call_count": {
+          "status": "derivable",
+          "detail": "Codex session JSONL exposes 151 function/custom tool calls"
+        },
+        "turn_count": {
+          "status": "derivable",
+          "detail": "turn.id markers exist in runtime logs"
+        }
+      },
+      "session_audit": {
+        "measured": {
+          "context_compactions": 0,
+          "custom_tool_calls": 19,
+          "function_calls": 132,
+          "patch_applications": 18,
+          "subagent": {
+            "spawn": 3,
+            "wait": 3,
+            "close": 3
+          },
+          "token_count_snapshots": 76,
+          "total_events": 696
+        },
+        "proxy": {
+          "repeated_broad_gates": {
+            "pytest": 5,
+            "ruff": 5
+          },
+          "repeated_vcs_commands": {
+            "git diff": 5,
+            "git status": 8
+          }
+        },
+        "source": {
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.codex/sessions/2026/06/03/rollout-2026-06-03T09-44-56-019e8af0-c95b-7e43-97ce-f07b3aa0996b.jsonl"
+        },
+        "window_filter": {
+          "status": "not_applied",
+          "included_records": 696,
+          "total_records": 696
+        }
+      }
+    },
+    "claude": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "status": "derivable",
+          "detail": "timestamped session events exist"
+        },
+        "token_count": {
+          "status": "available",
+          "detail": "message.usage.input_tokens/output_tokens present"
+        },
+        "tool_call_count": {
+          "status": "derivable",
+          "detail": "message.content includes tool_use items"
+        },
+        "turn_count": {
+          "status": "derivable",
+          "detail": "user/assistant events exist but require pairing heuristics"
+        }
+      }
+    }
+  }
+}
