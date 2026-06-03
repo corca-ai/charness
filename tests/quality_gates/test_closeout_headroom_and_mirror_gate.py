@@ -7,10 +7,13 @@ exists to surface.
 """
 from __future__ import annotations
 
+import ast
 import importlib
 import subprocess
 import tarfile
 from pathlib import Path
+
+from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import ROOT, init_git_repo, run_script
 
@@ -137,9 +140,36 @@ def test_main_blocks_on_drift_and_passes_when_clean(tmp_path: Path, monkeypatch,
     assert mirror_gate.main() == 0
 
 
-def test_gate_passes_on_real_repo_in_sync() -> None:
-    """End-to-end happy path against the real repo (committed mirror is in sync).
-    Exercises git write-tree + archive + the real validate_packaging."""
-    result = run_script("scripts/check_staged_mirror_drift.py", "--repo-root", str(ROOT))
+def test_gate_passes_on_isolated_repo_copy_in_sync(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    """End-to-end happy path against an isolated repo copy.
+
+    This still exercises git write-tree + archive + the real validate_packaging,
+    but it avoids touching the shared parent repo index during parallel pytest or
+    pre-push hooks.
+    """
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    assert repo != ROOT
+
+    result = run_script("scripts/check_staged_mirror_drift.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "matches staged sources" in result.stdout
+
+
+def test_staged_mirror_drift_e2e_does_not_target_shared_parent_repo() -> None:
+    """Regression guard for #292: standing pytest must not run this staged-index
+    gate against the shared parent worktree, because `git write-tree` touches the
+    live index and can race with git hooks."""
+    source_path = Path(__file__)
+    source = source_path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    offenders: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        segment = ast.get_source_segment(source, node) or ""
+        if "check_staged_mirror_drift.py" in segment and "str(ROOT)" in segment:
+            offenders.append(node.lineno)
+
+    assert offenders == []

@@ -18,9 +18,9 @@ proof unless a later slice explicitly runs and records it.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3, #292 root cause and containment design.
-- Next action: read #292 current tracker state, run the required bug-class
-  issue/debug causal path, and design the index-isolation fix before mutation.
+- Current slice: Slice 5, #284 pre-edit preflight contract.
+- Next action: read #284 current tracker state and emit the feature/deferred-work
+  resolution brief before mutation.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -161,8 +161,8 @@ What the user can do to verify completion directly:
 | 0 | Shape and validate the achieve goal | Prevent the handoff chunk from turning into an ad hoc issue bundle | This artifact passes normal and pursue-ready validation | done |
 | 1 | Resolve #291 activation-readiness contract | The current checker can greenlight pursuit while warning discussion is unresolved | Issue/debug causal review, contract decision, failing/regression fixture | done |
 | 2 | Implement #291 checker and guidance fix | The rest of this goal should operate under the stricter activation-readiness model | Updated checker fields/behavior, achieve guidance, targeted tests | done |
-| 3 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | pending |
-| 4 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | pending |
+| 3 | Resolve #292 root cause and containment design | The pre-push flake blocks reliable closeout and informs #284's hazard list | Issue/debug causal review, selected design brief, targeted failing/regression test | done |
+| 4 | Implement #292 index isolation | Remove live parent-index access from parallel quality tests without weakening mirror drift coverage | Changed tests/helpers, targeted pytest, no live-worktree `git write-tree` in parallel path | done |
 | 5 | Design #284 pre-edit preflight contract | Convert repeated skill-surface edit waste into a cheap command surface before implementation | Resolution brief, CLI/API shape, coupling inventory, test plan | pending |
 | 6 | Implement #284 preflight | Add the authoring signal while reusing existing validators and preserving portability | Helper/CLI behavior, tests for headroom and coupling output, generated/plugin sync | pending |
 | 7 | Bundle critique, broad verification, issue closeout, handoff refresh | Close the tracked issues only after the proof and next-session state are durable | Fresh-eye critique, run-quality, issue closeout validation/verification, updated handoff if needed | pending |
@@ -243,6 +243,20 @@ during the run:
 - Off-goal findings: None.
 - Lessons carried forward: Readiness fields must name the consumer boundary they prove: shape-ready for Before-phase continuation, activation-ready for /goal.
 - Metrics: Headroom before edit: goal_artifact_lib.py 43 lines left; discussion helper 283 lines left. Kept most new logic in discussion helper.
+
+### Slice 2: Resolve #292 index isolation
+
+- Objective: Remove real parent repo index access from the staged mirror drift e2e quality test while preserving staged-index gate coverage.
+- Why this approach: The pre-push flake came from standing pytest running git write-tree against the shared parent worktree during git hook/push state.
+- Commits: pending
+- What changed: Replaced the real-ROOT staged mirror drift e2e test with an isolated seeded Charness git repo copy; added a static regression guard against reintroducing check_staged_mirror_drift.py with --repo-root str(ROOT); added #292 debug RCA artifact and refreshed seam-risk index.
+- Alternatives rejected: Changing the production gate to use HEAD; marking the real-index e2e serial only; removing e2e coverage.
+- Targeted verification: Focused pytest: tests/quality_gates/test_closeout_headroom_and_mirror_gate.py (7 passed); ruff on the test file; length headroom 141/800; markdown/docs/secrets; debug artifact and seam-risk index validation.
+- Test duplication pressure: Expanded one existing focused test file from 6 to 7 tests; no parallel duplicate module added. The new guard covers the exact recurrence class.
+- Critique: Bounded fresh-eye causal review executed by subagent Hume; it confirmed the isolated clone containment and warned not to weaken the production staged-index gate.
+- Off-goal findings: #284 should carry real parent repo index access as a preflight hazard; already in the active goal.
+- Lessons carried forward: A test can be filesystem read-only but still unsafe for shared git state; index-sensitive git commands need private repo roots in standing pytest.
+- Metrics: No broad duplicate sample yet; this slice changed one test file and one debug artifact plus generated seam-risk index.
 
 ## Context Sources
 

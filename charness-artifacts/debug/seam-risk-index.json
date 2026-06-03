@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 53,
-  "indexed_artifact_count": 44,
+  "source_artifact_count": 54,
+  "indexed_artifact_count": 45,
   "risk_class_counts": {
     "contract-freeze-risk": 20,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 7,
-    "operator-visible-recovery": 15
+    "operator-visible-recovery": 16
   },
   "generalization_pressure_counts": {
-    "monitor": 44
+    "monitor": 45
   },
   "entries": [
     {
@@ -612,6 +612,20 @@
         "operator-visible-recovery"
       ],
       "seam": "goal artifact checker output to operator activation behavior.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-04-292-prepush-real-index-flake.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-292-prepush-real-index-flake",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "standing pytest versus git hook/push index state.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
