@@ -38,9 +38,8 @@
 
 1. After the next scheduled mutation run, confirm #283 cleared; otherwise inspect
    any remaining survived definitions.
-2. Run the v0.16.0 real-host smoke (clean `charness update` + `tokei`
-   doctor/install) on a second machine, or record an explicit waiver.
-3. Pick #184 for product-success synthesis.
+2. Pick #184 for product-success synthesis. (Also pending, not issue-linked: the
+   v0.16.0 real-host smoke noted under Current State.)
 
 ## Discuss
 

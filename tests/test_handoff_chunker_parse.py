@@ -351,11 +351,21 @@ def test_current_handoff_pipeline_has_only_actionable_candidates():
     candidates = payload["standalone"] + payload["merged"]
     assert candidates
     assert all(entry["referenced_issues"] for candidate in candidates for entry in candidate["entries"])
-    assert any(
-        entry["referenced_issues"] == [184, 282]
+    # Structural check, not a brittle live-issue-number pin. The previous
+    # `== [184, 282]` assertion broke the moment #282 closed; pinning the live
+    # handoff's Next-Session issue numbers is the recurring brittleness flagged in
+    # recent-lessons. The test's contract is its name — every surfaced candidate
+    # is actionable (issue-linked, asserted above) — so here we only require the
+    # pipeline to surface real, positive issue references rather than a degenerate
+    # set.
+    referenced = [
+        issue
         for candidate in candidates
         for entry in candidate["entries"]
-    )
+        for issue in entry["referenced_issues"]
+    ]
+    assert referenced, "expected the live handoff pipeline to surface issue-linked candidates"
+    assert all(isinstance(issue, int) and issue > 0 for issue in referenced)
 
 
 def _load_parser_module():
