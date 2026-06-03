@@ -30,10 +30,13 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.15.0 (minor release: Corca-internal usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets).
+- Run `charness update` to pull 0.16.0 (minor release: provider-safe, goal-scoped closeout metrics for `achieve`/`retro` — #282).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
-- NEW OPERATOR SURFACE - use `python3 scripts/report_usage_product_review.py --repo-root . --release-version <version> --json` to inspect privacy-safe last-seen usage review payloads. Add `--friction-threshold` or `--missed-detection-threshold` to preview reporter-only issue/comment packets; `--execute` remains explicit and redacts target refs in mutating comments by default.
+- NEW CLOSEOUT BEHAVIOR (#282) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window now surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
+- RELIABILITY (#283) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
+- NEW VALIDATOR MODE - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
+- Carried-forward (0.15.0) - the Corca-internal `report_usage_product_review.py` usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets remains available (`--execute` stays explicit and redacts target refs in mutating comments by default).
 - Carried-forward from 0.14.0 - stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates remain part of the installed surface.
 - VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.
 - BEHAVIOR CHANGE (broad closeout lock) - `scripts/run_slice_closeout.py` refuses broad pytest unless `--verification-lock` is passed after the mutation set is locked. Use `--skip-broad-pytest` for pre-lock rehearsal of deterministic gates.
