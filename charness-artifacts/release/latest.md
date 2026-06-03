@@ -16,19 +16,20 @@ Advanced `charness` toward release `0.17.0` (tag `v0.17.0`) through the repo-own
 
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- initial release push carried the release branch update and tag from the release helper.
+- release branch update and tag `v0.17.0` were pushed to `origin/main`.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.17.0`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: created at `https://github.com/corca-ai/charness/releases/tag/v0.17.0`
+- public release surface verification: verified with `gh release view v0.17.0`
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified visible with `gh release view v0.17.0`.
+- Release URL: `https://github.com/corca-ai/charness/releases/tag/v0.17.0`.
 
 ## Release Adapter Preflight
 
