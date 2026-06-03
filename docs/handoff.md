@@ -16,14 +16,14 @@
 
 ## Current State
 
-- Released **v0.16.0** ([release](../charness-artifacts/release/latest.md),
-  verified public) — resolved #282 and shipped the #283 mutation-survivor fix.
-- **Open release follow-up:** the v0.16.0 real-host checklist (clean
+- Released **v0.17.0** ([release](../charness-artifacts/release/latest.md),
+  verified public) — shipped the testability quality ratchet and reusable
+  `quality`/`find-skills` routing surface.
+- **Open release follow-up:** the v0.17.0 real-host checklist (clean
   `charness update`, `tokei` doctor/install) is unrun — flagged by the
   conservative `integrations-and-control-plane` trigger; the shipped code is
-  goal-metrics rendering, which does not touch the install runtime.
-- Open issues: #289/#288/#287/#286/#285/#284 plus #184. #283 is no longer in
-  the live open-issue list.
+  quality/routing/handoff work, which does not touch the install runtime.
+- Open issues: #292/#291/#289/#288/#287/#286/#285/#284 plus #184.
 - **Testability + test-DSL initiative**: completed the
   [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md):
   boundary-bypass no-increase ratchet is wired into quality, the portable
@@ -32,9 +32,10 @@
 
 ## Next Session
 
-1. Pick **#284** first: add a pre-edit preflight for skill-surface edits
-   (headroom, coupling, markdown spans, mirror sync) so the ratchet-goal waste
-   does not repeat.
+1. Pick **#292 + #284 together**: first remove the real-repo git-index flake
+   from parallel pre-push quality tests, then add the skill-surface pre-edit
+   preflight (headroom, coupling, markdown spans, mirror sync, real-index
+   access hazard) so the ratchet/release closeout waste does not repeat.
 2. Then pick **#286**: make handoff chunker propose agentic work packages, not
    ranked issue lists.
 3. Then pick **#285** if #286 exposes live-issue fixture brittleness: stop
