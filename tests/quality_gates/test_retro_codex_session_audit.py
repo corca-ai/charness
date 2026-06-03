@@ -216,6 +216,62 @@ def test_codex_audit_auto_skips_unreadable_sqlite_for_tui(tmp_path: Path) -> Non
     assert explicit_payload["status"] == "source_unreadable"
 
 
+def test_codex_audit_session_id_routes_to_jsonl_and_reports_missing(tmp_path: Path) -> None:
+    # Passing --session-id (even with no --session-file) must route through the
+    # rollout JSONL path; this pins the `session_id or session_file` branch and
+    # the missing-rollout exit code 2 against routing/number mutants.
+    home = tmp_path / "home"
+    home.mkdir()
+
+    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "nonexistent", "--format", "json")
+    assert result.returncode == 2
+    assert "No Codex rollout JSONL found" in result.stdout
+    assert "nonexistent" in result.stdout
+
+
+def test_codex_audit_list_threads_ignores_markdown_format(tmp_path: Path) -> None:
+    # --list-threads short-circuits markdown rendering: `format == markdown and
+    # not list_threads` is False, so output must stay JSON. This kills the
+    # and->or / negation mutants on that guard.
+    home = tmp_path / "home"
+    write_sqlite(home)
+
+    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--list-threads", "--format", "markdown")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.lstrip().startswith("{")
+    payload = json.loads(result.stdout)
+    assert "threads" in payload
+    assert "# Codex Session Efficiency Audit" not in result.stdout
+
+
+def test_codex_audit_json_preserves_non_ascii_command_snippets(tmp_path: Path) -> None:
+    # The audit prints JSON with ensure_ascii=False so non-ASCII command text
+    # stays human-readable. Pinning that a literal multibyte char survives (and is
+    # not \u-escaped) kills the ensure_ascii False->True mutant on the json.dumps.
+    home = tmp_path / "home"
+    log_path = home / ".codex" / "log" / "codex-tui.log"
+    log_path.parent.mkdir(parents=True)
+    log_path.write_text(
+        '2026-02-02T00:00:00Z INFO thread.id=thread-t turn.id=turn-t '
+        'ToolCall: exec_command {"cmd":"echo café-ñ"}\n',
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        AUDIT_SCRIPT,
+        "--home",
+        str(home),
+        "--source",
+        "tui",
+        "--include-command-snippets",
+        "--format",
+        "json",
+    )
+    assert result.returncode == 0, result.stderr
+    assert "café-ñ" in result.stdout
+    assert "\\u00e9" not in result.stdout
+
+
 def test_codex_audit_rejects_schema_drifted_sqlite(tmp_path: Path) -> None:
     home = tmp_path / "home"
     path = home / ".codex" / "logs_2.sqlite"

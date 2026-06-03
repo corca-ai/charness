@@ -352,7 +352,7 @@ def test_current_handoff_pipeline_has_only_actionable_candidates():
     assert candidates
     assert all(entry["referenced_issues"] for candidate in candidates for entry in candidate["entries"])
     assert any(
-        entry["referenced_issues"] == [184, 261]
+        entry["referenced_issues"] == [184, 282]
         for candidate in candidates
         for entry in candidate["entries"]
     )

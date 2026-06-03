@@ -16,27 +16,28 @@
 
 ## Current State
 
-- Local `main` has #277 closed on `225898a3` and the workflow-review goal is
-  complete; check live `git status --short --branch` before assuming the
-  worktree is clean. The sibling-pattern audit is
-  [workflow-review sibling-pattern audit](../charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md)
-  and its fresh-eye review is
-  [sibling-pattern audit critique](../charness-artifacts/critique/2026-06-02-sibling-pattern-audit-slice.md).
-- The mutation recovery goal is complete:
-  [#273/#261 mutation recovery](../charness-artifacts/goals/2026-06-01-273-261-mutation-regression-and-survivors.md).
-  The carrier closes #273 and leaves #261 open intentionally as a
-  mutation-standard policy question.
-- #261 and #184 remain the live carry-forward issues; #184 needs product-success
-  synthesis from the maintainer's newer thinking and source thread.
-- Workflow-review goal:
-  [workflow review efficiency and generalization](../charness-artifacts/goals/2026-06-02-workflow-review-efficiency-and-generalization.md).
-  Closeout added `find-skills --summary` for operator-facing routing probes,
-  final fresh-eye critique, retro, host probe, and disposition review.
+- A rigorous `quality` pass closed the #283 mutation-regression hot spot in the
+  Codex session/token reporter: new direct unit tests
+  ([test_codex_session_audit_tokens.py](../tests/quality_gates/test_codex_session_audit_tokens.py))
+  plus `main` routing + non-ASCII tests in
+  [test_retro_codex_session_audit.py](../tests/quality_gates/test_retro_codex_session_audit.py).
+  Verified with targeted local cosmic-ray (tokens survivors 23→12, audit `main`
+  6→4; all residual are equivalent/annotation mutants). No production source
+  changed. Fresh artifact:
+  [quality latest](../charness-artifacts/quality/latest.md) (prior 2026-05-24 review
+  archived to `history/`).
+- #283 stays OPEN until the next scheduled mutation run on `main` confirms recovery
+  above the 80% threshold; the `mutation-tests.yml` auto-issue owns close/reopen.
+- Open issues: #283 (awaiting scheduled re-run), #282 (provider-safe goal closeout
+  metrics — closeout/retro design slice), #184 (product success metrics — needs
+  maintainer product judgment). #261/#273/#277 are closed.
 
 ## Next Session
 
-1. Pick #184 for product-success synthesis or #261 for the mutation-standard
-   policy decision.
+1. After the next scheduled mutation run, confirm #283 cleared; otherwise inspect
+   any remaining survived definitions.
+2. Pick #184 for product-success synthesis or #282 for the closeout/retro metrics
+   design slice.
 
 ## Discuss
 
