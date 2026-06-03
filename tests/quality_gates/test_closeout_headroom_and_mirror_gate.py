@@ -13,6 +13,8 @@ import subprocess
 import tarfile
 from pathlib import Path
 
+import pytest
+
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import ROOT, init_git_repo, run_script
@@ -140,6 +142,7 @@ def test_main_blocks_on_drift_and_passes_when_clean(tmp_path: Path, monkeypatch,
     assert mirror_gate.main() == 0
 
 
+@pytest.mark.release_only
 def test_gate_passes_on_isolated_repo_copy_in_sync(
     tmp_path: Path, seeded_charness_git_repo: Path
 ) -> None:

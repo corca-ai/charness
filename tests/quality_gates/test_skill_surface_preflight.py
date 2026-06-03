@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import run_script
+import pytest
+
+from scripts import check_skill_surface_preflight as preflight
 
 
 def _write_skill(repo: Path, *, skill_lines: list[str]) -> Path:
@@ -38,19 +40,8 @@ def test_skill_surface_preflight_blocks_skill_md_preview_past_known_ceilings(
     repo = tmp_path / "repo"
     skill_path = _write_skill(repo, skill_lines=_skill_at_ceiling())
 
-    result = run_script(
-        "scripts/check_skill_surface_preflight.py",
-        "--repo-root",
-        str(repo),
-        "--path",
-        str(skill_path),
-        "--preview-delta",
-        "1",
-        "--json",
-    )
-
-    assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = preflight.build_report(repo.resolve(), str(skill_path), 1, False)
+    assert json.loads(json.dumps(payload))["status"] == "blocked"
     assert payload["status"] == "blocked"
     assert set(payload["blockers"]) == {"skill_md_total", "core_nonempty"}
     assert payload["headroom"]["skill_md_total"]["remaining_after_preview"] == -1
@@ -80,19 +71,7 @@ def test_skill_surface_preflight_reference_preview_preserves_core_headroom(
     )
     reference_path = repo / "skills" / "public" / "demo" / "references" / "note.md"
 
-    result = run_script(
-        "scripts/check_skill_surface_preflight.py",
-        "--repo-root",
-        str(repo),
-        "--path",
-        str(reference_path),
-        "--preview-delta",
-        "200",
-        "--json",
-    )
-
-    assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = preflight.build_report(repo.resolve(), str(reference_path), 200, False)
     assert payload["target"]["kind"] == "reference"
     assert payload["headroom"]["skill_md_total"]["preview_delta"] == 0
     assert payload["headroom"]["core_nonempty"]["preview_delta"] == 0
@@ -106,13 +85,5 @@ def test_skill_surface_preflight_rejects_non_skill_surface(tmp_path: Path) -> No
     outside.parent.mkdir(parents=True)
     outside.write_text("# Note\n", encoding="utf-8")
 
-    result = run_script(
-        "scripts/check_skill_surface_preflight.py",
-        "--repo-root",
-        str(repo),
-        "--path",
-        str(outside),
-    )
-
-    assert result.returncode == 2
-    assert "target must live under skills/public" in result.stderr
+    with pytest.raises(preflight.PreflightError, match="target must live under skills/public"):
+        preflight.build_report(repo.resolve(), str(outside), 0, False)
