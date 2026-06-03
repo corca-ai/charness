@@ -187,6 +187,22 @@ def _load_sibling_disposition():
     return module
 
 
+def _load_sibling_metric_window():
+    """Load the sibling goal-metric-window module for the non-blocking #282
+    closeout attention signal. A leaf module (no sibling imports), so the
+    dependency stays one-directional.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "goal_metric_window_lib",
+        Path(__file__).resolve().parent / "goal_metric_window_lib.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_metric_window_lib.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_sibling_coordination_floors():
     """Load the sibling gather/release coordination-floor module.
 
@@ -211,6 +227,9 @@ apply_disposition_rungs = _disposition.apply_disposition_rungs
 
 _coordination = _load_sibling_coordination_floors()
 apply_coordination_floors = _coordination.apply_coordination_floors
+
+_metric_window = _load_sibling_metric_window()
+metric_window_attention = _metric_window.metric_window_attention
 
 
 def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
@@ -304,5 +323,12 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # flip, explicit opt-out valve. Independent of the disposition scope (its own
     # rule date), so it runs unconditionally; the module no-ops when inert.
     apply_coordination_floors(report, text)
+
+    # #282 affordance: surface whether a goal-scoped `Host metric window:` line
+    # was recorded so an absent window is visible at flip-to-complete rather than
+    # silently reported thread-wide. Strictly non-blocking — it never touches
+    # report["ok"] — because a host that lacks timestamps legitimately records
+    # the documented `unavailable` case instead.
+    report["metric_window"] = metric_window_attention(text)
 
     return report

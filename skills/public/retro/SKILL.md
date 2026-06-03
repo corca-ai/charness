@@ -67,6 +67,10 @@ Adapter policy:
      When a goal artifact carries a `Host metric window:` evidence line, pass
      `probe_host_logs.py --goal-path <artifact>` to produce a scoped
      `goal_window_audit` instead of treating the whole thread as the goal cost.
+     For a goal closeout, add `--format markdown` to emit the standardized
+     provider-safe measured-vs-proxy block (it surfaces the window status and
+     never embeds provider CLI command strings) rather than hand-assembling the
+     metric narration.
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next

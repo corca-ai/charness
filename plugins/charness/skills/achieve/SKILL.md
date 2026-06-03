@@ -91,10 +91,16 @@ lifecycle instead of starting a new one.
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
    - run `retro` for the automatic efficiency review
+   - for a long goal with host timing data, record the goal window with
+     `record_metric_window.py` so the probe is goal-scoped, then render the
+     standardized provider-safe metrics block with
+     `probe_host_logs.py --goal-path <artifact> --format markdown` instead of
+     hand-assembling it (see `references/goal-artifact.md`)
    - when host evidence exists, summarize measured efficiency signals and proxy
      pressure separately: tokens/time, compactions, tool-call counts, repeated
      VCS/check commands, polling, and subagent count. Cached input alone is not
-     waste.
+     waste. Record broad-gate proof as a result attestation, never a re-embedded
+     provider CLI command string.
    - disposition every surfaced improvement in Auto-Retro: either
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing

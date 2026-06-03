@@ -150,14 +150,56 @@ fabricating numbers. Keep measured counts, proxy signals, and unavailable
 signals separate. Cached input by itself is a context-pressure signal, not a
 waste conclusion.
 
-For long goals, prefer a goal-window evidence line when the host exposes enough
+For long goals, record a goal-window evidence line when the host exposes enough
 timing data:
 
 ```text
 Host metric window: started_at=<ISO> completed_at=<ISO> codex_session_file=<path>
 ```
 
-Then run the `retro` host-log probe with `--goal-path <artifact>` so Codex
-rollout JSONL signals can be filtered to that window. If the source lacks
-timestamps or a session file, say `unavailable` rather than presenting a
-thread-wide audit as a goal total.
+Record it with the helper rather than hand-editing, so the probe sees a complete
+window instead of silently reporting `absent` (#282):
+
+```bash
+python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
+  --started-at <ISO> --completed-at <ISO> --codex-session-file <host adapter path>
+```
+
+The host adapter supplies the timestamps and rollout-file path it can prove; the
+portable helper only writes them, idempotently, under `## Final Verification`.
+Then run the `retro` host-log probe with `--goal-path <artifact>` so host signals
+are filtered to that window. If the source lacks timestamps or a session file,
+say `unavailable` rather than presenting a thread-wide audit as a goal total.
+
+At flip-to-complete, `check_goal_artifact.py` surfaces a non-blocking
+`closeout_evidence.metric_window` signal (`recorded` / `incomplete` / `absent`)
+so a forgotten window is visible at the gate instead of silently producing a
+thread-wide audit reported as a per-goal total (#282). It never blocks the flip:
+a host that genuinely lacks timestamps records `unavailable` instead.
+
+### Standardized closeout metrics block (provider-safe)
+
+Render the measured-vs-proxy closeout summary instead of hand-assembling it, so
+every goal narrates the same signals the same way:
+
+```bash
+python3 "$SKILL_DIR/scripts/probe_host_logs.py" --goal-path <artifact> --format markdown
+```
+
+The block surfaces the window status verbatim (so an `absent` window cannot
+masquerade as a per-goal total), separates measured counts from activity
+proxies, and emits only counts, family labels, and result attestations — never a
+provider CLI verification command string. This keeps closeout evidence safe to
+stage under a provider-boundary scanner that rejects re-advertised provider CLI
+commands (#282 criterion 2).
+
+### Broad-gate attestation hook
+
+Exact-state broad-gate proof is recorded as a *result*, not a re-embedded
+command. The portable contract is a result triple — `gate` (id), `outcome`
+(`PASS`/`FAIL`/…), and `state_ref` (a host-provable exact state such as a commit
+SHA with a clean tree) — rendered by
+`scripts/goal_metrics_render_lib.render_broad_gate_attestation`. The structure
+has no `command` field by design, so a host (e.g. Ceal) can attest its own
+exact-state gate without weakening pushed-state proof and without leaking the
+provider CLI invocation into staged docs (#282 criterion 4).

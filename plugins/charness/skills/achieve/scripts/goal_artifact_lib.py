@@ -27,6 +27,7 @@ def _load_sibling(module_name: str):
 
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
+_metric_window = _load_sibling("goal_metric_window_lib")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
 NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
 parse_closeout_evidence = _closeout.parse_closeout_evidence
@@ -34,6 +35,11 @@ check_complete_evidence = _closeout.check_complete_evidence
 derive_goal_tokens = _closeout.derive_goal_tokens
 narration_sections_present = _closeout.narration_sections_present
 discussion_readiness = _discussion.discussion_readiness
+# Goal-window evidence recording lives in its own module so this file stays under
+# its code-line limit; re-export so callers keep using `goal_artifact_lib` (#282).
+render_metric_window_line = _metric_window.render_metric_window_line
+record_metric_window = _metric_window.record_metric_window
+metric_window_attention = _metric_window.metric_window_attention
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
