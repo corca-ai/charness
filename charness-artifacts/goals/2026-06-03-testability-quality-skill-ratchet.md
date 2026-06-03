@@ -1,6 +1,6 @@
 # Achieve Goal: Testability Quality Skill Ratchet
 
-Status: active
+Status: complete
 Created: 2026-06-03
 Activation: `/goal @charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md`
 
@@ -17,9 +17,9 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 — sync, critique, broad verification, closeout.
-- Next action: run the final bounded critique and broad quality proof, then
-  complete the goal artifact with honest non-claims and retro dispositions.
+- Current slice: complete.
+- Next action: none for this goal; follow-on backlog cleanup belongs to a new
+  task or goal.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -135,7 +135,7 @@ What the user can do to verify completion directly:
 | 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | done |
 | 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | done |
 | 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | done |
-| 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | pending |
+| 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | done |
 
 Test-duplication pressure expectation:
 
@@ -304,6 +304,54 @@ during the run:
   clean-convertible to 95 candidates / 53 clean-convertible; clean
   `inventory_*` backlog is now 0.
 
+### Slice 6: Sync, critique, broad verification, closeout
+
+- Objective: Close the ratchet/skill-boundary bundle with fresh-eye critique,
+  final broad proof, honest non-claims, and retro dispositions.
+- Why this approach: The public `quality` contract and repo-local ratchet now
+  affect standing quality behavior, so closeout needed both deterministic proof
+  and a separate fresh-eye review.
+- Commits: `4d577b1a` Tighten boundary-bypass portable contract.
+- What changed: Applied final critique findings: public payloads now include
+  `candidate_key_count`; the public validator rejects clean/internal target
+  overlap; repo-local inventory emits key counts; the ratchet rejects inventory
+  schema drift; `find-skills` routes `test DSL` and `boundary-bypass ratchet`
+  prompts to `quality`; recommendation wording now says registered trigger
+  rather than verbatim naming; public docs no longer require Python-shaped
+  `has_lib`.
+- Alternatives rejected: Enforcing owner/revisit structure in every exemption
+  rationale now; stale-exemption validation while the exemption file is empty;
+  creating a new public test skill.
+- Targeted verification: payload validator example and repo-emitted payload
+  both validated; focused pytest for payload validator, ratchet, and
+  find-skills routing passed (11 passed); selected pytest surface passed
+  (2111 passed, 4 skipped); changed-surface validators passed for packaging,
+  markdown/docs/secrets, Cautilus proof policy, skills, public-skill
+  policy/dogfood, integrations/control-plane dry-runs, ruff, py_compile,
+  length, and attention-state visibility.
+- Final broad verification: `./scripts/run-quality.sh --read-only` passed
+  71 checks, 0 failed, total 64.9s.
+- Test duplication pressure: Added one payload validator negative case, one
+  ratchet schema-drift case, and one find-skills DSL-route case. These cover
+  critique-found invariants and routing gaps rather than duplicating existing
+  happy paths.
+- Critique: Fresh-eye Satisfaction: parent-delegated. Angle reviewers
+  `019e8d85-5c11-7382-882e-7084334a7c0a` and
+  `019e8d85-72a3-78d2-82d2-bc146c0b1014`; counterweight reviewer
+  `019e8d88-656c-7cc1-93d5-83fc943d1ed4`.
+- Counterweight triage: Act Before Ship items were candidate-key portability,
+  DSL/boundary-bypass routing, clean/internal overlap rejection, inventory
+  schema-drift rejection, and final verification recording. All were applied.
+  Bundle Anyway items were `has_lib` public-contract cleanup, registered-trigger
+  wording, and exemption prose softening. All cheap items were applied. Valid
+  But Defer: stale exemption validation, because the exemption file is empty.
+- Off-goal findings: None.
+- Lessons carried forward: Run fresh-eye critique before the final broad gate
+  when the critique can still change public/prompt contract surfaces.
+- Metrics: closeout host goal snapshot from `get_goal`: 617074 tokens,
+  4441 seconds. The broad gate was intentionally rerun after critique findings
+  changed code.
+
 ## Context Sources
 
 - [docs/handoff.md](../../docs/handoff.md): names the testability initiative,
@@ -363,18 +411,67 @@ during the run:
 
 ## Off-Goal Findings
 
-None yet.
+None.
 
 ## Final Verification
 
-Not run yet. The goal is active; final broad proof belongs to Slice 6.
+- `./scripts/run-quality.sh --read-only`: 71 passed, 0 failed, total 64.9s.
+- `pytest -q tests/quality_gates tests/control_plane tests/test_*.py
+  tests/charness_cli/test_doctor_cache_selection.py
+  tests/charness_cli/test_tool_lifecycle.py`: 2111 passed, 4 skipped.
+- `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`: passed at
+  95 candidates, 53 clean-convertible, 42 internally-spawning, 23 likely
+  keep-boundary.
+- `python3 skills/public/quality/scripts/validate_boundary_bypass_payload.py
+  --input skills/public/quality/references/boundary-bypass-payload.example.json
+  --json`: passed for the non-Python-shaped example with 3 candidates and 3
+  candidate keys.
+- Repo-emitted boundary-bypass payload also passed the public validator:
+  95 candidates, 158 candidate keys.
+- Fresh-eye critique executed with two angle reviewers and one counterweight
+  reviewer; all Act Before Ship items were applied before this final proof.
+
+Non-claims:
+
+- No live, release, scheduled CI, GitHub issue closeout, or cross-repo consumer
+  proof was run.
+- The ratchet proves no increase from the committed baseline; it does not claim
+  the remaining 95 boundary-bypass candidates are healthy.
+- The portable contract was validated with example and repo-emitted payloads,
+  not by running a real Go or TypeScript consumer repo.
+
+Retro: charness-artifacts/retro/2026-06-03-testability-quality-ratchet-retro.md
+Host log probe: charness-artifacts/probe/2026-06-03-testability-quality-ratchet-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-03-testability-quality-ratchet-disposition-review.md
 
 ## User Verification Instructions
 
-After completion, inspect the files named in `## Context Sources`, run the final
-quality command recorded in `## Final Verification`, and review the non-claims
-before treating this as portable across other repos.
+- Inspect
+  [skills/public/quality/references/boundary-bypass-ratchet.md](../../skills/public/quality/references/boundary-bypass-ratchet.md)
+  and
+  [skills/public/quality/references/testability-and-selection.md](../../skills/public/quality/references/testability-and-selection.md)
+  to confirm the portable policy stays stack-neutral.
+- Run `./scripts/run-quality.sh --read-only` or the narrower
+  `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`.
+- Confirm `tests/dsl.py` remains repo-local ergonomics and is not referenced as
+  a public skill dependency.
+- Treat cross-repo adoption as unproven until a real consumer repo implements
+  its own stack-specific probe against this payload contract.
 
 ## Auto-Retro
 
-Not run yet. Auto-Retro belongs to the After phase.
+- Persisted:
+  [2026-06-03-testability-quality-ratchet-retro.md](../retro/2026-06-03-testability-quality-ratchet-retro.md).
+- Waste: broad final proof ran once before fresh-eye critique was consumed, then
+  had to rerun after the critique found real public-contract gaps.
+- Critical decisions: keep public ownership in `quality`; treat DSLs as
+  ergonomics, not production testability proof; convert critique findings into
+  validators/tests/routing before closeout.
+- Expert counterfactuals: Gary Klein would have asked earlier which hidden
+  machine invariant another repo needs to reproduce the ratchet; Daniel
+  Kahneman would have separated current-repo green proof from portable-contract
+  proof.
+- Disposition review artifact:
+  [2026-06-03-testability-quality-ratchet-disposition-review.md](../critique/2026-06-03-testability-quality-ratchet-disposition-review.md).
+- Retro dispositions: none left as prose-only memory; all surfaced
+  improvements were applied in this goal.
