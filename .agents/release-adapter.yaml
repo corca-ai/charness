@@ -30,9 +30,11 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.14.0 (minor release: stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates).
+- Run `charness update` to pull 0.15.0 (minor release: Corca-internal usage product-review reporter with last-seen summaries and thresholded dry-run GitHub packets).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow.
+- NEW OPERATOR SURFACE - use `python3 scripts/report_usage_product_review.py --repo-root . --release-version <version> --json` to inspect privacy-safe last-seen usage review payloads. Add `--friction-threshold` or `--missed-detection-threshold` to preview reporter-only issue/comment packets; `--execute` remains explicit and redacts target refs in mutating comments by default.
+- Carried-forward from 0.14.0 - stable `charness goal check`, broad closeout verification lock, and `tokei`-backed Python length gates remain part of the installed surface.
 - VALIDATION DEPENDENCY - Python file and headroom length gates now require the `tokei` binary on PATH and fail closed when `tokei` or its JSON output is unavailable. Run `charness tool doctor tokei --json` or `charness tool install tokei --json` before local validation on machines that do not already have it.
 - BEHAVIOR CHANGE (broad closeout lock) - `scripts/run_slice_closeout.py` refuses broad pytest unless `--verification-lock` is passed after the mutation set is locked. Use `--skip-broad-pytest` for pre-lock rehearsal of deterministic gates.
 - NEW OPERATOR SURFACE - use `charness goal check --repo-root . --goal-path <path> --pursue-ready` as the stable goal-helper surface instead of invoking versioned plugin-cache helper paths directly.
