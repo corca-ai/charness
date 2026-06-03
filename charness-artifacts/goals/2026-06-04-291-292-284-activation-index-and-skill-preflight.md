@@ -1,6 +1,6 @@
 # Achieve Goal: 291 292 284 activation readiness, index isolation, and skill preflight
 
-Status: active
+Status: complete
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
 
@@ -18,18 +18,17 @@ proof unless a later slice explicitly runs and records it.
 
 ## Active Operating Frame
 
-- Current slice: Slice 7, bundle critique, broad verification, issue closeout,
-  and handoff refresh.
-- Next action: finish surface-driven validators for the #284 helper, commit the
-  slice, then run final critique and broad verification.
+- Current slice: complete.
+- Next action: none for this goal; remaining queue is recorded in
+  [docs/handoff.md](../../docs/handoff.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed
   files and owning/generated surfaces, expected invariants, tests/proof,
   non-claims, out-of-scope lines, and reviewer questions.
-- History boundary: keep this frame current; move completed detail to
-  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+- History boundary: completed detail lives in `## Slice Log`,
+  `## Final Verification`, and `## Auto-Retro`.
 
 ## Goal
 
@@ -203,6 +202,10 @@ during the run:
   before publishing and `issue_tool.py verify-closeout --expect-state CLOSED`
   after push/merge/manual fallback.
 
+Gather: n/a — GitHub issue URLs were handled through the issue workflow, not gathered external sources; no Slack, Notion, Docs, Drive, or web source needed capture.
+Release: n/a — no version bump, install manifest edit, release helper, or public release surface was part of this goal.
+Issue closeout: charness-artifacts/issue/2026-06-04-291-292-284-closeout.md; carrier e93e5fa6 verified CLOSED for #291/#292/#284.
+
 ## Slice Log
 
 ### Slice 0: Shape the handoff first-chunk goal
@@ -263,12 +266,12 @@ during the run:
 
 - Objective: Add a cheap pre-edit command for skill-surface edits that reports SKILL.md total/core headroom and known coupling hazards before broad quality.
 - Why this approach: #284 is deferred-work quality tooling; a repo-local helper gives authors an early signal without changing public skill behavior or replacing broad quality.
-- Commits: pending
+- Commits: 14339a73; closeout test-structure repair in 3b7ed973
 - What changed: Added scripts/check_skill_surface_preflight.py with human/JSON output, preview-delta blocking for SKILL.md additions, optional targeted check execution, coupling output for validate-skills, markdown inline spans, doc links, plugin mirror sync, reference link depth, and staged-index hazards. Added focused tests and documented the preflight in implementation discipline. Trimmed achieve/SKILL.md back to core 160 after the new helper exposed the current #291 prose breach, then synced plugin mirrors.
 - Alternatives rejected: Changing validate_skill_ergonomics into a broader mode; running staged mirror drift against the shared repo as part of preflight; making the helper prose-only without an executable signal.
-- Targeted verification: Focused pytest tests/quality_gates/test_skill_surface_preflight.py: 3 passed; ruff on new helper/test: passed; validate_skills: 23 packages; preflight on skills/public/achieve/SKILL.md: total 190/200, core 160/160, status ok; markdown inline spans and doc links passed.
-- Test duplication pressure: Added one focused test module for a new command surface; cases cover SKILL.md ceiling blocking, references preview not consuming SKILL.md headroom, and invalid non-skill paths.
-- Critique: Same-slice causal check: the helper caught an existing achieve core breach before broad quality, proving the pre-edit signal targets the intended waste class. Fresh-eye bundle critique remains scheduled for final closeout.
+- Targeted verification: Focused pytest tests/quality_gates/test_skill_surface_preflight.py: 3 passed before 14339a73; after the broad gate found a boundary-bypass candidate, 3b7ed973 converted those tests to the in-process API and the focused repair set passed 19 tests. ruff, validate_skills, preflight on skills/public/achieve/SKILL.md, markdown inline spans, doc links, and boundary-bypass ratchet passed.
+- Test duplication pressure: Added one focused test module for a new command surface; cases cover SKILL.md ceiling blocking, references preview not consuming SKILL.md headroom, and invalid non-skill paths. The final repair avoided a new process-boundary test smell.
+- Critique: Same-slice causal check: the helper caught an existing achieve core breach before broad quality, proving the pre-edit signal targets the intended waste class. Final fresh-eye bundle critique is recorded in `charness-artifacts/critique/2026-06-04-291-292-284-final-bundle.md`.
 - Off-goal findings: None.
 - Lessons carried forward: A useful preflight should block only previewed breaches, but still report zero headroom loudly enough that authors avoid adding to saturated SKILL.md core.
 - Metrics: New script headroom: 235/480 code lines; new test headroom: 100/800 code lines.
@@ -355,14 +358,90 @@ Issues or deferred findings discovered during the run:
 
 ## Final Verification
 
-Pending activation and execution.
+- Implementation commits:
+  - #291: b7c62cf1
+  - #292: d2a0e9fa
+  - #284: 14339a73
+  - closeout test-structure repair: 3b7ed973
+  - closeout carrier: e93e5fa6
+- Final broad quality before push: `./scripts/run-quality.sh --read-only` passed
+  70 gates, 0 failed, total 48.9s. The first broad attempt failed on two real
+  test-structure issues: the #292 isolated repo-copy e2e test needed
+  `pytest.mark.release_only`, and #284 tests needed to call the import-safe
+  preflight API instead of spawning the script. Both were fixed in 3b7ed973.
+- Pre-push broad quality on successful push: `./scripts/run-quality.sh
+  --read-only` passed 70 gates, 0 failed, total 48.5s. A prior push attempt hit
+  a live usage-episode snapshot flake in
+  `test_session_capture_cli_install_and_uninstall_round_trip`; the focused test
+  passed immediately afterward, and the retried pre-push broad gate passed.
+- Fresh-eye critique: Franklin, Banach, and Raman reviewed implementation,
+  closeout/artifact, and counterweight risks; actionable findings were folded
+  into 3b7ed973, e93e5fa6, this final artifact update, and handoff refresh.
+- Cautilus: `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
+  returned `next_action: none`; deterministic validation owns closeout. The
+  public `achieve` scenario review/dogfood posture was validated with
+  `validate_public_skill_dogfood.py`.
+- Issue closeout draft validation passed for #291 as `bug`, #292 as `bug`, and
+  #284 as `deferred-work` against
+  `charness-artifacts/issue/2026-06-04-291-292-284-closeout.md`.
+- GitHub closeout verification after push:
+  - #291: `issue_tool.py verify-closeout --carrier direct-commit --commit-ref
+    e93e5fa6 --expect-state CLOSED` returned `status: verified`, state `CLOSED`.
+  - #292: same verifier returned `status: verified`, state `CLOSED`.
+  - #284: same verifier returned `status: verified`, state `CLOSED`.
+- Retro: charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md
+- Host log probe: skipped: host-log-not-exposed: no goal metric window or session file was recorded for this run, so a per-goal host log probe would be misleading
+- Disposition review: charness-artifacts/critique/2026-06-04-291-292-284-final-bundle.md
+- Residual risks and non-claims:
+  - No release, installed-machine `charness update`, scheduled CI, or live host
+    proof was run.
+  - Broader inventory for all future index-sensitive tests is useful but was
+    outside this bounded fix; #292 preserves the production gate and fixes the
+    known shared-index test path.
+  - `achieve/SKILL.md` is at core 160/160; future public-core additions should
+    move detail to references or trim first.
 
 ## User Verification Instructions
 
-After completion, verify by running the commands recorded in `## Final
-Verification`, checking the new preflight on representative skill-surface files,
-and confirming #291/#292/#284 are closed only after the pushed carrier verifies.
+- Run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path
+  skills/public/achieve/SKILL.md --preview-delta 1 --json` to see a blocked
+  core-headroom preview on saturated `achieve`.
+- Run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path
+  skills/public/achieve/SKILL.md --preview-delta 0` to see the current
+  non-blocking headroom/coupling report.
+- Re-run `python3 skills/public/issue/scripts/issue_tool.py verify-closeout
+  --repo-root . --repo corca-ai/charness --number 291 --classification bug
+  --carrier direct-commit --commit-ref e93e5fa6 --expect-state CLOSED` and the
+  analogous #292/#284 commands if GitHub closeout proof needs to be rechecked.
 
 ## Auto-Retro
 
-Pending activation and execution.
+- Mode: session.
+- Context: one goal bundled #291 activation-readiness semantics, #292 index
+  isolation, and #284 skill-surface preflight.
+- Waste: the first final broad gate found two avoidable test-structure issues:
+  a copy-heavy e2e test was not marked `release_only`, and a new helper test
+  spawned an import-safe script, increasing the boundary-bypass ratchet. The
+  first push also hit a live usage-episode snapshot flake, but the focused test
+  and retry passed.
+- Critical decisions: fixing #291 first prevented the goal from relying on the
+  warning-only activation bug; keeping #292's production staged-index behavior
+  intact preserved the mirror-drift gate; making #284 a repo-local helper kept
+  it cheap and did not turn it into broad quality.
+- Expert counterfactuals: a Klein-style premortem would have asked which final
+  broad gate can fail despite focused tests and would have caught copy-heavy and
+  boundary-bypass policies before the first broad run. A Kahneman-style
+  checklist would have separated "test is read-only" from "test is safe for
+  shared process/git state," matching #292's lesson.
+- Next improvements:
+  - applied: 3b7ed973 marks the copy-heavy e2e release-only and converts #284
+    tests to the in-process API.
+  - applied: `scripts/check_skill_surface_preflight.py` plus implementation
+    discipline makes future skill-surface headroom/coupling checks executable.
+  - no new issue: broader index-sensitive inventory and installed-host proof are
+    valid future improvements but outside this bounded issue bundle and recorded
+    above as non-claims.
+- Sibling search: n/a - the transferable #284 waste pattern was the goal's
+  implemented target; the final closeout misses were fixed directly in this
+  bundle.
+- Persisted: yes, this goal artifact.

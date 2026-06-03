@@ -23,7 +23,10 @@
   `charness update`, `tokei` doctor/install) is unrun — flagged by the
   conservative `integrations-and-control-plane` trigger; the shipped code is
   quality/routing/handoff work, which does not touch the install runtime.
-- Open issues: #292/#291/#289/#288/#287/#286/#285/#284 plus #184.
+- Open issues: #293/#289/#288/#287/#286/#285 plus #184.
+- Completed workflow-hardening chunk: #291, #292, and #284 were closed by
+  direct carrier `e93e5fa6` after verified local/pre-push broad quality and
+  `issue_tool.py verify-closeout --expect-state CLOSED`.
 - **Testability + test-DSL initiative**: completed the
   [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md):
   boundary-bypass no-increase ratchet is wired into quality, the portable
@@ -32,10 +35,9 @@
 
 ## Next Session
 
-1. Pick **#292 + #284 together**: first remove the real-repo git-index flake
-   from parallel pre-push quality tests, then add the skill-surface pre-edit
-   preflight (headroom, coupling, markdown spans, mirror sync, real-index
-   access hazard) so the ratchet/release closeout waste does not repeat.
+1. Pick **#293**: mutation test regression on main. Treat it as a quality
+   regression first; run the `quality`/debug path before changing mutation or
+   testability policy.
 2. Then pick **#286**: make handoff chunker propose agentic work packages, not
    ranked issue lists.
 3. Then pick **#285** if #286 exposes live-issue fixture brittleness: stop
