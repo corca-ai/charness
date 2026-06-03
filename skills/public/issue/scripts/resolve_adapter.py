@@ -48,6 +48,7 @@ def infer_defaults() -> dict[str, Any]:
         "remote_name": "origin",
         "issue_backend": default_backend(),
         "feature_brief_pause": DEFAULT_FEATURE_BRIEF_PAUSE,
+        "harness_upstream": None,
     }
 
 
@@ -74,6 +75,99 @@ def _string(value: Any, field: str, errors: list[str]) -> str | None:
         errors.append(f"{field} must be a non-empty string")
         return None
     return value
+
+
+def _parse_harness_upstream(raw: Any, errors: list[str]) -> str | None:
+    """Validate the `org/repo` slug naming the charness upstream repository.
+
+    Optional: absent means the destination split has no configured upstream and
+    callers fall back to keeping findings repo-local (see
+    ../../../shared/references/retro-issue-destination-split.md).
+    """
+    if raw is None:
+        return None
+    if not isinstance(raw, str) or not raw.strip():
+        errors.append("harness_upstream must be a non-empty 'org/repo' string")
+        return None
+    parts = raw.strip().split("/")
+    if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
+        errors.append("harness_upstream must be of the form 'org/repo'")
+        return None
+    return raw.strip()
+
+
+def resolve_destination_target(
+    current_full_name: str | None, harness_upstream: str | None
+) -> dict[str, Any]:
+    """Pure resolution of upstream/local issue targets for a retro-derived split.
+
+    Implements the B1 adapter-pointer identity, the E1 current-repo==upstream
+    collapse, and the safe "unknown -> keep local" fallback. Targets are returned
+    as-given (GitHub slugs compare case-insensitively).
+    """
+    current = current_full_name.strip() if isinstance(current_full_name, str) and current_full_name.strip() else None
+    upstream = harness_upstream.strip() if isinstance(harness_upstream, str) and harness_upstream.strip() else None
+
+    if upstream is None:
+        return {
+            "ok": True,
+            "mode": "unknown",
+            "current": current,
+            "harness_upstream": None,
+            "collapsed": False,
+            "ambiguous": True,
+            "upstream_target": None,
+            "local_target": current,
+            "note": (
+                "harness_upstream is unset; keep findings repo-local and state the "
+                "ambiguity. Never file a harness issue into a guessed upstream repo."
+            ),
+        }
+    if current is None:
+        return {
+            "ok": True,
+            "mode": "unknown",
+            "current": None,
+            "harness_upstream": upstream,
+            "collapsed": False,
+            "ambiguous": True,
+            "upstream_target": upstream,
+            "local_target": None,
+            "note": (
+                "current repo is unresolved; resolve it before routing repo-local "
+                "findings. Upstream-harness findings can target harness_upstream."
+            ),
+        }
+    if current.lower() == upstream.lower():
+        return {
+            "ok": True,
+            "mode": "collapse",
+            "current": current,
+            "harness_upstream": upstream,
+            "collapsed": True,
+            "ambiguous": False,
+            "upstream_target": current,
+            "local_target": current,
+            "note": (
+                "current repo is the harness; the destination split collapses to one "
+                "repo. Distinguish portable skill/harness core vs this repo's own "
+                "operating surface by label/section, not by destination repo."
+            ),
+        }
+    return {
+        "ok": True,
+        "mode": "consumer",
+        "current": current,
+        "harness_upstream": upstream,
+        "collapsed": False,
+        "ambiguous": False,
+        "upstream_target": upstream,
+        "local_target": current,
+        "note": (
+            "consumer repo; upstream-harness findings -> harness_upstream, "
+            "repo-local findings -> the current repo."
+        ),
+    }
 
 
 def _parse_backend(raw: Any, errors: list[str], warnings: list[str]) -> dict[str, Any]:
@@ -154,6 +248,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     data["feature_brief_pause"] = _parse_feature_brief_pause(
         raw_data.get("feature_brief_pause"), errors
     )
+    data["harness_upstream"] = _parse_harness_upstream(raw_data.get("harness_upstream"), errors)
 
     canonical_path = repo_root / ".agents" / "issue-adapter.yaml"
     if adapter_path.resolve() != canonical_path.resolve():
@@ -174,8 +269,25 @@ def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="issue resolve_adapter")
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to locate the issue adapter")
+    sub = parser.add_subparsers(dest="command")
+    dest = sub.add_parser(
+        "resolve-destination",
+        help="Resolve upstream/local issue targets for a retro-derived destination split",
+    )
+    dest.add_argument(
+        "--current",
+        type=str,
+        default=None,
+        help="Current repo as org/repo; omit to leave the local target unresolved",
+    )
     try:
         args = parser.parse_args()
+        if args.command == "resolve-destination":
+            adapter = load_adapter(args.repo_root.resolve())
+            payload = resolve_destination_target(args.current, adapter["data"].get("harness_upstream"))
+            payload["adapter_found"] = adapter["found"]
+            print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+            return 0 if payload["ok"] else 1
         payload = load_adapter(args.repo_root.resolve())
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if payload["valid"] else 1

@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Goal run implementing the A4-lite contract that turns retro waste findings into **structural, destination-routed** issue proposals instead of incident-coupled ones (shared reference + retro/achieve/issue wiring + issue-adapter `harness_upstream` + presence-only `validate_proposal_fields.py` + tests). (source: `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`)
 - Reviewing the just-completed `/charness:quality` slice that closed the #283 mutation regression in the Codex session/token reporter (new unit tests + `main` routing/non-ASCII tests, verified by targeted local cosmic-ray, committed as `9fb08f6f`). (source: `charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md`)
-- The user pointed out that waste retros still appear not to happen automatically. (source: `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`)
 
 ## Repeat Traps
 
@@ -31,3 +31,4 @@
 - `charness-artifacts/retro/2026-06-03-281-automatic-waste-retro-closeout.md`
 - `charness-artifacts/retro/2026-06-03-auto-retro-trigger-miss.md`
 - `charness-artifacts/retro/2026-06-03-quality-283-waste-retro.md`
+- `charness-artifacts/retro/2026-06-03-retro-issue-destination-split.md`

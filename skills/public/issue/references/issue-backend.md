@@ -82,6 +82,36 @@ When `issue_backend` is omitted:
 - `binary: gh`
 - `commands: null` (skill uses canonical `gh` invocations)
 
+## Harness Upstream
+
+`harness_upstream` names the charness upstream repository as an `org/repo` slug.
+It is optional and only used by the retro-derived destination split (see
+`../../../shared/references/retro-issue-destination-split.md`): when a retro finding
+is classified `upstream-harness`, the portable fix is filed there rather than
+into the current repo.
+
+```yaml
+version: 1
+harness_upstream: corca-ai/charness
+```
+
+Resolve the concrete targets with:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root . \
+  resolve-destination --current <org/repo>
+```
+
+Behavior:
+
+- **consumer repo** (current ≠ `harness_upstream`): `upstream_target` is
+  `harness_upstream`, `local_target` is the current repo.
+- **collapse** (current == `harness_upstream`, i.e. you are charness):
+  `collapsed: true`; both targets are this repo, distinguished by label/section
+  rather than destination repo.
+- **unset / unresolved**: `ambiguous: true`; keep findings repo-local and state
+  the ambiguity. The skill never files a harness issue into a guessed repo.
+
 ## Required Operations
 
 The skill consumes these operations through the adapter when available:

@@ -105,6 +105,9 @@ lifecycle instead of starting a new one.
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing
      actionable, record one per-goal `Retro dispositions: none — <reason>` line.
+   - when a disposition routes an improvement to `issue #N`, the proposed issue
+     carries the generalized `Structural pattern:`+`Triggering instance(s):` and a
+     resolved `Destination:`, split per `../../shared/references/retro-issue-destination-split.md`.
    - **disposition gate, for goals created after the rule landed:** a deterministic
      block blank Auto-Retro when cited retro lists improvements and require a
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is

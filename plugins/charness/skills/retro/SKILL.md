@@ -97,6 +97,9 @@ Adapter policy:
      `n/a — trivial fix; no plausible siblings` short-circuit. The four-axis
      scan, four-decision taxonomy, follow-up identifiers, and the section-gated
      validator are owned by `references/waste-sibling-scan.md`
+   - when an improvement is headed for an issue, classify it on two axes — a
+     generalized `Structural pattern:`+`Triggering instance(s):` and a
+     `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes
    - if `weekly` and the adapter defines `snapshot_path`, write a compact machine-readable snapshot with the window, evidence sources, and any real metrics or deltas you used
@@ -191,5 +194,6 @@ The result should usually include:
 - `references/trigger-and-persistence.md`
 - `references/weekly-trends.md`
 - `references/waste-sibling-scan.md`
+- `../../shared/references/retro-issue-destination-split.md`
 - `../debug/references/sibling-search.md`
 - `../../shared/references/rca-ledger-append.md`
