@@ -17,9 +17,9 @@ this goal unless later scope changes touch release surfaces.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — baseline, exemptions, and no-increase policy.
-- Next action: design the committed boundary-bypass baseline/exemption shape and
-  the no-increase checker using the corrected Slice 1 payload.
+- Current slice: Slice 3 — wire the boundary-bypass ratchet into `run-quality`.
+- Next action: add the passing `check_boundary_bypass_ratchet.py` command to the
+  standing read-only quality gate with clear output.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad proof at
   closeout, with live/release proof recorded only if scope changes.
@@ -131,8 +131,8 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | 0 | Shape and validate the achieve goal | Prevent scope drift before code changes | This artifact passes normal and pursue-ready validation | done |
 | 1 | Ratchet-correctness fixes in the advisory probe | Enforcement before correctness would freeze noisy counts | Targeted tests for over-match, candidate naming/count stability, internal-spawn classification | done |
-| 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | in progress |
-| 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | pending |
+| 2 | Baseline, exemptions, and no-increase policy | Converts sensor into a structural ratchet | Committed baseline, rationale-bearing exemptions, failing regression fixture, passing current repo | done |
+| 3 | Wire ratchet into `run-quality` | Makes the rule part of standing quality instead of an optional script | `run-quality --read-only` includes the ratchet with visible advisory/fail state | in progress |
 | 4 | Portable `quality` skillification | Lets other repos reproduce the policy without Python/layout coupling | Updated testability lens and boundary-bypass payload/ratchet reference; find-skills routes task to `quality` | pending |
 | 5 | First backlog conversion cluster | Proves the gate points to real structural cleanup | Import-safe `inventory_*` tests converted subprocess to in-process where targets do not shell out internally | pending |
 | 6 | Sync, critique, broad verification, closeout | Finish with honest proof and non-claims | Synced surfaces, fresh-eye critique, green gates or recorded blockers, final artifact complete | pending |
@@ -201,6 +201,20 @@ during the run:
 - Off-goal findings: Selected pytest initially exposed a stale handoff non-issue candidate for this ratchet work; fixed by moving that pickup to the active goal artifact and keeping `## Next Session` issue-linked.
 - Lessons carried forward: Do not enforce advisory counts until target extraction and classification semantics are stable.
 - Metrics: Probe line headroom after edits: inventory_boundary_bypass_lib.py 170/480; test file 169/800.
+
+### Slice 2: Baseline and no-increase ratchet
+
+- Objective: Commit a repo-local baseline, rationale-bearing exemption file, and no-increase checker for the corrected boundary-bypass payload.
+- Why this approach: The advisory sensor needs a deterministic ratchet before future test code can add new boundary-bypass patterns silently.
+- Commits:
+- What changed: Added boundary_bypass_ratchet_lib.py and check_boundary_bypass_ratchet.py; added scripts/boundary-bypass-baseline.json with current corrected baseline; added empty scripts/boundary-bypass-exemptions.txt requiring '# why:' rationale; added in-process ratchet tests; synced plugin exports.
+- Alternatives rejected: A summary-count-only baseline without candidate keys; prose-only exemptions; wiring directly into run-quality before the ratchet command had focused tests.
+- Targeted verification: python3 -m pytest tests/test_boundary_bypass_inventory.py tests/test_boundary_bypass_ratchet.py (11 passed); ruff/length/attention checks; validate_packaging/validate_packaging_committed; validate_integrations plus sync_support/update_tools dry-runs; python3 scripts/check_boundary_bypass_ratchet.py --repo-root .; selected pytest surface passed (2105 passed, 4 skipped).
+- Test duplication pressure: Added one focused ratchet test module with 4 cases covering matching baseline, new unexempt candidate failure, missing # why: rationale failure, and exemption allowance. This is new behavior, not duplicate inventory-probe coverage.
+- Critique: No new fresh-eye pass yet; this is still inside the ratchet bundle that will receive bounded critique before closeout.
+- Off-goal findings: None.
+- Lessons carried forward: Baseline enforcement should track stable candidate keys as well as counts so new targets in existing test files cannot hide behind unchanged row counts.
+- Metrics: Baseline: 96 candidate rows, 159 candidate keys, 54 clean-convertible, 42 internally-spawning, 23 likely keep-boundary.
 
 ## Context Sources
 

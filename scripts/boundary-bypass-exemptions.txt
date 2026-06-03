@@ -1,0 +1,7 @@
+# Boundary-bypass ratchet exemptions.
+#
+# Format:
+# tests/path/test_file.py::scripts/target.py # why: short rationale with owner/revisit condition
+#
+# Empty by design at ratchet introduction. Add exemptions only for intentional
+# boundary tests that should not count against the no-increase policy.
