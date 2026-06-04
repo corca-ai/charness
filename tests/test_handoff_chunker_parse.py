@@ -109,6 +109,18 @@ def test_issue_references_are_collected_in_first_seen_order(entries):
     assert by_index[7].referenced_issues == (224,)
 
 
+def test_issue_ranges_are_expanded_in_first_seen_order(lib):
+    text = """# Handoff
+
+## Next Session
+
+1. Close #285-#289 after checking #287 and #293 with `issue_tool.py --number 286 --number 294`.
+"""
+    entries = lib.parse_handoff_entries(text)
+
+    assert entries[0].referenced_issues == (285, 286, 287, 288, 289, 293, 294)
+
+
 def test_referenced_paths_are_deduped_after_normalization(entries, lib):
     by_index = {entry.index: entry for entry in entries}
     entry_1 = by_index[1]

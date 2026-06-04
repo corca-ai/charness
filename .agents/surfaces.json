@@ -104,6 +104,22 @@
       ]
     },
     {
+      "surface_id": "goal-evidence-json",
+      "description": "Machine-readable evidence captured beside achieve goal artifacts.",
+      "source_paths": [
+        "charness-artifacts/goals/*.json"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for evidence_file in charness-artifacts/goals/*.json; do python3 -m json.tool \"$evidence_file\" >/dev/null || exit $?; done",
+        "python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md"
+      ],
+      "notes": [
+        "Commit goal-scoped raw evidence with the goal log that explains the command, version, and interpretation."
+      ]
+    },
+    {
       "surface_id": "prompt-behavior-proof",
       "description": "Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.",
       "source_paths": [

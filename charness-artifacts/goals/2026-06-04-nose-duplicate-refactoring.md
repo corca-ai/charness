@@ -1,6 +1,6 @@
 # Achieve Goal: Nose duplicate refactoring
 
-Status: draft
+Status: active
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md`
 
@@ -9,8 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md`.
+- Current slice: Slice 3 — adapter resolver consolidation candidate.
+- Next action: inspect the remaining top `nose` families and decide whether the
+  adapter resolver skeletons can move to a shared helper without weakening
+  public skill portability.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -109,8 +111,8 @@ The user can verify completion by inspecting:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Lock baseline and scope | Avoid optimizing against stale `nose 0.2.0` or raw `jscpd` output | `nose 0.4.0` version, top-family inventory, docs updated to defer `jscpd` | pending |
-| 2 | Remove portable bootstrap duplication where a shared path is provably safe | Largest `nose` family is skill runtime bootstrap across public skill scripts | shared helper or generator path, source/plugin execution tests, reduced `nose` family | pending |
+| 1 | Lock baseline and scope | Avoid optimizing against stale `nose 0.2.0` or raw `jscpd` output | `nose 0.4.0` version, top-family inventory, docs updated to defer `jscpd` | done |
+| 2 | Remove portable bootstrap duplication where a shared path is provably safe | Largest `nose` family is skill runtime bootstrap across public skill scripts | shared helper or generator path, source/plugin execution tests, reduced `nose` family | done |
 | 3 | Consolidate adapter resolver/validator skeletons | Adapter families are the next largest actionable duplication | common adapter validation helpers or templates, focused resolver tests, reduced `nose` family | pending |
 | 4 | Preserve or narrow `check_duplicates.py` to document near-copy ownership | Do this only after code-clone cleanup clarifies what Python near-file coverage would be lost | tests proving Markdown near-copy behavior; explicit non-claim or retained coverage for helper-script near-file checks | pending |
 | 5 | Reassess post-cleanup `jscpd` signal | Only after actual cleanup can raw token clone signal be judged fairly | before/after `jscpd` summary, recommendation to defer/add wrapper/skip | pending |
@@ -148,6 +150,20 @@ changed the plan to defer `jscpd`, keep document near-copy detection, update
 `nose` to 0.4.0, and run refactoring before reassessing `jscpd`.
 
 ## Slice Log
+
+### Slice 1: Baseline and bootstrap loader contraction
+
+- Objective: Lock the nose 0.4.0 duplicate baseline and remove the largest portable per-script bootstrap duplication that is safe before tackling adapter resolver families.
+- Why this approach: The baseline prevents optimizing against stale jscpd or nose output. The per-script ancestor bootstrap preamble was a real high-cardinality code clone, but direct source/plugin execution still requires a tiny local preamble because arbitrary skill scripts cannot import repo modules until the bootstrap has located the repo root.
+- Commits: same closeout commit as this slice log.
+- What changed: Recorded raw nose baseline JSON beside the goal artifact; changed public skill and plugin mirror scripts from importlib.util module loading to runpy + SimpleNamespace bootstrap loading; further contracted the repeated loader body; added goal JSON surface coverage; fixed handoff issue reference parsing for #285-#289 and issue_tool.py --number arguments exposed by the broad test run.
+- Alternatives rejected: Did not introduce jscpd in this slice. Did not claim that all skill_runtime_bootstrap loaders changed: root shims still use importlib.util. Did not remove the final 5-line per-script bootstrap clone because that is the portability boundary for independent script execution.
+- Targeted verification: nose 0.4.0 baseline: /home/hwidong/codes/nose/target/release/nose scan scripts skills/public skills/support --mode syntax,semantic,near --threshold 0.70 --min-lines 18 --min-tokens 24 --sort extractability --top 0 --format json > charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring-nose-baseline.json; baseline 230 families, top bootstrap family 86 members / 1020 dup_lines. After slice: same scan > /tmp/charness-nose-after-slice.json; 225 families, top remaining bootstrap family 81 members / 400 dup_lines. ruff check passed; representative source/plugin env -u PYTHONPATH -u CHARNESS_REPO_ROOT direct executions passed; packaging, skill, surface, markdown, secrets, duplicate, policy, integration, py_compile, plugin import smoke, focused pytest passed. Broad pytest initially found handoff range/--number parsing gap; fixed and focused tests passed.
+- Test duplication pressure: check_duplicates.py remains the document near-copy gate and passed with --fail-on-match. nose remains advisory evidence; this slice reduces its top bootstrap signal but leaves adapter resolver families as the next target. Cautilus planner reported next_action none and must_ask_before_running true; no evaluator was run because this slice changed runtime bootstrap mechanics, not prompt behavior or skill semantics.
+- Critique: Medium fresh-eye runtime reviewer found no runtime/portability regression and independently ran source/plugin direct execution checks. Medium evidence reviewer found blockers in stale goal logging and unmatched baseline JSON; fixed by adding goal-evidence-json surface coverage and writing this slice log. Evidence reviewer also noted success-semantics coverage gap; parent added source/plugin direct execution and plugin import smoke evidence.
+- Off-goal findings: The broad repo-python test exposed a pre-existing live handoff parser blind spot for issue ranges and issue_tool.py --number references; fixed because it blocked the changed-surface gate and improves handoff structure.
+- Lessons carried forward: For future nose-driven refactors, record raw baseline evidence before editing and update surfaces when the evidence format is not already covered. Keep claims narrow: per-script bootstrap loader contraction is not the same as replacing every root bootstrap shim.
+- Metrics: nose families 230 -> 225; bootstrap duplicate lines 1020 -> 400; changed-surface unmatched paths 1 -> 0 after goal-evidence-json surface.
 
 ## Context Sources
 

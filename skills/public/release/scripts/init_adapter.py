@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import importlib.util
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    script_path = Path(__file__).resolve()
-    for ancestor in script_path.parents:
-        candidate = ancestor / "skill_runtime_bootstrap.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("skill_runtime_bootstrap.py not found")
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)

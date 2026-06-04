@@ -8,7 +8,6 @@ single-file line gate, so the tests must not force a new re-export through it.
 from __future__ import annotations
 
 import importlib.util
-import types
 from pathlib import Path
 
 import pytest
@@ -632,12 +631,20 @@ def test_load_sibling_coordination_floors_raises_when_spec_missing(monkeypatch) 
         ce._load_sibling_coordination_floors()
 
 
-def test_loaders_fail_closed_when_spec_loader_is_missing(monkeypatch) -> None:
-    spec_without_loader = types.SimpleNamespace(loader=None)
-    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: spec_without_loader)
+def test_skill_runtime_bootstrap_loader_fails_closed_when_bootstrap_is_missing(monkeypatch) -> None:
+    monkeypatch.setattr(cga.Path, "is_file", lambda self: False)
 
     with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
         cga._load_skill_runtime_bootstrap()
+
+
+def test_sibling_loaders_fail_closed_when_spec_loader_is_missing(monkeypatch) -> None:
+    class SpecWithoutLoader:
+        loader = None
+
+    spec_without_loader = SpecWithoutLoader()
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: spec_without_loader)
+
     with pytest.raises(ImportError, match="scripts/check_prescribed_skill_executed_lib.py not found"):
         ce._load_shared_helper()
     with pytest.raises(ImportError, match="goal_artifact_disposition.py not found"):

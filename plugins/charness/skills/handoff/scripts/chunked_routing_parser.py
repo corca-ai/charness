@@ -33,7 +33,9 @@ _NEXT_SESSION_HEADER = "Next Session"
 _NUMBERED_BULLET = re.compile(r"^(\d+)\.\s+(.*)$")
 _BOLD_TITLE = re.compile(r"^\*\*(.+?)\*\*", re.DOTALL)
 _MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-_ISSUE_REF = re.compile(r"#(\d+)\b")
+_ISSUE_REF = re.compile(r"#(\d+)(?:\s*-\s*#?(\d+))?\b")
+_ISSUE_NUMBER_FLAG = re.compile(r"(?:^|\s)--number\s+(\d+)\b")
+_MAX_ISSUE_RANGE_SPAN = 100
 _SKILL_PATH = re.compile(r"skills/(?:public|support|profile)/([a-z0-9-]+)")
 _GOAL_STATUS = re.compile(r"^Status:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE)
 _BARE_PATH = re.compile(
@@ -153,11 +155,27 @@ def _normalize_path(token: str) -> str:
 def _collect_issues(text: str) -> tuple[int, ...]:
     seen: list[int] = []
     seen_set: set[int] = set()
-    for match in _ISSUE_REF.finditer(text):
-        number = int(match.group(1))
+
+    def append(number: int) -> None:
         if number not in seen_set:
             seen_set.add(number)
             seen.append(number)
+
+    for match in _ISSUE_REF.finditer(text):
+        start = int(match.group(1))
+        end_text = match.group(2)
+        if end_text is None:
+            numbers = (start,)
+        else:
+            end = int(end_text)
+            if start <= end and end - start <= _MAX_ISSUE_RANGE_SPAN:
+                numbers = range(start, end + 1)
+            else:
+                numbers = (start, end)
+        for number in numbers:
+            append(number)
+    for match in _ISSUE_NUMBER_FLAG.finditer(text):
+        append(int(match.group(1)))
     return tuple(seen)
 
 
