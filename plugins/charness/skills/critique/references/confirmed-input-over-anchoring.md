@@ -5,8 +5,7 @@ pending change locks a value that came from user confirmation, issue
 framing, prior session memory, or any external input that closed a
 design space without proving the value is the only point.
 
-This angle implements the
-[#229 lesson](https://github.com/corca-ai/charness/issues/229) — the
+This angle implements the confirmed-input over-anchoring lesson: the
 agent treated a single confirmed model name as a global default when the
 repo is known to run on multiple hosts. The miss was not the value; the
 miss was treating one confirmed input as a closed design space.

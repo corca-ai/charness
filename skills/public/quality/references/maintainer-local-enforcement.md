@@ -167,7 +167,7 @@ The default canonical-gate patterns cover `npm run verify`, `make verify`,
 `charness verify`. Repos with custom local-gate names should pass
 `--canonical-gate-pattern` to surface their own shape.
 
-### CI-Only Failure Recovery (#236)
+### CI-Only Failure Recovery
 
 When local pre-push or release gates passed and CI still fails, do not pay
 another broad local gate plus push retry before isolating the CI-only delta.

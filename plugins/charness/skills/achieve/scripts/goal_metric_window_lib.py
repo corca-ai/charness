@@ -1,4 +1,4 @@
-"""Record the goal-scoped `Host metric window:` evidence line (#282).
+"""Record the goal-scoped `Host metric window:` evidence line.
 
 Kept in its own module so ``goal_artifact_lib`` stays under its code-line limit.
 The line is read back by ``scripts/host_log_probe_lib.GOAL_WINDOW_LINE``; this
@@ -42,7 +42,7 @@ def metric_window_attention(text: str) -> dict[str, str]:
     ``unavailable`` case instead, so this never gates the flip to complete. It
     exists only so a forgotten ``Host metric window:`` line is surfaced at
     flip-to-complete time rather than silently producing a thread-wide audit
-    reported as a per-goal total — the recurrence the issue reported twice (#282).
+    reported as a per-goal total.
     The probe (`host_log_probe_lib.parse_goal_metric_window`) still owns the real
     parse/validation; this is a cheap structural affordance, not a re-validator.
     """

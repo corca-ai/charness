@@ -84,7 +84,8 @@ alone gets skipped under context pressure and the miss is silent and costly:
 All are enforced by `goal_artifact_coordination_floors.py` at the `complete`
 flip, grandfathered by `Created` date, presence/binding-only (never
 prose-quality classification). Gather/release apply to goals Created ≥
-2026-05-31; issue closeout applies to goals Created ≥ 2026-06-02. They are
+the gather/release rule landing date; issue closeout applies to goals Created
+on or after its landing date. They are
 operator-side cues `achieve` plans into the artifact — `gather`, `release`, and
 `issue` stay useful standalone, with no `achieve`-only branch. See
 `references/lifecycle.md` After-phase for the full contract.

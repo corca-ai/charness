@@ -1,4 +1,4 @@
-"""#253 improvement-disposition closeout gate — the deterministic rung.
+"""Improvement-disposition closeout gate — the deterministic rung.
 
 Gives the After-phase disposition rule teeth without a prose word-list (round-2
 critique proved a classifier over-fires or passes pure narration). This module
@@ -88,7 +88,7 @@ def goal_created_date(text: str) -> date | None:
 
 
 def disposition_gate_applies(text: str) -> bool:
-    """Whether the #253 disposition rungs fire for this goal (grandfather-by-
+    """Whether the disposition rungs fire for this goal (grandfather-by-
     ``Created``-date). Fail-CLOSED: a missing/malformed ``Created:`` is treated
     as in-scope, so a goal cannot dodge both rungs by corrupting one line."""
     created = goal_created_date(text)
@@ -177,7 +177,7 @@ def _bound_retro_path(report: dict[str, Any]):
 
 
 def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -> None:
-    """Attach the #253 disposition-gate verdict to ``report`` (mutates in place).
+    """Attach the disposition-gate verdict to ``report`` (mutates in place).
 
     Rung 1a (block-the-blank): refuse the flip when the bound retro lists ≥1
     improvement, the goal's ``## Auto-Retro`` is blank, and no opt-out is
@@ -218,8 +218,8 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
             "reason": (
                 "the cited retro lists actionable `## Next Improvements` but the goal's "
                 "`## Auto-Retro` is blank and no `Retro dispositions: none — <reason>` opt-out "
-                "is recorded; disposition each improvement (`applied: <what>` or `issue #N`) "
-                "or record the opt-out before flipping to complete (#253)"
+                "is recorded; disposition each improvement (`applied: <what>` or `issue <id>`) "
+                "or record the opt-out before flipping to complete"
             )
         }
         report["ok"] = False

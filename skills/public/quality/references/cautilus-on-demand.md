@@ -1,6 +1,6 @@
 # Cautilus On-Demand
 
-This repo treats Cautilus as eval-only per corca-ai/cautilus#32: `cautilus evaluate fixture`, `cautilus evaluate observation`, and `cautilus evaluate skill-experiment` are the only supported live surfaces (cautilus 0.15.4 renamed the legacy `eval test/evaluate` topic; `skill-experiment` is the subagent-spawning skill-clone evaluator). The adapter is in `run_mode: ask`, which means a live cautilus run is never the default closeout path — deterministic gates own closeout when no log-backed behavior proof is requested.
+This repo treats Cautilus as eval-only: `cautilus evaluate fixture`, `cautilus evaluate observation`, and `cautilus evaluate skill-experiment` are the only supported live surfaces (cautilus 0.15.4 renamed the legacy `eval test/evaluate` topic; `skill-experiment` is the subagent-spawning skill-clone evaluator). The adapter is in `run_mode: ask`, which means a live cautilus run is never the default closeout path — deterministic gates own closeout when no log-backed behavior proof is requested.
 
 The repeated trap is calling `cautilus evaluate fixture` against the legacy route-only fixture (`evals/cautilus/whole-repo-routing.fixture.json`) on the strength of an ambiguous user phrase plus the cautilus binary being on PATH. The fixture is a deterministic sentinel; running it as live proof produces a false closeout signal. To prevent that, every `cautilus evaluate ...` invocation must go through the planner first.
 

@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 - generalize portable skill packages away from
-  repo-local/history-coupled prose.
-- Next action: clean or generalize the current package findings
-  (`package_issue_anchor=102`, `package_dated_incident=3`,
-  `host_surface_reference=104`, `reference_discoverability=0`) and decide which
-  opt-in package rules can become blocking after cleanup.
+- Current slice: Slice 4 - tighten `achieve` routing and phase-evidence
+  contract.
+- Next action: add the smallest `achieve` coordination/routing evidence guard
+  that prevents implementation/debug slices from remaining `achieve`-only, while
+  carrying the Slice 3 host-surface follow-up
+  (`host_surface_reference=104`) as deferred exception/modeling work before
+  final closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -153,7 +154,7 @@ Slice 2 after baseline counts and false-positive review.
 | --- | --- | --- | --- | --- |
 | 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | complete |
 | 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | complete |
-| 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | planned |
+| 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | complete |
 | 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | planned |
 | 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | planned |
 | 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | planned |
@@ -239,6 +240,20 @@ tracked issue closeout carrier.
 - Off-goal findings: None.
 - Lessons carried forward: High-recall text-quality heuristics need names that describe evidence, not verdicts. Local generated/cache files must be excluded from package-discoverability inventories before baselines are treated as meaningful.
 - Metrics: package_issue_anchor=102; package_dated_incident=3; host_surface_reference=104; reference_discoverability=0; closeout_usage_episode=slice-closeout-abca6310dc454bba9d0cb38bd009f037
+
+### Slice 3: portable skill package cleanup and blocking rules
+
+- Objective: Generalize portable public/support skill packages away from concrete issue anchors and dated incident wording, then promote the clean package issue/date checks to blocking enforcement.
+- Why this approach: Slice 2 proved the package-level detector and showed the current issue/date baseline was finite and objective. Cleaning those findings now lets future quality runs fail on the same leakage instead of treating it as advisory prose review.
+- Commits:
+- What changed: Removed concrete issue-number anchors, issue URLs, and dated incident wording from public/support skill references, script comments, docstrings, diagnostic strings, and examples while preserving stable behavioral contracts; promoted portable_package_issue_anchor and portable_package_dated_incident into DEFAULT_SKILL_ERGONOMICS_GATE_RULES and .agents/quality-adapter.yaml; updated the quality adapter example and adapter contract to separate default blocking rules from valid opt-in review rules; synced plugin mirrors.
+- Alternatives rejected: Rejected enabling portable_package_host_surface_reference as blocking because the remaining 104 findings are mostly legitimate host-surface seams and need a narrower exception/modeling slice. Rejected mutating evals/cautilus/scenarios.json because plan_cautilus_proof reported next_action=none and the slice is a preserve/provenance cleanup, not a routing or behavior-improvement claim.
+- Targeted verification: Inventory after cleanup: checked_skill_count=23, subcheck_counts={package_issue_anchor:0, package_dated_incident:0, host_surface_reference:104, reference_discoverability:0, core_overfill:0, mode_option_pressure:0, prose_ritual:0, path_ambiguity:0}. validate_skill_ergonomics passed with portable_package_dated_incident and portable_package_issue_anchor active and 0 violations. Focused tests passed: quality/bootstrap/ergonomics set 77 before promotion and 66 after reviewer fixes; achieve goal helper set 74 after heading guard repair; handoff chunker set 61; quality mutation testing passed in slice closeout. validate_adapters, check_github_actions, inventory declaration/coverage, py_compile, ruff, check_python_lengths, git diff --check, plugin mirror scan, and run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review all passed after final sync. run_slice_closeout final usage episode: slice-closeout-bce1af8df512436cb5ba5761ccbec2cf.
+- Test duplication pressure: No new tests were needed for the prose cleanup because existing exact-heading, handoff, goal-artifact, adapter, and skill-ergonomics tests covered the affected semantics. One test failure caught accidental heading-case drift and was fixed by preserving the expected heading phrases without numeric anchors.
+- Critique: Fresh-eye parent-delegated critique executed by subagent 019e90d2-efbf-7c32-b8b8-2d8c09827474. Act-before-ship findings were applied: quality adapter example now includes the promoted package rules; adapter-contract now separates default blocking rules from valid opt-in review rules. Bundle-anyway indentation cleanups in handoff scripts were applied. Valid-but-defer: host_surface_reference remains a real follow-up but not a blocker for this issue/date cleanup.
+- Off-goal findings: None.
+- Lessons carried forward: Do not stop at a clean source inventory when shipped examples and adapter docs still describe the pre-promotion contract. Preserve exact behavior-test phrases while removing numeric provenance anchors.
+- Metrics: package_issue_anchor=0; package_dated_incident=0; host_surface_reference=104; reference_discoverability=0; active_blocking_rules+=portable_package_issue_anchor,portable_package_dated_incident; Cautilus scenario review=preserve/no scenario registry mutation
 
 ## Context Sources
 

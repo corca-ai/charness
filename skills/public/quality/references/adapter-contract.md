@@ -277,10 +277,12 @@ over inline multi-line strings when evaluator-backed review needs prompt bytes
 to drift independently from code bytes.
 
 `skill_ergonomics_gate_rules` is the standing skill-structure enforcement list.
-Generated adapters default to the current supported rule set so skill packages
-do not silently skip structure review. Repos may set it to `[]` as an explicit
+Generated adapters default to the current blocking rule set so skill packages do
+not silently skip structure review. Repos may set it to `[]` as an explicit
 opt-out, but that disabled enforcement state must remain visible in quality
-output. Current supported rules:
+output.
+
+Default blocking rules:
 
 - `long_core`
   Fail when a public skill core exceeds the configured line budget.
@@ -301,21 +303,23 @@ output. Current supported rules:
   retro artifacts.
 - `portable_package_issue_anchor`
   Fail when a public/support skill package contains concrete issue-number
-  anchors. Keep this rule opt-in until the current package corpus is cleaned or
-  a narrow machine-readable exception model exists.
+  anchors.
 - `portable_package_dated_incident`
   Fail when a public/support skill package contains dated incident/history
   wording.
+- `portable_helper_path_ambiguity`
+  Fail when helper references look cwd-relative instead of install-portable.
+
+Valid opt-in review rules:
+
 - `portable_package_host_surface_reference`
   Fail when a public/support skill package names host/runtime surfaces that need
   review. Keep legitimate host routing explicit, and move host-specific behavior
   to adapters, presets, or integrations.
 - `reference_discoverability_gap`
   Fail when checked-in `references/` files are not discoverable from `SKILL.md`.
-- `portable_helper_path_ambiguity`
-  Fail when helper references look cwd-relative instead of install-portable.
 
-The canonical quality path runs these opt-in rules through
+The canonical quality path runs these rules through
 `<repo-root>/scripts/validate_skill_ergonomics.py`. Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`. When rules
 are configured, an empty checked-skill set is a failure; use

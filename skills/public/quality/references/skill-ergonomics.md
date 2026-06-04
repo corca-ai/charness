@@ -96,6 +96,11 @@ and machine-readable. `bootstrap_adapter.py` will refuse to rewrite an adapter
 that sets invalid ergonomics rules, because silently clearing them would hide
 operator intent.
 
+Package-level concrete issue anchors and dated incidents are clean enough in the
+current corpus to be default blocking rules. Host-surface references and
+reference discoverability remain opt-in review signals until their exception
+model and false-positive posture are narrower.
+
 When a repo has discoverable skills but `skill_ergonomics_gate_rules: []`, the
 validator should still return success, but it must emit a structured warning.
 An empty rule list means the inventory is advisory-only and no skill structure

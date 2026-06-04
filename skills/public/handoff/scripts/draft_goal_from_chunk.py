@@ -198,7 +198,7 @@ def main() -> int:
             # placeholders), so surfacing `/goal` as the next action would tell
             # the operator to start the During run on an unshaped goal. The real
             # next move is to SHAPE the draft through the achieve Before-phase
-            # first; `/goal` activates the run only afterward (#246).
+            # first; `/goal` activates the run only afterward.
             "activation": f"/goal @{goal_rel}",
             "shape_command": f"/achieve @{goal_rel}",
             "next_step": (

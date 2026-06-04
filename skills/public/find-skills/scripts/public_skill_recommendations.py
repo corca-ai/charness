@@ -5,7 +5,7 @@ Without this, the task-text recommendation payload was structurally blind to
 the public-skill layer: only support skills, integrations, and the two
 hardcoded worktree workflows could ever match, so an agent that named a public
 skill verbatim still saw an empty result and drifted to a tool or raw shell
-(#220).
+instead.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def _task_text_token_matches(task_text: str, candidate: str) -> bool:
     Public-skill names are short and collision-prone as raw substrings (`impl`
     inside `simple`/`implement`, `spec` inside `respect`/`specs`). A Unicode word
     boundary keeps the "named verbatim" signal high precision and avoids the
-    broad-match over-trigger that #108/#139 fought. `\b` (not ASCII-only
+    broad-match over-trigger from earlier routing fixes. `\b` (not ASCII-only
     lookarounds) is required so a CJK letter glued to the name — e.g. `hitl스킬`
     — is treated as a non-boundary and does not false-match, since Korean is a
     first-class trigger language here.

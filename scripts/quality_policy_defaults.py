@@ -46,15 +46,15 @@ DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = [
     "issue_anchor_in_core",
     "long_core",
     "mode_option_pressure_terms",
+    "portable_package_dated_incident",
+    "portable_package_issue_anchor",
     "portable_helper_path_ambiguity",
     "progressive_disclosure_risk",
 ]
 VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset(
     [
         *DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
-        "portable_package_dated_incident",
         "portable_package_host_surface_reference",
-        "portable_package_issue_anchor",
         "reference_discoverability_gap",
     ]
 )

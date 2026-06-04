@@ -233,7 +233,7 @@ def resolve_milestone(requested: str | None, existing: list[str]) -> dict[str, A
     The skill must never invent a milestone. This guard assigns only when the
     requested title exactly matches one the repository already has; otherwise it
     leaves the issue unassigned and says so, so the agent cannot silently create
-    a fake milestone (corca-ai/charness#202).
+    a fake milestone.
     """
     existing_titles = [title for title in existing if title]
     requested_title = (requested or "").strip()

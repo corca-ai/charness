@@ -1,6 +1,6 @@
 # Release Closeout Critique Gate
 
-Closes [#230](https://github.com/corca-ai/charness/issues/230) Waste 1c.
+Closes the release-closeout self-substitution gap.
 This gate makes the SKILL.md prose about "do not skip critique for
 task-completing release work" a runtime refusal at the publish boundary,
 not just a convention. The full contract spans achieve / issue / release

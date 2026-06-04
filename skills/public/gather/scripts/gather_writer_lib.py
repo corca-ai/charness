@@ -57,7 +57,7 @@ def refresh_current_pointer(
     but stays in-process so the writer does not depend on a
     parent-harness shell-out that may not be available in every consumer
     layout. Refuses to operate on a symlink whose target escapes
-    `output_dir`. See corca-ai/charness#138.
+    `output_dir`.
     """
     payload: dict[str, Any] = {
         "pointer_path": str(pointer_path),

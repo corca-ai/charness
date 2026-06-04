@@ -277,7 +277,7 @@ caller-side closeout:
 > missing or free-form, and name it as the closeout gate in `SKILL.md`. A prose
 > schema the caller must re-derive every time is not a contract.
 
-This is the unifying root cause behind corca-ai/charness#199/#201/#203/#205:
+This is the unifying root cause behind the structured-output validator failures:
 skills declared structured output the caller had to act on, but shipped no
 validator, so the caller re-classified prose on every pass (15 critique passes ×
 15 manual triages in the Ceal-session evidence). The fix each time was the same
@@ -302,8 +302,8 @@ Every `argparse.add_argument(...)` call in a skill script must pass an explicit
 `help="..."` string — for positional arguments too, not just flags. The first
 caller of any skill script is an LLM with no shared context with the author;
 without `help=` text, `--help` lists flag names only, and the model is forced
-into a guess-then-grep-source loop on first use (observed in live agent
-runtimes; see corca-ai/charness#192).
+into a guess-then-grep-source loop on first use, as observed in live agent
+runtimes.
 
 A short imperative phrase is enough. The bar is: "an LLM caller can pick the
 right value on first read of `--help`." Example:

@@ -38,7 +38,7 @@ def _load_shared_helper():
 # enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
 CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
 
-# #253 rung 1b: in-scope goals (Created >= the disposition rule date) must also
+# Disposition rung 1b: in-scope goals must also
 # carry a bound ``Disposition review: <path>`` line proving a fresh-eye
 # disposition review *ran* (or a ``skipped: host-blocked-subagent: <detail>``).
 # Grandfathered goals do not require it — the name is appended to the required
@@ -46,8 +46,8 @@ CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
 DISPOSITION_REVIEW_EVIDENCE = "disposition_review"
 
 # Retro H2 sections whose substance must be narrated to the user, not just
-# persisted to the retro file (#233 F2). The After-phase gate surfaces which of
-# these the retro actually contains so the closeout response can transport them.
+# persisted to the retro file. The After-phase gate surfaces which of these the
+# retro actually contains so the closeout response can transport them.
 NARRATION_REQUIRED_SECTIONS = (
     "Waste",
     "Critical Decisions",
@@ -67,7 +67,7 @@ _EVIDENCE_LINE = re.compile(
 
 # Activation line points at the goal's own file: ``/goal @<repo-rel-path>``.
 # The basename minus the date prefix is the goal slug, the strongest binding
-# token for the closeout's evidence files (#233 F1).
+# token for the closeout's evidence files.
 _ACTIVATION_PATH = re.compile(
     r"^[\s>*-]*Activation\s*:\s*`?\s*/goal\s+@?([^`\s]+)",
     re.MULTILINE | re.IGNORECASE,
@@ -81,7 +81,7 @@ def derive_goal_tokens(text: str) -> list[str]:
 
     The tokens are matched against each evidence file's basename/content so a
     closeout cannot satisfy the gate by citing an unrelated pre-existing
-    artifact (#233 F1). Returns ``[]`` when the goal identity is not derivable
+    artifact. Returns ``[]`` when the goal identity is not derivable
     (e.g., a malformed Activation line); the caller then opts out of binding.
     """
     match = _ACTIVATION_PATH.search(text)
@@ -104,8 +104,8 @@ def narration_sections_present(retro_text: str) -> list[str]:
     """Return which ``NARRATION_REQUIRED_SECTIONS`` the retro file contains.
 
     Used to surface, at flip-to-complete time, exactly which substantive retro
-    sections the closeout response must narrate to the user (#233 F2). This is
-    an affordance, not a gate: it does not block the flip.
+    sections the closeout response must narrate to the user. This is an
+    affordance, not a gate: it does not block the flip.
     """
     masked = _mask_fences(retro_text)
     present: list[str] = []
@@ -169,7 +169,7 @@ def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
 
 
 def _load_sibling_disposition():
-    """Load the sibling #253 improvement-disposition gate module.
+    """Load the sibling improvement-disposition gate module.
 
     Kept in its own file (a separable concept, like this module was split from
     ``goal_artifact_lib.py``) so neither file approaches the single-file line
@@ -188,7 +188,7 @@ def _load_sibling_disposition():
 
 
 def _load_sibling_metric_window():
-    """Load the sibling goal-metric-window module for the non-blocking #282
+    """Load the sibling goal-metric-window module for the non-blocking
     closeout attention signal. A leaf module (no sibling imports), so the
     dependency stays one-directional.
     """
@@ -303,7 +303,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     """
     helper = _load_shared_helper()
     parsed = parse_closeout_evidence(text)
-    # #253 rung 1b: require the review-ran evidence line only for in-scope goals
+    # Disposition rung 1b: require the review-ran evidence line only for in-scope goals
     # (grandfather-by-Created gates BOTH rungs — else a grandfathered goal would
     # still be refused for a Disposition review line it never had).
     in_scope = disposition_gate_applies(text)
@@ -334,7 +334,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # the user-facing closeout (not just persist to the file). Non-blocking.
     report["narration_required_sections"] = _retro_narration_for_satisfied(report)
 
-    # #253 rung 1a: deterministic block-the-blank floor (grandfathered by Created
+    # Disposition rung 1a: deterministic block-the-blank floor (grandfathered by Created
     # date; substance is rung 2's job). Rung 1b (the disposition_review line) is
     # already enforced above via the ``required`` set; 1a fires independently so a
     # rung-1b skip on a subagent-blocked host still leaves the blank check active.
@@ -347,14 +347,14 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # rule date), so it runs unconditionally; the module no-ops when inert.
     apply_coordination_floors(report, text)
 
-    # #282 affordance: surface whether a goal-scoped `Host metric window:` line
+    # Metric-window affordance: surface whether a goal-scoped `Host metric window:` line
     # was recorded so an absent window is visible at flip-to-complete rather than
     # silently reported thread-wide. Strictly non-blocking — it never touches
     # report["ok"] — because a host that lacks timestamps legitimately records
     # the documented `unavailable` case instead.
     report["metric_window"] = metric_window_attention(text)
 
-    # Adapter seam for #287: publication and Auto-Retro policy are repo-owned
+    # Adapter seam: publication and Auto-Retro policy are repo-owned
     # configuration with safe audit-only fallback when absent. A found but
     # invalid adapter blocks completion so closeout does not silently ignore the
     # repo's declared publication contract.

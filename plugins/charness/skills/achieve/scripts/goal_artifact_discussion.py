@@ -1,4 +1,4 @@
-"""Before-phase operator discussion readiness for achieve goals (#276)."""
+"""Before-phase operator discussion readiness for achieve goals."""
 from __future__ import annotations
 
 import re

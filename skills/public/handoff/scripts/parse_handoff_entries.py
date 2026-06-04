@@ -52,7 +52,7 @@ def _resolve_handoff_path(args: argparse.Namespace) -> Path:
     # Source stage: input is the handoff doc, not pipeline JSON. A positional
     # path or --handoff-path both name it (positional wins); otherwise resolve
     # via the adapter from --repo-root. The positional makes the natural
-    # `parse_handoff_entries.py docs/handoff.md` invocation work (#248).
+    # direct `parse_handoff_entries.py docs/handoff.md` invocation work.
     explicit = _explicit_handoff_path(args)
     if explicit is not None:
         return explicit
@@ -103,7 +103,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "Also union open tracker issues into the entries so the chunker "
-            "reasons over the live backlog (adapter-gated; #249). Default off "
+        "reasons over the live backlog (adapter-gated). Default off "
             "keeps the source stage offline."
         ),
     )

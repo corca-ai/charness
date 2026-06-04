@@ -114,6 +114,8 @@ skill_ergonomics_gate_rules:
   - long_core
   - issue_anchor_in_core
   - mode_option_pressure_terms
+  - portable_package_dated_incident
+  - portable_package_issue_anchor
   - progressive_disclosure_risk
   - code_fence_without_helper_script
   - portable_helper_path_ambiguity

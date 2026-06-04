@@ -125,7 +125,7 @@ def _objective_from_chunk(chunk: ChunkCandidate) -> str:
 def _quote_entry_body(body: str) -> str:
     """Blockquote a handoff entry's body.
 
-    No marker scrub is needed: #255 removed the trivial-goal exemption from
+    No marker scrub is needed: the trivial-goal exemption was removed from
     ``goal_artifact_lib``, so the portability gate no longer special-cases any
     ``single-slice goal`` phrase. Quoted handoff prose is safe verbatim.
     """
@@ -230,7 +230,7 @@ def render_auto_draft_artifact(
     Activation line). The caller is responsible for writing the body to
     that path; this function is pure rendering.
 
-    Source-chunk text is rendered verbatim: #255 removed the trivial-goal
+    Source-chunk text is rendered verbatim: the trivial-goal
     exemption from ``goal_artifact_lib``, so there is no longer a marker
     phrase a quoted handoff entry could use to neuter the portability gate.
     """

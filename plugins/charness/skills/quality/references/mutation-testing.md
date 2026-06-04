@@ -94,7 +94,7 @@ discovery for zero changed files.
    - `pull_request`: runs `commands.dry_run` (no sample step).
    - `workflow_dispatch` or scheduled: runs `commands.sample` then
      `commands.full`. Scheduled runs always execute — same-SHA dedup was
-     removed (see corca-ai/craken-agents#127) because it both masked real
+     removed because it both masked real
      regressions and defeated the stratified-sampling intent.
 3. always runs `commands.summary` and uploads `report_paths.*` as the
    `mutation-report` actions artifact.
@@ -182,7 +182,7 @@ preset stays stack-neutral.
 
 When a run FAILs on the **blocking** "changed files with uncovered changed
 lines" signal (distinct from a score break — the score can pass while this
-fails), two traps waste time and produce false proof (learned from #251):
+fails), two traps waste time and produce false proof:
 
 - **Read the summary as two results, not one overloaded status.** The top-level
   status is the overall gate result. The `Mutation score:` row reports only the

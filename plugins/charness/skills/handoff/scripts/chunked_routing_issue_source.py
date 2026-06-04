@@ -1,4 +1,4 @@
-"""#249 issue-backed source for the handoff chunker.
+"""Issue-backed source for the handoff chunker.
 
 Lets a pickup reason over the live open-issue backlog, not only the
 hand-maintained ``## Next Session`` list. Each open issue becomes the same
@@ -111,7 +111,7 @@ def issue_to_handoff_entry(issue: dict[str, Any], index: int) -> HandoffEntry:
     label. Issue *bodies* cite many incidental paths (a mutation-regression
     body lists mutant paths across many skills, a process issue cites several
     skill dirs); merging on those over-clusters unrelated issues — observed
-    directly in the slice-2 live dogfood. The same-surface signal #249 wants
+    directly in live dogfood. The same-surface signal this path wants
     ("several Slack-rendering bugs") lives in the title and labels. ``referenced_*``
     still capture the full issue for display and slice-3 dedup; only the merge
     boundary is narrowed.
@@ -310,7 +310,7 @@ def dedup_and_union(
     issue_entries: list[HandoffEntry],
 ) -> list[HandoffEntry]:
     """Union handoff + issue entries, merging an issue into a handoff entry
-    that already cites it (#249 dedup) instead of double-counting.
+    that already cites it instead of double-counting.
 
     A handoff entry that cites ``#X`` and the issue entry whose own number is
     ``X`` are the same work. The issue is merged INTO the citing handoff entry —

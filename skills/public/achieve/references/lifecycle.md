@@ -32,7 +32,7 @@ Establish:
 Ask a small number of high-leverage questions. Do not interrogate the user for
 detail that a strong default or the request wording already settles.
 
-### Mode disambiguation (#239)
+### Mode disambiguation
 
 One mode question is high-leverage often enough to call out: is this an
 **artifact-only** goal draft (shape and save, then stop) or an
@@ -44,9 +44,7 @@ user wanted only reviewed. When a strong default settles it (the prose names the
 mode), state the assumed mode in the artifact and the response instead of
 asking. The mode is a shaping-time intent question only; it never licenses
 auto-execution, because `/goal` (pursue) and `/achieve` (shape) are separate
-operator actions (#247). This is the
-[#239](https://github.com/corca-ai/charness/issues/239) before-phase
-question-discipline contract.
+operator actions. This is the before-phase question-discipline contract.
 
 ### Anti-anchoring probe
 
@@ -59,10 +57,9 @@ before locking the design. Record the result on each value:
   else (adapter, preset, profile, integration manifest), or
 - `single-point: <reason>` when the value really is a singleton.
 
-A confirmed value with neither record is over-anchored. This is the
-[#229](https://github.com/corca-ai/charness/issues/229) lesson — one
-confirmed model name was treated as a global default when the repo runs
-on multiple hosts.
+A confirmed value with neither record is over-anchored. This preserves the
+confirmed-input over-anchoring lesson: one confirmed model name must not become
+a global default when the repo runs on multiple hosts.
 
 When the repo is known to vary on a host/provider/environment axis, do
 **not** offer an `AskUserQuestion` that frames the value as a global
@@ -92,22 +89,22 @@ in the template):
 
 `check_goal_artifact.py` enforces these on every goal regardless of
 size. A goal that genuinely has nothing for a section keeps the heading
-and writes `N/A — <reason>`. (#255 removed the old size/marker exemption:
-its full-text `Single-slice goal:` scan was poisoned by prose merely
-describing the marker, and the template already seeds all three headings,
-so the exemption was both unsafe and redundant.)
+and writes `N/A — <reason>`. The old size/marker exemption was removed:
+its full-text `Single-slice goal:` scan was poisoned by prose merely describing
+the marker, and the template already seeds all three headings, so the exemption
+was both unsafe and redundant.
 
 When shaping an auto-drafted skeleton, overwrite its
 `To be filled by the achieve Before-phase` placeholder lines with the real
 content — a leftover marker leaves the goal reading as unshaped to the
 pursue-readiness check, which would make `/goal` fail-fast on an
-actually-shaped goal (#247).
+actually-shaped goal.
 
 Save the artifact with `upsert_goal.py` at status `draft`. Tell the user the
 file is inert until they run the activation command. The skill does **not** start
 executing slices on its own — activation is the user's explicit decision.
 
-### Activation-closeout clarity (#239)
+### Activation-closeout clarity
 
 The before-phase response must make activation impossible to miss. Close it with
 an explicit checklist the operator can act on without rereading:
@@ -121,7 +118,7 @@ an explicit checklist the operator can act on without rereading:
 its `Activation:` line; this closeout checklist is the response-side counterpart
 so the operator-facing handoff is as clear as the artifact contract.
 
-### Activation = pursue only (#247)
+### Activation = Pursue Only
 
 `/goal @<artifact>` is **pure pursue**: it runs the During loop on the goal as
 given and never shapes. Shaping is the Before-phase's job (invoked via
@@ -133,9 +130,9 @@ Before pursuing, confirm the goal is shaped with
 handoff-chunker auto-draft that was never `/achieve`'d), **fail-fast**: refuse to
 pursue and route the operator to the Before-phase (`/achieve @<artifact>`). Do
 **not** shape the goal inside `/goal` — that would put shaping back into the
-pursue path, the exact responsibility blur #247 removes.
+pursue path, the exact responsibility blur this boundary removes.
 
-### Consequential discussion before activation (#276)
+### Consequential Discussion Before Activation
 
 Structural readiness is not enough when the goal contains consequential
 defaults. Before reporting an artifact as ready for `/goal`, surface a
@@ -209,10 +206,10 @@ review.
 
 `run_slice_closeout.py` auto-surfaces two recurring-trap signals so they are
 workflow affordances, not agent memory: a **length-headroom advisory** for any
-changed gated file already near its limit (`limit − current`; #256 — choose a new
+changed gated file already near its limit (`limit − current`; choose a new
 module over appending before the hard gate fires), and — via the
 `check_staged_mirror_drift.py` pre-commit gate — a **hard block** when exported
-source is staged without its regenerated `plugins/` mirror (#257). Both are
+source is staged without its regenerated `plugins/` mirror. Both are
 owned by the authoring-repo-internal
 `<repo-root>/docs/conventions/implementation-discipline.md`.
 
@@ -290,13 +287,10 @@ At completion the goal artifact should contain:
   `## Critical Decisions`, `## Next Improvements`, and `## Sibling Search`
   (when present) sections inline in the user-facing response — the retro
   file is the durable copy, the user-facing message is the transport.
-  "Persisted at `<path>`" alone is the [#233](https://github.com/corca-ai/charness/issues/233)
-  F2 recurrence pattern (three observed occurrences as of 2026-05-28:
-  the #226 origin run, the #230+#229 closeout that filed #233, and the
-  handoff-chunked-routing closeout that inherited #233 as an Off-Goal
-  note and still hit it). As of #233 the After-phase evidence gate now
-  surfaces a `narration_required_sections` list naming exactly which of
-  these sections the cited retro contains — narrate each one inline.
+  "Persisted at `<path>`" alone repeats the closeout-transport failure pattern.
+  The After-phase evidence gate now surfaces a `narration_required_sections`
+  list naming exactly which of these sections the cited retro contains —
+  narrate each one inline.
   Narration itself stays a prose contract (a hard transcript gate would
   over-fire); the list is the affordance, not a blocker.
 
@@ -319,7 +313,7 @@ the checked-in goal artifact must already read `Status: complete` and
 the artifact disagree, the artifact is the source of truth and the closeout is
 not complete.
 
-### Post-Apply Checkpoint Classification (#237)
+### Post-Apply Checkpoint Classification
 
 When a goal includes a live apply, restart, deployment smoke, or other
 behavioral checkpoint before the final commit, the After-phase closeout must
@@ -378,7 +372,7 @@ scope, not a third escape box: it is a factual claim the fresh-eye reviewer can
 **falsify** (it reads the retro and contradicts a false "none"). Use it only
 when the retro genuinely surfaced nothing to act on.
 
-### Disposition gate — two rungs (#253)
+### Disposition Gate - Two Rungs
 
 The disposition rule above earns teeth from two complementary rungs, each doing
 only what it is good at (the gate-and-intelligence split). A deterministic
@@ -400,7 +394,7 @@ made by an agent and recorded for a human, never by a regex.
   After-phase already mandates a bounded fresh-eye closeout review; this gives
   that reviewer an added mandate: read the cited retro's `## Next Improvements`
   and the goal's `## Auto-Retro`, and record a **per-improvement verdict** —
-  for each improvement, dispositioned (`applied:` / `issue #N` / explicit-none)
+  for each improvement, dispositioned (`applied:` / `issue <id>` / explicit-none)
   or undispositioned — into a review artifact the `Disposition review:` line
   binds. This is the substantive call a regex cannot make (polarity, "filed" vs
   "not filed", narration-vs-action). It is **non-deterministic by nature** — made
@@ -412,7 +406,7 @@ exists and binds) and catches the unambiguous *blank*; it never scores whether a
 non-empty Auto-Retro genuinely disposed each improvement. That substantive
 judgment is rung 2's and the human's. A fully-deterministic *substantive* check
 is infeasible — a prose word-list over-fires or passes pure narration (proven on
-the live corpus) — so #253's literal "deterministic check" is satisfied as a
+the live corpus) — so the deterministic-check requirement is satisfied as a
 deterministic floor **plus** a recorded intelligent review, named honestly, not
 as a quiet scope-narrowing. Narration stays a non-blocking affordance while
 review-*existence* is blocking, for one principled reason: you can ungameably
@@ -434,7 +428,7 @@ whole body):
   `probe_host_logs.py` output (e.g.,
   `charness-artifacts/probe/<date>-<slug>.json`), **or**
   `Host log probe: skipped: <enum>: <detail>`.
-- `Disposition review: <path>` — **for in-scope goals only** (#253; see
+- `Disposition review: <path>` — **for in-scope goals only** (see
   grandfather rule below) — the fresh-eye disposition-review artifact (rung 2),
   e.g. under `charness-artifacts/critique/`, **or**
   `Disposition review: skipped: host-blocked-subagent: <detail>` on a host that
@@ -444,9 +438,9 @@ whole body):
 
 The `## Auto-Retro` blank check (rung 1a) and the `Disposition review:`
 requirement (rung 1b) fire only for goals **`Created:` on or after the rule
-landing date `2026-05-30` (inclusive)**. A goal shaped before the rule existed
-had no chance to plan its Auto-Retro/review around it, so keying on `Created`
-(not completion date) grandfathers exactly the in-flight goals; a
+landing date (inclusive)**. A goal shaped before the rule existed had no chance
+to plan its Auto-Retro/review around it, so keying on `Created` (not completion
+date) grandfathers exactly the in-flight goals; a
 missing/malformed `Created:` fails **closed** (the gate applies) so a goal cannot
 dodge both rungs by corrupting one line. Grandfathering is clone-safe (in-file
 content, not mtime).
@@ -454,13 +448,13 @@ content, not mtime).
 `check_goal_artifact.py` runs the same check post-flip when the goal's
 status is already `complete`, so the gate stays visible from both
 directions. (A goal closed before the rule but `Created` on/after the landing
-date — e.g. `2026-05-30-issue-251`, closed ~80 min before the rule commit — is
-in-scope and shows a rung-1b diagnostic on re-check, but is never *re-refused*:
-the flip-guard only fires on a non-`complete` → `complete` transition.) The
+date is in-scope and shows a rung-1b diagnostic on re-check, but is never
+*re-refused*: the flip-guard only fires on a non-`complete` → `complete`
+transition.) The
 contract lives at the authoring-repo-internal
 `<repo-root>/docs/prescribed-skill-closeout-contract.md`.
 
-A cited evidence file must also **bind** to this goal (#233 F1): file
+A cited evidence file must also **bind** to this goal: file
 presence is necessary but not sufficient, so each evidence path's
 basename or content must reference the goal's identity (its slug or the
 issue numbers parsed from the `Activation:` line). A closeout that points
@@ -496,12 +490,13 @@ step line in `## Coordination Cues` (a real reference or an explicit opt-out):
 All are presence/binding-only (they never classify whether prose is "good
 enough"), scoped to `## Coordination Cues` so a goal that merely *describes* a
 step line in prose cannot falsely satisfy them, and **grandfathered by
-`Created` date**. Gather/release apply to goals Created ≥ `2026-05-31`; issue
-closeout applies to goals Created ≥ `2026-06-02`. A missing/malformed `Created`
-fails closed. The floors fire at the `complete` flip (`upsert_goal.py`) and
-post-flip (`check_goal_artifact.py`), like the disposition gate. `gather`,
-`release`, and `issue` stay useful standalone — these are operator-side cues
-`achieve` plans into the artifact, never `achieve`-only branches in those skills.
+`Created` date**. Gather/release apply to goals Created on or after the
+gather/release rule landing date; issue closeout applies to goals Created on or
+after its landing date. A missing/malformed `Created` fails closed. The floors
+fire at the `complete` flip (`upsert_goal.py`) and post-flip
+(`check_goal_artifact.py`), like the disposition gate. `gather`, `release`, and
+`issue` stay useful standalone — these are operator-side cues `achieve` plans
+into the artifact, never `achieve`-only branches in those skills.
 
 ## Honest Proof Discipline
 
