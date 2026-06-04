@@ -96,6 +96,14 @@ When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.
 
+When `id != "gh"` and `commands` is omitted or null, preflight still reports
+`selected_backend` so operators can see the intended capability substrate, but
+backend operations are not ready. Configure a synchronous wrapper that returns
+the issue skill's expected stdout/JSON contracts before using create, view,
+comment, close, or search operations. Host-mediated CLIs that only queue a
+request and write a later result artifact are capability substrates, not
+drop-in issue backend command templates.
+
 ## Milestones
 
 The skill assigns only milestones the repository already has and never creates
@@ -210,9 +218,11 @@ Preflight returns ok only when:
 - backend binary is present on PATH
 - for `gh`, `gh auth status` exits 0
 
-For non-gh backends, presence of the binary is treated as ready; the host
-owns deeper auth/health probing because the worker sandbox should not
-introspect host credentials.
+For non-gh backends, binary presence alone is not enough when `commands` is
+omitted. Preflight reports `backend_ops_available: false` and returns not-ready
+until adapter commands or a synchronous wrapper are configured. When commands
+are configured, the host still owns deeper auth/health probing because the
+worker sandbox should not introspect host credentials.
 
 ## Body Safety (#232)
 

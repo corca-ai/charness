@@ -99,7 +99,9 @@ def _parse_backend(raw: Any, errors: list[str], warnings: list[str]) -> dict[str
     if backend_id != "gh" and not commands:
         warnings.append(
             f"issue_backend.id={backend_id} declared without commands; "
-            "agent must follow the host-documented command shape until commands templates are filled in"
+            "selected_backend is visible for host-capability routing, but issue "
+            "backend create/view/comment/close/search ops are unavailable until "
+            "a synchronous adapter wrapper is configured"
         )
     return {"id": backend_id, "binary": binary, "commands": commands}
 

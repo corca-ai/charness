@@ -82,36 +82,38 @@ def _probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
     return selected
 
 
-def _backend_ok(selected: dict[str, Any]) -> bool:
-    if not selected["found"]:
-        return False
-    if selected["id"] == "gh":
-        return bool(selected["auth_status"]) and selected["auth_status"]["exit_code"] == 0
-    return True
-
-
 def command_preflight(args: argparse.Namespace) -> int:
     resolved = _resolve_backend(args.repo_root.resolve())
     try:
         selected = _probe_backend(resolved["backend"])
     except RuntimeError as exc:
-        payload = {"ok": False, "error": str(exc), "adapter": resolved["adapter"],
-                   "selected_backend": resolved["backend"]}
+        payload = {"ok": False, "error": str(exc), "adapter": resolved["adapter"], "selected_backend": resolved["backend"]}
         if args.json:
             emit(payload)
         else:
             print(str(exc))
         return 1
-    ok = resolved["adapter_ok"] and _backend_ok(selected)
+    backend_ready = selected["found"] and (
+        bool(selected.get("commands")) if selected["id"] != "gh"
+        else bool(selected["auth_status"]) and selected["auth_status"]["exit_code"] == 0
+    )
+    ok = resolved["adapter_ok"] and backend_ready
     payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
+    if selected["id"] != "gh":
+        payload["backend_ops_available"] = bool(selected.get("commands"))
     if selected["id"] == "gh":
-        payload.update(gh_found=selected["found"], gh_path=selected["binary_path"],
-                       auth_status=selected["auth_status"])
+        payload.update(gh_found=selected["found"], gh_path=selected["binary_path"], auth_status=selected["auth_status"])
     if not selected["found"]:
         payload["error"] = (
             f"issue_backend binary {selected['binary']!r} not found on PATH. "
             f"Install the declared backend or update issue_backend in "
             f".agents/issue-adapter.yaml so it matches a backend the host exposes."
+        )
+    elif selected["id"] != "gh" and not selected.get("commands"):
+        payload["error"] = (
+            f"issue_backend.id={selected['id']} selected {selected['binary']!r}, "
+            "but no synchronous issue backend command templates are configured. Configure a wrapper that returns the issue skill's expected JSON "
+            "contract before using create/view/comment/close/search operations."
         )
     if args.json:
         emit(payload)
@@ -122,7 +124,6 @@ def command_preflight(args: argparse.Namespace) -> int:
     else:
         print(f"{selected['id']} backend binary {selected['binary']!r} missing")
     return 0 if ok else 1
-
 
 def command_resolve_target(args: argparse.Namespace) -> int:
     adapter = ADAPTER.load_adapter(args.repo_root.resolve())
