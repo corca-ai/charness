@@ -252,7 +252,13 @@ def _delivery_warnings(
 
 
 def _validate_chaining_contract(validated: dict[str, Any], warnings: list[str]) -> None:
-    outputs = validated.get("outputs") or []
+    contract = delivery_contract(validated)
+    for issue in contract["blocking_issues"]:
+        warnings.append(issue)
+
+
+def delivery_contract(data: dict[str, Any]) -> dict[str, Any]:
+    outputs = data.get("outputs") or []
     has_thread_reply = any(
         isinstance(output, dict) and output.get("delivery_role") == "thread_reply"
         for output in outputs
@@ -261,22 +267,36 @@ def _validate_chaining_contract(validated: dict[str, Any], warnings: list[str]) 
         isinstance(output, dict) and output.get("delivery_role") == "parent"
         for output in outputs
     )
-    template = validated.get("post_command_template") or ""
+    template = data.get("post_command_template") or ""
+    has_handle_placeholder = "{parent_delivery_handle}" in template or "{parent_delivery_handle_q}" in template
+    blocking_issues: list[str] = []
+    if data["delivery_kind"] == "none":
+        blocking_issues.append("delivery_kind is `none`; announcement remains draft-only.")
+    if data["delivery_kind"] == "release-notes" and not data.get("release_notes_path"):
+        blocking_issues.append("release-notes delivery requires `release_notes_path` before publication.")
+    if data["delivery_kind"] == "human-backend" and not data.get("post_command_template"):
+        blocking_issues.append("human-backend delivery requires `post_command_template` before posting.")
+    if data["delivery_kind"] == "human-backend" and not data.get("delivery_capability"):
+        blocking_issues.append("human-backend delivery requires `delivery_capability` before posting.")
     if has_thread_reply and not has_parent:
-        warnings.append(
+        blocking_issues.append(
             "outputs declare `thread_reply` without a preceding `parent` output; "
-            "the chaining contract in `references/delivery-seams.md` (Chaining Outputs) "
-            "needs a parent output to emit the delivery handle."
+            "delivery is draft-only until the parent output can emit a delivery handle."
         )
-    has_handle_placeholder = (
-        "{parent_delivery_handle}" in template or "{parent_delivery_handle_q}" in template
-    )
     if has_thread_reply and not has_handle_placeholder:
-        warnings.append(
+        blocking_issues.append(
             "outputs declare `thread_reply` but `post_command_template` does not reference "
             "`{parent_delivery_handle}` or `{parent_delivery_handle_q}`; follow-up replies will "
-            "not be wired to the parent post (see `references/delivery-seams.md` Chaining Outputs)."
+            "not be wired to the parent post."
         )
+    return {
+        "status": "draft-only" if blocking_issues else "executable",
+        "blocking_issues": blocking_issues,
+        "chaining_required": has_thread_reply,
+        "chaining_satisfied": has_thread_reply and has_parent and has_handle_placeholder,
+        "has_parent_output": has_parent,
+        "has_parent_handle_placeholder": has_handle_placeholder,
+    }
 
 
 def _apply_public_body_shape(
@@ -316,11 +336,13 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
     adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
     if adapter_path is None:
         data = infer_announcement_defaults(repo_root)
+        contract = delivery_contract(data)
         return {
             "found": False,
             "valid": True,
             "path": None,
             "data": data,
+            "delivery_contract": contract,
             "field_state": _field_state_map({}),
             "artifact_filename": ARTIFACT_FILENAME,
             "artifact_class": data["artifact_class"],
@@ -349,11 +371,13 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
         warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_announcement_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
+    contract = delivery_contract(data)
     return {
         "found": True,
         "valid": not errors,
         "path": str(adapter_path),
         "data": data,
+        "delivery_contract": contract,
         "field_state": _field_state_map(raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_class": data["artifact_class"],

@@ -156,8 +156,14 @@ Examples (each host owns its own shape; the public surface never names them):
 - `release-notes`: a section anchor or the URL of the appended PR review
   comment
 
-If a `thread_reply` output's template references `{parent_delivery_handle}`
-but no prior `parent` output produced a handle, the seam should fail fast
+If a `thread_reply` output is declared without a parent output or without a
+`{parent_delivery_handle}` / `{parent_delivery_handle_q}` placeholder in the
+template, resolver output reports `delivery_contract.status: draft-only`.
+Delivery code must treat that as non-executable and stop before posting a
+top-level message by accident.
+
+If a `thread_reply` output's template references `{parent_delivery_handle}` but
+no prior `parent` output produced a handle at runtime, the seam should fail fast
 rather than post the literal placeholder.
 
 When a `parent` output is split into `(part N/total)` chunks by
@@ -195,8 +201,6 @@ contract: `gh issue comment ...` piped through
 PR-comment delivery, and a release-notes seam can echo a section anchor
 literal.
 
-The placeholder validator in `scripts/announcement_adapter_lib.py`
-emits a warning when `outputs` declares a `thread_reply` role but
-`post_command_template` omits `{parent_delivery_handle}` /
-`{parent_delivery_handle_q}`, so adapter authors are told before a
-chained reply silently lands as a top-level message.
+The resolver still emits warnings for miswired chaining, but the load-bearing
+machine signal is `delivery_contract.status`: `thread_reply` configurations are
+either executable or explicitly draft-only before any backend post is attempted.

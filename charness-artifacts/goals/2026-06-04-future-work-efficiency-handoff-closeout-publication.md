@@ -9,10 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 - announcement dual-output delivery chaining for #289.
-- Next action: inspect `announcement` adapter/resolver and delivery runner
-  surfaces; make parent/thread delivery chains executable or explicitly
-  draft-only before any unthreaded `thread_reply` claim can pass.
+- Current slice: Slice 6 - final sync, broad verify, critique, issue closeout,
+  retro, and handoff refresh.
+- Next action: lock the mutation set, run final broad verification, run required
+  critique/retro/issue closeout proof, refresh handoff at closeout, then flip
+  the goal only after the checked-in artifact passes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -132,7 +133,7 @@ and verification steps prove the carrier.
 | 2 | Implement agentic handoff work-package proposal and stable fixture policy for #286/#285 | This fixes the entry point that chooses future work and removes live issue churn from tests | Source packet/proposal validator tests, fixture-owned issue data, handoff e2e package rendering | done |
 | 3 | Add direct-commit closeout carrier rehearsal for #288 | Safer closeout reduces push/recommit/CI-watch waste for the rest of the bundle | Carrier rehearsal command/tests, unchanged existing validation behavior, issue skill instruction update | done |
 | 4 | Add Achieve closeout publication / auto-retro disposition adapter seam for #287 | The broader policy should consume the concrete closeout rehearsal contract | Adapter contract/resolver/tests, lifecycle wording, missing-adapter fallback, goal validation | done |
-| 5 | Make announcement dual-output delivery chaining executable or draft-only for #289 | Delivery claims should fail fast or stay draft-only instead of surprising operators late | Adapter example/runner or resolver updates, thread-reply tests, single-output compatibility | planned |
+| 5 | Make announcement dual-output delivery chaining executable or draft-only for #289 | Delivery claims should fail fast or stay draft-only instead of surprising operators late | Adapter example/runner or resolver updates, thread-reply tests, single-output compatibility | done |
 | 6 | Sync, broad verify, critique, issue closeout, retro, and handoff refresh | Bundle completion needs generated surfaces, proof, and tracked issue closure aligned | Synced exports, broad gate, critique, closeout verification, retro dispositions, updated handoff | planned |
 
 ## Coordination Cues
@@ -224,6 +225,20 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 - Off-goal findings: No tracked issue was closed; #287 remains open until final bundle closeout publishes and verifies the carrier.
 - Lessons carried forward: Keep closeout publication defaults and Auto-Retro disposition floors in adapter data with safe audit-only fallback; let check_goal_artifact surface the resolved policy before a goal can claim completion.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-e962c73045fe45109434fb767a3eef07.
+
+### Slice 5: Announcement delivery chain posture
+
+- Objective: Make #289 dual-output parent/thread announcement delivery executable or explicitly draft-only.
+- Why this approach: A `thread_reply` output without a parent handle should fail before posting, not surprise the operator by landing as a top-level message.
+- Commits: pending commit for Slice 5.
+- What changed: Added resolver-level delivery_contract status for announcement adapters; `thread_reply` chains without a parent output or parent handle placeholder now remain adapter-valid for drafting but report draft-only blocking issues. Capability explain now surfaces delivery status and only advertises human-backend capability needs when delivery_contract is executable. Updated delivery-seams/adapter-contract references, dogfood evidence, plugin mirror, and tests.
+- Alternatives rejected: Rejected making miswired thread_reply adapters invalid because that would block draft creation and break the draft-first contract. Rejected leaving warning-only behavior because delivery code and capability explain could still treat the backend as executable.
+- Targeted verification: Focused tests: pytest -q tests/test_announcement_adapter_lib.py tests/charness_cli/test_capability_resolution.py tests/quality_gates/test_bootstrap_visibility.py tests/quality_gates/test_portable_json_artifacts.py tests/test_public_skill_dogfood.py -> 39 passed. Public-skill dogfood, public-skill validation, skill validation, doc links, command docs, markdown, secrets, ruff, Python length, attention visibility, packaging, and run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review passed.
+- Test duplication pressure: Expanded tests/test_announcement_adapter_lib.py and tests/charness_cli/test_capability_resolution.py to cover executable parent/thread chains, draft-only miswired thread_reply posture, and capability explain suppression for non-executable delivery.
+- Critique: Scenario review folded: announcement routing, draft artifact path, and draft-first behavior are unchanged. The semantic change is delivery-posture reporting, covered by deterministic resolver and CLI tests; live Cautilus was not required by planner.
+- Off-goal findings: No tracked issue was closed; #289 remains open until final bundle closeout publishes and verifies the carrier.
+- Lessons carried forward: Warnings are advisory; delivery readiness needs a structured status that downstream tools can consume before side effects.
+- Metrics: Usage episode emitted by slice closeout: slice-closeout-29506b652eb940fc854996dfa56f2e09.
 
 ## Context Sources
 

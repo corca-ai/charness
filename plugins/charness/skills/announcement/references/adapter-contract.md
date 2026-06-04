@@ -76,6 +76,11 @@ Search order:
 - `outputs`: empty list. When non-empty each item is
   `{id, audience_tags, delivery_role: single|parent|thread_reply}` and the
   delivery seam routes outputs accordingly
+- `delivery_contract`: resolver output, not adapter input. It reports
+  `status: executable` only when the selected delivery kind has the needed
+  target/template/capability and any `thread_reply` output has both a parent
+  output and `{parent_delivery_handle}` or `{parent_delivery_handle_q}` in the
+  command template. Otherwise status is `draft-only` with blocking issues.
 
 ## Artifact Rule
 

@@ -673,13 +673,16 @@ def explain_skill_capabilities(
             str(target_repo_root),
         )
         adapter_data = adapter_payload["data"]
+        delivery_contract = adapter_payload.get("delivery_contract", {})
         delivery_kind = adapter_data.get("delivery_kind")
         delivery_capability = adapter_data.get("delivery_capability")
         response["announcement_delivery"] = {
             "delivery_kind": delivery_kind,
             "delivery_capability": delivery_capability,
+            "status": delivery_contract.get("status"),
+            "blocking_issues": delivery_contract.get("blocking_issues", []),
         }
-        if delivery_kind == "human-backend":
+        if delivery_kind == "human-backend" and delivery_contract.get("status") == "executable":
             if isinstance(delivery_capability, str) and delivery_capability:
                 response["capability_needs"] = [
                     *capability_needs,
@@ -694,6 +697,11 @@ def explain_skill_capabilities(
                     *notes,
                     "The current announcement adapter uses `human-backend` delivery but does not set `delivery_capability` yet.",
                 ]
+        elif delivery_kind == "human-backend":
+            response["notes"] = [
+                *notes,
+                "The current announcement adapter is draft-only until its delivery contract is executable.",
+            ]
     return response
 
 
@@ -3669,6 +3677,7 @@ def print_capability_explain_summary(payload: dict[str, object]) -> None:
         print(
             "ANNOUNCEMENT_DELIVERY: "
             f"{announcement_delivery.get('delivery_kind')} "
+            f"{announcement_delivery.get('status') or ''} "
             f"{announcement_delivery.get('delivery_capability') or ''}".rstrip()
         )
 

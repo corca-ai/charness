@@ -256,4 +256,51 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
     logical_ids = {need["logical_id"] for need in announcement_payload["capability_needs"]}
     assert "slack.default" in logical_ids
     assert announcement_payload["announcement_delivery"]["delivery_kind"] == "human-backend"
+    assert announcement_payload["announcement_delivery"]["status"] == "executable"
     assert announcement_payload["announcement_delivery"]["delivery_capability"] == "slack.default"
+
+
+def test_capability_explain_keeps_unwired_thread_reply_draft_only(tmp_path: Path) -> None:
+    target_repo = init_target_repo(tmp_path / "target")
+    agents_dir = target_repo / ".agents"
+    agents_dir.mkdir(parents=True, exist_ok=True)
+    (agents_dir / "announcement-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo-repo",
+                "delivery_kind: human-backend",
+                "delivery_target: team-chat",
+                "post_command_template: scripts/post-announcement.sh {message_file_q}",
+                "delivery_capability: slack.default",
+                "outputs:",
+                "  - id: body",
+                "    audience_tags:",
+                "      - user",
+                "    delivery_role: parent",
+                "  - id: reply",
+                "    audience_tags:",
+                "      - operator",
+                "    delivery_role: thread_reply",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(
+        "capability",
+        "explain",
+        "--repo-root",
+        str(ROOT),
+        "--target-repo-root",
+        str(target_repo),
+        "--json",
+        "announcement",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["announcement_delivery"]["status"] == "draft-only"
+    assert payload["announcement_delivery"]["blocking_issues"]
+    assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}
+    assert any("draft-only" in note for note in payload["notes"])

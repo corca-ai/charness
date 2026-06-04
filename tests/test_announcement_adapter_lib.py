@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from scripts.announcement_adapter_lib import (
+    delivery_contract,
     load_announcement_adapter,
     validate_announcement_adapter_data,
 )
@@ -47,6 +48,7 @@ def test_legacy_adapter_without_new_fields_validates_with_default_values(tmp_pat
     assert data["format_rules_path"] == ""
     assert data["message_size_limit"] == 0
     assert data["public_body_shape"] == "chat_update"
+    assert payload["delivery_contract"]["status"] == "draft-only"
 
 
 def test_release_notes_delivery_defaults_public_body_shape_to_release_notes(tmp_path: Path) -> None:
@@ -119,6 +121,7 @@ def test_thread_reply_without_parent_handle_placeholder_emits_warning(tmp_path: 
     _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
     assert errors == []
     assert any("{parent_delivery_handle}" in warning for warning in warnings)
+    assert delivery_contract(_validated)["status"] == "draft-only"
 
 
 def test_thread_reply_with_parent_handle_placeholder_does_not_warn(tmp_path: Path) -> None:
@@ -134,6 +137,7 @@ def test_thread_reply_with_parent_handle_placeholder_does_not_warn(tmp_path: Pat
     _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
     assert errors == []
     assert not any("{parent_delivery_handle}" in warning for warning in warnings)
+    assert delivery_contract(_validated)["status"] == "executable"
 
 
 def test_thread_reply_without_parent_output_emits_warning(tmp_path: Path) -> None:
@@ -148,6 +152,7 @@ def test_thread_reply_without_parent_output_emits_warning(tmp_path: Path) -> Non
     _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
     assert errors == []
     assert any("without a preceding `parent`" in warning for warning in warnings)
+    assert delivery_contract(_validated)["status"] == "draft-only"
 
 
 def test_in_progress_sources_validation_requires_path_for_kind_path(tmp_path: Path) -> None:
