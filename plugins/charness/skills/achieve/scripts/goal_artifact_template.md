@@ -54,7 +54,9 @@ and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
 - **Routing** — ask `find-skills` to recommend the skill for the current phase or
-  boundary, and record the route it returns.
+  boundary, and record the route it returns. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context

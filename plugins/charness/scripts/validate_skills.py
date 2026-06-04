@@ -49,6 +49,7 @@ SCRIPT_EXTENSION_RE = re.compile(r"\.(sh|bash|zsh|py|js|ts|rb|pl|lua|rs|go|json|
 BACKTICK_REL_PATH_RE = re.compile(
     r"`((?:(?:\.\./)+[A-Za-z0-9._/-]+|references|scripts)/[^`]+)`"
 )
+REFERENCE_LIST_ITEM_RE = re.compile(r"^\s*-\s+`(references/[A-Za-z0-9._/-]+)`(?:\s|$)")
 REDIRECT_PREFIX_RE = re.compile(r"^[0-9]*[<>&]")
 NUMERIC_RE = re.compile(r"^[0-9]+$")
 COMMAND_SEPARATORS = frozenset({"|", "||", "&&", ";", "&"})
@@ -300,6 +301,48 @@ def validate_referenced_paths(root: Path, skill_dir: Path, markdown_path: Path) 
             )
 
 
+def listed_reference_paths_from_lines(lines: list[str]) -> set[str]:
+    return {
+        match.group(1)
+        for line in lines
+        if (match := REFERENCE_LIST_ITEM_RE.match(line))
+    }
+
+
+def listed_reference_paths(skill_dir: Path, skill_md_contents: str) -> set[str]:
+    listed = listed_reference_paths_from_lines(
+        extract_h2_section_lines(skill_md_contents, "References")
+    )
+    index_path = skill_dir / "references" / "index.md"
+    if "references/index.md" in listed and index_path.is_file():
+        listed.update(
+            listed_reference_paths_from_lines(index_path.read_text(encoding="utf-8").splitlines())
+        )
+    return listed
+
+
+def validate_reference_inventory(skill_dir: Path, contents: str) -> Path:
+    listed_reference_paths_set = listed_reference_paths(skill_dir, contents)
+    if not listed_reference_paths_set:
+        raise ValidationError("`## References` must list at least one `references/...` file")
+    for rel_path in sorted(listed_reference_paths_set):
+        if not (skill_dir / rel_path).is_file():
+            raise ValidationError(f"`## References` lists missing path `{rel_path}`")
+
+    references_dir = skill_dir / "references"
+    if references_dir.exists():
+        existing_reference_paths = {
+            str(path.relative_to(skill_dir))
+            for path in references_dir.iterdir()
+            if path.is_file()
+        }
+        missing_reference_listings = sorted(existing_reference_paths - listed_reference_paths_set)
+        if missing_reference_listings:
+            formatted = ", ".join(f"`{path}`" for path in missing_reference_listings)
+            raise ValidationError(f"unlisted reference file(s): {formatted}")
+    return references_dir
+
+
 def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
     skill_md = skill_dir / "SKILL.md"
     contents = skill_md.read_text(encoding="utf-8")
@@ -313,25 +356,7 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
     if "## References" not in contents:
         raise ValidationError("missing `## References` section")
 
-    listed_reference_paths = [
-        line.split("`")[1]
-        for line in lines
-        if line.startswith("- `references/")
-    ]
-    if not listed_reference_paths:
-        raise ValidationError("`## References` must list at least one `references/...` file")
-
-    references_dir = skill_dir / "references"
-    if references_dir.exists():
-        existing_reference_paths = {
-            str(path.relative_to(skill_dir))
-            for path in references_dir.iterdir()
-            if path.is_file()
-        }
-        missing_reference_listings = sorted(existing_reference_paths - set(listed_reference_paths))
-        if missing_reference_listings:
-            formatted = ", ".join(f"`{path}`" for path in missing_reference_listings)
-            raise ValidationError(f"unlisted reference file(s): {formatted}")
+    references_dir = validate_reference_inventory(skill_dir, contents)
 
     validate_referenced_paths(root, skill_dir, skill_md)
     if references_dir.exists():

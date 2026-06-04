@@ -27,6 +27,11 @@ Use this lens to keep public/support skills aligned with:
   validator should own the behavior?
 - Do validators pin exact prose because it is truly load-bearing classifier
   input, or because no one wrote a reference-aware or behavior-level assertion?
+- Do issue anchors, dated incidents, or host-surface references document stable
+  portable behavior, or are they leaking repo-local history and host policy into
+  the package?
+- Are reference files discoverable from `SKILL.md` when a cold reader follows
+  progressive disclosure?
 
 ## Advisory Inventory
 
@@ -43,6 +48,14 @@ quality pass:
 - multiple code fences without helper scripts, which can signal prose ritual
 - prose helper-path ambiguity where bare `<repo-root>/scripts/...` or source-tree file paths
   can be misread as runtime instructions outside the source checkout
+- concrete issue anchors anywhere in a public/support skill package, which can
+  leak repo-local history into portable skill bundles
+- dated incident or history-coupled wording anywhere in a public/support skill
+  package
+- host-surface references that need review before treating the package as host
+  portable
+- reference files that are not listed from `SKILL.md`, which makes the package
+  hard to operate under line-budget pressure
 
 Treat these as prompts, not automatic failures.
 
@@ -71,6 +84,10 @@ Advisory only unless the repo explicitly opts in:
 - progressive-disclosure risk
 - repeated bootstrap fences without a helper script
 - installed-bundle helper-path ambiguity review
+- package-level concrete issue-anchor review
+- package-level dated incident/history review
+- package-level host-surface reference review
+- reference discoverability review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
 
@@ -78,6 +95,11 @@ When a repo opts into `skill_ergonomics_gate_rules`, keep the rule values valid
 and machine-readable. `bootstrap_adapter.py` will refuse to rewrite an adapter
 that sets invalid ergonomics rules, because silently clearing them would hide
 operator intent.
+
+Package-level concrete issue anchors and dated incidents are clean enough in the
+current corpus to be default blocking rules. Host-surface references and
+reference discoverability remain opt-in review signals until their exception
+model and false-positive posture are narrower.
 
 When a repo has discoverable skills but `skill_ergonomics_gate_rules: []`, the
 validator should still return success, but it must emit a structured warning.

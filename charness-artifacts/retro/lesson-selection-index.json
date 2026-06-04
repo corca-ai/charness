@@ -11,9 +11,49 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-04",
-  "source_artifact_count": 119,
-  "candidate_count": 745,
+  "source_artifact_count": 122,
+  "candidate_count": 765,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:70eec22540b8",
+      "kind": "current_focus",
+      "lesson": "Resolved Charness issues #294, #295, #297, and #298 through direct-to-default carrier commits, with #296 kept as already-closed context.",
+      "normalized_key": "resolved charness issues 294 295 297 and 298 through direct to default carrier commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:43819e338e5b",
+      "kind": "current_focus",
+      "lesson": "This retro covers the follow-up after the portable skill quality closeout exposed a roughly five-minute broad pytest cost and a brittle handoff parser test.",
+      "normalized_key": "this retro covers the follow up after the portable skill quality closeout exposed a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:10b1f703314a",
       "kind": "current_focus",
@@ -29,6 +69,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:07297c743b0d",
+      "kind": "current_focus",
+      "lesson": "This session closed the active goal `charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`.",
+      "normalized_key": "this session closed the active goal charness artifacts goals 2026 06 04 portable skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
           "date": "2026-06-04",
           "section": "Context"
         }
@@ -71,6 +131,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
           "date": "2026-06-04",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e33bfef1fdb0",
+      "kind": "next_improvement",
+      "lesson": "#295 should still make broad-vs-focused closeout selection more explicit for pre-lock slice proof versus final verification-lock proof.",
+      "normalized_key": "295 should still make broad vs focused closeout selection more explicit for pre lock",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -155,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:f7bade6a1ad1",
+      "candidate_id": "next_improvement:64a8659e9c81",
       "kind": "next_improvement",
-      "lesson": "applied: record command lines and version beside temporary clone-report counts before treating a tool comparison as durable evidence.",
-      "normalized_key": "applied record command lines and version beside temporary clone report counts before treating a",
+      "lesson": "Applied: keep final lifecycle/audit commits free of close keywords after the issue-resolution carriers have already been verified.",
+      "normalized_key": "applied keep final lifecycle audit commits free of close keywords after the issue resolution",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
       "latest_source_date": "2026-06-04",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -168,95 +248,55 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
           "date": "2026-06-04",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7879cd1a3772",
-      "kind": "next_improvement",
-      "lesson": "applied: the new preflight helper and implementation-discipline guidance make skill-surface headroom/coupling checks executable before broad quality.",
-      "normalized_key": "applied the new preflight helper and implementation discipline guidance make skill surface headroom coupling",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-          "date": "2026-06-04",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c82557fe4e47",
-      "kind": "next_improvement",
-      "lesson": "no new issue: broader index-sensitive test inventory and installed-host proof are valid future work, but they are outside this bounded issue bundle and are recorded as non-claims.",
-      "normalized_key": "no new issue broader index sensitive test inventory and installed host proof are valid",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-          "date": "2026-06-04",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:70c6bb02b70f",
-      "kind": "repeat_trap",
-      "lesson": "Several repeated VCS/status/check commands were useful for phase barriers, but the run still paid extra cost around sync-after-fix and broad rerun.",
-      "normalized_key": "several repeated vcs status check commands were useful for phase barriers but the run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-          "date": "2026-06-04",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:49f9bf3ce23e",
-      "kind": "repeat_trap",
-      "lesson": "Slice 5 initially treated delivery-chain warnings as enough. Fresh-eye review showed that executable posture needs output-order semantics, not only presence of any parent output.",
-      "normalized_key": "slice 5 initially treated delivery chain warnings as enough fresh eye review showed that",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-          "date": "2026-06-04",
-          "section": "Waste"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:70eec22540b8",
+      "kind": "current_focus",
+      "lesson": "Resolved Charness issues #294, #295, #297, and #298 through direct-to-default carrier commits, with #296 kept as already-closed context.",
+      "normalized_key": "resolved charness issues 294 295 297 and 298 through direct to default carrier commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:43819e338e5b",
+      "kind": "current_focus",
+      "lesson": "This retro covers the follow-up after the portable skill quality closeout exposed a roughly five-minute broad pytest cost and a brittle handoff parser test.",
+      "normalized_key": "this retro covers the follow up after the portable skill quality closeout exposed a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:10b1f703314a",
       "kind": "current_focus",
       "lesson": "This retro reviews the goal that resolved #291, #292, and #284 in one bundle: activation readiness, staged-index test isolation, and skill-surface preflight.",
@@ -271,6 +311,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:07297c743b0d",
+      "kind": "current_focus",
+      "lesson": "This session closed the active goal `charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`.",
+      "normalized_key": "this session closed the active goal charness artifacts goals 2026 06 04 portable skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
           "date": "2026-06-04",
           "section": "Context"
         }
@@ -313,6 +373,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
           "date": "2026-06-04",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e33bfef1fdb0",
+      "kind": "next_improvement",
+      "lesson": "#295 should still make broad-vs-focused closeout selection more explicit for pre-lock slice proof versus final verification-lock proof.",
+      "normalized_key": "295 should still make broad vs focused closeout selection more explicit for pre lock",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -397,6 +477,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:64a8659e9c81",
+      "kind": "next_improvement",
+      "lesson": "Applied: keep final lifecycle/audit commits free of close keywords after the issue-resolution carriers have already been verified.",
+      "normalized_key": "applied keep final lifecycle audit commits free of close keywords after the issue resolution",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1940da7063f9",
+      "kind": "next_improvement",
+      "lesson": "Applied: prefer in-process test APIs for import-safe repo scripts unless the subprocess boundary is the behavior under test.",
+      "normalized_key": "applied prefer in process test apis for import safe repo scripts unless the subprocess",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:f7bade6a1ad1",
       "kind": "next_improvement",
       "lesson": "applied: record command lines and version beside temporary clone-report counts before treating a tool comparison as durable evidence.",
@@ -411,6 +531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:024f5d3373fb",
+      "kind": "next_improvement",
+      "lesson": "Applied: run `build_debug_seam_risk_index.py --check` for slices that create or edit current debug seam-risk artifacts.",
+      "normalized_key": "applied run build debug seam risk index py check for slices that create or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
           "date": "2026-06-04",
           "section": "Next Improvements"
         }
@@ -437,6 +577,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6c2db38feded",
+      "kind": "next_improvement",
+      "lesson": "issue #295: make closeout test-selection cost explicit, separating pre-lock slice proof from final verification-lock broad proof.",
+      "normalized_key": "issue 295 make closeout test selection cost explicit separating pre lock slice proof from",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7c13567c4f65",
+      "kind": "next_improvement",
+      "lesson": "issue #296: expose bounded reviewer cost/tier selection in closeout evidence when the host, not the repo, chooses it.",
+      "normalized_key": "issue 296 expose bounded reviewer cost tier selection in closeout evidence when the host",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c82557fe4e47",
       "kind": "next_improvement",
       "lesson": "no new issue: broader index-sensitive test inventory and installed-host proof are valid future work, but they are outside this bounded issue bundle and are recorded as non-claims.",
@@ -453,6 +633,106 @@
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
           "date": "2026-06-04",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c20529f96e8b",
+      "kind": "next_improvement",
+      "lesson": "Treat live handoff + issue union checks as pickup/integration behavior; stable unit tests should use fixtures or stubs.",
+      "normalized_key": "treat live handoff issue union checks as pickup integration behavior stable unit tests should",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d84a0f09b1cc",
+      "kind": "next_improvement",
+      "lesson": "Use the new default closeout command for ordinary repo-python slices; run release-only tests only for release, packaging, install/update, or tool lifecycle changes.",
+      "normalized_key": "use the new default closeout command for ordinary repo python slices run release only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8f1854dff103",
+      "kind": "repeat_trap",
+      "lesson": "Pre-push found debug seam-risk enum drift after the issue carriers were already locally verified.",
+      "normalized_key": "pre push found debug seam risk enum drift after the issue carriers were already",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:086274dc55f7",
+      "kind": "repeat_trap",
+      "lesson": "Repeated carrier verification and pre-push retries added overhead that would have been cheaper before the first push attempt.",
+      "normalized_key": "repeated carrier verification and pre push retries added overhead that would have been cheaper",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0d67860d4356",
+      "kind": "repeat_trap",
+      "lesson": "Repeated status/diff/check commands were partly phase-barrier proof, but the volume shows that final goal work still pays meaningful context and command overhead.",
+      "normalized_key": "repeated status diff check commands were partly phase barrier proof but the volume shows",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+          "date": "2026-06-04",
+          "section": "Waste"
         }
       ]
     },
@@ -491,6 +771,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3e890068205e",
+      "kind": "repeat_trap",
+      "lesson": "The boundary-bypass ratchet caught subprocess-style quality tests late in the publish phase.",
+      "normalized_key": "the boundary bypass ratchet caught subprocess style quality tests late in the publish phase",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3ac8a4c2a788",
+      "kind": "repeat_trap",
+      "lesson": "The failed handoff test asserted that every current live candidate had issue references. That coupled a unit test to GitHub/open-issue state and broke when a valid non-issue-only pickup candidate entered the live queue.",
+      "normalized_key": "the failed handoff test asserted that every current live candidate had issue references that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
           "date": "2026-06-04",
           "section": "Waste"
         }
@@ -571,6 +891,86 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:111cd79472ee",
+      "kind": "repeat_trap",
+      "lesson": "The remaining 216s baseline is still heavy. The current top offenders are cumulative subprocess-heavy quality/release tests rather than one isolated easy fix.",
+      "normalized_key": "the remaining 216s baseline is still heavy the current top offenders are cumulative subprocess",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:086a41c04fa9",
+      "kind": "repeat_trap",
+      "lesson": "The selected broad pytest gate is expensive for small parser/public-skill slices. It passed once before the Slice 5 reviewer fix and again at final locked closeout, so the earlier five-minute run became weaker evidence after a narrow parser change.",
+      "normalized_key": "the selected broad pytest gate is expensive for small parser public skill slices it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0065d44a5ee0",
+      "kind": "repeat_trap",
+      "lesson": "The standing repo-python gate included release-only install/update lifecycle tests even though `run-quality.sh` already treats `release_only` as opt-in. That made ordinary closeout pay release verification cost and hid the true default-vs-release boundary.",
+      "normalized_key": "the standing repo python gate included release only install update lifecycle tests even though",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md",
+          "date": "2026-06-04",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:60ada5da7264",
+      "kind": "repeat_trap",
+      "lesson": "The subagent reviewer tier was not controlled by the spawn call. The repo requires fresh-eye review, but the closeout evidence did not make the host-selected cost/model tier predictable to the operator.",
+      "normalized_key": "the subagent reviewer tier was not controlled by the spawn call the repo requires",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md",
           "date": "2026-06-04",
           "section": "Waste"
         }

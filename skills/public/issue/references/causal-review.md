@@ -127,6 +127,11 @@ Return the triaged patterns plus concrete locations the implementer should
 inspect. The implementer decides at step 5 whether to bundle, leave
 diagnostic-only, mark an intentional boundary, or defer.
 
+When an abstraction-up sibling is left as diagnostic-only for this slice, triage
+whether it is proof-backed no-action or deferred structural work. Deferred
+abstraction-up work needs a bundled fix, intentional boundary, or `follow-up:`
+owner; do not carry it into the close ledger as diagnostic-only context.
+
 ### Output shape (causal review)
 
 The subagent returns:

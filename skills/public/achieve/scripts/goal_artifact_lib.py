@@ -36,7 +36,7 @@ derive_goal_tokens = _closeout.derive_goal_tokens
 narration_sections_present = _closeout.narration_sections_present
 discussion_readiness = _discussion.discussion_readiness
 # Goal-window evidence recording lives in its own module so this file stays under
-# its code-line limit; re-export so callers keep using `goal_artifact_lib` (#282).
+# its code-line limit; re-export so callers keep using `goal_artifact_lib`.
 render_metric_window_line = _metric_window.render_metric_window_line
 record_metric_window = _metric_window.record_metric_window
 metric_window_attention = _metric_window.metric_window_attention
@@ -64,7 +64,7 @@ REQUIRED_SECTIONS = (
 # originating context (sources, rejected interview alternatives, and critique
 # reasoning) without consulting the saving session's working memory. Required
 # on every goal regardless of size: a goal that genuinely has nothing for a
-# section keeps the heading and states ``N/A — <reason>``. #255 removed the
+# section keeps the heading and states ``N/A — <reason>``. The retired
 # size/marker exemption (a ``Single-slice goal:`` opt-out scanned over the full
 # body) because the full-text scan was poisoned by prose merely describing it.
 PORTABILITY_SECTIONS = (
@@ -73,8 +73,8 @@ PORTABILITY_SECTIONS = (
     "Plan Critique Findings",
 )
 
-# Before-phase placeholder marker the handoff auto-draft (#246) leaves until
-# shaping fills it; its presence means `/goal` must fail-fast to `/achieve` (#247).
+# Before-phase placeholder marker the handoff auto-draft leaves until shaping
+# fills it; its presence means `/goal` must fail-fast to `/achieve`.
 _UNSHAPED_MARKER = re.compile(r"to be filled by the achieve before-phase", re.IGNORECASE)
 
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
@@ -181,12 +181,13 @@ def upsert_goal(
                     "requested_status": status,
                     "note": (
                         "refused to flip to complete: After-phase evidence missing, "
-                        "invalid, unbound, the #253 disposition gate, or a coordination floor "
+                        "invalid, unbound, the disposition gate, or a coordination floor "
                         "is unmet. Add bound `Retro:`/`Host log probe:` "
                         "lines (path or `skipped: <enum>: <detail>`); in-scope goals also need "
                         "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
                         "`Retro dispositions: none — <reason>` opt-out), and any triggered "
-                        "`Gather:`/`Release:`/`Issue closeout:` step in `## Coordination Cues`. "
+                        "`Routing:`/`Gather:`/`Release:`/`Issue closeout:` step in "
+                        "`## Coordination Cues`. "
                         "See the closeout contract."
                     ),
                     "evidence_report": evidence_report,
@@ -224,7 +225,7 @@ def slice_plan_data_row_count(text: str) -> int:
     Data rows start with ``|`` and are neither the header row nor the table
     separator row (the ``| --- |`` line). A standalone row-count utility: the
     handoff auto-draft invariant tests assert a freshly drafted skeleton has
-    zero data rows. (#255 removed the trivial-goal discriminator that once
+    zero data rows. The trivial-goal discriminator that once
     consumed this count to exempt goals from the portability check.)
     """
     masked = _mask_fences(text)
@@ -268,7 +269,7 @@ def missing_portability_sections(text: str) -> list[str]:
 
 
 def pursue_readiness(text: str) -> dict[str, Any]:
-    """Whether a goal is shaped enough to *pursue* via ``/goal`` (#247).
+    """Whether a goal is shaped enough to *pursue* via ``/goal``.
 
     Unshaped = a Before-phase placeholder marker still present (the handoff
     auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
@@ -294,10 +295,10 @@ def pursue_readiness(text: str) -> dict[str, Any]:
         else (
             f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
             "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
-            "only and does not shape (#247)"
+            "only and does not shape"
             if placeholders
             else "operator discussion required: consequential activation decisions are present "
-            "but no non-empty `Discuss before activation:` summary was found (#276)"
+            "but no non-empty `Discuss before activation:` summary was found"
         )
     )
     return {

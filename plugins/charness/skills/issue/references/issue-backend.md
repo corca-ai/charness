@@ -257,7 +257,7 @@ For non-gh backends, presence of the binary is treated as ready; the host
 owns deeper auth/health probing because the worker sandbox should not
 introspect host credentials.
 
-## Body Safety (#232)
+## Body Safety
 
 Issue bodies were repeatedly corrupted because creation flows built a backend
 command with an inline shell-quoted `--body` string. Multi-line Korean/English,
@@ -278,7 +278,7 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
 - The body file is read in UTF-8 and delivered verbatim; title/labels/milestone
   ride as argv values (also no shell), so none of them can be corrupted.
 - Never construct `gh issue create --body "<multi-line>"` (or the equivalent on
-  another backend) from a raw body string — that is the #232 corruption path.
+  another backend) from a raw body string — that is the body-corruption path.
 - After creating, the helper reads the issue back (`view --json body`) and
   reports `body_verified`: `true` = stored body byte-identical; `false` =
   mismatch (with a `stored_body_bytes` count); `null` = read-back not feasible
@@ -286,7 +286,7 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
   anything other than `true` as an unconfirmed write and re-check before
   reporting success. A `false` can also mean the backend normalized the body
   server-side (e.g. CRLF→LF or a trailing-newline tweak), not corruption —
-  inspect the diff rather than assuming a #232 regression.
+  inspect the diff rather than assuming a body-safety regression.
 - Provider-agnostic: a non-gh backend declares `commands.create` (and
   `commands.view`) with the `{repo}`/`{title}`/`{body_file}` and
   `{repo}`/`{number}`/`{json_fields}` placeholders; labels/milestone are

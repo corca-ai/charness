@@ -270,12 +270,12 @@ def should_fire_chunker(user_message: str, *, invoked_directly: bool = False) ->
         id, or a canonical pickup phrase (including Korean); or
     (b) ``invoked_directly`` is True — the handoff skill was launched directly
         with no task (e.g. a bare ``/handoff`` / ``charness:handoff`` call), the
-        #249 trigger-widening path.
+        trigger-widening path.
 
     An explicit task directive (imperative verb + non-handoff noun, issue id,
     non-handoff file path, slash command other than /handoff, or CLI flag)
     always bypasses — even on a direct invocation that carries one
-    (``/handoff fix #233`` does not fire).
+    (``/handoff fix <issue>`` does not fire).
 
     See ``skills/public/handoff/references/chunked-routing.md`` for the
     operator-facing rule and the trigger fixture in

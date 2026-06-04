@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
         "--pursue-ready",
         action="store_true",
         help="Instead of the full section/status check, report whether the goal is shaped "
-        "enough to pursue via `/goal` (#247). Exit 1 when unshaped.",
+        "enough to pursue via `/goal`. Exit 1 when unshaped.",
     )
     return parser.parse_args()
 
@@ -102,7 +102,7 @@ def main() -> int:
                 )
             if evidence_report.get("disposition_blank"):
                 missing_bits.append(
-                    "improvement-disposition gate (#253): cited retro lists "
+                    "improvement-disposition gate: cited retro lists "
                     "improvements but ## Auto-Retro is blank and no opt-out is recorded"
                 )
             if evidence_report.get("coordination_missing"):

@@ -90,16 +90,28 @@ def validate_nonempty_sections(lines: Sequence[str], required_sections: Sequence
 
 SIBLING_SEARCH_HEADING = "## Sibling Search"
 SIBLING_DECISION_FOLLOWUP = "valid follow-up outside the slice"
+SIBLING_DECISION_DIAGNOSTIC_ONLY = "same class, diagnostic-only for this slice"
+ABSTRACTION_UP_AXIS_RE = re.compile(r"^[-*]\s+abstraction[ -]up(?:\s+axis)?\s*:", re.IGNORECASE)
+UNRESOLVED_STRUCTURAL_RE = re.compile(
+    r"\b(unresolved|deferred|not fix(?:ed|ing)?|outside (?:this|the) slice|"
+    r"repo-level|structural (?:work|class)|broader (?:class|structural))\b",
+    re.IGNORECASE,
+)
+NO_ACTION_REASON_RE = re.compile(
+    r"\b(no action (?:needed|required)|bounded|already (?:covered|owned|handled)|"
+    r"distinct (?:surface|contract|case)|not an? (?:instance|sibling)|intentional boundary)\b",
+    re.IGNORECASE,
+)
 
 
 def is_sibling_decision_bullet(line: str) -> bool:
-    """Bullet entries are `- ...` lines that carry a `decision:` field.
+    """Bullet entries are markdown list items that carry a `decision:` field.
 
     Prose paragraphs that mention the decision phrase are excluded so authors
     can quote the rule in commentary without tripping the validator.
     """
     stripped = line.lstrip()
-    return stripped.startswith("- ") and "decision:" in stripped.lower()
+    return bool(re.match(r"^[-*]\s+", stripped)) and "decision:" in stripped.lower()
 
 
 def is_trivial_short_circuit(line: str) -> bool:
@@ -132,6 +144,29 @@ def line_has_valid_followup(line: str) -> bool:
         return False
     tail = lower.split("follow-up:", 1)[1].strip()
     return is_valid_followup_tail(tail)
+
+
+def continuation_lines(section: Sequence[str], index: int) -> list[str]:
+    lines: list[str] = []
+    for candidate in section[index + 1 :]:
+        if re.match(r"^\s*[-*]\s+", candidate):
+            break
+        if candidate.strip():
+            lines.append(candidate.strip())
+    return lines
+
+
+def line_has_no_action_reason(line: str) -> bool:
+    return bool(NO_ACTION_REASON_RE.search(line))
+
+
+def is_abstraction_up_diagnostic_only(line: str) -> bool:
+    stripped = line.lstrip()
+    return (
+        bool(ABSTRACTION_UP_AXIS_RE.match(stripped))
+        and is_sibling_decision_bullet(stripped)
+        and SIBLING_DECISION_DIAGNOSTIC_ONLY in stripped.lower()
+    )
 
 
 def validate_sibling_followups(
@@ -172,12 +207,29 @@ def validate_sibling_followups(
         line = raw.rstrip()
         if not is_sibling_decision_bullet(line):
             continue
+        continuations = continuation_lines(section, index)
+        full_entry = " ".join([line, *continuations])
+        if is_abstraction_up_diagnostic_only(line):
+            has_followup = line_has_valid_followup(line) or any(line_has_valid_followup(cont) for cont in continuations)
+            if UNRESOLVED_STRUCTURAL_RE.search(full_entry) and not has_followup:
+                offender = line.strip().lstrip("- ").strip()
+                raise ValidationError(
+                    "`## Sibling Search` abstraction-up diagnostic-only entry describes unresolved "
+                    "structural work but has no `follow-up:` issue URL or handoff anchor "
+                    f"(offender: `{offender[:120]}`); see {source_reference}."
+                )
+            if not (line_has_no_action_reason(full_entry) or has_followup):
+                offender = line.strip().lstrip("- ").strip()
+                raise ValidationError(
+                    "`## Sibling Search` abstraction-up diagnostic-only entry must include a "
+                    "proof-backed no-action reason or a `follow-up:` identifier "
+                    f"(offender: `{offender[:120]}`); see {source_reference}."
+                )
         if SIBLING_DECISION_FOLLOWUP not in line.lower():
             continue
         if line_has_valid_followup(line):
             continue
-        peek = section[index + 1] if index + 1 < len(section) else ""
-        if line_has_valid_followup(peek):
+        if any(line_has_valid_followup(cont) for cont in continuations):
             continue
         offender = line.strip().lstrip("- ").strip()
         raise ValidationError(
@@ -185,4 +237,3 @@ def validate_sibling_followups(
             "`follow-up: <issue-url>` or `follow-up: deferred <handoff-anchor>` identifier on the same "
             f"bullet (offender: `{offender[:120]}`); see {source_reference}."
         )
-

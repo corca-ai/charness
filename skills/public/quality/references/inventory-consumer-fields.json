@@ -1,5 +1,5 @@
 {
-  "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/validate_inventory_consumption.py to close the consumer-side of issue #145: helpers expose review-state, but agents were collapsing them into headline-only summaries.",
+  "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/validate_inventory_consumption.py to close the consumer-side review-state gap: helpers expose review-state, but agents were collapsing them into headline-only summaries.",
   "_contract": "Every inventory_*.py in skills/public/quality/scripts/ must have an entry. Either declare `non_headline_fields` (≥2 distinct fields; consumer must engage with at least 2 when ≥2 are declared, otherwise at least 1) or declare an empty `non_headline_fields: []` with a non-empty `opt_out_reason` string. scripts/validate_inventory_consumption_declaration.py asserts that each declared field actually appears as a key in the inventory's --json output. scripts/check_inventory_declaration_coverage.py asserts every inventory_*.py is listed.",
   "_scope": "Coverage applies to skills/public/quality/scripts/inventory_*.py only. Inventory scripts that live in other skill packages (for example skills/public/find-skills/scripts/inventory_artifact.py) or in scripts/inventory_*.py at the repo root are out of scope — they have their own consumers and audit trails. If a non-quality inventory should also be guarded, lift the declaration into the consuming skill rather than expanding this file's scope.",
   "inventories": {
@@ -10,6 +10,11 @@
         "prose_review_status",
         "checked_skill_count",
         "heuristic_finding_count",
+        "subcheck_counts",
+        "package_issue_anchor_count",
+        "package_dated_incident_count",
+        "host_surface_reference_count",
+        "unlisted_reference_count",
         "core_nonempty_lines",
         "reference_file_count",
         "script_file_count",

@@ -47,7 +47,7 @@ packet_sections:
     # `content` accepts a string or a list of strings (one per line).
     # Block scalars (`|`) are not supported by the repo-local YAML loader.
     content:
-      - "- This critique should not relitigate the host/worker boundary portability decision (closed #157/#158)."
+      - "- This critique should not relitigate the host/worker boundary portability decision."
       - "- This critique should not redesign the adapter slot shape."
 ```
 

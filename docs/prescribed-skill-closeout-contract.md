@@ -105,7 +105,7 @@ still calls the same presence-only `check()` today.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the gather/release/issue **coordination floors** (separate, presence-only — gather/release `Created` ≥ 2026-05-31; issue `Created` ≥ 2026-06-02; see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Gather:`/`Release:`/`Issue closeout:` step or `n/a — <reason>` opt-out |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the routing/gather/release/issue **coordination floors** (separate, presence-only — gather/release `Created` ≥ 2026-05-31; issue `Created` ≥ 2026-06-02; phase routing `Created` ≥ 2026-06-04; see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Routing:`/`Gather:`/`Release:`/`Issue closeout:` step or `n/a — <reason>` opt-out |
 | `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
@@ -156,16 +156,24 @@ narration (proven on the live goal corpus) — so the gate is a deterministic
 intelligent review (judges substance). Rung 1b is therefore weaker than #253's
 literal ask, by design and named, not by quiet scope-narrowing.
 
-### Coordination Floors (gather + release + issue)
+### Coordination Floors (routing + gather + release + issue)
 
 The achieve After-phase carries further presence-only floors, in
 [`goal_artifact_coordination_floors.py`](../skills/public/achieve/scripts/goal_artifact_coordination_floors.py)
-and wired through the same evidence gate. They give *teeth* to
+and
+[`goal_artifact_phase_routing.py`](../skills/public/achieve/scripts/goal_artifact_phase_routing.py),
+wired through the same evidence gate. They give *teeth* to
 `find-skills`-routing boundaries the goal-artifact `## Coordination Cues` prose
 cue under-serves (skipping them is silent and costly). Same deterministic-floor
 philosophy as #253: presence/binding-only, clone-safe, block-the-blank, an
 explicit opt-out valve, grandfathered by `Created`.
 
+- **phase-routing floor** — trigger: recorded work sections show implementation
+  (`What changed:` / `Commits:`), bug/RCA/debug cues, quality-gate cues, or
+  issue-closeout cues. Satisfied by a `Routing:` line in `## Coordination Cues`
+  that names `find-skills` and the routed skill (`impl`, `debug`, `quality`, or
+  `issue`), or a `Routing: n/a — <reason>` opt-out (≥30 chars). This proves the
+  owner-skill boundary was considered; it does not judge route prose quality.
 - **gather floor** — trigger: `## Context Sources` names an external source (an
   `http(s)://` URL — Slack / Notion / Google-Docs / Drive links and bare web URLs
   all qualify). Satisfied by a `Gather: <ref>` step in `## Coordination Cues`, or
@@ -188,8 +196,9 @@ signal is clone-safe — a fresh checkout reproduces the verdict. Reference + op
 detection is scoped to `## Coordination Cues` so a goal body that merely
 *describes* a step line in prose cannot falsely satisfy a floor. Grandfather
 dates are floor-specific: gather/release apply to goals Created ≥ `2026-05-31`,
-and issue closeout applies to goals Created ≥ `2026-06-02`. The gather/release
-floors landed 2026-05-30, but several same-day goals predate them, so the
+issue closeout applies to goals Created ≥ `2026-06-02`, and phase routing
+applies to goals Created ≥ `2026-06-04`. The gather/release floors landed
+2026-05-30, but several same-day goals predate them, so the
 2026-05-31 cutoff grandfathers every in-flight goal;
 missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
 `find-skills` owns *which* skill answers a boundary (never an inline phase→skill

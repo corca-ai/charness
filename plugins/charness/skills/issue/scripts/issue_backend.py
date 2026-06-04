@@ -5,7 +5,7 @@ template into a concrete argv and run it without a shell. Keeping the templating
 and subprocess primitives here means there is one source of truth for how a
 backend op is rendered and invoked — no shell string interpolation anywhere, so
 multi-line / Unicode / quote / dollar-sign content in a body file reaches the
-backend byte-for-byte (corca-ai/charness#232).
+backend byte-for-byte.
 """
 
 from __future__ import annotations

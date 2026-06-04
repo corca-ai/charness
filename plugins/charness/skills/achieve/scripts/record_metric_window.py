@@ -2,7 +2,7 @@
 """Record a goal-scoped `Host metric window:` evidence line in a goal artifact.
 
 The achieve After-phase runs this so `probe_host_logs.py --goal-path <artifact>`
-reports an applied (``parsed``) goal window instead of ``absent`` (#282). The
+reports an applied (``parsed``) goal window instead of ``absent``. The
 host adapter supplies the timestamps and rollout-file path it can prove; this
 helper only writes them into the artifact idempotently.
 """

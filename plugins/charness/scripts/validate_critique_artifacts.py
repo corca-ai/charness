@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -20,6 +21,24 @@ STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "
 STRUCTURED_EVIDENCE = frozenset({"strong", "moderate", "weak", "contested"})
 STRUCTURED_ACTIONS = frozenset({"fix", "file-issue", "document", "defer"})
 STRUCTURED_REQUIRED_FIELDS = ("bin", "evidence", "ref", "action", "note")
+REVIEWER_TIER_HEADING = "## Reviewer Tier Evidence"
+REVIEWER_TIER_REQUIRED_FIELDS = (
+    "requested tier",
+    "requested spawn fields",
+    "host exposure state",
+    "application state",
+)
+REVIEWER_TIER_HOST_STATES = frozenset(
+    {
+        "pending-parent-spawn",
+        "requested_fields_sent",
+        "metadata-hidden",
+        "host-defaulted",
+        "unsupported",
+        "applied",
+    }
+)
+PACKET_CONSUMED_RE = re.compile(r"(?im)^\s*packet consumed\s*:\s*(?P<path>\S+)")
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -236,7 +255,46 @@ def validate_structured_findings(path: Path, text: str) -> None:
             )
 
 
-def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool) -> None:
+def _section_field_map(text: str, heading: str) -> dict[str, str]:
+    lines = text.splitlines()
+    try:
+        start = next(index for index, line in enumerate(lines) if line.strip() == heading)
+    except StopIteration:
+        return {}
+    fields: dict[str, str] = {}
+    for raw in lines[start + 1 :]:
+        if raw.startswith("## "):
+            break
+        stripped = raw.strip()
+        if not stripped.startswith("- ") or ":" not in stripped:
+            continue
+        key, _, value = stripped.lstrip("- ").partition(":")
+        normalized_key = key.replace("*", "").strip().lower()
+        fields[normalized_key] = value.strip().strip("`")
+    return fields
+
+
+def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
+    fields = _section_field_map(text, REVIEWER_TIER_HEADING)
+    missing = [field for field in REVIEWER_TIER_REQUIRED_FIELDS if not fields.get(field)]
+    if missing:
+        raise ValidationError(f"{path}: reviewer tier evidence missing fields: {missing}")
+    state = fields["host exposure state"]
+    if state not in REVIEWER_TIER_HOST_STATES:
+        raise ValidationError(
+            f"{path}: reviewer tier host exposure state `{state}` must be one of "
+            f"{sorted(REVIEWER_TIER_HOST_STATES)}"
+        )
+    if state == "applied" and not fields["application state"].lower().startswith("host-confirmed:"):
+        raise ValidationError(
+            f"{path}: reviewer tier evidence may use `applied` only with "
+            "`Application state: host-confirmed: <signal>`"
+        )
+
+
+def validate_critique_artifact(
+    path: Path, *, repo_has_delegation_contract: bool, require_tier_evidence: bool
+) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
     status_lowered = status.lower() if status is not None else ""
@@ -255,6 +313,11 @@ def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool
                 f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
             )
     validate_structured_findings(path, text)
+    requires_tier_evidence = require_tier_evidence and (
+        "parent-delegated" in status_lowered or PACKET_CONSUMED_RE.search(text)
+    )
+    if requires_tier_evidence or _section_field_map(text, REVIEWER_TIER_HEADING):
+        validate_reviewer_tier_evidence(path, text)
 
 
 def main() -> int:
@@ -265,11 +328,18 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    paths = [] if args.all else args.paths if args.paths is not None else changed_paths(repo_root)
+    explicit_paths = args.paths is not None
+    paths = [] if args.all else args.paths if explicit_paths else changed_paths(repo_root)
     artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
+    require_tier_paths = set(paths)
     repo_has_delegation_contract = has_repo_delegation_contract(repo_root)
     for artifact in artifacts:
-        validate_critique_artifact(artifact, repo_has_delegation_contract=repo_has_delegation_contract)
+        relpath = artifact.relative_to(repo_root).as_posix()
+        validate_critique_artifact(
+            artifact,
+            repo_has_delegation_contract=repo_has_delegation_contract,
+            require_tier_evidence=explicit_paths or relpath in require_tier_paths,
+        )
     print(f"Validated {len(artifacts)} critique artifact(s).")
     return 0
 

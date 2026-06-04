@@ -30,7 +30,7 @@ TEMPLATE = """\
 #
 # Schema:    integrations/t-events/manifest.schema.json
 # Records:   integrations/t-events/event.schema.json
-# Spec:      charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md
+# Spec:      charness-artifacts/spec/t-first-self-evolving-unit.md
 # Storage:   .charness/t-events/<event_type>.jsonl (gitignore the directory)
 version: 1
 enabled: true

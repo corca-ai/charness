@@ -53,7 +53,7 @@ Do not blur these just to make the answer sound more complete.
 `find-skills --recommend-for-task` proves that workflow language can route a
 task to a hidden support skill without the user naming `support/<id>` first.
 
-The canonical example is `support/specdown` (corca-ai/charness#108):
+The canonical example is `support/specdown`:
 
 - the strong-trigger set lives in the `strong_intent_triggers` field of
   `integrations/tools/specdown.json` and currently lists `*.spec.md`,

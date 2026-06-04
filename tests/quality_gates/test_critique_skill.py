@@ -187,6 +187,13 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
                 "",
                 "Fresh-Eye Satisfaction: parent-delegated.",
                 "",
+                "## Reviewer Tier Evidence",
+                "",
+                "- **Requested tier**: `high-leverage`",
+                "- **Requested spawn fields**: `model=gpt-5.5`",
+                "- **Host exposure state**: `requested_fields_sent`",
+                "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
+                "",
                 "The runtime still has blocked JSON endpoints; this is domain content, not a subagent blocker.",
                 "",
             ]
@@ -198,11 +205,72 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
         "scripts/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
-        "--all",
+        "--paths",
+        "charness-artifacts/critique/demo.md",
     )
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 critique artifact" in result.stdout
+
+
+def test_critique_artifact_validator_requires_reviewer_tier_evidence_for_parent_delegated(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Fresh-Eye Satisfaction: parent-delegated.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/demo.md",
+    )
+
+    assert result.returncode == 1
+    assert "reviewer tier evidence missing fields" in result.stderr
+
+
+def test_critique_artifact_validator_requires_reviewer_tier_evidence_when_packet_consumed(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Packet Consumed: charness-artifacts/critique/demo-packet.md",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/demo.md",
+    )
+
+    assert result.returncode == 1
+    assert "reviewer tier evidence missing fields" in result.stderr
 
 
 def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: Path) -> None:
@@ -235,6 +303,75 @@ def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 critique artifact" in result.stdout
+
+
+def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Fresh-Eye Satisfaction: parent-delegated.",
+                "",
+                "## Reviewer Tier Evidence",
+                "",
+                "- **Requested tier**: `high-leverage`",
+                "- **Requested spawn fields**: `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`",
+                "- **Host exposure state**: `requested_fields_sent`",
+                "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--all",
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Fresh-Eye Satisfaction: parent-delegated.",
+                "",
+                "## Reviewer Tier Evidence",
+                "",
+                "- **Requested tier**: `high-leverage`",
+                "- **Requested spawn fields**: `model=gpt-5.5`",
+                "- **Host exposure state**: `applied`",
+                "- **Application state**: `fields were sent`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--all",
+    )
+
+    assert result.returncode == 1
+    assert "host-confirmed:" in result.stderr
 
 
 def test_critique_artifact_validator_accepts_signal_section_with_body(tmp_path: Path) -> None:
@@ -372,6 +509,13 @@ _STRUCTURED_PRELUDE = (
     "# Demo Critique\n"
     "\n"
     "Fresh-Eye Satisfaction: parent-delegated.\n"
+    "\n"
+    "## Reviewer Tier Evidence\n"
+    "\n"
+    "- **Requested tier**: `high-leverage`\n"
+    "- **Requested spawn fields**: `model=gpt-5.5`\n"
+    "- **Host exposure state**: `requested_fields_sent`\n"
+    "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`\n"
     "\n"
 )
 

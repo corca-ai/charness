@@ -4,6 +4,8 @@ import re
 from pathlib import Path
 from typing import Callable
 
+import skill_text_quality_lib as tqlib
+
 DEFAULT_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
     "Check progressive disclosure honesty: core owns selection and sequencing, references deepen rather than fork the workflow.",
@@ -12,6 +14,8 @@ DEFAULT_REVIEW_PROMPTS = [
     "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
     "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required.",
     "Keep issue-number and dated incident anchors out of public `SKILL.md` core; move historical provenance to references, tests, or retro artifacts.",
+    "Review concrete issue anchors across the whole public/support package; generic issue-workflow placeholders and version fields are not project-history leakage.",
+    "Review dated incident wording, host-surface references, and unlisted reference files as package-level portability signals.",
 ]
 RUNTIME_INSTALL_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
@@ -23,20 +27,6 @@ MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
 BARE_HELPER_PATH_RE = re.compile(r"`scripts/[A-Za-z0-9._/-]+\.(?:py|sh|bash|zsh|js|ts|rb|pl|lua)`")
 SOURCE_TREE_FILE_PATH_RE = re.compile(r"`skills/(?:public|support)/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+\.(?:md|py|sh|bash|zsh|js|ts|rb|pl|lua|yaml|yml|json)`")
-ISSUE_ANCHOR_RE = re.compile(
-    r"(?:"
-    r"\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+\b|"
-    r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+\b|"
-    r"\b(?:issue|bug|pr|pull request)s?\s+#\d+\b|"
-    r"(?<![A-Za-z0-9_])#\d{3,}\b"
-    r")",
-    re.IGNORECASE,
-)
-DATED_INCIDENT_RE = re.compile(
-    r"(?:20\d{2}-\d{2}-\d{2}.{0,80}\b(?:incident|miss|regression|trap|failure|bug|closeout|lesson)s?\b|"
-    r"\b(?:incident|miss|regression|trap|failure|bug|closeout|lesson)s?\b.{0,80}20\d{2}-\d{2}-\d{2})",
-    re.IGNORECASE,
-)
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
@@ -75,11 +65,11 @@ def has_portable_path_ambiguity(lines: list[str]) -> bool:
 
 
 def has_issue_anchor_in_core(lines: list[str]) -> bool:
-    return any(ISSUE_ANCHOR_RE.search(line) for line in lines)
+    return any(tqlib.ISSUE_ANCHOR_RE.search(line) for line in lines)
 
 
 def has_dated_incident_in_core(lines: list[str]) -> bool:
-    return any(DATED_INCIDENT_RE.search(line) for line in lines)
+    return any(tqlib.DATED_INCIDENT_RE.search(line) for line in lines)
 
 
 def strip_inline_code(text: str) -> str:
@@ -115,6 +105,15 @@ def inventory_skill(
     bootstrap_fence_count = markdown_helpers["count_fence_blocks"](bootstrap_lines)
     reference_count = count_files(skill_dir / "references")
     script_count = count_files(skill_dir / "scripts")
+    package_issue_findings: list[dict[str, object]] = []
+    package_dated_findings: list[dict[str, object]] = []
+    host_surface_findings: list[dict[str, object]] = []
+    reference_findings: list[dict[str, object]] = []
+    if skill_type in {"public", "support"}:
+        package_issue_findings = tqlib.issue_anchor_package_findings(repo_root, skill_dir)
+        package_dated_findings = tqlib.dated_incident_package_findings(repo_root, skill_dir)
+        host_surface_findings = tqlib.host_surface_reference_findings(repo_root, skill_dir)
+        reference_findings = tqlib.reference_discoverability_findings(repo_root, skill_path, body)
     heuristics: list[str] = []
     if len(nonempty_lines) > max_core_lines:
         heuristics.append("long_core")
@@ -132,6 +131,27 @@ def inventory_skill(
         heuristics.append("issue_anchor_in_core")
     if skill_type == "public" and has_dated_incident_in_core(prose.splitlines()):
         heuristics.append("dated_incident_in_core")
+    if skill_type in {"public", "support"} and package_issue_findings:
+        heuristics.append("portable_package_issue_anchor")
+    if skill_type in {"public", "support"} and package_dated_findings:
+        heuristics.append("portable_package_dated_incident")
+    if skill_type in {"public", "support"} and host_surface_findings:
+        heuristics.append("portable_package_host_surface_reference")
+    if skill_type in {"public", "support"} and reference_findings:
+        heuristics.append("reference_discoverability_gap")
+    subcheck_counts = {
+        "core_overfill": 1 if "long_core" in heuristics else 0,
+        "mode_option_pressure": (
+            int("mode_pressure_terms_present" in heuristics)
+            + int("option_pressure_terms_present" in heuristics)
+        ),
+        "prose_ritual": 1 if "code_fence_without_helper_script" in heuristics else 0,
+        "path_ambiguity": 1 if "portable_helper_path_ambiguity" in heuristics else 0,
+        "package_issue_anchor": len(package_issue_findings),
+        "package_dated_incident": len(package_dated_findings),
+        "host_surface_reference": len(host_surface_findings),
+        "reference_discoverability": len(reference_findings),
+    }
     review_prompts = RUNTIME_INSTALL_REVIEW_PROMPTS if skill_type == "runtime_install" else DEFAULT_REVIEW_PROMPTS
     return {
         "skill_id": skill_dir.name,
@@ -142,6 +162,15 @@ def inventory_skill(
         "script_file_count": script_count,
         "code_fence_count": code_fence_count,
         "bootstrap_fence_count": bootstrap_fence_count,
+        "package_issue_anchor_count": len(package_issue_findings),
+        "package_issue_anchor_findings": package_issue_findings,
+        "package_dated_incident_count": len(package_dated_findings),
+        "package_dated_incident_findings": package_dated_findings,
+        "host_surface_reference_count": len(host_surface_findings),
+        "host_surface_reference_findings": host_surface_findings,
+        "unlisted_reference_count": len(reference_findings),
+        "unlisted_reference_files": reference_findings,
+        "subcheck_counts": subcheck_counts,
         "heuristics": heuristics,
         "review_prompts": review_prompts,
     }
@@ -191,10 +220,17 @@ def prose_review_advisory(status: str) -> list[dict[str, str]]:
 
 def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
     heuristic_count = sum(len(skill.get("heuristics", [])) for skill in skills)
+    subcheck_counts: dict[str, int] = {}
+    for skill in skills:
+        for name, count in dict(skill.get("subcheck_counts", {})).items():
+            subcheck_counts[name] = subcheck_counts.get(name, 0) + int(count)
+    package_issue_anchor_count = subcheck_counts.get("package_issue_anchor", 0)
     if not skills:
         return {
             "checked_skill_count": 0,
             "heuristic_finding_count": 0,
+            "package_issue_anchor_count": 0,
+            "subcheck_counts": {},
             "finding_status": "not_evaluated",
             "prose_review_status": "not_started",
             "advisories": [],
@@ -204,6 +240,8 @@ def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
         return {
             "checked_skill_count": len(skills),
             "heuristic_finding_count": heuristic_count,
+            "package_issue_anchor_count": package_issue_anchor_count,
+            "subcheck_counts": subcheck_counts,
             "finding_status": "heuristics_present",
             "prose_review_status": prose_status,
             "advisories": prose_review_advisory(prose_status),
@@ -212,6 +250,8 @@ def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
     return {
         "checked_skill_count": len(skills),
         "heuristic_finding_count": 0,
+        "package_issue_anchor_count": package_issue_anchor_count,
+        "subcheck_counts": subcheck_counts,
         "finding_status": "zero_heuristic_findings",
         "prose_review_status": prose_status,
         "advisories": prose_review_advisory(prose_status),

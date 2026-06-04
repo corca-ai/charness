@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Corpus-discovery runner for the #253 improvement-disposition gate (rung 1).
+"""Corpus-discovery runner for the improvement-disposition gate (rung 1).
 
 Calibration is **discovery, not "assert 0"**: run the real deterministic floor
 (``check_complete_evidence``) over every completed goal artifact and report what
@@ -63,7 +63,7 @@ def audit_goal(repo_root: Path, path: Path) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Audit the goal corpus against the #253 disposition floor.")
+    parser = argparse.ArgumentParser(description="Audit the goal corpus against the disposition floor.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--completed-only", action="store_true", help="Only audit goals with Status: complete")
     parser.add_argument("--fail-on-pre-rule-refusal", action="store_true")

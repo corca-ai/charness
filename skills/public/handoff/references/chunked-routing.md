@@ -32,7 +32,7 @@ recent user-authored message before the agent acts):
    - a `--<flag>` token
 
    A task directive **always bypasses** — even a direct skill invocation that
-   carries one (`/handoff fix #233` does not fire).
+   carries one (`/handoff fix <issue>` does not fire).
 2. **Handoff signal**, at least one of:
    - literal token `docs/handoff.md`, `handoff.md`, or `/handoff`
    - phrase `handoff skill`, `handoff 스킬`, or `charness:handoff`
@@ -43,7 +43,7 @@ recent user-authored message before the agent acts):
    - **direct skill invocation** (`invoked_directly`): the handoff skill was
      launched with no task — a bare `/handoff` / `charness:handoff` call.
      Invoking the skill is itself enough; no doc mention is required. This is
-     the #249 trigger-widening path, so a pickup reasons over the backlog even
+     the trigger-widening path, so a pickup reasons over the backlog even
      when the operator did not type a handoff filename.
 
 When both hold the chunker fires. When the task-directive check fails (the
@@ -70,7 +70,7 @@ step 4 is the active agent.
    checks are operator setup, not user-selectable chunks; goal activation
    entries pointing at a `Status: active` or `Status: complete` goal artifact are stale and are
    also dropped; `during`/`while` cadence or invariant entries shape the chosen
-   chunk instead of becoming standalone candidates. Pass `--with-issues` (the pickup default; #249)
+   chunk instead of becoming standalone candidates. Pass `--with-issues` (the pickup default)
    to also union the live open-issue backlog: each open issue becomes a
    `HandoffEntry` (boundary tokens from its **title + specific labels**, not
    its body — body paths over-cluster), routed through the `issue` skill
@@ -98,6 +98,9 @@ step 4 is the active agent.
    with `materialize_chunk_proposal_response`. Validation rejects unknown,
    duplicated, missing, or over-large source groups, empty rationale, and
    broad-label-only merges unless adapter policy explicitly allows that label.
+   The packet and validation report expose merge policy facts only: a false
+   broad-only-overlap fact is not merge clearance, and unknown basis tokens mean
+   the policy has no opinion while the agent still judges semantic fit.
 4. **Rank.** Run
    [`prepare_ranker_packet.py`](../scripts/prepare_ranker_packet.py)
    against the materialized package proposal. The script emits a self-contained JSON
@@ -133,7 +136,7 @@ step 4 is the active agent.
    the achieve Before-phase: surface the drafter's `next_step` /
    `shape_command` (`/achieve @<artifact>`), not `/goal @<artifact>`.
    `/goal` is the artifact's `activation` line and starts the During
-   run only after shaping has filled the placeholders (#246).
+   run only after shaping has filled the placeholders.
 
 ## Override UX
 

@@ -46,10 +46,18 @@ DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = [
     "issue_anchor_in_core",
     "long_core",
     "mode_option_pressure_terms",
+    "portable_package_dated_incident",
+    "portable_package_issue_anchor",
     "portable_helper_path_ambiguity",
     "progressive_disclosure_risk",
 ]
-VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
+VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset(
+    [
+        *DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
+        "portable_package_host_surface_reference",
+        "reference_discoverability_gap",
+    ]
+)
 
 # DEFAULT_MUTATION_TESTING is stack-neutral. Policy values trace to
 # craken-agents/.github/workflows/mutation-tests.yml (2026-05-14). Stryker-

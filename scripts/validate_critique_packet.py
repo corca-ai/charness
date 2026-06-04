@@ -27,12 +27,20 @@ TOP_KEYS = {
     "prepared_for",
     "changed_ref",
     "adapter_path",
+    "reviewer_tier_evidence",
     "sections",
     "section_count",
     "ok",
 }
 SECTION_KEYS = {"id", "title", "content_kind", "producer", "content", "ok", "errors"}
 VALID_CONTENT_KINDS = {"static", "script"}
+REVIEWER_TIER_EVIDENCE_KEYS = {
+    "requested_tier",
+    "requested_spawn_fields",
+    "host_exposure_state",
+    "application_state",
+    "instruction",
+}
 
 
 def _validate_top_level(payload: dict, errors: list[str]) -> None:
@@ -89,6 +97,23 @@ def _validate_section_shape(
         errors.append(f"{prefix}.errors must be a list")
 
 
+def _validate_reviewer_tier_evidence(payload: dict, errors: list[str]) -> None:
+    evidence = payload.get("reviewer_tier_evidence")
+    if not isinstance(evidence, dict):
+        errors.append("reviewer_tier_evidence must be an object")
+        return
+    missing = REVIEWER_TIER_EVIDENCE_KEYS - set(evidence.keys())
+    if missing:
+        errors.append(f"reviewer_tier_evidence missing keys: {sorted(missing)}")
+    if evidence.get("requested_tier") != "high-leverage":
+        errors.append("reviewer_tier_evidence.requested_tier must be `high-leverage`")
+    if not isinstance(evidence.get("requested_spawn_fields"), dict):
+        errors.append("reviewer_tier_evidence.requested_spawn_fields must be an object")
+    for key in ("host_exposure_state", "application_state", "instruction"):
+        if not isinstance(evidence.get(key), str) or not evidence.get(key):
+            errors.append(f"reviewer_tier_evidence.{key} must be a non-empty string")
+
+
 def _validate_section_aggregates(
     payload: dict, sections: list, errors: list[str]
 ) -> None:
@@ -119,6 +144,7 @@ def validate_packet(payload: object) -> list[str]:
     if not isinstance(sections, list):
         errors.append("sections must be a list")
         return errors
+    _validate_reviewer_tier_evidence(payload, errors)
     seen_ids: set[str] = set()
     for index, section in enumerate(sections):
         _validate_section_shape(section, prefix=f"sections[{index}]",

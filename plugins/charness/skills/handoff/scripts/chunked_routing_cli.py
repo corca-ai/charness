@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Shared CLI input convention for the handoff chunker pipeline stages.
 
-#248: every JSON-consuming stage (``propose_merges`` -> ``prepare_chunk_packet``
+# Every JSON-consuming stage (``propose_merges`` -> ``prepare_chunk_packet``
 -> ``prepare_ranker_packet`` -> ``draft_goal_from_chunk``) exposes one predictable input flag —
 ``--input``/``-i`` plus its legacy stage-specific alias — defaulting to ``-``
 (stdin), so ``parse | propose | chunk-packet | prepare`` composes without a temp file or a

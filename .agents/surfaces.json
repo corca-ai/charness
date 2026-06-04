@@ -602,10 +602,11 @@
         "ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts",
         "python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing",
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
-        "pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py"
+        "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
       ],
       "notes": [
-        "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched."
+        "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",
+        "Release-only install/update lifecycle tests are excluded from the standing Python closeout gate and should run for release, packaging, or tool lifecycle changes."
       ]
     }
   ]

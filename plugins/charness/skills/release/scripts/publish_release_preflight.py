@@ -75,7 +75,7 @@ def enforce_release_critique_gate(
     """Refuse the publish unless the standalone critique either ran (artifact
     exists) or was honestly skipped with a blocked host signal.
 
-    Closes #230 Waste 1c. The release skill's prose already required a
+    Closes the release-closeout self-substitution gap. The release skill's prose already required a
     critique; this gate makes the requirement non-optional at the publish
     boundary. Returns the shared helper's report so callers can include it
     in their structured payload.

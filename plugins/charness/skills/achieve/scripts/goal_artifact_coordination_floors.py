@@ -176,8 +176,6 @@ def issue_closeout_triggered(text: str) -> bool:
         return True
     work = "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
     return _CLOSE_KEYWORD.search(work) is not None
-
-
 _SATISFYING = frozenset({"ref", "optout"})
 
 

@@ -93,7 +93,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Plan run
-        # NOTE: same-SHA dedup was removed (see corca-ai/craken-agents#127).
+        # NOTE: same-SHA dedup was removed.
         # Scheduled runs always execute so that stratified sampling can rotate
         # over time even when main is idle, and a real regression cannot be
         # masked by a later same-SHA "skip-success" run.

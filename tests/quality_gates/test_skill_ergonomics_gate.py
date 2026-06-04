@@ -181,6 +181,136 @@ def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path:
     assert all(violation["skill_id"] == "demo" for violation in payload["violations"])
 
 
+def test_skill_ergonomics_gate_fails_on_package_issue_anchor_rule_for_support_skill(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "support" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - portable_package_issue_anchor",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "skills" / "support" / "demo" / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "history.md").write_text(
+        "# History\n\nThis support package still names corca-ai/charness#123.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["violations"][0]["rule"] == "portable_package_issue_anchor"
+    assert payload["violations"][0]["skill_id"] == "demo"
+    assert payload["checked_skills"][0]["package_issue_anchor_count"] == 1
+
+
+def test_skill_ergonomics_gate_fails_on_package_text_quality_rules(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - portable_package_dated_incident",
+                "  - portable_package_host_surface_reference",
+                "  - reference_discoverability_gap",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (references_dir / "hidden.md").write_text(
+        "# Hidden\n\nA 2026-05-28 incident note belongs outside portable prose.\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n\nCodex settings.json owns this host behavior.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert [violation["rule"] for violation in payload["violations"]] == [
+        "portable_package_dated_incident",
+        "portable_package_host_surface_reference",
+        "reference_discoverability_gap",
+    ]
+    assert all(violation["findings"] for violation in payload["violations"])
+
+
+def test_skill_ergonomics_gate_keeps_existing_rules_public_only_for_support_skills(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "support" / "demo"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Mode choice matters in this mode-heavy workflow.",
+                "Another mode note keeps the mode pressure explicit.",
+                "This option should probably be inference instead of an option.",
+                "A second option mention keeps option pressure visible.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["checked_skills"][0]["skill_type"] == "support"
+    assert payload["violations"] == []
+
+
 def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=["typo_rule"])
 

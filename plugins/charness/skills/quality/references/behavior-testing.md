@@ -75,8 +75,7 @@ source. Routine quality review can recommend a proof without running it.
 
 ## Cautilus Contract
 
-The stable consumer result shape is owned by Cautilus and was settled in
-[corca-ai/cautilus#44](https://github.com/corca-ai/cautilus/issues/44). The
-contract is documented in the Cautilus source repo, not vendored here, at
+The stable consumer result shape is owned by Cautilus. The contract is
+documented in the Cautilus source repo, not vendored here, at
 `docs/contracts/robustness-evaluation.md` and uses request, plan, and report
 packets instead of a Charness-owned runner.

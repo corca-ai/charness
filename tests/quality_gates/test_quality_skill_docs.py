@@ -305,7 +305,8 @@ def test_quality_behavior_testing_uses_cautilus_robustness_contract() -> None:
     assert "cautilus.robustness_report.v1" in behavior
     assert "preserve_behavior" in behavior
     assert "relation status (`satisfied`, `violated`, `blocked`, `invalid`, or" in behavior
-    assert "cautilus#44" in behavior.lower()
+    assert "docs/contracts/robustness-evaluation.md" in behavior
+    assert "Cautilus source repo" in behavior
     assert "They remain recommend-only unless the user supplies an" in proposal
 
 

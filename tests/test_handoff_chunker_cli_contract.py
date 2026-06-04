@@ -140,11 +140,23 @@ def test_missing_input_file_fails_loudly(tmp_path):
     assert "not found" in err["error"]
 
 
-def test_draft_input_alias_matches_chunk(entries_json, proposal_json, tmp_path):
+def test_draft_input_alias_matches_chunk(tmp_path):
     """draft accepts `--input -` (alias of the legacy `--chunk -`)."""
-    # Build a ChunkCandidate from the first standalone candidate.
-    proposal = json.loads(proposal_json)
-    chunk = proposal["standalone"][0]
+    chunk = {
+        "entries": [
+            {
+                "index": 1,
+                "title": "CLI contract smoke",
+                "body": "Keep the draft input alias stable.",
+                "referenced_paths": ["docs/handoff.md"],
+                "referenced_issues": [],
+                "referenced_skills": ["handoff"],
+                "boundary_tokens": ["docs/handoff.md"],
+            }
+        ],
+        "label": "cli-contract-smoke",
+        "objective_summary": "Verify draft accepts the shared input alias.",
+    }
     res = _run(
         [DRAFT, "--input", "-", "--date", "2026-05-29", "--slug", "cli-contract-smoke",
          "--repo-root", tmp_path],

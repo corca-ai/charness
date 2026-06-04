@@ -2,22 +2,22 @@
 
 ## Current Focus
 
-- This retro reviews the goal that resolved #291, #292, and #284 in one bundle: activation readiness, staged-index test isolation, and skill-surface preflight. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
-- This session completed the active `nose` duplicate-refactoring goal: bootstrap and adapter duplicate families were reduced, the near-copy hard gate was narrowed to document surfaces, and `jscpd` was reassessed after cleanup. (source: `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`)
+- Resolved Charness issues #294, #295, #297, and #298 through direct-to-default carrier commits, with #296 kept as already-closed context. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
+- This retro covers the follow-up after the portable skill quality closeout exposed a roughly five-minute broad pytest cost and a brittle handoff parser test. (source: `charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md`)
 
 ## Repeat Traps
 
+- Pre-push found debug seam-risk enum drift after the issue carriers were already locally verified. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
+- Repeated carrier verification and pre-push retries added overhead that would have been cheaper before the first push attempt. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
+- Repeated status/diff/check commands were partly phase-barrier proof, but the volume shows that final goal work still pays meaningful context and command overhead. (source: `charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md`)
 - Several repeated VCS/status/check commands were useful for phase barriers, but the run still paid extra cost around sync-after-fix and broad rerun. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
-- Slice 5 initially treated delivery-chain warnings as enough. Fresh-eye review showed that executable posture needs output-order semantics, not only presence of any parent output. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
-- The first broad pytest run became invalid because a fresh-eye fix was applied while the run was still in progress; the eventual failure was plugin mirror readiness in a mixed tree, not a stable post-fix signal. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
-- The first final broad gate failed on two test-structure issues that focused tests did not reveal: the isolated repo-copy e2e test needed `pytest.mark.release_only`, and #284 tests introduced a boundary-bypass candidate by spawning an import-safe script. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
 
 ## Next-Time Checklist
 
+- #295 should still make broad-vs-focused closeout selection more explicit for pre-lock slice proof versus final verification-lock proof. (source: `charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md`)
 - applied: `3b7ed973` marked the copy-heavy isolated repo test release-only and converted #284 tests to the in-process preflight API. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
 - applied: final broad proof was rerun after the blocker fix and plugin mirror sync, replacing the mixed-tree pytest run. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
 - applied: fresh-eye blocker fixed in `f64dbdc8` by requiring each `thread_reply` output to have a preceding `parent` output before delivery is executable. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
-- applied: keep duplicate-detector responsibilities named by algorithm shape: whole-file near-copy gate, exact token/block clone candidate, and advisory semantic/structural clone inventory. (source: `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`)
 
 ## Selection Policy
 
@@ -28,5 +28,7 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
+- `charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md`
 - `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
-- `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`
+- `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`
+- `charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md`

@@ -8,7 +8,7 @@ pointer (`latest.md`) via the lstat-aware helper in `gather_writer_lib`
 so a writer that hits a symlinked pointer never silently follows the
 link and clobbers an unrelated dated record. The refresh is
 unlink-then-write rather than strictly POSIX-atomic; gather's read-mostly
-workload tolerates the small window. See corca-ai/charness#138.
+workload tolerates the small window.
 
 Idempotent on the dated path: if a dated record with the same slug+date
 already exists, the script refuses to overwrite. Use a different slug or

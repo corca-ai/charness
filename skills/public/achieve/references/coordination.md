@@ -68,9 +68,14 @@ map into the template or this reference. Seeding the cue in the artifact (read
 mid-run), not only in a table read once at shaping, is deliberate: a read-once
 table is inert exactly when the cue would fire.
 
-Three boundaries also earn presence-only closeout floors, because a prose cue
+Four boundaries also earn presence-only closeout floors, because a prose cue
 alone gets skipped under context pressure and the miss is silent and costly:
 
+- **phase routing** — when recorded work shows implementation, bug/RCA,
+  quality-gate, or issue-closeout boundaries, the run records a `Routing:` line
+  naming `find-skills` and the routed skill (`impl`, `debug`, `quality`, or
+  `issue`) or `Routing: n/a — <reason>`. This proves the goal did not remain
+  `achieve`-only; it does not replace the `find-skills` recommendation.
 - **gather** — when `## Context Sources` names an external source (URL / Slack /
   Notion / Docs / Drive), the run records a `Gather:` step (or
   `Gather: n/a — <reason>`). Mandated by `CLAUDE.md`'s external-source routing.
@@ -81,12 +86,15 @@ alone gets skipped under context pressure and the miss is silent and costly:
   close keyword, the run records an `Issue closeout:` step (or
   `Issue closeout: n/a — <reason>`).
 
-All are enforced by `goal_artifact_coordination_floors.py` at the `complete`
-flip, grandfathered by `Created` date, presence/binding-only (never
-prose-quality classification). Gather/release apply to goals Created ≥
-2026-05-31; issue closeout applies to goals Created ≥ 2026-06-02. They are
-operator-side cues `achieve` plans into the artifact — `gather`, `release`, and
-`issue` stay useful standalone, with no `achieve`-only branch. See
+The gather/release/issue floors are enforced by
+`goal_artifact_coordination_floors.py`; phase routing is enforced by
+`goal_artifact_phase_routing.py`. All run at the `complete` flip,
+grandfathered by `Created` date, and are presence/binding-only (never
+prose-quality classification). Gather/release apply to goals Created on or after
+the gather/release rule landing date; issue closeout and phase routing each
+apply on or after their own landing dates. They are operator-side cues
+`achieve` plans into the artifact — `impl`, `debug`, `quality`, `gather`,
+`release`, and `issue` stay useful standalone, with no `achieve`-only branch. See
 `references/lifecycle.md` After-phase for the full contract.
 
 ## Activation

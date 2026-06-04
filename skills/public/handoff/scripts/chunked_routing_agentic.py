@@ -26,6 +26,7 @@ def _load_sibling(module_name: str):
 
 _types = _load_sibling("chunked_routing_types")
 _policy = _load_sibling("chunked_routing_agentic_policy")
+_facts = _load_sibling("chunked_routing_agentic_facts")
 HandoffEntry = _types.HandoffEntry
 ChunkCandidate = _types.ChunkCandidate
 MergeProposal = _types.MergeProposal
@@ -131,6 +132,12 @@ def build_chunk_proposal_packet(
             "allowed_broad_boundary_tokens": list(
                 effective_policy.get("allowed_broad_boundary_tokens", ())
             ),
+        },
+        "merge_decision_contract": {
+            "script_role": "facts-only",
+            "no_clearance_fields": ["safe_to_merge", "merge_ok"],
+            "broad_only_overlap_false_means": "policy emitted no broad-only warning; agent still judges semantic fit, urgency, dependency, and operator value",
+            "unknown_tokens_mean": "policy has no opinion",
         },
         "chunk_proposer_prompt": CHUNK_PROPOSER_PROMPT,
         "response_schema": CHUNK_PROPOSAL_RESPONSE_SCHEMA,
@@ -309,6 +316,7 @@ def validate_chunk_proposal_response(
 
     seen_labels: set[str] = set()
     seen_sources: list[int] = []
+    merge_policy_facts: list[dict[str, Any]] = []
     for index, chunk in enumerate(chunks, start=1):
         if not isinstance(chunk, dict):
             issues.append(f"chunk {index}: must be an object")
@@ -324,6 +332,17 @@ def validate_chunk_proposal_response(
             issues=issues,
         )
         seen_sources.extend(source_ids)
+        if isinstance(chunk, dict):
+            merge_policy_facts.append(
+                _facts.merge_policy_fact(
+                    label=str(chunk.get("label") or f"chunk {index}"),
+                    source_ids=source_ids,
+                    basis=chunk.get("basis_boundary_tokens", []),
+                    valid_basis=_basis_tokens(source_ids, by_id),
+                    broad_tokens=broad_tokens,
+                    allowed_broad=allowed_broad,
+                )
+            )
 
     duplicate_across = sorted({sid for sid in seen_sources if seen_sources.count(sid) > 1})
     if duplicate_across:
@@ -331,7 +350,7 @@ def validate_chunk_proposal_response(
     missing = sorted(set(by_id) - set(seen_sources))
     if missing:
         issues.append(f"missing source_ids {missing}")
-    return {"ok": not issues, "issues": issues}
+    return {"ok": not issues, "issues": issues, "merge_policy_facts": merge_policy_facts}
 
 
 def materialize_chunk_proposal_response(

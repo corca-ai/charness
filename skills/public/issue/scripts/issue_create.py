@@ -1,7 +1,7 @@
 """Create a GitHub issue with the body delivered via ``--body-file``.
 
-corca-ai/charness#232: issue bodies were getting corrupted because creation
-flows built a backend command with an inline shell-quoted ``--body`` string.
+Issue bodies were getting corrupted because creation flows built a backend
+command with an inline shell-quoted ``--body`` string.
 Multi-line Korean/English, Markdown, fenced code, backticks, quotes, dollar
 signs, and URLs all survive only if the body never passes through a shell
 quoting layer. This helper writes the body to a file and hands the backend

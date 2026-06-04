@@ -11,7 +11,7 @@ def test_achieve_lifecycle_classifies_post_apply_commits() -> None:
     lifecycle = _read("skills/public/achieve/references/lifecycle.md")
     normalized = " ".join(lifecycle.split())
 
-    assert "Post-Apply Checkpoint Classification (#237)" in lifecycle
+    assert "Post-Apply Checkpoint Classification" in lifecycle
     assert "runtime-affecting" in lifecycle
     assert "test-only" in lifecycle
     assert "audit-doc-only" in lifecycle
@@ -22,7 +22,7 @@ def test_achieve_lifecycle_classifies_post_apply_commits() -> None:
 def test_quality_reference_carries_ci_only_recovery_protocol() -> None:
     reference = _read("skills/public/quality/references/maintainer-local-enforcement.md")
 
-    assert "CI-Only Failure Recovery (#236)" in reference
+    assert "CI-Only Failure Recovery" in reference
     assert "workflow, job, failed step, failing test, and exact command" in reference
     assert "shell, OS image, tool versions, environment variables" in reference
     assert "targeted local reproduction" in reference

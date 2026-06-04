@@ -10,8 +10,7 @@ does not auto-wire this hook; it is a manual user-level install.)
 
 ## The miss this prevents
 
-The recurring failure (retro 2026-05-28, confirmed again 2026-05-29): the agent
-runs `find-skills`, emits the capability inventory, and then reacts to the raw
+The recurring failure: the agent runs `find-skills`, emits the capability inventory, and then reacts to the raw
 `@docs/handoff.md` mention content instead of continuing the workflow the
 handoff names. `find-skills` ran; `handoff` did not. The fix is not "ensure
 find-skills runs" — that already happened. The fix is that `find-skills` must

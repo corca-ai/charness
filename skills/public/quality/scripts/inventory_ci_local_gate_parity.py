@@ -5,7 +5,7 @@
 Reports `run:` steps that follow the canonical local gate inside the same
 GitHub Actions job. A non-empty `parity_issues` set means CI enforces
 required quality gates that the local/pre-push gate does not run, which is
-the failure mode in corca-ai/charness#137.
+the CI/local parity failure mode.
 
 Classification per subsequent step:
 

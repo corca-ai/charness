@@ -47,6 +47,8 @@ skill_ergonomics_gate_rules:
   - issue_anchor_in_core
   - long_core
   - mode_option_pressure_terms
+  - portable_package_dated_incident
+  - portable_package_issue_anchor
   - portable_helper_path_ambiguity
   - progressive_disclosure_risk
 runtime_profile_default: default

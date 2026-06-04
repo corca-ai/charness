@@ -1,4 +1,4 @@
-"""#249 provider-routing layer for the handoff chunker's issue source.
+"""Provider-routing layer for the handoff chunker's issue source.
 
 Split out of ``chunked_routing_issue_source.py`` to keep each module under the
 repo's single-file length budget (the recent-lessons trap: a slice bundle
