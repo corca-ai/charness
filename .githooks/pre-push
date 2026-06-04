@@ -57,7 +57,7 @@ fi
 # Docs-only quality subset that still runs when classification = docs-artifact-only.
 # These check the things a pure docs/artifact change could break and would
 # otherwise land on remote unchecked (slice-7 critique F1). Order does not matter.
-DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,check-title-slug-drift,check-duplicates,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
+DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,check-title-slug-drift,check-doc-near-duplicates,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
 
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"

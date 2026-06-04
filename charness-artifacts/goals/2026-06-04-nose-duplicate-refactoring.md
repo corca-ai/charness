@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — check_duplicates Markdown/near-copy ownership.
-- Next action: inspect the current `check_duplicates.py` scope and make the
-  document near-copy role explicit without losing the user's intended
-  cross-skill/reference duplicate guard.
+- Current slice: Slice 5 — post-cleanup `jscpd` signal reassessment.
+- Next action: rerun the `jscpd` comparison after the bootstrap, adapter, and
+  document-near-copy cleanup slices; decide whether a code-only hard gate still
+  adds useful signal or should remain deferred.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -114,7 +114,7 @@ The user can verify completion by inspecting:
 | 1 | Lock baseline and scope | Avoid optimizing against stale `nose 0.2.0` or raw `jscpd` output | `nose 0.4.0` version, top-family inventory, docs updated to defer `jscpd` | done |
 | 2 | Remove portable bootstrap duplication where a shared path is provably safe | Largest `nose` family is skill runtime bootstrap across public skill scripts | shared helper or generator path, source/plugin execution tests, reduced `nose` family | done |
 | 3 | Consolidate adapter resolver/validator skeletons | Adapter families are the next largest actionable duplication | common adapter validation helpers or templates, focused resolver tests, reduced `nose` family | done |
-| 4 | Preserve or narrow `check_duplicates.py` to document near-copy ownership | Do this only after code-clone cleanup clarifies what Python near-file coverage would be lost | tests proving Markdown near-copy behavior; explicit non-claim or retained coverage for helper-script near-file checks | pending |
+| 4 | Preserve or narrow `check_duplicates.py` to document near-copy ownership | Do this only after code-clone cleanup clarifies what Python near-file coverage would be lost | tests proving Markdown near-copy behavior; explicit non-claim or retained coverage for helper-script near-file checks | done |
 | 5 | Reassess post-cleanup `jscpd` signal | Only after actual cleanup can raw token clone signal be judged fairly | before/after `jscpd` summary, recommendation to defer/add wrapper/skip | pending |
 
 ## Coordination Cues
@@ -178,6 +178,20 @@ changed the plan to defer `jscpd`, keep document near-copy detection, update
 - Test duplication pressure: `check_duplicates.py` remains the whole-file/document near-copy gate. `nose` remains advisory for refactoring inventory. This slice reduces meaningful adapter contract duplication but makes no zero-clone claim; remaining import/bootstrap/main skeleton families are still candidates only if a later slice can keep independent plugin execution clear.
 - Lessons carried forward: Prefer extracting the shared envelope around adapter resolution before extracting field validation. Count-based `nose` deltas need interpretation: a smaller number of higher-cardinality skeleton families can mask removal of more semantically important duplicated bodies.
 - Metrics: nose families 225 -> 222; adapter `find_adapter` duplicate lines 54 -> 18; changed files 14; net source/plugin mirror diff 456 insertions / 888 deletions before goal-log closeout.
+
+### Slice 4: Document near-copy gate naming and scope
+
+- Objective: Make the hard duplicate gate match the user's intended role: catch near-identical checked-in Markdown, skill, reference, and README surfaces, while leaving code clone inventory to `nose` and later `jscpd` reassessment.
+- Why this approach: The prior `scripts/check_duplicates.py` name and `DEFAULT_PATTERNS` implied a broad duplicate detector, but the algorithm is whole-file Ratcliff/Obershelp-style text similarity at threshold 0.98. That is the right shape for near-copy documents, not for Python block clones. The canonical command is now `scripts/check_doc_near_duplicates.py`; `scripts/check_duplicates.py` remains as a compatibility wrapper.
+- Commits: same closeout commit as this slice log.
+- What changed: Renamed the canonical checker to `check_doc_near_duplicates.py`, narrowed its patterns to `docs/*.md`, skill/support/shared reference Markdown, public/support `SKILL.md`, and `README.md`, and changed the `run-quality.sh` phase plus docs-only pre-push label to `check-doc-near-duplicates`. Synced plugin mirrors, renamed runtime budget keys in `.agents/quality-adapter.yaml`, updated strategy/operating docs, and replaced the boundary-bypass baseline key for the renamed script.
+- Coverage tradeoff: Before narrowing, the checker scanned 627 substantive tracked files: 400 Python and 227 Markdown. The old broad scope and the new document scope both reported 0 duplicate pairs at threshold 0.98 in the current tree. The removed future coverage is only whole-file near-copy Python/helper-script blocking; this goal intentionally assigns Python clone cleanup to advisory `nose` refactoring inventory and the later `jscpd` decision, not to the document near-copy hard gate.
+- Targeted verification: `python3 scripts/check_doc_near_duplicates.py --repo-root . --fail-on-match --require-git-file-listing --json`, legacy `scripts/check_duplicates.py`, and the plugin mirror equivalents all returned `[]`. Focused tests passed for document near-copy rejection, gitignored docs, helper-script exclusion, and legacy wrapper scope. `CHARNESS_QUALITY_LABELS=check-doc-near-duplicates ./scripts/run-quality.sh --read-only` passed. `pytest` focused quality-runner/docs/mutation/runtime-budget/bootstrap set passed with 137 tests. `check_boundary_bypass_ratchet.py` passed after the rename baseline update with 95 candidates, one fewer than the prior baseline. Packaging, docs, markdown, secrets, Cautilus proof validation, adapter validation, mutation workflow test/GitHub Actions check, maintainer hook validation, integrations, support/tool dry-runs, ruff, Python length, and attention-state visibility checks passed. Scenario review: the prompt-affecting adapter paths changed only runtime-budget/phase label strings; Cautilus planner reported `next_action: none`, so deterministic validation owned closeout and no live evaluator run was made.
+- Nose evidence: Maintainer-local `nose 0.4.0` still reports 222 families after this slice, matching the post-adapter slice count. This slice does not claim code-clone reduction; it removes the misleading code-scan responsibility from the whole-file document gate.
+- Critique: Medium fresh-eye reviewer found no behavior or regression blockers. The reviewer checked root/plugin run-quality labels, docs-only pre-push label, runtime budgets, canonical document scope, legacy wrapper dispatch, boundary-bypass rename legitimacy, and source/plugin command output. Reviewer recommended adding a wrapper compatibility test; parent added it.
+- Test duplication pressure: This slice improves duplicate-test pressure by making the deterministic gate's scope explicit instead of pretending a whole-file document matcher is the code-clone gate. The next slice can compare `jscpd` against the cleaned code baseline without conflating it with Markdown near-copy behavior.
+- Lessons carried forward: Rename-induced boundary-bypass changes should be treated as key migration, not new behavior, and proved with the ratchet. Keep compatibility wrappers when operator muscle memory or older local commands may still call the previous script name.
+- Metrics: scanned substantive files 627 -> 227 for the hard near-copy gate; current hard-gate duplicate pairs remained 0 -> 0; boundary-bypass candidates 96 -> 95 after the rename/scope change; `nose` families remained 222.
 
 ## Context Sources
 

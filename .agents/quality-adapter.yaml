@@ -123,7 +123,7 @@ runtime_budgets:
   check-cli-skill-surface: 11000
   pytest: 70000
   check-coverage: 15000
-  check-duplicates: 13000
+  check-doc-near-duplicates: 13000
   check-markdown: 11000
   check-secrets: 6000
   run-evals: 6500
@@ -142,7 +142,7 @@ runtime_budget_profiles:
       inventory-ubiquitous-language: 1200
       pytest: 140000
       check-coverage: 45000
-      check-duplicates: 13000
+      check-doc-near-duplicates: 13000
       check-markdown: 11000
       check-secrets: 6000
       run-evals: 6500
@@ -165,7 +165,7 @@ runtime_budget_profiles:
       inventory-ubiquitous-language: 2500
       pytest: 110000
       check-coverage: 60000
-      check-duplicates: 24000
+      check-doc-near-duplicates: 24000
       check-markdown: 15000
       check-secrets: 8000
       run-evals: 8000

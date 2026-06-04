@@ -130,7 +130,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),
     ("run-evals", "run_evals.py"),
-    ("check-duplicates", "check_duplicates.py"),
+    ("check-doc-near-duplicates", "check_doc_near_duplicates.py"),
 )
 QUALITY_RUNTIME_STUBS = (
     ("measure-startup-probes", "measure_startup_probes.py"),

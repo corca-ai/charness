@@ -5,13 +5,14 @@ Charness and for repos that consume the `quality` skill.
 
 ## Layers
 
-### 1. `check_duplicates.py`: Near-Copy Guard, Markdown Target
+### 1. `check_doc_near_duplicates.py`: Document Near-Copy Guard
 
-[`scripts/check_duplicates.py`](../scripts/check_duplicates.py) is the current
-repo-local hard guard for whole-file near similarity. It currently still scans
-the helper-script globs in its `DEFAULT_PATTERNS`; the intended long-term scope
-is checked-in Markdown, skill, reference, and README surfaces. It filters out
-files below 18 non-empty lines, respects the git file listing when
+[`scripts/check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py)
+is the current repo-local hard guard for whole-file document near similarity.
+Its scope is checked-in Markdown, skill, reference, and README surfaces.
+[`scripts/check_duplicates.py`](../scripts/check_duplicates.py) remains as a
+compatibility wrapper for older local invocations. The canonical gate filters
+out files below 18 non-empty lines, respects the git file listing when
 `--require-git-file-listing` is used, and fails on whole-file text similarity at
 `0.98` or higher.
 
@@ -19,17 +20,15 @@ This guard is intentionally narrow:
 
 - it catches nearly identical checked-in Markdown, `SKILL.md`, reference, and
   README files
-- it currently also scans helper-script globs, which should be preserved or
-  narrowed only after the `nose` cleanup makes the coverage tradeoff explicit
 - it is wired into [`scripts/run-quality.sh`](../scripts/run-quality.sh) as
-  `check-duplicates`
+  `check-doc-near-duplicates`
 - it also runs in the docs-only pre-push subset, so doc-only pushes still get a
   cheap copy-paste guard; this does not mean `charness-artifacts/` are scanned
   by the duplicate checker
 
 The guard is not a block-level clone detector and should not be treated as a
 complete refactoring inventory. Python and other code duplicate cleanup should
-move out of this guard instead of widening its role.
+stay out of this guard instead of widening its role.
 
 ### 2. `jscpd`: Syntax Copy-Paste Candidate
 
@@ -43,7 +42,8 @@ baselined. Revisit `jscpd` only after the `nose`-driven refactoring pass reduces
 the existing code-clone backlog.
 
 Adoption should start as a separate validation support binary, not as an
-immediate replacement for [`scripts/check_duplicates.py`](../scripts/check_duplicates.py):
+immediate replacement for
+[`scripts/check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py):
 
 - add a `jscpd` manifest under
   [`integrations/tools/`](../integrations/tools/) with `quality` as the
@@ -60,21 +60,23 @@ immediate replacement for [`scripts/check_duplicates.py`](../scripts/check_dupli
 Parity status as of 2026-06-04:
 
 - `jscpd` catches the existing
-  [`check_duplicates.py`](../scripts/check_duplicates.py) fixture shape with
+  [`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py)
+  fixture shape with
   repeated exact Markdown lines and respects `.gitignore` in that fixture.
 - `jscpd` does not exactly replace the whole-file near-similarity behavior:
   highly similar Markdown files with per-line token differences can trip
-  [`check_duplicates.py`](../scripts/check_duplicates.py) while producing no
-  exact `jscpd` clone.
-- With the current [`check_duplicates.py`](../scripts/check_duplicates.py) file
-  list and a large token floor, `jscpd` reports existing Charness
-  bootstrap/script clones instead of passing cleanly. That is useful signal, but
-  not drop-in parity.
+  [`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py)
+  while producing no exact `jscpd` clone.
+- With the old broad [`check_duplicates.py`](../scripts/check_duplicates.py)
+  file list and a large token floor, `jscpd` reported existing Charness
+  bootstrap/script clones instead of passing cleanly. That signal is now owned
+  by `nose` cleanup and later `jscpd` reassessment, not by this document guard.
 
 Conclusion: do not introduce `jscpd` yet. After the `nose` refactoring pass,
 rerun the comparison and decide whether a code-only `jscpd` wrapper still adds
 useful hard-gate signal. Whole-file Markdown near-similarity remains owned by
-[`check_duplicates.py`](../scripts/check_duplicates.py) either way.
+[`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py) either
+way.
 
 ### 3. `nose`: Advisory Refactoring Inventory
 
@@ -95,10 +97,12 @@ Recommended integration shape:
 - consume it from `quality` as an advisory inventory phase, for example
   `inventory-nose-clones`
 
-`nose` should not replace [`check_duplicates.py`](../scripts/check_duplicates.py)
-or `jscpd`:
+`nose` should not replace
+[`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py) or
+`jscpd`:
 
-- [`check_duplicates.py`](../scripts/check_duplicates.py) protects
+- [`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py)
+  protects
   near-identical whole documents and skill files
 - `jscpd` is the syntax/token copy-paste gate candidate
 - `nose` ranks semantic and near-structural clone families as refactoring
