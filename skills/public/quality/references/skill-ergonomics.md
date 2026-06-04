@@ -27,6 +27,11 @@ Use this lens to keep public/support skills aligned with:
   validator should own the behavior?
 - Do validators pin exact prose because it is truly load-bearing classifier
   input, or because no one wrote a reference-aware or behavior-level assertion?
+- Do issue anchors, dated incidents, or host-surface references document stable
+  portable behavior, or are they leaking repo-local history and host policy into
+  the package?
+- Are reference files discoverable from `SKILL.md` when a cold reader follows
+  progressive disclosure?
 
 ## Advisory Inventory
 
@@ -45,6 +50,12 @@ quality pass:
   can be misread as runtime instructions outside the source checkout
 - concrete issue anchors anywhere in a public/support skill package, which can
   leak repo-local history into portable skill bundles
+- dated incident or history-coupled wording anywhere in a public/support skill
+  package
+- host-surface references that need review before treating the package as host
+  portable
+- reference files that are not listed from `SKILL.md`, which makes the package
+  hard to operate under line-budget pressure
 
 Treat these as prompts, not automatic failures.
 
@@ -74,6 +85,9 @@ Advisory only unless the repo explicitly opts in:
 - repeated bootstrap fences without a helper script
 - installed-bundle helper-path ambiguity review
 - package-level concrete issue-anchor review
+- package-level dated incident/history review
+- package-level host-surface reference review
+- reference discoverability review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
 

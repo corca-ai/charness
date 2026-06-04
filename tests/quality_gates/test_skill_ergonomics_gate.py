@@ -219,6 +219,50 @@ def test_skill_ergonomics_gate_fails_on_package_issue_anchor_rule_for_support_sk
     assert payload["checked_skills"][0]["package_issue_anchor_count"] == 1
 
 
+def test_skill_ergonomics_gate_fails_on_package_text_quality_rules(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - portable_package_dated_incident",
+                "  - portable_package_host_surface_reference",
+                "  - reference_discoverability_gap",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (references_dir / "hidden.md").write_text(
+        "# Hidden\n\nA 2026-05-28 incident note belongs outside portable prose.\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n\nCodex settings.json owns this host behavior.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert [violation["rule"] for violation in payload["violations"]] == [
+        "portable_package_dated_incident",
+        "portable_package_host_surface_reference",
+        "reference_discoverability_gap",
+    ]
+    assert all(violation["findings"] for violation in payload["violations"])
+
+
 def test_skill_ergonomics_gate_keeps_existing_rules_public_only_for_support_skills(
     tmp_path: Path,
 ) -> None:

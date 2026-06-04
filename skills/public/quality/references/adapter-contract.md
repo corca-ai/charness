@@ -303,6 +303,15 @@ output. Current supported rules:
   Fail when a public/support skill package contains concrete issue-number
   anchors. Keep this rule opt-in until the current package corpus is cleaned or
   a narrow machine-readable exception model exists.
+- `portable_package_dated_incident`
+  Fail when a public/support skill package contains dated incident/history
+  wording.
+- `portable_package_host_surface_reference`
+  Fail when a public/support skill package names host/runtime surfaces that need
+  review. Keep legitimate host routing explicit, and move host-specific behavior
+  to adapters, presets, or integrations.
+- `reference_discoverability_gap`
+  Fail when checked-in `references/` files are not discoverable from `SKILL.md`.
 - `portable_helper_path_ambiguity`
   Fail when helper references look cwd-relative instead of install-portable.
 

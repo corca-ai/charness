@@ -44,6 +44,9 @@ RULE_HEURISTICS = {
     "issue_anchor_in_core": ("issue_anchor_in_core",),
     "dated_incident_in_core": ("dated_incident_in_core",),
     "portable_package_issue_anchor": ("portable_package_issue_anchor",),
+    "portable_package_dated_incident": ("portable_package_dated_incident",),
+    "portable_package_host_surface_reference": ("portable_package_host_surface_reference",),
+    "reference_discoverability_gap": ("reference_discoverability_gap",),
 }
 
 RULE_SKILL_TYPES = {
@@ -55,6 +58,9 @@ RULE_SKILL_TYPES = {
     "issue_anchor_in_core": {"public"},
     "dated_incident_in_core": {"public"},
     "portable_package_issue_anchor": {"public", "support"},
+    "portable_package_dated_incident": {"public", "support"},
+    "portable_package_host_surface_reference": {"public", "support"},
+    "reference_discoverability_gap": {"public", "support"},
 }
 
 RULE_MESSAGES = {
@@ -86,6 +92,18 @@ RULE_MESSAGES = {
     "portable_package_issue_anchor": (
         "Portable skill package carries concrete issue-number anchors. "
         "Generalize real project history to placeholders or record a narrow machine-readable exception before enabling this rule."
+    ),
+    "portable_package_dated_incident": (
+        "Portable skill package carries dated incident/history wording. "
+        "Name the stable invariant or move provenance into repo-local artifacts before enabling this rule."
+    ),
+    "portable_package_host_surface_reference": (
+        "Portable skill package names host/runtime surfaces that need review. "
+        "Keep legitimate host routing explicit, and move host-specific behavior to adapters, presets, or integration manifests."
+    ),
+    "reference_discoverability_gap": (
+        "Skill package has reference files that are not listed from SKILL.md. "
+        "Add a discoverable reference/index path or remove stale references."
     ),
 }
 
@@ -139,6 +157,57 @@ def _empty_rules_warnings(skill_count: int, requested_paths: list[str]) -> list[
     return []
 
 
+def _checked_skill_item(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "skill_id": item["skill_id"],
+        "skill_type": item["skill_type"],
+        "skill_path": item["skill_path"],
+        "heuristics": item["heuristics"],
+        "package_issue_anchor_count": item.get("package_issue_anchor_count", 0),
+        "package_issue_anchor_findings": item.get("package_issue_anchor_findings", []),
+        "package_dated_incident_count": item.get("package_dated_incident_count", 0),
+        "package_dated_incident_findings": item.get("package_dated_incident_findings", []),
+        "host_surface_reference_count": item.get("host_surface_reference_count", 0),
+        "host_surface_reference_findings": item.get("host_surface_reference_findings", []),
+        "unlisted_reference_count": item.get("unlisted_reference_count", 0),
+        "unlisted_reference_files": item.get("unlisted_reference_files", []),
+        "subcheck_counts": item.get("subcheck_counts", {}),
+    }
+
+
+def _rule_findings(item: dict[str, Any], rule: str) -> list[dict[str, Any]]:
+    findings_by_rule = {
+        "portable_package_issue_anchor": item.get("package_issue_anchor_findings", []),
+        "portable_package_dated_incident": item.get("package_dated_incident_findings", []),
+        "portable_package_host_surface_reference": item.get("host_surface_reference_findings", []),
+        "reference_discoverability_gap": item.get("unlisted_reference_files", []),
+    }
+    return findings_by_rule.get(rule, [])
+
+
+def _violations_for_skill(item: dict[str, Any], rules: list[str]) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    if item["skill_type"] == "runtime_install":
+        return violations
+    for rule in rules:
+        if item["skill_type"] not in RULE_SKILL_TYPES.get(rule, {"public"}):
+            continue
+        rule_heuristics = RULE_HEURISTICS.get(rule, ())
+        if not any(heuristic in item["heuristics"] for heuristic in rule_heuristics):
+            continue
+        violations.append(
+            {
+                "rule": rule,
+                "skill_id": item["skill_id"],
+                "skill_path": item["skill_path"],
+                "heuristics": item["heuristics"],
+                "findings": _rule_findings(item, rule),
+                "message": RULE_MESSAGES[rule],
+            }
+        )
+    return violations
+
+
 def evaluate(repo_root: Path) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
     adapter_errors = adapter.get("errors", []) if adapter.get("valid") is not True else []
@@ -187,35 +256,8 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         if _vendored_path_lib.is_vendored(repo_root, skill_path, vendored_prefixes_list):
             continue
         item = inventory_skill(repo_root, skill_path, max_core_lines=160, runtime_install_prefixes=runtime_install_prefixes)
-        checked_skills.append(
-            {
-                "skill_id": item["skill_id"],
-                "skill_type": item["skill_type"],
-                "skill_path": item["skill_path"],
-                "heuristics": item["heuristics"],
-                "package_issue_anchor_count": item.get("package_issue_anchor_count", 0),
-                "package_issue_anchor_findings": item.get("package_issue_anchor_findings", []),
-            }
-        )
-        if item["skill_type"] == "runtime_install":
-            continue
-        for rule in rules:
-            if item["skill_type"] not in RULE_SKILL_TYPES.get(rule, {"public"}):
-                continue
-            rule_heuristics = RULE_HEURISTICS.get(rule, ())
-            if not any(heuristic in item["heuristics"] for heuristic in rule_heuristics):
-                continue
-            findings = item.get("package_issue_anchor_findings", []) if rule == "portable_package_issue_anchor" else []
-            violations.append(
-                {
-                    "rule": rule,
-                    "skill_id": item["skill_id"],
-                    "skill_path": item["skill_path"],
-                    "heuristics": item["heuristics"],
-                    "findings": findings,
-                    "message": RULE_MESSAGES[rule],
-                }
-            )
+        checked_skills.append(_checked_skill_item(item))
+        violations.extend(_violations_for_skill(item, rules))
     if rules and not checked_skills:
         discovery_errors.append(
             {

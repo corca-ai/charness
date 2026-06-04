@@ -188,8 +188,87 @@ def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_p
     assert "issue_anchor_in_core" in skill["heuristics"]
     assert "dated_incident_in_core" in skill["heuristics"]
     assert "portable_package_issue_anchor" in skill["heuristics"]
+    assert "portable_package_dated_incident" in skill["heuristics"]
     assert skill["package_issue_anchor_count"] == 3
+    assert skill["subcheck_counts"]["package_issue_anchor"] == 3
+    assert skill["subcheck_counts"]["package_dated_incident"] == 1
     assert any("issue-number and dated incident anchors" in item for item in skill["review_prompts"])
+
+
+def test_inventory_skill_ergonomics_reports_package_host_and_reference_subchecks(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (references_dir / "hidden.md").write_text("# Hidden\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "This assumes Claude Code settings.json behavior instead of an adapter.",
+                "",
+                "## References",
+                "",
+                "- `references/visible.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert "portable_package_host_surface_reference" in skill["heuristics"]
+    assert "reference_discoverability_gap" in skill["heuristics"]
+    assert payload["subcheck_counts"]["host_surface_reference"] == 1
+    assert payload["subcheck_counts"]["reference_discoverability"] == 1
+    assert skill["host_surface_reference_count"] == 1
+    assert skill["unlisted_reference_count"] == 1
+    assert skill["unlisted_reference_files"][0]["excerpt"] == "references/hidden.md is not listed in SKILL.md"
+
+
+def test_inventory_skill_ergonomics_ignores_cache_files_for_reference_discoverability(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    cache_dir = skill_dir / "references" / "__pycache__"
+    cache_dir.mkdir(parents=True)
+    (cache_dir / "generated.cpython-310.pyc").write_bytes(b"\0\0\0\0")
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert "reference_discoverability_gap" not in skill["heuristics"]
+    assert payload["subcheck_counts"]["reference_discoverability"] == 0
+    assert skill["unlisted_reference_count"] == 0
 
 
 def test_inventory_skill_ergonomics_scans_whole_portable_package_for_issue_anchors(

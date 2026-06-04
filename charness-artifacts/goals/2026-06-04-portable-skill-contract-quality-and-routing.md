@@ -9,12 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 - define and implement the portable skill text-quality
-  detector.
-- Next action: use the corrected package-level issue-anchor baseline
-  (`package_issue_anchor_count=102`) to decide the cleanup/exception model and
-  whether the opt-in `portable_package_issue_anchor` gate can become blocking
-  after Slice 3.
+- Current slice: Slice 3 - generalize portable skill packages away from
+  repo-local/history-coupled prose.
+- Next action: clean or generalize the current package findings
+  (`package_issue_anchor=102`, `package_dated_incident=3`,
+  `host_surface_reference=104`, `reference_discoverability=0`) and decide which
+  opt-in package rules can become blocking after cleanup.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -152,7 +152,7 @@ Slice 2 after baseline counts and false-positive review.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | complete |
-| 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | planned |
+| 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | complete |
 | 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | planned |
 | 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | planned |
 | 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | planned |
@@ -225,6 +225,20 @@ tracked issue closeout carrier.
 - Off-goal findings: None.
 - Lessons carried forward: Do not call a baseline concrete until false-positive taxonomy is reviewed; gate valid-rule vocabulary and default-generated enforcement are separate policy surfaces.
 - Metrics:
+
+### Slice 2: portable skill text-quality detector
+
+- Objective: Define and ship the broader portable skill text-quality detector bundle beyond package issue anchors.
+- Why this approach: The Slice 1 baseline proved the old core-only inventory missed package-level leakage; this slice moves detection into reusable subchecks while keeping noisy current-corpus rules opt-in until cleanup.
+- Commits:
+- What changed: Added skill_text_quality_lib.py and extended inventory_skill_ergonomics.py with package-level issue-anchor, dated-incident, host-surface-reference, and reference-discoverability subchecks; added optional validator rules and payload fields for those signals; added inventory consumer fields; documented the advisory/gate contract; synced the checked-in plugin mirror.
+- Alternatives rejected: Rejected enabling the new package-level gates in generated/default adapter rules because current baseline still has 102 package issue anchors, 3 dated incidents, and 104 high-recall host-surface references. Rejected shipping the host signal as portable_package_host_assumption after fresh-eye review because many hits are legitimate host-plural seams; renamed it to portable_package_host_surface_reference.
+- Targeted verification: Focused pytest passed: tests/quality_gates/test_quality_skill_ergonomics.py, test_skill_ergonomics_gate.py, test_quality_bootstrap.py, test_profile_and_preset_validation.py, test_inventory_consumption.py (77 tests). Inventory baseline after fixes: checked_skill_count=23, heuristic_finding_count=29, package_issue_anchor_count=102, subcheck_counts={core_overfill:0, mode_option_pressure:0, prose_ritual:0, path_ambiguity:0, package_issue_anchor:102, package_dated_incident:3, host_surface_reference:104, reference_discoverability:0}. validate_skill_ergonomics --json passed with existing adapter rules and 0 violations; inventory declaration and coverage validators passed; check_python_lengths passed with unrelated advisory warnings; run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed after final sync.
+- Test duplication pressure: New tests cover package dated incidents, host-surface reference payloads, reference discoverability, __pycache__ false-positive suppression, opt-in gate failure payloads, and checked_skill field exposure for the new subchecks.
+- Critique: Fresh-eye parent-delegated critique executed by subagent 019e90c3-574b-7143-8adf-e31c39c57544. Act-before-ship findings were applied: reference discoverability now ignores cache/non-text files and has a regression test; the host signal was renamed/reframed as host_surface_reference; run_slice_closeout was rerun after final sync. Bundle-anyway requests applied: package_dated_incident_count declared, review prompts updated, checked_skills includes new finding lists. Valid-but-defer: cleaning 102 issue anchors and 3 dated incidents, plus richer host-surface exception modeling.
+- Off-goal findings: None.
+- Lessons carried forward: High-recall text-quality heuristics need names that describe evidence, not verdicts. Local generated/cache files must be excluded from package-discoverability inventories before baselines are treated as meaningful.
+- Metrics: package_issue_anchor=102; package_dated_incident=3; host_surface_reference=104; reference_discoverability=0; closeout_usage_episode=slice-closeout-abca6310dc454bba9d0cb38bd009f037
 
 ## Context Sources
 
