@@ -1,16 +1,16 @@
 # Achieve Goal: 3h Quality Test Economics
 
-Status: active
+Status: complete
 Created: 2026-06-05
 Activation: `/goal @charness-artifacts/goals/2026-06-05-3h-quality-test-economics.md`
 
-This file is the living goal scratchpad for the active run.
+This file is the completed goal scratchpad for the run.
 
 ## Active Operating Frame
 
-- Current slice: 4 — quality runner test-body cleanup; ready to commit.
-- Next action: commit the repeated git setup helper extraction, then run final
-  closeout proof.
+- Current slice: complete.
+- Next action: none; review final verification and user verification
+  instructions.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -109,8 +109,8 @@ or external proof is expected unless a selected slice unexpectedly requires it.
 | 1 | Refresh the current quality and pytest-economics posture. | The target must come from current runtime, duplicate, and test surface data, not yesterday's intuition. | Runtime summary, standing-test economics, nose advisory sample, selected target rationale. | completed |
 | 2 | Convert one duplicated expensive pytest proof cluster into cheaper helper-level proof while keeping one boundary smoke. | This best matches the user's preference for equal confidence with less code and time. | Focused before/after test commands, retained representative boundary proof, critique notes. | completed |
 | 3 | Apply one nose-surfaced refactor only if it is clearly extractable and low risk. | Nose should guide real simplification, not become the objective. | Before/after nose excerpt, focused tests, plugin/support sync if relevant. | completed |
-| 4 | Use remaining time for the next low-risk pytest structure cleanup. | The user asked to continue when the planned goal closes early with time left. | Focused tests, lint/length proof, committed diff. | in_progress |
-| 5 | Finalize and close out. | The goal must leave audited evidence, committed artifacts, and honest non-claims. | Broad or substitute proof, final artifact status complete, retro dispositions, clean committed tree. | pending |
+| 4 | Use remaining time for the next low-risk pytest structure cleanup. | The user asked to continue when the planned goal closes early with time left. | Focused tests, lint/length proof, committed diff. | completed |
+| 5 | Finalize and close out. | The goal must leave audited evidence, committed artifacts, and honest non-claims. | Broad or substitute proof, final artifact status complete, retro dispositions, clean committed tree. | completed |
 
 ## Coordination Cues
 
@@ -138,9 +138,7 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-Routing: `find-skills` was already used for this task-oriented session; the
-active route is `achieve` for the goal lifecycle and `quality` for current gate,
-test-economics, and nose-advisory decisions.
+Routing: find-skills routed this goal to achieve for lifecycle work and quality for current gate, test-economics, and nose-advisory decisions.
 Gather: n/a — no external URLs, Slack, Notion, Docs, Drive, or other external
 source is being used as working context.
 Release: n/a — this goal intentionally follows the completed `0.18.0` release
@@ -271,18 +269,82 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-- None at shaping time.
+- issue #299: optional release-only sentinel coverage inventory. Surfaced by
+  final disposition review as the concrete destination for the retro
+  `capability:` improvement.
 
 ## Final Verification
 
-- Not run yet; the goal is not complete.
+- Focused release publish standing proof:
+  `pytest --collect-only -q -m "not release_only"
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py` collected 8/27
+  tests after the marker split. Before the change, the same files collected
+  27/27 non-release tests.
+- Focused standing release publish run: `pytest -q -m "not release_only"
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py --durations=20
+  --durations-min=0.01` passed 8 tests, deselected 19, in 3.27s.
+- Focused release-only release publish run: `pytest -q -m release_only
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py --durations=10
+  --durations-min=0.01` passed 19 tests, deselected 8, in 29.15s.
+- Focused quality-runner run: `pytest -q
+  tests/quality_gates/test_quality_runner.py` passed 32 tests in 13.65s.
+- Final broad lint: `ruff check charness scripts tests
+  skills/public/*/scripts skills/support/*/scripts` passed.
+- Final length gate: `python3 scripts/check_python_lengths.py --repo-root .
+  --require-git-file-listing` passed for 668 files, with existing advisory
+  near-limit warnings for `scripts/check_mutation_score.py`,
+  `scripts/setup_agent_docs_lib.py`,
+  `skills/public/handoff/scripts/chunked_routing_agentic.py`, and
+  `tests/quality_gates/test_release_publish.py`.
+- Final attention-state gate: `python3
+  scripts/validate_attention_state_visibility.py --repo-root . --scan-root
+  scripts --scan-root skills --scan-root-map ../charness-support=skills/support`
+  passed for 69 files.
+- Final broad non-release pytest: `pytest -q -m 'not release_only'
+  tests/quality_gates tests/control_plane tests/test_*.py` passed 2140 tests,
+  skipped 4, deselected 25, in 170.70s.
+- Final changed-surface check: `python3 scripts/check_changed_surfaces.py
+  --repo-root .` reported no unstaged changed paths after the implementation
+  commits.
+Retro: charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md
+Host log probe: skipped: host-log-not-exposed: no `Host metric window:` line was recorded, so the host-log probe reported thread-wide proxy pressure only and no goal-scoped token/time/tool-call total is claimed.
+Disposition review: charness-artifacts/critique/2026-06-05-3h-quality-test-economics-disposition-review.md
+- Non-claims: no release was published; no release version or install manifest
+  was changed; no live/provider proof was run; no jscpd gate was added; no nose
+  code refactor was applied after `_mask_fences` was judged intentionally
+  self-contained for now.
 
 ## User Verification Instructions
 
-- After completion, review the final verification commands and re-run the
-  commands that match the changed surface. If final proof lists only focused
-  checks, treat broad/release/live proof as an explicit non-claim.
+- To verify the standing-test split, run: `pytest --collect-only -q -m "not
+  release_only" tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py`.
+- To verify the release boundary proof still exists, run: `pytest -q -m
+  release_only tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py`.
+- To verify the final local quality proof, rerun the broad non-release pytest
+  and lint commands listed in `## Final Verification`.
+- Treat release publication, live/provider behavior, jscpd adoption, and
+  goal-scoped host-cost totals as explicit non-claims.
 
 ## Auto-Retro
 
-- Not run yet; the goal is not complete.
+Session retro persisted at
+`charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md` and
+refreshed `charness-artifacts/retro/recent-lessons.md`.
+
+Retro dispositions:
+
+- applied: future quality goals now have a persisted recent lesson to collect
+  standing-test economics and focused durations before acting on clone
+  inventory.
+- issue #299: optional release-only sentinel coverage inventory was filed and
+  verified as `https://github.com/corca-ai/charness/issues/299`.
+- applied: `_mask_fences` nose finding is explicitly recorded as deferred in
+  this goal because the closeout-floor helpers are intentionally self-contained
+  leaf modules; no code refactor was applied.
+
+Disposition review: charness-artifacts/critique/2026-06-05-3h-quality-test-economics-disposition-review.md

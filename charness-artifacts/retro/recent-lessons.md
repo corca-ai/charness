@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Closed the active 2026-06-05 quality/test-economics goal after the v0.18.0 release. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
 - Release publish triggered a configured automatic session retro for `v0.18.0`. (source: `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`)
-- Resolved Charness issues #294, #295, #297, and #298 through direct-to-default carrier commits, with #296 kept as already-closed context. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`; sources: 2)
-- Pre-push found debug seam-risk enum drift after the issue carriers were already locally verified. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
-- Repeated carrier verification and pre-push retries added overhead that would have been cheaper before the first push attempt. (source: `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`)
-- Repeated status/diff/check commands were partly phase-barrier proof, but the volume shows that final goal work still pays meaningful context and command overhead. (source: `charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md`)
+- Broad pytest took 170.70s in closeout, much slower than the latest runtime summary. It was justified as final proof after marker changes, but it should not be repeated inside pre-lock slices. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
+- The first high-value cut was not a nose refactor; the useful work came from standing-test economics. Running nose early was still useful for rejecting clone-count chasing, but the goal should bias toward measured pytest/runtime targets first. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
+- The `test_release_publish.py` file remains near the advisory length band after this run. The marker change reduced standing cost, but did not yet solve that file's size. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`; sources: 2)
-- #295 should still make broad-vs-focused closeout selection more explicit for pre-lock slice proof versus final verification-lock proof. (source: `charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md`)
-- applied: `3b7ed973` marked the copy-heavy isolated repo test release-only and converted #284 tests to the in-process preflight API. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
-- applied: final broad proof was rerun after the blocker fix and plugin mirror sync, replacing the mixed-tree pytest run. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
+- For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
+- issue #299 tracks an optional meta-test or inventory check that reports how many `release_only` tests remain in selected expensive files and which cheaper standing sentinels cover them, before marking more tests release-only. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
+- Keep the `_mask_fences` nose finding as intentionally deferred unless closeout-floor helpers get a shared leaf utility that preserves no-cycle constraints. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
 
 ## Selection Policy
 
@@ -28,9 +28,5 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
-- `charness-artifacts/retro/2026-06-04-closeout-test-time-waste-reduction.md`
-- `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
-- `charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md`
-- `charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md`
 - `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`
