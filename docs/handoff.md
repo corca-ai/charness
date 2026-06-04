@@ -23,24 +23,21 @@
   guard risk, and `achieve` absorbing `impl`/`debug`.
 - Released **v0.17.0**; real-host follow-up remains unrun for clean
   `charness update` and `tokei` doctor/install.
-- Local future-work-efficiency closeout commit `f66d484d` stages close keywords
-  for #285, #286, #287, #288, and #289. Those issues remain OPEN until that
-  commit is pushed and post-push verification passes.
+- Future-work-efficiency closeout commit `f66d484d` is pushed and post-push
+  `issue_tool.py verify-closeout --expect-state CLOSED` passed for #285, #286,
+  #287, #288, and #289.
 - #293 and #184 remain open and deferred unless the new text-quality work
   directly trips their owning quality/product surfaces.
 
 ## Next Session
 
-1. If branch `main` is still unpushed, push it and verify the prior
-   #285/#286/#287/#288/#289 closeout carrier against `f66d484d`:
-   `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo-root . --repo corca-ai/charness --number 285 --number 286 --number 287 --number 288 --number 289 --classification feature --carrier direct-commit --commit-ref f66d484d --expect-state CLOSED`.
-   Then activate
-   `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`
-   and start Slice 1 with `find-skills` routing, the RCA, and baseline skill
-   text-quality inventories. Do not use a memorized exhaustive phase-to-skill
-   table; decide the owning skill at each boundary and use short anchors only
-   for easy-to-miss cases like implementation -> `impl` and bug/RCA work ->
-   `debug`.
+Activate directly:
+`/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`.
+
+Start Slice 1 with `find-skills` routing, the RCA, and baseline skill
+text-quality inventories. Do not use a memorized exhaustive phase-to-skill
+table; decide the owning skill at each boundary and use short anchors only for
+easy-to-miss cases like implementation -> `impl` and bug/RCA work -> `debug`.
 
 ## Discuss
 
