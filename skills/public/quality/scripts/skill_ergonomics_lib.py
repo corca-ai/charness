@@ -12,6 +12,7 @@ DEFAULT_REVIEW_PROMPTS = [
     "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
     "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required.",
     "Keep issue-number and dated incident anchors out of public `SKILL.md` core; move historical provenance to references, tests, or retro artifacts.",
+    "Review concrete issue anchors across the whole public/support package; generic issue-workflow placeholders and version fields are not project-history leakage.",
 ]
 RUNTIME_INSTALL_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
@@ -27,6 +28,8 @@ ISSUE_ANCHOR_RE = re.compile(
     r"(?:"
     r"\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+\b|"
     r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+\b|"
+    r"\bissues/\d+\b|"
+    r"\bissue-\d+\b|"
     r"\b(?:issue|bug|pr|pull request)s?\s+#\d+\b|"
     r"(?<![A-Za-z0-9_])#\d{3,}\b"
     r")",
@@ -39,6 +42,20 @@ DATED_INCIDENT_RE = re.compile(
 )
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+PACKAGE_TEXT_SUFFIXES = {
+    ".bash",
+    ".json",
+    ".md",
+    ".py",
+    ".sh",
+    ".txt",
+    ".yaml",
+    ".yml",
+    ".zsh",
+}
+PACKAGE_TEXT_FILENAMES = {"SKILL.md"}
+ISSUE_VERSION_FIELD_RE = re.compile(r"defaults_version\b.*\bissue-\d+\b", re.IGNORECASE)
+PLACEHOLDER_ISSUE_URL_RE = re.compile(r"\.\.\./issues/\d+\b")
 
 
 def count_files(directory: Path) -> int:
@@ -78,6 +95,52 @@ def has_issue_anchor_in_core(lines: list[str]) -> bool:
     return any(ISSUE_ANCHOR_RE.search(line) for line in lines)
 
 
+def _is_package_text_file(path: Path) -> bool:
+    return path.name in PACKAGE_TEXT_FILENAMES or path.suffix in PACKAGE_TEXT_SUFFIXES
+
+
+def _iter_package_text_files(skill_dir: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in skill_dir.rglob("*")
+        if path.is_file()
+        and _is_package_text_file(path)
+        and "__pycache__" not in path.parts
+        and ".pytest_cache" not in path.parts
+    )
+
+
+def _excerpt(line: str) -> str:
+    return line.strip()[:160]
+
+
+def is_allowed_issue_anchor_context(line: str) -> bool:
+    return bool(ISSUE_VERSION_FIELD_RE.search(line) or PLACEHOLDER_ISSUE_URL_RE.search(line))
+
+
+def issue_anchor_package_findings(repo_root: Path, skill_dir: Path) -> list[dict[str, object]]:
+    findings: list[dict[str, object]] = []
+    for path in _iter_package_text_files(skill_dir):
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except UnicodeDecodeError:
+            continue
+        for index, line in enumerate(lines, start=1):
+            if not ISSUE_ANCHOR_RE.search(line):
+                continue
+            if is_allowed_issue_anchor_context(line):
+                continue
+            findings.append(
+                {
+                    "heuristic": "portable_package_issue_anchor",
+                    "path": str(path.relative_to(repo_root)),
+                    "line": index,
+                    "excerpt": _excerpt(line),
+                }
+            )
+    return findings
+
+
 def has_dated_incident_in_core(lines: list[str]) -> bool:
     return any(DATED_INCIDENT_RE.search(line) for line in lines)
 
@@ -115,6 +178,11 @@ def inventory_skill(
     bootstrap_fence_count = markdown_helpers["count_fence_blocks"](bootstrap_lines)
     reference_count = count_files(skill_dir / "references")
     script_count = count_files(skill_dir / "scripts")
+    package_issue_findings = (
+        issue_anchor_package_findings(repo_root, skill_dir)
+        if skill_type in {"public", "support"}
+        else []
+    )
     heuristics: list[str] = []
     if len(nonempty_lines) > max_core_lines:
         heuristics.append("long_core")
@@ -132,6 +200,8 @@ def inventory_skill(
         heuristics.append("issue_anchor_in_core")
     if skill_type == "public" and has_dated_incident_in_core(prose.splitlines()):
         heuristics.append("dated_incident_in_core")
+    if skill_type in {"public", "support"} and package_issue_findings:
+        heuristics.append("portable_package_issue_anchor")
     review_prompts = RUNTIME_INSTALL_REVIEW_PROMPTS if skill_type == "runtime_install" else DEFAULT_REVIEW_PROMPTS
     return {
         "skill_id": skill_dir.name,
@@ -142,6 +212,8 @@ def inventory_skill(
         "script_file_count": script_count,
         "code_fence_count": code_fence_count,
         "bootstrap_fence_count": bootstrap_fence_count,
+        "package_issue_anchor_count": len(package_issue_findings),
+        "package_issue_anchor_findings": package_issue_findings,
         "heuristics": heuristics,
         "review_prompts": review_prompts,
     }
@@ -191,10 +263,12 @@ def prose_review_advisory(status: str) -> list[dict[str, str]]:
 
 def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
     heuristic_count = sum(len(skill.get("heuristics", [])) for skill in skills)
+    package_issue_anchor_count = sum(int(skill.get("package_issue_anchor_count", 0)) for skill in skills)
     if not skills:
         return {
             "checked_skill_count": 0,
             "heuristic_finding_count": 0,
+            "package_issue_anchor_count": 0,
             "finding_status": "not_evaluated",
             "prose_review_status": "not_started",
             "advisories": [],
@@ -204,6 +278,7 @@ def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
         return {
             "checked_skill_count": len(skills),
             "heuristic_finding_count": heuristic_count,
+            "package_issue_anchor_count": package_issue_anchor_count,
             "finding_status": "heuristics_present",
             "prose_review_status": prose_status,
             "advisories": prose_review_advisory(prose_status),
@@ -212,6 +287,7 @@ def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
     return {
         "checked_skill_count": len(skills),
         "heuristic_finding_count": 0,
+        "package_issue_anchor_count": package_issue_anchor_count,
         "finding_status": "zero_heuristic_findings",
         "prose_review_status": prose_status,
         "advisories": prose_review_advisory(prose_status),

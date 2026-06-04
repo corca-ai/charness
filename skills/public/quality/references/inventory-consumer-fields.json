@@ -10,6 +10,7 @@
         "prose_review_status",
         "checked_skill_count",
         "heuristic_finding_count",
+        "package_issue_anchor_count",
         "core_nonempty_lines",
         "reference_file_count",
         "script_file_count",

@@ -187,7 +187,85 @@ def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_p
     skill = payload["skills"][0]
     assert "issue_anchor_in_core" in skill["heuristics"]
     assert "dated_incident_in_core" in skill["heuristics"]
+    assert "portable_package_issue_anchor" in skill["heuristics"]
+    assert skill["package_issue_anchor_count"] == 3
     assert any("issue-number and dated incident anchors" in item for item in skill["review_prompts"])
+
+
+def test_inventory_skill_ergonomics_scans_whole_portable_package_for_issue_anchors(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "support" / "demo"
+    references_dir = skill_dir / "references"
+    scripts_dir = skill_dir / "scripts"
+    references_dir.mkdir(parents=True)
+    scripts_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (references_dir / "history.md").write_text(
+        "# History\n\nThis used to cite corca-ai/charness#123.\n",
+        encoding="utf-8",
+    )
+    (scripts_dir / "helper.py").write_text(
+        '"""Keep issues/456 visible until migration is cleaned."""\n',
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert skill["skill_type"] == "support"
+    assert payload["package_issue_anchor_count"] == 2
+    assert skill["package_issue_anchor_count"] == 2
+    assert "portable_package_issue_anchor" in skill["heuristics"]
+    assert {finding["path"] for finding in skill["package_issue_anchor_findings"]} == {
+        "skills/support/demo/references/history.md",
+        "skills/support/demo/scripts/helper.py",
+    }
+
+
+def test_inventory_skill_ergonomics_allows_version_fields_and_portable_placeholders(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    scripts_dir = skill_dir / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "adapter.example.yaml").write_text(
+        "defaults_version: issue-64\nrecommendation_defaults_version: issue-65\n",
+        encoding="utf-8",
+    )
+    (scripts_dir / "helper.py").write_text(
+        '"""`gh issue create` prints ``.../issues/123`` as a portable placeholder."""\n',
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert skill["package_issue_anchor_count"] == 0
+    assert "portable_package_issue_anchor" not in skill["heuristics"]
 
 
 def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explicit_issue_refs(
@@ -251,6 +329,7 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert "issue_anchor_in_core" in payload["skills"][0]["heuristics"]
+    assert "portable_package_issue_anchor" in payload["skills"][0]["heuristics"]
 
 
 def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> None:
@@ -575,6 +654,7 @@ def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuris
                 "# Demo",
                 "",
                 "Use `scripts/process_receipt.py` before stopping.",
+                "Historical note corca-ai/charness#123 stays out of portable package metrics here.",
             ]
         )
         + "\n",
@@ -607,6 +687,8 @@ def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuris
     payload = json.loads(result.stdout)
     skill = payload["skills"][0]
     assert skill["skill_type"] == "runtime_install"
+    assert skill["package_issue_anchor_count"] == 0
     assert "portable_helper_path_ambiguity" not in skill["heuristics"]
+    assert "portable_package_issue_anchor" not in skill["heuristics"]
     assert any("runtime-install portability" in prompt for prompt in skill["review_prompts"])
     assert not any("installed-bundle portability" in prompt for prompt in skill["review_prompts"])

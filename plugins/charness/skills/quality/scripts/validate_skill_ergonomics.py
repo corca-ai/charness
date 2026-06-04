@@ -43,6 +43,18 @@ RULE_HEURISTICS = {
     "portable_helper_path_ambiguity": ("portable_helper_path_ambiguity",),
     "issue_anchor_in_core": ("issue_anchor_in_core",),
     "dated_incident_in_core": ("dated_incident_in_core",),
+    "portable_package_issue_anchor": ("portable_package_issue_anchor",),
+}
+
+RULE_SKILL_TYPES = {
+    "long_core": {"public"},
+    "mode_option_pressure_terms": {"public"},
+    "progressive_disclosure_risk": {"public"},
+    "code_fence_without_helper_script": {"public"},
+    "portable_helper_path_ambiguity": {"public"},
+    "issue_anchor_in_core": {"public"},
+    "dated_incident_in_core": {"public"},
+    "portable_package_issue_anchor": {"public", "support"},
 }
 
 RULE_MESSAGES = {
@@ -70,6 +82,10 @@ RULE_MESSAGES = {
     "dated_incident_in_core": (
         "Public skill core carries dated incident wording. "
         "Name the stable failure class in the core and keep date-specific provenance outside the trigger contract."
+    ),
+    "portable_package_issue_anchor": (
+        "Portable skill package carries concrete issue-number anchors. "
+        "Generalize real project history to placeholders or record a narrow machine-readable exception before enabling this rule."
     ),
 }
 
@@ -177,20 +193,26 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                 "skill_type": item["skill_type"],
                 "skill_path": item["skill_path"],
                 "heuristics": item["heuristics"],
+                "package_issue_anchor_count": item.get("package_issue_anchor_count", 0),
+                "package_issue_anchor_findings": item.get("package_issue_anchor_findings", []),
             }
         )
-        if item["skill_type"] != "public":
+        if item["skill_type"] == "runtime_install":
             continue
         for rule in rules:
+            if item["skill_type"] not in RULE_SKILL_TYPES.get(rule, {"public"}):
+                continue
             rule_heuristics = RULE_HEURISTICS.get(rule, ())
             if not any(heuristic in item["heuristics"] for heuristic in rule_heuristics):
                 continue
+            findings = item.get("package_issue_anchor_findings", []) if rule == "portable_package_issue_anchor" else []
             violations.append(
                 {
                     "rule": rule,
                     "skill_id": item["skill_id"],
                     "skill_path": item["skill_path"],
                     "heuristics": item["heuristics"],
+                    "findings": findings,
                     "message": RULE_MESSAGES[rule],
                 }
             )

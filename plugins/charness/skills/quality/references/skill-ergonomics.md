@@ -43,6 +43,8 @@ quality pass:
 - multiple code fences without helper scripts, which can signal prose ritual
 - prose helper-path ambiguity where bare `<repo-root>/scripts/...` or source-tree file paths
   can be misread as runtime instructions outside the source checkout
+- concrete issue anchors anywhere in a public/support skill package, which can
+  leak repo-local history into portable skill bundles
 
 Treat these as prompts, not automatic failures.
 
@@ -71,6 +73,7 @@ Advisory only unless the repo explicitly opts in:
 - progressive-disclosure risk
 - repeated bootstrap fences without a helper script
 - installed-bundle helper-path ambiguity review
+- package-level concrete issue-anchor review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
 

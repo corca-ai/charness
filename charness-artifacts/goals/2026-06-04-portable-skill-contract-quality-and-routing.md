@@ -1,6 +1,6 @@
 # Achieve Goal: Portable skill contract quality and routing discipline
 
-Status: draft
+Status: active
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`
 
@@ -9,10 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`,
-  then start Slice 1 with `find-skills` routing and `debug`/`quality` evidence
-  before any implementation.
+- Current slice: Slice 2 - define and implement the portable skill text-quality
+  detector.
+- Next action: use the corrected package-level issue-anchor baseline
+  (`package_issue_anchor_count=102`) to decide the cleanup/exception model and
+  whether the opt-in `portable_package_issue_anchor` gate can become blocking
+  after Slice 3.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -149,7 +151,7 @@ Slice 2 after baseline counts and false-positive review.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | planned |
+| 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | complete |
 | 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | planned |
 | 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | planned |
 | 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | planned |
@@ -183,6 +185,10 @@ during the run:
 Routing: Before-phase shaping used `find-skills` read-only recommendation and
 selected `achieve` for the goal artifact, `debug` for RCA, `handoff` for the
 next-session baton, and `quality`/`impl` as required pursuit-phase routes.
+Activation routing on 2026-06-04 used `find-skills --recommend-for-task
+"continue active goal ...portable-skill-contract-quality-and-routing.md"` and
+selected `quality` for Slice 1 because the immediate work is a portable skill
+text-quality baseline and gate-design pass.
 Gather: n/a - this goal was shaped from local repo artifacts and the user's
 in-thread portability requirement, not an external URL.
 Release: n/a - no release surface is planned.
@@ -205,6 +211,20 @@ tracked issue closeout carrier.
   scope was widened before activation.
 - Non-claims: No skill package cleanup or text-quality validator has been
   implemented yet.
+
+### Slice 1: Slice 1: portable skill text-quality detector baseline
+
+- Objective: Establish a package-wide portable skill issue-anchor detector baseline and wire the first quality-gate surface without enabling the stricter current-corpus rule before cleanup.
+- Why this approach: The prior inventory reported zero findings because it only checked public SKILL.md core; a package-level inventory gives Slice 3 concrete cleanup targets while the opt-in gate stays available for post-cleanup enforcement.
+- Commits:
+- What changed: Activated the goal artifact; extended inventory_skill_ergonomics.py to emit package_issue_anchor_count and line-level package_issue_anchor_findings for public/support skill packages; added valid opt-in rule portable_package_issue_anchor with explicit public/support applicability; kept the rule out of default/generated adapter rules; documented the inventory/gate field and synced plugin mirrors.
+- Alternatives rejected: Rejected enabling portable_package_issue_anchor in the current repo adapter before cleanup because the corrected baseline still has 102 findings. Rejected counting generic defaults_version issue-* fields or .../issues/123 placeholders as concrete history leakage after fresh-eye review.
+- Targeted verification: Focused pytest passed: tests/quality_gates/test_quality_skill_ergonomics.py, test_skill_ergonomics_gate.py, test_quality_bootstrap.py, test_profile_and_preset_validation.py (63 tests). Corrected inventory baseline: checked_skill_count=23, heuristic_finding_count=10, package_issue_anchor_count=102. validate_skill_ergonomics --json passed with existing adapter rules and no violations; package counts are visible in checked_skills. validate_inventory_consumption_declaration and check_inventory_declaration_coverage passed after stable sync. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed; broad pytest intentionally skipped for slice rehearsal.
+- Test duplication pressure: New coverage adds focused cases for whole-package public/support findings, defaults_version and .../issues/123 false-positive skips, runtime-install package count suppression, support-skill package rule enforcement, and public-only applicability for older rules.
+- Critique: Fresh-eye parent-delegated critique executed by subagent 019e90b4-143c-7cb3-8da8-6d9bbac73a0f. Act-before-ship findings were applied: removed the new rule from defaults/example adapter, narrowed placeholder/version false positives, made rule applicability explicit, suppressed runtime-install counts, included findings in gate payloads, updated stale review prompt, and removed unsupported reviewed-exception wording. Valid-but-defer: vendor subdirectories in support skills and two-digit anchor ambiguity.
+- Off-goal findings: None.
+- Lessons carried forward: Do not call a baseline concrete until false-positive taxonomy is reviewed; gate valid-rule vocabulary and default-generated enforcement are separate policy surfaces.
+- Metrics:
 
 ## Context Sources
 

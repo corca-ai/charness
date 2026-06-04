@@ -299,6 +299,10 @@ output. Current supported rules:
   Fail when a public skill core uses issue-number or dated incident anchors as
   normative instruction instead of keeping provenance in references, tests, or
   retro artifacts.
+- `portable_package_issue_anchor`
+  Fail when a public/support skill package contains concrete issue-number
+  anchors. Keep this rule opt-in until the current package corpus is cleaned or
+  a narrow machine-readable exception model exists.
 - `portable_helper_path_ambiguity`
   Fail when helper references look cwd-relative instead of install-portable.
 
