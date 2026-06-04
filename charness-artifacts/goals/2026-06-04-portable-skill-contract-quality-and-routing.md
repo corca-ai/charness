@@ -9,13 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 - skill discoverability/readability cleanup for
-  `achieve`.
-- Next action: inspect `achieve` reference/index discoverability and SKILL.md
-  headroom, then make the smallest cleanup that improves operator lookup without
-  reintroducing repo-local history anchors. Carry the Slice 3 host-surface
-  follow-up (`host_surface_reference=104`) as deferred exception/modeling work
-  before final closeout.
+- Current slice: Slice 6 - broad verify, critique, retro, and handoff closeout.
+- Next action: run final closeout proof, decide whether the deferred
+  host-surface follow-up (`host_surface_reference=104`, now 9 for `achieve`
+  after scoped cleanup) remains a reviewed exception or needs a final modeling
+  slice, then update retro/handoff with honest non-claims.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -156,7 +154,7 @@ Slice 2 after baseline counts and false-positive review.
 | 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | complete |
 | 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | complete |
 | 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | complete |
-| 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | planned |
+| 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | complete |
 | 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | planned |
 
 ## Coordination Cues
@@ -189,7 +187,11 @@ next-session baton, and `quality`/`impl` as required pursuit-phase routes.
 Activation routing on 2026-06-04 used `find-skills --recommend-for-task
 "continue active goal ...portable-skill-contract-quality-and-routing.md"` and
 selected `quality` for Slice 1 because the immediate work is a portable skill
-text-quality baseline and gate-design pass.
+text-quality baseline and gate-design pass. Slice 5 routing used `find-skills
+--recommend-for-task "continue active goal ... Slice 5 skill
+discoverability/readability cleanup for achieve"` and selected `achieve` for
+goal lifecycle plus `quality` for reference-discoverability validation; the
+implementation stayed repo-local and synced plugin mirrors before validators.
 Gather: n/a - this goal was shaped from local repo artifacts and the user's
 in-thread portability requirement, not an external URL.
 Release: n/a - no release surface is planned.
@@ -268,6 +270,62 @@ tracked issue closeout carrier.
 - Off-goal findings: The closeout wrapper repeated the generic achieve dogfood scenario-review follow-up; resolved in this slice by updating docs/public-skill-dogfood.json for the additive phase-routing floor.
 - Lessons carried forward: Presence-only floors still need authoritative closeout docs, not only template/reference prose. Tests should assert durable contracts rather than deleted issue-number anchors or live handoff backlog contents.
 - Metrics: phase_routing_rule_date=2026-06-04; closeout_usage_episode=slice-closeout-c799a010c49e4b6981fab4a726656397; broad_pytest=2153_passed_4_skipped; package_issue_anchor=0; package_dated_incident=0; host_surface_reference=104
+
+### Slice 5: achieve reference index and headroom cleanup
+
+- Objective: Make the `achieve` root skill surface easier to scan by replacing
+  a long reference list with a discoverable reference index while preserving
+  reference-discoverability validation and creating SKILL.md core headroom.
+- Why this approach: Slice 3/4 left `achieve` near the core line ceiling; an
+  index keeps root selection prose concise without hiding important references
+  from validators or operators.
+- Commits:
+- What changed: Added `skills/public/achieve/references/index.md`; changed
+  `skills/public/achieve/SKILL.md` to list that index and trimmed small root
+  wording blocks; updated `validate_skills.py` and the quality ergonomics
+  inventory so `references/index.md` list items count as discoverable reference
+  listings; froze reviewed dogfood evidence for `achieve` and `quality`; synced
+  plugin mirrors; added focused reference-index tests.
+- Alternatives rejected: Rejected dropping important `achieve` references from
+  the root without an index because that would satisfy line pressure by hiding
+  operator lookup paths. Rejected broad whole-body regex matching after
+  fresh-eye review showed incidental prose could mask missing list entries.
+- Targeted verification: Current-diff focused tests passed:
+  `tests/quality_gates/test_skill_reference_index.py` (`5 passed`) and the
+  quality ergonomics/skill validation bundle (`51 passed`). Achieve preflight:
+  SKILL.md total 183/200, core nonempty 156/160. Achieve inventory:
+  `reference_discoverability=0`, `package_issue_anchor=0`,
+  `package_dated_incident=0`, `host_surface_reference=9` (deferred
+  host-surface modeling). Current-diff deterministic validators passed:
+  packaging, packaging_committed, doc links, command docs, markdown, secrets,
+  Cautilus proof policy, `validate_skills`, py_compile, ownership overlap,
+  public skill validation/dogfood, integrations, Ruff, Python lengths, attention
+  visibility, public dogfood JSON validation, and `git diff --check`. Slice
+  closeout wrapper passed with broad pytest skipped. A broader selected pytest
+  run before the reviewer parser tightening passed `2157 passed, 4 skipped in
+  291.31s`; it was not repeated after the focused parser fix.
+- Test duplication pressure: New coverage lives in
+  `test_skill_reference_index.py` rather than adding more weight to already
+  large quality-gate files. It covers positive index listing plus negative
+  cases for references mentioned only in SKILL.md prose or index prose.
+- Critique: Fresh-eye parent-delegated critique executed by subagent
+  019e90fd-d5cf-71f3-a44f-36844d63fcf0. Act-before-ship findings were applied:
+  only `## References` list items and index bullet list items now count as
+  listings; incidental prose no longer satisfies reference inventory.
+- Off-goal findings: The selected broad pytest gate costs about five minutes on
+  this machine; Slice 5 treated that as evidence and left test-cost improvement
+  for retro/quality follow-up rather than widening this implementation slice.
+  Subagent model/cost selection was not controlled by the spawn call; the host
+  surfaced a higher-cost reviewer than expected.
+- Lessons carried forward: Reference-index semantics need validator and
+  inventory agreement, and list-item parsing must avoid whole-document regex
+  shortcuts. Small slices should prefer targeted current-diff proof and reserve
+  broad pytest for final closeout or riskier semantic changes.
+- Metrics: package_issue_anchor=0; package_dated_incident=0;
+  host_surface_reference=9; reference_discoverability=0;
+  achieve_core_nonempty=156/160; broad_pytest_pre_fix=2157_passed_4_skipped;
+  current_diff_quality_gate=51_passed;
+  closeout_usage_episode=slice-closeout-52ea5085e7d146aa83023b0d2f2bb2d7
 
 ## Context Sources
 

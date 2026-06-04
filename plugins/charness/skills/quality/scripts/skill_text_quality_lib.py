@@ -39,6 +39,7 @@ PACKAGE_TEXT_SUFFIXES = {
 PACKAGE_TEXT_FILENAMES = {"SKILL.md"}
 ISSUE_VERSION_FIELD_RE = re.compile(r"defaults_version\b.*\bissue-\d+\b", re.IGNORECASE)
 PLACEHOLDER_ISSUE_URL_RE = re.compile(r"\.\.\./issues/\d+\b")
+REFERENCE_LIST_ITEM_RE = re.compile(r"^\s*-\s+`(references/[A-Za-z0-9._/-]+)`(?:\s|$)")
 
 
 def _is_package_text_file(path: Path) -> bool:
@@ -122,10 +123,43 @@ def host_surface_reference_findings(repo_root: Path, skill_dir: Path) -> list[di
     )
 
 
+def _h2_section_lines(contents: str, heading: str) -> list[str]:
+    lines = contents.splitlines()
+    start: int | None = None
+    marker = f"## {heading}"
+    for index, line in enumerate(lines):
+        if line.strip() == marker:
+            start = index + 1
+            break
+    if start is None:
+        return []
+    end = len(lines)
+    for index in range(start, len(lines)):
+        if lines[index].startswith("## "):
+            end = index
+            break
+    return lines[start:end]
+
+
+def listed_reference_paths_from_lines(lines: list[str]) -> set[str]:
+    return {
+        match.group(1)
+        for line in lines
+        if (match := REFERENCE_LIST_ITEM_RE.match(line))
+    }
+
+
 def reference_discoverability_findings(repo_root: Path, skill_path: Path, body: str) -> list[dict[str, object]]:
     references_dir = skill_path.parent / "references"
     if not references_dir.is_dir():
         return []
+    listed_references = listed_reference_paths_from_lines(_h2_section_lines(body, "References"))
+    if "references/index.md" in listed_references:
+        index_path = skill_path.parent / "references" / "index.md"
+        if index_path.is_file():
+            listed_references.update(
+                listed_reference_paths_from_lines(index_path.read_text(encoding="utf-8").splitlines())
+            )
     findings: list[dict[str, object]] = []
     for path in sorted(references_dir.rglob("*")):
         if not path.is_file() or not _is_package_text_file(path):
@@ -133,7 +167,7 @@ def reference_discoverability_findings(repo_root: Path, skill_path: Path, body: 
         if "__pycache__" in path.parts or ".pytest_cache" in path.parts:
             continue
         relative_to_skill = path.relative_to(skill_path.parent).as_posix()
-        if relative_to_skill in body:
+        if relative_to_skill in listed_references:
             continue
         findings.append(
             {

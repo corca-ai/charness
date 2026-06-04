@@ -113,11 +113,10 @@ lifecycle instead of starting a new one.
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is
      presence/binding-only, never a content classifier; pre-rule goals are
      grandfathered.
-   - **coordination floors (routing + gather + release + issue closeout), for
-     goals created after the rules landed:** recorded phase work needs
-     `Routing:` evidence; external sources need `Gather:`; touched release
-     surfaces need `Release:`; tracked issue sources or closeout work need
-     `Issue closeout:`. Presence-only, grandfathered.
+   - **coordination floors:** for in-scope goals, recorded phase work needs
+     `Routing:`; external sources need `Gather:`; release surfaces need
+     `Release:`; tracked issue closeout needs `Issue closeout:`.
+     Presence-only, grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
@@ -139,12 +138,9 @@ lifecycle instead of starting a new one.
 
 ## Output Shape
 
-- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with a
-  top-level `## Active Operating Frame` plus the required audit sections (Goal,
-  Non-Goals, Boundaries, User Acceptance, Agent Verification Plan, Slice Plan,
-  Slice Log, Context Sources, Interview Decisions, Plan Critique Findings,
-  Off-Goal Findings, Final Verification, User Verification Instructions,
-  Auto-Retro)
+- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with
+  `## Active Operating Frame` plus the audit sections in
+  `references/goal-artifact.md`
 - `Status` is one of draft / active / blocked / complete
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
@@ -184,7 +180,4 @@ lifecycle instead of starting a new one.
 
 ## References
 
-- `references/lifecycle.md`
-- `references/adapter-contract.md`
-- `references/goal-artifact.md`
-- `references/coordination.md`
+- `references/index.md`
