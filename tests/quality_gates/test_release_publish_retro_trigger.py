@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from .test_release_publish import _release_env, _run_publish_patch, _seed_publish_release_repo
+from .release_publish_fixtures import _release_env, _run_publish_patch, _seed_publish_release_repo
 
 
 def _configure_retro_trigger(repo: Path, *, surface_id: str, source_paths: list[str]) -> None:

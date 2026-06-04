@@ -13,10 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 complete; mutation score summary helper extraction is
-  verified.
-- Next action: decide whether the remaining time should address the final
-  measured length warning or enter final closeout based on the timebox reserve.
+- Current slice: Slice 6 complete; release publish test fixture extraction and
+  #299 inventory declaration repair are verified.
+- Next action: enter final closeout with broad/substitute proof and honest
+  non-claims.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -133,7 +133,8 @@ the run must route through `issue` and `debug` before claiming closeout.
 | 3 | Improve one skill-health surface if current evidence supports it. | The user explicitly included skill health; it should be considered as a first-class target. | skill metadata/ergonomics/public-spec/export proof, synced surfaces if touched. | completed |
 | 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | completed |
 | 5 | Trim mutation score helper length pressure. | After Slice 4, this was the remaining near-limit production script with focused tests. | mutation tests, workflow validators, plugin sync, fresh-eye review. | completed |
-| 6 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
+| 6 | Remove the final measured Python length warning. | After Slice 5, only the release publish test file remained in the advisory band. | release fixture tests, full length gate, release quality wrapper, fresh-eye review. | completed |
+| 7 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
 
 ## Coordination Cues
 
@@ -340,6 +341,76 @@ recommended `quality` for the current gate and skill-health posture.
   already had it.
 - Metrics: focused mutation pytest 4.27s; mutation workflow pytest 3.08s; slice
   closeout 13.8s.
+
+### Slice 6: Extract release publish fixtures and repair inventory declaration
+
+- Objective: Remove the final measured Python length warning and repair the
+  inventory declaration gap found by release-inclusive quality proof.
+- Why this approach: After Slice 5, the only remaining advisory length warning
+  was `tests/quality_gates/test_release_publish.py` at 731 lines. Its reusable
+  release publish fixture helpers were already imported by several sibling test
+  modules, so extracting them into a dedicated fixture module reduced length
+  pressure and made the dependency explicit.
+- Commits: local slice subject `Extract release publish test fixtures`.
+- What changed: Added `tests/quality_gates/release_publish_fixtures.py` and moved
+  the release repo setup, fake git/gh, publish runner, review-gate runner, and
+  executable helper there. Updated
+  `test_release_publish.py`, `test_release_publish_retro_trigger.py`,
+  `test_release_publish_real_host_delta.py`,
+  `test_release_publish_tag_history.py`, and
+  `test_release_issue_closeout_preflight.py` to import helpers from the fixture
+  module. Also added `inventory_release_only_sentinels.py` to
+  `skills/public/quality/references/inventory-consumer-fields.json` after
+  `run-quality --read-only --release` exposed the missing declaration; synced the
+  plugin mirror.
+- Alternatives rejected: Rejected splitting release publish test cases by
+  behavior first because the fixture block was the clear reusable dependency and
+  already had cross-file consumers. Rejected leaving the inventory declaration
+  failure as a separate follow-up because it was caused by this goal's #299 slice
+  and the release wrapper caught it before final closeout.
+- Targeted verification: `pytest -q
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_retro_trigger.py
+  tests/quality_gates/test_release_publish_real_host_delta.py
+  tests/quality_gates/test_release_publish_tag_history.py
+  tests/quality_gates/test_release_issue_closeout_preflight.py` passed 34 tests.
+  `ruff check` passed for the affected release test files and full `ruff check
+  charness scripts tests skills/public/*/scripts skills/support/*/scripts`
+  passed. `python3 -m py_compile` passed for the affected release test files.
+  `check_python_lengths --paths` passed for the split release publish files, and
+  full `check_python_lengths --require-git-file-listing` passed with no advisory
+  warnings. Broad non-release pytest
+  `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane
+  tests/test_*.py` passed 2153 tests, 4 skipped, 25 deselected in 169.61s.
+  Inventory declaration validators passed after adding the #299 inventory entry:
+  `validate_inventory_consumption_declaration` reported 7 declared inventories
+  drift-free and `check_inventory_declaration_coverage` reported 17 covered
+  inventories. `check_current_pointer_writes` passed after a rerun against a
+  stable post-sync tree. `./scripts/run-quality.sh --read-only --release` then
+  passed 71/71 in 76.9s, including the release-only cases, inventory declaration
+  coverage, current-pointer writes, and all standing quality gates.
+  `suggest_public_skill_dogfood.py --skill-id quality --json` confirmed the
+  quality consumer contract remains hitl-recommended and covered by the
+  checked-in dogfood registry.
+- Test duplication pressure: no tests were added; helpers were extracted from an
+  existing release test file and imports were updated in existing sibling tests.
+- Critique: Fresh-eye reviewer Curie reported no blocking findings. It confirmed
+  relative and absolute helper imports remain valid, moved helpers preserve
+  behavior, collection/import smoke passed, and the new fixture file must be
+  staged.
+- Off-goal findings: The first release-inclusive wrapper run failed on
+  `inventory_release_only_sentinels.py` missing from
+  `inventory-consumer-fields.json`; this was fixed in-slice. A concurrent sync
+  while that wrapper was still running caused a transient
+  `check_current_pointer_writes` FileNotFound on a plugin helper path; the same
+  gate and the full release wrapper passed after rerun without concurrent
+  mutation.
+- Lessons carried forward: Do not run sync/export commands while any quality
+  wrapper is still reading generated plugin paths. Release-inclusive quality proof
+  is valuable after adding release-only inventories because it exercises
+  declaration coverage missed by focused tests.
+- Metrics: targeted release pytest 36.16s; broad non-release pytest 169.61s;
+  release-inclusive quality wrapper 76.9s.
 
 ## Context Sources
 

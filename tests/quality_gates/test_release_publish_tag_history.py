@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.quality_gates.test_release_publish import _seed_publish_release_repo
+from tests.quality_gates.release_publish_fixtures import _seed_publish_release_repo
 from tests.quality_gates.test_release_publish_real_host_delta import (
     _publish_env,
     _seed_publish_current_previous_tag_delta,

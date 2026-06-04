@@ -77,6 +77,15 @@
         "notes"
       ]
     },
+    "inventory_release_only_sentinels.py": {
+      "non_headline_fields": [
+        "release_only_test_count",
+        "standing_test_count",
+        "files",
+        "standing_sentinel_names",
+        "findings"
+      ]
+    },
     "inventory_cli_side_effect_probes.py": {
       "non_headline_fields": [],
       "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."

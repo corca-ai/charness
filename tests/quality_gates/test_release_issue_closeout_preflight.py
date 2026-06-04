@@ -6,7 +6,7 @@ import subprocess
 import textwrap
 from pathlib import Path
 
-from .test_release_publish import _seed_publish_release_repo, _write_exec
+from .release_publish_fixtures import _seed_publish_release_repo, _write_exec
 
 ROOT = Path(__file__).resolve().parents[2]
 
