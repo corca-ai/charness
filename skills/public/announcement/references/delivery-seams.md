@@ -156,11 +156,11 @@ Examples (each host owns its own shape; the public surface never names them):
 - `release-notes`: a section anchor or the URL of the appended PR review
   comment
 
-If a `thread_reply` output is declared without a parent output or without a
-`{parent_delivery_handle}` / `{parent_delivery_handle_q}` placeholder in the
-template, resolver output reports `delivery_contract.status: draft-only`.
-Delivery code must treat that as non-executable and stop before posting a
-top-level message by accident.
+If a `thread_reply` output is declared without a **preceding** parent output in
+`outputs` order, or without a `{parent_delivery_handle}` /
+`{parent_delivery_handle_q}` placeholder in the template, resolver output
+reports `delivery_contract.status: draft-only`. Delivery code must treat that as
+non-executable and stop before posting a top-level message by accident.
 
 If a `thread_reply` output's template references `{parent_delivery_handle}` but
 no prior `parent` output produced a handle at runtime, the seam should fail fast

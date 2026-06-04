@@ -155,6 +155,24 @@ def test_thread_reply_without_parent_output_emits_warning(tmp_path: Path) -> Non
     assert delivery_contract(_validated)["status"] == "draft-only"
 
 
+def test_thread_reply_before_parent_is_draft_only(tmp_path: Path) -> None:
+    data = {
+        "delivery_kind": "human-backend",
+        "post_command_template": "slack-post --file {message_file_q} --thread {parent_delivery_handle_q}",
+        "delivery_capability": "slack",
+        "outputs": [
+            {"id": "reply", "audience_tags": ["operator"], "delivery_role": "thread_reply"},
+            {"id": "body", "audience_tags": ["user"], "delivery_role": "parent"},
+        ],
+    }
+    _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    assert any("before any preceding `parent`" in warning for warning in warnings)
+    contract = delivery_contract(_validated)
+    assert contract["status"] == "draft-only"
+    assert contract["chaining_satisfied"] is False
+
+
 def test_in_progress_sources_validation_requires_path_for_kind_path(tmp_path: Path) -> None:
     data = {"in_progress_sources": [{"kind": "path"}]}
     _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)

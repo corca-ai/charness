@@ -269,6 +269,18 @@ def delivery_contract(data: dict[str, Any]) -> dict[str, Any]:
     )
     template = data.get("post_command_template") or ""
     has_handle_placeholder = "{parent_delivery_handle}" in template or "{parent_delivery_handle_q}" in template
+    thread_replies_without_prior_parent = [
+        output.get("id")
+        for index, output in enumerate(outputs)
+        if (
+            isinstance(output, dict)
+            and output.get("delivery_role") == "thread_reply"
+            and not any(
+                isinstance(prior, dict) and prior.get("delivery_role") == "parent"
+                for prior in outputs[:index]
+            )
+        )
+    ]
     blocking_issues: list[str] = []
     if data["delivery_kind"] == "none":
         blocking_issues.append("delivery_kind is `none`; announcement remains draft-only.")
@@ -283,6 +295,12 @@ def delivery_contract(data: dict[str, Any]) -> dict[str, Any]:
             "outputs declare `thread_reply` without a preceding `parent` output; "
             "delivery is draft-only until the parent output can emit a delivery handle."
         )
+    elif thread_replies_without_prior_parent:
+        blocking_issues.append(
+            "outputs declare `thread_reply` before any preceding `parent` output: "
+            + ", ".join(str(item) for item in thread_replies_without_prior_parent)
+            + "; delivery is draft-only until output order provides a parent handle first."
+        )
     if has_thread_reply and not has_handle_placeholder:
         blocking_issues.append(
             "outputs declare `thread_reply` but `post_command_template` does not reference "
@@ -293,7 +311,10 @@ def delivery_contract(data: dict[str, Any]) -> dict[str, Any]:
         "status": "draft-only" if blocking_issues else "executable",
         "blocking_issues": blocking_issues,
         "chaining_required": has_thread_reply,
-        "chaining_satisfied": has_thread_reply and has_parent and has_handle_placeholder,
+        "chaining_satisfied": has_thread_reply
+        and has_parent
+        and has_handle_placeholder
+        and not thread_replies_without_prior_parent,
         "has_parent_output": has_parent,
         "has_parent_handle_placeholder": has_handle_placeholder,
     }

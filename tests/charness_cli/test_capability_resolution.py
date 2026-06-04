@@ -304,3 +304,48 @@ def test_capability_explain_keeps_unwired_thread_reply_draft_only(tmp_path: Path
     assert payload["announcement_delivery"]["blocking_issues"]
     assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}
     assert any("draft-only" in note for note in payload["notes"])
+
+
+def test_capability_explain_keeps_thread_reply_before_parent_draft_only(tmp_path: Path) -> None:
+    target_repo = init_target_repo(tmp_path / "target")
+    agents_dir = target_repo / ".agents"
+    agents_dir.mkdir(parents=True, exist_ok=True)
+    (agents_dir / "announcement-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo-repo",
+                "delivery_kind: human-backend",
+                "delivery_target: team-chat",
+                "post_command_template: scripts/post-announcement.sh --thread {parent_delivery_handle_q} {message_file_q}",
+                "delivery_capability: slack.default",
+                "outputs:",
+                "  - id: reply",
+                "    audience_tags:",
+                "      - operator",
+                "    delivery_role: thread_reply",
+                "  - id: body",
+                "    audience_tags:",
+                "      - user",
+                "    delivery_role: parent",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(
+        "capability",
+        "explain",
+        "--repo-root",
+        str(ROOT),
+        "--target-repo-root",
+        str(target_repo),
+        "--json",
+        "announcement",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["announcement_delivery"]["status"] == "draft-only"
+    assert any("before any preceding `parent`" in issue for issue in payload["announcement_delivery"]["blocking_issues"])
+    assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}
