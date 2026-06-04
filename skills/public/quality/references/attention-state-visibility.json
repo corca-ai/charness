@@ -65,8 +65,14 @@
     "scripts/check_mutation_score.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary", "metric_or_trace"],
+      "evidence_terms": ["skipped"],
+      "rationale": "Mutation skipped workers remain counted in the score metrics and are rendered by the summary helper."
+    },
+    "scripts/check_mutation_score_summary_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary", "metric_or_trace"],
       "evidence_terms": ["Skipped:"],
-      "rationale": "Mutation skipped workers are counted in the printed score summary."
+      "rationale": "Mutation skipped workers are rendered in the printed score summary."
     },
     "scripts/check_upstream_support_drift.py": {
       "states": ["skipped"],

@@ -13,11 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 complete; setup fresh-eye policy helper extraction is
-  verified and ready to commit.
-- Next action: commit Slice 4, then decide whether the remaining time should
-  trim one more measured warning or enter final closeout based on the timebox
-  reserve.
+- Current slice: Slice 5 complete; mutation score summary helper extraction is
+  verified.
+- Next action: decide whether the remaining time should address the final
+  measured length warning or enter final closeout based on the timebox reserve.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -133,7 +132,8 @@ the run must route through `issue` and `debug` before claiming closeout.
 | 2 | Fix the highest-value reproducible bug or quality weakness. | Bug fixes need root cause and focused proof before broader refactoring. | root cause, focused tests before/after or equivalent proof, changed-surface check. | completed |
 | 3 | Improve one skill-health surface if current evidence supports it. | The user explicitly included skill health; it should be considered as a first-class target. | skill metadata/ergonomics/public-spec/export proof, synced surfaces if touched. | completed |
 | 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | completed |
-| 5 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
+| 5 | Trim mutation score helper length pressure. | After Slice 4, this was the remaining near-limit production script with focused tests. | mutation tests, workflow validators, plugin sync, fresh-eye review. | completed |
+| 6 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
 
 ## Coordination Cues
 
@@ -271,6 +271,75 @@ recommended `quality` for the current gate and skill-health posture.
   refactors even when packaging validation passes.
 - Metrics: setup policy pytest 5.11s; broader setup inspect trio 6.35s; slice
   closeout 8.9s.
+
+### Slice 5: Extract mutation score summary rendering
+
+- Objective: Reduce production mutation score script length pressure while
+  preserving mutation metrics, partial-run blocking labels, survived-mutant
+  detail rendering, and CLI summary output behavior.
+- Why this approach: After Slice 4, `scripts/check_mutation_score.py` was the
+  only remaining production script in the advisory length band at 438 lines. Its
+  summary rendering and survived-mutant detail logic formed a cohesive helper
+  domain with direct focused tests.
+- Commits: local slice subject `Extract mutation score summary rendering`.
+- What changed: Added `scripts/check_mutation_score_summary_lib.py` for survived
+  mutant details, blocking label rendering, and summary line construction.
+  `scripts/check_mutation_score.py` keeps parsing, metrics, config, timeout, and
+  CLI orchestration, and assigns the moved helper names back onto the original
+  module so existing direct imports and star-import behavior remain compatible.
+  Updated the quality attention-state visibility declaration because the
+  `Skipped:` summary evidence moved into the new helper. Synced plugin mirror
+  files under `plugins/charness/scripts/` and
+  `plugins/charness/skills/quality/references/`.
+- Alternatives rejected: Rejected editing the large release publish test first
+  because it is a test-only file with broader release-fixture coupling, while the
+  mutation score script had focused tests and production workflow validators.
+  Rejected adding `__all__` as the re-export mechanism after fresh-eye review
+  noted it would narrow `from scripts.check_mutation_score import *`; replaced it
+  with explicit module-name assignments.
+- Targeted verification: `pytest -q
+  tests/quality_gates/test_check_mutation_score_partial.py
+  tests/quality_gates/test_quality_mutation_score_validity.py
+  tests/quality_gates/test_quality_mutation_testing.py` passed 69 tests. `python3
+  -m pytest -q tests/quality_gates/test_quality_mutation_testing.py` passed 39
+  tests for the changed-surface workflow gate. `ruff check` passed for touched
+  mutation files and focused tests, then full `ruff check charness scripts tests
+  skills/public/*/scripts skills/support/*/scripts` passed. `python3 -m
+  py_compile` passed for root/plugin mutation files. `check_python_lengths
+  --paths` passed for the old and new files; full `check_python_lengths
+  --require-git-file-listing` now leaves only the release publish test advisory
+  warning. `check_changed_surfaces` routed the change through plugin export,
+  mutation-testing workflow, skill package/public-skill policy, attention-state
+  visibility, and integrations/control-plane checks;
+  `sync_root_plugin_manifests`, `validate_packaging`,
+  `validate_packaging_committed`, `check_github_actions`, `validate_adapters`,
+  `validate_attention_state_visibility`, `validate_skills`,
+  `check_skill_ownership_overlap`, `validate_public_skill_validation`,
+  `validate_public_skill_dogfood`, `validate_integrations`, `sync_support
+  --json`, `update_tools --json`, `check_export_safe_imports`,
+  `check_plugin_import_smoke`, `check_doc_links`, `check_command_docs`,
+  `check-markdown`, `check-secrets`, and `run_slice_closeout
+  --skip-broad-pytest --ack-cautilus-skill-review` passed. After the pre-commit
+  attention-state gate caught the moved `Skipped:` evidence, the manifest was
+  updated and revalidated sequentially post-sync.
+  `suggest_public_skill_dogfood.py --skill-id quality --json` showed the current
+  quality consumer contract remains hitl-recommended and already covered by the
+  checked-in dogfood registry.
+- Test duplication pressure: no tests were added or expanded; no
+  duplicate-pressure sample required.
+- Critique: Fresh-eye reviewer Lagrange reported no blocking findings. It
+  confirmed behavior preservation for mutation metrics, summary rendering,
+  survived-mutant details, partial-run labels, public named imports, and plugin
+  mirror consistency. The one compatibility concern about adding `__all__` was
+  applied before commit by removing `__all__`.
+- Off-goal findings: No live Cosmic Ray run, provider proof, release proof, or
+  installed-host proof was attempted. This slice preserves local deterministic
+  mutation summary behavior only.
+- Lessons carried forward: Re-export compatibility is broader than named-import
+  tests; avoid `__all__` in extraction refactors unless the original module
+  already had it.
+- Metrics: focused mutation pytest 4.27s; mutation workflow pytest 3.08s; slice
+  closeout 13.8s.
 
 ## Context Sources
 
