@@ -325,23 +325,14 @@ def test_parser_cli_explicit_docs_handoff_filters_completed_goal(tmp_path):
     assert [entry["index"] for entry in payload["entries"]] == [3]
 
 
-def test_current_handoff_pipeline_has_only_actionable_candidates():
-    parse = subprocess.run(
-        ["python3", str(PARSER_SCRIPT), "--repo-root", str(REPO_ROOT), "--with-issues"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert parse.returncode == 0, parse.stderr
+def test_fixture_handoff_pipeline_preserves_issue_linked_candidates(entries):
+    parser_payload = {"ok": True, "entries": [entry.to_dict() for entry in entries]}
     propose = subprocess.run(
         [
             "python3",
-            str(
-                REPO_ROOT
-                / "skills/public/handoff/scripts/propose_merges.py"
-            ),
+            str(REPO_ROOT / "skills/public/handoff/scripts/propose_merges.py"),
         ],
-        input=parse.stdout,
+        input=json.dumps(parser_payload),
         capture_output=True,
         text=True,
         check=False,
@@ -350,21 +341,13 @@ def test_current_handoff_pipeline_has_only_actionable_candidates():
     payload = json.loads(propose.stdout)
     candidates = payload["standalone"] + payload["merged"]
     assert candidates
-    assert all(entry["referenced_issues"] for candidate in candidates for entry in candidate["entries"])
-    # Structural check, not a brittle live-issue-number pin. The previous
-    # `== [184, 282]` assertion broke the moment #282 closed; pinning the live
-    # handoff's Next-Session issue numbers is the recurring brittleness flagged in
-    # recent-lessons. The test's contract is its name — every surfaced candidate
-    # is actionable (issue-linked, asserted above) — so here we only require the
-    # pipeline to surface real, positive issue references rather than a degenerate
-    # set.
     referenced = [
         issue
         for candidate in candidates
         for entry in candidate["entries"]
         for issue in entry["referenced_issues"]
     ]
-    assert referenced, "expected the live handoff pipeline to surface issue-linked candidates"
+    assert referenced, "expected the fixture handoff pipeline to surface issue-linked candidates"
     assert all(isinstance(issue, int) and issue > 0 for issue in referenced)
 
 

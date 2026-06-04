@@ -9,8 +9,7 @@ def test_broad_pytest_detector_matches_repo_python_closeout_command() -> None:
     from scripts.slice_closeout_broad_gate import is_broad_pytest_command
 
     assert is_broad_pytest_command(
-        "pytest -q tests/quality_gates tests/control_plane tests/test_*.py "
-        "tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py"
+        "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
     )
     assert not is_broad_pytest_command("pytest -q tests/quality_gates/test_goal_artifact_lib.py")
 
@@ -69,7 +68,7 @@ def test_run_slice_closeout_skip_broad_pytest_text_names_skipped_command() -> No
 
     assert result.returncode == 0, result.stderr
     assert "Skipped broad pytest commands:" in result.stdout
-    assert "pytest -q tests/quality_gates tests/control_plane" in result.stdout
+    assert "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane" in result.stdout
 
 
 def test_run_slice_closeout_verification_lock_keeps_broad_pytest_in_plan() -> None:
@@ -90,4 +89,7 @@ def test_run_slice_closeout_verification_lock_keeps_broad_pytest_in_plan() -> No
     assert payload["status"] == "planned"
     assert "verification_lock_required" not in payload
     planned = [item["command"] for item in payload["planned_commands"]]
-    assert any(command.startswith("pytest -q tests/quality_gates tests/control_plane") for command in planned)
+    assert any(
+        command.startswith("pytest -q -m 'not release_only' tests/quality_gates tests/control_plane")
+        for command in planned
+    )
