@@ -19,7 +19,8 @@ def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
     payload = json.loads(result.stdout)
     assert payload["required"] is True
     assert "integrations-and-control-plane" in payload["surface_hits"]
-    assert any("tokei" in item for item in payload["checklist"])
+    assert any("tool doctor" in item for item in payload["checklist"])
+    assert any("tool install" in item for item in payload["checklist"])
     assert any("manifest-supported path" in item for item in payload["checklist"])
 
 
