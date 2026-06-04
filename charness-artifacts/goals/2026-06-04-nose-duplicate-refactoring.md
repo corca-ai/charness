@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — adapter resolver consolidation candidate.
-- Next action: inspect the remaining top `nose` families and decide whether the
-  adapter resolver skeletons can move to a shared helper without weakening
-  public skill portability.
+- Current slice: Slice 4 — check_duplicates Markdown/near-copy ownership.
+- Next action: inspect the current `check_duplicates.py` scope and make the
+  document near-copy role explicit without losing the user's intended
+  cross-skill/reference duplicate guard.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -113,7 +113,7 @@ The user can verify completion by inspecting:
 | --- | --- | --- | --- | --- |
 | 1 | Lock baseline and scope | Avoid optimizing against stale `nose 0.2.0` or raw `jscpd` output | `nose 0.4.0` version, top-family inventory, docs updated to defer `jscpd` | done |
 | 2 | Remove portable bootstrap duplication where a shared path is provably safe | Largest `nose` family is skill runtime bootstrap across public skill scripts | shared helper or generator path, source/plugin execution tests, reduced `nose` family | done |
-| 3 | Consolidate adapter resolver/validator skeletons | Adapter families are the next largest actionable duplication | common adapter validation helpers or templates, focused resolver tests, reduced `nose` family | pending |
+| 3 | Consolidate adapter resolver/validator skeletons | Adapter families are the next largest actionable duplication | common adapter validation helpers or templates, focused resolver tests, reduced `nose` family | done |
 | 4 | Preserve or narrow `check_duplicates.py` to document near-copy ownership | Do this only after code-clone cleanup clarifies what Python near-file coverage would be lost | tests proving Markdown near-copy behavior; explicit non-claim or retained coverage for helper-script near-file checks | pending |
 | 5 | Reassess post-cleanup `jscpd` signal | Only after actual cleanup can raw token clone signal be judged fairly | before/after `jscpd` summary, recommendation to defer/add wrapper/skip | pending |
 
@@ -164,6 +164,20 @@ changed the plan to defer `jscpd`, keep document near-copy detection, update
 - Off-goal findings: The broad repo-python test exposed a pre-existing live handoff parser blind spot for issue ranges and issue_tool.py --number references; fixed because it blocked the changed-surface gate and improves handoff structure.
 - Lessons carried forward: For future nose-driven refactors, record raw baseline evidence before editing and update surfaces when the evidence format is not already covered. Keep claims narrow: per-script bootstrap loader contraction is not the same as replacing every root bootstrap shim.
 - Metrics: nose families 230 -> 225; bootstrap duplicate lines 1020 -> 400; changed-surface unmatched paths 1 -> 0 after goal-evidence-json surface.
+
+### Slice 3: Adapter resolver envelope consolidation
+
+- Objective: Remove the repeated adapter discovery, fallback-warning, artifact-path, and JSON envelope code from the next actionable `nose` families while keeping per-skill validation semantics local.
+- Why this approach: The high-value duplication was not each skill's field policy. It was the repeated adapter search/envelope contract across public skill resolver scripts. Centralizing that contract in `scripts/simple_skill_adapter_lib.py` preserves plugin/source portability because every public resolver still keeps the tiny runtime bootstrap and local validation function.
+- Commits: same closeout commit as this slice log.
+- What changed: Added `adapter_candidates`, `searched_adapter_paths`, `find_adapter`, `artifact_path`, `record_artifact_pattern`, and `load_adapter_contract` to the shared adapter helper. Refactored `debug`, `gather`, `hitl`, `impl`, `retro`, and `release` public resolver scripts to call the shared contract, then synced the `plugins/charness` mirrors.
+- Alternatives rejected: Did not force `achieve`, `critique`, `find-skills`, `issue`, `quality`, `create-skill`, `announcement`, or `narrative` through the generic helper in this slice because their resolver shapes either have lower duplicate pressure or more bespoke semantics. Did not move per-skill validation into a generic schema layer because that would hide adapter intent only to improve a duplicate score.
+- Targeted verification: `ruff check` and `py_compile` passed for the shared helper plus the six touched public resolvers. Focused pytest passed for gather provider, release backend/publish, and retro memory coverage. Direct source and `plugins/charness` resolver JSON smoke tests passed for all six skills, including `env -u PYTHONPATH -u CHARNESS_REPO_ROOT` plugin execution. `check_export_safe_imports.py`, `check_plugin_import_smoke.py`, `validate_packaging.py`, `validate_packaging_committed.py`, `validate_skills.py`, `check_skill_ownership_overlap.py`, `validate_public_skill_validation.py`, `validate_public_skill_dogfood.py`, `validate_adapters.py`, `validate_integrations.py`, `sync_support.py --json`, and `update_tools.py --json` passed. `check_duplicates.py --fail-on-match --require-git-file-listing --json` returned no matches.
+- Nose evidence: Before this slice, the advisory `nose 0.4.0` scan over `scripts skills/public skills/support` reported 225 families. After the slice it reported 222 families. The raw count moved only slightly because the remaining resolver import/main skeletons still cluster, but the large `load_adapter` families disappeared from the top reported families: the `find_adapter` family dropped from 10 members / 54 duplicate lines to 4 members / 18 duplicate lines, and the debug/gather/hitl/release plus impl/retro adapter-load families no longer appeared in the top 16 inspected results.
+- Critique: Medium fresh-eye reviewer found no behavior or regression blockers, checked the shared resolver contract and plugin mirror, confirmed gather/release/HITL/impl/retro special payloads still land in the intended top-level or `data` fields, and smoke-ran all six source and plugin resolver paths. The reviewer also tested missing-adapter and fallback-adapter cases in a temp repo.
+- Test duplication pressure: `check_duplicates.py` remains the whole-file/document near-copy gate. `nose` remains advisory for refactoring inventory. This slice reduces meaningful adapter contract duplication but makes no zero-clone claim; remaining import/bootstrap/main skeleton families are still candidates only if a later slice can keep independent plugin execution clear.
+- Lessons carried forward: Prefer extracting the shared envelope around adapter resolution before extracting field validation. Count-based `nose` deltas need interpretation: a smaller number of higher-cardinality skeleton families can mask removal of more semantically important duplicated bodies.
+- Metrics: nose families 225 -> 222; adapter `find_adapter` duplicate lines 54 -> 18; changed files 14; net source/plugin mirror diff 456 insertions / 888 deletions before goal-log closeout.
 
 ## Context Sources
 

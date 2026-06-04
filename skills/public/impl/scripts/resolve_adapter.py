@@ -25,16 +25,10 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
-load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
-
-ADAPTER_CANDIDATES = (
-    Path(".agents/impl-adapter.yaml"),
-    Path(".codex/impl-adapter.yaml"),
-    Path(".claude/impl-adapter.yaml"),
-    Path("docs/impl-adapter.yaml"),
-    Path("impl-adapter.yaml"),
+_scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.simple_skill_adapter_lib"
 )
+load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
 
 STRING_FIELDS = (
     "repo",
@@ -126,61 +120,28 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 
 
 def find_adapter(repo_root: Path) -> Path | None:
-    for candidate in ADAPTER_CANDIDATES:
-        path = repo_root / candidate
-        if path.is_file():
-            return path
-    return None
+    return _scripts_simple_skill_adapter_lib_module.find_adapter(repo_root, "impl")
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = find_adapter(repo_root)
-    if adapter_path is None:
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": infer_repo_defaults(repo_root),
+    return load_adapter_contract(
+        repo_root,
+        skill_id="impl",
+        infer_defaults=infer_repo_defaults,
+        validate_adapter_data=validate_adapter_data,
+        missing_warnings=(
+            "No impl adapter found. Using inferred defaults and manual verification discovery.",
+            "Create .agents/impl-adapter.yaml to record repo-preferred self-verification tools.",
+        ),
+        extra_payload=lambda _data, raw_data, _found: {
             "field_state": {
-                "verification_tools": "unset",
-                "ui_verification_tools": "unset",
-                "verification_install_proposals": "unset",
-                "truth_surfaces": "unset",
-            },
-            "errors": [],
-            "warnings": [
-                "No impl adapter found. Using inferred defaults and manual verification discovery.",
-                "Create .agents/impl-adapter.yaml to record repo-preferred self-verification tools.",
-            ],
-            "searched_paths": searched_paths,
-        }
-
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    canonical_path = repo_root / ".agents" / "impl-adapter.yaml"
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
-    data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
-    return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "field_state": {
-            "verification_tools": _list_field_state(raw_data, "verification_tools"),
-            "ui_verification_tools": _list_field_state(raw_data, "ui_verification_tools"),
-            "verification_install_proposals": _list_field_state(raw_data, "verification_install_proposals"),
-            "truth_surfaces": _list_field_state(raw_data, "truth_surfaces"),
+                "verification_tools": _list_field_state(raw_data, "verification_tools"),
+                "ui_verification_tools": _list_field_state(raw_data, "ui_verification_tools"),
+                "verification_install_proposals": _list_field_state(raw_data, "verification_install_proposals"),
+                "truth_surfaces": _list_field_state(raw_data, "truth_surfaces"),
+            }
         },
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
+    )
 
 
 def main() -> None:

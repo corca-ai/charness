@@ -25,19 +25,12 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
-load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 _scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
 ARTIFACT_CLASSES = _scripts_artifact_naming_lib_module.ARTIFACT_CLASSES
-RECORD_PATTERN = _scripts_artifact_naming_lib_module.RECORD_PATTERN
-
-ADAPTER_CANDIDATES = (
-    Path(".agents/hitl-adapter.yaml"),
-    Path(".codex/hitl-adapter.yaml"),
-    Path(".claude/hitl-adapter.yaml"),
-    Path("docs/hitl-adapter.yaml"),
-    Path("hitl-adapter.yaml"),
+_scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.simple_skill_adapter_lib"
 )
+load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "default_scope")
 ARTIFACT_FILENAME = "latest.md"
@@ -115,19 +108,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 
 
 def find_adapter(repo_root: Path) -> Path | None:
-    for candidate in ADAPTER_CANDIDATES:
-        path = repo_root / candidate
-        if path.is_file():
-            return path
-    return None
-
-
-def _artifact_path(output_dir: str) -> str:
-    return str(Path(output_dir) / ARTIFACT_FILENAME)
-
-
-def _record_artifact_pattern(output_dir: str) -> str:
-    return str(Path(output_dir) / RECORD_PATTERN)
+    return _scripts_simple_skill_adapter_lib_module.find_adapter(repo_root, "hitl")
 
 
 def _runtime_dir(output_dir: str) -> str:
@@ -135,52 +116,18 @@ def _runtime_dir(output_dir: str) -> str:
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = find_adapter(repo_root)
-    if adapter_path is None:
-        data = infer_repo_defaults(repo_root)
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": data,
-            "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_class": data["artifact_class"],
-            "artifact_path": _artifact_path(data["output_dir"]),
-            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-            "runtime_dir": _runtime_dir(data["output_dir"]),
-            "errors": [],
-            "warnings": [
-                "No hitl adapter found. Using resumable review defaults.",
-                "Create .agents/hitl-adapter.yaml to record scope defaults and chunk sizing.",
-            ],
-            "searched_paths": searched_paths,
-        }
-
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    canonical_path = repo_root / ".agents" / "hitl-adapter.yaml"
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
-    data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
-    return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "artifact_filename": ARTIFACT_FILENAME,
-        "artifact_class": data["artifact_class"],
-        "artifact_path": _artifact_path(data["output_dir"]),
-        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-        "runtime_dir": _runtime_dir(data["output_dir"]),
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
+    return load_adapter_contract(
+        repo_root,
+        skill_id="hitl",
+        infer_defaults=infer_repo_defaults,
+        validate_adapter_data=validate_adapter_data,
+        missing_warnings=(
+            "No hitl adapter found. Using resumable review defaults.",
+            "Create .agents/hitl-adapter.yaml to record scope defaults and chunk sizing.",
+        ),
+        artifact_filename=ARTIFACT_FILENAME,
+        extra_payload=lambda data, _raw_data, _found: {"runtime_dir": _runtime_dir(data["output_dir"])},
+    )
 
 
 def main() -> None:
