@@ -1,6 +1,6 @@
 # Achieve Goal: Future work efficiency: handoff, closeout, and publication
 
-Status: draft
+Status: active
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
 
@@ -9,8 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`.
+- Current slice: Slice 2 - agentic handoff work-package proposal and stable
+  fixture policy for #286/#285.
+- Next action: inspect the current handoff chunker parser/proposer/ranker tests
+  and implement deterministic source packets plus validated agentic package
+  response support without live issue number coupling.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -166,6 +169,20 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 #184 are context/exclusions, not close-intended issues.
 
 ## Slice Log
+
+### Slice 1: Preflight quality and routing baseline
+
+- Objective: Activate the goal, inspect repo/open-issue state, and decide whether #293 blocks the efficiency bundle.
+- Why this approach: The bundle should not start implementation on an unknown red proof surface, but #293 must remain outside this goal unless it directly blocks touched work.
+- Commits: current HEAD before slice record: dff7bbfa; artifact status changed to active in working tree.
+- What changed: Goal artifact status moved to active. Preflight found open issues #293/#289/#288/#287/#286/#285/#184; local branch is ahead of origin/main by the goal-shaping commit; changed surface is only the goal artifact.
+- Alternatives rejected: Rejected resolving #293 first inside this goal: its issue body points at earlier quality/testability files and scheduled mutation proof, not the first handoff/fixture implementation surface. It remains a final-proof risk to revisit if broad gates fail.
+- Targeted verification: check_goal_artifact.py --pursue-ready passed; gh issue list/view captured current #293 state; check_changed_surfaces.py identified repo-markdown only; run_slice_closeout.py --skip-broad-pytest passed doc links, command docs, markdown, secrets, and agent-browser orphan guard.
+- Test duplication pressure: n/a - no tests added or expanded in Slice 1.
+- Critique: Same-agent preflight critique: the main possible misread is treating #293 as solved or irrelevant. Folded outcome: record it as independent for Slice 2 start but preserve it as final broad-proof risk.
+- Off-goal findings: #293 remains open and out of scope; #184 remains open and out of scope.
+- Lessons carried forward: Start Slice 2 with handoff package synthesis plus fixture stability, and keep deterministic source-ID validation as the guardrail around agentic grouping.
+- Metrics: Host/thread goal tracker active; no provider-safe per-slice token window recorded for this short preflight.
 
 ## Context Sources
 
