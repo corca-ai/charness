@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -55,7 +55,7 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
 - Surface hits: 1.
   - `checked-in-plugin-export`
 - Path hits: 0.
-- Evaluated changed paths: 51.
+- Evaluated changed paths: 56.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-06-04-quality-economics-refactor-closeout.md`
@@ -64,7 +64,9 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
   - `charness-artifacts/critique/2026-06-05-achieve-timebox-closeout-review.md`
   - `charness-artifacts/critique/2026-06-05-release-v0.19.0-critique.md`
   - `charness-artifacts/goals/2026-06-05-3h-quality-test-economics.md`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`
   - `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
@@ -74,9 +76,7 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
   - `plugins/charness/.codex-plugin/plugin.json`
   - `plugins/charness/skills/achieve/SKILL.md`
   - `plugins/charness/skills/achieve/references/goal-artifact.md`
-  - `plugins/charness/skills/achieve/references/lifecycle.md`
-  - `plugins/charness/skills/achieve/scripts/check_goal_artifact.py`
-  - ... 31 more
+  - ... 36 more
 
 ## Real-Host Verification
 
@@ -92,7 +92,7 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
