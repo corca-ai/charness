@@ -8,9 +8,8 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: 1 — refresh the current quality and pytest-economics posture.
-- Next action: collect current runtime, standing-test economics, and nose
-  advisory data; then select the first implementation target.
+- Current slice: 2 — release publish pytest economics; ready to commit.
+- Next action: commit the release publish release-only marker boundary.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -106,8 +105,8 @@ or external proof is expected unless a selected slice unexpectedly requires it.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Refresh the current quality and pytest-economics posture. | The target must come from current runtime, duplicate, and test surface data, not yesterday's intuition. | Runtime summary, standing-test economics, nose advisory sample, selected target rationale. | in_progress |
-| 2 | Convert one duplicated expensive pytest proof cluster into cheaper helper-level proof while keeping one boundary smoke. | This best matches the user's preference for equal confidence with less code and time. | Focused before/after test commands, retained representative boundary proof, critique notes. | pending |
+| 1 | Refresh the current quality and pytest-economics posture. | The target must come from current runtime, duplicate, and test surface data, not yesterday's intuition. | Runtime summary, standing-test economics, nose advisory sample, selected target rationale. | completed |
+| 2 | Convert one duplicated expensive pytest proof cluster into cheaper helper-level proof while keeping one boundary smoke. | This best matches the user's preference for equal confidence with less code and time. | Focused before/after test commands, retained representative boundary proof, critique notes. | in_progress |
 | 3 | Apply one nose-surfaced refactor only if it is clearly extractable and low risk. | Nose should guide real simplification, not become the objective. | Before/after nose excerpt, focused tests, plugin/support sync if relevant. | pending |
 | 4 | Finalize and close out. | The goal must leave audited evidence, committed artifacts, and honest non-claims. | Broad or substitute proof, final artifact status complete, retro dispositions, clean committed tree. | pending |
 
@@ -147,6 +146,41 @@ and must not bump or publish.
 Issue closeout: n/a — no tracked GitHub issue is being closed by this goal.
 
 ## Slice Log
+
+### Slice 1-2: Release Publish Standing Pytest Economics
+
+- Baseline: `render_runtime_summary.py` reported `pytest` 21.4s latest / 27.4s
+  median under a 140s budget, and `check-coverage` 41.7s latest / 42.1s median
+  near its 45s budget.
+- Standing economics inventory: 244 Python test files, 107 nested CLI fanout
+  files, and clean pytest temp footprint.
+- Nose advisory: `nose 0.4.0` via `/home/hwidong/codes/nose/target/release/nose`
+  reported mostly bootstrap/import-loader families plus adapter helper
+  duplicates; no nose-only refactor was selected before test-economics cleanup.
+- Target selected: release publish tests because
+  `tests/quality_gates/test_release_publish.py` took 14 passed in 20.97s and
+  `tests/quality_gates/test_release_publish_real_host_delta.py` took 13 passed
+  in 11.53s. Before the change, `-m "not release_only"` collected all 27 tests
+  from those two files.
+- Change: mark full publish subprocess/git/GH boundary tests as
+  `release_only`; keep requested-review gate tests, dry-run helper-level
+  fail-closed tests, and the no-trigger dry-run CLI check in standing pytest.
+- Focused proof so far: `pytest --collect-only -q -m "not release_only"
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py` collected 8/27;
+  `pytest -q -m "not release_only" ... --durations=20 --durations-min=0.01`
+  passed 8, deselected 19 in 3.27s; `pytest -q -m release_only ...` passed 19,
+  deselected 8 in 29.15s.
+- Hygiene proof so far: `python3 -m ruff check
+  tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_real_host_delta.py` passed;
+  `check_python_lengths.py --paths ...` passed with an advisory near-limit
+  warning for `test_release_publish.py`.
+- Delegated Review: executed via bounded fresh-eye subagent Ptolemy. No
+  `Act Before Ship` findings. Reviewer agreed the marked tests are full
+  `publish_release.py --execute` subprocess/git/GH boundary tests and that
+  standing pytest still keeps requested-review gates plus dry-run/helper
+  fail-closed sentinels. Reviewer did not recommend a smaller marker boundary.
 
 ## Context Sources
 

@@ -7,6 +7,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
 REVIEW_GATE_SCRIPT = "skills/public/release/scripts/check_requested_review_gate.py"
@@ -291,6 +293,7 @@ def _run_review_gate(repo: Path, *extra: str) -> subprocess.CompletedProcess[str
     )
 
 
+@pytest.mark.release_only
 def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -> None:
     repo, remote, bin_dir = _seed_publish_release_repo(tmp_path)
     critique_artifact = repo / "charness-artifacts" / "critique" / "demo.md"
@@ -352,6 +355,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "audit narrative: durable record written to" in artifact_text
 
 
+@pytest.mark.release_only
 def test_release_artifact_does_not_claim_post_publish_proof_before_verification(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
@@ -370,6 +374,7 @@ def test_release_artifact_does_not_claim_post_publish_proof_before_verification(
     assert "Review proof: not recorded in this helper invocation." in tag_artifact
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_after_post_create_verification_failure(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
@@ -396,6 +401,7 @@ def test_publish_release_fails_after_post_create_verification_failure(tmp_path: 
     assert "## Post-Publish Proof" not in artifact_text
 
 
+@pytest.mark.release_only
 def test_publish_release_does_not_close_issues_when_post_create_verification_fails(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
@@ -417,6 +423,7 @@ def test_publish_release_does_not_close_issues_when_post_create_verification_fai
     assert "Issue closeout verification: pending or not requested." in artifact_text
 
 
+@pytest.mark.release_only
 def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
@@ -461,6 +468,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     assert issue_view_indexes[-1] > release_create_index
 
 
+@pytest.mark.release_only
 def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter_path = repo / ".agents" / "release-adapter.yaml"
@@ -615,6 +623,7 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
     assert "WARNING: requested_review_commands is empty" in plain.stdout
 
 
+@pytest.mark.release_only
 def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter_path = repo / ".agents" / "release-adapter.yaml"
@@ -641,6 +650,7 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
     assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
 
 
+@pytest.mark.release_only
 def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
@@ -675,6 +685,7 @@ def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_
     assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
 
 
+@pytest.mark.release_only
 def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
@@ -713,6 +724,7 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
     assert amend_index < push_index
 
 
+@pytest.mark.release_only
 def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
@@ -766,6 +778,7 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
     ).stdout.strip() == ""
 
 
+@pytest.mark.release_only
 def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)

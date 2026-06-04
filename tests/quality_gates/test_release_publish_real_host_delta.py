@@ -183,6 +183,7 @@ def _seed_missing_local_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path]:
     return repo, bin_dir
 
 
+@pytest.mark.release_only
 def test_publish_release_records_real_host_proof_for_already_pushed_tag_delta(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
@@ -221,6 +222,7 @@ def test_publish_release_records_real_host_proof_for_already_pushed_tag_delta(tm
     _assert_real_host_required(repo, result)
 
 
+@pytest.mark.release_only
 def test_publish_release_fetches_missing_previous_tag_for_real_host_proof(tmp_path: Path) -> None:
     repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
     env = _publish_env(tmp_path, bin_dir)
@@ -248,6 +250,7 @@ def test_publish_release_fetches_missing_previous_tag_for_real_host_proof(tmp_pa
     assert ["fetch", "--quiet", "origin", "refs/tags/v0.0.0:refs/tags/v0.0.0"] in git_log
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Path) -> None:
     repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
     _write_base_ref_failing_git(bin_dir)
@@ -344,6 +347,7 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_fetch_fails(tmp_
     assert not any(command[:3] == ["git", "diff", "--name-only"] for command in commands[commands.index(fetch_command) + 1 :])
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: Path) -> None:
     repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
     _write_base_ref_failing_git(bin_dir)
@@ -470,6 +474,7 @@ def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path
     return repo, bin_dir
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_real_host_release_config(repo)
@@ -559,6 +564,7 @@ def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: 
     assert "forced diff failure" in message
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_broken_real_host_release_config(repo)
@@ -641,6 +647,7 @@ def test_publish_release_dry_run_fails_closed_when_real_host_config_is_broken(tm
     assert "missing-release-surface" in message
 
 
+@pytest.mark.release_only
 def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_missing_surfaces_real_host_release_config(repo)
@@ -731,6 +738,7 @@ def test_publish_release_dry_run_allows_no_trigger_repo_without_surfaces(tmp_pat
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
 
 
+@pytest.mark.release_only
 def test_publish_current_uses_previous_release_tag_for_real_host_proof(tmp_path: Path) -> None:
     repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
 
