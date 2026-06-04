@@ -8,8 +8,9 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: 2 — release publish pytest economics; ready to commit.
-- Next action: commit the release publish release-only marker boundary.
+- Current slice: 4 — quality runner test-body cleanup; ready to commit.
+- Next action: commit the repeated git setup helper extraction, then run final
+  closeout proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -106,9 +107,10 @@ or external proof is expected unless a selected slice unexpectedly requires it.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Refresh the current quality and pytest-economics posture. | The target must come from current runtime, duplicate, and test surface data, not yesterday's intuition. | Runtime summary, standing-test economics, nose advisory sample, selected target rationale. | completed |
-| 2 | Convert one duplicated expensive pytest proof cluster into cheaper helper-level proof while keeping one boundary smoke. | This best matches the user's preference for equal confidence with less code and time. | Focused before/after test commands, retained representative boundary proof, critique notes. | in_progress |
-| 3 | Apply one nose-surfaced refactor only if it is clearly extractable and low risk. | Nose should guide real simplification, not become the objective. | Before/after nose excerpt, focused tests, plugin/support sync if relevant. | pending |
-| 4 | Finalize and close out. | The goal must leave audited evidence, committed artifacts, and honest non-claims. | Broad or substitute proof, final artifact status complete, retro dispositions, clean committed tree. | pending |
+| 2 | Convert one duplicated expensive pytest proof cluster into cheaper helper-level proof while keeping one boundary smoke. | This best matches the user's preference for equal confidence with less code and time. | Focused before/after test commands, retained representative boundary proof, critique notes. | completed |
+| 3 | Apply one nose-surfaced refactor only if it is clearly extractable and low risk. | Nose should guide real simplification, not become the objective. | Before/after nose excerpt, focused tests, plugin/support sync if relevant. | completed |
+| 4 | Use remaining time for the next low-risk pytest structure cleanup. | The user asked to continue when the planned goal closes early with time left. | Focused tests, lint/length proof, committed diff. | in_progress |
+| 5 | Finalize and close out. | The goal must leave audited evidence, committed artifacts, and honest non-claims. | Broad or substitute proof, final artifact status complete, retro dispositions, clean committed tree. | pending |
 
 ## Coordination Cues
 
@@ -181,6 +183,30 @@ Issue closeout: n/a — no tracked GitHub issue is being closed by this goal.
   `publish_release.py --execute` subprocess/git/GH boundary tests and that
   standing pytest still keeps requested-review gates plus dry-run/helper
   fail-closed sentinels. Reviewer did not recommend a smaller marker boundary.
+
+### Slice 3: Nose Candidate Triage
+
+- Candidate evaluated: achieve `_mask_fences` duplication across
+  `goal_artifact_lib.py`, `goal_artifact_coordination_floors.py`,
+  `goal_artifact_disposition.py`, `goal_artifact_closeout_evidence.py`,
+  `goal_artifact_discussion.py`, and `goal_artifact_phase_routing.py`.
+- Decision: defer. The repeated functions are inside one skill, but several
+  modules explicitly document self-contained/no-sibling-import reasoning to
+  avoid circular imports and keep closeout floor helpers leaf-like. This is a
+  real nose advisory finding, but not a clear low-risk extraction during this
+  goal.
+- Applied action: none. Continue test-economics cleanup instead.
+
+### Slice 4: Quality Runner Test Setup Cleanup
+
+- Change: extracted `_commit_quality_runner_repo` in
+  `tests/quality_gates/test_quality_runner.py` and replaced four repeated
+  git-init/config/add/commit blocks in check-coverage selection tests.
+- Proof: `pytest -q tests/quality_gates/test_quality_runner.py --durations=10
+  --durations-min=0.01` passed 32 tests in 13.82s; `python3 -m ruff check
+  tests/quality_gates/test_quality_runner.py` passed; `python3
+  scripts/check_python_lengths.py --paths
+  tests/quality_gates/test_quality_runner.py` passed.
 
 ## Context Sources
 
