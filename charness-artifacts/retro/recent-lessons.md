@@ -3,14 +3,14 @@
 ## Current Focus
 
 - Closed the active 2026-06-05 quality/test-economics goal after the v0.18.0 release. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
-- Release publish triggered a configured automatic session retro for `v0.18.0`. (source: `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`)
+- This retro reviews the active achieve goal `2026-06-05-3h-code-quality-bugfix`: a three-hour code-quality, bug-fix, and skill-health run. (source: `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`; sources: 3)
+- A sync command was accidentally run while the release-inclusive quality wrapper was still reading generated plugin paths. That created a transient `check_current_pointer_writes` FileNotFound. The gate passed on a stable post-sync rerun, but the overlap was avoidable. (source: `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`)
 - Broad pytest took 170.70s in closeout, much slower than the latest runtime summary. It was justified as final proof after marker changes, but it should not be repeated inside pre-lock slices. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
-- The first high-value cut was not a nose refactor; the useful work came from standing-test economics. Running nose early was still useful for rejecting clone-count chasing, but the goal should bias toward measured pytest/runtime targets first. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
-- The `test_release_publish.py` file remains near the advisory length band after this run. The marker change reduced standing cost, but did not yet solve that file's size. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
+- Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn. (source: `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`)
 
 ## Next-Time Checklist
 
@@ -30,4 +30,5 @@
 - `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
 - `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`

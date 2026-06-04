@@ -1,6 +1,6 @@
 # Achieve Goal: 3h Code Quality Bugfix And Skill Health
 
-Status: active
+Status: complete
 Created: 2026-06-05
 Activation: `/goal @charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix.md`
 Timebox: 3h
@@ -13,10 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 complete; release publish test fixture extraction and
-  #299 inventory declaration repair are verified.
-- Next action: enter final closeout with broad/substitute proof and honest
-  non-claims.
+- Current slice: Slice 7 closeout complete; final artifact proof and disposition
+  review are recorded.
+- Next action: none for this artifact; host goal completion is reported after
+  the final closeout commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -134,7 +134,7 @@ the run must route through `issue` and `debug` before claiming closeout.
 | 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | completed |
 | 5 | Trim mutation score helper length pressure. | After Slice 4, this was the remaining near-limit production script with focused tests. | mutation tests, workflow validators, plugin sync, fresh-eye review. | completed |
 | 6 | Remove the final measured Python length warning. | After Slice 5, only the release publish test file remained in the advisory band. | release fixture tests, full length gate, release quality wrapper, fresh-eye review. | completed |
-| 7 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
+| 7 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | completed |
 
 ## Coordination Cues
 
@@ -148,6 +148,10 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+- Routing: startup `find-skills` routed implementation/code-change slices to `impl` for scoped code, script, test, and artifact mutations.
+- Routing: startup `find-skills` kept reproducible bug work on the `debug` boundary when needed; #299 used issue/quality proof because the local failure was a declaration-coverage gap rather than a separate runtime RCA.
+- Routing: startup `find-skills` routed validation posture, skill-health gates, and broad closeout proof to `quality`.
+- Routing: startup `find-skills` routed the tracked #299 carrier and non-closure evidence to `issue`.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -479,18 +483,97 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-None yet.
+- #299 is locally carrier-verified by commit body only. This run did not push,
+  so GitHub issue state is not claimed closed.
+- #184 remained open and out of scope because it is product-success policy work,
+  not a safe local quality/bug-fix slice for this goal.
+- No live, provider, release, installed-host, or external publication proof was
+  attempted.
 
 ## Final Verification
 
-Not run. The goal is draft and inactive.
+Host metric window: started_at=2026-06-05T07:41:49+09:00 completed_at=2026-06-05T08:39:18+09:00 codex_session_file=/home/hwidong/.codex/sessions/2026/06/05/rollout-2026-06-05T07-37-34-019e94c8-e62e-7c01-81ba-df9b587fbd58.jsonl
+
+- No safe next slice: all measured Python length advisory warnings from the
+  current repo inventory are cleared, #299 is locally carrier-verified, and the
+  remaining visible work either needs a push/GitHub state transition (#299) or a
+  separate product-policy scope (#184). Continuing would require selecting a new
+  goal target rather than extending the current evidence-backed slice set.
+- Self-verification: the run produced five implementation slice commits after
+  activation:
+  `Extract handoff agentic validation`, `Report release-only sentinel coverage`,
+  `Extract setup fresh-eye policy detection`, `Extract mutation score summary
+  rendering`, and `Extract release publish test fixtures`. The final closeout
+  artifact commit records this proof and the retro/disposition evidence. The
+  implemented slices improved public skill/helper headroom, added the #299
+  release-only sentinel inventory, repaired a declaration gap caught by
+  release-inclusive proof, and removed every current Python advisory length
+  warning.
+- Final broad proof: `./scripts/run-quality.sh --read-only --release` passed
+  71/71 in 76.9s after the inventory declaration repair. This included
+  release-only pytest cases, current-pointer writes, inventory declaration
+  coverage, skill/package/public-skill validators, markdown/doc/security gates,
+  ruff, py_compile, and runtime budget checks.
+- Additional broad proof: `pytest -q -m 'not release_only'
+  tests/quality_gates tests/control_plane tests/test_*.py` passed 2153 tests, 4
+  skipped, 25 deselected in 169.61s.
+- Focused proof: release publish fixture extraction passed 34 affected tests;
+  mutation score extraction passed 69 focused tests; setup inspect extraction
+  passed 44 setup inspect tests; #299 sentinel inventory passed focused tests and
+  selected-file inventory output; handoff extraction passed 14 focused package
+  tests.
+- Deterministic closeout proof: `run_slice_closeout --skip-broad-pytest
+  --ack-cautilus-skill-review` passed for each committed slice after the
+  relevant sync and validator surfaces. Final pre-closeout slice wrapper passed
+  after package, markdown, skill, public-skill, ruff, length, attention-state,
+  and agent-browser runtime checks.
+- Cautilus proof: planner returned `next_action: none` for the local refactor
+  slices; no live Cautilus run is claimed. `validate_cautilus_proof.py` passed
+  where prompt-affecting quality reference paths were detected.
+Retro: charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md
+Host log probe: charness-artifacts/probe/2026-06-05-3h-code-quality-bugfix-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-06-05-3h-code-quality-bugfix-disposition-review.md
+- Non-claims: no push was performed; #299 is not claimed closed on GitHub; no
+  release, installed-host, provider, external-source, or live behavior proof was
+  performed; the host metric token snapshots are point-in-time snapshots, not a
+  cumulative token total.
 
 ## User Verification Instructions
 
-After activation and completion, inspect the final commits, rerun the focused
-checks and final broad/substitute proof named here, and compare any skill-health
-changes against the synced public/support/plugin surfaces.
+- Inspect `git log --oneline origin/main..HEAD` and review the five
+  implementation slice commits plus the final closeout artifact commit.
+- Rerun `./scripts/run-quality.sh --read-only --release` for the final broad
+  local proof.
+- Rerun `python3 scripts/check_python_lengths.py --repo-root .
+  --require-git-file-listing` to confirm no advisory length warnings remain.
+- Rerun the focused release fixture proof:
+  `pytest -q tests/quality_gates/test_release_publish.py
+  tests/quality_gates/test_release_publish_retro_trigger.py
+  tests/quality_gates/test_release_publish_real_host_delta.py
+  tests/quality_gates/test_release_publish_tag_history.py
+  tests/quality_gates/test_release_issue_closeout_preflight.py`.
+- After pushing, verify #299 closed through GitHub if the direct commit carrier is
+  published. Until then, treat #299 as locally staged only.
 
 ## Auto-Retro
 
-Not run. The goal is draft and inactive.
+- Waste: the first release-inclusive wrapper exposed a missing
+  `inventory-consumer-fields.json` declaration for the #299 inventory; the gap
+  was repaired in Slice 6. A sync command also overlapped a still-running quality
+  wrapper once, causing transient generated-path read drift; the gate passed on a
+  stable rerun.
+- Critical decisions: running `run-quality --read-only --release` before
+  closeout caught the declaration gap; fresh-eye review prevented a mutation
+  helper `__all__` compatibility narrowing; chasing measured length warnings
+  paid off because every target had a cohesive extraction and focused tests.
+- Next improvements disposition:
+  - applied: quality inventory declaration coverage was repaired for
+    `inventory_release_only_sentinels.py`, and the release-inclusive wrapper now
+    passes.
+  - applied: shared release publish fake-repo helpers were extracted into
+    `tests/quality_gates/release_publish_fixtures.py`, and all sibling imports
+    were updated.
+- Sibling search: inventory declaration coverage now covers all 17 quality
+  inventory scripts; release fixture imports were found and updated across
+  sibling release tests; sync/read overlap is already covered by
+  `docs/conventions/implementation-discipline.md`.

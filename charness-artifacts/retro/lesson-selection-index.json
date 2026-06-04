@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 125,
-  "candidate_count": 774,
+  "source_artifact_count": 126,
+  "candidate_count": 780,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -95,6 +95,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3cf4ebd4f07b",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the active achieve goal `2026-06-05-3h-code-quality-bugfix`: a three-hour code-quality, bug-fix, and skill-health run.",
+      "normalized_key": "this retro reviews the active achieve goal 2026 06 05 3h code quality bugfix",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -155,6 +175,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6c98974530f4",
+      "kind": "next_improvement",
+      "lesson": "Workflow: for long test modules with shared fake repo setup, extract reusable fixtures before moving or adding more tests.",
+      "normalized_key": "workflow for long test modules with shared fake repo setup extract reusable fixtures before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e02bc8f98619",
+      "kind": "next_improvement",
+      "lesson": "Workflow: when adding a quality inventory, run declaration coverage before the slice commit, even if the inventory is advisory.",
+      "normalized_key": "workflow when adding a quality inventory run declaration coverage before the slice commit even",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7a39fb5c9392",
+      "kind": "repeat_trap",
+      "lesson": "A sync command was accidentally run while the release-inclusive quality wrapper was still reading generated plugin paths. That created a transient `check_current_pointer_writes` FileNotFound. The gate passed on a stable post-sync rerun, but the overlap was avoidable.",
+      "normalized_key": "a sync command was accidentally run while the release inclusive quality wrapper was still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:e62cb6a3cca8",
       "kind": "repeat_trap",
       "lesson": "Broad pytest took 170.70s in closeout, much slower than the latest runtime summary. It was justified as final proof after marker changes, but it should not be repeated inside pre-lock slices.",
@@ -175,12 +255,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:31d9103f9245",
+      "candidate_id": "repeat_trap:eaec30af839e",
       "kind": "repeat_trap",
-      "lesson": "The first high-value cut was not a nose refactor; the useful work came from standing-test economics. Running nose early was still useful for rejecting clone-count chasing, but the goal should bias toward measured pytest/runtime targets first.",
-      "normalized_key": "the first high value cut was not a nose refactor the useful work came",
+      "lesson": "Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn.",
+      "normalized_key": "several slice log updates needed small repairs after verification changed the exact proof set",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
       "latest_source_date": "2026-06-05",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -188,89 +268,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
           "date": "2026-06-05",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:120c3e1b07d1",
-      "kind": "repeat_trap",
-      "lesson": "The `test_release_publish.py` file remains near the advisory length band after this run. The marker change reduced standing cost, but did not yet solve that file's size.",
-      "normalized_key": "the test release publish py file remains near the advisory length band after this",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-          "date": "2026-06-05",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4fb2b248dc56",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.18.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 18 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md",
-          "date": "2026-06-04",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4dbca51deb58",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.19.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 19 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md",
-          "date": "2026-06-04",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:70eec22540b8",
-      "kind": "current_focus",
-      "lesson": "Resolved Charness issues #294, #295, #297, and #298 through direct-to-default carrier commits, with #296 kept as already-closed context.",
-      "normalized_key": "resolved charness issues 294 295 297 and 298 through direct to default carrier commits",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-issue-294-298-closeout.md",
-          "date": "2026-06-04",
-          "section": "Context"
         }
       ]
     }
@@ -357,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3cf4ebd4f07b",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the active achieve goal `2026-06-05-3h-code-quality-bugfix`: a three-hour code-quality, bug-fix, and skill-health run.",
+      "normalized_key": "this retro reviews the active achieve goal 2026 06 05 3h code quality bugfix",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -417,6 +437,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6c98974530f4",
+      "kind": "next_improvement",
+      "lesson": "Workflow: for long test modules with shared fake repo setup, extract reusable fixtures before moving or adding more tests.",
+      "normalized_key": "workflow for long test modules with shared fake repo setup extract reusable fixtures before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e02bc8f98619",
+      "kind": "next_improvement",
+      "lesson": "Workflow: when adding a quality inventory, run declaration coverage before the slice commit, even if the inventory is advisory.",
+      "normalized_key": "workflow when adding a quality inventory run declaration coverage before the slice commit even",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7a39fb5c9392",
+      "kind": "repeat_trap",
+      "lesson": "A sync command was accidentally run while the release-inclusive quality wrapper was still reading generated plugin paths. That created a transient `check_current_pointer_writes` FileNotFound. The gate passed on a stable post-sync rerun, but the overlap was avoidable.",
+      "normalized_key": "a sync command was accidentally run while the release inclusive quality wrapper was still",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:e62cb6a3cca8",
       "kind": "repeat_trap",
       "lesson": "Broad pytest took 170.70s in closeout, much slower than the latest runtime summary. It was justified as final proof after marker changes, but it should not be repeated inside pre-lock slices.",
@@ -437,6 +517,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:eaec30af839e",
+      "kind": "repeat_trap",
+      "lesson": "Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn.",
+      "normalized_key": "several slice log updates needed small repairs after verification changed the exact proof set",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:31d9103f9245",
       "kind": "repeat_trap",
       "lesson": "The first high-value cut was not a nose refactor; the useful work came from standing-test economics. Running nose early was still useful for rejecting clone-count chasing, but the goal should bias toward measured pytest/runtime targets first.",
@@ -451,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:48bac3ad4266",
+      "kind": "repeat_trap",
+      "lesson": "The first release-inclusive quality run failed because #299's new `inventory_release_only_sentinels.py` did not have a `inventory-consumer-fields.json` declaration. Focused tests and the pre-lock slice closeout did not cover that declaration gate.",
+      "normalized_key": "the first release inclusive quality run failed because 299 s new inventory release only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
           "date": "2026-06-05",
           "section": "Waste"
         }
