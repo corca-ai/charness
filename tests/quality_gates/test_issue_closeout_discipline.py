@@ -108,3 +108,14 @@ def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     assert "Release-driven direct-to-default work follows the same linkage" in closeout
     assert "post-push issue verification payload" in resolve_flow
     assert "Do not report a release-linked issue as resolved" in release_skill
+
+
+def test_issue_closeout_separates_carrier_from_lifecycle_publication() -> None:
+    closeout = _read(CLOSEOUT)
+    achieve_lifecycle = _read(
+        ROOT / "skills" / "public" / "achieve" / "references" / "lifecycle.md"
+    )
+
+    assert "Issue-resolution carrier publication" in closeout
+    assert "separate publication surfaces" in closeout
+    assert "second docs-only issue-closeout push" in achieve_lifecycle

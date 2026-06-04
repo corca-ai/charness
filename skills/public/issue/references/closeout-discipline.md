@@ -91,6 +91,12 @@ After publish or manual close, still run
 `issue_tool.py verify-closeout --expect-state CLOSED` for the source-of-truth
 state check.
 
+Issue-resolution carrier publication is the commit, PR body, release carrier, or
+manual fallback that closes the issue. Later lifecycle/audit artifacts
+(`achieve` goal updates, retro notes, handoff refreshes) may be valuable, but
+they are separate publication surfaces and do not require a second issue
+closeout push once the carrier and GitHub state are verified.
+
 `verify-closeout` returns `carrier_verified` when close keywords and the
 classification ledger are present but no `--expect-state` was provided. That
 status is useful before push or merge, but it is not final closeout. Final

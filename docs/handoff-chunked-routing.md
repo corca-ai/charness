@@ -247,6 +247,8 @@ merge.
    when tokens justify a merge. `validate_chunk_proposal_response` rejects
    unknown, duplicated, missing, or over-large sources, empty rationale, and
    broad-label-only merges unless adapter policy explicitly allows that label;
+   its merge policy facts are diagnostic only, so no broad-only warning does not
+   mean merge clearance and unknown basis tokens mean policy has no opinion;
    `materialize_chunk_proposal_response` converts the validated packages into a
    `MergeProposal`.
 4. **Rank.** [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) writes a JSON packet containing

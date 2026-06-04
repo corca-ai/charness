@@ -102,6 +102,9 @@ def test_build_chunk_proposal_packet_uses_sources_hints_and_policy(lib, entries)
     assert packet["policy"]["max_package_sources"] == 3
     assert packet["chunk_proposer_prompt"] == lib.CHUNK_PROPOSER_PROMPT
     assert "chunks" in packet["response_schema"]["properties"]
+    assert packet["merge_decision_contract"]["script_role"] == "facts-only"
+    assert "safe_to_merge" in packet["merge_decision_contract"]["no_clearance_fields"]
+    assert "safe_to_merge" not in packet
     assert any(hint["source_ids"] == [3, 4] for hint in packet["merge_hints"])
 
 
@@ -116,6 +119,10 @@ def test_validate_accepts_complete_agentic_packages(lib, entries):
         },
     )
     assert report["ok"] is True, report["issues"]
+    facts = report["merge_policy_facts"][1]
+    assert facts["broad_only_overlap"] is False
+    assert "not safe-to-merge" in facts["non_clearance"]
+    assert facts["unknown_tokens_mean"] == "policy has no opinion"
 
 
 def test_materialize_agentic_packages_as_merge_proposal(lib, entries):
@@ -187,7 +194,51 @@ def test_validate_rejects_broad_label_only_package(lib, entries):
         },
     )
     assert report["ok"] is False
+    assert report["merge_policy_facts"][1]["broad_only_overlap"] is True
     assert any("broad boundary tokens" in issue for issue in report["issues"])
+
+
+def test_validate_reports_unknown_basis_as_policy_no_opinion(lib, entries):
+    response = _good_response()
+    response["chunks"][1]["basis_boundary_tokens"] = ["label/unknown"]
+
+    report = lib.validate_chunk_proposal_response(
+        response,
+        entries,
+        policy={
+            "max_package_sources": 3,
+            "broad_boundary_tokens": ("label/closeout",),
+            "allowed_broad_boundary_tokens": (),
+        },
+    )
+
+    facts = report["merge_policy_facts"][1]
+    assert facts["unknown_basis_boundary_tokens"] == ["label/unknown"]
+    assert facts["unknown_tokens_mean"] == "policy has no opinion"
+    assert "unknown basis_boundary_tokens" in "\n".join(report["issues"])
+
+
+def test_validate_malformed_basis_tokens_reports_instead_of_crashing(lib, entries):
+    response = _good_response()
+    response["chunks"][1]["basis_boundary_tokens"] = ["label/closeout", 1, {}]
+
+    report = lib.validate_chunk_proposal_response(
+        response,
+        entries,
+        policy={
+            "max_package_sources": 3,
+            "broad_boundary_tokens": ("label/closeout",),
+            "allowed_broad_boundary_tokens": (),
+        },
+    )
+
+    assert report["ok"] is False
+    assert report["merge_policy_facts"][1]["basis_boundary_tokens"] == [
+        "label/closeout"
+    ]
+    assert "`basis_boundary_tokens` must be a string list" in "\n".join(
+        report["issues"]
+    )
 
 
 def test_adapter_policy_can_allow_repo_specific_broad_label(lib, entries):

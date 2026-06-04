@@ -73,3 +73,6 @@ pressure signal, not a per-goal cost total.
 - Which findings crossed from exploration into `fix now`?
 - Which findings should have been deferred or marked false positive?
 - After scope lock, which new branches reopened scope without a user decision?
+- Was a docs-only push actually required for the issue-resolution carrier, or
+  was it a later lifecycle/audit artifact after the carrier was already
+  verified?

@@ -265,6 +265,11 @@ At completion the goal artifact should contain:
   push auto-closes it (it is still OPEN at `achieve` closeout); `achieve` does
   not push or close out-of-band (see `references/coordination.md` *Resolving A
   Tracked Issue*)
+- issue-resolution carrier publication and lifecycle/audit artifact
+  publication are separate surfaces. After the carrier is pushed and GitHub
+  state is verified, later goal, retro, or handoff updates are lifecycle
+  artifacts unless they are required by the carrier itself; do not force a
+  second docs-only issue-closeout push for them.
 - an automatic retro focused on reducing time, tokens, and waste next time
 - the resolved `achieve` adapter policy for closeout publication and Auto-Retro
   disposition. Missing adapters default to `audit-only`; found invalid adapters

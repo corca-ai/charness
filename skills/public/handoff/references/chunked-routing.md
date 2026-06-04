@@ -98,6 +98,9 @@ step 4 is the active agent.
    with `materialize_chunk_proposal_response`. Validation rejects unknown,
    duplicated, missing, or over-large source groups, empty rationale, and
    broad-label-only merges unless adapter policy explicitly allows that label.
+   The packet and validation report expose merge policy facts only: a false
+   broad-only-overlap fact is not merge clearance, and unknown basis tokens mean
+   the policy has no opinion while the agent still judges semantic fit.
 4. **Rank.** Run
    [`prepare_ranker_packet.py`](../scripts/prepare_ranker_packet.py)
    against the materialized package proposal. The script emits a self-contained JSON
