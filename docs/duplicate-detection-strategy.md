@@ -78,6 +78,33 @@ useful hard-gate signal. Whole-file Markdown near-similarity remains owned by
 [`check_doc_near_duplicates.py`](../scripts/check_doc_near_duplicates.py) either
 way.
 
+Post-cleanup reassessment on 2026-06-04 used maintainer-local
+`npx --yes jscpd` 4.2.4 after the bootstrap, adapter, and document near-copy
+cleanup slices:
+
+- Source-only Python scan
+  (`scripts skills/public skills/support`, `--min-lines 18 --min-tokens 50`)
+  still found 87 exact clones / 2110 duplicated lines (3.05%). Most of that is
+  portable skill-runtime bootstrap and remaining adapter/import skeletons, with
+  a few real refactoring candidates mixed in, so a raw hard gate would still be
+  noisy.
+- Document-only Markdown scan found 1 exact clone / 23 duplicated lines between
+  the Achieve goal artifact reference and its template. This is template/source
+  mirroring, not a replacement for whole-file near-copy detection.
+- A higher-floor source scan (`--min-lines 40 --min-tokens 80`) found 3 exact
+  clones / 188 duplicated lines: `check_init_repo_rename.py` vs
+  `check_premortem_rename.py`, and `report_usage_episodes.py` vs
+  `validate_usage_episodes.py`. These are meaningful refactoring candidates,
+  but not enough to justify adding `jscpd` as an unbaselined hard gate in this
+  goal.
+
+Recommendation: keep `jscpd` out of the standing gate for now. If it is adopted,
+wire it through the external-tool/support-binary path first and start with a
+labelled code-only advisory or baseline/no-increase wrapper that records exact
+command/options and excludes or prices the portable bootstrap families. Promote
+it to a hard gate only after that advisory surface is quiet enough to fail on
+newly introduced clones rather than inherited portable entrypoint debt.
+
 ### 3. `nose`: Advisory Refactoring Inventory
 
 `nose` should be a validation support binary for `quality`, not a public skill

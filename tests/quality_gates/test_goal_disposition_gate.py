@@ -213,6 +213,22 @@ def test_disposition_review_line_parsed_and_normalized() -> None:
     assert skip["disposition_review"]["kind"] == "skip"
 
 
+def test_disposition_review_prose_in_auto_retro_is_not_evidence() -> None:
+    text = (
+        "# Achieve Goal: T\n\n"
+        "Created: 2026-05-30\n"
+        "Activation: `/goal @charness-artifacts/goals/2026-05-30-253-dispo.md`\n\n"
+        "## Final Verification\n\n"
+        "Retro: charness-artifacts/retro/2026-05-30-253-dispo.md\n"
+        "Host log probe: charness-artifacts/probe/2026-05-30-253-dispo.json\n\n"
+        "## Auto-Retro\n\n"
+        "- Disposition review: this prose notes that the review happened elsewhere\n"
+        "Disposition review: this unbulleted prose is still outside Final Verification\n"
+    )
+    parsed = ce.parse_closeout_evidence(text)
+    assert "disposition_review" not in parsed
+
+
 def test_derive_goal_tokens_keeps_slug_and_numeric_cluster() -> None:
     assert ce.derive_goal_tokens(
         "Activation: `/goal @charness-artifacts/goals/2026-05-31-261-coordination-cues.md`\n"

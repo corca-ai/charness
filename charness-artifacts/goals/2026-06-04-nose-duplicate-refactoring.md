@@ -1,6 +1,6 @@
 # Achieve Goal: Nose duplicate refactoring
 
-Status: active
+Status: complete
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md`
 
@@ -9,10 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — post-cleanup `jscpd` signal reassessment.
-- Next action: rerun the `jscpd` comparison after the bootstrap, adapter, and
-  document-near-copy cleanup slices; decide whether a code-only hard gate still
-  adds useful signal or should remain deferred.
+- Current slice: complete.
+- Next action: no goal work remains; future `jscpd`/`nose` support-binary work
+  should start as a new scoped goal or issue.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -115,7 +114,7 @@ The user can verify completion by inspecting:
 | 2 | Remove portable bootstrap duplication where a shared path is provably safe | Largest `nose` family is skill runtime bootstrap across public skill scripts | shared helper or generator path, source/plugin execution tests, reduced `nose` family | done |
 | 3 | Consolidate adapter resolver/validator skeletons | Adapter families are the next largest actionable duplication | common adapter validation helpers or templates, focused resolver tests, reduced `nose` family | done |
 | 4 | Preserve or narrow `check_duplicates.py` to document near-copy ownership | Do this only after code-clone cleanup clarifies what Python near-file coverage would be lost | tests proving Markdown near-copy behavior; explicit non-claim or retained coverage for helper-script near-file checks | done |
-| 5 | Reassess post-cleanup `jscpd` signal | Only after actual cleanup can raw token clone signal be judged fairly | before/after `jscpd` summary, recommendation to defer/add wrapper/skip | pending |
+| 5 | Reassess post-cleanup `jscpd` signal | Only after actual cleanup can raw token clone signal be judged fairly | before/after `jscpd` summary, recommendation to defer/add wrapper/skip | done |
 
 ## Coordination Cues
 
@@ -193,6 +192,21 @@ changed the plan to defer `jscpd`, keep document near-copy detection, update
 - Lessons carried forward: Rename-induced boundary-bypass changes should be treated as key migration, not new behavior, and proved with the ratchet. Keep compatibility wrappers when operator muscle memory or older local commands may still call the previous script name.
 - Metrics: scanned substantive files 627 -> 227 for the hard near-copy gate; current hard-gate duplicate pairs remained 0 -> 0; boundary-bypass candidates 96 -> 95 after the rename/scope change; `nose` families remained 222.
 
+### Slice 5: Post-cleanup jscpd signal reassessment
+
+- Objective: Reassess whether `jscpd` should be introduced after the `nose`-driven cleanup and document near-copy narrowing.
+- Why this approach: The user explicitly changed the plan to avoid adding `jscpd` until after `nose` cleanup. This slice compares post-cleanup `jscpd` signal against the cleaned baseline without changing the standing gate.
+- Tooling: `npx --yes jscpd --version` reported 4.2.4. This is maintainer-local analysis evidence, not a Charness support-binary install/update proof.
+- Evidence: `npx --yes jscpd scripts skills/public skills/support --format python --min-lines 18 --min-tokens 50 --reporters json --output /tmp/charness-jscpd-code --exitCode 0 --noTips --silent` found 87 exact clones / 2110 duplicated lines across 409 Python sources (3.05%). Classification: 58 skill-runtime bootstrap preamble clones / 1361 lines, 9 adapter resolver skeleton clones / 225 lines, 6 repo runtime bootstrap/import preamble clones / 163 lines, plus smaller CLI/helper shapes and 9 other exact blocks / 276 lines. This report is not pure false-positive noise: it is dominated by short bootstrap/preamble/import/adapter skeleton pairs, with a few real refactoring candidates mixed in.
+- Document comparison: `npx --yes jscpd docs skills/public skills/support README.md --format markdown --min-lines 18 --min-tokens 50 --reporters json --output /tmp/charness-jscpd-docs --exitCode 0 --noTips --silent` found 1 exact Markdown clone / 23 duplicated lines between `skills/public/achieve/references/goal-artifact.md:43-66` and `skills/public/achieve/scripts/goal_artifact_template.md:27-50`. This is template/reference mirroring and does not replace whole-file near-copy detection.
+- Mixed comparison: `npx --yes jscpd scripts skills/public skills/support docs README.md --format python,markdown --min-lines 18 --min-tokens 50 --reporters json --output /tmp/charness-jscpd-mixed --exitCode 0 --noTips --silent` found 88 clones / 2133 duplicated lines, which is the source-only result plus the one template/reference Markdown clone.
+- Higher-floor comparisons: `npx --yes jscpd scripts skills/public skills/support --format python --min-lines 40 --min-tokens 80 --reporters json --output /tmp/charness-jscpd-code-40 --exitCode 0 --noTips --silent` found 3 exact Python clones / 188 duplicated lines: two blocks shared by `scripts/check_init_repo_rename.py` and `scripts/check_premortem_rename.py`, plus one shared by `scripts/report_usage_episodes.py` and `scripts/validate_usage_episodes.py`. `--min-lines 30 --min-tokens 100` found 9 clones / 398 duplicated lines, adding a small set of resolver/bootstrap and dogfood helper candidates. These are real follow-up candidates, but they are a small inventory rather than a repo-wide hard-gate-ready result.
+- Strict-mode comparison: `npx --yes jscpd scripts skills/public skills/support --format python --min-lines 18 --min-tokens 50 --mode strict --reporters json --output /tmp/charness-jscpd-code-strict --exitCode 0 --noTips --silent` found 92 clones / 2209 duplicated lines, slightly increasing bootstrap/preamble noise rather than improving gate fitness.
+- Recommendation: `jscpd` has meaningful code signal, but do not add it as an unbaselined hard gate in this goal. The default/lower-floor scan is still dominated by portable bootstrap and remaining adapter/import skeleton pairs, while stricter floors surface real but small follow-up candidates. If adopted later, it should enter through the external-tool/support-binary path as a labelled code-only advisory or baseline/no-increase wrapper with recorded command/options and a reviewed threshold/ignore policy before any hard-gate promotion.
+- Nose cross-check: Maintainer-local `nose 0.4.0` final scan still reports 222 families after Slice 4. Top families remain bootstrap/import skeletons and smaller helper shapes; the large adapter-load families removed in Slice 3 remain gone.
+- Critique: Medium fresh-eye reviewer found no blockers. The reviewer verified the `jscpd 4.2.4` report counts, confirmed the default code-only report is dominated by short bootstrap/preamble/import/adapter skeleton pairs but not pure false-positive noise, confirmed the high-floor reports are small real follow-up inventories, and confirmed the docs-only clone is Achieve template/reference mirroring.
+- Metrics: `jscpd` source-only default floor 87 clones / 2110 duplicated lines; source high floor 3 clones / 188 duplicated lines; docs-only 1 clone / 23 duplicated lines; mixed code+docs 88 clones / 2133 duplicated lines.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -264,14 +278,45 @@ N/A — none yet.
 
 ## Final Verification
 
-Pending activation and execution.
+Status: complete.
+
+Retro: charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md
+Host log probe: charness-artifacts/probe/2026-06-04-nose-duplicate-refactoring.json
+Disposition review: charness-artifacts/critique/2026-06-04-nose-duplicate-refactoring-disposition-review.md
+
+- `nose 0.4.0` was verified from `/home/hwidong/codes/nose/target/release/nose --version`.
+- Baseline `nose` scan: 230 families, top bootstrap family 86 members / 1020 duplicate lines.
+- After bootstrap slice: 225 families, top remaining bootstrap family 81 members / 400 duplicate lines.
+- After adapter slice and document-gate slice: 222 families. Large duplicated adapter `load_adapter` bodies disappeared from the inspected top families; remaining top families are portable bootstrap/import skeletons, smaller adapter resolver skeletons, and helper shapes.
+- `check_doc_near_duplicates.py` is the hard document near-copy gate; legacy `check_duplicates.py` delegates to it. Source and plugin canonical/legacy commands returned `[]`.
+- `jscpd` 4.2.4 was reassessed post-cleanup. It remains meaningful as advisory code-clone signal, especially at a high floor, but is not added as a hard gate in this goal.
+- Final standing proof: `./scripts/run-quality.sh --read-only` passed with 70 phases, 0 failures, total 53.4s.
+- Fresh-eye review ran for the adapter resolver slice, document near-copy gate slice, and final `jscpd` disposition; no blockers remained.
+- Arbitrary-machine `nose` install/update proof was not run; support-binary manifest work remains an explicit future integration step.
+- Non-claims: no `jscpd` support manifest, `nose` support manifest, consumer-repo install proof, or zero-clone proof was produced in this goal.
 
 ## User Verification Instructions
 
-After activation and completion, review the final verification section, run the
-listed focused tests if desired, and compare the before/after `nose 0.4.0`
-summary for the cleaned families.
+Review this artifact and, if desired, rerun:
+
+- `python3 scripts/check_doc_near_duplicates.py --repo-root . --fail-on-match --require-git-file-listing --json`
+- `/home/hwidong/codes/nose/target/release/nose scan scripts skills/public skills/support --mode syntax,semantic,near --threshold 0.70 --min-lines 18 --min-tokens 24 --sort extractability --top 0 --format json`
+- `npx --yes jscpd scripts skills/public skills/support --format python --min-lines 40 --min-tokens 80 --reporters json --output /tmp/charness-jscpd-code-40 --exitCode 0 --noTips --silent`
 
 ## Auto-Retro
 
-Pending completion.
+Persisted: [`charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`](../retro/2026-06-04-nose-duplicate-refactoring.md)
+
+- Context: completed the `nose` duplicate-refactoring goal, narrowed the hard
+  near-copy gate to document surfaces, and reassessed `jscpd` after cleanup.
+- Waste: raw clone counts were easy to overstate as either noise or proof; final
+  evidence needed command/options beside the report counts.
+- Critical decisions: kept whole-file document near-copy separate from token
+  clone detection, used `nose 0.4.0` for refactoring, and deferred `jscpd` hard
+  gating until support-binary/baseline policy exists.
+- Counterfactuals: Gary Klein would have asked which clone families would block
+  a push today; Daniel Kahneman would have resisted a binary "noise or gate"
+  framing and asked for threshold/base-rate evidence.
+- Disposition decisions: applied — exact `jscpd` commands/options and version are
+  recorded in this goal and `docs/duplicate-detection-strategy.md`; applied —
+  duplicate-detector responsibilities are now named by algorithm shape.

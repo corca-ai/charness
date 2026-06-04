@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-02T01:55:41Z",
-  "repo": "charness",
+  "generated_at": "2026-06-04T12:20:28Z",
+  "repo": "charness-duplicate-detection",
   "inventory": {
     "adapter": {
       "found": false,
@@ -37,7 +37,9 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/achieve/references/lifecycle.md",
           "skills/public/achieve/references/goal-artifact.md",
-          "skills/public/achieve/references/coordination.md"
+          "skills/shared/references/retro-issue-destination-split.md",
+          "skills/public/achieve/references/coordination.md",
+          "skills/public/achieve/references/adapter-contract.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -459,7 +461,14 @@
           "quality",
           "quality skill",
           "quality 스킬",
-          "charness:quality"
+          "charness:quality",
+          "test quality",
+          "testability",
+          "test DSL",
+          "test helper ergonomics",
+          "boundary-bypass ratchet",
+          "boundary bypass",
+          "quality gate"
         ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
@@ -472,6 +481,7 @@
           "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/behavior-testing.md",
           "skills/public/quality/references/inventory-consumer-fields.json",
+          "skills/public/quality/references/boundary-bypass-ratchet.md",
           "skills/public/quality/references/agent-production-runtime.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/quality/references/maintainer-local-enforcement.md",
@@ -482,6 +492,7 @@
           "skills/public/quality/references/automation-promotion.md",
           "skills/public/quality/references/bootstrap-posture.md",
           "skills/public/quality/references/brittle-source-guards.md",
+          "skills/public/quality/references/boundary-bypass-payload.example.json",
           "skills/public/quality/references/cli-ergonomics-smells.md",
           "skills/public/quality/references/coverage-floor-exemptions.txt",
           "skills/public/quality/references/coverage_floor_inventory.py",
@@ -556,6 +567,7 @@
           "skills/public/retro/references/adapter-contract.md",
           "skills/public/retro/references/phase-aware-efficiency.md",
           "skills/public/retro/references/waste-sibling-scan.md",
+          "skills/shared/references/retro-issue-destination-split.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/retro/references/mode-guide.md",
           "skills/public/retro/references/section-guide.md",
@@ -748,9 +760,9 @@
         "name": "agent-browser",
         "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
         "summary": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/agent-browser/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/agent-browser",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/agent-browser/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser/SKILL.md",
         "trigger_phrases": [
           "agent-browser",
           "agent-browser skill",
@@ -770,9 +782,9 @@
         "name": "cautilus-agent",
         "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
         "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/cautilus/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/cautilus",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/cautilus/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus/SKILL.md",
         "trigger_phrases": [
           "cautilus-agent",
           "cautilus-agent skill",
@@ -792,9 +804,9 @@
         "name": "specdown",
         "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
         "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/specdown/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/specdown",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.13.5/support/specdown/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown/SKILL.md",
         "trigger_phrases": [
           "specdown",
           "specdown skill",
@@ -1339,6 +1351,40 @@
         ],
         "recommendation_role": "runtime",
         "path": "integrations/tools/google-workspace-worker.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "nose",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [
+          "nose",
+          "clone family",
+          "code clone",
+          "semantic clone",
+          "near duplicate code",
+          "refactoring candidates",
+          "duplication refactor",
+          "duplicate code advisory",
+          "중복 리팩토링",
+          "코드 중복"
+        ],
+        "strong_intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/nose.json",
         "source": "local-integration",
         "layer": "external integration"
       },

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-04",
-  "source_artifact_count": 118,
-  "candidate_count": 742,
+  "source_artifact_count": 119,
+  "candidate_count": 745,
   "top_candidates": [
     {
       "candidate_id": "current_focus:10b1f703314a",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:432f1f5fedc7",
+      "kind": "current_focus",
+      "lesson": "This session completed the active `nose` duplicate-refactoring goal: bootstrap and adapter duplicate families were reduced, the near-copy hard gate was narrowed to document surfaces, and `jscpd` was reassessed after cleanup.",
+      "normalized_key": "this session completed the active nose duplicate refactoring goal bootstrap and adapter duplicate families",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
           "date": "2026-06-04",
           "section": "Context"
         }
@@ -109,6 +129,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fb7c386a2baf",
+      "kind": "next_improvement",
+      "lesson": "applied: keep duplicate-detector responsibilities named by algorithm shape: whole-file near-copy gate, exact token/block clone candidate, and advisory semantic/structural clone inventory.",
+      "normalized_key": "applied keep duplicate detector responsibilities named by algorithm shape whole file near copy gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7bade6a1ad1",
+      "kind": "next_improvement",
+      "lesson": "applied: record command lines and version beside temporary clone-report counts before treating a tool comparison as durable evidence.",
+      "normalized_key": "applied record command lines and version beside temporary clone report counts before treating a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
           "date": "2026-06-04",
           "section": "Next Improvements"
         }
@@ -193,66 +253,6 @@
           "section": "Waste"
         }
       ]
-    },
-    {
-      "candidate_id": "repeat_trap:9e29b8c46031",
-      "kind": "repeat_trap",
-      "lesson": "The first broad pytest run became invalid because a fresh-eye fix was applied while the run was still in progress; the eventual failure was plugin mirror readiness in a mixed tree, not a stable post-fix signal.",
-      "normalized_key": "the first broad pytest run became invalid because a fresh eye fix was applied",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
-          "date": "2026-06-04",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cc2c9acb991c",
-      "kind": "repeat_trap",
-      "lesson": "The first final broad gate failed on two test-structure issues that focused tests did not reveal: the isolated repo-copy e2e test needed `pytest.mark.release_only`, and #284 tests introduced a boundary-bypass candidate by spawning an import-safe script.",
-      "normalized_key": "the first final broad gate failed on two test structure issues that focused tests",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-          "date": "2026-06-04",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c059d608219a",
-      "kind": "repeat_trap",
-      "lesson": "The first push attempt hit a live usage-episode snapshot flake in one host hook test. A focused rerun passed, and the second pre-push broad gate passed.",
-      "normalized_key": "the first push attempt hit a live usage episode snapshot flake in one host",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-      "latest_source_date": "2026-06-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
-          "date": "2026-06-04",
-          "section": "Waste"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+          "date": "2026-06-04",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:432f1f5fedc7",
+      "kind": "current_focus",
+      "lesson": "This session completed the active `nose` duplicate-refactoring goal: bootstrap and adapter duplicate families were reduced, the near-copy hard gate was narrowed to document surfaces, and `jscpd` was reassessed after cleanup.",
+      "normalized_key": "this session completed the active nose duplicate refactoring goal bootstrap and adapter duplicate families",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
           "date": "2026-06-04",
           "section": "Context"
         }
@@ -351,6 +371,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fb7c386a2baf",
+      "kind": "next_improvement",
+      "lesson": "applied: keep duplicate-detector responsibilities named by algorithm shape: whole-file near-copy gate, exact token/block clone candidate, and advisory semantic/structural clone inventory.",
+      "normalized_key": "applied keep duplicate detector responsibilities named by algorithm shape whole file near copy gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+          "date": "2026-06-04",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7bade6a1ad1",
+      "kind": "next_improvement",
+      "lesson": "applied: record command lines and version beside temporary clone-report counts before treating a tool comparison as durable evidence.",
+      "normalized_key": "applied record command lines and version beside temporary clone report counts before treating a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
+      "latest_source_date": "2026-06-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md",
           "date": "2026-06-04",
           "section": "Next Improvements"
         }

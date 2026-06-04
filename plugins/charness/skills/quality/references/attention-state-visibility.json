@@ -128,6 +128,12 @@
       "evidence_terms": ["mode", "disabled"],
       "rationale": "Tool installation reports disabled adapter state as structured skipped output."
     },
+    "skills/public/quality/scripts/inventory_nose_clones.py": {
+      "states": ["skipped"],
+      "visibility": ["stdout_attention", "terminal_payload"],
+      "evidence_terms": ["ADVISORY: nose missing", "clone-family inventory skipped"],
+      "rationale": "The `nose` clone-family inventory is advisory. When the binary is absent it prints an explicit advisory skip and exits zero, while document near-copy detection remains covered by the standing hard gate."
+    },
     "scripts/plan_cautilus_proof.py": {
       "states": ["disabled"],
       "visibility": ["terminal_payload"],

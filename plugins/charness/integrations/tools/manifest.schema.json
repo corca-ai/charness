@@ -164,6 +164,13 @@
         "validation"
       ]
     },
+    "doctor_policy": {
+      "type": "string",
+      "enum": [
+        "required",
+        "advisory"
+      ]
+    },
     "degradation": {
       "$ref": "#/definitions/degradation"
     },

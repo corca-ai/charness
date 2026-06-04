@@ -527,6 +527,11 @@ if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_cli_ergonomics.py" 
 else
   queue_selected "inventory-cli-ergonomics" bash -c 'echo "inventory_cli_ergonomics.py unavailable; skipping optional advisory inventory."'
 fi
+if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_nose_clones.py" ]]; then
+  queue_selected "inventory-nose-clones" python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root "$REPO_ROOT"
+else
+  queue_selected "inventory-nose-clones" bash -c 'echo "ADVISORY: inventory_nose_clones.py unavailable; skipping optional clone-family inventory."'
+fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then

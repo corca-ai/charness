@@ -125,11 +125,15 @@ product-policy decision before proposing new gates.
   `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py`
 - Python dead-code advisory:
   `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root .`
+- code clone-family advisory:
+  `$SKILL_DIR/scripts/inventory_nose_clones.py --repo-root .`
 
 When dual implementation smell is real, require one honest contract: parity
 harness, canonical side plus deletion/wrapper plan, or intentional divergence
 backed by an assertion. Treat first-run dead-code findings as advisory until
-the repo accounts for dynamic entrypoints.
+the repo accounts for dynamic entrypoints. Treat `nose` findings the same way:
+review extractable non-bootstrap families first, and do not refactor every
+reported family just because the advisory scanner can see it.
 
 Elevate source-guard pressure as a rollup: total rows, top specs, brittle
 count, and next action category should be visible together. Blanket, file-level,

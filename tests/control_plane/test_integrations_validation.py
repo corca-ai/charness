@@ -245,6 +245,23 @@ def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp
     assert gws_doctor["doctor_disposition"] == "advisory-install-needed"
 
 
+def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["lifecycle"]["install"]["mode"] = "script"
+    manifest["lifecycle"]["install"]["commands"] = ["./install-demo-tool"]
+    manifest["doctor_policy"] = "advisory"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (repo / "bin" / "demo-tool").unlink()
+
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe")
+    assert doctor.returncode == 0, doctor.stderr
+    doctor_payload = json.loads(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "missing"
+    assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
+
+
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
     (repo / ".demo-ready").unlink()

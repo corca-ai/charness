@@ -61,9 +61,10 @@ NARRATION_REQUIRED_SECTIONS = (
 # refused. ``_normalize_evidence_name`` maps the captured label to
 # ``disposition_review`` automatically.
 _EVIDENCE_LINE = re.compile(
-    r"^[\s>*-]*(Retro|Host[- ]log[- ]probe|Disposition[- ]review)\s*:\s*(.+?)\s*$",
+    r"^[ \t>]*(Retro|Host[- ]log[- ]probe|Disposition[- ]review)\s*:\s*(.+?)\s*$",
     re.MULTILINE | re.IGNORECASE,
 )
+_H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 
 # Activation line points at the goal's own file: ``/goal @<repo-rel-path>``.
 # The basename minus the date prefix is the goal slug, the strongest binding
@@ -146,7 +147,7 @@ def _normalize_evidence_name(label: str) -> str:
 
 
 def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
-    """Extract ``Retro:`` and ``Host log probe:`` lines from the goal body.
+    """Extract closeout evidence lines from ``## Final Verification``.
 
     Returns ``{name: {"kind": "evidence"|"skip", "value": <path-or-reason>}}``.
     A value that starts with ``skipped:`` (case-insensitive) is treated as a
@@ -154,6 +155,19 @@ def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
     repo-relative or absolute path to the evidence file.
     """
     masked = _mask_fences(text)
+    headings = list(_H2.finditer(masked))
+    if headings:
+        final_verification = None
+        for index, heading in enumerate(headings):
+            if heading.group(1).strip() != "Final Verification":
+                continue
+            body_start = masked.find("\n", heading.start())
+            body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
+            final_verification = masked[body_start + 1 if body_start != -1 else heading.end():body_end]
+            break
+        if final_verification is None:
+            return {}
+        masked = final_verification
     parsed: dict[str, dict[str, str]] = {}
     for match in _EVIDENCE_LINE.finditer(masked):
         name = _normalize_evidence_name(match.group(1))

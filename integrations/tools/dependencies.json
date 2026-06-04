@@ -3,6 +3,7 @@
   "tool_dependencies": [
     "cautilus",
     "gitleaks",
+    "nose",
     "ruff",
     "specdown",
     "tokei"

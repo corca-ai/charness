@@ -62,6 +62,16 @@
       "non_headline_fields": [],
       "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
     },
+    "inventory_nose_clones.py": {
+      "non_headline_fields": [
+        "status",
+        "advisory",
+        "family_count",
+        "families",
+        "paths",
+        "notes"
+      ]
+    },
     "inventory_cli_side_effect_probes.py": {
       "non_headline_fields": [],
       "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."

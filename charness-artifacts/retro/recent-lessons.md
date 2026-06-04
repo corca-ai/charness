@@ -3,7 +3,7 @@
 ## Current Focus
 
 - This retro reviews the goal that resolved #291, #292, and #284 in one bundle: activation readiness, staged-index test isolation, and skill-surface preflight. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
-- This session completed the future-work-efficiency goal for #285, #286, #287, #288, and #289: handoff package synthesis, stable handoff fixture posture, direct-commit closeout rehearsal, Achieve closeout policy adapter, and announcement delivery posture. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
+- This session completed the active `nose` duplicate-refactoring goal: bootstrap and adapter duplicate families were reduced, the near-copy hard gate was narrowed to document surfaces, and `jscpd` was reassessed after cleanup. (source: `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - applied: `3b7ed973` marked the copy-heavy isolated repo test release-only and converted #284 tests to the in-process preflight API. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
 - applied: final broad proof was rerun after the blocker fix and plugin mirror sync, replacing the mixed-tree pytest run. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
 - applied: fresh-eye blocker fixed in `f64dbdc8` by requiring each `thread_reply` output to have a preceding `parent` output before delivery is executable. (source: `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`)
-- applied: the new preflight helper and implementation-discipline guidance make skill-surface headroom/coupling checks executable before broad quality. (source: `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`)
+- applied: keep duplicate-detector responsibilities named by algorithm shape: whole-file near-copy gate, exact token/block clone candidate, and advisory semantic/structural clone inventory. (source: `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`)
 
 ## Selection Policy
 
@@ -29,3 +29,4 @@
 
 - `charness-artifacts/retro/2026-06-04-291-292-284-activation-index-and-skill-preflight.md`
 - `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
+- `charness-artifacts/retro/2026-06-04-nose-duplicate-refactoring.md`

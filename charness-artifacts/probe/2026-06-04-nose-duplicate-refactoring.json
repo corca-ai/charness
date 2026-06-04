@@ -1,0 +1,143 @@
+{
+  "goal_metric_window": {
+    "path": "/home/hwidong/codes/charness-duplicate-detection/charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md",
+    "status": "absent"
+  },
+  "home": "/home/hwidong",
+  "hosts": {
+    "claude": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "detail": "timestamped session events exist",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-parental-interaction-eval/4e286643-0295-452c-aa6b-82062616b85a.jsonl",
+          "status": "derivable"
+        },
+        "token_count": {
+          "detail": "No assistant usage token fields found",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-parental-interaction-eval/4e286643-0295-452c-aa6b-82062616b85a.jsonl",
+          "status": "unavailable"
+        },
+        "tool_call_count": {
+          "detail": "No tool_use items found",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-parental-interaction-eval/4e286643-0295-452c-aa6b-82062616b85a.jsonl",
+          "status": "unavailable"
+        },
+        "turn_count": {
+          "detail": "user/assistant events exist but require pairing heuristics",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-parental-interaction-eval/4e286643-0295-452c-aa6b-82062616b85a.jsonl",
+          "status": "derivable"
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.claude/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "project-jsonl",
+          "path": "/home/hwidong/.claude/projects/-home-hwidong-codes-parental-interaction-eval/4e286643-0295-452c-aa6b-82062616b85a.jsonl",
+          "status": "used"
+        }
+      ]
+    },
+    "codex": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "detail": "No timestamped runtime lines found",
+          "source": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "unavailable"
+        },
+        "token_count": {
+          "detail": "Codex session JSONL exposes 443 token_count snapshot(s)",
+          "source": "/home/hwidong/.codex/sessions/2026/06/04/rollout-2026-06-04T11-20-17-019e906e-71d0-7113-96e2-638698272e54.jsonl",
+          "status": "available"
+        },
+        "tool_call_count": {
+          "detail": "Codex session JSONL exposes 826 function/custom tool call(s)",
+          "source": "/home/hwidong/.codex/sessions/2026/06/04/rollout-2026-06-04T11-20-17-019e906e-71d0-7113-96e2-638698272e54.jsonl",
+          "status": "derivable"
+        },
+        "turn_count": {
+          "detail": "turn.id markers exist in runtime logs",
+          "source": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "derivable"
+        }
+      },
+      "session_audit": {
+        "measured": {
+          "context_compactions": 6,
+          "custom_tool_calls": 50,
+          "function_calls": 776,
+          "patch_applications": 48,
+          "subagent": {
+            "close": 11,
+            "spawn": 15,
+            "wait": 7
+          },
+          "token_count_snapshots": 443,
+          "total_events": 3727
+        },
+        "notes": [
+          "patch_applications counts patch_apply_end events; those patches also appear in custom_tool_calls as apply_patch, so the two fields overlap rather than add."
+        ],
+        "proxy": {
+          "repeated_broad_gates": {
+            "./scripts/check-markdown.sh": 8,
+            "pytest": 8,
+            "ruff": 16
+          },
+          "repeated_vcs_commands": {
+            "git -C": 5,
+            "git add": 5,
+            "git commit": 3,
+            "git diff": 40,
+            "git log": 6,
+            "git status": 40
+          }
+        },
+        "source": {
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.codex/sessions/2026/06/04/rollout-2026-06-04T11-20-17-019e906e-71d0-7113-96e2-638698272e54.jsonl"
+        },
+        "warnings": [],
+        "window_filter": {
+          "completed_at": null,
+          "included_records": 3727,
+          "started_at": null,
+          "status": "not_applied",
+          "total_records": 3727,
+          "undated_records": 0
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.codex/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "sqlite-log",
+          "path": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "used"
+        },
+        {
+          "kind": "sqlite-log",
+          "path": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "available"
+        },
+        {
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.codex/sessions/2026/06/04/rollout-2026-06-04T11-20-17-019e906e-71d0-7113-96e2-638698272e54.jsonl",
+          "status": "used"
+        }
+      ]
+    }
+  },
+  "repo_root": "/home/hwidong/codes/charness-duplicate-detection",
+  "schema_version": 1
+}

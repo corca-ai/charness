@@ -222,9 +222,11 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any], *, plu
     else:
         doctor_status = "ok"
 
+    doctor_policy = capability.get("doctor_policy") or "required"
+
     if doctor_status == "ok":
         doctor_disposition = "ready"
-    elif doctor_status == "missing" and install_route.get("mode") == "manual":
+    elif doctor_status == "missing" and (install_route.get("mode") == "manual" or doctor_policy == "advisory"):
         doctor_disposition = "advisory-install-needed"
     elif doctor_status == "support-missing":
         doctor_disposition = "blocking-support-sync-needed"
