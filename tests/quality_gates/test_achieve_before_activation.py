@@ -98,3 +98,18 @@ def test_long_goal_efficiency_contract_is_explicit() -> None:
     assert "Slice review packet" in artifact
     assert "measured signals" in lifecycle and "proxy signals" in lifecycle
     assert "Cached input alone is not a waste conclusion" in lifecycle
+
+
+def test_timebox_goal_contract_is_explicit() -> None:
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    artifact = _norm(ACHIEVE / "references" / "goal-artifact.md")
+
+    assert "Timebox:" in skill and "Timebox:" in lifecycle and "Timebox:" in artifact
+    assert "Activation time:" in skill and "Activation time:" in lifecycle
+    assert "Closeout reserve:" in skill and "Closeout reserve:" in lifecycle
+    assert "Done-early policy: continue_next_improvement" in skill
+    assert "Done-early policy: continue_next_improvement" in lifecycle
+    assert "Slice-Boundary Continuation" in lifecycle
+    assert "No safe next slice:" in skill and "No safe next slice:" in artifact
+    assert "cannot flip to `complete` before" in lifecycle

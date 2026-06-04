@@ -47,7 +47,7 @@ lifecycle instead of starting a new one.
      when a strong default settles it
    - establish outcome, non-goals, boundaries, user acceptance, verification
      plan, proof cost, test-duplication pressure, slice sequence, critique plan,
-     stop conditions, and reporting expectations
+     stop conditions, reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`
    - for consequential defaults in Non-Goals, Boundaries, verification,
@@ -81,8 +81,8 @@ lifecycle instead of starting a new one.
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
-   - on an unresolvable blocker, flip status to `blocked`, record the blocker
-     and attempted paths, and ask the user
+   - on an unresolvable blocker or `No safe next slice:` closeout, flip status
+     or record the reason with attempted paths, and ask the user when needed
 3. After — prove and reflect.
    - run the final quality gate or documented substitute; if a broad
      duplicate/pressure gate fails, classify new-slice-local versus accumulated

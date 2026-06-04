@@ -28,6 +28,7 @@ def _load_sibling(module_name: str):
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
 _metric_window = _load_sibling("goal_metric_window_lib")
+_timebox = _load_sibling("goal_artifact_timebox")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
 NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
 parse_closeout_evidence = _closeout.parse_closeout_evidence
@@ -40,6 +41,7 @@ discussion_readiness = _discussion.discussion_readiness
 render_metric_window_line = _metric_window.render_metric_window_line
 record_metric_window = _metric_window.record_metric_window
 metric_window_attention = _metric_window.metric_window_attention
+check_timebox_closeout = _timebox.check_timebox_closeout
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -173,7 +175,8 @@ def upsert_goal(
         original = path.read_text(encoding="utf-8")
         if status == "complete" and read_status(original) != "complete":
             evidence_report = check_complete_evidence(repo_root, original)
-            if not evidence_report["ok"]:
+            timebox_report = check_timebox_closeout(original)
+            if not evidence_report["ok"] or not timebox_report["ok"]:
                 return {
                     "action": "refused",
                     "path": rel,
@@ -182,15 +185,18 @@ def upsert_goal(
                     "note": (
                         "refused to flip to complete: After-phase evidence missing, "
                         "invalid, unbound, the disposition gate, or a coordination floor "
-                        "is unmet. Add bound `Retro:`/`Host log probe:` "
+                        "is unmet, or a timeboxed goal is closing before its closeout window. "
+                        "Add bound `Retro:`/`Host log probe:` "
                         "lines (path or `skipped: <enum>: <detail>`); in-scope goals also need "
                         "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
                         "`Retro dispositions: none — <reason>` opt-out), and any triggered "
                         "`Routing:`/`Gather:`/`Release:`/`Issue closeout:` step in "
-                        "`## Coordination Cues`. "
+                        "`## Coordination Cues`. For early timebox closeout, record why no "
+                        "safe next slice remains. "
                         "See the closeout contract."
                     ),
                     "evidence_report": evidence_report,
+                    "timebox_report": timebox_report,
                 }
         updated = set_status(original, status)
         changed = updated != original

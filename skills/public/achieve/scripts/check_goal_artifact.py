@@ -77,7 +77,15 @@ def main() -> int:
         )
     if result.get("status") == "complete":
         evidence_report = goal_lib.check_complete_evidence(args.repo_root.expanduser().resolve(), text)
+        timebox_report = goal_lib.check_timebox_closeout(text)
         result["closeout_evidence"] = evidence_report
+        result["timebox_closeout"] = timebox_report
+        if not timebox_report["ok"]:
+            result["ok"] = False
+            result["issues"].append(
+                "timebox closeout not satisfied — "
+                + "; ".join(timebox_report["issues"])
+            )
         if not evidence_report["ok"]:
             result["ok"] = False
             missing_bits: list[str] = []

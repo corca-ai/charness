@@ -22,6 +22,7 @@ Establish:
   a broad duplicate/length/pressure gate toward its threshold
 - slice sequence
 - critique plan
+- timebox contract, when the user gives a time budget
 - when the goal resolves a tracked issue: the `debug` root-cause step for a
   bug-class issue (planned *before* the fix slice) and the closeout
   close-via-`issue` step (`Close #N` on the fix/closeout commit) — see
@@ -149,6 +150,29 @@ about them. Helper output separates `shape_ready` from `activation_ready`;
 `pursue_ready` is the activation-ready signal and must be false while
 consequential discussion is only surfaced.
 
+### Timebox Mode
+
+When the user gives a fixed work budget ("for 3 hours", "exactly 2 hours",
+"spend the next slice"), shape the goal as **timebox mode** instead of only a
+macro-outcome checklist. The artifact records:
+
+- `Timebox: <duration>` — the work budget, e.g. `3h` or `180m`.
+- `Activation time: <ISO>` — the timestamp the active run started.
+- `Closeout reserve: <duration>` — time reserved for final proof, artifact
+  update, critique, commit, and user closeout; default to `20m` unless the user
+  chose a different reserve.
+- `Done-early policy: continue_next_improvement` — if the macro goal finishes
+  before the closeout reserve window, immediately choose another safe
+  improvement instead of closing because the first backlog item ended.
+
+This field set makes a time budget operational: it tells the next session when
+the clock started, how much closeout time to protect, and what to do if the
+first slice finishes early. A timebox goal may still stop early when continuing
+would be unsafe or needs a user decision, but that is evidence, not vibes:
+record `No safe next slice: <reason>`, `Early close rationale: <reason>`, or a
+specific `Stop condition:` line under `## Final Verification` with enough detail
+for a fresh reviewer to falsify it.
+
 ## During
 
 The goal artifact becomes the working scratchpad for the active run. Do not use
@@ -245,6 +269,26 @@ the blocker or relevant context, cite the latest `Test duplication pressure`
 sample in the blocked record so the user and any resumed session inherit it
 instead of rediscovering it.
 
+### Slice-Boundary Continuation
+
+At every slice boundary, use the goal's own learning to pick the next slice
+before considering closeout. The priority order is:
+
+- newly discovered waste, fragile coupling, or quality/test-time debt from the
+  slice just completed, when a small structural fix is safe;
+- the next item already in the Slice Plan or active operating frame;
+- safe work from handoff/open issues that advances the macro goal family;
+- an explicit stop record when the remaining work is unsafe, decision-heavy, or
+  would exceed the closeout reserve.
+
+Safe structural deletion and larger cleanup are allowed when the evidence says
+the test or coupling no longer pays for itself, especially for overlong pytest
+files, release-only sentinels, and source-guard-level tests. If the choice is
+unsafe or product/policy-bound, file or record it instead of burning the timebox
+on a risky guess. If the macro goal is already satisfied and no planned work
+remains, continue with the safest handoff/open-issue improvement until the
+closeout reserve begins.
+
 ## After
 
 At completion the goal artifact should contain:
@@ -303,6 +347,15 @@ Run `check_goal_artifact.py` before declaring completion so the required
 sections, status, and activation line are all present. Flip the status to
 `complete` only after the final report separates what was proven from what
 remains the user's responsibility to verify.
+
+For timebox mode, `upsert_goal.py --status complete` and
+`check_goal_artifact.py` enforce the closeout boundary. A goal with
+`Done-early policy: continue_next_improvement` cannot flip to `complete` before
+`Activation time + Timebox - Closeout reserve` unless the artifact records a
+valid `No safe next slice:`, `Early close rationale:`, or supported
+`Stop condition:` line under `## Final Verification`. This catches the failure
+mode where the agent declares the macro target done early and ignores the user's
+time budget.
 
 Mutable `HEAD` claims are live-state claims, not durable proof by themselves.
 When a goal artifact says `current HEAD`, `HEAD is`, or equivalent and also

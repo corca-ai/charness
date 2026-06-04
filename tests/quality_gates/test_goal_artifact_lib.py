@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -468,6 +469,24 @@ def _append_evidence_lines(text: str, retro_value: str, probe_value: str) -> str
     )
 
 
+def _add_timebox(
+    text: str,
+    *,
+    activation_time: str,
+    timebox: str = "3h",
+    reserve: str = "20m",
+    extra: str = "",
+    policy: str = "continue_next_improvement",
+) -> str:
+    lines = (
+        f"Timebox: {timebox}\nActivation time: {activation_time}\n"
+        f"Closeout reserve: {reserve}\nDone-early policy: {policy}\n"
+    )
+    if extra:
+        lines += extra.rstrip() + "\n"
+    return text.replace("## Active Operating Frame\n", f"## Active Operating Frame\n\n{lines}", 1)
+
+
 def test_parse_closeout_evidence_handles_path_and_skip() -> None:
     text = (
         "Retro: charness-artifacts/retro/2026-05-28-g.md\n"
@@ -546,6 +565,119 @@ def test_upsert_refuses_flip_to_complete_with_invalid_skip(tmp_path: Path) -> No
     assert refusal["action"] == "refused"
     invalid_names = {entry["name"] for entry in refusal["evidence_report"]["invalid_skips"]}
     assert invalid_names == set(gal.CLOSEOUT_EVIDENCE_NAMES)
+
+
+def test_check_timebox_blocks_early_close_without_next_slice_decision() -> None:
+    text = _add_timebox(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n",
+        activation_time="2026-06-05T00:00:00Z",
+    )
+    report = gal.check_timebox_closeout(
+        text,
+        now=datetime(2026, 6, 5, 1, 0, tzinfo=timezone.utc),
+    )
+    assert report["ok"] is False
+    assert report["status"] == "early_close_blocked"
+    assert report["closeout_window_started"] == "2026-06-05T02:40:00Z"
+
+
+def test_check_timebox_allows_early_close_with_no_safe_next_slice() -> None:
+    text = (
+        _add_timebox(
+            "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n\n## Final Verification\n",
+            activation_time="2026-06-05T00:00:00Z",
+        )
+        + "No safe next slice: only unsafe release work remains and user confirmation is required first.\n"
+    )
+    report = gal.check_timebox_closeout(
+        text,
+        now=datetime(2026, 6, 5, 1, 0, tzinfo=timezone.utc),
+    )
+    assert report["ok"] is True
+    assert report["status"] == "early_close_with_evidence"
+    assert report["evidence"] == "no_safe_next_slice"
+
+
+def test_check_timebox_ignores_planned_stop_condition_outside_final_verification() -> None:
+    text = _add_timebox(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n",
+        activation_time="2026-06-05T00:00:00Z",
+        extra="Stop condition: blocked - only unsafe release work remains and user confirmation is required first.",
+    )
+    report = gal.check_timebox_closeout(
+        text,
+        now=datetime(2026, 6, 5, 1, 0, tzinfo=timezone.utc),
+    )
+    assert report["ok"] is False
+    assert report["status"] == "early_close_blocked"
+
+
+def test_check_timebox_allows_closeout_window() -> None:
+    text = _add_timebox(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n",
+        activation_time="2026-06-05T00:00:00Z",
+    )
+    report = gal.check_timebox_closeout(
+        text,
+        now=datetime(2026, 6, 5, 2, 45, tzinfo=timezone.utc),
+    )
+    assert report["ok"] is True
+    assert report["status"] == "ready"
+
+
+def test_check_timebox_rejects_reserve_not_shorter_than_timebox() -> None:
+    text = _add_timebox(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n",
+        activation_time="2026-06-05T00:00:00Z",
+        timebox="15m",
+        reserve="20m",
+    )
+    report = gal.check_timebox_closeout(
+        text,
+        now=datetime(2026, 6, 5, 0, 1, tzinfo=timezone.utc),
+    )
+    assert report["ok"] is False
+    assert any("`Closeout reserve:` must be shorter" in issue for issue in report["issues"])
+
+
+def test_check_timebox_rejects_annotated_duration() -> None:
+    text = _add_timebox(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n## Active Operating Frame\n",
+        activation_time="2026-06-05T00:00:00Z",
+        timebox="3h (180m)",
+    )
+    report = gal.check_timebox_closeout(text)
+    assert report["ok"] is False
+    assert "invalid `Timebox:` duration" in report["issues"]
+
+
+def test_upsert_refuses_timebox_complete_before_closeout_window(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    skip_line = "skipped: host-log-not-exposed: claude jsonl path missing on this host"
+    text = _goal_text(tmp_path, date="2026-05-28")
+    text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
+    text = _add_timebox(text, activation_time="2099-01-01T00:00:00Z")
+    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
+    refusal = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
+    )
+    assert refusal["action"] == "refused"
+    assert refusal["timebox_report"]["ok"] is False
+    assert "Status: complete" not in _goal_text(tmp_path, date="2026-05-28")
+
+
+def test_upsert_allows_timebox_complete_after_deadline(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
+    skip_line = "skipped: host-log-not-exposed: claude jsonl path missing on this host"
+    text = _goal_text(tmp_path, date="2026-05-28")
+    text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
+    text = _add_timebox(text, activation_time="2000-01-01T00:00:00Z")
+    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
+    result = gal.upsert_goal(
+        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
+    )
+    assert result["action"] in ("updated", "unchanged")
+    assert result["status"] == "complete"
 
 
 # --- #233 F1 binding + F2 narration -----------------------------------------

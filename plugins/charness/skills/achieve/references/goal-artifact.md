@@ -21,6 +21,10 @@ is fixed for the first version.
 Status: draft | active | blocked | complete
 Created: <date>
 Activation: `/goal @charness-artifacts/goals/<file>.md`
+Timebox: <duration, when user supplied a work budget>
+Activation time: <ISO timestamp when the active run starts>
+Closeout reserve: <duration reserved for final proof and closeout>
+Done-early policy: continue_next_improvement
 
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
@@ -134,6 +138,17 @@ archive. Update it at activation and before/after substantial slices so a
 compacted session can continue from the top of the file without rereading the
 entire historical log. Completed detail belongs in the Slice Log, Final
 Verification, and Auto-Retro sections.
+
+## Timebox Fields
+
+Add the timebox fields only when the user gives a fixed duration. `Timebox:`,
+`Activation time:`, `Closeout reserve:`, and
+`Done-early policy: continue_next_improvement` make the budget enforceable:
+before the closeout reserve begins, completion is blocked unless the artifact
+records `No safe next slice:`, `Early close rationale:`, or a supported
+`Stop condition:` with a concrete reason under `## Final Verification`. These
+lines are plain markdown so a fresh session can continue the clock without host
+memory.
 
 When changing the goal artifact shape, update every goal producer that emits a
 new artifact, not only the primary `achieve` template. The current producer
