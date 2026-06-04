@@ -30,12 +30,15 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.18.0 (minor release: quality `nose` advisory clone-family inventory plus duplicate-detection cleanup).
+- Run `charness update` to pull 0.19.0 (minor release: `achieve` timebox continuation plus quality test-economics cleanup).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
-- No new manual migration is required beyond the normal `charness update` flow; `nose` is optional/advisory unless the operator wants clone-family refactoring candidates.
-- NEW QUALITY ADVISORY - `quality` now runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
-- NEW TOOL SUPPORT - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
-- DUPLICATE DETECTION POSTURE - the hard near-copy gate is now document-oriented (`check-doc-near-duplicates`); code clone cleanup starts advisory through `nose`, with `jscpd` still deferred until a baseline/ignore policy is justified.
+- No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
+- NEW ACHIEVE TIMEBOX MODE - when the user gives a fixed work budget, `achieve` now records `Timebox:`, `Activation time:`, `Closeout reserve:`, and `Done-early policy: continue_next_improvement`.
+- NEW ACHIEVE CLOSEOUT GATE - timeboxed goals cannot flip to `complete` before the closeout reserve window unless `## Final Verification` records a falsifiable `No safe next slice:`, `Early close rationale:`, or supported `Stop condition:` line.
+- QUALITY TEST ECONOMICS - release-only pytest coverage is separated from standing pytest for expensive release publish paths, and quality runner tests share setup helpers without reducing release-path proof.
+- Carried-forward (0.18.0) - `quality` runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
+- Carried-forward (0.18.0) - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
+- Carried-forward (0.18.0) - the hard near-copy gate is document-oriented (`check-doc-near-duplicates`); code clone cleanup starts advisory through `nose`, with `jscpd` still deferred until a baseline/ignore policy is justified.
 - NEW QUALITY RATCHET - `quality` now owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
 - NEW ROUTING - `find-skills` now routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
 - HANDOFF QUEUE - the checked-in handoff now marks the ratchet goal complete and queues the next session for #284 first, then #286, with #285 only if #286 exposes live-issue fixture brittleness.
