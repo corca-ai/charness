@@ -30,9 +30,12 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.17.0 (minor release: testability quality ratchet and reusable quality routing).
+- Run `charness update` to pull 0.18.0 (minor release: quality `nose` advisory clone-family inventory plus duplicate-detection cleanup).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
-- No new manual migration is required beyond the normal `charness update` flow.
+- No new manual migration is required beyond the normal `charness update` flow; `nose` is optional/advisory unless the operator wants clone-family refactoring candidates.
+- NEW QUALITY ADVISORY - `quality` now runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
+- NEW TOOL SUPPORT - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
+- DUPLICATE DETECTION POSTURE - the hard near-copy gate is now document-oriented (`check-doc-near-duplicates`); code clone cleanup starts advisory through `nose`, with `jscpd` still deferred until a baseline/ignore policy is justified.
 - NEW QUALITY RATCHET - `quality` now owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
 - NEW ROUTING - `find-skills` now routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
 - HANDOFF QUEUE - the checked-in handoff now marks the ratchet goal complete and queues the next session for #284 first, then #286, with #285 only if #286 exposes live-issue fixture brittleness.
@@ -65,10 +68,12 @@ real_host_required_path_globs:
 - scripts/update_tools.py
 real_host_checklist:
 - On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
-- Run `charness tool doctor tokei --json` before installing `tokei` and confirm the missing-binary state still surfaces the upstream install document URL instead of a guessed package-manager command.
-- Install `tokei` through the manifest-supported path (`charness tool install tokei --json`, `cargo install tokei`, `brew install tokei`, or an upstream release binary), then verify `tokei --version`.
-- Re-run `charness tool doctor tokei --json` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support tokei --json` and confirm it reports `skipped` with reason `integration has no support_skill_source`; `tokei` is an integration-only validation binary, not a materialized support skill.
+- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 fresh_checkout_probes:
 - ./charness --help >/dev/null
 - ./charness goal check --help >/dev/null
