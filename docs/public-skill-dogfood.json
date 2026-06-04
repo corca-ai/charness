@@ -149,7 +149,7 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-06-02",
+      "reviewed_on": "2026-06-04",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
@@ -472,7 +472,8 @@
         "The handoff skill now treats standing invariants and recurring workflow rules as spill/promote candidates: handoff may leave a short pickup pointer, but the durable rule belongs in the owning skill reference, support-runtime contract, spec, validator, or operator document.",
         "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
         "Long-goal efficiency (2026-06-01): the handoff chunked-routing auto-draft goal renderer now emits the same `## Active Operating Frame` scaffold as achieve-generated goals, with `/achieve @...` as the next shaping action before `/goal` activation. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior are unchanged; this is a generated artifact shape compatibility update. Guarded by tests/test_handoff_chunker_auto_draft.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py.",
-        "Issue #277 (2026-06-02): chunked handoff routing now treats activation-looking entries that point at `Status: active` goal artifacts as inert, just like completed goals, while preserving draft-goal activation and ordinary issue candidates. The maintained handoff scenario remains unchanged; deterministic coverage proves active goal activation filtering and live handoff backlog parsing."
+        "Issue #277 (2026-06-02): chunked handoff routing now treats activation-looking entries that point at `Status: active` goal artifacts as inert, just like completed goals, while preserving draft-goal activation and ordinary issue candidates. The maintained handoff scenario remains unchanged; deterministic coverage proves active goal activation filtering and live handoff backlog parsing.",
+        "Issue #286/#285 (2026-06-04): chunked handoff routing now has a deterministic source packet plus validated agentic work-package proposal stage before ranking, so pickup can present coherent packages instead of a ranked issue list while rejecting unknown, duplicate, missing, over-large, and broad-label-only source groups unless adapter policy allows them. The existing `handoff-adapter-bootstrap` Cautilus scenario remains unchanged because it validates routing/bootstrap, not package synthesis; deterministic coverage now lives in tests/test_handoff_chunker_agentic_packages.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py."
       ]
     },
     {

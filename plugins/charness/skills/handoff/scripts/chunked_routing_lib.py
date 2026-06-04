@@ -3,7 +3,8 @@
 Records flow:
 
     parse_handoff_entries.py    -> HandoffEntry
-    propose_merges.py           -> MergeProposal(standalone=[...], merged=[...])
+    propose_merges.py           -> deterministic MergeProposal hints
+    prepare_chunk_packet.py     -> agentic work-package proposal packet
     prepare_ranker_packet.py    -> RankerPacket (JSON for agent fill)
     draft_goal_from_chunk.py    -> consumes a selected ChunkCandidate
 
@@ -41,6 +42,7 @@ _types = _load_sibling("chunked_routing_types")
 _parser = _load_sibling("chunked_routing_parser")
 _merger = _load_sibling("chunked_routing_merger")
 _auto_draft = _load_sibling("chunked_routing_auto_draft")
+_agentic = _load_sibling("chunked_routing_agentic")
 
 # Re-exports — types & shared utility ---------------------------------------
 COMMON_NOUN_EXCLUSIONS = _types.COMMON_NOUN_EXCLUSIONS
@@ -58,6 +60,18 @@ _build_boundary_tokens = _parser._build_boundary_tokens
 # Re-exports — merger -------------------------------------------------------
 propose_merges = _merger.propose_merges
 parse_ranked_chunks = _merger.parse_ranked_chunks
+
+# Re-exports — agentic package proposal ------------------------------------
+CHUNK_PROPOSAL_PACKET_VERSION = _agentic.CHUNK_PROPOSAL_PACKET_VERSION
+DEFAULT_MAX_PACKAGE_SOURCES = _agentic.DEFAULT_MAX_PACKAGE_SOURCES
+DEFAULT_BROAD_BOUNDARY_TOKENS = _agentic.DEFAULT_BROAD_BOUNDARY_TOKENS
+CHUNK_PROPOSER_PROMPT = _agentic.CHUNK_PROPOSER_PROMPT
+CHUNK_PROPOSAL_RESPONSE_SCHEMA = _agentic.CHUNK_PROPOSAL_RESPONSE_SCHEMA
+default_chunk_policy = _agentic.default_chunk_policy
+load_chunk_policy_config = _agentic.load_chunk_policy_config
+build_chunk_proposal_packet = _agentic.build_chunk_proposal_packet
+validate_chunk_proposal_response = _agentic.validate_chunk_proposal_response
+materialize_chunk_proposal_response = _agentic.materialize_chunk_proposal_response
 
 # Re-exports — auto-draft ---------------------------------------------------
 USER_ACCEPTANCE_PLACEHOLDER = _auto_draft.USER_ACCEPTANCE_PLACEHOLDER

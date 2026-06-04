@@ -9,11 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 - agentic handoff work-package proposal and stable
-  fixture policy for #286/#285.
-- Next action: inspect the current handoff chunker parser/proposer/ranker tests
-  and implement deterministic source packets plus validated agentic package
-  response support without live issue number coupling.
+- Current slice: Slice 3 - direct-commit closeout carrier rehearsal for #288.
+- Next action: inspect `issue_tool.py validate-closeout-draft`, closeout
+  carrier parsing, and issue skill instructions; add a pre-push direct-commit
+  rehearsal path without claiming post-push remote issue state.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -129,8 +128,8 @@ and verification steps prove the carrier.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Preflight the quality/routing baseline and inspect #293 impact | Avoid building efficiency work on an unknown red proof surface | Status/open-issue snapshot, #293 independence or blocker note, changed-surface obligations | planned |
-| 2 | Implement agentic handoff work-package proposal and stable fixture policy for #286/#285 | This fixes the entry point that chooses future work and removes live issue churn from tests | Source packet/proposal validator tests, fixture-owned issue data, handoff e2e package rendering | planned |
+| 1 | Preflight the quality/routing baseline and inspect #293 impact | Avoid building efficiency work on an unknown red proof surface | Status/open-issue snapshot, #293 independence or blocker note, changed-surface obligations | done |
+| 2 | Implement agentic handoff work-package proposal and stable fixture policy for #286/#285 | This fixes the entry point that chooses future work and removes live issue churn from tests | Source packet/proposal validator tests, fixture-owned issue data, handoff e2e package rendering | done |
 | 3 | Add direct-commit closeout carrier rehearsal for #288 | Safer closeout reduces push/recommit/CI-watch waste for the rest of the bundle | Carrier rehearsal command/tests, unchanged existing validation behavior, issue skill instruction update | planned |
 | 4 | Add Achieve closeout publication / auto-retro disposition adapter seam for #287 | The broader policy should consume the concrete closeout rehearsal contract | Adapter contract/resolver/tests, lifecycle wording, missing-adapter fallback, goal validation | planned |
 | 5 | Make announcement dual-output delivery chaining executable or draft-only for #289 | Delivery claims should fail fast or stay draft-only instead of surprising operators late | Adapter example/runner or resolver updates, thread-reply tests, single-output compatibility | planned |
@@ -183,6 +182,20 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 - Off-goal findings: #293 remains open and out of scope; #184 remains open and out of scope.
 - Lessons carried forward: Start Slice 2 with handoff package synthesis plus fixture stability, and keep deterministic source-ID validation as the guardrail around agentic grouping.
 - Metrics: Host/thread goal tracker active; no provider-safe per-slice token window recorded for this short preflight.
+
+### Slice 2: Agentic handoff packages and stable fixtures
+
+- Objective: Implement the #286/#285 handoff package proposal stage so pickup can group work into coherent packages and tests stop depending on live issue numbers.
+- Why this approach: This is the entry point for future work selection; package synthesis must happen before ranking, with deterministic validation around agent judgment.
+- Commits: pending commit for Slice 2.
+- What changed: Added chunked_routing_agentic.py and chunked_routing_agentic_policy.py for source packets, adapter chunk policy, response validation, and materialization; added prepare_chunk_packet.py CLI; re-exported the API from chunked_routing_lib.py; updated chunked-routing references, adapter contract/example, CLI contract, e2e tests, dogfood registry, and plugin mirror.
+- Alternatives rejected: Rejected replacing propose_merges outright because existing scripts/tests depend on it and overlap clusters remain useful deterministic hints. Rejected pinning current live issue numbers in tests; new coverage uses synthetic source IDs and current-live smoke only as non-pinned validation evidence.
+- Targeted verification: Focused tests: pytest -q tests/test_handoff_chunker_agentic_packages.py tests/test_handoff_chunker_cli_contract.py tests/test_handoff_chunker_ranker_packet.py tests/test_handoff_chunker_end_to_end.py tests/test_handoff_chunker_parse.py tests/test_handoff_chunker_issue_source.py tests/test_handoff_chunker_merge_proposer.py -> 110 passed. Ruff full target passed. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review passed sync, packaging, docs, cautilus proof validator, skill validators, dogfood, ruff, length, attention visibility, and orphan guard. Current live backlog package response validated ok and materialized packages for #286/#285 and #288/#287 without pinning tests to issue numbers.
+- Test duplication pressure: Added tests/test_handoff_chunker_agentic_packages.py and expanded CLI/e2e tests; length gate passes after splitting policy into chunked_routing_agentic_policy.py. Broad pytest intentionally skipped at slice closeout per run_slice_closeout --skip-broad-pytest; final goal closeout still owns broad proof.
+- Critique: Slice critique folded: agentic grouping can hallucinate, so validation requires source coverage, no duplicates, max package size, non-empty rationale/unlock, and broad-label-only rejection unless adapter policy allows it. Public-skill dogfood review recorded no Cautilus scenario change because existing handoff-adapter-bootstrap evaluates routing/bootstrap, while deterministic tests cover package synthesis.
+- Off-goal findings: #293 remains open; this slice did not touch its quality/testability files. #184 remained out of implementation scope and only appeared as a validated standalone package in live backlog smoke.
+- Lessons carried forward: Keep work-package synthesis before ranking; use adapter policy for repo-specific broad labels; do not promote live issue numbers into deterministic tests.
+- Metrics: Usage episode emitted by slice closeout: slice-closeout-5c9334d6c2c748a790fc5d5368bc9873.
 
 ## Context Sources
 

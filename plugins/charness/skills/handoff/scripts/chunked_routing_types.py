@@ -3,7 +3,8 @@
 Records flow:
 
     parse_handoff_entries.py    -> HandoffEntry
-    propose_merges.py           -> MergeProposal(standalone=[...], merged=[...])
+    propose_merges.py           -> deterministic MergeProposal hints
+    prepare_chunk_packet.py     -> agentic work-package proposal packet
     prepare_ranker_packet.py    -> RankerPacket (JSON for agent fill)
     draft_goal_from_chunk.py    -> consumes a selected ChunkCandidate
 

@@ -3,11 +3,13 @@
 Feeds the 2026-05-28 handoff snapshot through the full chain:
 
     parse_handoff_entries
-      -> propose_merges
-        -> prepare_ranker_packet
-          -> consume known-good filled packet
-            -> draft_goal_from_chunk
-              -> check_goal_artifact.check_goal (ok at status draft)
+      -> propose_merges (deterministic hints)
+        -> prepare_chunk_packet
+          -> validate/materialize known-good package response
+            -> prepare_ranker_packet
+              -> consume known-good ranking
+                -> draft_goal_from_chunk
+                  -> check_goal_artifact.check_goal (ok at status draft)
 
 Asserts the auto-drafted goal artifact passes check_goal_artifact and
 carries the right standalone-vs-merged shape, single-prefix heading,
@@ -74,30 +76,53 @@ def goal_lib():
 def test_end_to_end_pipeline_produces_valid_goal_artifact(
     lib, goal_lib, tmp_path
 ):
-    """Full chain on the real fixture: parse -> propose_merges -> ranker
-    packet -> known-good filled response -> validate -> materialize ->
-    draft selected chunk -> check_goal."""
+    """Full chain on the real fixture: parse -> merge hints -> agentic
+    packages -> ranker packet -> ranking -> draft selected chunk -> check_goal."""
     handoff_text = FIXTURE_PATH.read_text(encoding="utf-8")
 
     # Step 1: parse.
     entries = lib.parse_handoff_entries(handoff_text)
     assert len(entries) == 7
 
-    # Step 2: propose merges.
-    proposal = lib.propose_merges(entries)
-    assert len(proposal.standalone) == 7
+    # Step 2: prepare deterministic merge hints.
+    hints = lib.propose_merges(entries)
+    assert len(hints.standalone) == 7
     # The real fixture has no merge candidates (slice-2 negative-merge
     # invariant); the e2e proof still runs because the ranker handles
     # any merge count.
+    assert len(hints.all_candidates()) == 7
+
+    # Step 3: build and fill agentic package packet.
+    chunk_packet = lib.build_chunk_proposal_packet(entries, merge_proposal=hints)
+    assert chunk_packet["version"] == lib.CHUNK_PROPOSAL_PACKET_VERSION
+    package_response = {
+        "chunks": [
+            {
+                "label": f"fixture-entry-{entry.index}",
+                "source_ids": [entry.index],
+                "objective_summary": entry.title,
+                "rationale": "Standalone package: no honest fixture merge exists.",
+                "downstream_unlock": "Keeps the fixture's negative-merge invariant explicit.",
+                "excluded_source_ids": [
+                    other.index for other in entries if other.index != entry.index
+                ],
+                "basis_boundary_tokens": [],
+            }
+            for entry in entries
+        ]
+    }
+    validation = lib.validate_chunk_proposal_response(package_response, entries)
+    assert validation["ok"] is True, validation["issues"]
+    proposal = lib.materialize_chunk_proposal_response(package_response, entries)
     candidates = proposal.all_candidates()
     assert len(candidates) == 7
 
-    # Step 3: build ranker packet.
+    # Step 4: build ranker packet.
     packet = lib.build_ranker_packet(proposal)
     assert packet["version"] == lib.RANKER_PACKET_VERSION
     assert packet["ranker_prompt"] == lib.RANKER_PROMPT
 
-    # Step 3.5: simulate the agent filling the packet. The reasoning is
+    # Step 4.5: simulate the agent filling the packet. The reasoning is
     # written in the generative-sequence shape the prompt requires (names
     # the unlock relation, not a restatement of objective_summary).
     labels = [candidate.label for candidate in candidates]
@@ -121,11 +146,11 @@ def test_end_to_end_pipeline_produces_valid_goal_artifact(
         ]
     }
 
-    # Step 3.9: validate the simulated response.
+    # Step 4.9: validate the simulated response.
     validation = lib.validate_ranker_response(response, proposal)
     assert validation["ok"] is True, validation["issues"]
 
-    # Step 4: materialize ranked chunks.
+    # Step 5: materialize ranked chunks.
     ranked = lib.parse_ranked_chunks(response, proposal)
     assert len(ranked) == 7
     for chunk in ranked:
@@ -134,7 +159,7 @@ def test_end_to_end_pipeline_produces_valid_goal_artifact(
         # without re-running the ranker.
         assert chunk.reasoning
 
-    # Step 5: pick a chunk (the first ranked one) and draft.
+    # Step 6: pick a chunk (the first ranked one) and draft.
     selected = ranked[0].candidate
     chunk_payload = json.dumps(selected.to_dict())
     result = subprocess.run(
@@ -196,7 +221,21 @@ def test_end_to_end_trigger_then_pipeline_matches_user_flow(lib):
         "read handoff.md and fix #233",
     )
     entries = lib.parse_handoff_entries(handoff_text)
-    proposal = lib.propose_merges(entries)
+    response = {
+        "chunks": [
+            {
+                "label": f"trigger-entry-{entry.index}",
+                "source_ids": [entry.index],
+                "objective_summary": entry.title,
+                "rationale": "Trigger smoke keeps each fixture source standalone.",
+                "downstream_unlock": "Proves the chunker reaches package candidates.",
+                "basis_boundary_tokens": [],
+            }
+            for entry in entries
+        ]
+    }
+    assert lib.validate_chunk_proposal_response(response, entries)["ok"] is True
+    proposal = lib.materialize_chunk_proposal_response(response, entries)
     for message in chunk_messages:
         assert lib.should_fire_chunker(message) is True
         # When the chunker fires, the pipeline reaches a non-empty

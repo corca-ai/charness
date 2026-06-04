@@ -30,6 +30,14 @@ Optional shared provenance:
 - `preset_version`
 - `customized_from`
 
+Optional chunk policy:
+
+- `chunk_policy.max_package_sources`: positive integer; default `5`
+- `chunk_policy.broad_boundary_tokens`: label/path tokens that cannot be the
+  sole merge basis by default
+- `chunk_policy.allowed_broad_boundary_tokens`: repo-local broad tokens that are
+  meaningful enough to allow as a merge basis
+
 ## Artifact Rule
 
 The durable handoff artifact filename is fixed to handoff.md and the

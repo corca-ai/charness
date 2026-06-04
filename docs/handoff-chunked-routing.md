@@ -192,8 +192,8 @@ class MergeProposal:
 
 ## Algorithm
 
-The chunker runs as a five-step pipeline. Steps 1, 2, 4, 5 are scripts;
-step 3 is the agent.
+The chunker runs as a six-step pipeline. Steps 1, 2, 3, 5, 6 are scripts;
+step 4 is the agent.
 
 1. **Parse.** [`parse_handoff_entries.py`](../skills/public/handoff/scripts/parse_handoff_entries.py) reads the resolved handoff
    artifact, finds the `## Next Session` section, splits on numbered
@@ -205,13 +205,14 @@ step 3 is the agent.
    treated as execution constraints, not standalone choices. Additional
    residual-work sections (e.g., `## Discuss`) are read only if the
    adapter declares them; default scope is `## Next Session` only.
-2. **Propose merges.** [`propose_merges.py`](../skills/public/handoff/scripts/propose_merges.py) consumes the entry list,
+2. **Prepare deterministic hints.** [`propose_merges.py`](../skills/public/handoff/scripts/propose_merges.py) consumes the entry list,
    computes pairwise `boundary_tokens` overlap, and emits a
    `MergeProposal`. The standalone list always contains one
    `ChunkCandidate` per entry. The merged list contains additional
    multi-entry candidates whose member entries share at least one
    non-trivial token, where **non-trivial** is defined below under
-   "Boundary tokenization".
+   "Boundary tokenization". These overlap candidates are hints for the
+   package proposer, not the final list shown to the user.
 
 ### Boundary Tokenization
 
@@ -238,19 +239,29 @@ Slice-4 merge fixture must include a negative case (entries 2 and 7
 of the current handoff, which both mention bare `tests` and
 `scripts` but share no deeper path) that asserts they do **not**
 merge.
-3. **Rank.** [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) writes a JSON packet containing
-   the `MergeProposal` plus the canonical generative-sequence prompt.
+3. **Propose work packages.** [`prepare_chunk_packet.py`](../skills/public/handoff/scripts/prepare_chunk_packet.py) writes a JSON packet containing
+   source IDs, overlap hints, adapter chunk policy, prompt, and response schema.
+   The agent fills a `chunks` array with coherent work packages rather than a
+   ranked issue list. Each package carries source IDs, excluded nearby IDs when
+   relevant, objective, rationale, downstream unlock, and basis boundary tokens
+   when tokens justify a merge. `validate_chunk_proposal_response` rejects
+   unknown, duplicated, missing, or over-large sources, empty rationale, and
+   broad-label-only merges unless adapter policy explicitly allows that label;
+   `materialize_chunk_proposal_response` converts the validated packages into a
+   `MergeProposal`.
+4. **Rank.** [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) writes a JSON packet containing
+   the package `MergeProposal` plus the canonical generative-sequence prompt.
    The agent fills it, producing a list of `RankedChunk` records (one
    per standalone + one per merged candidate; agent picks which to
    present). The packet's JSON schema is asserted by a round-trip
    fixture so prompt-shaped drift fails loudly.
-4. **Present.** The handoff skill renders the ranked list inline in the
+5. **Present.** The handoff skill renders the ranked list inline in the
    conversation: one chunk per line with rank, label, objective summary,
-   and the 2–3 line generative-sequence reasoning. Merged candidates are
-   labelled `(merged: <reason>)`. The user picks one chunk (or none) and
+   and the 2–3 line generative-sequence reasoning. Work-package candidates are
+   labelled `(package: <reason>)`. The user picks one chunk (or none) and
    may ask "why not chunk X?" in the same turn; the agent answers from
    the already-rendered reasoning.
-5. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py) calls
+6. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py) calls
    [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py)
    to write the goal artifact at
    `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at status
@@ -381,7 +392,7 @@ gate enforces the second direction mechanically.
 | 5 | `<repo-root>/tests/test_handoff_chunker_auto_draft.py` | selected `ChunkCandidate` → drafted goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py); portability section content matches the placeholder-or-seeded rule; Slice Plan data row count is 0. |
 | 6 | `<repo-root>/tests/test_handoff_skill_md_budget.py` | `wc -l skills/public/handoff/SKILL.md` ≤ 161. |
 | 7 (trigger) | `<repo-root>/tests/test_handoff_chunker_trigger.py` | the 7-row fixture above; parametrize over each row. |
-| 7 (e2e) | `<repo-root>/tests/test_handoff_chunker_end_to_end.py` | feed the 2026-05-28 handoff snapshot through parse → propose_merges → render-prompt → consume known-good packet → draft; assert final goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py). |
+| 7 (e2e) | `<repo-root>/tests/test_handoff_chunker_end_to_end.py` | feed the 2026-05-28 handoff snapshot through parse → merge hints → agentic package packet → validated package response → ranker packet → draft; assert final goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py). |
 
 ## Stop Conditions
 

@@ -2,9 +2,9 @@
 input convention and fail loudly on bad input.
 
 Pins the regression hit while picking up a session via chunked routing:
-- each JSON-consuming stage (propose -> prepare -> draft) accepts a uniform
+- each JSON-consuming stage (propose -> chunk-packet -> prepare -> draft) accepts a uniform
   ``--input``/``-i`` plus its legacy alias and defaults to stdin, so
-  ``parse | propose | prepare`` composes without a temp file or per-stage
+  ``parse | propose | chunk-packet | prepare`` composes without a temp file or per-stage
   ``--help`` lookup;
 - a malformed input fails at the stage that read it (structured stderr +
   exit 2), instead of masquerading as an opaque JSONDecodeError downstream.
@@ -22,6 +22,7 @@ SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
 PARSE = SCRIPTS / "parse_handoff_entries.py"
 PROPOSE = SCRIPTS / "propose_merges.py"
 PREPARE = SCRIPTS / "prepare_ranker_packet.py"
+CHUNK_PACKET = SCRIPTS / "prepare_chunk_packet.py"
 DRAFT = SCRIPTS / "draft_goal_from_chunk.py"
 HANDOFF = REPO_ROOT / "docs" / "handoff.md"
 
@@ -84,6 +85,24 @@ def test_prepare_reads_stdin_by_default(proposal_json):
     assert json.loads(res.stdout)["version"] >= 1
 
 
+def test_prepare_chunk_packet_reads_entries_stdin_by_default(entries_json):
+    res = _run([CHUNK_PACKET], stdin=entries_json)
+    assert res.returncode == 0, res.stderr
+    payload = json.loads(res.stdout)
+    assert payload["version"] >= 1
+    assert "sources" in payload
+    assert "chunk_proposer_prompt" in payload
+
+
+@pytest.mark.parametrize("flag", ["--input", "-i", "--entries"])
+def test_prepare_chunk_packet_input_flags_are_equivalent(entries_json, tmp_path, flag):
+    entries_file = tmp_path / "entries.json"
+    entries_file.write_text(entries_json, encoding="utf-8")
+    res = _run([CHUNK_PACKET, flag, entries_file])
+    assert res.returncode == 0, res.stderr
+    assert "sources" in json.loads(res.stdout)
+
+
 @pytest.mark.parametrize("flag", ["--input", "--merge-proposal"])
 def test_prepare_input_flag_alias(proposal_json, tmp_path, flag):
     proposal_file = tmp_path / "proposal.json"
@@ -94,6 +113,7 @@ def test_prepare_input_flag_alias(proposal_json, tmp_path, flag):
 
 @pytest.mark.parametrize("stage,script", [
     ("propose_merges", PROPOSE),
+    ("prepare_chunk_packet", CHUNK_PACKET),
     ("prepare_ranker_packet", PREPARE),
     ("draft_goal_from_chunk", DRAFT),
 ])

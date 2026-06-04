@@ -4,3 +4,9 @@ language: en
 output_dir: charness-artifacts/handoff
 preset_id: portable-defaults
 customized_from: portable-defaults
+chunk_policy:
+  max_package_sources: 5
+  broad_boundary_tokens:
+    - label/enhancement
+    - label/bug
+  allowed_broad_boundary_tokens: []

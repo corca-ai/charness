@@ -57,8 +57,8 @@ prose and that fixture is the prose's bug.
 
 ## Pipeline
 
-The chunker runs as a five-step pipeline. Steps 1, 2, 4, 5 are scripts;
-step 3 is the active agent.
+The chunker runs as a six-step pipeline. Steps 1, 2, 3, 5, 6 are scripts;
+step 4 is the active agent.
 
 1. **Parse (+ live backlog).** Run
    [`parse_handoff_entries.py`](../scripts/parse_handoff_entries.py)
@@ -80,15 +80,27 @@ step 3 is the active agent.
    that entry**, not double-counted, so the chunker surfaces the open issues
    the hand-written `## Next Session` omitted without duplicating the ones it
    names.
-2. **Propose merges.** Pipe the parsed entries to
+2. **Prepare deterministic hints.** Pipe the parsed entries to
    [`propose_merges.py`](../scripts/propose_merges.py). The proposer
    computes pairwise `boundary_tokens` overlap and emits a
    `MergeProposal` whose `standalone` list always carries one
    `ChunkCandidate` per entry; the `merged` list is additive (zero or
-   more multi-entry candidates per shared-boundary cluster).
-3. **Rank.** Run
+   more multi-entry candidates per shared-boundary cluster). These are
+   overlap hints, not the final user-facing package list.
+3. **Propose work packages.** Run
+   [`prepare_chunk_packet.py`](../scripts/prepare_chunk_packet.py)
+   against the parsed entries. The packet carries source IDs, overlap hints,
+   adapter chunk policy, prompt, and schema. The active agent fills `chunks`
+   with coherent work packages: included source IDs, excluded nearby IDs when
+   relevant, objective, rationale, downstream unlock, and basis boundary tokens
+   when tokens justify a merge. The parent validates the response with
+   `chunked_routing_lib.validate_chunk_proposal_response`, then materializes it
+   with `materialize_chunk_proposal_response`. Validation rejects unknown,
+   duplicated, missing, or over-large source groups, empty rationale, and
+   broad-label-only merges unless adapter policy explicitly allows that label.
+4. **Rank.** Run
    [`prepare_ranker_packet.py`](../scripts/prepare_ranker_packet.py)
-   against the proposal. The script emits a self-contained JSON
+   against the materialized package proposal. The script emits a self-contained JSON
    packet (version + merge proposal + canonical Christopher Alexander
    generative-sequence prompt + response schema). The active agent
    fills the `ranked_chunks` array (one entry per candidate with
@@ -97,15 +109,15 @@ step 3 is the active agent.
    `chunked_routing_lib.validate_ranker_response` on the filled
    payload; a structural failure (missing label, duplicate rank,
    empty reasoning, etc.) refuses materialization.
-4. **Present.** Render the ranked list inline in the conversation:
+5. **Present.** Render the ranked list inline in the conversation:
    one chunk per line with rank, label, objective summary, and the
    pre-computed reasoning. Merged candidates carry a
-   `(merged: <shared boundary>)` marker so the user sees the basis
+   `(package: <rationale>)` marker so the user sees the basis
    for the bundle proposal. Ask the user to pick a chunk (or to
    decline). A follow-up question like "why not chunk N?" must be
    answered from the already-rendered reasoning — do not re-invoke
    the ranker.
-5. **Draft.** On selection, pipe the chosen `ChunkCandidate` JSON to
+6. **Draft.** On selection, pipe the chosen `ChunkCandidate` JSON to
    [`draft_goal_from_chunk.py`](../scripts/draft_goal_from_chunk.py).
    The drafter writes a goal artifact at
    `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at
