@@ -103,6 +103,15 @@ slice and so do not require a `follow-up:` field:
 `same class, diagnostic-only for this slice`;
 `intentional plain-text or non-rendering boundary`.
 
+For the `abstraction up` axis, `same class, diagnostic-only for this slice`
+means an inspected no-action finding, not deferred ownership. If the entry names
+unresolved repo-level or structural work, record one owner instead: bundle the
+fix now, mark an intentional boundary with reason, give a proof-backed
+no-action reason, or add a valid `follow-up:` identifier. The debug artifact
+validator blocks abstraction-up diagnostic-only entries that describe unresolved
+structural work without a follow-up, and blocks entries that lack a no-action
+reason.
+
 For schema alignment across skills, see
 `../../critique/references/counterweight-triage.md` (the `action: file-issue`
 field maps to a `follow-up:` URL here) and

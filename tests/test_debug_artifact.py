@@ -358,3 +358,115 @@ def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path:
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolved_work(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- abstraction up: messenger side-effect durability | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only | deferred repo-level structural work"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "abstraction-up diagnostic-only" in result.stderr
+    assert "follow-up:" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_reason(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- abstraction-up axis: broad closeout posture | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "proof-backed no-action reason" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_action_reason(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- abstraction up: broad closeout posture | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only | no action needed because the existing "
+            "final closeout gate already owns this boundary"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_followup(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- abstraction up: messenger side-effect durability | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only | deferred repo-level structural work | "
+            "follow-up: https://github.com/corca-ai/charness/issues/294"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_preserves_same_layer_diagnostic_only_without_reason(tmp_path: Path) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- same layer: local helper naming | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_does_not_read_next_star_bullet_as_abstraction_up_reason(
+    tmp_path: Path,
+) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "- abstraction up: broad closeout posture | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only\n"
+            "* same layer: other checked surface | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: no action needed because coverage is distinct"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "proof-backed no-action reason" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_without_reason(
+    tmp_path: Path,
+) -> None:
+    artifact = valid_current_artifact().replace(
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        (
+            "* abstraction up: broad closeout posture | "
+            "decision: same class, diagnostic-only for this slice | "
+            "proof: static scan only"
+        ),
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "proof-backed no-action reason" in result.stderr
