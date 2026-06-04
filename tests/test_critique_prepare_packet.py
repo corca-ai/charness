@@ -269,6 +269,13 @@ def test_validate_packet_catches_kind_drift() -> None:
         "prepared_for": "x",
         "changed_ref": None,
         "adapter_path": None,
+        "reviewer_tier_evidence": {
+            "requested_tier": "high-leverage",
+            "requested_spawn_fields": {},
+            "host_exposure_state": "pending-parent-spawn",
+            "application_state": "unverified-by-packet",
+            "instruction": "record host state",
+        },
         "sections": [],
         "section_count": 0,
         "ok": True,
@@ -286,6 +293,13 @@ def test_validate_packet_catches_section_count_mismatch() -> None:
         "prepared_for": "x",
         "changed_ref": None,
         "adapter_path": None,
+        "reviewer_tier_evidence": {
+            "requested_tier": "high-leverage",
+            "requested_spawn_fields": {},
+            "host_exposure_state": "pending-parent-spawn",
+            "application_state": "unverified-by-packet",
+            "instruction": "record host state",
+        },
         "sections": [{
             "id": "s", "title": "S", "content_kind": "static",
             "producer": "p", "content": "c", "ok": True, "errors": [],
@@ -306,6 +320,13 @@ def test_validate_packet_catches_ok_lying_about_section_states() -> None:
         "prepared_for": "x",
         "changed_ref": None,
         "adapter_path": None,
+        "reviewer_tier_evidence": {
+            "requested_tier": "high-leverage",
+            "requested_spawn_fields": {},
+            "host_exposure_state": "pending-parent-spawn",
+            "application_state": "unverified-by-packet",
+            "instruction": "record host state",
+        },
         "sections": [{
             "id": "s", "title": "S", "content_kind": "static",
             "producer": "p", "content": "", "ok": False, "errors": ["boom"],
@@ -333,7 +354,38 @@ packet_sections:
     assert "Alpha Section" in md
     assert "alpha-body" in md
     assert "Critique Prepare Packet" in md
+    assert "Reviewer Tier Evidence" in md
     assert "**Changed ref**: `HEAD`" in md
+
+
+def test_packet_records_adapter_reviewer_tier_evidence(tmp_path: Path) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+reviewer_tiers:
+  high-leverage:
+    model: gpt-5.5
+    reasoning_effort: medium
+    service_tier: priority
+packet_sections:
+  - id: only
+    title: Only
+    content_kind: static
+    content: body
+""")
+    adapter = load_adapter(tmp_path)
+    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
+    evidence = packet["reviewer_tier_evidence"]
+    assert evidence["requested_tier"] == "high-leverage"
+    assert evidence["requested_spawn_fields"] == {
+        "model": "gpt-5.5",
+        "reasoning_effort": "medium",
+        "service_tier": "priority",
+    }
+    assert evidence["host_exposure_state"] == "pending-parent-spawn"
+    md = render_markdown(packet)
+    assert "model=gpt-5.5" in md
+    assert "pending-parent-spawn" in md
 
 
 def test_write_packet_emits_both_artifacts(tmp_path: Path) -> None:

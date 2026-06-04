@@ -20,6 +20,7 @@ from typing import Any
 PACKET_KIND = "charness.critique_prepare_packet"
 PACKET_VERSION = 1
 PRODUCER_TIMEOUT_SECONDS = 60
+DEFAULT_REVIEWER_TIER = "high-leverage"
 
 
 def _now_iso() -> str:
@@ -122,9 +123,25 @@ def build_packet(
         "prepared_for": prepared_for,
         "changed_ref": changed_ref,
         "adapter_path": _relative_adapter_path(adapter.get("path"), repo_root),
+        "reviewer_tier_evidence": reviewer_tier_evidence(data),
         "sections": sections,
         "section_count": len(sections),
         "ok": all_ok,
+    }
+
+
+def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
+    reviewer_tiers = adapter_data.get("reviewer_tiers", {}) or {}
+    requested_fields = reviewer_tiers.get(DEFAULT_REVIEWER_TIER, {}) or {}
+    return {
+        "requested_tier": DEFAULT_REVIEWER_TIER,
+        "requested_spawn_fields": dict(requested_fields),
+        "host_exposure_state": "pending-parent-spawn",
+        "application_state": "unverified-by-packet",
+        "instruction": (
+            "Review artifacts must record requested_fields_sent, metadata-hidden, "
+            "host-defaulted, unsupported, or applied only when host-confirmed."
+        ),
     }
 
 
@@ -152,6 +169,8 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append(f"- **Adapter**: `{packet['adapter_path']}`")
     lines.append(f"- **Sections**: {packet['section_count']}")
     lines.append(f"- **Overall ok**: {packet['ok']}")
+    lines.append("")
+    lines.extend(render_reviewer_tier_evidence(packet.get("reviewer_tier_evidence")))
     lines.append("")
     if not packet["sections"]:
         lines.append(
@@ -182,6 +201,24 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append("```")
         lines.append("")
     return "\n".join(lines)
+
+
+def render_reviewer_tier_evidence(raw: object) -> list[str]:
+    evidence = raw if isinstance(raw, dict) else {}
+    fields = evidence.get("requested_spawn_fields", {})
+    if isinstance(fields, dict) and fields:
+        rendered_fields = ", ".join(f"{key}={value}" for key, value in sorted(fields.items()))
+    else:
+        rendered_fields = "none"
+    return [
+        "## Reviewer Tier Evidence",
+        "",
+        f"- **Requested tier**: `{evidence.get('requested_tier', '')}`",
+        f"- **Requested spawn fields**: `{rendered_fields}`",
+        f"- **Host exposure state**: `{evidence.get('host_exposure_state', '')}`",
+        f"- **Application state**: `{evidence.get('application_state', '')}`",
+        f"- **Instruction**: {evidence.get('instruction', '')}",
+    ]
 
 
 def write_packet(

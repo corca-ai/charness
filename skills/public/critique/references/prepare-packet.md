@@ -75,6 +75,13 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
   "prepared_for": "<short label: commit range, branch, or free text>",
   "changed_ref": "<git commit or endpoint-diff range, or null>",
   "adapter_path": "<repo-relative path or null>",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {"model": "..."},
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "<record host state in the review artifact>"
+  },
   "sections": [
     {
       "id": "<slug>",
@@ -106,6 +113,11 @@ Rules:
 - Envelope-level `ok: false` does not block packet emission; reviewers
   still read what was produced and judge whether the missing section
   changes their next move.
+- `reviewer_tier_evidence` records the adapter-requested reviewer tier and
+  spawn fields before subagents are spawned. The packet cannot prove host
+  application; the parent review artifact records `requested_fields_sent`,
+  `metadata-hidden`, `host-defaulted`, `unsupported`, or `applied` only when
+  host-confirmed.
 
 ## Section Types
 
@@ -153,7 +165,9 @@ When `critique` runs and the repo's adapter declares ≥1 packet section:
 1. The fresh-eye reviewer subagents receive the packet content
    (markdown render) before broad repo sampling. The parent passes the
    packet path or the packet body in the angle/counterweight prompts.
-2. The critique closeout records `Packet Consumed: <path>`. The
+2. The critique closeout records `Packet Consumed: <path>` plus reviewer-tier
+   evidence: requested tier, requested spawn fields, host exposure state, and
+   applied-evidence boundary. The
    conditional hard-block is workflow-prescriptive: the rule applies
    only when the adapter declares packet sections, and enforcement
    lives in the *caller skill's* closeout validator (e.g., a future

@@ -64,6 +64,12 @@ Record the fresh-eye satisfaction context in the review result:
 - `blocked <host-signal>`: required delegation could not run; include the
   concrete missing tool, host refusal, policy block, or exhausted budget
 
+Also record reviewer-tier evidence in the parent closeout artifact: requested
+tier, requested spawn fields from the adapter, host exposure state
+(`requested_fields_sent`, `metadata-hidden`, `host-defaulted`, or
+`unsupported`), and `applied` only when the host confirms application. Sent
+fields alone are not proof that the provider applied them.
+
 Parent sessions that never spawned a fresh-eye reviewer cannot claim
 `parent-delegated`. They must run the capability check below before calling the
 canonical path blocked.

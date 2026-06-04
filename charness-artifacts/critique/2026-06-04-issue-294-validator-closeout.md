@@ -8,6 +8,13 @@ Fresh-eye code critique ran before the direct-commit closeout for issue #294.
 
 parent-delegated
 
+## Reviewer Tier Evidence
+
+- **Requested tier**: `high-leverage`
+- **Requested spawn fields**: `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`
+- **Host exposure state**: `requested_fields_sent`
+- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`
+
 ## Packet Consumed
 
 charness-artifacts/critique/2026-06-04-111910-packet.md
