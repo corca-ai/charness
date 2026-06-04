@@ -224,6 +224,9 @@ def seed_quality_python_binary_stub(target_dir: Path) -> None:
                 '  echo "quality success output from pytest"',
                 "  exit 0",
                 "fi",
+                'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
+                "  exit 0",
+                "fi",
                 f"exec {real_python!r} \"$@\"",
                 "",
             ]
