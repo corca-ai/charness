@@ -1,0 +1,287 @@
+# Achieve Goal: Portable skill contract quality and routing discipline
+
+Status: draft
+Created: 2026-06-04
+Activation: `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: before activation.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`,
+  then start Slice 1 with `find-skills` routing and `debug`/`quality` evidence
+  before any implementation.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Make Charness public/support skills portable and easier to operate by improving
+skill text quality as a first-class contract: remove repo-local history leakage
+and other non-portable wording from skill packages, strengthen detection so
+future full-surface quality passes catch conceptual/text-quality regressions
+before humans do, and tighten `achieve` coordination so implementation/debug
+work routes through the owning skills instead of being absorbed by the goal
+operator.
+
+The goal starts from the RCA in
+`charness-artifacts/debug/2026-06-04-portable-skill-contract-quality-and-routing.md`:
+the previous long goal mostly used `achieve` correctly as a scratchpad, but it
+did not explicitly invoke `impl` for implementation slices or `debug` for the
+fresh-eye blocker; the portable skill surface also still contains concrete
+repo-local issue anchors and broader skill-text quality smells after recent
+broad skill quality review.
+
+## Non-Goals
+
+- Do not resolve unrelated open product or mutation work in this goal unless a
+  validator added here directly exposes the same invariant failure.
+- Do not remove issue-number syntax from user-facing issue workflows where it is
+  the actual domain object. Generic placeholders such as `#N` or synthetic
+  fixture issue numbers are allowed when the surrounding example is portable and
+  not tied to `corca-ai/charness`.
+- Do not preserve historical rationale, repo-local chronology, overfull
+  reference sprawl, or exact incident wording in portable skill packages merely
+  because it explains how a rule originated. If history is still useful, move it
+  to a repo-local artifact or convert it into invariant-first wording.
+- Do not claim installed-host cleanup until the plugin/export propagation path is
+  synced and verified.
+
+## Boundaries
+
+- Scope covers `skills/public/`, `skills/support/`, their checked-in plugin
+  mirrors, skill validators, quality inventories, handoff/achieve coordination
+  contracts, and durable artifacts needed to prove the change.
+- Portable skill text quality covers at least: concrete repo issue anchors,
+  repo-local chronology, stale incident rationale, hidden host assumptions,
+  missing reference/index discoverability, duplicated workflow instructions,
+  SKILL.md core overfill, exact-prose source guards, and unclear ownership
+  between public skill, references, scripts, adapters, and quality gates.
+- Concrete repo issue anchors are one disallowed subtype: examples include
+  `#123`, `issue-123`, `issues/123`, and `corca-ai/charness#123` when they name
+  real Charness history rather than a generic placeholder.
+- Portable skill source may describe issue workflows, close keywords, and
+  issue-number parameters, but examples must use placeholders or synthetic
+  adapter fixtures that cannot be mistaken for Charness project history.
+- `achieve` remains a goal operator. During pursuit it should use `find-skills`
+  to decide the owning skill at real phase boundaries, not carry a hard-coded
+  exhaustive skill map. Add short anchors only where this RCA proves the boundary
+  is easy to miss, especially implementation -> `impl` and bug/RCA work ->
+  `debug`.
+- Prefer validators and inventories over prose-only policy. Any manual exception
+  must be machine-readable, narrow, and reviewed during closeout.
+- Preserve generated-surface discipline: mutate source, sync plugin mirrors,
+  verify, then publish/commit.
+
+## User Acceptance
+
+- A user can run one documented quality command and see a skill text quality
+  report that covers portability, issue-anchor leakage, reference
+  discoverability, core overfill, repeated prose ritual, host-assumption leakage,
+  and exact-prose/source-guard risk.
+- That report shows zero unapproved concrete Charness issue anchors under
+  portable skill packages.
+- `achieve` documentation and validator output make clear that `achieve`
+  coordinates `impl`/`debug`/`quality`/`issue` instead of replacing them, and a
+  long goal missing required phase evidence is flagged before completion.
+- `quality` reports this as a portable-skill text quality concern with explicit
+  human-review status, not as a hidden human-only judgment or a misleading "no
+  issues" summary when heuristics are merely incomplete.
+- `skills/public/achieve/SKILL.md` links to a discoverable reference/index path
+  without dropping important references due to line-budget pressure.
+- Existing issue, handoff, release, and quality tests still pass after examples
+  are generalized.
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- `git status --short --branch` and `git log --oneline origin/main..HEAD`.
+- `find-skills --recommend-for-task` before each phase boundary.
+- Baseline inventories: issue-anchor scan, `inventory_skill_ergonomics.py
+  --json`, skill-surface preflight on overfull skills, reference-link inventory,
+  and any existing brittle-source/prose-guard inventory.
+- `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <changed-skill-surface> --preview-delta <planned-lines>` before public skill prose edits.
+- Focused tests for any new inventory/validator plus touched skill helper tests.
+- `python3 scripts/check_changed_surfaces.py --repo-root .` after each mutation.
+
+### High-Confidence Checks
+
+- Add or extend a portable skill text-quality inventory/gate with subchecks for
+  issue anchors, repo-local chronology/history leakage, reference
+  discoverability, SKILL.md overfill, duplicated prose ritual, host assumptions,
+  and exact-prose/source-guard risk.
+- Add quality-consumption coverage proving each text-quality subcheck is surfaced
+  when skills are in scope and cannot be summarized away as "no issue."
+- Add achieve goal-artifact validation coverage for routing-cue binding so
+  easy-to-miss implementation/debug slices cannot silently remain
+  `achieve`-only, without turning the artifact into an exhaustive phase-to-skill
+  map.
+- Add focused regression tests for `achieve` references/index discoverability and
+  SKILL.md headroom behavior if the solution changes reference structure.
+- Run `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
+  at slice boundaries and the locked broad gate before final closeout.
+
+### External Or Live Proof
+
+- No external source gathering is expected unless the next session consults live
+  GitHub issue bodies for historical migration decisions; if it does, route that
+  through `gather`.
+- No release proof is expected unless the change modifies release surfaces.
+- Installed-host proof is optional; if skipped, record it as a non-claim and
+  rely on plugin mirror/package validators for local closeout.
+
+Discuss before activation: resolved by the user's 2026-06-04 instruction that
+all Charness skills must be portable and real issue-number anchors must not
+appear in portable skills. The remaining discretion is implementation shape:
+whether the first shipped gate is advisory or blocking may be decided during
+Slice 2 after baseline counts and false-positive review.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | planned |
+| 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | planned |
+| 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | planned |
+| 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | planned |
+| 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | planned |
+| 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | planned |
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, deferred to `find-skills` (its
+`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
+engine) - never a hard-coded phase-to-skill list here. `achieve` owns this slot
+and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
+during the run:
+
+- **Routing** - ask `find-skills` to recommend the skill for the current phase or
+  boundary, and record the route it returns.
+- **Gather step** - when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a - <reason>` when no external context
+  applies.
+- **Release step** - when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a - <reason>`.
+- **Issue closeout step** - when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a - <reason>`.
+
+Routing: Before-phase shaping used `find-skills` read-only recommendation and
+selected `achieve` for the goal artifact, `debug` for RCA, `handoff` for the
+next-session baton, and `quality`/`impl` as required pursuit-phase routes.
+Gather: n/a - this goal was shaped from local repo artifacts and the user's
+in-thread portability requirement, not an external URL.
+Release: n/a - no release surface is planned.
+Issue closeout: n/a - this is a repo-quality goal not currently bound to a
+tracked issue closeout carrier.
+
+## Slice Log
+
+### Before-phase shaping: RCA and goal contract
+
+- Objective: Turn the user's portability/routing concerns and this session's
+  waste into a reviewable next-session goal.
+- What changed: Created this draft goal and the RCA artifact
+  `charness-artifacts/debug/2026-06-04-portable-skill-contract-quality-and-routing.md`.
+- Evidence: `find-skills` recommended `achieve`, `debug`, `handoff`, `impl`,
+  `issue`, and `quality` for the task. `rg` found 106 concrete issue-anchor
+  candidates under `skills/public` and `skills/support`; `achieve` SKILL.md is
+  at 160/160 core non-empty lines and 190/200 total lines. The user clarified
+  that issue anchors are a symptom of broader skill text quality, so the goal
+  scope was widened before activation.
+- Non-claims: No skill package cleanup or text-quality validator has been
+  implemented yet.
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+- User instruction, 2026-06-04: all Charness skills must be portable; real issue
+  numbers should not appear in portable skills; issue numbers are a symptom of a
+  broader skill text quality problem.
+- `charness-artifacts/debug/2026-06-04-portable-skill-contract-quality-and-routing.md`
+- `charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
+- `charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md`
+- `charness-artifacts/quality/latest.md`
+- `skills/public/achieve/SKILL.md`
+- `skills/public/achieve/references/lifecycle.md`
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+- Scope: chose portable skill package-wide text quality plus `achieve` routing
+  discipline. Rejected `achieve`-only cleanup because the baseline scan found
+  sibling symptoms outside `achieve`, and the user clarified that issue anchors
+  are not the whole problem.
+- Portability rule: chose "no concrete repo-local history leakage in portable
+  skill packages, with issue anchors as one blocked subtype." Rejected keeping
+  issue-number history in references because the user identified it as
+  non-portable coupling, not just readability debt.
+- Gate posture: leave advisory-vs-blocking implementation to Slice 2 after
+  false-positive review. Rejected deciding it in Before-phase because some
+  checks are objective enough to block while others may need reviewed advisory
+  status.
+- Execution posture: next session should activate this goal, then let
+  `find-skills` drive the owning skill at phase boundaries. Rejected a hard-coded
+  phase-to-skill table; accepted short anchors for boundaries the prior run
+  missed, especially implementation -> `impl` and bug/RCA work -> `debug`.
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
+
+- Blocker folded: a simple issue-anchor hard gate would falsely catch generic
+  issue workflow examples and still miss non-anchor text-quality problems.
+  Boundary now treats issue anchors as one subtype inside a broader
+  text-quality inventory.
+- Blocker folded: focusing only on `achieve` would miss sibling surfaces and
+  focusing only on issue anchors would miss the user's actual concern; the slice
+  plan starts with a package-wide text-quality taxonomy.
+- Risk folded: SKILL.md line budget is already exhausted, so adding more prose
+  to `achieve` is likely the wrong repair. The plan includes reference/index
+  restructuring instead.
+- Over-worry not folded: eliminating every historical issue reference or rough
+  working note from repo-local artifacts is not required. The portability/text
+  quality rule applies to portable skill packages, not `charness-artifacts/`.
+
+## Off-Goal Findings
+
+- Current handoff still contains tracked issue pickup details for the previous
+  closeout and open backlog; this goal should not silently rewrite those unless
+  the next-session first move changes.
+
+## Final Verification
+
+Not run; this is a draft goal prepared for later activation.
+
+## User Verification Instructions
+
+After activation and completion, run the documented portable skill text-quality
+inventory/gate and inspect the `achieve` goal artifact closeout evidence. The
+completion report should name any remaining reviewed exceptions, placeholders,
+or fixtures and should not leave concrete Charness history leakage in portable
+skill packages.
+
+## Auto-Retro
+
+Not run; this goal is not complete.
