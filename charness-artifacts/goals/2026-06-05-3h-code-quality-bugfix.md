@@ -13,10 +13,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 complete; #299 direct-commit closeout draft verified.
-- Next action: rerun changed-surface closeout after critique/goal updates,
-  commit the #299 slice with `Close #299`, then decide whether to continue a
-  third slice or enter final closeout based on the timebox reserve.
+- Current slice: Slice 4 complete; setup fresh-eye policy helper extraction is
+  verified and ready to commit.
+- Next action: commit Slice 4, then decide whether the remaining time should
+  trim one more measured warning or enter final closeout based on the timebox
+  reserve.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -131,7 +132,7 @@ the run must route through `issue` and `debug` before claiming closeout.
 | 1 | Refresh current quality, bug, and skill-health posture. | The target should come from current repo evidence, not stale memory. | quality routing, current gate/inventory summary, selected target rationale. | completed |
 | 2 | Fix the highest-value reproducible bug or quality weakness. | Bug fixes need root cause and focused proof before broader refactoring. | root cause, focused tests before/after or equivalent proof, changed-surface check. | completed |
 | 3 | Improve one skill-health surface if current evidence supports it. | The user explicitly included skill health; it should be considered as a first-class target. | skill metadata/ergonomics/public-spec/export proof, synced surfaces if touched. | completed |
-| 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | planned |
+| 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | completed |
 | 5 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
 
 ## Coordination Cues
@@ -184,8 +185,7 @@ recommended `quality` for the current gate and skill-health posture.
 
 - Objective: Refresh current quality, bug, and skill-health posture, then implement the first evidence-backed skill-health improvement.
 - Why this approach: Broad read-only quality passed, so no failing bug was available as the first target. The actionable current weakness was handoff chunked_routing_agentic.py entering the length advisory band at 345/360 lines while mixing packet/materialization code with proposal validation.
-- Commits: current slice commit is `git log -1 --oneline` after this artifact
-  update; subject `Extract handoff agentic validation`.
+- Commits: local commit subject `Extract handoff agentic validation`.
 - What changed: Extracted agentic chunk proposal validation into skills/public/handoff/scripts/chunked_routing_agentic_validation.py and synced the plugin mirror under plugins/charness/skills/handoff/scripts/. chunked_routing_agentic.py now re-exports validate_chunk_proposal_response from the sibling module and keeps packet/materialization responsibilities local.
 - Alternatives rejected: Rejected chasing skill ergonomics portable-package host-surface heuristics because inventory labels them advisory and prose-review-dependent. Rejected standing test pruning because this slice had a narrower skill-health improvement with direct headroom proof. Rejected tracked issue closeout because no issue was selected for root-cause/debug handling.
 - Targeted verification: find-skills routed current validation posture to quality; ./scripts/run-quality.sh --read-only passed 71/71 in 42.8s; runtime summary showed check-coverage 44.7s latest / 42.3s median under 45.0s and pytest 17.3s latest / 27.7s median under 140.0s; standing test economics reported 244 test files and 107 nested CLI files; inventory_skill_ergonomics reported heuristic findings with prose review still required; pytest -q tests/test_handoff_chunker_agentic_packages.py passed 14 in 2.40s; ruff touched files passed; py_compile touched source/plugin files and all public/support skill scripts passed; check_python_lengths headroom improved chunked_routing_agentic.py from 345/360 to 157/360 and new validation module is 210/360; validate_packaging, validate_packaging_committed, validate_skills, check_skill_ownership_overlap, validate_public_skill_validation, validate_public_skill_dogfood, check_doc_links, check_command_docs, check-markdown, and check-secrets passed. Cautilus planner reported required=false, next_action=none, changed_public_skills=handoff; `suggest_public_skill_dogfood.py --skill-id handoff --json` showed the current handoff consumer contract is already frozen in docs/public-skill-dogfood.json; evals/cautilus/scenarios.json lists `handoff-adapter-bootstrap` for handoff, and this extraction did not change routing/bootstrap or prompt semantics, so no scenario mutation or Cautilus run is claimed. `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review` passed after running plugin sync, packaging, doc, command-doc, markdown, secrets, skill validation, compile, ownership, public-skill validation/dogfood, and agent-browser runtime guard checks.
@@ -199,8 +199,7 @@ recommended `quality` for the current gate and skill-health posture.
 
 - Objective: Resolve #299 by adding an advisory quality inventory for release-only test sentinel coverage.
 - Why this approach: #299 is the only current open quality/test-economics issue and directly follows the first slice's quality evidence. It is feature/deferred-work class, not a bug, so a resolution brief and critique are the right issue flow.
-- Commits: current issue-299 slice commit is `git log -1 --oneline` after this
-  artifact update; subject `Report release-only sentinel coverage`.
+- Commits: local commit subject `Report release-only sentinel coverage`.
 - What changed: Added skills/public/quality/scripts/inventory_release_only_sentinels.py, focused tests in tests/quality_gates/test_release_only_sentinel_inventory.py, inventory-dispatch discoverability, quality dogfood evidence, plugin mirror sync, critique artifact, and a verified direct-commit closeout draft for #299.
 - Alternatives rejected: Rejected making the inventory a blocking gate because the signal is intentionally advisory and default all-test scanning can be noisy. Rejected live Cautilus because the planner returned required=false and next_action=none. Rejected leaving marker/async robustness as deferred after reviewers raised them because structural marker parsing and async test counting were cheap to apply.
 - Targeted verification: find-skills routed #299 resolution to issue and quality; issue_tool preflight selected gh and resolve-invocation targeted corca-ai/charness#299; feature resolution brief had no open decisions. Focused pytest for test_release_only_sentinel_inventory.py passed 4 in 2.38s; selected inventory output for test_release_publish.py and test_release_publish_real_host_delta.py reported release_only=19, standing=8, standing sentinels=8, findings=[]; ruff, py_compile, check_python_lengths, validate_cautilus_proof, validate_packaging, validate_packaging_committed, validate_skills, check_skill_ownership_overlap, validate_public_skill_validation, validate_public_skill_dogfood, check_doc_links, check_command_docs, check-markdown, check-secrets, validate_attention_state_visibility, and run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review passed. issue_tool validate-closeout-draft passed for direct-commit Close #299 with classification feature and critique binding.
@@ -209,6 +208,69 @@ recommended `quality` for the current gate and skill-health posture.
 - Off-goal findings: No external source or release proof. #299 will be carried by direct commit with Close #299; final GitHub CLOSED verification is post-push and is not claimed locally.
 - Lessons carried forward: Advisory inventories should make selected-file mode explicit when default broad scans are intentionally noisy. Cheap robustness concerns from critique should be applied before commit when they reduce future gate-promotion risk without expanding scope.
 - Metrics: Focused pytest 2.38s; selected inventory command returned immediately; slice closeout rehearsal 14.6s.
+
+### Slice 4: Extract setup fresh-eye policy detection
+
+- Objective: Reduce setup inspection helper length pressure while preserving the
+  AGENTS.md fresh-eye/subagent delegation policy detector.
+- Why this approach: `scripts/setup_agent_docs_lib.py` was in the advisory length
+  band at 435 lines and carried a cohesive fresh-eye policy subdomain alongside
+  agent-doc, retro-memory, artifact-policy, skill-routing, and adapter
+  normalization. Extracting that subdomain improves skill-health maintainability
+  without changing the public inspect payload shape.
+- Commits: local slice subject `Extract setup fresh-eye policy detection`.
+- What changed: Added `scripts/setup_agent_docs_fresh_eye_lib.py` for fresh-eye
+  constants, compact contract detection, policy gap calculation, and
+  normalization findings. `scripts/setup_agent_docs_lib.py` now imports that
+  helper and still owns the overall `detect_agent_docs` payload. Synced plugin
+  mirror files under `plugins/charness/scripts/`. While running the required
+  markdown surface gate for this goal artifact update, also converted three
+  existing backticked script references in
+  `docs/conventions/implementation-discipline.md` to markdown links so
+  `check_doc_links.py` can pass.
+- Alternatives rejected: Rejected trimming `scripts/check_mutation_score.py`
+  first because setup policy tests directly cover the selected behavior and the
+  fresh-eye detector is a clearer cohesive extraction. Rejected changing
+  AGENTS.md policy wording because this slice is a behavior-preserving refactor,
+  not a policy change.
+- Targeted verification: `pytest -q tests/quality_gates/test_setup_inspect_policy.py`
+  passed 31 tests; the broader setup inspect trio
+  `tests/quality_gates/test_setup_inspect_policy.py
+  tests/quality_gates/test_setup_inspect_adapters.py
+  tests/quality_gates/test_setup_source_guard_scan.py` passed 44 tests. `ruff
+  check` passed for touched setup files, then full `ruff check charness scripts
+  tests skills/public/*/scripts skills/support/*/scripts` passed. `python3 -m
+  py_compile scripts/*.py plugins/charness/scripts/*.py` passed.
+  `check_python_lengths --paths` passed for the old and new files, and full
+  `check_python_lengths --require-git-file-listing` now leaves only two advisory
+  warnings (`scripts/check_mutation_score.py` and
+  `tests/quality_gates/test_release_publish.py`), so the previous
+  `setup_agent_docs_lib.py` warning is resolved. `check_changed_surfaces` routed
+  the change through plugin export plus integrations/control-plane checks;
+  `sync_root_plugin_manifests`, `validate_packaging`,
+  `validate_packaging_committed`, `validate_integrations`, `sync_support --json`,
+  `update_tools --json`, `check_export_safe_imports`, `check_plugin_import_smoke`,
+  `check_doc_links`, `check_command_docs`, `check-markdown`, `git diff --check`,
+  and `run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review`
+  passed. Cautilus planner reported
+  required=false, next_action=none, and must_ask_before_running=true; no
+  evaluator run is claimed.
+- Test duplication pressure: no tests were added or expanded; no
+  duplicate-pressure sample required.
+- Critique: Fresh-eye reviewer Leibniz reported no blocking findings. It checked
+  behavior preservation for fresh-eye/subagent delegation detection and
+  policy-source recommendations, plugin mirror consistency, and validator
+  coverage. Residual risk was only that both new helper files must be included in
+  the commit.
+- Off-goal findings: No release, live, provider, or GitHub closed-state proof was
+  attempted. #299 remains locally carrier-verified only until the branch is
+  pushed.
+- Lessons carried forward: Cohesive policy detector extraction is a good
+  skill-health slice when it removes length pressure and is protected by
+  payload-level tests. Parent-run import smoke is worth adding after plugin mirror
+  refactors even when packaging validation passes.
+- Metrics: setup policy pytest 5.11s; broader setup inspect trio 6.35s; slice
+  closeout 8.9s.
 
 ## Context Sources
 

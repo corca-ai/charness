@@ -4,39 +4,15 @@ import re
 from pathlib import Path
 from typing import Any, Callable
 
+from scripts.setup_agent_docs_fresh_eye_lib import (
+    FRESH_EYE_MARKERS,
+    detect_fresh_eye_normalization,
+    fresh_eye_policy_gaps,
+)
 from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
-FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "critique", "subagent review", "subagent reviews")
-FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
-FRESH_EYE_SECTION_HEADING = "## Subagent Delegation"
-FRESH_EYE_REQUIRED_SNIPPETS = (
-    "explicit user delegation request",
-    "already delegated",
-    "second user message",
-    "host blocks",
-    "same-agent pass",
-)
-FRESH_EYE_COMPACT_REQUIRED_SNIPPETS = (
-    "standing delegation request",
-    "canonical scopes",
-    "host block",
-)
-FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS = (
-    "same-agent substitutes are forbidden",
-    "no same-agent",
-    "do not substitute a same-agent",
-    "same-agent pass fails",
-)
-FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
-    "higher-priority host",
-    "developer policy requires explicit user delegation",
-    "once the user authorizes subagents",
-    "follow that stricter rule",
-)
-TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality", "critique", "release", "issue")
-LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"
 COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(call|invoke|run)\s+`?find-skills`?\b")
 COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(call|invoke|run)\s+`?find-skills`?\b")
 RECOMMENDATION_PRIORITY_ORDER = {
@@ -90,11 +66,6 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
 
 
-def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
-    lowered = text.lower()
-    return [snippet for snippet in snippets if snippet.lower() not in lowered]
-
-
 def _extract_section(text: str, heading: str) -> str:
     lines = text.splitlines()
     target = heading.strip().lower()
@@ -111,13 +82,6 @@ def _extract_section(text: str, heading: str) -> str:
             end = index
             break
     return "\n".join(lines[start:end])
-
-
-def _fresh_eye_compact_contract_present(agents_text: str) -> bool:
-    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING)
-    section_lower = section_body.lower()
-    same_agent_forbidden = any(snippet in section_lower for snippet in FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS)
-    return bool(section_body) and same_agent_forbidden and not _missing_snippets(section_body, FRESH_EYE_COMPACT_REQUIRED_SNIPPETS)
 
 
 def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
@@ -211,106 +175,12 @@ def sort_recommendations(recommendations: list[dict[str, object]]) -> list[dict[
     )
 
 
-def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    lowered = agents_text.lower()
-    stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
-    has_subagent_delegation_section = FRESH_EYE_SECTION_HEADING.lower() in lowered
-    compact_contract_present = stop_gate_detected and _fresh_eye_compact_contract_present(agents_text)
-    missing_required = (
-        _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
-        if stop_gate_detected and not compact_contract_present
-        else []
-    )
-    if stop_gate_detected and not has_subagent_delegation_section and not compact_contract_present:
-        missing_required.append(FRESH_EYE_SECTION_HEADING)
-    missing_task_review_scopes = (
-        [snippet for snippet in TASK_REVIEW_SCOPE_SNIPPETS if snippet not in lowered] if stop_gate_detected else []
-    )
-    legacy_init_repo_scope_present = (
-        stop_gate_detected
-        and "setup" in missing_task_review_scopes
-        and LEGACY_TASK_REVIEW_SCOPE_SNIPPET in lowered
-    )
-    stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
-    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
-    section_lower = section_body.lower()
-    weakening_caveats_detected = (
-        [pattern for pattern in FRESH_EYE_DELEGATION_CAVEAT_PATTERNS if pattern in section_lower]
-        if section_body
-        else []
-    )
-    findings: list[dict[str, str]] = []
-    if stop_gate_detected and missing_required:
-        findings.append(
-            {
-                "type": "fresh_eye_delegation_rule_drift",
-                "message": "Fresh-eye or critique review is present but AGENTS.md is missing the delegated-review stop-gate rule.",
-                "recommended_action": "normalize_fresh_eye_delegation_rule",
-            }
-        )
-    if stop_gate_detected and missing_task_review_scopes and not legacy_init_repo_scope_present:
-        findings.append(
-            {
-                "type": "fresh_eye_task_review_scope_drift",
-                "message": "Fresh-eye or critique review is present but AGENTS.md does not name all repo-mandated review runs as spawn-authorized scopes.",
-                "recommended_action": "add_repo_mandated_delegated_review_scopes",
-            }
-        )
-    if legacy_init_repo_scope_present:
-        findings.append(
-            {
-                "type": "fresh_eye_task_review_scope_uses_legacy_init_repo",
-                "message": (
-                    "AGENTS.md still names the legacy `init-repo` scope for the delegated-review stop gate. "
-                    "The skill was renamed to `setup`; migrate the scope to the repo-mandated review set. "
-                    "This is advisory during consumer migration and will tighten in a future release."
-                ),
-                "recommended_action": "rename_legacy_init_repo_scope_to_setup",
-            }
-        )
-    if stop_gate_detected and stale_markers:
-        findings.append(
-            {
-                "type": "fresh_eye_review_still_requires_consent_or_fallback",
-                "message": "Fresh-eye review wording still asks for explicit consent or permits local fallback.",
-                "recommended_action": "replace_with_already_delegated_host_restriction_rule",
-            }
-        )
-    if weakening_caveats_detected:
-        findings.append(
-            {
-                "type": "fresh_eye_delegation_caveat_weakens_contract",
-                "message": (
-                    "Subagent Delegation section contains caveat wording that weakens the standing delegation "
-                    f"contract: {', '.join(weakening_caveats_detected)}."
-                ),
-                "recommended_action": "remove_weakening_caveats_from_subagent_delegation_section",
-            }
-        )
-    return (
-        {
-            "stop_gate_detected": stop_gate_detected,
-            "has_subagent_delegation_section": has_subagent_delegation_section,
-            "compact_contract_present": compact_contract_present,
-            "missing_required_snippets": missing_required,
-            "missing_task_review_scopes": missing_task_review_scopes,
-            "legacy_init_repo_scope_present": legacy_init_repo_scope_present,
-            "stale_markers": stale_markers,
-            "weakening_caveats_detected": weakening_caveats_detected,
-        },
-        findings,
-    )
-
-
 def detect_policy_source_recommendations(
     repo_root: Path,
     agents_text: str,
     policy: dict[str, Any],
 ) -> list[dict[str, object]]:
-    lowered_agents = agents_text.lower()
-    compact_contract_present = _fresh_eye_compact_contract_present(agents_text)
-    missing_required = [] if compact_contract_present else _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
-    missing_scopes = [scope for scope in TASK_REVIEW_SCOPE_SNIPPETS if scope not in lowered_agents]
+    missing_required, missing_scopes = fresh_eye_policy_gaps(agents_text)
     if not missing_required and not missing_scopes:
         return []
 
@@ -430,7 +300,7 @@ def detect_agent_docs(
     else:
         action = "inspect_manually"
     retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
-    fresh_eye_review, fresh_eye_findings = _detect_fresh_eye_normalization(agents_text)
+    fresh_eye_review, fresh_eye_findings = detect_fresh_eye_normalization(agents_text)
     charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
         repo_root,

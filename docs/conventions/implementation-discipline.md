@@ -31,8 +31,9 @@ the root instruction file but still apply to Charness maintenance work.
   `python3 scripts/check_python_lengths.py --headroom --paths <file>`
   (`limit − current`, where current is measured by `tokei` Python code lines);
   if the file is near its limit, start a new module rather than append.
-  `run_slice_closeout.py` auto-surfaces near-limit *changed* files at every
-  slice closeout, so the near-limit trap is workflow signal, not memory (#256).
+  [run_slice_closeout.py](../../scripts/run_slice_closeout.py) auto-surfaces
+  near-limit *changed* files at every slice closeout, so the near-limit trap is
+  workflow signal, not memory (#256).
   The advisory never blocks on near-limit status; the existing length gate is
   the hard floor. Function limits remain AST-span based because `tokei` does not
   report function-level counts.
@@ -82,18 +83,20 @@ the root instruction file but still apply to Charness maintenance work.
 - If checked-in plugin export is touched, run
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .` before
   validators.
-- A pre-commit gate (`check_staged_mirror_drift.py`, wired in
-  `.githooks/pre-commit`) blocks committing when exported source is staged but
-  its regenerated `plugins/` mirror is not — it archives the staged index
-  (`git write-tree`) and validates that snapshot, catching both "forgot to sync"
-  and "synced but forgot to stage the mirror" at commit time instead of
+- A pre-commit gate
+  ([check_staged_mirror_drift.py](../../scripts/check_staged_mirror_drift.py),
+  wired in `.githooks/pre-commit`) blocks committing when exported source is
+  staged but its regenerated `plugins/` mirror is not — it archives the staged
+  index (`git write-tree`) and validates that snapshot, catching both "forgot to
+  sync" and "synced but forgot to stage the mirror" at commit time instead of
   post-commit at `validate_packaging_committed` (#257). Still stage the
   regenerated mirror (`git add plugins/ .claude-plugin/ .agents/plugins/`)
   alongside the source.
-- A commit-message gate (`check_issue_closeout_commit_msg.py`, wired in
-  `.githooks/commit-msg`) blocks commits that stage issue closeout artifacts
-  with `Close #N` keywords unless the final commit message carries those
-  keywords and the required closeout ledger. `pre-commit` cannot enforce this
-  because it does not see the final message.
+- A commit-message gate
+  ([check_issue_closeout_commit_msg.py](../../scripts/check_issue_closeout_commit_msg.py),
+  wired in `.githooks/commit-msg`) blocks commits that stage issue closeout
+  artifacts with `Close #N` keywords unless the final commit message carries
+  those keywords and the required closeout ledger. `pre-commit` cannot enforce
+  this because it does not see the final message.
 - Machine-local discovery output under `.agents/charness-discovery/` is not a
   checked-in surface; generated local stubs should not be committed as drift.
