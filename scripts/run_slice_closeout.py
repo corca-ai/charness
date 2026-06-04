@@ -35,6 +35,8 @@ _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_g
 run_predict_commit = _staged_commit_gate_plan.run_predict_commit
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
+format_broad_pytest_policy_lines = _slice_closeout_broad_gate.format_broad_pytest_policy_lines
+should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad_pytest_policy
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
 
@@ -258,6 +260,8 @@ def _print_usage_episode(payload: dict[str, object]) -> None:
 
 
 def _print_broad_pytest_policy(payload: dict[str, object]) -> None:
+    for line in format_broad_pytest_policy_lines(payload):
+        print(line)
     skipped = payload.get("skipped_broad_pytest_commands")
     if isinstance(skipped, list) and skipped:
         print("Skipped broad pytest commands:")
@@ -451,15 +455,15 @@ def main() -> int:
     command_plan = broad_policy.pop("command_plan")
     payload.update({key: value for key, value in broad_policy.items() if value and key != "block_error"})
 
+    if should_block_broad_pytest_policy(broad_policy, plan_only=args.plan_only):
+        payload["status"] = "blocked"
+        payload["error"] = broad_policy["block_error"]
+        return _emit_payload(payload, as_json=args.json, stderr_message=payload["error"])
+
     if args.plan_only:
         payload["status"] = "planned"
         payload["planned_commands"] = [{"phase": phase, "command": command} for phase, command in command_plan]
         return _emit_payload(payload, as_json=args.json)
-
-    if broad_policy["block_error"]:
-        payload["status"] = "blocked"
-        payload["error"] = broad_policy["block_error"]
-        return _emit_payload(payload, as_json=args.json, stderr_message=payload["error"])
 
     unsafe_blockers = _unsafe_command_blockers(command_plan)
     if unsafe_blockers:
