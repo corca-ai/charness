@@ -5,18 +5,22 @@ Charness and for repos that consume the `quality` skill.
 
 ## Layers
 
-### 1. `check_duplicates.py`: Current Hard Guard
+### 1. `check_duplicates.py`: Near-Copy Guard, Markdown Target
 
 [`scripts/check_duplicates.py`](../scripts/check_duplicates.py) is the current
-repo-local hard guard. It scans the checked-in code, skill, and documentation
-surfaces listed in its `DEFAULT_PATTERNS`, filters out files below 18 non-empty
-lines, respects the git file listing when `--require-git-file-listing` is used,
-and fails on whole-file text similarity at `0.98` or higher.
+repo-local hard guard for whole-file near similarity. It currently still scans
+the helper-script globs in its `DEFAULT_PATTERNS`; the intended long-term scope
+is checked-in Markdown, skill, reference, and README surfaces. It filters out
+files below 18 non-empty lines, respects the git file listing when
+`--require-git-file-listing` is used, and fails on whole-file text similarity at
+`0.98` or higher.
 
 This guard is intentionally narrow:
 
-- it catches nearly identical checked-in Markdown, `SKILL.md`, reference,
-  README, and helper-script files
+- it catches nearly identical checked-in Markdown, `SKILL.md`, reference, and
+  README files
+- it currently also scans helper-script globs, which should be preserved or
+  narrowed only after the `nose` cleanup makes the coverage tradeoff explicit
 - it is wired into [`scripts/run-quality.sh`](../scripts/run-quality.sh) as
   `check-duplicates`
 - it also runs in the docs-only pre-push subset, so doc-only pushes still get a
@@ -24,12 +28,19 @@ This guard is intentionally narrow:
   by the duplicate checker
 
 The guard is not a block-level clone detector and should not be treated as a
-complete refactoring inventory.
+complete refactoring inventory. Python and other code duplicate cleanup should
+move out of this guard instead of widening its role.
 
 ### 2. `jscpd`: Syntax Copy-Paste Candidate
 
 `jscpd` is the right candidate for a broader literal/token copy-paste detector.
 It can scan Python and Markdown, so it is not limited to JavaScript-only use.
+
+Adoption is now deferred. `jscpd` found real block-level code clones, but the
+current tree contains enough bootstrap and adapter-shape debt that a hard raw
+`jscpd` gate would be noisy before those families are refactored or explicitly
+baselined. Revisit `jscpd` only after the `nose`-driven refactoring pass reduces
+the existing code-clone backlog.
 
 Adoption should start as a separate validation support binary, not as an
 immediate replacement for [`scripts/check_duplicates.py`](../scripts/check_duplicates.py):
@@ -60,12 +71,10 @@ Parity status as of 2026-06-04:
   bootstrap/script clones instead of passing cleanly. That is useful signal, but
   not drop-in parity.
 
-Conclusion: `jscpd` can eventually take over the hard syntax/document
-copy-paste role only after an explicit migration contract. That contract must
-choose one of three outcomes for whole-file near-similarity: keep
-[`check_duplicates.py`](../scripts/check_duplicates.py) as a narrow companion,
-add a separate near-file guard, or explicitly accept losing that coverage.
-Until then, keep `jscpd` separate.
+Conclusion: do not introduce `jscpd` yet. After the `nose` refactoring pass,
+rerun the comparison and decide whether a code-only `jscpd` wrapper still adds
+useful hard-gate signal. Whole-file Markdown near-similarity remains owned by
+[`check_duplicates.py`](../scripts/check_duplicates.py) either way.
 
 ### 3. `nose`: Advisory Refactoring Inventory
 
@@ -95,13 +104,15 @@ or `jscpd`:
 - `nose` ranks semantic and near-structural clone families as refactoring
   proposals
 
-For Charness, this local run surfaced meaningful advisory refactoring
-candidates, including repeated skill-runtime bootstrap blocks, adapter resolver
-shapes, and repeated test artifact validation patterns:
+For Charness, the initial maintainer-local 2026-06-04 `nose 0.4.0` observation
+surfaced meaningful refactoring candidates, especially repeated skill-runtime
+bootstrap blocks and adapter resolver shapes. A durable baseline report belongs
+to the first activated refactoring slice:
 
 ```sh
-nose scan scripts tests skills/public skills/support skills/shared \
-  --mode semantic,near --min-value 80 --top 12 --hotspots
+nose scan scripts skills/public skills/support \
+  --mode syntax,semantic,near --threshold 0.70 \
+  --min-lines 18 --min-tokens 24 --sort extractability --top 20
 ```
 
 ## Test DSL And Testability Policy
