@@ -1,6 +1,6 @@
 # Achieve Goal: Future work efficiency: handoff, closeout, and publication
 
-Status: active
+Status: complete
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-future-work-efficiency-handoff-closeout-publication.md`
 
@@ -9,11 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 - final sync, broad verify, critique, issue closeout,
-  retro, and handoff refresh.
-- Next action: lock the mutation set, run final broad verification, run required
-  critique/retro/issue closeout proof, refresh handoff at closeout, then flip
-  the goal only after the checked-in artifact passes.
+- Current slice: complete.
+- Next action: push the closeout commit, then run post-push issue state
+  verification for #285/#286/#287/#288/#289.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -164,9 +162,14 @@ Gather: n/a — current context is local repo state plus GitHub issues fetched v
 `gh issue view/list` during shaping; no external URL or Slack/Docs source is in
 scope for this goal.
 Release: n/a — no release surface is planned.
-Issue closeout: planned for #285, #286, #287, #288, and #289 only after
-direct-commit/PR carrier rehearsal and post-publication verification; #293 and
-#184 are context/exclusions, not close-intended issues.
+Issue closeout: #285/#286/#287/#288/#289 staged through direct-commit carrier.
+Draft validation passed with
+`issue_tool.py validate-closeout-draft --carrier direct-commit --commit-message-file charness-artifacts/issue-drafts/2026-06-04-future-work-efficiency-closeout-commit-message.txt`
+(`status: draft_verified`, `publication_status: ready_to_commit_push`,
+`verified_state: []`). Current GitHub state read on 2026-06-04 still showed all
+five issues OPEN because the closeout commit has not been pushed; after push,
+run `issue_tool.py verify-closeout --carrier direct-commit --commit-ref HEAD
+--expect-state CLOSED` before claiming remote closure.
 
 ## Slice Log
 
@@ -240,6 +243,34 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 - Lessons carried forward: Warnings are advisory; delivery readiness needs a structured status that downstream tools can consume before side effects.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-29506b652eb940fc854996dfa56f2e09.
 
+### Slice 6: Final closeout and proof
+
+- Objective: Lock final proof, run fresh-eye critique/retro, stage issue
+  closeout, and refresh handoff.
+- Why this approach: The bundle touches public skill behavior, generated plugin
+  surfaces, workflow artifacts, and issue closeout, so final proof needs both
+  deterministic gates and durable non-claims.
+- Commits: pending final closeout commit.
+- What changed: Added final critique, retro, host-probe, issue-draft, and
+  handoff updates; flipped this goal artifact to complete after all slice work
+  and closeout evidence were recorded.
+- Alternatives rejected: Rejected claiming GitHub issue closure before push;
+  current issue state still reports #285/#286/#287/#288/#289 OPEN.
+- Targeted verification: `./scripts/run-quality.sh --read-only` passed 70
+  phases. Broad pytest passed: 2142 passed, 4 skipped. Direct-commit closeout
+  draft validation passed for #285/#286/#287/#288/#289 with status
+  `draft_verified`.
+- Test duplication pressure: Final broad pytest covered the full selected
+  quality/test surface; no new duplicate-pressure failure surfaced.
+- Critique: Fresh-eye final critique found one blocker in announcement
+  `thread_reply` ordering; commit `f64dbdc8` fixed it before final proof.
+- Off-goal findings: #293 remains open and out of scope; #184 remains open and
+  out of scope.
+- Lessons carried forward: Run fresh-eye critique before treating warning-only
+  adapter checks as delivery readiness.
+- Metrics: Host-log probe recorded thread-wide pressure only; no goal metric
+  window was recorded before the goal started.
+
 ## Context Sources
 
 - `docs/handoff.md` as read on 2026-06-04: current pickup recommended #293
@@ -304,15 +335,44 @@ N/A — none discovered during shaping.
 
 ## Final Verification
 
-Pending activation and implementation.
+Retro: charness-artifacts/retro/2026-06-04-future-work-efficiency-handoff-closeout-publication.md
+Host log probe: charness-artifacts/probe/2026-06-04-future-work-efficiency-handoff-closeout-publication-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-04-future-work-efficiency-closeout-review.md
+
+- Self-verification: the implemented slices cover #286/#285 handoff package
+  synthesis and fixture posture, #288 direct-commit closeout rehearsal, #287
+  Achieve closeout policy adapter, and #289 announcement delivery posture.
+- Deterministic final proof: `./scripts/run-quality.sh --read-only` passed 70
+  phases after the fresh-eye fix and plugin mirror sync. Broad pytest passed
+  with 2142 passed and 4 skipped.
+- Fresh-eye proof: final critique initially returned "ship with fixes" because
+  announcement `thread_reply` outputs could be executable before a preceding
+  parent output. Commit `f64dbdc8` fixed the blocker and added ordering tests.
+- Issue closeout proof: direct-commit closeout draft validation passed for
+  #285/#286/#287/#288/#289 using
+  `charness-artifacts/issue-drafts/2026-06-04-future-work-efficiency-closeout-commit-message.txt`.
+  This proves pre-push carrier readiness only.
+- Host metrics: no goal metric window was recorded before start, so the host
+  probe is thread-wide pressure, not a per-goal total.
+- Non-claims: no live installed-host proof, no release proof, no real
+  announcement delivery posting, no `git push`, and no post-push
+  `verify-closeout --expect-state CLOSED` were run in this session.
 
 ## User Verification Instructions
 
-After completion, run a bare handoff pickup and inspect that it proposes
-coherent work packages; inspect direct-commit closeout rehearsal output before a
-close-keyword push; and review the Achieve/announcement adapter examples for
-draft-only versus executable publication behavior.
+After completion, push the closeout commit, then run post-push issue closeout
+verification for #285/#286/#287/#288/#289. A user can also run a bare handoff
+pickup and inspect that it proposes coherent work packages; run
+`python3 skills/public/achieve/scripts/resolve_adapter.py --repo-root .`; and
+run `python3 skills/public/announcement/scripts/resolve_adapter.py --repo-root .`
+against adapters with and without `thread_reply` chains to inspect draft-only
+versus executable publication behavior.
 
 ## Auto-Retro
 
-Pending completion.
+applied: fresh-eye blocker fixed in `f64dbdc8` by requiring each
+`thread_reply` output to have a preceding `parent` output before delivery is
+executable.
+
+applied: final broad proof was rerun after the blocker fix and plugin mirror
+sync, replacing the mixed-tree pytest run.

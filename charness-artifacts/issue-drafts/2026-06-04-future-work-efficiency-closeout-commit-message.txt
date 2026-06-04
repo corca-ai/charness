@@ -1,0 +1,15 @@
+Close future work efficiency bundle
+
+Close #285. Close #286. Close #287. Close #288. Close #289.
+
+JTBD: reduce future Charness operator waste across handoff pickup, fixture stability, issue closeout rehearsal, goal closeout publication policy, and announcement delivery posture.
+
+Boundary: scoped to #285, #286, #287, #288, and #289. Excluded #293 mutation-test regression and #184 product-success synthesis.
+
+Resolution brief: implemented agentic handoff work-package proposals with deterministic validation, stable non-live issue fixture posture, direct-commit closeout draft rehearsal, Achieve adapter-owned closeout publication and Auto-Retro disposition policy, and announcement delivery_contract status that keeps miswired thread_reply chains draft-only.
+
+Implementation: commits 85f7a211, 1d0c3921, 518bdc23, 44f3649e, and f64dbdc8 plus this closeout artifact commit carry the bundle. Plugin mirrors and public skill dogfood/validation policy were synchronized.
+
+Prevention: focused tests cover handoff agentic packages, direct-commit draft validation, Achieve adapter policy, announcement delivery posture, reversed thread_reply ordering, and capability explain suppression for non-executable delivery; final read-only quality and broad pytest passed after the fresh-eye fix.
+
+Critique #285 #286 #287 #288 #289: charness-artifacts/critique/2026-06-04-future-work-efficiency-closeout-review.md

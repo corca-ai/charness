@@ -23,7 +23,10 @@
   `charness update`, `tokei` doctor/install) is unrun — flagged by the
   conservative `integrations-and-control-plane` trigger; the shipped code is
   quality/routing/handoff work, which does not touch the install runtime.
-- Open issues: #293/#289/#288/#287/#286/#285 plus #184.
+- Open issues before pushing this closeout: #293, #285-#289, and #184. Local
+  closeout now stages direct-commit close keywords for #285, #286, #287, #288,
+  and #289; those five remain OPEN until the closeout commit is pushed and
+  verified.
 - Completed workflow-hardening chunk: #291, #292, and #284 were closed by
   direct carrier `e93e5fa6` after verified local/pre-push broad quality and
   `issue_tool.py verify-closeout --expect-state CLOSED`.
@@ -35,16 +38,14 @@
 
 ## Next Session
 
-1. Pick **#293**: mutation test regression on main. Treat it as a quality
+1. If this branch has not been pushed yet, push the future-work-efficiency
+   closeout commit and run post-push issue verification:
+   `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo-root . --repo corca-ai/charness --number 285 --number 286 --number 287 --number 288 --number 289 --classification feature --carrier direct-commit --commit-ref HEAD --expect-state CLOSED`.
+2. Then pick **#293**: mutation test regression on main. Treat it as a quality
    regression first; run the `quality`/debug path before changing mutation or
    testability policy.
-2. Then pick **#286**: make handoff chunker propose agentic work packages, not
-   ranked issue lists.
-3. Then pick **#285** if #286 exposes live-issue fixture brittleness: stop
-   hard-pinning live issue numbers in tests.
-4. Keep **#184** for product-success synthesis after the workflow-hardening
-   pair above; v0.16.0 real-host smoke also remains pending unless the release
-   closeout updates it.
+3. Keep **#184** for product-success synthesis after #293; v0.16.0 real-host
+   smoke also remains pending unless a release closeout updates it.
 
 ## Discuss
 
