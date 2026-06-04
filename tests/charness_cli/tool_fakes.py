@@ -27,3 +27,35 @@ def make_fake_cautilus(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
+
+
+def make_fake_nose(tmp_path: Path) -> tuple[Path, Path]:
+    bin_dir = tmp_path / "bin"
+    nose = bin_dir / "nose"
+    curl = bin_dir / "curl"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--version"]:
+                print("nose 0.4.0")
+                raise SystemExit(0)
+            if args == ["scan", "--help"]:
+                print("Find clone families")
+                raise SystemExit(0)
+            if args and args[0] == "scan":
+                print("[]")
+                raise SystemExit(0)
+            raise SystemExit(0)
+            """
+        ),
+        encoding="utf-8",
+    )
+    nose.chmod(0o755)
+    curl.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    curl.chmod(0o755)
+    return curl, nose

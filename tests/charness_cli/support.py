@@ -76,6 +76,12 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
                     "published_at": "2026-04-10T00:00:00Z",
                     "assets": [{"name": "cautilus-linux-amd64.tar.gz"}],
                 },
+                "corca-ai/nose": {
+                    "tag_name": "v0.4.0",
+                    "html_url": "https://github.com/corca-ai/nose/releases/tag/v0.4.0",
+                    "published_at": "2026-06-04T00:00:00Z",
+                    "assets": [{"name": "nose-cli-installer.sh"}],
+                },
                 "cli/cli": {
                     "tag_name": "v2.90.1",
                     "html_url": "https://github.com/cli/cli/releases/tag/v2.90.1",

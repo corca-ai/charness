@@ -23,7 +23,7 @@ from .support import (
     run_cli,
 )
 from .test_managed_install import init_managed_home_from_repo
-from .tool_fakes import make_fake_cautilus
+from .tool_fakes import make_fake_cautilus, make_fake_nose
 
 
 @pytest.mark.release_only
@@ -51,10 +51,13 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
     fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
+    fake_curl, fake_nose = make_fake_nose(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
     env["PATH"] = os.pathsep.join(
         [
+            str(fake_curl.parent),
+            str(fake_nose.parent),
             str(fake_agent_browser.parent),
             str(fake_go.parent),
             str(specdown_bin.parent),
@@ -97,6 +100,8 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["cautilus"]["update"]["status"] == "manual"
     assert tool_update["results"]["cautilus"]["update"]["mode"] == "manual"
     assert tool_update["results"]["cautilus"]["support"]["status"] == "synced"
+    assert tool_update["results"]["nose"]["update"]["status"] == "updated"
+    assert tool_update["results"]["nose"]["doctor"]["doctor_status"] == "ok"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
     assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
     assert tool_update["results"]["gws-cli"]["update"]["status"] == "updated"
