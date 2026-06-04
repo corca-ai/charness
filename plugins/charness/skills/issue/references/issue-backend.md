@@ -204,6 +204,19 @@ means `status: carrier_verified`, not final issue closeout. Final handoff
 requires `--expect-state CLOSED`, which uses the selected backend's `view`
 operation and reports `status: verified` only when every issue is closed.
 
+For pre-push direct-to-default commits, use `validate-closeout-draft` instead of
+`verify-closeout`:
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" validate-closeout-draft \
+  --repo <full_name> --number <n> --classification bug \
+  --carrier direct-commit --commit-message-file <path>
+```
+
+Success means `publication_status: ready_to_commit_push`; it does not prove
+remote issue state. After push, run `verify-closeout` with
+`--carrier direct-commit`, `--commit-ref <ref>`, and `--expect-state CLOSED`.
+
 ## Placeholders
 
 Adapter-supplied templates substitute:

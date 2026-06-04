@@ -9,10 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 - direct-commit closeout carrier rehearsal for #288.
-- Next action: inspect `issue_tool.py validate-closeout-draft`, closeout
-  carrier parsing, and issue skill instructions; add a pre-push direct-commit
-  rehearsal path without claiming post-push remote issue state.
+- Current slice: Slice 4 - Achieve closeout publication / auto-retro
+  disposition adapter seam for #287.
+- Next action: inspect `achieve` adapter/resolver patterns and After-phase
+  closeout policy surfaces; add a missing-adapter-safe publication/disposition
+  policy seam that can consume the direct-commit rehearsal contract.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -130,7 +131,7 @@ and verification steps prove the carrier.
 | --- | --- | --- | --- | --- |
 | 1 | Preflight the quality/routing baseline and inspect #293 impact | Avoid building efficiency work on an unknown red proof surface | Status/open-issue snapshot, #293 independence or blocker note, changed-surface obligations | done |
 | 2 | Implement agentic handoff work-package proposal and stable fixture policy for #286/#285 | This fixes the entry point that chooses future work and removes live issue churn from tests | Source packet/proposal validator tests, fixture-owned issue data, handoff e2e package rendering | done |
-| 3 | Add direct-commit closeout carrier rehearsal for #288 | Safer closeout reduces push/recommit/CI-watch waste for the rest of the bundle | Carrier rehearsal command/tests, unchanged existing validation behavior, issue skill instruction update | planned |
+| 3 | Add direct-commit closeout carrier rehearsal for #288 | Safer closeout reduces push/recommit/CI-watch waste for the rest of the bundle | Carrier rehearsal command/tests, unchanged existing validation behavior, issue skill instruction update | done |
 | 4 | Add Achieve closeout publication / auto-retro disposition adapter seam for #287 | The broader policy should consume the concrete closeout rehearsal contract | Adapter contract/resolver/tests, lifecycle wording, missing-adapter fallback, goal validation | planned |
 | 5 | Make announcement dual-output delivery chaining executable or draft-only for #289 | Delivery claims should fail fast or stay draft-only instead of surprising operators late | Adapter example/runner or resolver updates, thread-reply tests, single-output compatibility | planned |
 | 6 | Sync, broad verify, critique, issue closeout, retro, and handoff refresh | Bundle completion needs generated surfaces, proof, and tracked issue closure aligned | Synced exports, broad gate, critique, closeout verification, retro dispositions, updated handoff | planned |
@@ -196,6 +197,20 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 - Off-goal findings: #293 remains open; this slice did not touch its quality/testability files. #184 remained out of implementation scope and only appeared as a validated standalone package in live backlog smoke.
 - Lessons carried forward: Keep work-package synthesis before ranking; use adapter policy for repo-specific broad labels; do not promote live issue numbers into deterministic tests.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-5c9334d6c2c748a790fc5d5368bc9873.
+
+### Slice 3: Direct-commit closeout rehearsal
+
+- Objective: Add #288 direct-commit carrier rehearsal before close-keyword push.
+- Why this approach: Direct-to-default closeout commits should be validated before publication so missing close keywords or closeout ledgers do not force follow-up commits and extra gates.
+- Commits: pending commit for Slice 3.
+- What changed: Extended validate-closeout-draft with --carrier direct-commit and --commit-message-file; direct-commit draft validation reuses the closeout ledger/critique/close-keyword checks while reporting publication_status ready_to_commit_push and no verified_state. Updated issue closeout references and dogfood evidence; synced plugin mirror.
+- Alternatives rejected: Rejected weakening verify-closeout direct-commit to accept arbitrary body files: final verification should still read a real commit ref and GitHub state. Rejected a separate sibling command because validate-closeout-draft already owns pre-publication carrier checks.
+- Targeted verification: Focused tests: pytest -q tests/quality_gates/test_issue_closeout_draft_validation.py tests/quality_gates/test_issue_closeout_verifier.py tests/quality_gates/test_issue_closeout_discipline.py -> 29 passed. Ruff focused passed. Manual sample validate-closeout-draft --carrier direct-commit --commit-message-file returned ok true, status draft_verified, publication_status ready_to_commit_push, verified_state []. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review passed sync, packaging, docs, cautilus proof validator, skill validators, dogfood, ruff, length, attention visibility, and orphan guard.
+- Test duplication pressure: Expanded tests/quality_gates/test_issue_closeout_draft_validation.py; no length gate issues.
+- Critique: Slice critique folded: pre-push rehearsal must not masquerade as final closeout. The output explicitly distinguishes ready_to_commit_push from post-push verify-closeout with expect-state CLOSED.
+- Off-goal findings: No issue was closed; #288 remains open until final bundle closeout publishes and verifies the carrier.
+- Lessons carried forward: Keep draft carrier validation pre-publication and source-of-truth issue state verification post-publication as separate claims.
+- Metrics: Usage episode emitted by slice closeout: slice-closeout-195a3f45f90b42db83b14eeed61815a2.
 
 ## Context Sources
 

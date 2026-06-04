@@ -47,6 +47,64 @@ def test_validate_closeout_draft_accepts_pr_body_before_state_mutation(tmp_path:
     assert payload["draft"] is True
     assert payload["status"] == "draft_verified"
     assert payload["verified_state"] == []
+    assert payload["publication_status"] == "ready_to_publish"
+
+
+def test_validate_closeout_draft_accepts_direct_commit_message_before_push(
+    tmp_path: Path,
+) -> None:
+    commit_message = tmp_path / "commit-message.txt"
+    commit_message.write_text(_bug_body(), encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "validate-closeout-draft",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-message-file",
+        str(commit_message),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["carrier"] == "direct-commit"
+    assert payload["draft"] is True
+    assert payload["status"] == "draft_verified"
+    assert payload["publication_status"] == "ready_to_commit_push"
+    assert payload["verified_state"] == []
+    assert payload["commit_message_file"] == str(commit_message)
+
+
+def test_validate_closeout_draft_direct_commit_requires_message_file(
+    tmp_path: Path,
+) -> None:
+    result = run_script(
+        SCRIPT,
+        "validate-closeout-draft",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert "direct-commit draft requires --commit-message-file" in payload["error"]
 
 
 def test_validate_closeout_draft_rejects_missing_ledger_before_mutation(tmp_path: Path) -> None:
