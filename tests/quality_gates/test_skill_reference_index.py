@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from scripts import check_skill_surface_preflight as preflight
+from scripts import validate_skills
+from skills.public.quality.scripts import inventory_skill_ergonomics
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 
 def _write_indexed_skill(
@@ -36,16 +37,34 @@ def _write_indexed_skill(
     return skill_dir
 
 
-def _first_skill_from_inventory(repo: Path) -> dict[str, object]:
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
+def _run_validate_skills_in_process(repo: Path) -> tuple[int, str]:
+    try:
+        for kind, skill_dir in validate_skills.iter_skill_dirs(repo.resolve()):
+            skill_md = skill_dir / "SKILL.md"
+            validate_skills.validate_frontmatter(skill_md)
+            validate_skills.validate_support_files(repo.resolve(), skill_dir, kind)
+    except validate_skills.ValidationError as exc:
+        return 1, str(exc)
+    return 0, ""
 
-    assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)["skills"][0]
+
+def _first_skill_from_inventory(repo: Path) -> dict[str, object]:
+    adapter = inventory_skill_ergonomics._adapter_payload(repo.resolve())
+    data = inventory_skill_ergonomics._adapter_data(adapter)
+    skill_paths = [
+        path
+        for path in inventory_skill_ergonomics.iter_skill_paths(
+            repo.resolve(),
+            [],
+            adapter_skill_paths=inventory_skill_ergonomics._adapter_skill_paths(data),
+        )
+        if path.is_file()
+    ]
+    return inventory_skill_ergonomics.inventory_skill(
+        repo.resolve(),
+        skill_paths[0],
+        max_core_lines=160,
+    )
 
 
 def test_validate_skills_rejects_reference_mentioned_only_in_skill_prose(
@@ -63,10 +82,10 @@ def test_validate_skills_rejects_reference_mentioned_only_in_skill_prose(
         index_text="# Reference Index\n",
     )
 
-    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    returncode, stderr = _run_validate_skills_in_process(repo)
 
-    assert result.returncode != 0
-    assert "unlisted reference file(s): `references/note.md`" in result.stderr
+    assert returncode != 0
+    assert "unlisted reference file(s): `references/note.md`" in stderr
 
 
 def test_inventory_reports_reference_mentioned_only_in_index_prose(
@@ -91,9 +110,9 @@ def test_validate_skills_accepts_reference_index_listing(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     _write_indexed_skill(repo)
 
-    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    returncode, stderr = _run_validate_skills_in_process(repo)
 
-    assert result.returncode == 0, result.stderr
+    assert returncode == 0, stderr
 
 
 def test_inventory_skill_ergonomics_accepts_reference_index_for_discoverability(

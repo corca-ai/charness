@@ -142,7 +142,7 @@ Both failures let downstream agents over-trust workflow scaffolding.
 ## Seam Risk
 
 - Interrupt ID: issue-298-handoff-merge-hints-and-publication-boundary
-- Risk Class: workflow-boundary
+- Risk Class: contract-freeze-risk
 - Seam: deterministic script output to agentic ranking, and issue carrier proof
   to lifecycle artifact publication.
 - Disproving Observation: broad-label-only merge guidance and docs-only second
@@ -155,7 +155,7 @@ Both failures let downstream agents over-trust workflow scaffolding.
 ## Interrupt Decision
 
 - Critique Required: yes
-- Next Step: impl after issue causal review confirms the substrate.
+- Next Step: impl
 - Handoff Artifact: charness-artifacts/goals/2026-06-04-issue-294-298.md
 
 ## Prevention

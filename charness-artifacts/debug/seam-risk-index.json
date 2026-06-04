@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 55,
-  "indexed_artifact_count": 46,
+  "source_artifact_count": 57,
+  "indexed_artifact_count": 48,
   "risk_class_counts": {
-    "contract-freeze-risk": 21,
+    "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 7,
     "operator-visible-recovery": 16
   },
   "generalization_pressure_counts": {
-    "monitor": 46
+    "monitor": 48
   },
   "entries": [
     {
@@ -630,6 +630,34 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/goals/2026-06-04-291-292-284-activation-index-and-skill-preflight.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-04-294-abstraction-up-diagnostic-disposition.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-294-abstraction-up-diagnostic-disposition",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "debug RCA sibling-search text to issue closeout and validators.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-04-issue-294-298.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-04-298-handoff-merge-hints-and-publication-boundary.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-298-handoff-merge-hints-and-publication-boundary",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "deterministic script output to agentic ranking, and issue carrier proof",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-04-issue-294-298.md",
       "forced": false
     },
     {

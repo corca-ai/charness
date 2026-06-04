@@ -124,7 +124,7 @@ not converted into a current fix, explicit boundary, or durable follow-up.
 ## Seam Risk
 
 - Interrupt ID: issue-294-abstraction-up-diagnostic-disposition
-- Risk Class: closeout-discipline
+- Risk Class: contract-freeze-risk
 - Seam: debug RCA sibling-search text to issue closeout and validators.
 - Disproving Observation: a broader class was recorded as diagnostic context
   until the operator challenged the missing owner.
@@ -135,7 +135,7 @@ not converted into a current fix, explicit boundary, or durable follow-up.
 ## Interrupt Decision
 
 - Critique Required: yes
-- Next Step: impl after issue causal review confirms the substrate.
+- Next Step: impl
 - Handoff Artifact: charness-artifacts/goals/2026-06-04-issue-294-298.md
 
 ## Prevention
