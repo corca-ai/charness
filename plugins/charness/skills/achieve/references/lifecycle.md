@@ -269,6 +269,13 @@ At completion the goal artifact should contain:
   not push or close out-of-band (see `references/coordination.md` *Resolving A
   Tracked Issue*)
 - an automatic retro focused on reducing time, tokens, and waste next time
+- the resolved `achieve` adapter policy for closeout publication and Auto-Retro
+  disposition. Missing adapters default to `audit-only`; found invalid adapters
+  block completion. The adapter, not host-loaded memory, owns whether the normal
+  closeout default is `audit-only`, `handoff-only`, or a publish-capable carrier,
+  and it binds direct-commit issue closeout to the `issue` skill's
+  `validate-closeout-draft --carrier direct-commit --commit-message-file`
+  rehearsal contract.
 - an efficiency summary when host evidence exists: measured signals (for
   example elapsed time, token snapshots, compactions, tool-call counts, or
   subagent count), proxy signals (for example repeated VCS/check commands,

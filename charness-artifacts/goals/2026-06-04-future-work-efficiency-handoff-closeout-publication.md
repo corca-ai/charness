@@ -9,11 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 - Achieve closeout publication / auto-retro
-  disposition adapter seam for #287.
-- Next action: inspect `achieve` adapter/resolver patterns and After-phase
-  closeout policy surfaces; add a missing-adapter-safe publication/disposition
-  policy seam that can consume the direct-commit rehearsal contract.
+- Current slice: Slice 5 - announcement dual-output delivery chaining for #289.
+- Next action: inspect `announcement` adapter/resolver and delivery runner
+  surfaces; make parent/thread delivery chains executable or explicitly
+  draft-only before any unthreaded `thread_reply` claim can pass.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -132,7 +131,7 @@ and verification steps prove the carrier.
 | 1 | Preflight the quality/routing baseline and inspect #293 impact | Avoid building efficiency work on an unknown red proof surface | Status/open-issue snapshot, #293 independence or blocker note, changed-surface obligations | done |
 | 2 | Implement agentic handoff work-package proposal and stable fixture policy for #286/#285 | This fixes the entry point that chooses future work and removes live issue churn from tests | Source packet/proposal validator tests, fixture-owned issue data, handoff e2e package rendering | done |
 | 3 | Add direct-commit closeout carrier rehearsal for #288 | Safer closeout reduces push/recommit/CI-watch waste for the rest of the bundle | Carrier rehearsal command/tests, unchanged existing validation behavior, issue skill instruction update | done |
-| 4 | Add Achieve closeout publication / auto-retro disposition adapter seam for #287 | The broader policy should consume the concrete closeout rehearsal contract | Adapter contract/resolver/tests, lifecycle wording, missing-adapter fallback, goal validation | planned |
+| 4 | Add Achieve closeout publication / auto-retro disposition adapter seam for #287 | The broader policy should consume the concrete closeout rehearsal contract | Adapter contract/resolver/tests, lifecycle wording, missing-adapter fallback, goal validation | done |
 | 5 | Make announcement dual-output delivery chaining executable or draft-only for #289 | Delivery claims should fail fast or stay draft-only instead of surprising operators late | Adapter example/runner or resolver updates, thread-reply tests, single-output compatibility | planned |
 | 6 | Sync, broad verify, critique, issue closeout, retro, and handoff refresh | Bundle completion needs generated surfaces, proof, and tracked issue closure aligned | Synced exports, broad gate, critique, closeout verification, retro dispositions, updated handoff | planned |
 
@@ -211,6 +210,20 @@ direct-commit/PR carrier rehearsal and post-publication verification; #293 and
 - Off-goal findings: No issue was closed; #288 remains open until final bundle closeout publishes and verifies the carrier.
 - Lessons carried forward: Keep draft carrier validation pre-publication and source-of-truth issue state verification post-publication as separate claims.
 - Metrics: Usage episode emitted by slice closeout: slice-closeout-195a3f45f90b42db83b14eeed61815a2.
+
+### Slice 4: Achieve closeout policy adapter
+
+- Objective: Add #287 Achieve adapter seam for closeout publication and Auto-Retro disposition policy.
+- Why this approach: Publication and disposition policy should be repo-owned and machine-readable instead of living only in host-loaded instructions.
+- Commits: pending commit for Slice 4.
+- What changed: Added achieve_adapter_policy.py, resolve_adapter.py, init_adapter.py, adapter.example.yaml, and .agents/achieve-adapter.yaml; check_goal_artifact complete-state evidence now reports achieve_adapter_policy and blocks found invalid adapters; lifecycle/coordination/adapter contract docs, public-skill validation/dogfood registry, plugin mirror, and tests were updated.
+- Alternatives rejected: Rejected hardcoding handoff-only or audit-only behavior in SKILL.md because repo defaults vary by adapter. Rejected making missing adapters fail because portable Achieve should remain usable in new repos with conservative audit-only defaults.
+- Targeted verification: Focused tests: pytest -q tests/quality_gates/test_achieve_adapter_policy.py tests/quality_gates/test_goal_disposition_gate.py tests/quality_gates/test_goal_coordination_floors.py tests/quality_gates/test_achieve_before_activation.py tests/test_public_skill_validation.py tests/test_public_skill_dogfood.py -> 102 passed. Public-skill validation, dogfood, adapter validation, skill validation, doc links, markdown, command docs, secrets, cautilus proof validator, py_compile, ownership overlap, ruff, Python length, attention visibility, packaging, goal artifact check, and run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review passed.
+- Test duplication pressure: Added tests/quality_gates/test_achieve_adapter_policy.py for resolver parsing, missing-adapter fallback, direct-commit rehearsal binding, invalid-adapter closeout block, resolve CLI, and init scaffold; Python length gate passes after extracting helper functions from check_complete_evidence.
+- Critique: Scenario review folded: the maintained Achieve consumer prompt remains unchanged because routing, draft artifact creation, activation, and inert-until-activation behavior did not change. Deterministic tests own the new closeout-side adapter seam.
+- Off-goal findings: No tracked issue was closed; #287 remains open until final bundle closeout publishes and verifies the carrier.
+- Lessons carried forward: Keep closeout publication defaults and Auto-Retro disposition floors in adapter data with safe audit-only fallback; let check_goal_artifact surface the resolved policy before a goal can claim completion.
+- Metrics: Usage episode emitted by slice closeout: slice-closeout-e962c73045fe45109434fb767a3eef07.
 
 ## Context Sources
 

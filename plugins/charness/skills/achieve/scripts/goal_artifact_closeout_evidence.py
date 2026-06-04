@@ -221,6 +221,19 @@ def _load_sibling_coordination_floors():
     return module
 
 
+def _load_sibling_adapter_policy():
+    """Load the optional achieve adapter policy leaf module."""
+    spec = importlib.util.spec_from_file_location(
+        "achieve_adapter_policy",
+        Path(__file__).resolve().parent / "achieve_adapter_policy.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("achieve_adapter_policy.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 _disposition = _load_sibling_disposition()
 disposition_gate_applies = _disposition.disposition_gate_applies
 apply_disposition_rungs = _disposition.apply_disposition_rungs
@@ -230,6 +243,54 @@ apply_coordination_floors = _coordination.apply_coordination_floors
 
 _metric_window = _load_sibling_metric_window()
 metric_window_attention = _metric_window.metric_window_attention
+
+_adapter_policy = _load_sibling_adapter_policy()
+
+
+def _apply_evidence_binding(helper, report: dict[str, Any], text: str) -> None:
+    tokens = derive_goal_tokens(text)
+    binding_failures: list[dict[str, Any]] = []
+    for entry in report["satisfied"]:
+        if entry.get("via") != "evidence":
+            continue
+        path = Path(entry["path"])
+        if not tokens:
+            reason = (
+                "goal identity not derivable from the Activation line; cannot "
+                "bind this evidence file to the goal"
+            )
+        else:
+            binds, detail = helper.evidence_binds_to_context(path, tokens=tokens)
+            reason = detail
+            if binds:
+                entry["binding"] = reason
+                continue
+        entry["binding"] = reason
+        binding_failures.append({"name": entry["name"], "path": entry["path"], "reason": reason})
+    report["binding_tokens"] = tokens
+    report["binding_failures"] = binding_failures
+    if binding_failures:
+        report["ok"] = False
+
+
+def _retro_narration_for_satisfied(report: dict[str, Any]) -> list[str]:
+    for entry in report["satisfied"]:
+        if entry["name"] != "retro_artifact" or entry.get("via") != "evidence":
+            continue
+        retro_path = Path(entry["path"])
+        try:
+            retro_text = retro_path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            retro_text = ""
+        return narration_sections_present(retro_text)
+    return []
+
+
+def _attach_adapter_policy(report: dict[str, Any], repo_root: Path) -> None:
+    policy = _adapter_policy.closeout_policy_report(repo_root)
+    report["achieve_adapter_policy"] = policy
+    if not policy["valid"]:
+        report["ok"] = False
 
 
 def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
@@ -267,49 +328,11 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # F1 binding: a present file is necessary but not sufficient — each
     # satisfied evidence file must also bind to this goal's identity, else a
     # closeout could cite any pre-existing retro/probe in the repo.
-    tokens = derive_goal_tokens(text)
-    binding_failures: list[dict[str, Any]] = []
-    for entry in report["satisfied"]:
-        if entry.get("via") != "evidence":
-            continue
-        path = Path(entry["path"])
-        if not tokens:
-            # Fail closed: a goal that cites evidence files but whose identity
-            # is not derivable from its `Activation:` line cannot bind them.
-            # A bare `Activation:` substring satisfies check_goal but must not
-            # silently disable binding (that one-line shape would reopen F1).
-            reason = (
-                "goal identity not derivable from the Activation line; cannot "
-                "bind this evidence file to the goal"
-            )
-        else:
-            binds, detail = helper.evidence_binds_to_context(path, tokens=tokens)
-            reason = detail
-            if binds:
-                entry["binding"] = reason
-                continue
-        entry["binding"] = reason
-        binding_failures.append(
-            {"name": entry["name"], "path": entry["path"], "reason": reason}
-        )
-    report["binding_tokens"] = tokens
-    report["binding_failures"] = binding_failures
-    if binding_failures:
-        report["ok"] = False
+    _apply_evidence_binding(helper, report, text)
 
     # F2 affordance: surface which substantive retro sections must travel with
     # the user-facing closeout (not just persist to the file). Non-blocking.
-    narration: list[str] = []
-    for entry in report["satisfied"]:
-        if entry["name"] != "retro_artifact" or entry.get("via") != "evidence":
-            continue
-        retro_path = Path(entry["path"])
-        try:
-            retro_text = retro_path.read_text(encoding="utf-8", errors="ignore")
-        except OSError:
-            retro_text = ""
-        narration = narration_sections_present(retro_text)
-    report["narration_required_sections"] = narration
+    report["narration_required_sections"] = _retro_narration_for_satisfied(report)
 
     # #253 rung 1a: deterministic block-the-blank floor (grandfathered by Created
     # date; substance is rung 2's job). Rung 1b (the disposition_review line) is
@@ -330,5 +353,11 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # report["ok"] — because a host that lacks timestamps legitimately records
     # the documented `unavailable` case instead.
     report["metric_window"] = metric_window_attention(text)
+
+    # Adapter seam for #287: publication and Auto-Retro policy are repo-owned
+    # configuration with safe audit-only fallback when absent. A found but
+    # invalid adapter blocks completion so closeout does not silently ignore the
+    # repo's declared publication contract.
+    _attach_adapter_policy(report, repo_root)
 
     return report

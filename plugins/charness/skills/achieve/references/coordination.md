@@ -51,6 +51,12 @@ two steps into the goal artifact — the `debug` step in the Slice Plan, the clo
 keyword at closeout — and invokes `debug` and `issue` **as-is**. Neither skill
 gets an `achieve`-only branch, and each stays useful standalone.
 
+The closeout publication default and issue-closeout carrier are adapter-owned.
+Resolve `references/adapter-contract.md` before final closeout when a goal names
+tracked issues or publication: missing adapters are safe `audit-only`; a repo
+adapter may choose `handoff-only` or a publish-capable carrier and may require
+the `issue` skill's direct-commit draft validator before push.
+
 ## Coordination Cues (find-skills routing + closeout floors)
 
 The role table above is the standalone-skill reference, not the run-time router.

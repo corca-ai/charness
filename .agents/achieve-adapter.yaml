@@ -1,0 +1,18 @@
+version: 1
+repo: charness
+language: en
+artifact_dir: charness-artifacts/goals
+closeout_publication:
+  default_mode: handoff-only
+  issue_closeout_carrier: direct-commit
+  require_draft_validation: true
+  draft_validation_command_template: "python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number {issue_number} --classification {classification} --carrier direct-commit --commit-message-file {commit_message_file}"
+  require_post_publication_verify: true
+  publish_requires_user_confirmation: true
+auto_retro:
+  disposition_floor: review-required
+  allow_host_blocked_disposition_review_skip: true
+  valid_dispositions:
+    - applied
+    - issue
+  allow_none_optout: true

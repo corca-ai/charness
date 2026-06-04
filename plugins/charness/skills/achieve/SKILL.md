@@ -185,6 +185,6 @@ lifecycle instead of starting a new one.
 ## References
 
 - `references/lifecycle.md`
+- `references/adapter-contract.md`
 - `references/goal-artifact.md`
 - `references/coordination.md`
-- `../../shared/references/bootstrap-resolution.md`

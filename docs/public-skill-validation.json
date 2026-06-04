@@ -28,6 +28,7 @@
   },
   "adapter_requirements": {
     "required": [
+      "achieve",
       "announcement",
       "create-skill",
       "critique",
@@ -45,7 +46,6 @@
       "retro"
     ],
     "adapter-free": [
-      "achieve",
       "create-cli",
       "ideation",
       "spec"
