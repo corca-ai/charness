@@ -1,10 +1,31 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+SCRIPT = REPO_ROOT / "skills/public/quality/references/find_inline_prompt_bulk.py"
+SPEC = importlib.util.spec_from_file_location("find_inline_prompt_bulk", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+find_inline_prompt_bulk = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(find_inline_prompt_bulk)
+
+
+def run_prompt_bulk(*args: str) -> dict[str, object]:
+    old_argv = sys.argv[:]
+    stdout = io.StringIO()
+    try:
+        sys.argv = [str(SCRIPT), *args]
+        with contextlib.redirect_stdout(stdout):
+            assert find_inline_prompt_bulk.main() == 0
+    finally:
+        sys.argv = old_argv
+    return json.loads(stdout.getvalue())
 
 
 def init_git_repo(repo: Path, *tracked_paths: str) -> None:
@@ -29,24 +50,15 @@ def test_find_inline_prompt_bulk_reports_large_multiline_strings(tmp_path: Path)
         'SMALL = """short\\ntext"""\n',
         encoding="utf-8",
     )
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/quality/references/find_inline_prompt_bulk.py",
-            "--repo-root",
-            str(repo),
-            "--source-glob",
-            "src/**/*.py",
-            "--min-multiline-chars",
-            "400",
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--source-glob",
+        "src/**/*.py",
+        "--min-multiline-chars",
+        "400",
+        "--json",
     )
-    payload = json.loads(result.stdout)
     assert payload["source_globs"] == ["src/**/*.py"]
     assert payload["min_multiline_chars"] == 400
     assert payload["findings"] == [
@@ -74,19 +86,10 @@ def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> Non
     )
     init_git_repo(repo, ".gitignore", "src/kept.py")
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/quality/references/find_inline_prompt_bulk.py",
-            "--repo-root",
-            str(repo),
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--json",
     )
-    payload = json.loads(result.stdout)
     assert payload["exemption_globs"] == []
     assert [finding["path"] for finding in payload["findings"]] == ["src/kept.py"]

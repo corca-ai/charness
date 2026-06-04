@@ -1,11 +1,30 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
 
-from .support import run_script
-
 ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "skills/public/quality/scripts/inventory_cli_ergonomics.py"
+SPEC = importlib.util.spec_from_file_location("inventory_cli_ergonomics", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+inventory_cli = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(inventory_cli)
+
+
+def run_inventory(*args: str) -> dict[str, object]:
+    old_argv = sys.argv[:]
+    stdout = io.StringIO()
+    try:
+        sys.argv = [str(SCRIPT), *args]
+        with contextlib.redirect_stdout(stdout):
+            assert inventory_cli.main() == 0
+    finally:
+        sys.argv = old_argv
+    return json.loads(stdout.getvalue())
 
 
 def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> None:
@@ -23,14 +42,11 @@ def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+    payload = run_inventory(
         "--repo-root",
         str(repo),
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["findings"][0]["type"] == "flat_help_without_grouping"
     assert payload["findings"][0]["command_count"] == 12
 
@@ -38,14 +54,11 @@ def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> No
 def test_inventory_cli_ergonomics_reports_unconfigured_when_nothing_to_scan(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+    payload = run_inventory(
         "--repo-root",
         str(repo),
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["registries"] == []
     assert payload["archetype_contracts"] == []
@@ -74,14 +87,11 @@ def test_inventory_cli_ergonomics_skips_vendored_registries(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+    payload = run_inventory(
         "--repo-root",
         str(repo),
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["registries"] == []
 
@@ -111,28 +121,22 @@ def test_inventory_cli_ergonomics_flags_cross_archetype_contract_overlap(tmp_pat
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+    payload = run_inventory(
         "--repo-root",
         str(repo),
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     finding_types = {finding["type"] for finding in payload["findings"]}
     assert "cross_archetype_schema_overlap" in finding_types
     assert "fixture_schema_namespace_mismatch" in finding_types
 
 
 def test_committed_cli_ergonomics_inputs_are_scanned_clean() -> None:
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+    payload = run_inventory(
         "--repo-root",
         str(ROOT),
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["status"] == "clean"
     assert payload["scope_classification"] == "scanned"
     assert [registry["path"] for registry in payload["registries"]] == [

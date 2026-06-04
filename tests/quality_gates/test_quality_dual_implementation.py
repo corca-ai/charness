@@ -1,9 +1,15 @@
 from __future__ import annotations
 
-import json
+import importlib.util
 from pathlib import Path
 
-from .support import ROOT, run_script
+from .support import ROOT
+
+SCRIPT = ROOT / "skills/public/quality/scripts/inventory_dual_implementation.py"
+SPEC = importlib.util.spec_from_file_location("inventory_dual_implementation", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+inventory_dual = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(inventory_dual)
 
 
 def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) -> None:
@@ -24,13 +30,7 @@ def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_dual_implementation.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = inventory_dual.build_payload(repo)
     assert payload["candidate_count"] == 1
     candidate = payload["candidates"][0]
     assert candidate["schema_id"] == "demo.behavior.packet.v1"
