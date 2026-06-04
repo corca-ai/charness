@@ -186,7 +186,8 @@ def upsert_goal(
                         "lines (path or `skipped: <enum>: <detail>`); in-scope goals also need "
                         "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
                         "`Retro dispositions: none — <reason>` opt-out), and any triggered "
-                        "`Gather:`/`Release:`/`Issue closeout:` step in `## Coordination Cues`. "
+                        "`Routing:`/`Gather:`/`Release:`/`Issue closeout:` step in "
+                        "`## Coordination Cues`. "
                         "See the closeout contract."
                     ),
                     "evidence_report": evidence_report,

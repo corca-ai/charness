@@ -24,6 +24,7 @@ def _load(name: str):
 
 
 cf = _load("goal_artifact_coordination_floors")
+pr = _load("goal_artifact_phase_routing")
 ce = _load("goal_artifact_closeout_evidence")
 gal = _load("goal_artifact_lib")
 cga = _load("check_goal_artifact")
@@ -573,6 +574,89 @@ def test_issue_closeout_grandfathers_pre_rule_goal(tmp_path: Path) -> None:
     assert report["issue_closeout_floor"]["in_scope"] is False
     assert report["issue_closeout_floor"]["triggered"] is False
     assert "coordination_missing" not in report
+    assert report["ok"] is True
+
+
+def test_phase_route_triggers_are_recorded_work_only() -> None:
+    planned = (
+        "## Slice Plan\n\n| 1 | implementation and debug RCA later | now | proof | planned |\n\n"
+        "## Slice Log\n\n- Objective: inspect only\n"
+    )
+    assert pr.phase_route_triggers(planned) == {
+        "impl": False,
+        "debug": False,
+        "quality": False,
+        "issue": False,
+    }
+
+
+def test_phase_route_triggers_do_not_treat_regression_suite_as_debug() -> None:
+    text = "## Slice Log\n\n- Targeted verification: regression suite passed under pytest\n"
+    assert pr.phase_route_triggers(text) == {
+        "impl": False,
+        "debug": False,
+        "quality": True,
+        "issue": False,
+    }
+
+
+def test_phase_routing_triggered_without_required_skill_refuses(tmp_path: Path) -> None:
+    created = "2026-06-04"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_LOCAL_SOURCE,
+            coordination="Routing: see find-skills for current phase\n",
+            release_work="- What changed: updated goal helper behavior\n",
+        ),
+    )
+    assert report["phase_routing_floor"]["triggered"] is True
+    assert report["phase_routing_floor"]["required"] == ["impl"]
+    assert report["phase_routing_floor"]["evidence"] == {"impl": "ref_incomplete"}
+    assert {e["floor"] for e in report["coordination_missing"]} == {"phase_routing"}
+    assert report["ok"] is False
+
+
+def test_phase_routing_satisfied_by_find_skills_skill_reference(tmp_path: Path) -> None:
+    created = "2026-06-04"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_LOCAL_SOURCE,
+            coordination="Routing: find-skills selected impl and quality for this slice\n",
+            release_work=(
+                "- What changed: updated goal helper behavior\n"
+                "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
+            ),
+        ),
+    )
+    assert report["phase_routing_floor"]["required"] == ["impl", "quality"]
+    assert report["phase_routing_floor"]["evidence"] == {"impl": "ref", "quality": "ref"}
+    assert "coordination_missing" not in report
+    assert report["ok"] is True
+
+
+def test_phase_routing_satisfied_by_optout(tmp_path: Path) -> None:
+    created = "2026-06-04"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_LOCAL_SOURCE,
+            coordination=(
+                "Routing: n/a — restoring a generated fixture only, no owner skill boundary "
+                "was crossed in this goal\n"
+            ),
+            release_work="- What changed: restored a generated fixture snapshot\n",
+        ),
+    )
+    assert report["phase_routing_floor"]["triggered"] is True
+    assert report["phase_routing_floor"]["evidence"] == {"impl": "optout"}
     assert report["ok"] is True
 
 

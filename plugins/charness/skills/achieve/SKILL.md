@@ -113,11 +113,11 @@ lifecycle instead of starting a new one.
      bound `Disposition review:` line (or `host-blocked-subagent` skip). This is
      presence/binding-only, never a content classifier; pre-rule goals are
      grandfathered.
-   - **coordination floors (gather + release + issue closeout), for goals
-     created after the rules landed:** an external source in
-     `## Context Sources` needs a `Gather:` step (or `n/a — <reason>`); a touched
-     release surface needs a `Release:` step; tracked issue sources or closeout
-     work need an `Issue closeout:` step. Presence-only, grandfathered.
+   - **coordination floors (routing + gather + release + issue closeout), for
+     goals created after the rules landed:** recorded phase work needs
+     `Routing:` evidence; external sources need `Gather:`; touched release
+     surfaces need `Release:`; tracked issue sources or closeout work need
+     `Issue closeout:`. Presence-only, grandfathered.
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
@@ -152,9 +152,9 @@ lifecycle instead of starting a new one.
 - at completion, an explicit disposition for each surfaced improvement
   (`applied: <what>` or `issue #N`) — never prose-only memory
 - a `## Coordination Cues` section that defers phase routing to `find-skills`
-  (never an inline phase→skill map) and, at completion, a `Gather:` /
-  `Release:` / `Issue closeout:` step (or an `n/a — <reason>` opt-out) whenever
-  the matching closeout floor is triggered
+  (never an inline phase→skill map) and, at completion, `Routing:` / `Gather:`
+  / `Release:` / `Issue closeout:` evidence (or an `n/a — <reason>` opt-out)
+  whenever the matching closeout floor is triggered
 
 ## Guardrails
 
@@ -179,8 +179,8 @@ lifecycle instead of starting a new one.
 - Do not tighten the deterministic disposition floor into a content
   classifier; it proves a review ran, and the reviewer/human judges substance.
 - Do not bake a phase→skill map into `## Coordination Cues`; defer routing to
-  `find-skills` and record only the `gather` / `release` presence floors or
-  explicit `n/a — <reason>` opt-outs.
+  `find-skills` and record only closeout-floor evidence or explicit
+  `n/a — <reason>` opt-outs.
 
 ## References
 

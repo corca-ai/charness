@@ -9,13 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 - tighten `achieve` routing and phase-evidence
-  contract.
-- Next action: add the smallest `achieve` coordination/routing evidence guard
-  that prevents implementation/debug slices from remaining `achieve`-only, while
-  carrying the Slice 3 host-surface follow-up
-  (`host_surface_reference=104`) as deferred exception/modeling work before
-  final closeout.
+- Current slice: Slice 5 - skill discoverability/readability cleanup for
+  `achieve`.
+- Next action: inspect `achieve` reference/index discoverability and SKILL.md
+  headroom, then make the smallest cleanup that improves operator lookup without
+  reintroducing repo-local history anchors. Carry the Slice 3 host-surface
+  follow-up (`host_surface_reference=104`) as deferred exception/modeling work
+  before final closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -155,7 +155,7 @@ Slice 2 after baseline counts and false-positive review.
 | 1 | Baseline RCA and skill text-quality inventory | Avoid cleaning only `achieve` or only issue anchors while sibling text-quality smells remain | Debug artifact, issue-anchor counts, ergonomics payload, candidate taxonomy, routing proof | complete |
 | 2 | Define and implement the portable skill text-quality detector | Prevention needs a validator bundle, not another prose warning | Inventory/gate script, subcheck schema, allowlist/exception model, tests, quality consumption | complete |
 | 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | complete |
-| 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | planned |
+| 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | complete |
 | 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | planned |
 | 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | planned |
 
@@ -254,6 +254,20 @@ tracked issue closeout carrier.
 - Off-goal findings: None.
 - Lessons carried forward: Do not stop at a clean source inventory when shipped examples and adapter docs still describe the pre-promotion contract. Preserve exact behavior-test phrases while removing numeric provenance anchors.
 - Metrics: package_issue_anchor=0; package_dated_incident=0; host_surface_reference=104; reference_discoverability=0; active_blocking_rules+=portable_package_issue_anchor,portable_package_dated_incident; Cautilus scenario review=preserve/no scenario registry mutation
+
+### Slice 4: phase-routing closeout floor
+
+- Objective: Add an achieve closeout guard so recorded implementation/debug/quality/issue phase work cannot remain achieve-only without routing evidence.
+- Why this approach: The RCA showed long goals can use achieve as a scratchpad while skipping the owning implementation/debug skills; a presence-only closeout floor gives the cue deterministic teeth without hard-coding a phase-to-skill router.
+- Commits:
+- What changed: Added goal_artifact_phase_routing.py and wired it into achieve complete-evidence checks; updated achieve template, lifecycle, coordination reference, SKILL.md checklist, prescribed closeout contract, plugin mirror, and public-skill dogfood scenario review; adjusted stale tests that still asserted deleted issue anchors or live handoff backlog state.
+- Alternatives rejected: Rejected semantic route-quality classification and an exhaustive phase-to-skill map. Rejected using bare 'regression' as a debug cue after fresh-eye review showed quality-only 'regression suite passed' false positives.
+- Targeted verification: Focused tests passed: goal/artifact and routing set 116 tests before review; post-review focused set 63 tests. Broad pytest passed: 2153 passed, 4 skipped. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review passed after dogfood review. Required validators passed: validate_skills, packaging, packaging_committed, doc links, command docs, markdown, secrets, cautilus proof policy, py_compile, ownership, public skill validation/dogfood, ruff, python lengths, attention visibility, browser runtime guard.
+- Test duplication pressure: New coverage adds phase-route trigger tests, missing-route refusal, find-skills route satisfaction, opt-out satisfaction, recorded-work-only scoping, and regression-suite-not-debug false-positive coverage. Broad suite initially exposed stale issue-anchor assertions and a live-handoff fixture dependency; both were narrowed to stable contract assertions.
+- Critique: Fresh-eye parent-delegated critique executed by subagent 019e90e9-7fd7-7862-a2e5-20119c79f777. Act-before-ship findings were applied: authoritative closeout docs now mention Routing; bare regression no longer triggers debug routing; the new phase-routing files will be staged with source and plugin mirror.
+- Off-goal findings: The closeout wrapper repeated the generic achieve dogfood scenario-review follow-up; resolved in this slice by updating docs/public-skill-dogfood.json for the additive phase-routing floor.
+- Lessons carried forward: Presence-only floors still need authoritative closeout docs, not only template/reference prose. Tests should assert durable contracts rather than deleted issue-number anchors or live handoff backlog contents.
+- Metrics: phase_routing_rule_date=2026-06-04; closeout_usage_episode=slice-closeout-c799a010c49e4b6981fab4a726656397; broad_pytest=2153_passed_4_skipped; package_issue_anchor=0; package_dated_incident=0; host_surface_reference=104
 
 ## Context Sources
 

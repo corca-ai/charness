@@ -462,14 +462,20 @@ issue numbers parsed from the `Activation:` line). A closeout that points
 `binding_failures` entry. Binding is clone-safe (basename/content tokens,
 not mtime — a fresh checkout resets every file's mtime).
 
-### Coordination floors — gather + release + issue
+### Coordination floors — routing + gather + release + issue
 
 Presence-only closeout floors give *teeth* to routing-cue boundaries the prose
-cue under-serves, implemented in
-`goal_artifact_coordination_floors.py` and wired through the same After-phase
-evidence gate. Each fires only when its trigger is present, and is satisfied by a
-step line in `## Coordination Cues` (a real reference or an explicit opt-out):
+cue under-serves, wired through the same After-phase evidence gate. Each fires
+only when its trigger is present, and is satisfied by a step line in
+`## Coordination Cues` (a real reference or an explicit opt-out):
 
+- **phase-routing floor** — when recorded work sections show implementation
+  (`What changed:` / `Commits:`), bug/RCA/debug cues, quality-gate cues, or
+  issue-closeout cues, the run must record a `Routing:` line that names
+  `find-skills` and the routed skill (`impl`, `debug`, `quality`, or `issue`),
+  or `Routing: n/a — <reason>` (≥30 chars). This floor is presence-only: it
+  proves `achieve` coordinated the owner skill boundary, not that the prose route
+  was semantically perfect.
 - **gather floor** — when `## Context Sources` names an external source (an
   `http(s)://` URL; Slack / Notion / Google-Docs / Drive links and bare web URLs
   all qualify), the run must record a `Gather: <ref>` step or a
@@ -491,12 +497,13 @@ All are presence/binding-only (they never classify whether prose is "good
 enough"), scoped to `## Coordination Cues` so a goal that merely *describes* a
 step line in prose cannot falsely satisfy them, and **grandfathered by
 `Created` date**. Gather/release apply to goals Created on or after the
-gather/release rule landing date; issue closeout applies to goals Created on or
-after its landing date. A missing/malformed `Created` fails closed. The floors
-fire at the `complete` flip (`upsert_goal.py`) and post-flip
-(`check_goal_artifact.py`), like the disposition gate. `gather`, `release`, and
-`issue` stay useful standalone — these are operator-side cues `achieve` plans
-into the artifact, never `achieve`-only branches in those skills.
+gather/release rule landing date; issue closeout and phase routing apply to
+goals Created on or after their own landing dates. A missing/malformed `Created`
+fails closed. The floors fire at the `complete` flip (`upsert_goal.py`) and
+post-flip (`check_goal_artifact.py`), like the disposition gate. `impl`,
+`debug`, `quality`, `gather`, `release`, and `issue` stay useful standalone —
+these are operator-side cues `achieve` plans into the artifact, never
+`achieve`-only branches in those skills.
 
 ## Honest Proof Discipline
 

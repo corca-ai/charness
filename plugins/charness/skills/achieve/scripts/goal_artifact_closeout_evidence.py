@@ -221,6 +221,19 @@ def _load_sibling_coordination_floors():
     return module
 
 
+def _load_sibling_phase_routing():
+    """Load the sibling phase-routing floor module."""
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_phase_routing",
+        Path(__file__).resolve().parent / "goal_artifact_phase_routing.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_phase_routing.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_sibling_adapter_policy():
     """Load the optional achieve adapter policy leaf module."""
     spec = importlib.util.spec_from_file_location(
@@ -240,6 +253,9 @@ apply_disposition_rungs = _disposition.apply_disposition_rungs
 
 _coordination = _load_sibling_coordination_floors()
 apply_coordination_floors = _coordination.apply_coordination_floors
+
+_phase_routing = _load_sibling_phase_routing()
+apply_phase_routing_floor = _phase_routing.apply_phase_routing_floor
 
 _metric_window = _load_sibling_metric_window()
 metric_window_attention = _metric_window.metric_window_attention
@@ -346,6 +362,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # flip, explicit opt-out valve. Independent of the disposition scope (its own
     # rule date), so it runs unconditionally; the module no-ops when inert.
     apply_coordination_floors(report, text)
+    apply_phase_routing_floor(report, text)
 
     # Metric-window affordance: surface whether a goal-scoped `Host metric window:` line
     # was recorded so an absent window is visible at flip-to-complete rather than
