@@ -4,8 +4,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from git_inventory_lib import visible_repo_files  # noqa: E402
 
 FINDING_CLASSES = {
     "structural_fact", "contextual_recommendation", "acknowledgement_gap",
@@ -17,14 +20,6 @@ QUALITY_ADAPTER_CANDIDATES = tuple(Path(path) for path in (
     ".claude/quality-adapter.yaml", "docs/quality-adapter.yaml", "quality-adapter.yaml",
 ))
 DEFAULT_REVIEW_GLOBS = (".agents/*-adapter.yaml", "skills/public/*/adapter.example.yaml", "scripts/*.py")
-
-
-def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        cwd=repo_root, check=False, capture_output=True,
-    )
-    return None if result.returncode != 0 else {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
 
 
 def _relative(path: Path, repo_root: Path) -> str:
@@ -88,7 +83,7 @@ def _review_globs(repo_root: Path) -> tuple[list[str], str]:
 
 def _review_paths(repo_root: Path) -> tuple[list[Path], str]:
     globs, source = _review_globs(repo_root)
-    visible_files = _git_visible_repo_files(repo_root)
+    visible_files = visible_repo_files(repo_root)
     paths: list[Path] = []
     for pattern in globs:
         paths.extend(

@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cli_ergonomics_lib as celib  # noqa: E402
+from git_inventory_lib import visible_repo_files  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -44,20 +44,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        return None
-    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
-
-
 def _default_paths(repo_root: Path, patterns: list[str], vendored: list[str]) -> list[Path]:
-    visible_files = _git_visible_repo_files(repo_root)
+    visible_files = visible_repo_files(repo_root)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in patterns:

@@ -6,13 +6,17 @@ import argparse
 import ast
 import fnmatch
 import json
-import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from git_inventory_lib import GitFileListingError, visible_repo_files  # noqa: E402
 
 GIT_AWARE_MARKERS = (
     "git ls-files",
     "git_visible_repo_files",
     "_git_visible_repo_files",
+    "visible_repo_files",
     "git_list_repo_files",
     "iter_repo_files",
     "iter_matching_repo_files",
@@ -34,31 +38,6 @@ class InventoryError(SystemExit):
     pass
 
 
-def _decode_output(value: bytes) -> str:
-    return value.decode("utf-8", errors="replace")
-
-
-def git_visible_repo_files(repo_root: Path, *, require_git: bool = False) -> set[Path] | None:
-    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        if require_git:
-            raise InventoryError(
-                "gitignore scan hygiene file listing failed\n"
-                f"command: {' '.join(command)}\n"
-                f"exit_code: {result.returncode}\n"
-                f"STDOUT:\n{_decode_output(result.stdout)}\n"
-                f"STDERR:\n{_decode_output(result.stderr)}"
-            )
-        return None
-    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
-
-
 def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
 
@@ -69,7 +48,14 @@ def candidate_files(
     *,
     require_git: bool = False,
 ) -> list[Path]:
-    visible_files = git_visible_repo_files(repo_root, require_git=require_git)
+    try:
+        visible_files = visible_repo_files(
+            repo_root,
+            require_git=require_git,
+            context="gitignore scan hygiene file listing",
+        )
+    except GitFileListingError as exc:
+        raise InventoryError(str(exc)) from exc
     candidates: list[Path] = []
     seen: set[Path] = set()
     for pattern in path_globs:

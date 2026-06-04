@@ -4,8 +4,12 @@ import hashlib
 import json
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from git_inventory_lib import visible_repo_files  # noqa: E402
 
 DEFAULT_PATTERNS = [".agents/cli-side-effect-probes.json", "**/cli-side-effect-probes.json", "**/*side-effect-probes*.json"]
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20
@@ -13,18 +17,6 @@ DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        return None
-    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
 
 
 def _filter_path(repo_root: Path, path: Path, visible: set[Path] | None, seen: set[Path], vendored_filter) -> bool:
@@ -38,7 +30,7 @@ def _filter_path(repo_root: Path, path: Path, visible: set[Path] | None, seen: s
 
 
 def default_paths(repo_root: Path, vendored_filter=None) -> list[Path]:
-    visible_files = _git_visible_repo_files(repo_root)
+    visible_files = visible_repo_files(repo_root)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in DEFAULT_PATTERNS:
