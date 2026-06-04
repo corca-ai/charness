@@ -13,50 +13,45 @@
 
 ## Current State
 
-- New improvement goal is shaped but not activated:
-  [portable skill contract quality and routing](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md),
-  backed by
-  [RCA](../charness-artifacts/debug/2026-06-04-portable-skill-contract-quality-and-routing.md).
-  It treats issue-number leakage as one symptom of broader portable skill text
-  quality: repo-local history leakage, overfull cores, weak reference
-  discoverability, host assumptions, repeated prose ritual, exact-prose/source
-  guard risk, and `achieve` absorbing `impl`/`debug`.
-- Released **v0.17.0**; real-host follow-up remains unrun for clean
-  `charness update` and `tokei` doctor/install.
-- Future-work-efficiency closeout commit `f66d484d` is pushed and post-push
-  `issue_tool.py verify-closeout --expect-state CLOSED` passed for #285, #286,
-  #287, #288, and #289.
-- #293 and #184 remain open and deferred unless the new text-quality work
-  directly trips their owning quality/product surfaces.
+- Portable skill contract quality goal is complete:
+  [goal artifact](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md).
+  It added package-level portable skill text-quality checks, cleaned concrete
+  issue/date anchors from portable skill packages, promoted issue/date leakage
+  to blocking skill-ergonomics rules, tightened `achieve` phase-routing
+  evidence, and added an `achieve` reference index.
+- Final locked closeout passed with broad pytest in 297.5s; no live Cautilus run
+  or installed-host cleanup is claimed. Retro is persisted at
+  [portable skill closeout retro](../charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md).
+- Follow-up issues filed from the retro:
+  #295 closeout test-selection cost, #296 bounded reviewer cost/tier visibility.
+  Existing open work #184, #293, and #294 remains outside the completed goal.
+- Local `main` is ahead of `origin/main` by the portable-skill goal commits plus
+  this closeout commit once committed; push is still a maintainer/operator
+  decision.
 
 ## Next Session
 
-Activate directly:
-`/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`.
-
-Start Slice 1 with `find-skills` routing, the RCA, and baseline skill
-text-quality inventories. Do not use a memorized exhaustive phase-to-skill
-table; decide the owning skill at each boundary and use short anchors only for
-easy-to-miss cases like implementation -> `impl` and bug/RCA work -> `debug`.
+1. If publishing this local work, inspect `git log --oneline origin/main..HEAD`
+   and run the repo's push path; expect the pre-push read-only quality gate.
+2. If continuing quality work instead, route through `find-skills` then
+   `quality` for #295. Keep #296 as a separate review-cost visibility issue
+   unless the same surface naturally owns both.
+3. Do not reopen the completed portable skill goal unless current verification
+   contradicts its final evidence.
 
 ## Discuss
 
-- Skill text quality is broader than issue-number leakage. Treat concrete issue
-  anchors as one subtype inside the portable skill text contract.
-- For future workflow-improvement goals, keep one startup `find-skills` pass,
-  read-only recommendation probes at real routing boundaries, and slice/bundle
-  fresh-eye critique.
-- `achieve` should self-route through `find-skills`, not carry a hard-coded
-  list of every skill. The next goal should add anchors only where the prior run
-  proved the boundary is easy to miss.
-- Long-goal waste signal is not cached input alone. Stronger signals are
-  compactions, repeated status/diff/check commands, polling, and broad-gate
-  cadence.
+- #295 should decide how pre-lock slice proof differs from final
+  verification-lock broad proof, rather than only increasing budgets.
+- #296 should record whether reviewer model/tier is repo-selected,
+  host-defaulted, or unavailable, because subagent cost surprised the user in
+  this closeout.
+- `host_surface_reference=104` is intentionally advisory/deferred, not a
+  blocking portability violation from the completed goal.
 
 ## References
 
-- [portable skill contract quality goal](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md),
-  [RCA](../charness-artifacts/debug/2026-06-04-portable-skill-contract-quality-and-routing.md)
-- [quality latest](../charness-artifacts/quality/latest.md),
+- [portable skill contract quality goal](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md)
+- [closeout retro](../charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md),
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [testability quality ratchet goal](../charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md)
+- [quality latest](../charness-artifacts/quality/latest.md)

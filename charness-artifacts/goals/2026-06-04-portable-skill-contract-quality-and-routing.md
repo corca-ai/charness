@@ -1,6 +1,6 @@
 # Achieve Goal: Portable skill contract quality and routing discipline
 
-Status: active
+Status: complete
 Created: 2026-06-04
 Activation: `/goal @charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md`
 
@@ -9,11 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 - broad verify, critique, retro, and handoff closeout.
-- Next action: run final closeout proof, decide whether the deferred
-  host-surface follow-up (`host_surface_reference=104`, now 9 for `achieve`
-  after scoped cleanup) remains a reviewed exception or needs a final modeling
-  slice, then update retro/handoff with honest non-claims.
+- Current slice: complete - final closeout recorded.
+- Next action: n/a - goal complete. Deferred follow-ups are tracked as #295
+  (closeout test-selection cost) and #296 (bounded reviewer cost/tier
+  visibility); `host_surface_reference=104` remains advisory evidence, not a
+  blocking portability violation.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -155,7 +155,7 @@ Slice 2 after baseline counts and false-positive review.
 | 3 | Generalize portable skill packages away from repo-local/history-coupled prose | Remove current violations and reduce historical/text-quality coupling | Updated skill docs/scripts/examples, plugin mirror sync, doc/link tests | complete |
 | 4 | Tighten `achieve` routing and phase-evidence contract | Stop `achieve` from absorbing `impl`/`debug` responsibilities without hard-coding every skill | Goal validator/docs/tests proving routing evidence or explicit opt-out | complete |
 | 5 | Skill discoverability/readability cleanup for `achieve` | Fix missing-link/headroom/reference-index quality at the root surface | Reference/index structure, SKILL.md headroom, link validation, focused tests | complete |
-| 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | planned |
+| 6 | Broad verify, critique, retro, and handoff closeout | Prove the new prevention/response loop and leave non-claims clear | Locked broad gate, fresh-eye critique, retro dispositions, handoff update | complete |
 
 ## Coordination Cues
 
@@ -192,6 +192,15 @@ text-quality baseline and gate-design pass. Slice 5 routing used `find-skills
 discoverability/readability cleanup for achieve"` and selected `achieve` for
 goal lifecycle plus `quality` for reference-discoverability validation; the
 implementation stayed repo-local and synced plugin mirrors before validators.
+Routing: `find-skills` recommended `impl` for implementation-shaped mutation
+work; implementation slices used repo-local source changes with generated mirror
+sync before validators.
+Routing: `find-skills` recommended `debug` for the RCA source that shaped this
+goal; the debug artifact remained the causal source while this goal pursued the
+quality/routing fixes.
+Routing: `find-skills` recommended `quality` for portable skill text-quality,
+validation, and final closeout proof; quality inventories and gates own the
+portable skill report.
 Gather: n/a - this goal was shaped from local repo artifacts and the user's
 in-thread portability requirement, not an external URL.
 Release: n/a - no release surface is planned.
@@ -393,16 +402,71 @@ re-verifies the folded revisions without re-running critique.
 
 ## Final Verification
 
-Not run; this is a draft goal prepared for later activation.
+- Final locked closeout: `python3 scripts/run_slice_closeout.py --repo-root .
+  --verification-lock --ack-cautilus-skill-review --paths $(git diff
+  --name-only origin/main..HEAD)` passed. It synced plugin mirrors and ran
+  packaging, committed packaging, doc links, command docs, markdown, secrets,
+  Cautilus proof policy, skill validation, py_compile, ownership overlap, public
+  skill validation/dogfood, adapter validation, mutation-testing workflow test,
+  GitHub Actions checks, integrations, support/tool dry-runs, Ruff, Python
+  lengths, attention-state visibility, broad pytest, and browser-runtime guard.
+  Broad pytest passed inside the wrapper in 297.5s. Usage episode:
+  `slice-closeout-ede1ec13dda447f38e8f3412f184ea82`.
+- Final skill text-quality report: `python3
+  skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .
+  --json` reported `checked_skill_count=23`, `package_issue_anchor=0`,
+  `package_dated_incident=0`, `reference_discoverability=0`,
+  `host_surface_reference=104`, `heuristic_finding_count=17`, and
+  `prose_review_status=required`. The remaining host-surface signal is advisory
+  and intentionally not promoted to a blocking rule in this goal.
+- Final blocking gate: `python3
+  skills/public/quality/scripts/validate_skill_ergonomics.py --repo-root .
+  --json` returned exit 0 with 9 configured rules and no violations.
+- Cautilus: `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
+  returned `next_action: none` on the clean post-commit tree; no live Cautilus
+  run was performed. Scenario-review decisions are frozen in
+  `docs/public-skill-dogfood.json`; deterministic tests and dogfood validation
+  own this closeout.
+- Retro: session retro persisted at
+  `charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md`
+  and refreshed `charness-artifacts/retro/recent-lessons.md`.
+- Retro: charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md
+- Metrics: no goal-scoped host metric window was recorded because the required
+  session-file/timestamp window was unavailable. `probe_host_logs.py --repo-root
+  . --format markdown` produced thread-wide pressure only: 6 compactions, 660
+  function calls, 97 custom tool calls, 14 pytest invocations, and repeated
+  VCS/check commands. These are not claimed as per-goal totals.
+- Host log probe: skipped: host-log-not-exposed: no goal-scoped session file and timestamp window were available, so only thread-wide pressure was reported.
+- Non-claims: installed-host cleanup was not run; no release surface was touched;
+  no external gather source was needed; open product/mutation work (#184, #293,
+  #294) remains outside this goal.
 
 ## User Verification Instructions
 
-After activation and completion, run the documented portable skill text-quality
-inventory/gate and inspect the `achieve` goal artifact closeout evidence. The
-completion report should name any remaining reviewed exceptions, placeholders,
-or fixtures and should not leave concrete Charness history leakage in portable
-skill packages.
+To verify the closeout, run:
+
+- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py
+  --repo-root . --json`
+- `python3 skills/public/quality/scripts/validate_skill_ergonomics.py
+  --repo-root . --json`
+- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock
+  --ack-cautilus-skill-review --paths $(git diff --name-only origin/main..HEAD)`
+
+Expected current posture: zero package issue anchors, zero package dated
+incidents, zero reference-discoverability gaps, no blocking skill-ergonomics
+violations, and `host_surface_reference=104` as advisory/deferred evidence.
 
 ## Auto-Retro
 
-Not run; this goal is not complete.
+Session retro found two workflow improvements and both have concrete
+dispositions:
+
+- issue #295: make closeout test-selection cost explicit, separating pre-lock
+  slice proof from final verification-lock broad proof.
+- issue #296: expose bounded reviewer cost/tier selection in closeout evidence
+  when the host, not the repo, chooses it.
+
+Retro dispositions: issues #295 and #296 filed and body-verified through the
+repo-owned issue backend. No prose-only improvement remains.
+
+Disposition review: charness-artifacts/critique/2026-06-04-portable-skill-contract-quality-final-closeout-review.md
