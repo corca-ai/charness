@@ -13,11 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 committed; selecting the next safe quality or bug
-  target.
-- Next action: inspect current evidence for a reproducible bug or next
-  low-risk quality weakness, then decide whether to continue a second slice or
-  enter final closeout based on the timebox reserve.
+- Current slice: Slice 2 complete; #299 direct-commit closeout draft verified.
+- Next action: rerun changed-surface closeout after critique/goal updates,
+  commit the #299 slice with `Close #299`, then decide whether to continue a
+  third slice or enter final closeout based on the timebox reserve.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -130,7 +129,7 @@ the run must route through `issue` and `debug` before claiming closeout.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Refresh current quality, bug, and skill-health posture. | The target should come from current repo evidence, not stale memory. | quality routing, current gate/inventory summary, selected target rationale. | completed |
-| 2 | Fix the highest-value reproducible bug or quality weakness. | Bug fixes need root cause and focused proof before broader refactoring. | root cause, focused tests before/after or equivalent proof, changed-surface check. | planned |
+| 2 | Fix the highest-value reproducible bug or quality weakness. | Bug fixes need root cause and focused proof before broader refactoring. | root cause, focused tests before/after or equivalent proof, changed-surface check. | completed |
 | 3 | Improve one skill-health surface if current evidence supports it. | The user explicitly included skill health; it should be considered as a first-class target. | skill metadata/ergonomics/public-spec/export proof, synced surfaces if touched. | completed |
 | 4 | Use remaining time for the next safe quality improvement. | The timebox should keep producing value when earlier slices close cleanly. | focused tests, critique if non-trivial, committed diff. | planned |
 | 5 | Finalize and close out. | The goal needs honest proof, complete artifact evidence, retro dispositions, and commits. | final broad/substitute proof, complete goal artifact, retro/disposition evidence, clean tree or explicit non-claim. | planned |
@@ -169,8 +168,11 @@ Gather: n/a — no external URLs, Slack, Notion, Docs, Drive, or other external
 source is being used as working context.
 Release: n/a — this goal must not bump versions, publish, or edit install
 manifests unless the user changes scope.
-Issue closeout: pending — no tracked issue has been selected; if selected, route
-through `issue` and record closeout carrier/proof before final completion.
+Issue closeout: #299 selected as feature/deferred quality work; carrier is
+direct-commit with `Close #299`; `issue_tool.py validate-closeout-draft` passed
+for `charness-artifacts/issue/2026-06-05-issue-299-closeout-commit-message.md`.
+Final `verify-closeout --expect-state CLOSED` is post-push and not claimed in
+this local goal slice.
 
 ## Slice Log
 
@@ -192,6 +194,21 @@ recommended `quality` for the current gate and skill-health posture.
 - Off-goal findings: No tracked issue selected or closed. Nose inventory in run-quality skipped because nose was not on PATH for the standing gate; this is not treated as a bug in this slice.
 - Lessons carried forward: For skill-health goals, prefer measured headroom and focused behavior tests over heuristic-only prose findings. Keep broad pytest for closeout or changed broad surfaces, not every pre-lock slice.
 - Metrics: Activation 2026-06-05T07:41:49+09:00; first broad read-only gate 42.8s; focused handoff agentic package pytest 2.40s; no tests added, so no duplicate-pressure sample required.
+
+### Slice 2: Issue 299 release-only sentinel inventory
+
+- Objective: Resolve #299 by adding an advisory quality inventory for release-only test sentinel coverage.
+- Why this approach: #299 is the only current open quality/test-economics issue and directly follows the first slice's quality evidence. It is feature/deferred-work class, not a bug, so a resolution brief and critique are the right issue flow.
+- Commits: current issue-299 slice commit is `git log -1 --oneline` after this
+  artifact update; subject `Report release-only sentinel coverage`.
+- What changed: Added skills/public/quality/scripts/inventory_release_only_sentinels.py, focused tests in tests/quality_gates/test_release_only_sentinel_inventory.py, inventory-dispatch discoverability, quality dogfood evidence, plugin mirror sync, critique artifact, and a verified direct-commit closeout draft for #299.
+- Alternatives rejected: Rejected making the inventory a blocking gate because the signal is intentionally advisory and default all-test scanning can be noisy. Rejected live Cautilus because the planner returned required=false and next_action=none. Rejected leaving marker/async robustness as deferred after reviewers raised them because structural marker parsing and async test counting were cheap to apply.
+- Targeted verification: find-skills routed #299 resolution to issue and quality; issue_tool preflight selected gh and resolve-invocation targeted corca-ai/charness#299; feature resolution brief had no open decisions. Focused pytest for test_release_only_sentinel_inventory.py passed 4 in 2.38s; selected inventory output for test_release_publish.py and test_release_publish_real_host_delta.py reported release_only=19, standing=8, standing sentinels=8, findings=[]; ruff, py_compile, check_python_lengths, validate_cautilus_proof, validate_packaging, validate_packaging_committed, validate_skills, check_skill_ownership_overlap, validate_public_skill_validation, validate_public_skill_dogfood, check_doc_links, check_command_docs, check-markdown, check-secrets, validate_attention_state_visibility, and run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review passed. issue_tool validate-closeout-draft passed for direct-commit Close #299 with classification feature and critique binding.
+- Test duplication pressure: Added four focused tests in one new quality_gates module; no broad duplicate-pressure gate was run for this pre-lock slice. Final broad closeout should classify any suite pressure separately.
+- Critique: Fresh-eye critique artifact: charness-artifacts/critique/2026-06-05-issue-299-release-only-sentinel-inventory.md. Two angle reviewers and one counterweight found no Act Before Ship issues. Bundle items applied: selected-file closeout output, Cautilus non-run proof, --path dispatch warning. Valid-defer robustness items were applied before commit: structural marker parsing and AsyncFunctionDef support.
+- Off-goal findings: No external source or release proof. #299 will be carried by direct commit with Close #299; final GitHub CLOSED verification is post-push and is not claimed locally.
+- Lessons carried forward: Advisory inventories should make selected-file mode explicit when default broad scans are intentionally noisy. Cheap robustness concerns from critique should be applied before commit when they reduce future gate-promotion risk without expanding scope.
+- Metrics: Focused pytest 2.38s; selected inventory command returned immediately; slice closeout rehearsal 14.6s.
 
 ## Context Sources
 

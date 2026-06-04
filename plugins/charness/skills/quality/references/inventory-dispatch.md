@@ -59,6 +59,10 @@ the quality adapter so the default inventory does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
 - standing test economics:
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py`
+- release-only sentinel coverage:
+  `$SKILL_DIR/scripts/inventory_release_only_sentinels.py`
+  (use `--path` for selected slow/release-only files; the default all-tests
+  scan is intentionally broad and advisory-noisy)
 - startup probes:
   `$SKILL_DIR/scripts/measure_startup_probes.py`
 - runtime summaries:
