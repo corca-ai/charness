@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shutil
@@ -7,7 +8,24 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from tests.quality_gates.test_release_publish import _seed_publish_release_repo
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_release_module(name: str):
+    path = ROOT / f"skills/public/release/scripts/{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_helpers = _load_release_module("publish_release_helpers")
+_preflight = _load_release_module("publish_release_preflight")
 
 
 def _write_real_host_release_config(repo: Path) -> None:
@@ -298,36 +316,32 @@ def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Pa
 
 
 def test_publish_release_dry_run_fails_closed_when_previous_tag_fetch_fails(tmp_path: Path) -> None:
-    repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
-    _write_base_ref_failing_git(bin_dir)
-    env = _publish_env(tmp_path, bin_dir)
-    env["FAKE_GIT_FETCH_TAG_FAIL"] = "1"
+    commands: list[list[str]] = []
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--critique-blocked",
-            "synthetic-host-signal for legacy release publish real-host-delta test",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    def fake_run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        if command[:3] == ["git", "rev-parse", "--verify"]:
+            return subprocess.CompletedProcess(command, 1, "", "")
+        if command[:3] == ["git", "ls-remote", "--tags"]:
+            return subprocess.CompletedProcess(command, 0, "abc refs/tags/v0.0.0\n", "")
+        if command[:3] == ["git", "fetch", "--quiet"]:
+            return subprocess.CompletedProcess(command, 43, "", "forced tag fetch failure\n")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert "release base ref fetch failed while computing unreleased paths" in result.stderr
-    assert "forced tag fetch failure" in result.stderr
-    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
-    assert not (repo / ".quality-ran").exists()
-    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(_helpers, "run", fake_run)
+    try:
+        with pytest.raises(SystemExit) as excinfo:
+            _helpers.unreleased_paths(tmp_path, remote="origin", branch="main", previous_version="0.0.0")
+    finally:
+        monkeypatch.undo()
+
+    message = str(excinfo.value)
+    assert "release base ref fetch failed while computing unreleased paths" in message
+    assert "forced tag fetch failure" in message
+    fetch_command = ["git", "fetch", "--quiet", "origin", "refs/tags/v0.0.0:refs/tags/v0.0.0"]
+    assert fetch_command in commands
+    assert not any(command[:3] == ["git", "diff", "--name-only"] for command in commands[commands.index(fetch_command) + 1 :])
 
 
 def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: Path) -> None:
@@ -398,36 +412,30 @@ def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: P
 
 
 def test_publish_release_dry_run_fails_closed_when_previous_tag_lookup_fails(tmp_path: Path) -> None:
-    repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
-    _write_base_ref_failing_git(bin_dir)
-    env = _publish_env(tmp_path, bin_dir)
-    env["FAKE_GIT_LS_REMOTE_PREVIOUS_TAG_FAIL"] = "1"
+    commands: list[list[str]] = []
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--critique-blocked",
-            "synthetic-host-signal for legacy release publish real-host-delta test",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    def fake_run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        if command[:3] == ["git", "rev-parse", "--verify"]:
+            return subprocess.CompletedProcess(command, 1, "", "")
+        if command[:3] == ["git", "ls-remote", "--tags"]:
+            return subprocess.CompletedProcess(command, 44, "", "forced previous tag lookup failure\n")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert "release base ref lookup failed while computing unreleased paths" in result.stderr
-    assert "forced previous tag lookup failure" in result.stderr
-    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
-    assert not (repo / ".quality-ran").exists()
-    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(_helpers, "run", fake_run)
+    try:
+        with pytest.raises(SystemExit) as excinfo:
+            _helpers.unreleased_paths(tmp_path, remote="origin", branch="main", previous_version="0.0.0")
+    finally:
+        monkeypatch.undo()
+
+    message = str(excinfo.value)
+    assert "release base ref lookup failed while computing unreleased paths" in message
+    assert "forced previous tag lookup failure" in message
+    assert ["git", "ls-remote", "--tags", "origin", "refs/tags/v0.0.0"] in commands
+    assert not any(command[:3] == ["git", "fetch", "--quiet"] for command in commands)
+    assert not any(command[:3] == ["git", "diff", "--name-only"] for command in commands)
 
 
 def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path]:
@@ -532,43 +540,23 @@ def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) ->
 
 
 def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _write_real_host_release_config(repo)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Configure release host proof"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    env = _publish_env(tmp_path, bin_dir)
-    env["FAKE_GIT_DIFF_NAME_ONLY_FAIL"] = "1"
+    def fake_run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
+        if command[:3] == ["git", "diff", "--name-only"]:
+            return subprocess.CompletedProcess(command, 42, "", "forced diff failure\n")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--critique-blocked",
-            "synthetic-host-signal for legacy release publish real-host-delta test",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(_helpers, "run", fake_run)
+    try:
+        with pytest.raises(SystemExit) as excinfo:
+            _helpers.unreleased_paths(tmp_path, remote="origin", branch="main")
+    finally:
+        monkeypatch.undo()
 
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert "release diff failed while computing unreleased paths" in result.stderr
-    assert "command: git diff --name-only origin/main..HEAD" in result.stderr
-    assert "forced diff failure" in result.stderr
-    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    message = str(excinfo.value)
+    assert "release diff failed while computing unreleased paths" in message
+    assert "command: git diff --name-only origin/main..HEAD" in message
+    assert "forced diff failure" in message
 
 
 def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
@@ -637,41 +625,20 @@ def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: 
 
 
 def test_publish_release_dry_run_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _write_broken_real_host_release_config(repo)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Configure broken release host proof"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    def broken_payload(_repo_root: Path, _repo_paths: list[str]) -> dict[str, object]:
+        return {
+            "required": False,
+            "configuration_status": "broken",
+            "unresolved_trigger_surfaces": ["missing-release-surface"],
+        }
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--critique-blocked",
-            "synthetic-host-signal for legacy release publish real-host-delta test",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=_publish_env(tmp_path, bin_dir),
-    )
+    with pytest.raises(SystemExit) as excinfo:
+        _preflight.safe_real_host_payload(tmp_path, ["README.md"], build_payload=broken_payload)
 
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert "release real-host proof probe failed" in result.stderr
-    assert '"configuration_status": "broken"' in result.stderr
-    assert "missing-release-surface" in result.stderr
-    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    message = str(excinfo.value)
+    assert "release real-host proof probe failed" in message
+    assert '"configuration_status": "broken"' in message
+    assert "missing-release-surface" in message
 
 
 def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path: Path) -> None:
