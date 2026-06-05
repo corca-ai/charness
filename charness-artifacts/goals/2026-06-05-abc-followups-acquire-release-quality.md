@@ -1,6 +1,6 @@
 # Achieve Goal: A~C parallel follow-ups: acquire signal fidelity (#310/#309), release resilience (#312), quality-gate economics (#307/#308)
 
-Status: draft
+Status: complete
 Created: 2026-06-05
 Activation: `/goal @charness-artifacts/goals/2026-06-05-abc-followups-acquire-release-quality.md`
 
@@ -10,13 +10,12 @@ and the shared final gate (user chose no work-budget).
 
 ## Active Operating Frame
 
-- Current slice: ALL SIX sub-slices landed — A (#310 `75f30584`, #309 `618bca29`),
-  B (#312 `32d06b80`+`e09444f0`), C (#307 `223ac53b`, #308 `285d64c0`). B2 landed
-  before C1 per the shared-surface guard.
-- Next action: Z phase — three per-chunk bounded fresh-eye reviews (different
-  agent contexts, read-only), then the shared `./scripts/run-quality.sh --release`
-  gate on a clean tree, then issue closeout verification, then retro + flip to
-  complete.
+- Current slice: COMPLETE. All six sub-slices landed and pushed to `origin/main`;
+  three per-chunk fresh-eye reviews returned ship/no-blockers; the bundle
+  `--release` gate passed 72/0 on clean-tree SHA `9f08bdc3`; #307/#308/#309/#310/
+  #312 verified CLOSED; retro persisted + Auto-Retro dispositioned.
+- Next action: none — goal achieved. See `## Final Verification`, `## Auto-Retro`,
+  and the Closeout-Floor Evidence above.
 - Quality route (B2 + C1): `quality` consulted and applied (B2 read-only-safe
   closeout via `CHARNESS_QUALITY_MODE`; C1 named fast checker in `repo-python`).
 - Execution model (at `/goal`, dynamic workflow approved): pursue via a Workflow
@@ -220,6 +219,25 @@ Frame). Fill the floors below during/at the run:
   `issue_tool.py validate-closeout-draft` / `verify-closeout`. #311 and #306 are
   out of scope (Non-Goals), not closed here.
 
+### Closeout-Floor Evidence (filled at completion)
+
+- Routing: `find-skills` routed `debug` — falsifiable reproduce-then-fixed per bug.
+- Routing: `find-skills` routed `impl` — the per-chunk slice edits.
+- Routing: `find-skills` routed `quality` — B2 read-only-safe cut + C1 checker.
+- Routing: `find-skills` routed `issue` — closeout of the five issues.
+- Routing: `find-skills` routed `critique` (per-chunk fresh-eye) and `retro` (after-action).
+- **Gather:** n/a — all context sources are local artifacts/issues; no external
+  URL/Slack/Notion/Docs/Drive fetch occurred.
+- **Release:** n/a — publish-flow *tooling* fix only (`publish_release_resume.py`,
+  `slice_closeout_usage_episode.py`); no version bump, no install-manifest edit,
+  no release cut.
+- **Issue closeout:** carrier `direct-commit` (`Close #N` on the owning commits +
+  the `07128a61` ledger carrier); `validate-closeout-draft` ok for the bug group
+  (#309/#310/#312) and feature group (#307/#308); pushed to `origin/main`;
+  `verify-closeout --expect-state CLOSED` → `status: verified` for both groups;
+  `gh issue view` confirms all five CLOSED. RCA ledger appended (3 bug events +
+  1 retro weak_proof event).
+
 ## Discuss Before Activation
 
 Discuss before activation: APPROVED — issue auto-close (#307/#308/#309/#310/#312),
@@ -411,14 +429,56 @@ Over-worry raised but not folded:
 
 ## Off-Goal Findings
 
-(none yet — file via `issue` during the run and record only the reference + reason here)
+- **Authoring into a portable skill package without checking its gate** — while
+  authoring this goal's fixes I added bare `#NNN` issue anchors to two portable
+  skill-package scripts (a sibling of the attention-state-vocab trap #308's own
+  reference covers); caught at the bundle gate, fixed in `9f08bdc3`. Not filed as
+  a new issue (external write out of this goal's approved scope, which was issue
+  *close* only). Disposition: `applied` — extended
+  `docs/conventions/authoring-preflight.md` with a "Portable skill packages"
+  section (issue-anchor / dated-incident / host-surface gates + a fast
+  `validate_skill_ergonomics` command). See `## Auto-Retro`.
 
 ## Final Verification
 
-Pending — populated at closeout: per-bug reproduce-then-fixed results, full
-pytest, the `./scripts/run-quality.sh --release` broad-gate attestation (gate id
-/ PASS / clean-tree SHA), and the five issue-close proofs. No live/prod proof in
-scope.
+**Reproduce-then-fixed (per bug, red before → green after):**
+
+- #310: `tests/test_web_fetch_cleanup.py::test_acquire_preserves_render_error_when_cleanup_also_fails`.
+- #309: `tests/test_agent_browser_runtime_guard.py::test_runtime_next_step_distinguishes_residue_class` and `::test_assert_no_orphans_init_reap_guidance_for_reparented_only`.
+- #312-B1: `tests/quality_gates/test_release_publish_resilience.py::test_resume_commits_artifact_before_push_with_executed_retro_payload`.
+- #312-B2: `tests/quality_gates/test_slice_closeout_usage_episode.py::test_run_slice_closeout_skips_usage_episode_inside_quality_run`.
+
+**Bundle barrier (broad-gate attestation):** `./scripts/run-quality.sh --release`
+→ PASS, 72 passed / 0 failed, on clean-tree SHA `9f08bdc3` (the User Acceptance
+#194 test `test_session_capture_cli_install_and_uninstall_round_trip` passed
+inside the full suite). Pre-push gate PASS (71/0). Recorded as a result
+attestation, not a re-embedded provider command string.
+
+**Issue closeout (proof):** `validate-closeout-draft` ok (bug + feature groups);
+`verify-closeout --expect-state CLOSED` → `status: verified` for both groups;
+`gh issue view` → #307, #308, #309, #310, #312 all `CLOSED`, each referenced by a
+landed commit on `origin/main` (`75f30584`, `618bca29`, `32d06b80`+`e09444f0`,
+`223ac53b`, `285d64c0`, ledger `07128a61`).
+
+Closeout evidence (After-phase):
+
+Retro: charness-artifacts/retro/2026-06-05-abc-followups-closeout.md
+
+Host-log-probe: charness-artifacts/probe/2026-06-05-abc-followups-acquire-release-quality-host-log.json
+
+Disposition review: charness-artifacts/retro/2026-06-05-abc-followups-closeout.md
+
+**Residual risk / non-claims:**
+
+- No live/prod/provider proof. The only external writes were the `git push` to
+  `origin/main` and the resulting GitHub issue auto-close (both user-approved);
+  no provider product behavior was exercised.
+- #312-B2's exact historical xdist interleaving was not re-derived; the fix
+  closes the read-only-mutation seam deterministically (verified by the
+  suppression test + full-suite green) rather than reproducing the original race.
+- #307 lands at the `run_slice_closeout` aggregate (the per-slice aggregate the
+  issue names), not the separate hardcoded git pre-commit gate list — documented
+  honestly, not over-claimed.
 
 ## User Verification Instructions
 
@@ -433,6 +493,38 @@ After the run completes, verify directly:
 
 ## Auto-Retro
 
-Pending — runs at the After phase via `retro`; each surfaced improvement gets an
-explicit `applied: <what>` or `issue #N` disposition (or one falsifiable
-`Retro dispositions: none — <reason>` line).
+Session retro persisted at
+[charness-artifacts/retro/2026-06-05-abc-followups-closeout.md](../retro/2026-06-05-abc-followups-closeout.md)
+(summary digest + lesson-selection-index refreshed).
+
+Substantive findings (inline, not path-only):
+
+- **Waste:** the bundle `--release` gate surfaced two blockers the per-slice
+  cheap checks missed — bare `#NNN` issue anchors in portable skill packages and
+  a duplicate boundary-bypass candidate — costing one extra gate run + the
+  `9f08bdc3` fix. Sharpest irony: the issue-anchor trap is a sibling of the
+  attention-state-vocab trap that #308's own authoring-preflight reference (built
+  this run) documents.
+- **Critical decisions:** mutations ran sequentially in the shared parent
+  worktree (Boundaries + B2/C1 shared-surface guard), with the approved "fan out"
+  honored where safe (independent reproduce-then-fixed + 3 parallel read-only
+  fresh-eye reviews); B2 cut = read-only-safe closeout via `CHARNESS_QUALITY_MODE`;
+  B2 landed before C1 on the shared surface.
+- **Counterfactuals:** Klein (pre-mortem) — a 30s "what will the bundle gate flag
+  that my per-slice set won't?" names `validate_skill_ergonomics` +
+  `check_boundary_bypass_ratchet`. Raskin (discoverability) — make the constraint
+  reachable at authoring time, not just knowable.
+
+**Dispositions (every surfaced improvement is `applied` or `issue #N`):**
+
+- `applied`: extended `docs/conventions/authoring-preflight.md` with a "Portable
+  skill packages" section (issue-anchor / dated-incident / host-surface gates + a
+  fast `validate_skill_ergonomics` command), committed this run — closes the
+  portable-package authoring trap and surfaces the pre-mortem habit. The deeper
+  "shift `validate_skill_ergonomics` to the per-slice aggregate" option is the
+  same class as #307; not folded (off-goal; external issue-file out of approved
+  scope) and folded instead into the discoverability fix above.
+
+Disposition review: complete — 1 surfaced improvement, dispositioned `applied`
+(authoring-preflight.md portable-package section); RCA ledger carries the matching
+`retro/weak_proof` event (`per-slice-checks-miss-portable-package-gate`).

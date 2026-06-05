@@ -59,6 +59,32 @@ forced during #302.
 near-limit *changed* files at every slice closeout, so this is workflow signal, not memory
 (#256). The advisory never blocks; the length gate is the hard floor.
 
+## Portable skill packages
+
+A file under `skills/public/**` or `skills/support/**` ships as a *portable*
+package, so
+[validate_skill_ergonomics.py](../../scripts/validate_skill_ergonomics.py)
+flags package text (SKILL.md,
+references, **and helper scripts — including their comments**) that embeds
+origin-repo-specific anchors. Authoring a fix into a skill-package helper is the
+trap: a `(#NNN)` provenance comment that is fine in a `scripts/` repo file trips
+`portable_package_issue_anchor` in a skill package.
+
+Before authoring into a skill package, avoid (or expect to declare):
+
+- bare issue anchors — `#310`, `owner/repo#5`, `issues/5` (keep issue provenance
+  in the commit message and the goal/critique artifact, not the package).
+- dated incident references — `2026-06-05 ... regression/trap/lesson`.
+- host-surface references — `Claude Code`, `Codex`, `settings.json`,
+  `.claude/`, `.codex/` (host specifics belong in adapters/presets).
+
+Run the ergonomics validator after touching a skill package; it is fast and
+catches these before the broad gate:
+
+```bash
+python3 scripts/validate_skill_ergonomics.py --repo-root .
+```
+
 ## Regex / string-matching edges
 
 When a check matches a version, identifier, or other token by string content,

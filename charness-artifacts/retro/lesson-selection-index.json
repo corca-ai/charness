@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 135,
-  "candidate_count": 815,
+  "source_artifact_count": 136,
+  "candidate_count": 820,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -139,6 +139,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:83429e11873b",
+      "kind": "current_focus",
+      "lesson": "Closeout review of the A~C parallel follow-up goal: gather/web-fetch acquisition signal fidelity (#310/#309), release publish-flow resilience (#312 B1+B2), and quality-gate economics (#307/#308).",
+      "normalized_key": "closeout review of the a c parallel follow up goal gather web fetch acquisition",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -283,26 +303,6 @@
           "section": "Context"
         }
       ]
-    },
-    {
-      "candidate_id": "current_focus:7b719dc4db46",
-      "kind": "current_focus",
-      "lesson": "This session ran an `achieve` goal for the user's next-improvement request plus GitHub issues #299 and #300.",
-      "normalized_key": "this session ran an achieve goal for the user s next improvement request plus",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
-          "date": "2026-06-05",
-          "section": "Context"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -431,6 +431,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:83429e11873b",
+      "kind": "current_focus",
+      "lesson": "Closeout review of the A~C parallel follow-up goal: gather/web-fetch acquisition signal fidelity (#310/#309), release publish-flow resilience (#312 B1+B2), and quality-gate economics (#307/#308).",
+      "normalized_key": "closeout review of the a c parallel follow up goal gather web fetch acquisition",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -777,6 +797,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:33dc4d730159",
+      "kind": "next_improvement",
+      "lesson": "memory + capability (applied): extended `docs/conventions/authoring-preflight.md` with a \"Portable skill packages\" section covering `portable_package_issue_anchor`, dated-incident, and host-surface gates plus a fast `validate_skill_ergonomics` command — closing the exact trap hit this run and making the pre-mortem habit discoverable at authoring time.",
+      "normalized_key": "memory capability applied extended docs conventions authoring preflight md with a portable skill packages",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:179f4e3790f8",
       "kind": "next_improvement",
       "lesson": "**memory:** persisted here + recent-lessons digest; the nose-schema and sibling-bootstrap lessons are captured in the goal slice log and the testability doc.",
@@ -1057,6 +1097,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:e45344793d90",
+      "kind": "repeat_trap",
+      "lesson": "Minor: an MD040 fence-language miss and two pathy-backtick doc-link misses on the new docs required quick re-runs (caught fast by the doc gates, not the bundle gate).",
+      "normalized_key": "minor an md040 fence language miss and two pathy backtick doc link misses on",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:6630b0678247",
       "kind": "repeat_trap",
       "lesson": "**`publish_release.py` from the installed plugin cache fails its runtime bootstrap** (`ModuleNotFoundError: skills.public`) — a dead end before I switched to the repo-root copy. Small, but it cost one failed attempt.",
@@ -1117,6 +1177,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:4b6583b0ee70",
+      "kind": "repeat_trap",
+      "lesson": "Sharpest irony: the issue-anchor trap is a *sibling* of the attention-state banned-vocabulary trap that #308's authoring-preflight reference — authored in this same run — documents. I embedded `(#310)`/`(#312)` provenance comments in portable skill-package scripts without applying the very discipline I was writing. The constraint was discoverable in principle; I did not route my own authoring through it.",
+      "normalized_key": "sharpest irony the issue anchor trap is a sibling of the attention state banned",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:fe5a4dec2b08",
       "kind": "repeat_trap",
       "lesson": "Smaller gate-caught frictions, each one edit, NOT itemized further (recording bar stated): the bug-class `Siblings:` field parse (`Decision:`/`Proof:` at line start read as new ledger fields) and the phase-routing `Routing:` regex capturing only the first physical line. Both validators gave precise errors at the right boundary — working as intended.",
@@ -1151,6 +1231,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8fa79ccf3119",
+      "kind": "repeat_trap",
+      "lesson": "The bundle `--release` gate surfaced two real blockers the per-slice cheap checks missed: bare `#NNN` issue anchors in portable skill packages (`portable_package_issue_anchor`) and a duplicate boundary-bypass candidate from a redundant headroom subprocess test. Both cost one extra gate run plus a fix commit (9f08bdc3).",
+      "normalized_key": "the bundle release gate surfaced two real blockers the per slice cheap checks missed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
           "date": "2026-06-05",
           "section": "Waste"
         }
