@@ -14,21 +14,23 @@ Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish.
+- `./scripts/run-quality.sh --release` passed before publish (the release helper's own gate ran green; the subsequent pre-push gate flaked once on the known usage-episodes test-isolation race #194, then passed clean — the failing test passes in isolation, gitignored live tree only).
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- initial release push carried the release branch update and tag from the release helper.
+- release push carried the release branch update and tag to `origin`.
+- `gh release view v0.21.0` confirms the published GitHub release (`draft: false`, `prerelease: false`).
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.21.0`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- branch/tag push: complete (`origin/main` at the release commit; tag `v0.21.0` pushed)
+- GitHub release record: created and verified — `https://github.com/corca-ai/charness/releases/tag/v0.21.0`
+- public release surface verification: verified via `gh release view v0.21.0`
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
+- finalize note: the publish helper aborted at its pre-push gate on the #194 flake, so the branch/tag push, GitHub release creation, and this verified record were completed directly; the local release commit + tag the helper prepared were reused unchanged.
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified — published at `https://github.com/corca-ai/charness/releases/tag/v0.21.0`.
 
 ## Release Adapter Preflight
 
@@ -104,16 +106,11 @@ Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-own
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.20.0 (minor release: setup host-docs normalization, release-only sentinel inventory, and achieve closeout/reporting improvements).
+- Run `charness update` to pull 0.21.0 (minor release: nose 0.5 clone-advisory adaptation, five more in-process `inventory_*` quality-gate conversions, and the boundary-bypass testability ratchet + quality-artifact scaffold).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
-- NEW SETUP HOST-DOCS PATH - `setup` now exposes `normalize_host_docs.py`, a dry-run-by-default helper for narrow `AGENTS.md` / host-docs-only normalization that preserves `CLAUDE.md -> AGENTS.md` behavior and blocks on real `CLAUDE.md` merge decisions.
-- NEW QUALITY INVENTORY - `quality` includes an advisory release-only sentinel coverage inventory for selected expensive pytest files, so maintainers can see release-only counts, standing counts, and likely standing sentinels before moving more tests out of standing pytest.
-- ACHIEVE CLOSEOUT REPORTING - final reports now call out actual run waste and true unresolved user decisions, and avoid routine publication/push prompts by default.
-- CLOSEOUT COST CONTROL - broad pytest proof is cached for the same locked mutation fingerprint and pre-lock closeout rehearsals skip broad pytest by design.
-- NEW ACHIEVE TIMEBOX MODE - when the user gives a fixed work budget, `achieve` now records `Timebox:`, `Activation time:`, `Closeout reserve:`, and `Done-early policy: continue_next_improvement`.
-- NEW ACHIEVE CLOSEOUT GATE - timeboxed goals cannot flip to `complete` before the closeout reserve window unless `## Final Verification` records a falsifiable `No safe next slice:`, `Early close rationale:`, or supported `Stop condition:` line.
-- QUALITY TEST ECONOMICS - release-only pytest coverage is separated from standing pytest for expensive release publish paths, and quality runner tests share setup helpers without reducing release-path proof.
+- NEW NOSE 0.5 SUPPORT - the `quality` clone-family advisory now runs under nose 0.5: it parses the 0.5 JSON object schema (it was silently reading the new schema as zero families) and reports the live nose version. `integrations/tools/nose.json` now prefers nose 0.5.0+. nose stays advisory; the gate still passes without it. Install/upgrade to nose 0.5 via the upstream installer or `brew install corca-ai/tap/nose`.
+- TESTABILITY CONVERSIONS - five more `inventory_*` quality-gate tests run their entrypoint in-process instead of spawning a subprocess, so coverage/type/mutation tooling can see across the old boundary. The repo-local boundary-bypass ratchet dropped 94 -> 90 candidate files (55 -> 51 convertible). Two inventory scripts (`inventory_public_spec_quality`, `inventory_cli_side_effect_probes`) gained the sibling-library import bootstrap so they are genuinely in-process importable.
 - Carried-forward (0.18.0) - `quality` runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
 - Carried-forward (0.18.0) - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
 - Carried-forward (0.18.0) - the hard near-copy gate is document-oriented (`check-doc-near-duplicates`); code clone cleanup starts advisory through `nose`, with `jscpd` still deferred until a baseline/ignore policy is justified.
