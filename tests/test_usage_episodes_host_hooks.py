@@ -5,13 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import host_hook_find_skills as fs
+import host_hook_install_lib as lib
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
-
-import host_hook_find_skills as fs  # noqa: E402
-import host_hook_install_lib as lib  # noqa: E402
 
 LIVE_STATE_PATH = REPO_ROOT / lib.HOST_HOOKS_STATE_RELATIVE
 LIVE_USAGE_EPISODES_DIR = REPO_ROOT / ".charness" / "usage-episodes"

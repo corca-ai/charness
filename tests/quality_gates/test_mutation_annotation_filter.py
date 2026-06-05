@@ -8,14 +8,10 @@ expressions stay killable.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from textwrap import dedent
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
+from scripts.filter_cosmic_ray_mutants import (
     _annotation_union_positions,
     _pipe_position,
     annotation_union_operator_positions,

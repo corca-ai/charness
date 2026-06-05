@@ -1,23 +1,20 @@
 from __future__ import annotations
 
 import json
-import sys
 import textwrap
 from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from scripts.t_events_emit_lib import (  # noqa: E402
+from scripts.t_events_emit_lib import (
     append_event,
     emit_lesson_cited,
     emit_retro_lesson_cites,
     extract_lesson_cites_from_markdown,
     load_adapter,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 jsonschema = pytest.importorskip("jsonschema")
 

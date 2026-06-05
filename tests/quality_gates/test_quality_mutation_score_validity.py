@@ -4,18 +4,16 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 from textwrap import dedent
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-from scripts.check_mutation_score import (  # noqa: E402
+from scripts.check_mutation_score import (
     iter_dump_records,
     mutation_metrics,
     summarize_cosmic_ray,
 )
+
+ROOT = Path(__file__).resolve().parents[2]
 
 _ADAPTER_HEADER = dedent(
     """\

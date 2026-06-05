@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
+import host_hook_codex_toml_lib as toml
+import host_hook_find_skills as fs
+import host_hook_install_lib as lib
 import pytest
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
-
-import host_hook_codex_toml_lib as toml  # noqa: E402
-import host_hook_find_skills as fs  # noqa: E402
-import host_hook_install_lib as lib  # noqa: E402
 
 
 @pytest.fixture

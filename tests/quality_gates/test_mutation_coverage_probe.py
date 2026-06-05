@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-from scripts.mutation_sampling_lib import run_test_coverage  # noqa: E402
+from scripts.mutation_sampling_lib import run_test_coverage
 
 
 def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) -> None:

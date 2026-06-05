@@ -5,11 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from scripts.skill_t_inventory_lib import (  # noqa: E402
+from scripts.skill_t_inventory_lib import (
     TIER_C_AWAITING,
     TIER_C_POPULATED,
     build_inventory,
@@ -17,6 +13,8 @@ from scripts.skill_t_inventory_lib import (  # noqa: E402
     render_inventory_markdown,
     write_inventory,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _make_minimal_repo(tmp_path: Path, skill_ids: list[str]) -> Path:

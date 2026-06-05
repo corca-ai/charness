@@ -9,20 +9,17 @@ from textwrap import dedent
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-import scripts.mutation_sampling_lib as mutation_sampling_lib  # noqa: E402
-from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
+import scripts.mutation_sampling_lib as mutation_sampling_lib
+from scripts.filter_cosmic_ray_mutants import (
     UNCOVERED_MUTATION_SKIP_OUTPUT,
     coverage_skip_reason,
     skip_reason,
 )
-from scripts.mutation_line_coverage_lib import (  # noqa: E402
+from scripts.mutation_line_coverage_lib import (
     covered_statement_spans,
     mutation_line_is_covered,
 )
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation_sampling_lib import (
     _covered_statement_spans,
     _mutation_line_is_covered,
     build_mutation_line_coverage,

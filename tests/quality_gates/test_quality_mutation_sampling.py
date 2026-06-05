@@ -6,23 +6,19 @@ import json
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-import scripts.mutation_changed_files_lib as mutation_changed_files_lib  # noqa: E402
-import scripts.sample_mutation_files as sample_mutation_files  # noqa: E402
-from scripts.mutation_changed_files_lib import (  # noqa: E402
+import scripts.mutation_changed_files_lib as mutation_changed_files_lib
+import scripts.sample_mutation_files as sample_mutation_files
+from scripts.mutation_changed_files_lib import (
     changed_line_numbers,
     classify_changed_file_exclusions,
     classify_changed_line_scope_gap,
 )
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation_sampling_lib import (
     coverage_run_command,
     filter_eligible_by_coverage,
     filter_eligible_by_mutation_line_coverage,
@@ -35,13 +31,15 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_budgeted_sample,
     select_test_nodeids,
 )
-from scripts.sample_mutation_files import (  # noqa: E402
+from scripts.sample_mutation_files import (
     list_changed,
     list_eligible,
     mutation_pathspecs,
     pool_for_path,
     write_manifest,
 )
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_list_changed_returns_stripped_paths_from_git_diff(

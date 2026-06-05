@@ -4,17 +4,13 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-import scripts.mutation_changed_files_lib as mutation_changed_files_lib  # noqa: E402
-from scripts.mutation_changed_files_lib import changed_line_scope_gap_targets  # noqa: E402
-from scripts.sample_mutation_files import write_manifest  # noqa: E402
+import scripts.mutation_changed_files_lib as mutation_changed_files_lib
+from scripts.mutation_changed_files_lib import changed_line_scope_gap_targets
+from scripts.sample_mutation_files import write_manifest
 
 
 def test_changed_line_scope_gap_targets_include_source_text(

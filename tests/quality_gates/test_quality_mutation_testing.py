@@ -19,24 +19,23 @@ from textwrap import dedent
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-from scripts.check_mutation_score import (  # noqa: E402
+from scripts.check_mutation_score import (
     iter_dump_records,
     summarize_survived_mutations,
 )
-from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
+from scripts.filter_cosmic_ray_mutants import (
     UNCOVERED_MUTATION_SKIP_OUTPUT,
     coverage_skip_reason,
     is_trivial_entry_guard_mutation,
 )
-from scripts.quality_adapter_lib import (  # noqa: E402
+from scripts.quality_adapter_lib import (
     infer_quality_defaults,
     load_quality_adapter,
     validate_quality_adapter_data,
 )
-from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING  # noqa: E402
+from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING
+
+ROOT = Path(__file__).resolve().parents[2]
 
 PROPOSE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py"
 TEMPLATE_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "templates" / "mutation-tests.yml"

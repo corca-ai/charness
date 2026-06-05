@@ -3,19 +3,14 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from scripts.critique_adapter_lib import (  # noqa: E402
+from scripts.critique_adapter_lib import (
     adapter_has_sections,
     load_adapter,
     validate_adapter_data,
 )
-from scripts.critique_packet_lib import (  # noqa: E402
+from scripts.critique_packet_lib import (
     PACKET_KIND,
     PACKET_VERSION,
     build_packet,
@@ -23,8 +18,10 @@ from scripts.critique_packet_lib import (  # noqa: E402
     render_markdown,
     write_packet,
 )
-from scripts.surfaces_lib import collect_changed_paths_for_ref  # noqa: E402
-from scripts.validate_critique_packet import validate_packet  # noqa: E402
+from scripts.surfaces_lib import collect_changed_paths_for_ref
+from scripts.validate_critique_packet import validate_packet
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _write_yaml(path: Path, body: str) -> None:

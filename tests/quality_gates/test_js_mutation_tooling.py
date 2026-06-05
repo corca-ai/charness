@@ -4,18 +4,15 @@ import json
 import os
 import re
 import subprocess
-import sys
 from pathlib import Path
 
-from .support import ROOT
-
-sys.path.insert(0, str(ROOT))
-
-from scripts.run_js_mutation import (  # noqa: E402
+from scripts.run_js_mutation import (
     list_js_targets,
     remove_stale_report,
     select_js_targets,
 )
+
+from .support import ROOT
 
 
 def test_stryker_config_mutates_only_agent_runtime_sources() -> None:

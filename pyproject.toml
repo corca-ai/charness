@@ -1,5 +1,11 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Put the repo root and scripts/ on sys.path for the test session so test
+# modules import `scripts.x` / bare `host_hook_*` at the top instead of each
+# file re-doing a `sys.path.insert(...)` bootstrap (which forced `# noqa: E402`).
+# Caution: with scripts/ on the path, a scripts/<stdlib-name>.py would shadow
+# that stdlib module during tests — keep script basenames non-colliding.
+pythonpath = [".", "scripts"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 markers = [

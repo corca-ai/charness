@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import session_start_find_skills as hook
 
-import session_start_find_skills as hook  # noqa: E402
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
 

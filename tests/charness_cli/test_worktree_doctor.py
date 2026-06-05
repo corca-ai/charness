@@ -9,11 +9,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+from scripts import worktree_doctor_lib as lib
 
-from scripts import worktree_doctor_lib as lib  # noqa: E402
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _git(*args: str, cwd: Path) -> None:
