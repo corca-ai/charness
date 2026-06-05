@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -56,7 +56,7 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 82.
+- Evaluated changed paths: 84.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
   - `.gitignore`
@@ -73,11 +73,11 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
   - `charness-artifacts/issue/2026-06-05-issue-299-closeout-commit-message.md`
   - `charness-artifacts/issue/2026-06-05-issue-300-closeout-commit-message.md`
   - `charness-artifacts/probe/2026-06-05-3h-code-quality-bugfix-host-log-probe.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
   - `charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md`
-  - `charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md`
-  - ... 62 more
+  - ... 64 more
 
 ## Real-Host Verification
 
@@ -100,7 +100,7 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
