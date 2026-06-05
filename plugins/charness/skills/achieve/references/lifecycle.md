@@ -220,6 +220,22 @@ sample, not the full broad gate, and it carries the test-debt signal forward in
 the goal artifact so a compacted or resumed session does not rediscover the same
 late blocker.
 
+### External-side-effect approval is phase-scoped
+
+Operator approval for an external side effect — publish, push, remote CI watch,
+or live apply — is scoped to the phase or bundle that requested it, and does
+**not** carry forward to a later phase. When an approved publish/CI/apply lane
+completes and the run continues into done-early or test-only quality slices, the
+per-slice verification cadence is **local by default**: prove each slice
+locally, batch the remote proof, and run remote CI once over the final bundled
+state. Do not re-enter the publish/push/CI-watch loop on every later slice on
+the strength of the earlier lane's approval — that silent carry-forward burns
+the operator's time and noises the audit trail. Per-slice remote publication is
+assumed **only** when the operator explicitly asks for it, or when a slice is
+itself runtime-affecting and requires earlier publication to be proven (see
+*Post-Apply Checkpoint Classification*). When in doubt about whether a later
+phase still carries the earlier approval, treat it as not carried and ask.
+
 Fresh-eye slice critique should receive a bounded slice review packet rather
 than the entire historical goal by default. Include the slice intent, changed
 files and owning/generated surfaces, expected invariants, tests/proof already
@@ -292,6 +308,15 @@ unsafe or product/policy-bound, file or record it instead of burning the timebox
 on a risky guess. If the macro goal is already satisfied and no planned work
 remains, continue with the safest handoff/open-issue improvement until the
 closeout reserve begins.
+
+Continuation crosses a side-effect boundary, not just a work boundary. When the
+just-completed phase carried an external publish/CI/apply approval and the next
+chosen slice is done-early or test-only quality continuation, that earlier
+approval does **not** transfer to the new slice. Verify the continuation slice
+**locally by default** and defer remote proof to one final bundled CI run; do
+not push and watch CI per slice unless the operator explicitly asked or the
+continuation slice is runtime-affecting. Re-scope the approval to the new phase
+rather than inheriting it silently.
 
 ## After
 

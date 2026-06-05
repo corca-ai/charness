@@ -115,3 +115,48 @@ def test_timebox_goal_contract_is_explicit() -> None:
     assert "Slice-Boundary Continuation" in lifecycle
     assert "No safe next slice:" in skill and "No safe next slice:" in artifact
     assert "cannot flip to `complete` before" in lifecycle
+
+
+def test_external_side_effect_approval_is_phase_scoped() -> None:
+    """#316: external publication/apply approval is scoped to the phase or bundle
+    that requested it, and done-early test-only quality continuation is local by
+    default. The rule must land in all three surfaces: SKILL.md, lifecycle.md,
+    and the goal-artifact template's ## Boundaries seed.
+    """
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    template = _norm(ACHIEVE / "scripts" / "goal_artifact_template.md")
+
+    # (1) Phase/bundle-scoped approval that does not carry forward.
+    for surface in (skill, lifecycle, template):
+        assert "phase or bundle" in surface or "phase-scoped" in surface
+        assert "carry forward" in surface or "does not carry forward" in surface
+
+    # (2) Local-by-default done-early test-only continuation.
+    for surface in (skill, lifecycle, template):
+        assert "local by default" in surface
+        assert "done-early" in surface
+
+    # (3) Per-slice remote publication only when the operator asks or a
+    # runtime-affecting slice needs it earlier.
+    for surface in (skill, lifecycle, template):
+        assert "operator explicitly asks" in surface
+        assert "runtime-affecting" in surface
+
+    # The template seeds the boundary under ## Boundaries so a fresh goal sees it.
+    boundary_template = (ACHIEVE / "scripts" / "goal_artifact_template.md").read_text(
+        encoding="utf-8"
+    )
+    boundaries_start = boundary_template.index("## Boundaries")
+    user_acceptance = boundary_template.index("## User Acceptance")
+    boundaries_block = boundary_template[boundaries_start:user_acceptance]
+    assert "External side-effect scope" in boundaries_block
+
+    # No new deterministic word-list gate was introduced for this rule: the
+    # boundary stays prose+template (the gate-over-fire failure mode is the
+    # explicitly out-of-scope direction for #316).
+    scripts_dir = ROOT / "scripts"
+    for gate in scripts_dir.glob("*.py"):
+        body = gate.read_text(encoding="utf-8")
+        assert "publication_approval_carryforward" not in body
+        assert "carry_forward_approval_gate" not in body

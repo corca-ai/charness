@@ -28,6 +28,14 @@ runs the activation command.
 
 ## Boundaries
 
+- External side-effect scope: name which phase or bundle any approved
+  publish / push / remote-CI / apply applies to. That approval is phase-scoped
+  and does not carry forward — after an approved publish/CI/apply lane
+  completes, done-early test-only quality continuation is local by default
+  (batch remote proof, run CI once over the final bundled state). Per-slice
+  remote publication is assumed only when the operator explicitly asks or a
+  runtime-affecting slice requires earlier publication.
+
 ## User Acceptance
 
 What the user can do to verify completion directly.

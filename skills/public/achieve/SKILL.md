@@ -78,6 +78,11 @@ lifecycle instead of starting a new one.
    - use cheap deterministic checks at commit boundaries; use higher-cost proof
      at slice boundaries; reserve broad/live proof for bundle boundaries or the
      final stage
+   - external-side-effect approval (publish/push/remote-CI/apply) is scoped to
+     the phase or bundle that requested it and does not carry forward; after an
+     approved lane completes, done-early test-only quality continuation is local
+     by default (batch remote proof, run CI once over the final bundled state)
+     unless the operator explicitly asks or a runtime-affecting slice needs it
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
@@ -92,27 +97,24 @@ lifecycle instead of starting a new one.
    - if a timeboxed goal stops early, write the report required by `references/lifecycle.md`
    - run `retro` for the automatic efficiency review
    - for a long goal with host timing data, record the goal window with
-     `record_metric_window.py` so the probe is goal-scoped, then render the
-     standardized provider-safe metrics block with
+     `record_metric_window.py`, then render the provider-safe metrics block with
      `probe_host_logs.py --goal-path <artifact> --format markdown` instead of
      hand-assembling it (see `references/goal-artifact.md`)
    - when host evidence exists, summarize measured efficiency signals and proxy
-     pressure separately: tokens/time, compactions, tool-call counts, repeated
-     VCS/check commands, polling, and subagent count. Cached input alone is not
-     waste. Record broad-gate proof as a result attestation, never a re-embedded
-     provider CLI command string.
+     pressure separately (tokens/time, compactions, tool-call counts, repeated
+     VCS/check commands, polling, subagent count); cached input alone is not
+     waste, and broad-gate proof is a result attestation, not a re-embedded CLI
    - disposition every surfaced improvement in Auto-Retro: either
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing
      actionable, record one per-goal `Retro dispositions: none — <reason>` line.
-   - when a disposition routes an improvement to `issue #N`, the proposed issue
-     carries the generalized `Structural pattern:`+`Triggering instance(s):` and a
-     resolved `Destination:`, split per `../../shared/references/retro-issue-destination-split.md`.
-   - **disposition gate, for goals created after the rule landed:** a deterministic
-     block blank Auto-Retro when cited retro lists improvements and require a
-     bound `Disposition review:` line (or `host-blocked-subagent` skip). This is
-     presence/binding-only, never a content classifier; pre-rule goals are
-     grandfathered.
+   - when a disposition routes to `issue #N`, the issue carries the generalized
+     `Structural pattern:`+`Triggering instance(s):` and a resolved `Destination:`
+     per `../../shared/references/retro-issue-destination-split.md`.
+   - **disposition gate, for goals created after the rule landed:** block blank
+     Auto-Retro when cited retro lists improvements, and require a bound
+     `Disposition review:` line (or `host-blocked-subagent` skip). Presence/
+     binding-only, never a content classifier; pre-rule goals grandfathered.
    - **coordination floors:** for in-scope goals, recorded phase work needs
      `Routing:`; external sources need `Gather:`; release surfaces need
      `Release:`; tracked issue closeout needs `Issue closeout:`.
@@ -161,6 +163,8 @@ lifecycle instead of starting a new one.
   fail-fasts on an unshaped goal, routing the operator to `/achieve`.
 - Do not require every short prompt to become a goal.
 - Do not run broad quality gates after every small commit.
+- Do not let one phase's external-side-effect approval carry forward to a later
+  phase; done-early test-only continuation is local by default unless asked.
 - Do not make `handoff` the normal running scratchpad while a goal is active.
 - Do not treat the historical slice log as the normal active prompt surface;
   refresh the active operating frame and archive completed detail below it.
