@@ -11,6 +11,21 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
+_surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
+
+# Single source of truth (#314) for the fast structural checkers that must run
+# in BOTH the per-slice aggregate (run_slice_closeout) and the literal git
+# pre-commit gate. Both paths draw the subset from surface verify_commands; this
+# allowlist is the reconciliation point so "passes the aggregate" and "passes
+# pre-commit" become one guarantee. Entries MUST be cheap (<1s), deterministic,
+# and path-scoped -- never a broad pytest in the pre-commit path.
+FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
+    "python3 scripts/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
+    "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .": "check-boundary-bypass-ratchet",
+}
+
 
 @dataclass(frozen=True)
 class GateCommand:
@@ -36,6 +51,65 @@ def collect_staged_paths(repo_root: Path) -> list[str]:
 
 def _any_starts(paths: list[str], prefix: str) -> bool:
     return any(path.startswith(prefix) for path in paths)
+
+
+def fast_surface_verify_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    """Fast structural checkers from matched surface verify_commands (#314).
+
+    Reconciles the pre-commit gate with the per-slice aggregate: when a touched
+    surface lists one of ``FAST_SURFACE_VERIFY_COMMANDS`` in its verify_commands,
+    that same cheap checker runs at the literal git pre-commit boundary, so the
+    aggregate and pre-commit agree on the fast gate subset. Degrades to no extra
+    gates when the surfaces manifest is absent or unreadable (e.g. tmp repos).
+    """
+    if not paths:
+        return []
+    try:
+        manifest = _surfaces_lib.load_surfaces(repo_root, required=False)
+        if manifest is None:
+            return []
+        matched = _surfaces_lib.match_surfaces(manifest, paths)
+    except _surfaces_lib.SurfaceError:
+        return []
+    gates: list[GateCommand] = []
+    seen: set[str] = set()
+    for command in matched["verify_commands"]:
+        label = FAST_SURFACE_VERIFY_COMMANDS.get(command)
+        if label is None or label in seen:
+            continue
+        seen.add(label)
+        gates.append(GateCommand(label, tuple(shlex.split(command))))
+    return gates
+
+
+_MIRROR_PREFIXES = (
+    "scripts/",
+    "skills/",
+    "profiles/",
+    "presets/",
+    "integrations/",
+    "plugins/",
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".agents/plugins/",
+)
+
+
+def _mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    touches_mirror = any(
+        path.startswith(_MIRROR_PREFIXES)
+        or path == "README.md"
+        or path in {"runtime_bootstrap.py", "skill_runtime_bootstrap.py"}
+        for path in paths
+    )
+    if not touches_mirror:
+        return []
+    return [
+        GateCommand(
+            "staged-plugin-mirror-drift",
+            ("python3", "scripts/check_staged_mirror_drift.py", "--repo-root", str(repo_root)),
+        )
+    ]
 
 
 def staged_commit_gate_plan(
@@ -106,33 +180,15 @@ def staged_commit_gate_plan(
     if _any_starts(paths, "integrations/"):
         plan.append(GateCommand("validate-integrations", ("python3", "scripts/validate_integrations.py", "--repo-root", str(repo_root))))
 
-    mirror_prefixes = (
-        "scripts/",
-        "skills/",
-        "profiles/",
-        "presets/",
-        "integrations/",
-        "plugins/",
-        ".claude-plugin/",
-        ".codex-plugin/",
-        ".agents/plugins/",
-    )
-    if any(
-        path.startswith(mirror_prefixes)
-        or path == "README.md"
-        or path in {"runtime_bootstrap.py", "skill_runtime_bootstrap.py"}
-        for path in paths
-    ):
-        plan.append(
-            GateCommand(
-                "staged-plugin-mirror-drift",
-                ("python3", "scripts/check_staged_mirror_drift.py", "--repo-root", str(repo_root)),
-            )
-        )
+    plan.extend(_mirror_drift_gates(repo_root, paths))
 
     if any(path.endswith(".md") for path in paths):
         plan.append(GateCommand("check-doc-links", ("python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root))))
         plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
+
+    # #314: append the fast surface verify checkers so the literal pre-commit gate
+    # agrees with the per-slice aggregate on the cheap structural subset.
+    plan.extend(fast_surface_verify_gates(repo_root, paths))
 
     return plan
 

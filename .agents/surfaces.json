@@ -168,10 +168,12 @@
       "verify_commands": [
         "python3 scripts/validate_skills.py --repo-root .",
         "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py",
-        "python3 scripts/check_skill_ownership_overlap.py --repo-root ."
+        "python3 scripts/check_skill_ownership_overlap.py --repo-root .",
+        "python3 scripts/validate_skill_ergonomics.py --repo-root ."
       ],
       "notes": [
         "Skill trigger contracts stay source-owned under skills/, not under plugins/.",
+        "validate_skill_ergonomics.py is a fast structural checker (#314): portable-package issue anchors, dated incidents, and host-surface references fail at the commit boundary, not only at the broad/bundle quality gate.",
         "Cross-namespace mentions (charness-artifacts/<other>/, .agents/<other>-adapter.yaml) require an allowlist entry in scripts/check_skill_ownership_overlap.allowlist.txt with a written reason."
       ]
     },
@@ -603,12 +605,14 @@
         "python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing",
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
+        "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .",
         "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
       ],
       "notes": [
         "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",
         "Release-only install/update lifecycle tests are excluded from the standing Python closeout gate and should run for release, packaging, or tool lifecycle changes.",
-        "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep."
+        "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep.",
+        "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate."
       ]
     }
   ]

@@ -7,13 +7,22 @@ from collections.abc import Callable
 from pathlib import Path
 
 from scripts.staged_commit_gate_plan import (
+    FAST_SURFACE_VERIFY_COMMANDS,
     GateCommand,
     collect_staged_paths,
+    fast_surface_verify_gates,
     run_predict_commit,
     staged_commit_gate_plan,
 )
+from scripts.surfaces_lib import load_surfaces, match_surfaces
 
 from .support import ROOT, run_script
+
+
+def _surface_verify_commands_for(paths: list[str]) -> set[str]:
+    manifest = load_surfaces(ROOT, required=False)
+    assert manifest is not None
+    return set(match_surfaces(manifest, paths)["verify_commands"])
 
 
 def _labels(paths: list[str]) -> list[str]:
@@ -254,3 +263,92 @@ def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "completed"
     assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]
+
+
+def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
+    # #314 acceptance (1): the fast skill-ergonomics checker must run in the
+    # skill-packages surface verify_commands so portable-package issue anchors,
+    # dated incidents, and host-surface references fail at the commit boundary,
+    # not only at the broad/bundle quality gate.
+    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    skill_packages = next(s for s in surfaces["surfaces"] if s["surface_id"] == "skill-packages")
+    assert (
+        "python3 scripts/validate_skill_ergonomics.py --repo-root ." in skill_packages["verify_commands"]
+    ), skill_packages["verify_commands"]
+
+
+def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pytest() -> None:
+    # #314 acceptance (1): the fast boundary-bypass ratchet must run in the
+    # repo-python surface and precede the broad pytest so a redundant boundary-
+    # spawning test fails at the commit boundary, not 172s into the broad gate.
+    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
+    verify = repo_python["verify_commands"]
+    ratchet_idx = next(
+        (i for i, cmd in enumerate(verify) if "check_boundary_bypass_ratchet.py" in cmd), None
+    )
+    broad_idx = next(
+        (i for i, cmd in enumerate(verify) if cmd.startswith("pytest") and "tests/quality_gates" in cmd),
+        None,
+    )
+    assert ratchet_idx is not None, verify
+    assert broad_idx is not None, verify
+    assert ratchet_idx < broad_idx, verify
+
+
+def test_fast_surface_verify_allowlist_keys_exist_in_some_surface() -> None:
+    # #314 acceptance (2/3): every reconciliation allowlist key must still appear
+    # in some surface verify_commands. If surfaces.json renames or drops a fast
+    # checker without updating FAST_SURFACE_VERIFY_COMMANDS (or vice versa), the
+    # two commit-boundary paths would silently disagree -- pin it so drift fails.
+    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    all_verify = {cmd for s in surfaces["surfaces"] for cmd in s["verify_commands"]}
+    for command in FAST_SURFACE_VERIFY_COMMANDS:
+        assert command in all_verify, f"{command!r} not found in any surface verify_commands"
+
+
+def test_precommit_plan_agrees_with_aggregate_fast_subset_for_skill_change() -> None:
+    # #314 acceptance (2/3): when a touched surface lists a fast checker in its
+    # verify_commands (consumed by the run_slice_closeout aggregate), the literal
+    # git pre-commit plan must run that SAME checker. "Passes the aggregate" and
+    # "passes pre-commit" become one guarantee for the fast subset.
+    paths = ["skills/public/critique/SKILL.md"]
+    surface_verify = _surface_verify_commands_for(paths)
+    expected_fast = {
+        command for command in FAST_SURFACE_VERIFY_COMMANDS if command in surface_verify
+    }
+    assert "python3 scripts/validate_skill_ergonomics.py --repo-root ." in expected_fast
+
+    precommit_labels = {command.label for command in staged_commit_gate_plan(ROOT, paths, ruff_path="")}
+    for command, label in FAST_SURFACE_VERIFY_COMMANDS.items():
+        if command in expected_fast:
+            assert label in precommit_labels, (label, precommit_labels)
+
+
+def test_precommit_plan_agrees_with_aggregate_fast_subset_for_test_change() -> None:
+    # #314: a changed test file routes to the repo-python surface, whose
+    # verify_commands now include the boundary-bypass ratchet; the pre-commit
+    # plan must run the same ratchet.
+    paths = ["tests/quality_gates/test_example.py"]
+    surface_verify = _surface_verify_commands_for(paths)
+    assert "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ." in surface_verify
+
+    gates = fast_surface_verify_gates(ROOT, paths)
+    labels = {gate.label for gate in gates}
+    assert "check-boundary-bypass-ratchet" in labels
+    argv = next(gate.argv for gate in gates if gate.label == "check-boundary-bypass-ratchet")
+    assert argv == ("python3", "scripts/check_boundary_bypass_ratchet.py", "--repo-root", ".")
+
+
+def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: Path) -> None:
+    # #314: tmp repos with no surfaces.json must not gain spurious gates; the
+    # reconciliation degrades cleanly so the existing pre-commit fixtures hold.
+    assert fast_surface_verify_gates(tmp_path, ["skills/public/critique/SKILL.md"]) == []
+    assert fast_surface_verify_gates(ROOT, []) == []
+
+
+def test_unrelated_change_adds_no_fast_surface_gates() -> None:
+    # #314: a markdown-only change whose surfaces declare no fast checker must
+    # not pull the fast subset into the pre-commit plan (no broad widening).
+    labels = {command.label for command in staged_commit_gate_plan(ROOT, ["README.md"], ruff_path="")}
+    assert labels.isdisjoint(set(FAST_SURFACE_VERIFY_COMMANDS.values()))
