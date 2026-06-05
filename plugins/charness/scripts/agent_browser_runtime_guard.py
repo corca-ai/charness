@@ -28,6 +28,17 @@ HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 TERM_GRACE_SECONDS = 2.0
 CLEANUP_COMMAND = "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
+# Guidance for residue the cleanup command cannot fix: reparented (PPID=1, owning
+# daemon already gone) or zombie (<defunct>) browser processes are not part of any
+# orphan-daemon tree, so `--cleanup-orphans` targets nothing and the operator who
+# keeps running it is stuck in a no-exit loop (#309). Reaping these is the
+# container init's job.
+INIT_REAP_GUIDANCE = (
+    "Only reparented (PPID=1) or zombie (<defunct>) agent-browser residue remains; "
+    "`--cleanup-orphans` targets orphan daemon trees and cannot reap it. The container "
+    "init must reap these PIDs — restart the container (or wait for init to reap them) "
+    "to clear the runtime."
+)
 # Markers that identify an agent-browser session's process tree (the agent-browser
 # daemon and the headless Chromium it drives). Used to detect reparented (PPID=1)
 # and zombie (<defunct>) browser residue that survives a daemon's death — residue
@@ -220,15 +231,35 @@ def runtime_residue_total(runtime: dict[str, object]) -> int:
     )
 
 
+def runtime_next_step(runtime: dict[str, object]) -> tuple[str | None, str | None]:
+    """Return ``(next_step, next_step_kind)`` for a runtime, or ``(None, None)``
+    when there is no residue.
+
+    A reap-able orphan daemon tree (``orphan_tree_pids``) is exactly what
+    ``--cleanup-orphans --execute`` targets, so recommend it (kind
+    ``cleanup_command``). When the only residue is reparented or zombie
+    processes — no orphan daemon tree to reap — the cleanup command clears
+    nothing (#309); return init-reap guidance (kind ``init_reap``) so the
+    operator is not stuck running a no-op command in a loop.
+    """
+    if runtime_residue_total(runtime) == 0:
+        return None, None
+    if runtime["orphan_tree_pids"]:
+        return CLEANUP_COMMAND, "cleanup_command"
+    return INIT_REAP_GUIDANCE, "init_reap"
+
+
 def assert_no_orphans_payload(repo_root: Path) -> dict[str, object]:
     runtime = inspect_runtime(list_processes(repo_root))
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
     healthy = ignore_orphans or runtime_residue_total(runtime) == 0
+    next_step, next_step_kind = (None, None) if healthy else runtime_next_step(runtime)
     return {
         "healthy": healthy,
         "runtime": runtime,
         "ignored_orphans": ignore_orphans,
-        "next_step": None if healthy else CLEANUP_COMMAND,
+        "next_step": next_step,
+        "next_step_kind": next_step_kind,
     }
 
 
@@ -237,13 +268,27 @@ def doctor_payload(repo_root: Path) -> dict[str, object]:
     runtime = inspect_runtime(list_processes(repo_root))
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
     healthy = helpcheck["ok"] and (ignore_orphans or runtime_residue_total(runtime) == 0)
+    next_step, next_step_kind = (None, None) if healthy else runtime_next_step(runtime)
     return {
         "healthy": healthy,
         "helpcheck": helpcheck,
         "runtime": runtime,
         "ignored_orphans": ignore_orphans,
-        "next_step": None if healthy else CLEANUP_COMMAND,
+        "next_step": next_step,
+        "next_step_kind": next_step_kind,
     }
+
+
+def print_next_step_guidance(payload: dict[str, object]) -> None:
+    next_step = payload.get("next_step")
+    if not isinstance(next_step, str):
+        return
+    if payload.get("next_step_kind") == "init_reap":
+        # Prose guidance, not a runnable command — print it verbatim so the
+        # operator is not told to "Run" reparented/zombie-residue advice (#309).
+        print(next_step, file=sys.stderr)
+    else:
+        print(f"Run `{next_step}` to remove orphan agent-browser daemon trees.", file=sys.stderr)
 
 
 def print_payload(payload: dict[str, object], *, as_json: bool) -> None:
@@ -279,9 +324,7 @@ def main() -> int:
                 print("agent-browser runtime healthy")
             return 0
         print_payload(payload, as_json=args.json)
-        next_step = payload.get("next_step")
-        if isinstance(next_step, str):
-            print(f"Run `{next_step}` to remove orphan agent-browser daemon trees.", file=sys.stderr)
+        print_next_step_guidance(payload)
         return 1
 
     if args.assert_no_orphans:
@@ -293,9 +336,7 @@ def main() -> int:
                 print("agent-browser runtime has no orphan daemon trees")
             return 0
         print_payload(payload, as_json=args.json)
-        next_step = payload.get("next_step")
-        if isinstance(next_step, str):
-            print(f"Run `{next_step}` to remove orphan agent-browser daemon trees.", file=sys.stderr)
+        print_next_step_guidance(payload)
         return 1
 
     print_payload(inspect_payload(repo_root), as_json=args.json)

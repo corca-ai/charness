@@ -187,6 +187,65 @@ def test_assert_no_orphans_unhealthy_for_reparented_chromium_residue(tmp_path: P
     assert payload["runtime"]["reparented_residue_pids"] == [500]
 
 
+def test_runtime_next_step_distinguishes_residue_class() -> None:
+    # #309: a reap-able orphan daemon tree gets the cleanup command, but residue
+    # that is purely reparented/zombie cannot be reaped by --cleanup-orphans and
+    # must instead be routed to an init reap / fresh container.
+    guard = load_runtime_guard_module()
+
+    clean = guard.inspect_runtime([])
+    assert guard.runtime_next_step(clean) == (None, None)
+
+    orphan = guard.inspect_runtime(
+        [guard.ProcessInfo(pid=100, ppid=1, rss_kib=10, command="node /tmp/agent-browser/dist/daemon.js")]
+    )
+    command, kind = guard.runtime_next_step(orphan)
+    assert kind == "cleanup_command"
+    assert "--cleanup-orphans --execute" in command
+
+    reparented = guard.inspect_runtime(
+        [guard.ProcessInfo(pid=501, ppid=1, rss_kib=80000, command="/opt/agent-browser/chrome-linux/chrome --headless --type=renderer")]
+    )
+    guidance, kind = guard.runtime_next_step(reparented)
+    assert kind == "init_reap"
+    # The guidance explains the cleanup command is the wrong tool and points at
+    # an init reap / fresh container instead.
+    lowered = guidance.lower()
+    assert "init" in lowered or "container" in lowered
+
+
+def test_assert_no_orphans_init_reap_guidance_for_reparented_only(tmp_path: Path) -> None:
+    # #309: with only reparented residue and no reap-able orphan tree, the guard
+    # must not loop the operator on `--cleanup-orphans --execute` (which clears
+    # nothing); next_step is init-reap guidance, not the dead-end command.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    make_fake_ps(
+        bin_dir,
+        output="500 1 64000 /opt/agent-browser/chrome-linux/chrome --headless --type=gpu-process",
+    )
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
+    env.pop("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS", None)
+    result = subprocess.run(
+        [sys.executable, str(RUNTIME_GUARD_PATH), "--repo-root", str(ROOT), "--assert-no-orphans", "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["healthy"] is False
+    assert payload["runtime"]["orphan_tree_pids"] == []
+    assert payload["next_step_kind"] == "init_reap"
+    # The dead-end "Run `... --cleanup-orphans --execute`" instruction is gone;
+    # the operator is told it needs an init reap / fresh container.
+    assert "Run `" not in result.stderr
+    assert "container" in result.stderr.lower()
+
+
 def test_runtime_guard_doctor_check_fails_for_orphan_daemons(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
