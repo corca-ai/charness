@@ -120,6 +120,12 @@ structure — hence pairing it with a testability sensor.
    `inventory_*` tests: `inventory_adapter_gate_design`, `_brittle_source_guards`,
    `_cli_side_effect_probes`, `_public_spec_quality`, `_skill_ergonomics` (skip the
    internally-spawning `_entrypoint_docs_ergonomics`, `_ubiquitous_language`).
+   *Per conversion:* regenerate the
+   [boundary-bypass baseline](../scripts/boundary-bypass-baseline.json) to canonical
+   form (`inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →
+   `boundary_bypass_ratchet_lib.build_baseline`, as commit `0604f3d2` did) and sync the
+   plugin mirror — the `no_increase` ratchet tolerates decreases silently, so skipping
+   the regen leaves a stale baseline that never records the convertible-count drop.
 2. **`quality` lens boost** (goal 3, portable): extend
    [testability-and-selection](../skills/public/quality/references/testability-and-selection.md)
    to name (a) DSL ergonomics signals — lazy / composable / implementation-simple —
