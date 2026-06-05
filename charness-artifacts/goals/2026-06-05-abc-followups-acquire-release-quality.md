@@ -10,8 +10,16 @@ and the shared final gate (user chose no work-budget).
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-05-abc-followups-acquire-release-quality.md`.
+- Current slice: chunk A landed (#310 `75f30584`, #309 `618bca29`); chunk B in
+  progress (B1 resume-before-push, B2 read-only-safe closeout).
+- Next action: implement B1+B2 (serialize C1 after B2 on the shared
+  usage-episode / `run_slice_closeout.py` surface), then C1+C2, then batch the
+  three per-chunk fresh-eye reviews before the shared `--release` gate.
+- Quality route (B2 + C1): `quality` consulted. B2 cut = read-only-safe closeout
+  (gate live usage-episode emission on `CHARNESS_QUALITY_MODE`, the signal
+  `run-quality.sh` already exports). C1 = add the fast standalone
+  `check_test_repo_copy_invariants.py` to the `repo-python` surface verify
+  commands (named checker only; honor the issue's latency caution).
 - Execution model (at `/goal`, dynamic workflow approved): pursue via a Workflow
   that fans out the three chunks as **independent slice-chains** running in
   parallel, then a single barrier before the shared final
@@ -243,6 +251,34 @@ Resolved/approved — activation-ready.
 ## Slice Log
 
 (empty until activation)
+
+### Slice 1: A1 (#310) — preserve acquisition .error on cleanup failure
+
+- Objective: Stop the agent-browser cleanup error from clobbering the last attempt's real acquisition .error/status/confidence; append cleanup error to details instead.
+- Why this approach: Minimal, source-located fix at acquire_public_url.py:_browser_stage; preserve original error when present, only promote cleanup error to .error when the attempt had none (degraded close stays non-silent).
+- Commits: 75f30584
+- What changed: skills/support/web-fetch/scripts/acquire_public_url.py (+ synced plugin mirror); tests/test_web_fetch_cleanup.py reproduce test.
+- Alternatives rejected:
+- Targeted verification: reproduce-then-fixed: test_acquire_preserves_render_error_when_cleanup_also_fails (red before, green after); full tests/test_web_fetch_cleanup.py 7 passed; ruff + check_python_lengths headroom 44 left; pre-commit gate green.
+- Test duplication pressure:
+- Critique: Debug root-cause confirmed falsifiably: the unconditional 3-tuple assignment overwrote .error; reproduce test proved it. Bounded fresh-eye review batched at chunk boundary before --release.
+- Off-goal findings:
+- Lessons carried forward: Existing cleanup tests all used render-SUCCESS, masking the render-FAILURE clobber path; the new test closes that gap.
+- Metrics:
+
+### Slice 2: A2 (#309) — runtime guard next_step distinguishes residue class
+
+- Objective: next_step must tell apart a reap-able orphan daemon tree (--cleanup-orphans helps) from container-init residue (reparented/zombie only -> needs init reap / fresh container).
+- Why this approach: Add runtime_next_step() returning (next_step, next_step_kind); init_reap guidance printed verbatim, cleanup_command printed as a runnable command. Also corrects helpcheck-only failures to stop suggesting cleanup.
+- Commits: 618bca29
+- What changed: scripts/agent_browser_runtime_guard.py (+ synced plugin mirror); tests/test_agent_browser_runtime_guard.py (2 reproduce tests).
+- Alternatives rejected:
+- Targeted verification: reproduce-then-fixed: test_runtime_next_step_distinguishes_residue_class + test_assert_no_orphans_init_reap_guidance_for_reparented_only (red before, green after); full guard suite 11 passed; ruff + attention-state + lengths green.
+- Test duplication pressure:
+- Critique: Debug root-cause: cleanup_orphans targets only orphan_tree_pids while runtime_residue_total also counts reparented+zombie; reproduce test confirmed the no-op loop. Fresh-eye review batched at chunk boundary.
+- Off-goal findings:
+- Lessons carried forward: next_step is operator-facing UX; a single string field needed a kind discriminator so prose guidance isn't wrapped in a Run-this-command phrasing.
+- Metrics:
 
 ## Context Sources
 
