@@ -66,6 +66,34 @@ def validate_critique_artifact_arg(
     return normalized
 
 
+def update_instructions_version_blocker(
+    update_instructions: Any, *, target_version: str, previous_version: str | None
+) -> str | None:
+    """Return a blocker when adapter `update_instructions` still describe the
+    previous release version but not the target — i.e. they went stale (#305).
+
+    The adapter-focused preflight only triggers when the adapter FILE changed in the
+    release delta, so a release that should refresh `update_instructions` but does not
+    touch the file is never flagged. This check is unconditional. It uses plain
+    substring containment of the concrete previous/target version strings rather than
+    a general semver scan, so it does not false-positive on dotted dates or
+    version-agnostic prose, and `v`-prefixed forms (`v0.20.0`) match transparently.
+    """
+    if isinstance(update_instructions, (list, tuple)):
+        text = "\n".join(str(item) for item in update_instructions)
+    else:
+        text = str(update_instructions or "")
+    if not previous_version or previous_version == target_version:
+        return None
+    if target_version in text or previous_version not in text:
+        return None
+    return (
+        f"release adapter update_instructions still describe the previous version `{previous_version}` "
+        f"but not the target version `{target_version}`; refresh update_instructions before publishing so "
+        "the generated release record does not ship stale operator steps"
+    )
+
+
 def enforce_release_critique_gate(
     repo_root: Path,
     *,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -29,6 +30,7 @@ _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue
 _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
 _release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
 _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
+_resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 build_real_host_payload = _check_real_host.build_payload
@@ -58,6 +60,7 @@ fail_after_post_create_verification = _post_create.fail_after_post_create_verifi
 verify_release_visible = _post_create.verify_release_visible
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
+resume_publish = _resume.resume_publish
 
 
 def parse_args() -> argparse.Namespace:
@@ -71,6 +74,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
     parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
+    parser.add_argument("--resume", action="store_true", help="Resume a partial publish: detect the existing local release commit+tag, re-validate, then push/release/verify (requires --publish-current)")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
@@ -224,12 +228,17 @@ def _load_adapter_and_gate(args: argparse.Namespace, repo_root: Path) -> tuple[d
 def main() -> None:
     args = parse_args()
     repo_root = args.repo_root.resolve()
+    if args.resume and not args.publish_current:
+        raise SystemExit("--resume requires --publish-current (the manifest is already at the target version)")
     adapter_data, critique_artifact = _load_adapter_and_gate(args, repo_root)
     status = git_status(repo_root)
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
 
-    plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run)
+    plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
+    if args.resume:
+        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=sys.modules[__name__])
+        return
     payload = plan["payload"]
     next_version = plan["next_version"]
     branch = plan["branch"]

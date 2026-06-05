@@ -16,9 +16,31 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-_retro_auto_trigger = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "skills.public.retro.scripts.check_auto_trigger"
-)
+
+
+def _load_public_skill_module(dotted_suffix: str):
+    # The repo layout exposes public skills under `skills.public.<skill>...`; the
+    # exported plugin cache drops the `public` segment (`skills.<skill>...`). Try
+    # both so publish_release runs from the installed plugin cache without a
+    # `ModuleNotFoundError: No module named 'skills.public'` (#305). Only the
+    # layout-resolution miss (a missing `skills`/`skills.public` package) is
+    # tolerated; a genuine missing dependency inside the target module re-raises
+    # immediately instead of being relabeled as a layout miss.
+    last_error: ModuleNotFoundError | None = None
+    for module_name in (f"skills.public.{dotted_suffix}", f"skills.{dotted_suffix}"):
+        try:
+            return SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, module_name)
+        except ModuleNotFoundError as exc:
+            missing = exc.name or ""
+            if not (missing == "skills" or missing.startswith("skills.")):
+                raise
+            last_error = exc
+    raise ModuleNotFoundError(
+        f"could not resolve `skills(.public).{dotted_suffix}` in the repo or exported plugin layout"
+    ) from last_error
+
+
+_retro_auto_trigger = _load_public_skill_module("retro.scripts.check_auto_trigger")
 _retro_persistence = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.retro_persistence_lib"
 )

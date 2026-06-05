@@ -9,13 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1 (#304), 2 (#303), 3 (#302) complete — fixes +
-  direct-commit closeouts staged (`Close #304`, `Close #303`, `Close #302`).
-  Next: Slice 4 (#305) release publish-flow resilience.
-- Next action: implement Slice 4 (#305) — make `publish_release.py`
-  resumable/idempotent across a mid-publish failure (detect existing commit+tag
-  → continue push/release/verify, re-validating first); installed-cache-safe
-  runtime bootstrap; release-time `update_instructions` version-staleness check.
+- Current slice: all four slices complete — #304, #303, #302, #305 fixes +
+  direct-commit closeouts staged (`Close #304/#303/#302/#305`). Remaining: final
+  closeout — broad pytest gate, Final Verification, User Verification, Auto-Retro.
+- Next action: run the final broad pytest gate (verification-lock), fill Final
+  Verification / User Verification Instructions, run `retro`, disposition
+  improvements, flip status to complete.
 - Verification cadence: cheap deterministic checks (`run_slice_closeout.py`
   aggregate + targeted pytest) at commit boundaries; full targeted test file +
   bounded fresh-eye critique at slice boundaries; broad pytest at final closeout.
@@ -259,6 +258,20 @@ unresolved consequential item remains for `/goal` activation.
 - Critique: charness-artifacts/critique/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md (fresh-eye, no blockers; chrome-marker finding folded).
 - Off-goal findings: none — the reviewer's deeper note (run_slice_closeout runs --assert-no-orphans unconditionally) is mitigated by the tightened markers; the residual (cleanup cannot reap reparented residue) is the intended fail-visible Ceal-owned boundary, not a defect.
 - Lessons carried forward: Browser session lifecycle must close in finally; missing proof must be fail-visible, never None; runtime residue detection must be specific (agent-browser + headless) to avoid false-positiving an unconditional, waiver-stripped closeout gate.
+- Metrics:
+
+### Slice 4: Slice 4 — #305 release publish-flow resilience
+
+- Objective: Make publish_release resumable/idempotent across a mid-publish failure (detect existing commit+tag, re-validate, continue push/release/verify), installed-cache-safe at import, and add a release-time update_instructions version-staleness check.
+- Why this approach: Bug-class, three confirmed gaps from the v0.21.0 publish. Explicit --resume (opt-in to avoid double-publish per B3); layout-tolerant retro import; previous-vs-target staleness containment (no regex date/v-prefix edges).
+- Commits:
+- What changed: NEW publish_release_resume.py (resumable_state/assert_resumable/resume_publish). publish_release_cli.py: --resume flag + branch + resume passthrough. publish_release_plan.py: resume skips ensure_release_target_available; wires staleness check after previous_version. publish_release_preflight.py: update_instructions_version_blocker. publish_release_retro.py: layout-tolerant skills(.public) import. docs/public-skill-dogfood.json: additive release evidence. Tests: test_release_publish_resilience.py (6). Mirrors synced.
+- Alternatives rejected: Automatic (flagless) idempotency — rejected per B3 (double-publish hazard); explicit --resume is safer. General semver-scan staleness — rejected (date false-positive + v-prefix false-negative); previous-vs-target containment is precise. Hardcoded single guard offset for the bundled module — n/a here.
+- Targeted verification: Pre-fix gaps confirmed (git show HEAD + exported-layout ModuleNotFoundError). 63 release-suite tests green incl. 6 new resilience tests; exported publish_release.py --help exits 0; deterministic aggregate completed (public-skill validation/dogfood gates pass after recording dogfood evidence + --ack-cautilus-skill-review). Bounded fresh-eye slice critique: SHIP/no blockers, all 3 gaps YES; folded its 4 edge findings (staleness regex→containment, resume issue-preflight + honest wording, import-fallback breadth, weak-test assertion).
+- Test duplication pressure: 6 new tests, each pinning a distinct gap/edge (staleness logic, staleness integration block, exported-layout import, resume idempotent continue, resume no-partial-state refusal, resume requires-publish-current). No duplicate-coverage pressure.
+- Critique: charness-artifacts/critique/2026-06-05-issue-305-release-publish-resilience.md (fresh-eye SHIP; 4 edge findings folded in-slice).
+- Off-goal findings: none
+- Lessons carried forward: Release helpers must commit/tag idempotently with an explicit resume that re-validates before push; cross-skill imports must be layout-tolerant for the installed cache; staleness checks should compare concrete previous-vs-target strings, not scan for any semver (avoids date/v-prefix edges).
 - Metrics:
 
 ## Context Sources

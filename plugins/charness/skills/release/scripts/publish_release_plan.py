@@ -32,6 +32,7 @@ release_previous_version = _helpers.release_previous_version
 ensure_release_target_available = _helpers.ensure_release_target_available
 safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
+update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 github_repo_slug = _issue_closeout.github_repo_slug
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 
@@ -83,6 +84,7 @@ def build_publish_plan(
     critique_artifact: str | None,
     *,
     run_command,
+    resume: bool = False,
 ) -> dict[str, Any]:
     current_payload = build_release_payload(repo_root)
     current_version = current_payload["surface_versions"]["packaging_manifest"]
@@ -90,11 +92,20 @@ def build_publish_plan(
         raise SystemExit("current_release did not report a packaging manifest version")
     next_version = target_version(args, current_version)
     previous_version = release_previous_version(repo_root, args.publish_current, current_version, next_version, args.remote)
+    update_blocker = update_instructions_version_blocker(
+        adapter_data.get("update_instructions"), target_version=next_version, previous_version=previous_version
+    )
+    if update_blocker:
+        raise SystemExit(update_blocker)
     branch = current_branch(repo_root)
     tag_name = f"v{next_version}"
     title = args.title or tag_name
     backend = adapter_data["release_backend"]
-    ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
+    # On --resume the local release commit + tag are expected to already exist;
+    # the resume path validates that partial state itself, so skip the
+    # "tag must not exist" guard that would otherwise block recovery (#305).
+    if not resume:
+        ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
     safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
     adapter_preflight_payload = release_adapter_preflight_payload(
