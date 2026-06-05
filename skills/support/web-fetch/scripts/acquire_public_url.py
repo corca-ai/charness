@@ -250,8 +250,16 @@ def _browser_stage(
             SCRIPT_DIR, args.repo_root, timeout=args.timeout, run_command=_run_command
         )
     if cleanup_error:
-        attempts[-1].status, attempts[-1].confidence, attempts[-1].error = "error", "none", cleanup_error
-        attempts[-1].details["cleanup"] = "failed"
+        last = attempts[-1]
+        # Preserve the attempt's real acquisition signal (status/confidence/error)
+        # and record the cleanup failure in details, so BOTH the "why the fetch
+        # failed" reason and the cleanup error survive (#310). Only when the
+        # attempt carried no acquisition error of its own do we surface the
+        # cleanup error as the attempt error, so the degraded close is not silent.
+        last.details["cleanup"] = "failed"
+        last.details["cleanup_error"] = cleanup_error
+        if last.error is None:
+            last.status, last.confidence, last.error = "error", "none", cleanup_error
         return _payload_for(args, route, attempts, "degraded")
     if has_success(attempts, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")

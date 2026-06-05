@@ -231,6 +231,53 @@ def test_acquire_public_url_degrades_when_agent_browser_close_fails(tmp_path: Pa
     assert attempt["details"]["cleanup"] == "failed"
 
 
+def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) -> None:
+    # #310: when the render attempt fails for a real acquisition reason AND the
+    # post-close runtime proof then fails, the operator must keep the original
+    # acquisition `.error` (and status/confidence). The cleanup error is appended
+    # to details, never allowed to clobber the "why the fetch failed" signal.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "calls.log"
+    _make_logging_agent_browser(bin_dir, log, render_fails=True)
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "agent_browser_runtime_guard.py").write_text(
+        "#!/usr/bin/env python3\nimport sys\nprint('orphan daemon remains', file=sys.stderr)\nsys.exit(1)\n",
+        encoding="utf-8",
+    )
+    direct = tmp_path / "direct.html"
+    direct.write_text(SPA_HTML, encoding="utf-8")
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "skills/support/web-fetch/scripts/acquire_public_url.py",
+            "--url", "https://example.com/app",
+            "--repo-root", str(repo),
+            "--direct-response-file", str(direct),
+            "--expect-text", "target proof",
+            "--browser-mode", "auto",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "degraded"
+    render = next(a for a in payload["attempts"] if a["stage_id"] == "agent-browser-render-recon")
+    # Original acquisition failure is preserved (the fake render exited 1 / "boom").
+    assert "boom" in render["error"]
+    assert "orphan daemon remains" not in render["error"]
+    # The cleanup failure still survives — appended to details, not clobbering .error.
+    assert render["details"]["cleanup"] == "failed"
+    assert "orphan daemon remains" in render["details"]["cleanup_error"]
+
+
 def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
