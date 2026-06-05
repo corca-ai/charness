@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shutil
 import subprocess
@@ -27,6 +26,12 @@ from acquisition_trace_lib import (  # noqa: E402
     payload,
     should_stop,
     skip_attempt,
+)
+from agent_browser_session import (  # noqa: E402
+    assert_runtime_clean,
+    close_session,
+    run_browser_network,
+    run_browser_text,
 )
 from classify_fetch_response import classify, extract_persistable_text  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
@@ -65,14 +70,6 @@ def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | No
         stderr = completed.stderr.strip() or completed.stdout.strip()
         return completed.stdout, f"exit={completed.returncode}:{stderr[:200]}"
     return completed.stdout, None
-
-
-def _assert_browser_runtime_clean(repo_root: Path, *, timeout: int) -> str | None:
-    guard = repo_root / "scripts" / "agent_browser_runtime_guard.py"
-    if not guard.is_file():
-        return None
-    command = [sys.executable, str(guard), "--repo-root", str(repo_root), "--assert-no-orphans"]
-    return _run_command(command, timeout=timeout)[1]
 
 
 def _positive_int(raw: str) -> int:
@@ -156,41 +153,6 @@ def _should_try_browser(
     return True, None
 
 
-def _browser_session_name(url: str) -> str:
-    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
-    return f"charness-gather-{digest}"
-
-
-def _run_browser_text(url: str, *, timeout: int) -> tuple[str, str | None, dict[str, object]]:
-    session = _browser_session_name(url)
-    details: dict[str, object] = {"session": session}
-    for command in (
-        ["agent-browser", "--session", session, "open", url],
-        ["agent-browser", "--session", session, "wait", "1000"],
-    ):
-        _stdout, error = _run_command(command, timeout=timeout)
-        if error:
-            return "", error, details
-    text, error = _run_command(
-        ["agent-browser", "--session", session, "get", "text", "body"],
-        timeout=timeout,
-    )
-    if error:
-        return text, error, details
-    return text, None, details
-
-
-def _run_browser_network(url: str, *, timeout: int) -> tuple[str, str | None, dict[str, object]]:
-    session = _browser_session_name(url)
-    requests_text, requests_error = _run_command(
-        ["agent-browser", "--session", session, "network", "requests", "--filter", "api|graphql|json"],
-        timeout=timeout,
-    )
-    candidates = [line.strip() for line in requests_text.splitlines() if line.strip()][:20]
-    details: dict[str, object] = {"session": session, "network_candidates": candidates}
-    return requests_text, requests_error, details
-
-
 def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
     route = {
         "input_url": args.url,
@@ -232,6 +194,68 @@ def _payload_for(
         include_selected_content=args.include_selected_content,
         selected_content_max_chars=args.selected_content_max_chars,
     )
+
+
+def _browser_stage(
+    args: argparse.Namespace,
+    route: dict[str, object],
+    attempts: list[AcquisitionAttempt],
+    *,
+    proof_required: bool,
+) -> dict[str, object] | None:
+    """Run the agent-browser render/network recon, then ALWAYS close + prove clean.
+
+    Once the session is opened, close + runtime proof run on every in-process
+    path — render/network success or failure, or an unexpected raise — via the
+    ``finally`` block, so a session is never leaked (#302). Returns a payload to
+    short-circuit ``acquire`` (degraded close or proven success), else None.
+    """
+    try:
+        started = time.monotonic()
+        text, error, details = run_browser_text(args.url, timeout=args.timeout, run_command=_run_command)
+        attempts.append(
+            _attempt_from_text(
+                stage_id="agent-browser-render-recon",
+                tool_id="agent-browser",
+                text=text,
+                elapsed_s=round(time.monotonic() - started, 3),
+                error=error,
+                intent=args.intent,
+                expect_text=args.expect_text,
+                expect_regex=args.expect_regex,
+                expect_json_field=args.expect_json_field,
+                details=details,
+            )
+        )
+        if args.intent == "collect":
+            started = time.monotonic()
+            network_text, network_error, network_details = run_browser_network(
+                args.url, timeout=args.timeout, run_command=_run_command
+            )
+            attempts.append(
+                AcquisitionAttempt(
+                    stage_id="agent-browser-network-recon",
+                    tool_id="agent-browser",
+                    status="diagnostic" if network_error is None else "error",
+                    confidence="weak" if network_text.strip() else "none",
+                    elapsed_s=round(time.monotonic() - started, 3),
+                    error=network_error,
+                    output_chars=len(network_text),
+                    details={**network_details, "diagnostic": True},
+                )
+            )
+    finally:
+        close_error = close_session(args.url, timeout=args.timeout, run_command=_run_command)
+        cleanup_error = close_error or assert_runtime_clean(
+            SCRIPT_DIR, args.repo_root, timeout=args.timeout, run_command=_run_command
+        )
+    if cleanup_error:
+        attempts[-1].status, attempts[-1].confidence, attempts[-1].error = "error", "none", cleanup_error
+        attempts[-1].details["cleanup"] = "failed"
+        return _payload_for(args, route, attempts, "degraded")
+    if has_success(attempts, proof_required=proof_required):
+        return _payload_for(args, route, attempts, "success")
+    return None
 
 
 def acquire(args: argparse.Namespace) -> dict[str, object]:
@@ -287,46 +311,9 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
     try_browser, browser_skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if try_browser:
-        started = time.monotonic()
-        text, error, details = _run_browser_text(args.url, timeout=args.timeout)
-        attempts.append(
-            _attempt_from_text(
-                stage_id="agent-browser-render-recon",
-                tool_id="agent-browser",
-                text=text,
-                elapsed_s=round(time.monotonic() - started, 3),
-                error=error,
-                intent=args.intent,
-                expect_text=args.expect_text,
-                expect_regex=args.expect_regex,
-                expect_json_field=args.expect_json_field,
-                details=details,
-            )
-        )
-        if args.intent == "collect":
-            started = time.monotonic()
-            network_text, network_error, network_details = _run_browser_network(args.url, timeout=args.timeout)
-            attempts.append(
-                AcquisitionAttempt(
-                    stage_id="agent-browser-network-recon",
-                    tool_id="agent-browser",
-                    status="diagnostic" if network_error is None else "error",
-                    confidence="weak" if network_text.strip() else "none",
-                    elapsed_s=round(time.monotonic() - started, 3),
-                    error=network_error,
-                    output_chars=len(network_text),
-                    details={**network_details, "diagnostic": True},
-                )
-            )
-        _stdout, cleanup_error = _run_command(["agent-browser", "--session", _browser_session_name(args.url), "close"], timeout=args.timeout)
-        if cleanup_error is None:
-            cleanup_error = _assert_browser_runtime_clean(args.repo_root, timeout=args.timeout)
-        if cleanup_error:
-            attempts[-1].status, attempts[-1].confidence, attempts[-1].error = "error", "none", cleanup_error
-            attempts[-1].details["cleanup"] = "failed"
-            return _payload_for(args, route, attempts, "degraded")
-        if has_success(attempts, proof_required=proof_required):
-            return _payload_for(args, route, attempts, "success")
+        browser_payload = _browser_stage(args, route, attempts, proof_required=proof_required)
+        if browser_payload is not None:
+            return browser_payload
     elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
         attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
         if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):

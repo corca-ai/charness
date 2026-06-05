@@ -9,13 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1 (#304) and 2 (#303) complete — fixes + direct-commit
-  closeouts staged (`Close #304`, `Close #303`). Next: Slice 3 (#302) gather
-  browser close + clean-runtime proof.
-- Next action: implement Slice 3 (#302) — `acquire_public_url.py` attempts
-  session close on all in-process paths; missing post-close guard is
-  fail-visible (`guard_unavailable`); exported-surface gather reaches the impl +
-  proof; runtime guard does not misclassify zombie/reparented residue.
+- Current slice: Slices 1 (#304), 2 (#303), 3 (#302) complete — fixes +
+  direct-commit closeouts staged (`Close #304`, `Close #303`, `Close #302`).
+  Next: Slice 4 (#305) release publish-flow resilience.
+- Next action: implement Slice 4 (#305) — make `publish_release.py`
+  resumable/idempotent across a mid-publish failure (detect existing commit+tag
+  → continue push/release/verify, re-validating first); installed-cache-safe
+  runtime bootstrap; release-time `update_instructions` version-staleness check.
 - Verification cadence: cheap deterministic checks (`run_slice_closeout.py`
   aggregate + targeted pytest) at commit boundaries; full targeted test file +
   bounded fresh-eye critique at slice boundaries; broad pytest at final closeout.
@@ -245,6 +245,20 @@ unresolved consequential item remains for `/goal` activation.
 - Critique: charness-artifacts/critique/2026-06-05-issue-303-adapter-first-reviewer-rule.md (fresh-eye, no blockers).
 - Off-goal findings: none
 - Lessons carried forward: Host instruction files (generated AGENTS.md) may name a concrete tier value as a per-adapter default, unlike portable skill prose; keep it adapter-first and explicitly disclaim global application.
+- Metrics:
+
+### Slice 3: Slice 3 — #302 gather browser close + clean-runtime proof
+
+- Objective: Guarantee agent-browser close on every in-process path; make a missing post-close guard fail-visible (guard_unavailable); make gather reach the web-fetch impl + cleanup proof from an exported layout; stop the runtime guard misclassifying reparented/zombie residue as clean.
+- Why this approach: Bug-class, four confirmed gaps. try/finally for close; ancestor-walk guard resolution for the bundled guard; reparented/zombie residue folded into the runtime health check; markers scoped to agent-browser + headless Chromium to avoid desktop-Chrome/dockerd false positives.
+- Commits:
+- What changed: NEW skills/support/web-fetch/scripts/agent_browser_session.py (session I/O + resolve_runtime_guard + assert_runtime_clean). acquire_public_url.py: _browser_stage try/finally close+proof. scripts/agent_browser_runtime_guard.py: reparented_residue + zombie_residue + runtime_residue_total in health. Mirrors synced. Tests: test_web_fetch_cleanup.py (+4), test_agent_browser_runtime_guard.py (+4).
+- Alternatives rejected: Hardcode a single relative guard offset (fails one of repo-root/export). De-wrap nothing. Bare chrome/chromium markers (rejected: false-positives desktop Chrome at PID 1 on the unconditional closeout gate; tightened to require headless/automation context). Reaping reparented/zombie residue (rejected: Ceal-owned Non-Goal; detect-not-reap).
+- Targeted verification: 63 tests green (web-fetch cleanup + runtime guard + support + content + gws). Pre-fix gaps confirmed via git show HEAD. guard_unavailable fail-visible; exported reach proven by failing-bundled-guard test; reparented/zombie not clean; desktop-Chrome + dockerd not flagged; dev host residue 0; deterministic aggregate completed. Bounded fresh-eye critique: no blockers, all 4 gaps YES; folded its chrome-marker false-positive finding in-slice.
+- Test duplication pressure: 8 new tests across 2 files. Distinct coverage: close-attempted (success/failure), guard_unavailable fail-visible, exported reach, reparented residue, zombie residue, desktop-Chrome-not-flagged, assert-no-orphans unhealthy. No duplicate-coverage pressure; each pins a distinct gap.
+- Critique: charness-artifacts/critique/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md (fresh-eye, no blockers; chrome-marker finding folded).
+- Off-goal findings: none — the reviewer's deeper note (run_slice_closeout runs --assert-no-orphans unconditionally) is mitigated by the tightened markers; the residual (cleanup cannot reap reparented residue) is the intended fail-visible Ceal-owned boundary, not a defect.
+- Lessons carried forward: Browser session lifecycle must close in finally; missing proof must be fail-visible, never None; runtime residue detection must be specific (agent-browser + headless) to avoid false-positiving an unconditional, waiver-stripped closeout gate.
 - Metrics:
 
 ## Context Sources

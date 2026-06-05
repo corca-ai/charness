@@ -28,6 +28,20 @@ HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 TERM_GRACE_SECONDS = 2.0
 CLEANUP_COMMAND = "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
+# Markers that identify an agent-browser session's process tree (the agent-browser
+# daemon and the headless Chromium it drives). Used to detect reparented (PPID=1)
+# and zombie (<defunct>) browser residue that survives a daemon's death — residue
+# the daemon-rooted orphan scan alone misses and would otherwise report clean (#302).
+# `daemon.js` is intentionally NOT a marker: reparented agent-browser daemons carry
+# `agent-browser` in their command and are already counted by the orphan-daemon scan,
+# and bare `daemon.js` collides with unrelated commands (e.g. dockerd's `daemon.json`).
+AGENT_BROWSER_RESIDUE_MARKERS = ("agent-browser", "headless_shell")
+# Bare Chrome/Chromium is only agent-browser residue when it is clearly a
+# headless/automation process; otherwise a developer's desktop Chrome reparented
+# to init would be misclassified as gather residue and fail the runtime gate.
+CHROMIUM_MARKERS = ("chromium", "chrome")
+HEADLESS_INDICATORS = ("--headless", "headless_shell")
+DEFUNCT_MARKERS = ("<defunct>", "(defunct)")
 
 
 @dataclass(frozen=True)
@@ -66,6 +80,20 @@ def is_agent_browser_daemon(process: ProcessInfo) -> bool:
     return "agent-browser" in process.command and "daemon.js" in process.command
 
 
+def is_browser_residue_command(command: str) -> bool:
+    lowered = command.lower()
+    if any(marker in lowered for marker in AGENT_BROWSER_RESIDUE_MARKERS):
+        return True
+    if any(marker in lowered for marker in CHROMIUM_MARKERS):
+        return any(indicator in lowered for indicator in HEADLESS_INDICATORS)
+    return False
+
+
+def is_defunct_command(command: str) -> bool:
+    lowered = command.lower()
+    return any(marker in lowered for marker in DEFUNCT_MARKERS)
+
+
 def collect_descendant_pids(processes: list[ProcessInfo], root_pids: set[int]) -> set[int]:
     children_by_parent: dict[int, list[int]] = defaultdict(list)
     for process in processes:
@@ -90,6 +118,22 @@ def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
     orphan_descendants = [
         process for process in processes if process.pid in orphan_tree_pids and process.pid not in orphan_root_pids
     ]
+    # Reparented browser residue: PPID=1 browser processes whose owning daemon is
+    # already gone, so they are not part of any orphan-daemon tree. Zombie residue:
+    # <defunct> browser processes the host init has not reaped. Neither is reaped
+    # here (that is the container init's job), but both must keep the runtime from
+    # being reported clean (#302).
+    reparented_residue = [
+        process
+        for process in processes
+        if process.ppid == 1
+        and process.pid not in orphan_root_pids
+        and is_browser_residue_command(process.command)
+        and not is_defunct_command(process.command)
+    ]
+    zombie_residue = [
+        process for process in processes if is_defunct_command(process.command) and is_browser_residue_command(process.command)
+    ]
     return {
         "daemon_count": len(daemons),
         "orphan_daemon_count": len(orphan_daemons),
@@ -97,8 +141,14 @@ def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
         "daemon_pids": [process.pid for process in daemons],
         "orphan_daemon_pids": sorted(orphan_root_pids),
         "orphan_tree_pids": sorted(orphan_tree_pids),
+        "reparented_residue_count": len(reparented_residue),
+        "reparented_residue_pids": sorted(process.pid for process in reparented_residue),
+        "zombie_residue_count": len(zombie_residue),
+        "zombie_residue_pids": sorted(process.pid for process in zombie_residue),
         "sample_orphan_daemons": [asdict(process) for process in orphan_daemons[:5]],
         "sample_orphan_descendants": [asdict(process) for process in orphan_descendants[:10]],
+        "sample_reparented_residue": [asdict(process) for process in reparented_residue[:5]],
+        "sample_zombie_residue": [asdict(process) for process in zombie_residue[:5]],
     }
 
 
@@ -162,10 +212,18 @@ def inspect_payload(repo_root: Path) -> dict[str, object]:
     return {"runtime": inspect_runtime(processes)}
 
 
+def runtime_residue_total(runtime: dict[str, object]) -> int:
+    return (
+        int(runtime["orphan_daemon_count"])
+        + int(runtime["reparented_residue_count"])
+        + int(runtime["zombie_residue_count"])
+    )
+
+
 def assert_no_orphans_payload(repo_root: Path) -> dict[str, object]:
     runtime = inspect_runtime(list_processes(repo_root))
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
-    healthy = ignore_orphans or runtime["orphan_daemon_count"] == 0
+    healthy = ignore_orphans or runtime_residue_total(runtime) == 0
     return {
         "healthy": healthy,
         "runtime": runtime,
@@ -178,7 +236,7 @@ def doctor_payload(repo_root: Path) -> dict[str, object]:
     helpcheck = run_help_check(repo_root)
     runtime = inspect_runtime(list_processes(repo_root))
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
-    healthy = helpcheck["ok"] and (ignore_orphans or runtime["orphan_daemon_count"] == 0)
+    healthy = helpcheck["ok"] and (ignore_orphans or runtime_residue_total(runtime) == 0)
     return {
         "healthy": healthy,
         "helpcheck": helpcheck,
