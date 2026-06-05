@@ -139,6 +139,31 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     assert any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
 
 
+def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> None:
+    # RN2: resume must RE-VALIDATE before continuing — never push a stale local
+    # release commit unchecked. Make the re-validated quality gate fail and assert
+    # resume aborts before any push or release-create.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    (repo / "scripts" / "run-quality.sh").write_text(
+        "#!/usr/bin/env bash\nset -euo pipefail\necho 'quality gate failed on resume' >&2\nexit 1\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "run-quality.sh").chmod(0o755)
+    _simulate_partial_publish(repo)  # the failing quality script is part of the release commit
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute",
+        "--critique-blocked", CRITIQUE_BLOCKED,
+    )
+
+    assert result.returncode != 0
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:1] == ["push"] for entry in git_log), f"resume must not push when re-validation fails: {git_log}"
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8")) if (tmp_path / "gh-log.json").exists() else []
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
+
+
 def test_resume_refuses_when_no_partial_state(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)

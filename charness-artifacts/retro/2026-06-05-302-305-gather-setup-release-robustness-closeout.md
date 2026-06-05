@@ -28,14 +28,27 @@ honest count is four bounded reviewers.
   was caught only by the final broad pytest gate (~172s) instead of the
   per-slice deterministic aggregate, forcing a late fix commit after the slice
   was already closed. Transferable pattern → issue #307.
-- The `attention-state-visibility` gate blocked the #302 closeout because a new
-  support module's docstring used the word "silently-skipped"; reworded in one
-  pass. Gate fired at the slice aggregate (early, correct) — minor reword cost,
-  not a workflow gap.
-- The bug-class closeout `Siblings:` field first failed validation because
-  `Decision:`/`Proof:` at line starts parse as new ledger fields; fixed by
-  inlining lowercase "decision"/"proof". Validator gave a precise error; one
-  re-edit. Gate working as intended.
+- **Self-inflicted detour (#302 attention-state):** the gate blocked the closeout
+  because a new support module's docstring used "silently-skipped". I first took
+  the WRONG, heavyweight path — declaring the new module's state in
+  `skills/public/quality/references/attention-state-visibility.json` (which then
+  pulled in the public-skill-validation gate) — then reverted that and reworded
+  the docstring (the scoped fix). Not a one-pass reword: a real
+  declare-then-revert detour. Root cause: authored support-module prose before
+  knowing the gate's banned vocabulary.
+- **Iteration (#305 staleness check):** first written as a general semver-scan
+  regex, then rewritten to previous-vs-target substring containment after the
+  fresh-eye review flagged date/`v`-prefix edges — one wasted iteration a
+  regex-edge premortem would have skipped.
+- **Unplanned refactor (#302 length gate):** `acquire_public_url.py` was near the
+  skill-helper Python-length limit, forcing a mid-slice extraction of
+  `agent_browser_session.py` — churn driven by adding to a near-limit file
+  without checking headroom first.
+- Smaller gate-caught frictions, each one edit, NOT itemized further (recording
+  bar stated): the bug-class `Siblings:` field parse (`Decision:`/`Proof:` at line
+  start read as new ledger fields) and the phase-routing `Routing:` regex
+  capturing only the first physical line. Both validators gave precise errors at
+  the right boundary — working as intended.
 
 ## Critical Decisions
 
@@ -72,6 +85,18 @@ honest count is four bounded reviewers.
   aggregate so test-fixture drift fails at the commit boundary, not the final
   broad gate. Disposition: issue #307 (quality-contract change; routes through
   `quality`).
+- workflow: know a constrained surface's rule before authoring into it
+  (attention-state banned vocabulary, `check_python_lengths` headroom, regex
+  edge cases), so the #302 docstring detour, the #302 length-gate refactor, and
+  the #305 regex→containment rewrite are avoided up front rather than caught
+  late. Disposition: issue #308 (authoring-preflight discoverability; sibling to
+  #307).
+- test: the #305 `--resume` path lacked a negative test proving it aborts before
+  push when re-validation fails (the RN2 "never push a stale commit unchecked"
+  guarantee was code-traced only). Disposition: applied —
+  `test_resume_aborts_before_push_when_revalidation_fails` added to
+  `tests/quality_gates/test_release_publish_resilience.py` (surfaced by the
+  follow-up goal critique, committed this run).
 
 ## Sibling Search
 

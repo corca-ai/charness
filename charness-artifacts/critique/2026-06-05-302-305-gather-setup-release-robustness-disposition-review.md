@@ -43,5 +43,21 @@ undisposed improvements.
 
 All four `Close #N` carriers verified in commit bodies (db66a30b #304, cb909eda
 #303, 5318a9a7 #302, 4b76196f #305) plus the test-fixture follow-up 0c593e23 —
-matching the goal's ledger. Bar met: each improvement is honestly disposed and
-the routing is defensible.
+matching the goal's ledger. Bar met for the one originally-surfaced improvement.
+
+## Extended audit (follow-up two-lens goal critique)
+
+A later operator-requested two-subagent critique of the whole goal found that
+this first review had scoped itself to the single surfaced improvement and
+**rubber-stamped the retro's Waste boundary**. The critique confirmed (against
+the diffs) that the persisted retro under-recorded three genuine waste items —
+the #302 attention-state declare-then-revert detour (understated as a "reword"),
+the #305 staleness regex→containment iteration (only in the counterfactual), and
+the #302 mid-slice length-gate refactor (absent) — and that the
+authoring-discipline lesson sat as undisposed prose in the Raskin counterfactual.
+Reconciliation (committed): the retro `## Waste` was upgraded to record all
+three honestly; **issue #308** was filed to disposition the authoring-discipline
+lesson; and a #305 resume negative-path test
+(`test_resume_aborts_before_push_when_revalidation_fails`) was added as an
+`applied` disposition. Closeout integrity, non-claims, and scope were re-verified
+clean with no blocker.

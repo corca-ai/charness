@@ -517,9 +517,21 @@ other dev machines; #305 staleness moved to previous-vs-target containment).
 - workflow/capability: run cheap standalone structural checkers
   (`check_test_repo_copy_invariants.py` and peers) at the per-slice / pre-commit
   boundary so test-fixture drift fails early, not at the final broad gate.
-  Disposition: **issue #307** (`corca-ai/charness#307`; quality-contract change,
-  routes through `quality`).
+  Disposition: **issue #307** (quality-contract change, routes through `quality`).
+- workflow: know a constrained surface's rule before authoring into it
+  (attention-state banned vocabulary, length-gate headroom, regex edge cases) —
+  the #302 docstring detour, #302 length-gate refactor, and #305 regex→containment
+  rewrite are this class. Disposition: **issue #308** (authoring-preflight
+  discoverability; sibling to #307).
+- test: the #305 `--resume` "re-validate before push" guarantee was code-traced
+  only. Disposition: **applied** —
+  `test_resume_aborts_before_push_when_revalidation_fails` added this run
+  (surfaced by the follow-up goal critique).
 
-Disposition review: bounded fresh-eye subagent audited the disposition above and
-returned a verdict; artifact bound in `## Final Verification`
-(`...-disposition-review.md`).
+Disposition review: a first bounded fresh-eye subagent returned
+`dispositions-sound` for the originally-surfaced improvement; a follow-up
+two-lens goal critique then found the retro Waste under-recorded three items and
+that the authoring-discipline lesson was undisposed prose. Both were reconciled
+(Waste upgraded above; #308 filed; resume test applied). Artifact bound in
+`## Final Verification` (`...-disposition-review.md`, updated with the extended
+audit).
