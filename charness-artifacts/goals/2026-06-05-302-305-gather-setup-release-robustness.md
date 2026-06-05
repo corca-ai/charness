@@ -9,11 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 (#304) complete — fix + bug-class direct-commit
-  closeout staged (`Close #304`). Next: Slice 2 (#303).
-- Next action: implement Slice 2 (#303) — add an adapter-first subagent reviewer
-  rule to the setup-generated/normalized AGENTS.md without weakening
-  standing-delegation language; keep `inspect_repo.py` clean.
+- Current slice: Slices 1 (#304) and 2 (#303) complete — fixes + direct-commit
+  closeouts staged (`Close #304`, `Close #303`). Next: Slice 3 (#302) gather
+  browser close + clean-runtime proof.
+- Next action: implement Slice 3 (#302) — `acquire_public_url.py` attempts
+  session close on all in-process paths; missing post-close guard is
+  fail-visible (`guard_unavailable`); exported-surface gather reaches the impl +
+  proof; runtime guard does not misclassify zombie/reparented residue.
 - Verification cadence: cheap deterministic checks (`run_slice_closeout.py`
   aggregate + targeted pytest) at commit boundaries; full targeted test file +
   bounded fresh-eye critique at slice boundaries; broad pytest at final closeout.
@@ -229,6 +231,20 @@ unresolved consequential item remains for `/goal` activation.
 - Critique: charness-artifacts/critique/2026-06-05-issue-304-template-inspector-agreement.md (fresh-eye, no blockers).
 - Off-goal findings: none
 - Lessons carried forward: Contract-snippet detection over markdown prose must be whitespace-insensitive; line-wrapping to satisfy length gates otherwise creates false drift against the very default the repo ships.
+- Metrics:
+
+### Slice 2: Slice 2 — #303 setup adapter-first reviewer rule
+
+- Objective: Add an adapter-first subagent reviewer rule to setup-generated/normalized AGENTS.md (follow the adapter's tier + concrete spawn fields; Codex critique default medium unless adapter says otherwise; stop+report if unappliable) without weakening standing-delegation language.
+- Why this approach: Feature-class: add the rule the #303 issue specifies, framed adapter-first per the canonical reviewer-tier policy (tier-named, concrete values adapter-owned).
+- Commits:
+- What changed: scripts/setup_host_docs_lib.py (+mirror): added a second adapter-first reviewer bullet to COMPACT_SUBAGENT_DELEGATION. tests/quality_gates/test_setup_inspect_policy.py: test_generated_agents_carries_adapter_first_reviewer_rule.
+- Alternatives rejected: Hardcode a global medium tier — rejected (axis adapter/host; would contradict the multi-host reviewer-tier policy). Make the rule host-plural and drop the Codex example — rejected: the #303 issue and goal boundary explicitly want medium named only as the Codex-critique default.
+- Targeted verification: Generated AGENTS.md carries the rule; standing-delegation language intact; inspector clean (compact_contract_present True, weakening_caveats []). 50 targeted tests passed; run_slice_closeout.py deterministic aggregate completed. Bounded fresh-eye slice critique: no blockers, all 4 acceptance criteria YES; test confirmed to fail on removed-rule and global-medium regressions.
+- Test duplication pressure: 1 new test. Distinct from the #304 generated-template test (which asserts inspector agreement on the wrap); this one asserts the adapter-first rule content + conditional-medium framing. No duplicate-coverage pressure.
+- Critique: charness-artifacts/critique/2026-06-05-issue-303-adapter-first-reviewer-rule.md (fresh-eye, no blockers).
+- Off-goal findings: none
+- Lessons carried forward: Host instruction files (generated AGENTS.md) may name a concrete tier value as a per-adapter default, unlike portable skill prose; keep it adapter-first and explicitly disclaim global application.
 - Metrics:
 
 ## Context Sources

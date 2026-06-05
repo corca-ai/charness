@@ -396,6 +396,43 @@ def test_setup_inspect_accepts_generated_compact_subagent_delegation_block(tmp_p
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
+def test_generated_agents_carries_adapter_first_reviewer_rule(tmp_path: Path) -> None:
+    # #303: setup-generated AGENTS.md must carry an adapter-first subagent
+    # reviewer rule (follow the adapter's tier + concrete spawn fields, not
+    # inherited host defaults), without weakening standing-delegation language,
+    # and without asserting a global `medium` tier.
+    from scripts.setup_host_docs_lib import render_agents_template
+
+    repo = tmp_path / "repo"
+    agents_text = render_agents_template(
+        skill_routing_markdown="## Skill Routing\n\n- Route via find-skills."
+    )
+    normalized = " ".join(agents_text.split())
+
+    # Adapter-first rule present.
+    assert "follow that adapter's reviewer tier" in normalized
+    assert "instead of inheriting the parent" in normalized
+    assert "stop and report the concrete signal" in normalized
+    # `medium` is named only as the conditional Codex critique default, never as
+    # a global claim — the rule must explicitly disclaim "every subagent".
+    assert "unless it says otherwise" in normalized
+    assert "not a claim that every subagent is medium" in normalized
+    # Standing-delegation language remains intact.
+    assert "standing delegation request" in normalized
+    assert "same-agent substitutes are forbidden" in normalized
+
+    # The new rule must not regress the inspector: still compact-contract-clean.
+    _seed_normalize_repo(repo, agents_text)
+    payload = _run_inspect(repo)
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["compact_contract_present"] is True
+    assert fresh_eye["weakening_caveats_detected"] == []
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_delegation_caveat_weakens_contract" not in finding_types
+
+
 def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substitute(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(
