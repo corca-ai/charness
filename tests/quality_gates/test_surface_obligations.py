@@ -757,3 +757,24 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["risk_interrupt_plan"]["status"] == "blocked"
+
+
+def test_repo_python_surface_runs_fast_repo_copy_checker_before_broad_pytest() -> None:
+    # #307: the fast standalone structural checker must run in the repo-python
+    # surface's verify commands (the per-slice / pre-commit aggregate) so test-
+    # fixture drift (e.g. inline shutil.ignore_patterns instead of REPO_COPY_IGNORE)
+    # fails at the commit boundary in <1s, not 172s into the broad pytest gate.
+    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
+    verify = repo_python["verify_commands"]
+    checker_idx = next(
+        (i for i, cmd in enumerate(verify) if "check_test_repo_copy_invariants.py" in cmd), None
+    )
+    broad_idx = next(
+        (i for i, cmd in enumerate(verify) if cmd.startswith("pytest") and "tests/quality_gates" in cmd),
+        None,
+    )
+    assert checker_idx is not None, verify
+    assert broad_idx is not None, verify
+    # It must precede the broad pytest so fixture drift fails fast, not 172s deep.
+    assert checker_idx < broad_idx, verify
