@@ -13,53 +13,46 @@
 
 ## Current State
 
-- **v0.22.0 is shipped and verified.** Tag `v0.22.0` at `a50cf8b3`, GitHub
-  release live and marked latest, all version surfaces at 0.22.0, and #302–#305
-  closed (via push close-keywords). Release:
-  <https://github.com/corca-ai/charness/releases/tag/v0.22.0>.
-  Release content: gather agent-browser close + clean-runtime proof (#302),
-  setup adapter-first reviewer rule (#303), setup delegation line-wrap agreement
-  (#304), release publish resilience (#305). Minor bump (one additive `feat`).
-- Critique: bounded fresh-eye release critique (3 angle + 1 counterweight) at
-  [v0.22.0 release critique](../charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md).
-- The `--release` gate surfaced **pre-existing committed debt** in the #302–#305
-  work (issue anchors in portable skill scripts; 3 debug artifacts in a
-  non-canonical structure; stale debug seam-risk index). Fixed in `f17e3e8e`;
-  `./scripts/run-quality.sh --release` then passed 72/0.
-- Publish tooling friction (worked around, filed as #312): the happy-path
-  `publish_release.py --execute` raced a usage-episode test via its
-  `run_slice_closeout` wrapper, and `--resume` left an uncommitted `latest.md`
-  that the pre-push hook blocked. Completed via the repo push path directly
-  (`git push origin main v0.22.0` → pre-push gate 71/0 → `gh release create`).
+- **v0.23.0 is shipped and verified.** Tag `v0.23.0` at `b85ab502`, GitHub
+  release live, all version surfaces at 0.23.0, and #306/#311/#314/#315/#316/#317
+  verified CLOSED. Release:
+  <https://github.com/corca-ai/charness/releases/tag/v0.23.0>.
+- Shipped via the **`2026-06-06-306-317-open-followups` achieve goal (complete)**:
+  a dynamic workflow implemented all six as sequential committed slices —
+  mutation-coverage honesty (#306), setup stale-AGENTS flag (#311), commit-boundary
+  gate reconciliation (#314), setup commit-discipline seed (#317), achieve closeout
+  placeholders (#315), achieve approval boundary (#316). S7 fresh-eye review +
+  rung-2 disposition review both CLEAR; local `./scripts/run-quality.sh --release`
+  72/0 is the bundle proof (minor bump, multiple additive `feat`).
 
 ## Next Session
 
-1. New follow-ups filed this release: **#309** (cleanup-orphans dead-end for
-   reparented/zombie residue), **#310** (gather acquire error clobber, pre-existing),
-   **#311** (reviewer rule greenfield-only backfill), **#312** (release publish-flow
-   resilience round 2 — resume `latest.md` ordering + closeout usage-episode race).
-   Route through `find-skills` then `issue` to resolve.
-2. Prior open work still outside this release: #184, #293, #294, #295, #296.
-3. Do not reopen #302–#305 or the portable-skill goal unless current verification
-   contradicts the shipped evidence.
+1. Open backlog — route through `find-skills` then `issue`:
+   - **#319** (filed this run): the `SKILL.md` `core_nonempty` headroom-buffer test
+     runs only in the broad gate, not the commit boundary (generalizes #308/#314).
+     The cleanest next quality pickup — it generalizes the just-shipped #314/#307.
+   - **#318**: support orchestrator-owned external proof for achieve sub-goal closeout.
+   - **#184**: 제품 성공 기준과 핵심 메트릭 정의 (product success metrics).
+2. Do not reopen #306/#311/#314/#315/#316/#317 or the 306-317 goal unless current
+   verification contradicts the shipped evidence.
 
 ## Discuss
 
-- #312 should likely be fixed before the next release: both gaps (resume
-  `latest.md` ordering and the closeout-wrapped quality usage-episode race) will
-  recur and forced a manual push this time. The cleanest framing is that
-  `run_slice_closeout`'s quality run should be read-only-safe (no live
-  usage-episode writes during the suite), and `--resume` should commit its
-  refreshed `latest.md` before pushing.
-- The `--release` gate caught real debt the #302–#305 goal closeout missed
-  because that closeout did not run the full `--release` gate. Worth deciding
-  whether goal closeout should run the release gate when the work targets a
-  release surface, rather than discovering it at publish time.
+- **No push/tag-triggered CI.** charness runs CI only on
+  `workflow_dispatch`/path-scoped `pull_request`/cron (`mutation-tests.yml`), so a
+  direct-to-`main` release gets **no** automatic CI on the released SHA; the local
+  `--release` gate is the bundle proof, and a manual dispatch is a false proof
+  (no `base_sha` — the #251/#306 trap). Worth deciding whether to add a light
+  push/tag CI so released SHAs get a real remote run.
+- **Pending operator real-host proof.** The v0.23.0 publish reported
+  `real_host_required: true` (the standing `nose` checklist): a second-machine
+  `charness update` + `charness tool doctor/install nose` run. Not done in-session.
 
 ## References
 
-- [v0.22.0 release critique](../charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md),
-  [release latest](../charness-artifacts/release/latest.md)
+- [306-317 goal](../charness-artifacts/goals/2026-06-06-306-316-open-followups.md),
+  [closeout retro](../charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md)
+- [v0.23.0 release critique](../charness-artifacts/critique/2026-06-06-v0.23.0-release-critique.md),
+  [disposition review](../charness-artifacts/critique/2026-06-06-306-317-disposition-review.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md),
   [quality latest](../charness-artifacts/quality/latest.md)
-- [#302–#305 robustness goal](../charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md)
