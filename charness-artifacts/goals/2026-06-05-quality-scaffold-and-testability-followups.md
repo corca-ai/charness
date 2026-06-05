@@ -183,7 +183,19 @@ during the run:
 - Proof: `./scripts/run-quality.sh --read-only` → 71 passed, 0 failed. Mirrors synced
   and staged with source. `test_usage_episodes_host_hooks` is a pre-existing parallel-run
   flake (3/3 green in-tree, green on clean HEAD), not a slice-1 regression.
-- Status: verified; fresh-eye critique in progress before commit.
+- Status: verified; fresh-eye review = ship, no blockers. Committed `54748cd3`.
+
+### Slice 2 — move the boundary-bypass ratchet to Done (2026-06-05)
+
+- `docs/testability-dsl-initiative.md`: added a Done entry for the ratchet
+  (commit `43e70e4c`, the standing `check-boundary-bypass-ratchet` gate at
+  run-quality.sh:498, committed baseline 96/57/38/23), rewrote the now-false
+  "no ratchet yet" Honest Non-Claim into "goal 2 ships; goal 1 barely started",
+  and removed the ratchet from Remaining (renumbered 1–4; the `inventory_*`
+  conversion is now Remaining item 1 = this goal's slice 3).
+- Proof: `check-doc-links` + `check-markdown` green; links resolve (baseline +
+  exemptions files exist). Mechanical doc catch-up — no fresh-eye critique
+  (Routing: n/a — not a substantial/behavioral slice). Committed separately.
 
 ## Context Sources
 

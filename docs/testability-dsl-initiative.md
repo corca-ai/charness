@@ -73,12 +73,24 @@ structure — hence pairing it with a testability sensor.
   only. **Baseline on this repo: 134 candidates (121 "convertible", 13 likely
   keep-boundary) across 235 test files.** Critique:
   [boundary-bypass-probe](../charness-artifacts/critique/2026-06-03-boundary-bypass-probe-critique.md).
+- **Slice 3 — the ratchet** (commit `43e70e4c`, delivers goal 2): committed
+  baseline [`scripts/boundary-bypass-baseline.json`](../scripts/boundary-bypass-baseline.json)
+  under a `no_increase` policy, a `# why:`-rationale exemption list
+  [`scripts/boundary-bypass-exemptions.txt`](../scripts/boundary-bypass-exemptions.txt),
+  and the standing `check-boundary-bypass-ratchet` gate wired in `run-quality.sh`.
+  The ratchet-correctness fixes landed with it (separate internally-spawning
+  targets, drop the `.read_text(` over-match, rename "candidate"), which is why
+  the committed baseline now reads **96 candidates / 57 convertible /
+  38 internally-spawning / 23 keep-boundary** — far below the advisory probe's 121
+  "convertible" once internally-spawning targets are split out. The probe is now
+  *costly*, not just *visible*.
 
 ## Honest Non-Claims (what is NOT yet true)
 
-- **This does NOT yet satisfy goal (2).** The probe is a *sensor with no teeth*:
-  no gate wiring, no committed baseline, no no-increase ratchet. Bad patterns are
-  now *visible*, not yet *costly*. The ratchet is the named next obligation (below).
+- **Goal (2) ships; goal (1) is barely started.** The ratchet makes bad patterns
+  *costly*, not just *visible* (see Done). But the committed baseline is a freeze
+  line, not a reduction: 57 convertible candidates remain. Lowering it requires
+  real in-process conversions (goal 1, below), not exemptions.
 - **Placement honesty:** boundary-spawn detection is *not* inherently
   un-portable — [`standing_test_economics_lib.py`](../skills/public/quality/scripts/standing_test_economics_lib.py)
   already ships a multi-language spawn detector (`nested_cli_fanout`) inside the
@@ -94,27 +106,20 @@ structure — hence pairing it with a testability sensor.
 
 ## Remaining (sequenced)
 
-1. **The ratchet** (delivers goal 2): committed baseline, a `no_increase` policy,
-   a consumer-declared exemption list (`# why:` rationale, mirror
-   [coverage-floor-policy](../skills/public/quality/references/coverage-floor-policy.md)),
-   and advisory→standing wiring in `run-quality.sh`. Route gate design through
-   `quality`. Fix ratchet-correctness first: `.read_text(` over-match in
-   `behavior_assert` (W3), `convertible_count` jitter, "candidate" naming (J5),
-   and subtract/flag internally-spawning targets (W2).
-2. **Convert the backlog** (goal 1, raises A): start with the import-safe
+1. **Convert the backlog** (goal 1, raises A): start with the import-safe
    `inventory_*` cluster (subprocess → in-process `*_lib`/`main()` calls, like
    [`test_check_coverage_inventory.py`](../tests/quality_gates/test_check_coverage_inventory.py)
    already does). Use `Repo().build()` for the
    on-disk fixture without `run_at`. Skip targets that shell out internally.
-3. **`quality` lens boost** (goal 3, portable): extend
+2. **`quality` lens boost** (goal 3, portable): extend
    [testability-and-selection](../skills/public/quality/references/testability-and-selection.md)
    to name (a) DSL ergonomics signals — lazy / composable / implementation-simple —
    and (b) "a test needing the heavy repo-builder DSL is a prompt to ask whether
    the behavior is in-process reachable." Write against the now-validated concrete
    shapes, not speculation.
-4. **Portable skillification** (goal 3): a `quality` adapter block + reference
+3. **Portable skillification** (goal 3): a `quality` adapter block + reference
    defining the boundary-bypass payload contract + ratchet policy stack-neutrally
    (mirror [mutation-testing](../skills/public/quality/references/mutation-testing.md)).
    A Go/TS repo then ships its own one-screen probe emitting the same payload.
-5. **DSL follow-ups** (from slice-1 critique): `env=` merge semantics (when the
+4. **DSL follow-ups** (from slice-1 critique): `env=` merge semantics (when the
    first explicit-`env` control_plane test migrates), broad `seed_repo` sweep.
