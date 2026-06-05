@@ -10,14 +10,15 @@ and the shared final gate (user chose no work-budget).
 
 ## Active Operating Frame
 
-- Current slice: chunk A landed (#310 `75f30584`, #309 `618bca29`); chunk B in
-  progress (B1 resume-before-push, B2 read-only-safe closeout).
-- Next action: implement B1+B2 (serialize C1 after B2 on the shared
-  usage-episode / `run_slice_closeout.py` surface), then C1+C2, then batch the
-  three per-chunk fresh-eye reviews before the shared `--release` gate.
+- Current slice: chunks A + B landed (#310 `75f30584`, #309 `618bca29`,
+  #312 `32d06b80`+`e09444f0`); chunk C in progress (C1 commit-boundary checker,
+  C2 authoring-preflight reference). B2 landed before C1 per the shared-surface
+  guard.
+- Next action: C1 (surfaces.json `repo-python` verify) then C2 (reference +
+  headroom pointer), then batch the three per-chunk fresh-eye reviews, then the
+  shared `--release` gate, then issue closeout + retro + flip to complete.
 - Quality route (B2 + C1): `quality` consulted. B2 cut = read-only-safe closeout
-  (gate live usage-episode emission on `CHARNESS_QUALITY_MODE`, the signal
-  `run-quality.sh` already exports). C1 = add the fast standalone
+  (landed: gate emission on `CHARNESS_QUALITY_MODE`). C1 = add the fast standalone
   `check_test_repo_copy_invariants.py` to the `repo-python` surface verify
   commands (named checker only; honor the issue's latency caution).
 - Execution model (at `/goal`, dynamic workflow approved): pursue via a Workflow
@@ -278,6 +279,34 @@ Resolved/approved — activation-ready.
 - Critique: Debug root-cause: cleanup_orphans targets only orphan_tree_pids while runtime_residue_total also counts reparented+zombie; reproduce test confirmed the no-op loop. Fresh-eye review batched at chunk boundary.
 - Off-goal findings:
 - Lessons carried forward: next_step is operator-facing UX; a single string field needed a kind discriminator so prose guidance isn't wrapped in a Run-this-command phrasing.
+- Metrics:
+
+### Slice 3: B1 (#312.1) — resume commits artifact before push; no retro dry-run regression
+
+- Objective: publish_release_resume.py: commit refreshed charness-artifacts/release/latest.md (and retro artifact) BEFORE git push so pre-push's git diff --quiet -- charness-artifacts does not false-block; build the executed retro-trigger evaluation (written/final_release_paths) instead of the plan's dry-run (would_write/release_content_paths).
+- Why this approach: Mirror the normal flow: executed retro eval before write_current_artifact; a guarded _commit_artifact_before_push (skips when nothing changed -> idempotent). Distinct commit message so the existing 'no second Release commit' guard holds.
+- Commits: 32d06b80
+- What changed: skills/public/release/scripts/publish_release_resume.py (+ plugin mirror); tests/quality_gates/test_release_publish_resilience.py reproduce test.
+- Alternatives rejected:
+- Targeted verification: reproduce-then-fixed: test_resume_commits_artifact_before_push_with_executed_retro_payload (red: only commit at idx16 after push idx12; green after); full resilience suite 8 passed (idempotency + abort-before-push guards intact).
+- Test duplication pressure:
+- Critique: Debug root-cause: resume committed via commit_final_release_artifact AFTER push (line 130) while refreshing latest.md at line 106; pre-push hooks not installed in the stubbed fixture, so the falsifiable invariant is commit-before-push ordering in git-log. Fresh-eye review batched at chunk boundary.
+- Off-goal findings:
+- Lessons carried forward: The stubbed git fixture can't run the real pre-push hook, so the test asserts the ordering invariant (commit precedes push) + the executed retro payload, which is what the hook actually depends on.
+- Metrics:
+
+### Slice 4: B2 (#312.2) — read-only-safe closeout usage episodes
+
+- Objective: A closeout running inside a quality/verification run must not write a live usage_episode.jsonl (the #194 state-bleed class that races test_usage_episodes_host_hooks).
+- Why this approach: quality-routed cut = read-only-safe closeout (not test-robustness, which would mask a real read-only-mutation invariant violation). Gate emission on CHARNESS_QUALITY_MODE, the signal run-quality.sh already exports tree-wide; status readonly_quality_run, closeout stays completed; top-level closeouts (no CHARNESS_QUALITY_MODE) still emit.
+- Commits: e09444f0
+- What changed: scripts/slice_closeout_usage_episode.py (+ plugin mirror); tests/quality_gates/test_slice_closeout_usage_episode.py (suppression test + emission tests clear ambient CHARNESS_QUALITY_MODE).
+- Alternatives rejected:
+- Targeted verification: reproduce-then-fixed: test_run_slice_closeout_skips_usage_episode_inside_quality_run (red: emitted; green: readonly_quality_run, no file). 6 slice-closeout + 89 host-hooks/broad-gate/schema tests pass; attention-state gate green (new status has no banned substring); validate_usage_episodes 592 records.
+- Test duplication pressure: Suppression test reuses the existing _write_closeout_fixture/_run_closeout harness (added quality_mode param) rather than a new fixture; no duplicate closeout-fixture scaffolding.
+- Critique: Routed through quality. Exact xdist interleaving from v0.22.0 not fully pinned, but the fix closes the read-only-mutation seam deterministically; surface_obligations closeout tests have no usage_episode assertion so suppression under the gate is safe. Fresh-eye review batched at chunk boundary.
+- Off-goal findings:
+- Lessons carried forward: CHARNESS_QUALITY_MODE is a tree-wide read-only signal already exported by run-quality.sh; reuse it instead of inventing a new flag.
 - Metrics:
 
 ## Context Sources
