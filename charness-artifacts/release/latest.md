@@ -3,12 +3,12 @@ Date: 2026-06-05
 
 ## Scope
 
-Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.19.0`
-- target version: `0.20.0`
+- previous version: `0.20.0`
+- target version: `0.21.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,32 +17,24 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.20.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.21.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
-- Release adapter focused preflight status: `required`.
-- Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.19.0`
-- Adapter paths in release delta:
-  - `.agents/release-adapter.yaml`
-- Changed adapter fields:
-  - `update_instructions`
-- Focused preflight commands:
-  - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
-  - `pytest tests/quality_gates/test_release_narrative_audit.py -q`
+- Release adapter focused preflight status: `not_required`.
+- Reason: release adapter did not change in the release delta
+- Focused preflight commands: none executed.
 
 ## Retro Trigger Evaluation
 
@@ -51,34 +43,34 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-20-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-21-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 84.
-  - `.agents/release-adapter.yaml`
+- Evaluated changed paths: 76.
   - `.claude-plugin/marketplace.json`
-  - `.gitignore`
-  - `charness-artifacts/critique/2026-06-04-225531-packet.json`
-  - `charness-artifacts/critique/2026-06-04-225531-packet.md`
-  - `charness-artifacts/critique/2026-06-05-3h-code-quality-bugfix-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-05-issue-299-release-only-sentinel-inventory.md`
-  - `charness-artifacts/critique/2026-06-05-issue-300-host-docs-normalization.md`
-  - `charness-artifacts/critique/2026-06-05-issues-299-300-next-improvements-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-05-v0-20-0-release.md`
-  - `charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix-early-close-report.md`
-  - `charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix.md`
-  - `charness-artifacts/goals/2026-06-05-issues-299-300-next-improvements.md`
-  - `charness-artifacts/issue/2026-06-05-issue-299-closeout-commit-message.md`
-  - `charness-artifacts/issue/2026-06-05-issue-300-closeout-commit-message.md`
-  - `charness-artifacts/probe/2026-06-05-3h-code-quality-bugfix-host-log-probe.json`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `charness-artifacts/announcement/latest.md`
+  - `charness-artifacts/critique/2026-06-05-disposition-review-quality-scaffold-and-testability-followups.md`
+  - `charness-artifacts/critique/2026-06-05-v0-21-0-release.md`
+  - `charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring-nose-baseline.json`
+  - `charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release.md`
+  - `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`
+  - `charness-artifacts/goals/2026-06-05-quality-scaffold-early-close-report.md`
+  - `charness-artifacts/quality/history/2026-06-03-quality-review.md`
+  - `charness-artifacts/quality/latest.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
-  - `charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md`
-  - ... 64 more
+  - `charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md`
+  - `charness-artifacts/retro/lesson-selection-index.json`
+  - `charness-artifacts/retro/recent-lessons.md`
+  - `docs/testability-dsl-initiative.md`
+  - `integrations/tools/nose.json`
+  - `packaging/charness.json`
+  - `plugins/charness/.claude-plugin/plugin.json`
+  - `plugins/charness/.codex-plugin/plugin.json`
+  - `plugins/charness/integrations/tools/nose.json`
+  - ... 56 more
 
 ## Real-Host Verification
 
@@ -97,11 +89,7 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-05-v0-20-0-release.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.20.0`.
+- Review proof: `charness-artifacts/critique/2026-06-05-v0-21-0-release.md`.
 
 ## Fresh Checkout Probes
 
@@ -112,14 +100,7 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #299: `CLOSED` (https://github.com/corca-ai/charness/issues/299)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #300: `CLOSED` (https://github.com/corca-ai/charness/issues/300)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
