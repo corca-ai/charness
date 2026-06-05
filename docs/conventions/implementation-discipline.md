@@ -30,6 +30,11 @@ the root instruction file but still apply to Charness maintenance work.
 
 ## Change Discipline
 
+- Before authoring into a gated surface, skim
+  [authoring-preflight.md](./authoring-preflight.md): the attention-state banned
+  vocabulary, the length-headroom check, and a string/regex edge checklist —
+  the constraints existing gates enforce, gathered so you know them up front
+  rather than after a rework cycle (#308).
 - Before a large addition to a skill helper or repo script, check headroom with
   `python3 scripts/check_python_lengths.py --headroom --paths <file>`
   (`limit − current`, where current is measured by `tokei` Python code lines);
