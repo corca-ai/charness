@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Closed the active 2026-06-05 quality/test-economics goal after the v0.18.0 release. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
-- Goal `2026-06-05-inventory-conversions-nose-05-and-release`: three bundled slices ending in a release — (1) adapt the `quality` clone-family advisory to nose 0.5, (2) convert the five remaining import-safe `inventory_*` boundary-bypass tests to in-process, (3) full-publish 0.21.0 (push + tag + GitHub release). (source: `charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md`)
+- Closeout of the `2026-06-05-302-305-gather-setup-release-robustness` achieve goal: four independent robustness fixes (setup template↔inspector agreement, setup adapter-first reviewer rule, gather agent-browser close + clean-runtime proof, release publish resilience), each with regression tests and a `Close #N` direct-commit closeout. (source: `charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md`)
 
 ## Repeat Traps
 
@@ -30,6 +30,7 @@
 - `charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md`
 - `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
 - `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`
 - `charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md`

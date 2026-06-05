@@ -1,6 +1,6 @@
 # Achieve Goal: Issues 302-305: gather / setup / release robustness
 
-Status: draft
+Status: complete
 Created: 2026-06-05
 Activation: `/goal @charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md`
 
@@ -9,12 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: all four slices complete — #304, #303, #302, #305 fixes +
-  direct-commit closeouts staged (`Close #304/#303/#302/#305`). Remaining: final
-  closeout — broad pytest gate, Final Verification, User Verification, Auto-Retro.
-- Next action: run the final broad pytest gate (verification-lock), fill Final
-  Verification / User Verification Instructions, run `retro`, disposition
-  improvements, flip status to complete.
+- Goal COMPLETE. All four slices landed with regression tests + direct-commit
+  closeouts (`Close #302/#303/#304/#305`, all `carrier_verified`). Broad pytest
+  gate green (2192 passed, 171s). Retro + disposition review persisted; off-goal
+  #307 filed. Issues stay OPEN until the maintainer pushes (achieve does not push).
+- Next action: none — closeout done. Maintainer push performs the auto-close.
 - Verification cadence: cheap deterministic checks (`run_slice_closeout.py`
   aggregate + targeted pytest) at commit boundaries; full targeted test file +
   bounded fresh-eye critique at slice boundaries; broad pytest at final closeout.
@@ -203,6 +202,20 @@ during the run:
 - Note #305 touches the release helper but performs **no** release; the
   `Release:` floor is expected to resolve as a helper-hardening reference or an
   `n/a — <reason>` opt-out, not a version bump.
+
+### Resolved At Closeout
+
+- Routing: `find-skills` routed session start to `achieve` (top public-skill match, trigger-matched), and the recorded impl, debug, and quality phase work ran under `achieve`'s coordination per the deferred routing (no inline phase→skill map); four bounded fresh-eye reviews (one per slice); route evidence: `charness-artifacts/find-skills/latest.md` consulted at start.
+- Gather: n/a — `## Context Sources` names tracked GitHub issues by number only;
+  no external URL / Slack / Notion / Docs / Drive source needed gathering.
+- Release: n/a — #305 hardens the `publish_release` helper only; no version bump,
+  `marketplace.json` change, push, or GitHub release was performed this goal
+  (explicit non-claim).
+- Issue closeout: #302, #303, #304, #305 — carrier `direct-commit` with `Close #N`
+  in each fix/closeout commit body on `main`; each draft validated via
+  `issue_tool.py validate-closeout-draft` (ok) and each carrier verified on its
+  commit via `verify-closeout` (`carrier_verified`). Issues remain OPEN until the
+  maintainer pushes (achieve does not push). Off-goal follow-up #307 filed.
 
 ### Discuss Before Activation
 
@@ -393,26 +406,120 @@ and Auto-Retro disposition.
 
 ## Off-Goal Findings
 
-None recorded at shaping. #306 is **not** an off-goal finding — it is a
-deliberately split-out goal (see Non-Goals).
+- **#307 (filed during the run)** — cheap deterministic test-fixture structural
+  invariants (`check_test_repo_copy_invariants.py`) run only in the broad pytest
+  gate, so the #302 cleanup test's inline `shutil.ignore_patterns` surfaced ~172s
+  late at closeout instead of at the slice commit boundary. Filed as
+  corca-ai/charness#307 (quality-gate-economics; routes through `quality`).
+  Recorded here as a reference + reason only, per the off-goal contract.
+
+#306 is **not** an off-goal finding — it is a deliberately split-out goal (see
+Non-Goals).
 
 ## Final Verification
 
-Filled at the After-phase closeout: final self-verification against each issue's
-acceptance criteria, broad pytest gate result (with new-slice-local vs
-accumulated-suite-debt classification if it fails), the `Close #N` staging
-ledger per issue, residual risks, and the explicit live/release non-claims.
+Self-verification against each issue's acceptance criteria (all met):
+
+- **#304** — generating `AGENTS.md` from `render_agents_template` (the actual
+  `COMPACT_SUBAGENT_DELEGATION` default) and running `inspect_repo.py` reports
+  **no** `fresh_eye_delegation_rule_drift`; the wrapped-default agreement is
+  pinned by `test_setup_inspect_accepts_generated_compact_subagent_delegation_block`.
+- **#303** — the generated `AGENTS.md` carries the adapter-first reviewer rule
+  (follow the adapter tier + concrete spawn fields; Codex critique default medium
+  unless the adapter says otherwise; stop+report if unappliable); standing
+  delegation language intact; inspector clean; pinned by
+  `test_generated_agents_carries_adapter_first_reviewer_rule`.
+- **#302** — close is attempted on every in-process path (try/finally); a missing
+  guard is fail-visible `guard_unavailable` (degraded, never clean); exported
+  gather reaches the impl + bundled cleanup proof; reparented/zombie residue is
+  not reported clean (desktop-Chrome/dockerd not false-flagged). 8 tests across
+  `test_web_fetch_cleanup.py` + `test_agent_browser_runtime_guard.py`.
+- **#305** — `publish_release.py` is resumable/idempotent across a simulated
+  failed push (`--resume`), imports from the exported plugin cache without
+  `ModuleNotFoundError`, and blocks stale `update_instructions`. 6 tests in
+  `test_release_publish_resilience.py`.
+
+Broad pytest gate (verification-lock): `pytest -q -m 'not release_only'
+tests/quality_gates tests/control_plane tests/test_*.py` → **2192 passed, 4
+skipped, 25 deselected in 171s**. One failure on the first run
+(`test_repo_copy_invariants`) was classified **new-slice-local** (the #302
+cleanup test used inline `shutil.ignore_patterns` instead of the canonical
+`REPO_COPY_IGNORE`), fixed in `0c593e23`, and the smallest structural cleanup was
+the one-import switch — **no accumulated-suite debt**. Re-run after the fix is
+fully green.
+
+`Close #N` staging ledger (carrier `direct-commit`, all `carrier_verified`):
+
+- #304 → `db66a30b`; #303 → `cb909eda`; #302 → `5318a9a7`; #305 → `4b76196f`.
+- Issues remain **OPEN**; the maintainer's push performs the auto-close.
+
+Residual risks: #302 marker detection at PID 1 still uses a headless/automation
+heuristic over agent-browser/Chromium command names; a non-standard headless
+launcher could be missed, and `CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1` remains
+the host escape hatch. #305 resume re-runs the push-time-flaky gates, not the
+one-time file-delta adapter/real-host preflights the original attempt already
+passed.
+
+Non-claims (explicit): no live `agent-browser`/Chromium runtime proof on a real
+exported host (#302 coverage is test-level; Ceal owns PID-1 reaping); no real
+`git push` / `gh release create` (#305 resume/idempotency proven with a simulated
+failed push + fake git/gh); no new charness version / no `marketplace.json` bump.
+
+Retro: charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md
+Host log probe: charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-host-probe.md
+Disposition review: charness-artifacts/critique/2026-06-05-302-305-gather-setup-release-robustness-disposition-review.md
 
 ## User Verification Instructions
 
-Filled at the After-phase closeout: the concrete commands the user runs to
-confirm each issue's acceptance criteria (see `## User Acceptance` for the
-planned shape), plus which issues are staged-to-close-on-push.
+Concrete commands to confirm each issue's acceptance criteria:
+
+- **#304 + #303 (setup host-doc):**
+  `python3 -m pytest tests/quality_gates/test_setup_inspect_policy.py -q`
+  (covers the wrapped-default agreement and the adapter-first reviewer rule). To
+  see it end-to-end: render `AGENTS.md` via
+  `python3 -c "import sys; sys.path.insert(0,'scripts'); from setup_host_docs_lib import render_agents_template; print(render_agents_template(skill_routing_markdown='## Skill Routing\n\n- x'))"`
+  then run `inspect_repo.py --repo-root <repo>` and confirm no
+  `fresh_eye_delegation_rule_drift`.
+- **#302 (gather/web-fetch):**
+  `python3 -m pytest tests/test_web_fetch_cleanup.py tests/test_agent_browser_runtime_guard.py -q`.
+- **#305 (release publish):**
+  `python3 -m pytest tests/quality_gates/test_release_publish_resilience.py -q`;
+  and confirm the exported helper imports:
+  `python3 plugins/charness/skills/release/scripts/publish_release.py --help`
+  (exits 0, no `ModuleNotFoundError`).
+- **Full gate:** `python3 -m pytest -q -m 'not release_only' tests/quality_gates
+  tests/control_plane tests/test_*.py` (2192 passed locally).
+
+Staged-to-close-on-push: **#302, #303, #304, #305** each carry `Close #N` in a
+`main` commit body; they auto-close when the maintainer pushes. #307 is an
+open follow-up (not closed by this goal).
 
 ## Auto-Retro
 
-Filled at the After-phase closeout: `retro` skill findings inline (Waste /
-Critical Decisions / Next Improvements), a per-improvement disposition
-(`applied: <what>` or `issue #N`) or the falsifiable
-`Retro dispositions: none — <reason>` line, the bound `Disposition review:`
-artifact, and the `Retro:` / `Host log probe:` evidence lines.
+`retro` session findings (full artifact:
+`charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md`;
+`Retro:` / `Host log probe:` evidence lines are in `## Final Verification`).
+
+**Waste:** the #302 cleanup test's inline `shutil.ignore_patterns` was caught only
+by the 172s broad gate (test-fixture drift), not the per-slice aggregate. The
+attention-state gate (reword) and the bug-class `Siblings:` field parse both
+fired at the right boundary and cost a single edit each — gates working as
+intended, not workflow gaps.
+
+**Critical decisions:** #304 RN1 (relax the inspector vs de-wrap the template);
+#305 explicit opt-in `--resume` (closes the B3 double-publish hazard); folding the
+fresh-eye edge findings in-slice (the #302 chrome/chromium markers gated on a
+headless context to avoid false-positiving the waiver-stripped closeout gate on
+other dev machines; #305 staleness moved to previous-vs-target containment).
+
+**Next Improvements (dispositioned):**
+
+- workflow/capability: run cheap standalone structural checkers
+  (`check_test_repo_copy_invariants.py` and peers) at the per-slice / pre-commit
+  boundary so test-fixture drift fails early, not at the final broad gate.
+  Disposition: **issue #307** (`corca-ai/charness#307`; quality-contract change,
+  routes through `quality`).
+
+Disposition review: bounded fresh-eye subagent audited the disposition above and
+returned a verdict; artifact bound in `## Final Verification`
+(`...-disposition-review.md`).

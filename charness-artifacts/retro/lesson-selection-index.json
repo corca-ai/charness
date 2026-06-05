@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 132,
-  "candidate_count": 805,
+  "source_artifact_count": 133,
+  "candidate_count": 810,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -109,6 +109,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:770e40013c4c",
+      "kind": "current_focus",
+      "lesson": "Closeout of the `2026-06-05-302-305-gather-setup-release-robustness` achieve goal: four independent robustness fixes (setup template↔inspector agreement, setup adapter-first reviewer rule, gather agent-browser close + clean-runtime proof, release publish resilience), each with regression tests and a `Close #N` direct-commit closeout.",
+      "normalized_key": "closeout of the 2026 06 05 302 305 gather setup release robustness achieve goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -273,26 +293,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:7d15a60573e4",
-      "kind": "next_improvement",
-      "lesson": "**capability:** `publish_release.py` should run from the installed plugin cache (resolve `skills.public` regardless of cache layout), or doctor should flag the gap. (issue #N)",
-      "normalized_key": "capability publish release py should run from the installed plugin cache resolve skills public",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -391,6 +391,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:770e40013c4c",
+      "kind": "current_focus",
+      "lesson": "Closeout of the `2026-06-05-302-305-gather-setup-release-robustness` achieve goal: four independent robustness fixes (setup template↔inspector agreement, setup adapter-first reviewer rule, gather agent-browser close + clean-runtime proof, release publish resilience), each with regression tests and a `Close #N` direct-commit closeout.",
+      "normalized_key": "closeout of the 2026 06 05 302 305 gather setup release robustness achieve goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -777,6 +797,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:36c7457509be",
+      "kind": "next_improvement",
+      "lesson": "workflow/capability: run cheap standalone structural checkers (`check_test_repo_copy_invariants.py` and peers) in the per-slice / pre-commit aggregate so test-fixture drift fails at the commit boundary, not the final broad gate. Disposition: issue #307 (quality-contract change; routes through `quality`).",
+      "normalized_key": "workflow capability run cheap standalone structural checkers check test repo copy invariants py and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:265c20de26ae",
       "kind": "next_improvement",
       "lesson": "Workflow: for every timeboxed early closeout, include a bound report artifact before status completion so the user receives stop rationale, decisions needed, and waste retro without asking.",
@@ -951,6 +991,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dd4c4cafcfea",
+      "kind": "repeat_trap",
+      "lesson": "Test-fixture drift (`shutil.ignore_patterns` inline in the #302 cleanup test) was caught only by the final broad pytest gate (~172s) instead of the per-slice deterministic aggregate, forcing a late fix commit after the slice was already closed. Transferable pattern → issue #307.",
+      "normalized_key": "test fixture drift shutil ignore patterns inline in the 302 cleanup test was caught",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a2163a40ce16",
+      "kind": "repeat_trap",
+      "lesson": "The `attention-state-visibility` gate blocked the #302 closeout because a new support module's docstring used the word \"silently-skipped\"; reworded in one pass. Gate fired at the slice aggregate (early, correct) — minor reword cost, not a workflow gap.",
+      "normalized_key": "the attention state visibility gate blocked the 302 closeout because a new support module",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9daae2cd782e",
+      "kind": "repeat_trap",
+      "lesson": "The bug-class closeout `Siblings:` field first failed validation because `Decision:`/`Proof:` at line starts parse as new ledger fields; fixed by inlining lowercase \"decision\"/\"proof\". Validator gave a precise error; one re-edit. Gate working as intended.",
+      "normalized_key": "the bug class closeout siblings field first failed validation because decision proof at line",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
           "date": "2026-06-05",
           "section": "Waste"
         }
