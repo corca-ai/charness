@@ -1,9 +1,25 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
-from .support import ROOT, run_script
+from .support import ROOT
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): load the
+# inventory entrypoint by file and call its `inventory()` lib function directly
+# instead of spawning it as a subprocess. The script's `__file__`-based bootstrap
+# resolves its sibling `standing_gate_verbosity_lib` regardless of sys.path, so no
+# path setup is needed. `inventory()` returns the same payload the CLI `--json`
+# mode serializes.
+_SPEC = importlib.util.spec_from_file_location(
+    "inventory_standing_gate_verbosity",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_standing_gate_verbosity.py",
+)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+INVENTORY = _MODULE.inventory
 
 
 def test_inventory_standing_gate_verbosity_flags_loud_runner_and_missing_escape_hatch(
@@ -35,14 +51,7 @@ def test_inventory_standing_gate_verbosity_flags_loud_runner_and_missing_escape_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["test_runner_reporter"]["status"] == "weak"
     assert payload["axes"]["per_gate_chatter"]["status"] == "weak"
     assert payload["axes"]["escape_hatch"]["status"] == "missing"
@@ -77,14 +86,7 @@ def test_inventory_standing_gate_verbosity_flags_parallel_lefthook_output_risk(
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["test_runner_reporter"]["status"] == "healthy"
     assert payload["axes"]["orchestrator_output_mode"]["status"] == "weak"
     assert any(
@@ -123,14 +125,7 @@ def test_inventory_standing_gate_verbosity_recognizes_shell_runner_thin_launcher
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["orchestrator_output_mode"]["status"] == "healthy"
     assert any(
         finding["type"] == "lefthook_thin_launcher"
@@ -165,14 +160,7 @@ def test_inventory_standing_gate_verbosity_recognizes_node_runner_thin_launcher(
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["orchestrator_output_mode"]["status"] == "healthy"
     assert any(
         finding["type"] == "lefthook_thin_launcher"
@@ -181,14 +169,7 @@ def test_inventory_standing_gate_verbosity_recognizes_node_runner_thin_launcher(
 
 
 def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -> None:
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(ROOT),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(ROOT)
     assert payload["axes"]["test_runner_reporter"]["status"] == "healthy"
     assert payload["axes"]["per_gate_chatter"]["status"] == "healthy"
     assert payload["axes"]["phase_level_signal"]["status"] == "healthy"
@@ -218,14 +199,7 @@ def test_inventory_standing_gate_verbosity_flags_quiet_failure_without_detail(
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["escape_hatch"]["status"] == "healthy"
     assert payload["axes"]["failure_detail"]["status"] == "weak"
     assert any(
@@ -253,14 +227,7 @@ def test_inventory_standing_gate_verbosity_flags_suppressed_quiet_pytest_detail(
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = INVENTORY(repo)
     assert payload["axes"]["failure_detail"]["status"] == "weak"
     assert any(
         finding.get("tool") == "pytest"

@@ -79,7 +79,6 @@
     "tests/quality_gates/test_quality_brittle_source_guards.py::skills/public/quality/scripts/inventory_brittle_source_guards.py",
     "tests/quality_gates/test_quality_cli_side_effect_probes.py::skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
     "tests/quality_gates/test_quality_entrypoint_docs_ergonomics.py::skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
-    "tests/quality_gates/test_quality_lint_ignores.py::skills/public/quality/scripts/inventory_lint_ignores.py",
     "tests/quality_gates/test_quality_markdown_preview_bootstrap.py::skills/public/quality/scripts/bootstrap_markdown_preview.py",
     "tests/quality_gates/test_quality_mutation_sampling.py::scripts/sample_mutation_files.py",
     "tests/quality_gates/test_quality_mutation_score_validity.py::scripts/check_mutation_score.py",
@@ -89,7 +88,6 @@
     "tests/quality_gates/test_quality_runner.py::scripts/record_quality_runtime.py",
     "tests/quality_gates/test_quality_runner.py::scripts/validate_maintainer_setup.py",
     "tests/quality_gates/test_quality_skill_ergonomics.py::skills/public/quality/scripts/inventory_skill_ergonomics.py",
-    "tests/quality_gates/test_quality_standing_gate_verbosity.py::skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
     "tests/quality_gates/test_quality_ubiquitous_language.py::skills/public/quality/scripts/inventory_ubiquitous_language.py",
     "tests/quality_gates/test_recent_lessons_refresh.py::skills/public/retro/scripts/refresh_recent_lessons.py",
     "tests/quality_gates/test_record_metric_window.py::skills/public/achieve/scripts/record_metric_window.py",
@@ -164,9 +162,9 @@
   "policy": "no_increase",
   "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
   "summary": {
-    "candidate_count": 96,
-    "candidate_key_count": 159,
-    "convertible_count": 57,
+    "candidate_count": 94,
+    "candidate_key_count": 157,
+    "convertible_count": 55,
     "internal_boundary_count": 38,
     "keep_boundary_count": 23
   }

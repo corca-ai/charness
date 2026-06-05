@@ -106,11 +106,20 @@ structure — hence pairing it with a testability sensor.
 
 ## Remaining (sequenced)
 
-1. **Convert the backlog** (goal 1, raises A): start with the import-safe
-   `inventory_*` cluster (subprocess → in-process `*_lib`/`main()` calls, like
+1. **Convert the backlog** (goal 1, raises A): the import-safe `inventory_*`
+   cluster (subprocess → in-process `*_lib`/`main()` calls, like
    [`test_check_coverage_inventory.py`](../tests/quality_gates/test_check_coverage_inventory.py)
    already does). Use `Repo().build()` for the
    on-disk fixture without `run_at`. Skip targets that shell out internally.
+   *Started:* [`test_quality_standing_gate_verbosity.py`](../tests/quality_gates/test_quality_standing_gate_verbosity.py)
+   (direct `inventory()` lib call) and
+   [`test_quality_lint_ignores.py`](../tests/quality_gates/test_quality_lint_ignores.py)
+   (in-process `main()` with captured stdout, preserving its adapter-wrapped
+   payload) are converted — the two documented patterns. Baseline convertible
+   57→55. Remaining convertible
+   `inventory_*` tests: `inventory_adapter_gate_design`, `_brittle_source_guards`,
+   `_cli_side_effect_probes`, `_public_spec_quality`, `_skill_ergonomics` (skip the
+   internally-spawning `_entrypoint_docs_ergonomics`, `_ubiquitous_language`).
 2. **`quality` lens boost** (goal 3, portable): extend
    [testability-and-selection](../skills/public/quality/references/testability-and-selection.md)
    to name (a) DSL ergonomics signals — lazy / composable / implementation-simple —

@@ -195,7 +195,29 @@ during the run:
   conversion is now Remaining item 1 = this goal's slice 3).
 - Proof: `check-doc-links` + `check-markdown` green; links resolve (baseline +
   exemptions files exist). Mechanical doc catch-up — no fresh-eye critique
-  (Routing: n/a — not a substantial/behavioral slice). Committed separately.
+  (Routing: n/a — not a substantial/behavioral slice). Committed `d2ce3bbd`.
+
+### Slice 3 — convert import-safe `inventory_*` boundary-bypass tests (2026-06-05)
+
+- Cluster identified: 9 `inventory_*`-target rows; 7 convertible, 2 internal
+  (`_entrypoint_docs_ergonomics`, `_ubiquitous_language` shell out internally → skipped
+  per Non-Goals). Converted 2 (the documented-pattern bound), deferred the other 5.
+- `test_quality_standing_gate_verbosity.py` (7 fns) → in-process via direct
+  `inventory()` lib call (the script's `__file__` bootstrap resolves siblings).
+- `test_quality_lint_ignores.py` (3 fns) → in-process `main()` with a captured
+  stdout buffer (this target wraps its lib output with adapter fields inside
+  `main()`, so `main()` preserves the contract). Two distinct documented patterns.
+- Baseline regenerated to reflect REAL conversions (no exemptions): `candidate_count`
+  96→94, `convertible_count` 57→55, `candidate_key_count` 159→157 — exactly the 2
+  converted keys dropped. Matches User Acceptance ("dropped by the converted count").
+- Doc: `docs/testability-dsl-initiative.md` Remaining item 1 now records the
+  started conversion + the 5 remaining convertible inventory_* tests.
+- Proof: 10/10 converted tests pass in-process; ruff + python-lengths green;
+  `check-boundary-bypass-ratchet` OK (94/55/38/23); mirror synced. Routing: impl
+  (conversion) verified by quality gate; fresh-eye critique at closeout.
+- Bound honesty: item 3 is "one cluster started + pattern documented" per the goal's
+  own bounding; 5 convertible inventory_* tests + the broader ~121→55 backlog remain
+  a tracked follow-up (testability doc Remaining item 1).
 
 ## Context Sources
 

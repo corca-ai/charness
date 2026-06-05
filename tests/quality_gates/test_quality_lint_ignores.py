@@ -1,9 +1,37 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
 from pathlib import Path
 
-from .support import run_script
+from .support import ROOT
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): load the
+# inventory entrypoint by file and drive its `main()` with a captured stdout
+# buffer instead of spawning a subprocess. This entrypoint wraps its lib output
+# with adapter-derived fields inside main(), so calling main() (not the bare lib
+# function) preserves that contract; `--json` mode serializes the same payload.
+_SPEC = importlib.util.spec_from_file_location(
+    "inventory_lint_ignores",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_lint_ignores.py",
+)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+
+
+def _inventory_json(repo: Path) -> dict:
+    buffer = io.StringIO()
+    saved_argv = _MODULE.sys.argv
+    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo), "--json"]
+    try:
+        with contextlib.redirect_stdout(buffer):
+            assert _MODULE.main() == 0
+    finally:
+        _MODULE.sys.argv = saved_argv
+    return json.loads(buffer.getvalue())
 
 
 def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_path: Path) -> None:
@@ -35,14 +63,7 @@ def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_lint_ignores.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _inventory_json(repo)
     assert payload["summary"] == {
         "ignore_count": 5,
         "files_with_ignores": 2,
@@ -88,14 +109,7 @@ def test_inventory_lint_ignores_skips_vendored_paths(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_lint_ignores.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _inventory_json(repo)
     paths = {finding["path"] for finding in payload["findings"]}
     assert paths == {"scripts/demo.py"}
 
@@ -116,13 +130,6 @@ def test_inventory_lint_ignores_skips_python_string_literals(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_lint_ignores.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _inventory_json(repo)
     assert payload["summary"]["ignore_count"] == 0
     assert payload["findings"] == []
