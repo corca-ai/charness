@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.repo_copy import REPO_COPY_IGNORE
+
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 GATHER_SCRIPTS = ROOT / "skills" / "public" / "gather" / "scripts"
@@ -106,7 +108,7 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
     # or any ancestor of the acquire helper, a skipped post-close proof must be
     # surfaced as `guard_unavailable` degraded, never as a clean success (#302).
     iso = tmp_path / "iso" / "webfetch"
-    shutil.copytree(WEB_FETCH_SCRIPTS, iso, ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(WEB_FETCH_SCRIPTS, iso, ignore=REPO_COPY_IGNORE)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "calls.log"
@@ -149,8 +151,8 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     plugin = tmp_path / "plugin"
     (plugin / "skills" / "gather").mkdir(parents=True)
     (plugin / "scripts").mkdir(parents=True)
-    shutil.copytree(GATHER_SCRIPTS, plugin / "skills" / "gather" / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
-    shutil.copytree(WEB_FETCH_SCRIPTS, plugin / "support" / "web-fetch" / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(GATHER_SCRIPTS, plugin / "skills" / "gather" / "scripts", ignore=REPO_COPY_IGNORE)
+    shutil.copytree(WEB_FETCH_SCRIPTS, plugin / "support" / "web-fetch" / "scripts", ignore=REPO_COPY_IGNORE)
     # A bundled guard that FAILS proves it was actually run (reached), not skipped.
     (plugin / "scripts" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('reparented chromium residue remains', file=sys.stderr)\nsys.exit(1)\n",
