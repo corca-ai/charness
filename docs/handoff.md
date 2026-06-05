@@ -13,45 +13,53 @@
 
 ## Current State
 
-- Portable skill contract quality goal is complete:
-  [goal artifact](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md).
-  It added package-level portable skill text-quality checks, cleaned concrete
-  issue/date anchors from portable skill packages, promoted issue/date leakage
-  to blocking skill-ergonomics rules, tightened `achieve` phase-routing
-  evidence, and added an `achieve` reference index.
-- Final locked closeout passed with broad pytest in 297.5s; no live Cautilus run
-  or installed-host cleanup is claimed. Retro is persisted at
-  [portable skill closeout retro](../charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md).
-- Follow-up issues filed from the retro:
-  #295 closeout test-selection cost, #296 bounded reviewer cost/tier visibility.
-  Existing open work #184, #293, and #294 remains outside the completed goal.
-- Local `main` is ahead of `origin/main` by the portable-skill goal commits plus
-  this closeout commit once committed; push is still a maintainer/operator
-  decision.
+- **v0.22.0 is shipped and verified.** Tag `v0.22.0` at `a50cf8b3`, GitHub
+  release live and marked latest, all version surfaces at 0.22.0, and #302–#305
+  closed (via push close-keywords). Release:
+  <https://github.com/corca-ai/charness/releases/tag/v0.22.0>.
+  Release content: gather agent-browser close + clean-runtime proof (#302),
+  setup adapter-first reviewer rule (#303), setup delegation line-wrap agreement
+  (#304), release publish resilience (#305). Minor bump (one additive `feat`).
+- Critique: bounded fresh-eye release critique (3 angle + 1 counterweight) at
+  [v0.22.0 release critique](../charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md).
+- The `--release` gate surfaced **pre-existing committed debt** in the #302–#305
+  work (issue anchors in portable skill scripts; 3 debug artifacts in a
+  non-canonical structure; stale debug seam-risk index). Fixed in `f17e3e8e`;
+  `./scripts/run-quality.sh --release` then passed 72/0.
+- Publish tooling friction (worked around, filed as #312): the happy-path
+  `publish_release.py --execute` raced a usage-episode test via its
+  `run_slice_closeout` wrapper, and `--resume` left an uncommitted `latest.md`
+  that the pre-push hook blocked. Completed via the repo push path directly
+  (`git push origin main v0.22.0` → pre-push gate 71/0 → `gh release create`).
 
 ## Next Session
 
-1. If publishing this local work, inspect `git log --oneline origin/main..HEAD`
-   and run the repo's push path; expect the pre-push read-only quality gate.
-2. If continuing quality work instead, route through `find-skills` then
-   `quality` for #295. Keep #296 as a separate review-cost visibility issue
-   unless the same surface naturally owns both.
-3. Do not reopen the completed portable skill goal unless current verification
-   contradicts its final evidence.
+1. New follow-ups filed this release: **#309** (cleanup-orphans dead-end for
+   reparented/zombie residue), **#310** (gather acquire error clobber, pre-existing),
+   **#311** (reviewer rule greenfield-only backfill), **#312** (release publish-flow
+   resilience round 2 — resume `latest.md` ordering + closeout usage-episode race).
+   Route through `find-skills` then `issue` to resolve.
+2. Prior open work still outside this release: #184, #293, #294, #295, #296.
+3. Do not reopen #302–#305 or the portable-skill goal unless current verification
+   contradicts the shipped evidence.
 
 ## Discuss
 
-- #295 should decide how pre-lock slice proof differs from final
-  verification-lock broad proof, rather than only increasing budgets.
-- #296 should record whether reviewer model/tier is repo-selected,
-  host-defaulted, or unavailable, because subagent cost surprised the user in
-  this closeout.
-- `host_surface_reference=104` is intentionally advisory/deferred, not a
-  blocking portability violation from the completed goal.
+- #312 should likely be fixed before the next release: both gaps (resume
+  `latest.md` ordering and the closeout-wrapped quality usage-episode race) will
+  recur and forced a manual push this time. The cleanest framing is that
+  `run_slice_closeout`'s quality run should be read-only-safe (no live
+  usage-episode writes during the suite), and `--resume` should commit its
+  refreshed `latest.md` before pushing.
+- The `--release` gate caught real debt the #302–#305 goal closeout missed
+  because that closeout did not run the full `--release` gate. Worth deciding
+  whether goal closeout should run the release gate when the work targets a
+  release surface, rather than discovering it at publish time.
 
 ## References
 
-- [portable skill contract quality goal](../charness-artifacts/goals/2026-06-04-portable-skill-contract-quality-and-routing.md)
-- [closeout retro](../charness-artifacts/retro/2026-06-04-portable-skill-contract-quality-and-routing-closeout.md),
-  [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [quality latest](../charness-artifacts/quality/latest.md)
+- [v0.22.0 release critique](../charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md),
+  [release latest](../charness-artifacts/release/latest.md)
+- [recent lessons](../charness-artifacts/retro/recent-lessons.md),
+  [quality latest](../charness-artifacts/quality/latest.md)
+- [#302–#305 robustness goal](../charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md)
