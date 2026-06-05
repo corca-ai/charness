@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 129,
-  "candidate_count": 793,
+  "source_artifact_count": 130,
+  "candidate_count": 797,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -105,6 +105,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:eaee438fdabe",
+      "kind": "current_focus",
+      "lesson": "Goal `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`: (1) build `scaffold_{handoff,ideation,retro,critique}_artifact.py`, (2) move the boundary-bypass ratchet to Done in `docs/testability-dsl-initiative.md`, (3) convert the import-safe `inventory_*` boundary-bypass cluster to in-process.",
+      "normalized_key": "goal charness artifacts goals 2026 06 05 quality scaffold and testability followups md 1",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:24d5a9aa0a2d",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.20.0`.",
@@ -185,6 +205,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9352ec9e63b6",
+      "kind": "next_improvement",
+      "lesson": "before editing any SKILL.md surface, check `recent-lessons.md` and grep for a per-skill budget test (`test_<skill>_skill_md_budget`) — both bit this run.",
+      "normalized_key": "before editing any skill md surface check recent lessons md and grep for a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -225,12 +265,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:3e091f0e8e8c",
+      "candidate_id": "next_improvement:6cc8c04f9286",
       "kind": "next_improvement",
-      "lesson": "issue #299 tracks an optional meta-test or inventory check that reports how many `release_only` tests remain in selected expensive files and which cheaper standing sentinels cover them, before marking more tests release-only.",
-      "normalized_key": "issue 299 tracks an optional meta test or inventory check that reports how many",
+      "lesson": "goal-draft interviews for \"mirror an existing pattern\" goals should verify the target contracts' shapes in the Before phase, not assume parity.",
+      "normalized_key": "goal draft interviews for mirror an existing pattern goals should verify the target contracts",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
       "latest_source_date": "2026-06-05",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -238,47 +278,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6dade6c2b839",
-      "kind": "next_improvement",
-      "lesson": "Keep setup bootstrap examples dry-run/read-only unless the line is explicitly inside the selected mutation step.",
-      "normalized_key": "keep setup bootstrap examples dry run read only unless the line is explicitly inside",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:bb4e52efaa94",
-      "kind": "next_improvement",
-      "lesson": "Keep the `_mask_fences` nose finding as intentionally deferred unless closeout-floor helpers get a shared leaf utility that preserves no-cycle constraints.",
-      "normalized_key": "keep the mask fences nose finding as intentionally deferred unless closeout floor helpers get",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -377,6 +377,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:eaee438fdabe",
+      "kind": "current_focus",
+      "lesson": "Goal `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`: (1) build `scaffold_{handoff,ideation,retro,critique}_artifact.py`, (2) move the boundary-bypass ratchet to Done in `docs/testability-dsl-initiative.md`, (3) convert the import-safe `inventory_*` boundary-bypass cluster to in-process.",
+      "normalized_key": "goal charness artifacts goals 2026 06 05 quality scaffold and testability followups md 1",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:24d5a9aa0a2d",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.20.0`.",
@@ -457,6 +477,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9352ec9e63b6",
+      "kind": "next_improvement",
+      "lesson": "before editing any SKILL.md surface, check `recent-lessons.md` and grep for a per-skill budget test (`test_<skill>_skill_md_budget`) — both bit this run.",
+      "normalized_key": "before editing any skill md surface check recent lessons md and grep for a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -491,6 +531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6cc8c04f9286",
+      "kind": "next_improvement",
+      "lesson": "goal-draft interviews for \"mirror an existing pattern\" goals should verify the target contracts' shapes in the Before phase, not assume parity.",
+      "normalized_key": "goal draft interviews for mirror an existing pattern goals should verify the target contracts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -551,6 +611,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:380796582f09",
+      "kind": "next_improvement",
+      "lesson": "the boundary-bypass baseline is regenerated to canonical form (not hand-edited) when adding/removing boundary-crossing tests; decreases are tolerated by `no_increase`, so a stale baseline can lag silently.",
+      "normalized_key": "the boundary bypass baseline is regenerated to canonical form not hand edited when adding",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
