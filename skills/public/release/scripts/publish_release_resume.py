@@ -1,4 +1,4 @@
-"""Resume a partially-completed `publish_release` run (#305).
+"""Resume a partially-completed `publish_release` run.
 
 When the pre-push gate flakes after the local `Release ...` commit + tag are made
 but before the push lands, the original run leaves a partial state: commit + tag

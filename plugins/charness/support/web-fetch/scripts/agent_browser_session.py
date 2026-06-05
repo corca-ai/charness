@@ -14,7 +14,7 @@ single relative offset does not reach the guard in both. We therefore search the
 caller's ``repo_root/scripts`` first, then every ancestor of the acquire script
 for a ``scripts/agent_browser_runtime_guard.py`` sibling. When the guard cannot
 be found anywhere, callers surface a fail-visible ``guard_unavailable`` signal
-rather than reporting an unrun proof as a clean close (#302).
+rather than reporting an unrun proof as a clean close.
 """
 from __future__ import annotations
 

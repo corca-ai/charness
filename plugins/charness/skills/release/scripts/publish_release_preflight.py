@@ -70,7 +70,7 @@ def update_instructions_version_blocker(
     update_instructions: Any, *, target_version: str, previous_version: str | None
 ) -> str | None:
     """Return a blocker when adapter `update_instructions` still describe the
-    previous release version but not the target — i.e. they went stale (#305).
+    previous release version but not the target — i.e. they went stale.
 
     The adapter-focused preflight only triggers when the adapter FILE changed in the
     release delta, so a release that should refresh `update_instructions` but does not

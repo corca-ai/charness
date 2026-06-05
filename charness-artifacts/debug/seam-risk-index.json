@@ -3,7 +3,7 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 57,
+  "source_artifact_count": 60,
   "indexed_artifact_count": 48,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
@@ -716,6 +716,18 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-05-26-issue-216-mutation-scope-oracle.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-05-issue-304-template-inspector-wrap.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-05-issue-305-release-publish-resilience.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {

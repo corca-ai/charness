@@ -207,7 +207,7 @@ def _browser_stage(
 
     Once the session is opened, close + runtime proof run on every in-process
     path — render/network success or failure, or an unexpected raise — via the
-    ``finally`` block, so a session is never leaked (#302). Returns a payload to
+    ``finally`` block, so a session is never leaked. Returns a payload to
     short-circuit ``acquire`` (degraded close or proven success), else None.
     """
     try:

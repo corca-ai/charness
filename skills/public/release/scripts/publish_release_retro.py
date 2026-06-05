@@ -22,7 +22,7 @@ def _load_public_skill_module(dotted_suffix: str):
     # The repo layout exposes public skills under `skills.public.<skill>...`; the
     # exported plugin cache drops the `public` segment (`skills.<skill>...`). Try
     # both so publish_release runs from the installed plugin cache without a
-    # `ModuleNotFoundError: No module named 'skills.public'` (#305). Only the
+    # `ModuleNotFoundError: No module named 'skills.public'`. Only the
     # layout-resolution miss (a missing `skills`/`skills.public` package) is
     # tolerated; a genuine missing dependency inside the target module re-raises
     # immediately instead of being relabeled as a layout miss.

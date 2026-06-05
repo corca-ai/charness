@@ -103,7 +103,7 @@ def build_publish_plan(
     backend = adapter_data["release_backend"]
     # On --resume the local release commit + tag are expected to already exist;
     # the resume path validates that partial state itself, so skip the
-    # "tag must not exist" guard that would otherwise block recovery (#305).
+    # "tag must not exist" guard that would otherwise block recovery.
     if not resume:
         ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
