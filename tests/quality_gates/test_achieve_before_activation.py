@@ -98,6 +98,8 @@ def test_long_goal_efficiency_contract_is_explicit() -> None:
     assert "Slice review packet" in artifact
     assert "measured signals" in lifecycle and "proxy signals" in lifecycle
     assert "Cached input alone is not a waste conclusion" in lifecycle
+    assert "actual waste from this run" in lifecycle
+    assert "Do not include routine publication/push prompts by default" in lifecycle
 
 
 def test_timebox_goal_contract_is_explicit() -> None:

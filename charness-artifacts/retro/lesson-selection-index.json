@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 127,
-  "candidate_count": 784,
+  "source_artifact_count": 128,
+  "candidate_count": 792,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -135,6 +135,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7b719dc4db46",
+      "kind": "current_focus",
+      "lesson": "This session ran an `achieve` goal for the user's next-improvement request plus GitHub issues #299 and #300.",
+      "normalized_key": "this session ran an achieve goal for the user s next improvement request plus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -149,6 +169,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15f0e23dc769",
+      "kind": "next_improvement",
+      "lesson": "For issue closeout drafts, create or bind critique evidence before running `validate-closeout-draft` so the first validation pass is meaningful.",
+      "normalized_key": "for issue closeout drafts create or bind critique evidence before running validate closeout draft",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -175,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6dade6c2b839",
+      "kind": "next_improvement",
+      "lesson": "Keep setup bootstrap examples dry-run/read-only unless the line is explicitly inside the selected mutation step.",
+      "normalized_key": "keep setup bootstrap examples dry run read only unless the line is explicitly inside",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:bb4e52efaa94",
       "kind": "next_improvement",
       "lesson": "Keep the `_mask_fences` nose finding as intentionally deferred unless closeout-floor helpers get a shared leaf utility that preserves no-cycle constraints.",
@@ -195,12 +255,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:265c20de26ae",
+      "candidate_id": "next_improvement:9ff710486bf7",
       "kind": "next_improvement",
-      "lesson": "Workflow: for every timeboxed early closeout, include a bound report artifact before status completion so the user receives stop rationale, decisions needed, and waste retro without asking.",
-      "normalized_key": "workflow for every timeboxed early closeout include a bound report artifact before status completion",
+      "lesson": "Update goal artifacts as soon as a slice moves from implementation to review, not only at final closeout.",
+      "normalized_key": "update goal artifacts as soon as a slice moves from implementation to review not",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
       "latest_source_date": "2026-06-05",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -208,69 +268,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6c98974530f4",
-      "kind": "next_improvement",
-      "lesson": "Workflow: for long test modules with shared fake repo setup, extract reusable fixtures before moving or adding more tests.",
-      "normalized_key": "workflow for long test modules with shared fake repo setup extract reusable fixtures before",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e02bc8f98619",
-      "kind": "next_improvement",
-      "lesson": "Workflow: when adding a quality inventory, run declaration coverage before the slice commit, even if the inventory is advisory.",
-      "normalized_key": "workflow when adding a quality inventory run declaration coverage before the slice commit even",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7a39fb5c9392",
-      "kind": "repeat_trap",
-      "lesson": "A sync command was accidentally run while the release-inclusive quality wrapper was still reading generated plugin paths. That created a transient `check_current_pointer_writes` FileNotFound. The gate passed on a stable post-sync rerun, but the overlap was avoidable.",
-      "normalized_key": "a sync command was accidentally run while the release inclusive quality wrapper was still",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-          "date": "2026-06-05",
-          "section": "Waste"
         }
       ]
     }
@@ -397,6 +397,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7b719dc4db46",
+      "kind": "current_focus",
+      "lesson": "This session ran an `achieve` goal for the user's next-improvement request plus GitHub issues #299 and #300.",
+      "normalized_key": "this session ran an achieve goal for the user s next improvement request plus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1eb8a6858727",
       "kind": "next_improvement",
       "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
@@ -411,6 +431,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:15f0e23dc769",
+      "kind": "next_improvement",
+      "lesson": "For issue closeout drafts, create or bind critique evidence before running `validate-closeout-draft` so the first validation pass is meaningful.",
+      "normalized_key": "for issue closeout drafts create or bind critique evidence before running validate closeout draft",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -437,6 +477,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6dade6c2b839",
+      "kind": "next_improvement",
+      "lesson": "Keep setup bootstrap examples dry-run/read-only unless the line is explicitly inside the selected mutation step.",
+      "normalized_key": "keep setup bootstrap examples dry run read only unless the line is explicitly inside",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:bb4e52efaa94",
       "kind": "next_improvement",
       "lesson": "Keep the `_mask_fences` nose finding as intentionally deferred unless closeout-floor helpers get a shared leaf utility that preserves no-cycle constraints.",
@@ -451,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9ff710486bf7",
+      "kind": "next_improvement",
+      "lesson": "Update goal artifacts as soon as a slice moves from implementation to review, not only at final closeout.",
+      "normalized_key": "update goal artifacts as soon as a slice moves from implementation to review not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -557,6 +637,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:18f0e76a76e5",
+      "kind": "repeat_trap",
+      "lesson": "I had to repair the closeout evidence chain after #300 draft validation failed on missing critique evidence. The validator did its job, but I should have created the critique artifact before drafting the closeout carrier.",
+      "normalized_key": "i had to repair the closeout evidence chain after 300 draft validation failed on",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4e5991ab1de5",
+      "kind": "repeat_trap",
+      "lesson": "I initially put `normalize_host_docs.py --execute` in the generic setup bootstrap path. That would have made ordinary setup startup mutate host docs before mode detection. Fresh-eye review caught it; fixing it was necessary but avoidable.",
+      "normalized_key": "i initially put normalize host docs py execute in the generic setup bootstrap path",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:eaec30af839e",
       "kind": "repeat_trap",
       "lesson": "Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn.",
@@ -631,6 +751,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c946397806e5",
+      "kind": "repeat_trap",
+      "lesson": "The goal artifact lagged behind the implementation for one slice. That created review churn because the issue draft claimed implementation while the goal still said the work was pending.",
+      "normalized_key": "the goal artifact lagged behind the implementation for one slice that created review churn",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0b994f3706d2",
+      "kind": "repeat_trap",
+      "lesson": "The previous habit of including routine push questions created user-facing noise. This goal changed the contract, but the waste was already paid in the earlier correction loop.",
+      "normalized_key": "the previous habit of including routine push questions created user facing noise this goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
           "date": "2026-06-05",
           "section": "Waste"
         }

@@ -37,6 +37,11 @@
 
 ## Deterministic Cases
 
+For a narrow host-docs-only normalization, use
+`$SKILL_DIR/scripts/normalize_host_docs.py --repo-root <repo> --execute`
+instead of hand-writing only `AGENTS.md`; it preserves the same deterministic
+cases below and blocks when a real `CLAUDE.md` needs a merge decision.
+
 - no `<repo-root>/AGENTS.md`, no `CLAUDE.md`
   - create `<repo-root>/AGENTS.md`
   - create `CLAUDE.md -> AGENTS.md`

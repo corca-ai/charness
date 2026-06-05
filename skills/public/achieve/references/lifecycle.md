@@ -308,6 +308,10 @@ At completion the goal artifact should contain:
   that they were not run
 - residual risks and non-claims
 - concrete user verification instructions
+- user-decision-needed items that are truly unresolved for this goal. Do not
+  include routine publication/push prompts by default; `achieve` already names
+  publication and remote-closeout non-claims separately, and repeating a known
+  operator surface is noise unless the user asked for that decision.
 - when the goal resolved a tracked issue: its close is *staged* through `issue`
   — the default-branch commit/PR body carries `Close #N` so the maintainer's
   push auto-closes it (it is still OPEN at `achieve` closeout); `achieve` does
@@ -318,7 +322,9 @@ At completion the goal artifact should contain:
   state is verified, later goal, retro, or handoff updates are lifecycle
   artifacts unless they are required by the carrier itself; do not force a
   second docs-only issue-closeout push for them.
-- an automatic retro focused on reducing time, tokens, and waste next time
+- an automatic retro focused on reducing time, tokens, and waste next time, and
+  a closeout report that names the actual waste from this run instead of only
+  summarizing implementation changes
 - for timeboxed goals that stop before the reserve window, a user-facing early
   close report with three explicit sections: why early closeout was chosen, what
   decisions now need the user, and what waste/retro findings explain the gap.

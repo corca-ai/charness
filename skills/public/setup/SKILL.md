@@ -51,6 +51,7 @@ python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
 # 1. current repo surface
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
 python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/normalize_host_docs.py" --repo-root .
 git status --short
 rg --files . | sed -n '1,200p'
 
@@ -85,6 +86,11 @@ Then load only the references needed for the detected state:
      to rename docs only to satisfy the inspector
    - if the run is read-only, classify artifact refresh, commit closeout, and bounded reviewers as unproven
 2. Stabilize the host-facing instruction surface first.
+   - for a narrow "host docs only" or "AGENTS.md only" request, run
+     `normalize_host_docs.py --repo-root .` as the dry-run plan, then rerun with
+     `--execute` only after that narrow host-docs path is the intended mutation
+     so the deterministic AGENTS/CLAUDE cases stay intact instead of
+     hand-writing only one file
    - if both `<repo-root>/AGENTS.md` and `CLAUDE.md` are missing, create `<repo-root>/AGENTS.md` and
      make `CLAUDE.md` a symlink to it
    - if `<repo-root>/AGENTS.md` exists and `CLAUDE.md` is missing, create the symlink
