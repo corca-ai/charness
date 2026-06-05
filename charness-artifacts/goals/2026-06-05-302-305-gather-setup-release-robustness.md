@@ -9,8 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md`.
+- Current slice: Slice 1 (#304) complete — fix + bug-class direct-commit
+  closeout staged (`Close #304`). Next: Slice 2 (#303).
+- Next action: implement Slice 2 (#303) — add an adapter-first subagent reviewer
+  rule to the setup-generated/normalized AGENTS.md without weakening
+  standing-delegation language; keep `inspect_repo.py` clean.
 - Verification cadence: cheap deterministic checks (`run_slice_closeout.py`
   aggregate + targeted pytest) at commit boundaries; full targeted test file +
   bounded fresh-eye critique at slice boundaries; broad pytest at final closeout.
@@ -213,6 +216,20 @@ reviewer-tier rule stays adapter-first, never a global hardcoded `medium`. No
 unresolved consequential item remains for `/goal` activation.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — #304 setup template↔inspector agreement
+
+- Objective: Make COMPACT_SUBAGENT_DELEGATION and the setup inspector agree on the minimal valid ## Subagent Delegation contract so a copy of the documented compact default is not flagged as fresh_eye_delegation_rule_drift.
+- Why this approach: RN1: relax the inspector (whitespace-normalize contract-snippet matching) rather than de-wrap the template — also fixes consumer repos that copied the documented wrapped block.
+- Commits:
+- What changed: scripts/setup_agent_docs_fresh_eye_lib.py (+mirror): added _normalize_whitespace() and routed _missing_snippets, the same-agent-forbidden check, fresh_eye_policy_gaps, and detect_fresh_eye_normalization haystacks through it. tests/quality_gates/test_setup_inspect_policy.py: new regression test pinning agreement against the actual render_agents_template output (line-wrapped).
+- Alternatives rejected: De-wrap the COMPACT_SUBAGENT_DELEGATION template (only fixes future generations, not consumer copies) — rejected per RN1.
+- Targeted verification: Confirmed pre-fix repro (compact_contract_present=False, drift finding present, end-to-end via inspect_repo.py). Post-fix: compact_contract_present=True, no drift, same-agent-allowed still rejected. test_setup_inspect_policy.py 32 passed; related fresh-eye suites 75 passed; run_slice_closeout.py deterministic aggregate completed. Bounded fresh-eye slice critique: no blockers, all 4 invariants confirmed.
+- Test duplication pressure: 1 new test (test_setup_inspect_accepts_generated_compact_subagent_delegation_block). Distinct from the sibling single-line accept test: this one renders the actual wrapped generator output and asserts the phrases are non-contiguous in raw text, so it exercises the normalization path the sibling never did. No duplicate-coverage pressure.
+- Critique: charness-artifacts/critique/2026-06-05-issue-304-template-inspector-agreement.md (fresh-eye, no blockers).
+- Off-goal findings: none
+- Lessons carried forward: Contract-snippet detection over markdown prose must be whitespace-insensitive; line-wrapping to satisfy length gates otherwise creates false drift against the very default the repo ships.
+- Metrics:
 
 ## Context Sources
 

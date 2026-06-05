@@ -363,6 +363,39 @@ def test_setup_inspect_accepts_compact_subagent_delegation_section(tmp_path: Pat
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
+def test_setup_inspect_accepts_generated_compact_subagent_delegation_block(tmp_path: Path) -> None:
+    # Pin template<->inspector agreement against the ACTUAL generator output (#304).
+    # `render_agents_template` line-wraps the compact block to satisfy markdown
+    # line-length limits, so contract phrases straddle line breaks. The sibling
+    # single-line test above never exercised that wrapping, which is exactly why
+    # the wrapped default used to trip `fresh_eye_delegation_rule_drift`.
+    from scripts.setup_host_docs_lib import render_agents_template
+
+    repo = tmp_path / "repo"
+    agents_text = render_agents_template(
+        skill_routing_markdown="## Skill Routing\n\n- Route via find-skills."
+    )
+    # Guard the regression: the generated block must wrap these phrases across
+    # lines so this test keeps exercising whitespace-normalized matching rather
+    # than silently degrading into the contiguous single-line case.
+    assert "standing delegation request" not in agents_text
+    assert "host block" not in agents_text
+
+    _seed_normalize_repo(repo, agents_text)
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["has_subagent_delegation_section"] is True
+    assert fresh_eye["compact_contract_present"] is True
+    assert fresh_eye["missing_required_snippets"] == []
+    assert fresh_eye["missing_task_review_scopes"] == []
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_task_review_scope_drift" not in finding_types
+
+
 def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substitute(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(

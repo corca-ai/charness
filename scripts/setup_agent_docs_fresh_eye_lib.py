@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "critique", "subagent review", "subagent reviews")
 FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
 FRESH_EYE_SECTION_HEADING = "## Subagent Delegation"
@@ -31,9 +33,26 @@ TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality", "critique", "release", "issue"
 LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"
 
 
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _normalize_whitespace(text: str) -> str:
+    """Collapse every run of whitespace (incl. newlines + indentation) to a single space.
+
+    Contract snippets are matched against AGENTS.md prose, which is line-wrapped to
+    satisfy markdown line-length limits. A documented phrase such as ``standing
+    delegation request`` or ``host block`` can therefore straddle a line break, so a
+    raw ``in`` check reports false drift on the very compact default this repo ships.
+    Normalizing the haystack (and the snippet) before matching makes detection
+    line-wrap-insensitive without weakening which phrases are required.
+    """
+
+    return _WHITESPACE_RE.sub(" ", text)
+
+
 def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
-    lowered = text.lower()
-    return [snippet for snippet in snippets if snippet.lower() not in lowered]
+    lowered = _normalize_whitespace(text).lower()
+    return [snippet for snippet in snippets if _normalize_whitespace(snippet).lower() not in lowered]
 
 
 def _extract_section(text: str, heading: str) -> str:
@@ -56,13 +75,16 @@ def _extract_section(text: str, heading: str) -> str:
 
 def fresh_eye_compact_contract_present(agents_text: str) -> bool:
     section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING)
-    section_lower = section_body.lower()
-    same_agent_forbidden = any(snippet in section_lower for snippet in FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS)
+    section_lower = _normalize_whitespace(section_body).lower()
+    same_agent_forbidden = any(
+        _normalize_whitespace(snippet).lower() in section_lower
+        for snippet in FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS
+    )
     return bool(section_body) and same_agent_forbidden and not _missing_snippets(section_body, FRESH_EYE_COMPACT_REQUIRED_SNIPPETS)
 
 
 def fresh_eye_policy_gaps(agents_text: str) -> tuple[list[str], list[str]]:
-    lowered_agents = agents_text.lower()
+    lowered_agents = _normalize_whitespace(agents_text).lower()
     compact_contract_present = fresh_eye_compact_contract_present(agents_text)
     missing_required = [] if compact_contract_present else _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
     missing_scopes = [scope for scope in TASK_REVIEW_SCOPE_SNIPPETS if scope not in lowered_agents]
@@ -70,7 +92,7 @@ def fresh_eye_policy_gaps(agents_text: str) -> tuple[list[str], list[str]]:
 
 
 def detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    lowered = agents_text.lower()
+    lowered = _normalize_whitespace(agents_text).lower()
     stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
     has_subagent_delegation_section = FRESH_EYE_SECTION_HEADING.lower() in lowered
     compact_contract_present = stop_gate_detected and fresh_eye_compact_contract_present(agents_text)
@@ -91,7 +113,7 @@ def detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object],
     )
     stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
     section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
-    section_lower = section_body.lower()
+    section_lower = _normalize_whitespace(section_body).lower()
     weakening_caveats_detected = (
         [pattern for pattern in FRESH_EYE_DELEGATION_CAVEAT_PATTERNS if pattern in section_lower]
         if section_body
