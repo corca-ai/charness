@@ -111,15 +111,24 @@ structure — hence pairing it with a testability sensor.
    [`test_check_coverage_inventory.py`](../tests/quality_gates/test_check_coverage_inventory.py)
    already does). Use `Repo().build()` for the
    on-disk fixture without `run_at`. Skip targets that shell out internally.
-   *Started:* [`test_quality_standing_gate_verbosity.py`](../tests/quality_gates/test_quality_standing_gate_verbosity.py)
+   *Done (2026-06-05):* the prior slice converted
+   [`test_quality_standing_gate_verbosity.py`](../tests/quality_gates/test_quality_standing_gate_verbosity.py)
    (direct `inventory()` lib call) and
    [`test_quality_lint_ignores.py`](../tests/quality_gates/test_quality_lint_ignores.py)
-   (in-process `main()` with captured stdout, preserving its adapter-wrapped
-   payload) are converted — the two documented patterns. Baseline convertible
-   57→55. Remaining convertible
-   `inventory_*` tests: `inventory_adapter_gate_design`, `_brittle_source_guards`,
-   `_cli_side_effect_probes`, `_public_spec_quality`, `_skill_ergonomics` (skip the
-   internally-spawning `_entrypoint_docs_ergonomics`, `_ubiquitous_language`).
+   (in-process `main()` with captured stdout) — the two documented patterns
+   (baseline convertible 57→55). This slice converted the five remaining
+   import-safe `inventory_*` tests — `inventory_adapter_gate_design` (the
+   [`test_quality_bootstrap.py`](../tests/quality_gates/test_quality_bootstrap.py)
+   call site only; its other spawns stay at the boundary),
+   `_brittle_source_guards`, `_cli_side_effect_probes`,
+   `_public_spec_quality`, `_skill_ergonomics` — all via the captured-`main()`
+   pattern, skipping the internally-spawning `_entrypoint_docs_ergonomics` and
+   `_ubiquitous_language` per the boundary rule.
+   `inventory_public_spec_quality.py` and `inventory_cli_side_effect_probes.py`
+   gained the sibling-`*_lib` `__file__` `sys.path` bootstrap their peers already
+   carried, so they are now genuinely in-process importable (goal A). Baseline:
+   convertible 55→51, candidate 94→90, keys 157→152 — five real conversions, no
+   exemptions.
    *Per conversion:* regenerate the
    [boundary-bypass baseline](../scripts/boundary-bypass-baseline.json) to canonical
    form (`inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →

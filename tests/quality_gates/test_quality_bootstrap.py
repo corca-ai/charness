@@ -1,12 +1,47 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
+from typing import NamedTuple
 
 from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
 from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 
-from .support import run_script
+from .support import ROOT, run_script
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): drive the
+# adapter-gate-design inventory's `main()` in-process. The other spawns in this
+# file (bootstrap_adapter / resolve_adapter / init_adapter) intentionally stay at
+# the process boundary; only the inventory_* call site is converted here.
+_AGD_SPEC = importlib.util.spec_from_file_location(
+    "inventory_adapter_gate_design",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_adapter_gate_design.py",
+)
+assert _AGD_SPEC is not None and _AGD_SPEC.loader is not None
+_AGD_MODULE = importlib.util.module_from_spec(_AGD_SPEC)
+_AGD_SPEC.loader.exec_module(_AGD_MODULE)
+
+
+class _Result(NamedTuple):
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+def _run_adapter_gate_design(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["inventory_adapter_gate_design.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = _AGD_MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def seed_quality_repo(tmp_path: Path) -> Path:
@@ -589,11 +624,7 @@ def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_adapter_gate_design.py",
-        "--repo-root",
-        str(repo),
-    )
+    result = _run_adapter_gate_design("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert set(payload["finding_classes"]) == {
@@ -639,11 +670,7 @@ def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_adapter_gate_design.py",
-        "--repo-root",
-        str(repo),
-    )
+    result = _run_adapter_gate_design("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["review_scope_source"].endswith(".agents/quality-adapter.yaml")

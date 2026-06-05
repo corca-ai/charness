@@ -5,10 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-from cli_side_effect_probe_lib import build_inventory
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cli_side_effect_probe_lib import build_inventory  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():

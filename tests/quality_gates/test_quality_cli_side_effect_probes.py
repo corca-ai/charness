@@ -1,9 +1,45 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
+from typing import NamedTuple
 
-from .support import run_script, write_executable
+from .support import ROOT, write_executable
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): load the
+# inventory entrypoint by file and drive its `main()` with captured stdout/stderr
+# instead of crossing a process boundary. main() parses argv and returns the exit
+# code, so patching sys.argv and capturing the streams reproduces the same CLI
+# surface (flags, exit code, adapter-wrapped JSON payload) the boundary test read.
+_SPEC = importlib.util.spec_from_file_location(
+    "inventory_cli_side_effect_probes",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_cli_side_effect_probes.py",
+)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+
+
+class _Result(NamedTuple):
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+def _run(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["inventory_cli_side_effect_probes.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = _MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_path: Path) -> None:
@@ -26,8 +62,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_pa
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -73,8 +108,7 @@ def test_inventory_cli_side_effect_probes_accepts_complete_contract(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -108,8 +142,7 @@ def test_inventory_cli_side_effect_probes_accepts_dry_run_waiver(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -124,8 +157,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_contract(tmp_path: Path)
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -136,8 +168,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_contract(tmp_path: Path)
     assert payload["findings"][0]["type"] == "cli_side_effect_probe_contract_missing"
     assert payload["status"] == "unconfigured"
 
-    failing_result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    failing_result = _run(
         "--repo-root",
         str(repo),
         "--fail-on-findings",
@@ -168,8 +199,7 @@ def test_inventory_cli_side_effect_probes_skips_vendored_contracts(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -228,8 +258,7 @@ def test_inventory_cli_side_effect_probes_executes_safe_fixture_and_flags_mutati
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--execute-probes",
@@ -266,8 +295,7 @@ def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--execute-probes",

@@ -9,17 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — convert the 5 import-safe `inventory_*` boundary-bypass
-  tests to in-process (Slice 1 nose 0.5 DONE: gate green, fresh-eye SHIP).
-- Next action: convert `inventory_adapter_gate_design` first, regen boundary
-  baseline, then the remaining four; ratchet green per conversion.
+- Current slice: Slice 3 — release `0.20.0 → 0.21.0` (version bump + manifests +
+  announcement + push). Slices 1 (nose 0.5) and 2 (5 inventory_* conversions)
+  DONE: read-only gate green, fresh-eye SHIP on both.
+- Next action: run the `release` skill to bump version + regen manifests, draft
+  the announcement, run packaging validators, then push to `origin` (final gated
+  step, after all gates green).
 - Timebox: 3h
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement
 - Activation time: 2026-06-05 (active).
-- Routing: Slice 1 nose work routed via `find-skills` local-first inventory →
-  `achieve` operator + `quality` (clone-family inventory surface) + bounded
-  fresh-eye `critique` subagent. Slice 3 release → `release`/`announcement`.
+- Routing: Slices 1–2 routed via `find-skills` local-first inventory → `achieve`
+  operator + `quality` (clone-family inventory + boundary-bypass ratchet) +
+  bounded fresh-eye `critique` subagents. Slice 3 release → `release` +
+  `announcement`.
 - Discuss before activation: RESOLVED with the user on 2026-06-05. (a) Release
   PUSH is in scope — the release slice pushes to `origin` (outward-facing,
   irreversible); user chose "version bump + push" over no-push and version-only.
@@ -129,8 +132,8 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | nose 0.5 integration: bump `version_expectation`, adapt inventory to 0.5 `--mode` semantics, refresh nose-baseline from a live 0.5 scan | fresh capability the user just upgraded; isolated from the conversions | manifest + inventory edits; live nose 0.5 scan output; refreshed nose-baseline; gate green | pending |
-| 2 | Convert the 5 import-safe `inventory_*` boundary-bypass tests to in-process; regen baseline per conversion | continues the prior goal; bounded, two documented patterns | converted tests green; boundary-bypass `candidate_count` drop recorded; ratchet green | pending |
+| 1 | nose 0.5 integration: bump `version_expectation`, adapt inventory to 0.5 `--mode` semantics, refresh nose-baseline from a live 0.5 scan | fresh capability the user just upgraded; isolated from the conversions | manifest + inventory edits; live nose 0.5 scan output; refreshed nose-baseline; gate green | done (commit 7bd7d1ee; nose 0.5.0 live, 20 families; gate 71/0) |
+| 2 | Convert the 5 import-safe `inventory_*` boundary-bypass tests to in-process; regen baseline per conversion | continues the prior goal; bounded, two documented patterns | converted tests green; boundary-bypass `candidate_count` drop recorded; ratchet green | done (candidate 94→90, keys 157→152, convertible 55→51; ratchet OK; gate 71/0) |
 | 3 | Release: version bump `0.20.0 → 0.21.0` + manifests + announcement + push | bundle close; user-requested ship | release commit; packaging validators green; pushed to `origin` | pending |
 | 4 | Verify, per-slice fresh-eye critique, retro, goal closeout | closeout | full gate; per-slice critiques; retro; goal check | pending |
 
@@ -176,6 +179,20 @@ _Empty until `/goal` activation._
 - Critique: Bounded fresh-eye subagent review (general-purpose): SHIP, no blockers. 14-shape adversarial sweep of _extract_families confirmed it never raises and always degrades to advisory; mirror byte-identical; baseline has no code consumer (array->object shape change safe); family count rose 230->236 (not masked). One cosmetic non-blocker (timeout path missing tool_version) applied.
 - Off-goal findings:
 - Lessons carried forward: nose 0.5 mode-replace semantics: list every wanted channel explicitly. Tool JSON schema changes are a silent under-report risk for parsers expecting the old top-level shape; a regression test on the exact new schema is the durable guard.
+- Metrics:
+
+### Slice 2: Slice 2 — convert 5 inventory_* boundary-bypass tests
+
+- Objective: Convert the 5 remaining import-safe inventory_* boundary-bypass tests from subprocess spawns to in-process calls; regenerate the boundary-bypass baseline canonically to record the real drop.
+- Why this approach: The captured-main() pattern (load entrypoint by file, patch sys.argv, capture stdout/stderr, treat main()'s return as exit code) preserves the exact CLI surface (flags, exit codes, adapter-wrapped JSON) the subprocess tests asserted on — faithful for the several tests that assert exit codes and stderr. Two scripts lacked the sibling-lib __file__ sys.path bootstrap their peers had, so they got it (raising real in-process testability, goal A) rather than a test-side path hack.
+- Commits: test(quality): convert 5 inventory_* gate tests to in-process (this slice)
+- What changed: TEST conversions (run_script -> in-process _run): test_quality_brittle_source_guards (6), _cli_side_effect_probes (8), _public_spec_quality (15), _skill_ergonomics (21); test_quality_bootstrap (2 adapter_gate_design sites -> _run_adapter_gate_design, OTHER spawns kept at boundary). PRODUCTION testability: inventory_public_spec_quality.py + inventory_cli_side_effect_probes.py (+ mirrors) gained the __file__ sys.path bootstrap (+ noqa E402) their siblings already carried. BASELINE: scripts/boundary-bypass-baseline.json (+ mirror) regenerated canonically: candidate 94->90, keys 157->152, convertible 55->51 (internal 38, keep 23 unchanged); exactly 5 keys removed, 0 added, no exemption change. DOC: docs/testability-dsl-initiative.md Remaining item 1 marked done.
+- Alternatives rejected: Test-side sys.path hack to import siblings — rejected (commit a7449e8a removed test path-bootstraps; production bootstrap is the parity fix and raises real testability). Direct inventory() lib calls — rejected for the captured-main() pattern because several tests assert exit codes / main()-wrapped fields. Adding exemptions to fake the drop — explicitly a non-goal.
+- Targeted verification: 57 focused converted tests pass in-process; ./scripts/run-quality.sh --read-only 71 passed / 0 failed (broad pytest, ratchet OK 90/51/38/23, test-completeness, test-production-ratio, doc-links, markdown); baseline diff minimal (5 keys + 3 numbers); plugin mirrors byte-identical; subprocess gate path still runs.
+- Test duplication pressure: No new tests added; existing tests converted in place (call mechanism only, assertions byte-preserved). Net test count unchanged; duplication unchanged — the per-file ~25-line in-process loader mirrors the two documented reference loaders (intentional, matches the established pattern).
+- Critique: Bounded fresh-eye subagent review (general-purpose): SHIP, no blockers. Verified all 6 invariants: byte-level assertion preservation (spot-checked public_spec 15 sites vs HEAD), exactly 5 keys removed (bootstrap's other 3 kept), exemptions unchanged, canonical regen matches committed baseline byte-for-byte, subprocess path + mirrors intact, internally-spawning tests untouched. Cleared a 91-vs-90 scare (pre-existing export_plugin exemption, ratchet ok:true). Independently ran tests/quality_gates: 1428 passed.
+- Off-goal findings:
+- Lessons carried forward: A script is 'import-safe' to the boundary probe (has main()+__main__) yet still not cleanly in-process loadable if it bare-imports siblings without a __file__ sys.path bootstrap; converting its test surfaces that gap, and the fix belongs in the production script (parity with peers), not a test path-hack.
 - Metrics:
 
 ## Context Sources

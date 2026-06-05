@@ -6,8 +6,9 @@ import json
 import sys
 from pathlib import Path
 
-import public_spec_quality_lib as qlib
-from public_spec_inventory_lib import inventory
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import public_spec_quality_lib as qlib  # noqa: E402
+from public_spec_inventory_lib import inventory  # noqa: E402
 
 
 def main() -> int:

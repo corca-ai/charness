@@ -1,9 +1,45 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
+from typing import NamedTuple
 
-from .support import run_script
+from .support import ROOT
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): load the
+# inventory entrypoint by file and drive its `main()` with captured stdout/stderr
+# instead of crossing a process boundary. main() parses argv and returns the exit
+# code, so patching sys.argv and capturing the streams reproduces the same CLI
+# surface (flags, exit code, adapter-wrapped JSON payload) the boundary test read.
+_SPEC = importlib.util.spec_from_file_location(
+    "inventory_public_spec_quality",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_public_spec_quality.py",
+)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+
+
+class _Result(NamedTuple):
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+def _run(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["inventory_public_spec_quality.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = _MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path) -> None:
@@ -48,8 +84,7 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -94,8 +129,7 @@ def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_pat
     (repo / "docs" / "specs" / "alpha.spec.md").write_text(first, encoding="utf-8")
     (repo / "docs" / "specs" / "beta.spec.md").write_text(second, encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -139,8 +173,7 @@ def test_inventory_public_spec_quality_recognizes_specdown_run_shell_blocks(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -189,8 +222,7 @@ def test_inventory_public_spec_quality_rolls_up_top_source_guard_specs(
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -218,8 +250,7 @@ def test_inventory_public_spec_quality_rolls_up_top_source_guard_specs(
     )
     assert recommendation["target_items"][0]["spec_path"] == "specs/alpha.spec.md"
 
-    text_result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    text_result = _run(
         "--repo-root",
         str(repo),
     )
@@ -256,8 +287,7 @@ def test_inventory_public_spec_quality_exempts_contract_sections(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -303,8 +333,7 @@ def test_inventory_public_spec_quality_still_scans_unexempt_headings(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -333,8 +362,7 @@ def test_inventory_public_spec_quality_uses_path_density_floor(tmp_path: Path) -
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -359,8 +387,7 @@ def test_inventory_public_spec_quality_uses_path_density_floor(tmp_path: Path) -
         ),
         encoding="utf-8",
     )
-    stricter = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    stricter = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -400,8 +427,7 @@ def test_inventory_public_spec_quality_recognizes_pointer_specs(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -436,8 +462,7 @@ def test_inventory_public_spec_quality_exempts_wrapped_pytest_pointer_blocks(tmp
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -472,8 +497,7 @@ def test_inventory_public_spec_quality_skips_implementation_guard_on_small_specs
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -518,8 +542,7 @@ def test_inventory_public_spec_quality_honors_adapter_implementation_guard_min_l
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -552,8 +575,7 @@ def test_inventory_public_spec_quality_skips_vendored_specs(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -582,8 +604,7 @@ def test_inventory_public_spec_quality_rejects_invalid_adapter(tmp_path: Path) -
     )
     (repo / "specs" / "index.spec.md").write_text("# Index\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",

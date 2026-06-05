@@ -1,9 +1,45 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
+from typing import NamedTuple
 
-from .support import run_script
+from .support import ROOT
+
+# In-process boundary conversion (testability-dsl-initiative goal 1): load the
+# inventory entrypoint by file and drive its `main()` with captured stdout/stderr
+# instead of crossing a process boundary. main() parses argv and returns the exit
+# code, so patching sys.argv and capturing the streams reproduces the same CLI
+# surface (flags, exit code, adapter-wrapped JSON payload) the boundary test read.
+_SPEC = importlib.util.spec_from_file_location(
+    "inventory_skill_ergonomics",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_skill_ergonomics.py",
+)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+
+
+class _Result(NamedTuple):
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+def _run(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["inventory_skill_ergonomics.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = _MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> None:
@@ -43,8 +79,7 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
     lines.extend(f"- filler line {index}" for index in range(90))
     (skill_dir / "SKILL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--max-core-lines",
@@ -96,8 +131,7 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -135,8 +169,7 @@ def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -175,8 +208,7 @@ def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -224,8 +256,7 @@ def test_inventory_skill_ergonomics_reports_package_host_and_reference_subchecks
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -256,8 +287,7 @@ def test_inventory_skill_ergonomics_ignores_cache_files_for_reference_discoverab
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -293,8 +323,7 @@ def test_inventory_skill_ergonomics_scans_whole_portable_package_for_issue_ancho
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -333,8 +362,7 @@ def test_inventory_skill_ergonomics_allows_version_fields_and_portable_placehold
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -370,8 +398,7 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -398,8 +425,7 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -447,8 +473,7 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -464,8 +489,7 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
 def test_inventory_skill_ergonomics_reports_unconfigured_when_no_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -488,8 +512,7 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
         "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
         encoding="utf-8",
     )
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -507,8 +530,7 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
     ]
     assert payload["skills"] and payload["skills"][0]["skill_id"] == "demo"
 
-    plain = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    plain = _run(
         "--repo-root",
         str(repo),
     )
@@ -539,8 +561,7 @@ def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -564,8 +585,7 @@ def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tm
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -581,8 +601,7 @@ def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tm
         "skill_ergonomics_prose_review_required"
     ]
 
-    plain = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    plain = _run(
         "--repo-root",
         str(repo),
     )
@@ -613,8 +632,7 @@ def test_inventory_skill_ergonomics_surfaces_invalid_adapter_as_best_effort(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -656,8 +674,7 @@ def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -705,8 +722,7 @@ def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
@@ -756,8 +772,7 @@ def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuris
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+    result = _run(
         "--repo-root",
         str(repo),
         "--json",
