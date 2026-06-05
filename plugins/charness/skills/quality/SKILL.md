@@ -45,8 +45,9 @@ concept paths, preset lineage, or deferred setup worth recording.
 Use `references/bootstrap-escalations.md` for missing validation tools,
 reader-facing Markdown preview, evaluator-backed behavior proof, artifact
 write-path handling, and other non-default bootstrap paths.
-When writing the quality artifact, edit the resolved `write_artifact_path`, not
-`latest.md` by habit.
+When writing the quality artifact, run the scaffold helper
+`python3 "$SKILL_DIR/scripts/scaffold_quality_artifact.py" --repo-root .` for a
+validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest.md`.
 
 ## Workflow
 

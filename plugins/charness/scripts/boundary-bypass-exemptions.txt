@@ -3,5 +3,7 @@
 # Format:
 # tests/path/test_file.py::scripts/target.py # why: short rationale with owner/revisit condition
 #
-# Empty by design at ratchet introduction. Add exemptions only for intentional
-# boundary tests that should not count against the no-increase policy.
+# Add exemptions only for intentional boundary tests that should not count
+# against the no-increase policy.
+
+tests/test_quality_scaffold.py::scripts/export_plugin.py # why: end-to-end export portability proof — runs the real export_plugin.py as a subprocess to build a fresh export, then runs the exported scaffold+validator from a clean consumer repo, exercising the build->consume path a downstream repo uses. export_plugin is import-safe (could be called in-process), but the subprocess keeps this an honest E2E check; the debug-scaffold export test exercises the same path and is grandfathered into boundary-bypass-baseline.json rather than exempted. Owner: quality. Revisit if a lighter in-process export-and-consume proof replaces the E2E fidelity.
