@@ -3,12 +3,12 @@ Date: 2026-06-05
 
 ## Scope
 
-Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.21.0`
-- target version: `0.22.0`
+- previous version: `0.22.0`
+- target version: `0.23.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -22,7 +22,7 @@ Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-own
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.22.0`; creation runs after the branch/tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.23.0`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
@@ -34,7 +34,7 @@ Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-own
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.21.0`
+- Previous release ref: `refs/tags/v0.22.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -50,41 +50,36 @@ Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-22-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-23-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 7.
-  - `skills/public/release/scripts/publish_release_cli.py`
-  - `skills/public/release/scripts/publish_release_plan.py`
-  - `skills/public/release/scripts/publish_release_preflight.py`
+- Path hits: 2.
   - `skills/public/release/scripts/publish_release_resume.py`
-  - `skills/public/release/scripts/publish_release_retro.py`
   - `skills/support/web-fetch/scripts/acquire_public_url.py`
-  - `skills/support/web-fetch/scripts/agent_browser_session.py`
-- Evaluated changed paths: 60.
+- Evaluated changed paths: 71.
   - `.agents/release-adapter.yaml`
+  - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-05-111217-packet.json`
-  - `charness-artifacts/critique/2026-06-05-111217-packet.md`
-  - `charness-artifacts/critique/2026-06-05-302-305-gather-setup-release-robustness-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-05-disposition-review-inventory-conversions-nose-05-and-release.md`
-  - `charness-artifacts/critique/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md`
-  - `charness-artifacts/critique/2026-06-05-issue-303-adapter-first-reviewer-rule.md`
-  - `charness-artifacts/critique/2026-06-05-issue-304-template-inspector-agreement.md`
-  - `charness-artifacts/critique/2026-06-05-issue-305-release-publish-resilience.md`
+  - `charness-artifacts/critique/2026-06-05-abc-followups-resolution-critique.md`
   - `charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md`
-  - `charness-artifacts/debug/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md`
-  - `charness-artifacts/debug/2026-06-05-issue-304-template-inspector-wrap.md`
-  - `charness-artifacts/debug/2026-06-05-issue-305-release-publish-resilience.md`
-  - `charness-artifacts/debug/seam-risk-index.json`
-  - `charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md`
-  - `charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release-early-close-report.md`
-  - `charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release.md`
-  - `charness-artifacts/issue/2026-06-05-followup-premortem-before-authoring-constrained-surfaces.md`
-  - `charness-artifacts/issue/2026-06-05-followup-repo-copy-invariant-timing.md`
-  - ... 40 more
+  - `charness-artifacts/critique/2026-06-06-306-317-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-06-v0.23.0-release-critique.md`
+  - `charness-artifacts/goals/2026-06-05-abc-followups-acquire-release-quality.md`
+  - `charness-artifacts/goals/2026-06-06-306-316-open-followups.md`
+  - `charness-artifacts/metrics/rca-ledger.jsonl`
+  - `charness-artifacts/probe/2026-06-05-abc-followups-acquire-release-quality-host-log.json`
+  - `charness-artifacts/probe/2026-06-06-306-316-open-followups.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `charness-artifacts/retro/2026-06-05-abc-followups-closeout.md`
+  - `charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md`
+  - `charness-artifacts/retro/lesson-selection-index.json`
+  - `charness-artifacts/retro/recent-lessons.md`
+  - `docs/conventions/authoring-preflight.md`
+  - `docs/conventions/implementation-discipline.md`
+  - `docs/handoff.md`
+  - ... 51 more
 
 ## Real-Host Verification
 
@@ -103,7 +98,7 @@ Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md`.
+- Review proof: `charness-artifacts/critique/2026-06-06-v0.23.0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -118,13 +113,19 @@ Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-own
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.22.0 (minor release: gather/setup/release robustness fixes for #302-#305 plus one additive `setup` operator surface).
+- Run `charness update` to pull 0.23.0 (minor release: six open follow-ups #306/#311/#314/#315/#316/#317 — mutation-coverage honesty, setup inspector + commit-discipline seeding, commit-boundary gate reconciliation, and achieve closeout/approval-boundary clarity).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
-- NEW SETUP REVIEWER RULE (#303) - `setup` now generates an adapter-first subagent reviewer rule into a greenfield AGENTS.md: bounded reviewers follow the owning skill/adapter's reviewer tier and concrete spawn fields instead of inheriting the parent turn's host defaults. NOTE - an AGENTS.md that already exists is left untouched (the block is greenfield-only); existing repos that want the rule should add it by hand for now.
-- SETUP DELEGATION FIX (#304) - the compact subagent-delegation block now agrees with the setup inspector across line wraps, so the host-doc generator no longer emits a delegation block its own inspector rejects.
-- GATHER RUNTIME HYGIENE (#302) - `gather`/web-fetch agent-browser sessions are guaranteed to close, and a fail-visible clean-runtime proof reports residue; the runtime guard now also counts reparented-PPID and zombie (`<defunct>`) residue, not just the orphan daemon tree. Pure reparented/zombie residue is the container init's job to reap; `--cleanup-orphans` only clears the orphan daemon tree.
-- RELEASE PUBLISH RESILIENCE (#305) - `publish_release.py` is now resumable (`--resume` re-validates and re-pushes a partial publish), bootstraps safely from the installed plugin cache, and unconditionally blocks publish when adapter `update_instructions` still describe the previous version but not the target (this very note is what that guard checks).
+- MUTATION-COVERAGE HONESTY (#306) - the recurring subprocess-only scaffold CLI class is now covered in-process, so the scheduled mutation gate's changed-line signal stops self-healing into ~2 auto-issues/day; the gate stays blocking on genuinely-uncovered changed lines.
+- SETUP STALE-AGENTS FLAG (#311) - the setup inspector now flags an existing AGENTS.md that predates the #303 adapter-first reviewer rule as stale. Report-only: existing AGENTS.md bodies are never rewritten.
+- COMMIT-BOUNDARY GATE RECONCILIATION (#314) - the fast structural checkers (`validate_skill_ergonomics`, `check_boundary_bypass_ratchet`) now run in the per-slice aggregate, and the per-slice aggregate and the literal git pre-commit hook run the same fast gate subset (generalizes #307).
+- SETUP COMMIT-DISCIPLINE SEED (#317) - greenfield AGENTS.md now carries a compact commit-discipline block, and the inspector flags an AGENTS.md that has Charness goal routing but no commit discipline. Report-only: existing bodies are never rewritten.
+- ACHIEVE CLOSEOUT PLACEHOLDERS (#315) - new achieve goal artifacts seed visible retro/host-log/disposition/Auto-Retro closeout placeholders; the complete gate still rejects untouched placeholders (`TODO`/`TBD`/`FIXME`/`<...>`).
+- ACHIEVE APPROVAL BOUNDARY (#316) - achieve now states that external publication/apply approval is scoped to the phase or bundle that requested it; after an approved lane, done-early test-only continuation is local by default (prose + template, no new gate).
+- Carried-forward (0.22.0, #303) - `setup` generates an adapter-first subagent reviewer rule into a greenfield AGENTS.md; an existing AGENTS.md is left untouched (greenfield-only; #311 above now flags the gap).
+- Carried-forward (0.22.0, #304) - the compact subagent-delegation block agrees with the setup inspector across line wraps.
+- Carried-forward (0.22.0, #302) - `gather`/web-fetch agent-browser sessions are guaranteed to close; the runtime guard counts reparented-PPID and zombie residue, not just the orphan daemon tree.
+- Carried-forward (0.22.0, #305) - `publish_release.py` is resumable (`--resume`), bootstraps from the installed plugin cache, and blocks publish when adapter `update_instructions` still describe the previous version but not the target (this very note is what that guard checks).
 - Carried-forward (0.21.0) - the `quality` clone-family advisory runs under nose 0.5 (parses the 0.5 JSON object schema, reports the live nose version); `integrations/tools/nose.json` prefers nose 0.5.0+. nose stays advisory; the gate passes without it.
 - Carried-forward (0.18.0) - `quality` runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
 - Carried-forward (0.18.0) - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
