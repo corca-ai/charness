@@ -24,7 +24,7 @@ def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
 
 
 def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str) -> None:
-    # B1 (#312): the resume refresh of charness-artifacts/release/latest.md (and
+    # B1: the resume refresh of charness-artifacts/release/latest.md (and
     # any retro-trigger artifact) must be committed BEFORE the push, mirroring the
     # normal flow's release commit. Otherwise charness-artifacts/ is dirty at push
     # time and .githooks/pre-push's `git diff --quiet -- charness-artifacts` blocks
@@ -123,7 +123,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     host_payload = cli.safe_real_host_payload(
         repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload
     )
-    # B1 (#312): build the EXECUTED retro-trigger evaluation (written /
+    # B1: build the EXECUTED retro-trigger evaluation (written /
     # final_release_paths), mirroring the normal flow, so the resumed artifact
     # does not regress to the plan's dry-run (would_write / release_content_paths)
     # payload. This also persists the retro artifact before it is committed below.
@@ -137,7 +137,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     )
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
 
-    # B1 (#312): commit the refreshed artifact before pushing so the pre-push gate
+    # B1: commit the refreshed artifact before pushing so the pre-push gate
     # does not block on a dirty charness-artifacts/ left by the resume refresh.
     _commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
 

@@ -253,9 +253,9 @@ def _browser_stage(
         last = attempts[-1]
         # Preserve the attempt's real acquisition signal (status/confidence/error)
         # and record the cleanup failure in details, so BOTH the "why the fetch
-        # failed" reason and the cleanup error survive (#310). Only when the
-        # attempt carried no acquisition error of its own do we surface the
-        # cleanup error as the attempt error, so the degraded close is not silent.
+        # failed" reason and the cleanup error survive. Only when the attempt
+        # carried no acquisition error of its own do we surface the cleanup error
+        # as the attempt error, so the degraded close is not silent.
         last.details["cleanup"] = "failed"
         last.details["cleanup_error"] = cleanup_error
         if last.error is None:

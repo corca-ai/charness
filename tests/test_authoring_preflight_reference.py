@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
 import sys
 from pathlib import Path
 
@@ -36,25 +35,6 @@ def test_authoring_preflight_lists_current_attention_vocabulary() -> None:
     assert not missing, f"authoring-preflight.md is missing banned terms: {missing}"
 
 
-def test_check_python_lengths_headroom_mode_reports_per_file_headroom() -> None:
-    # #308: the headroom affordance the reference points at actually works.
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts" / "check_python_lengths.py"),
-            "--repo-root",
-            str(ROOT),
-            "--headroom",
-            "--json",
-            "--paths",
-            "scripts/check_python_lengths.py",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 0, result.stderr
-    import json
-
-    rows = json.loads(result.stdout)["headroom"]
-    assert rows and "headroom" in rows[0] and "limit" in rows[0]
+# The headroom affordance the reference points at (check_python_lengths --headroom)
+# is exercised by tests/quality_gates/test_closeout_headroom_and_mirror_gate.py, so
+# it is not re-driven here (avoids a duplicate subprocess boundary-bypass candidate).
