@@ -10,17 +10,15 @@ and the shared final gate (user chose no work-budget).
 
 ## Active Operating Frame
 
-- Current slice: chunks A + B landed (#310 `75f30584`, #309 `618bca29`,
-  #312 `32d06b80`+`e09444f0`); chunk C in progress (C1 commit-boundary checker,
-  C2 authoring-preflight reference). B2 landed before C1 per the shared-surface
-  guard.
-- Next action: C1 (surfaces.json `repo-python` verify) then C2 (reference +
-  headroom pointer), then batch the three per-chunk fresh-eye reviews, then the
-  shared `--release` gate, then issue closeout + retro + flip to complete.
-- Quality route (B2 + C1): `quality` consulted. B2 cut = read-only-safe closeout
-  (landed: gate emission on `CHARNESS_QUALITY_MODE`). C1 = add the fast standalone
-  `check_test_repo_copy_invariants.py` to the `repo-python` surface verify
-  commands (named checker only; honor the issue's latency caution).
+- Current slice: ALL SIX sub-slices landed — A (#310 `75f30584`, #309 `618bca29`),
+  B (#312 `32d06b80`+`e09444f0`), C (#307 `223ac53b`, #308 `285d64c0`). B2 landed
+  before C1 per the shared-surface guard.
+- Next action: Z phase — three per-chunk bounded fresh-eye reviews (different
+  agent contexts, read-only), then the shared `./scripts/run-quality.sh --release`
+  gate on a clean tree, then issue closeout verification, then retro + flip to
+  complete.
+- Quality route (B2 + C1): `quality` consulted and applied (B2 read-only-safe
+  closeout via `CHARNESS_QUALITY_MODE`; C1 named fast checker in `repo-python`).
 - Execution model (at `/goal`, dynamic workflow approved): pursue via a Workflow
   that fans out the three chunks as **independent slice-chains** running in
   parallel, then a single barrier before the shared final
@@ -307,6 +305,34 @@ Resolved/approved — activation-ready.
 - Critique: Routed through quality. Exact xdist interleaving from v0.22.0 not fully pinned, but the fix closes the read-only-mutation seam deterministically; surface_obligations closeout tests have no usage_episode assertion so suppression under the gate is safe. Fresh-eye review batched at chunk boundary.
 - Off-goal findings:
 - Lessons carried forward: CHARNESS_QUALITY_MODE is a tree-wide read-only signal already exported by run-quality.sh; reuse it instead of inventing a new flag.
+- Metrics:
+
+### Slice 5: C1 (#307) — fast repo-copy checker at the commit boundary
+
+- Objective: Run scripts/check_test_repo_copy_invariants.py in the repo-python surface verify commands (the run_slice_closeout aggregate), before the broad pytest, so fixture drift fails at the commit boundary in <1s not 172s deep.
+- Why this approach: quality-routed: add the NAMED fast checker only (0.77s, path-scoped) to honor the issue's latency caution; peers deferred unless the class recurs. Positioned before the broad pytest in .agents/surfaces.json.
+- Commits: 223ac53b
+- What changed: .agents/surfaces.json (repo-python verify_commands + note); tests/quality_gates/test_surface_obligations.py reproduce/wiring test.
+- Alternatives rejected:
+- Targeted verification: reproduce-then-fixed: test_repo_python_surface_runs_fast_repo_copy_checker_before_broad_pytest (red: checker absent; green after). validate_surfaces 27 surfaces OK. End-to-end: run_slice_closeout --plan-only on a tests/*.py change plans the checker at idx3 before broad pytest at idx4.
+- Test duplication pressure:
+- Critique: Discovered scripts/*.py top-level files match checked-in-plugin-export (scripts/**) not repo-python (scripts/**/*.py); #307's drift class is tests/*.py which matches repo-python cleanly, so the wiring covers the actual triggering surface. Fresh-eye review batched at chunk boundary.
+- Off-goal findings:
+- Lessons carried forward: Surface glob semantics: scripts/**/*.py does not match top-level scripts/*.py in this matcher; tests/*.py is the relevant #307 surface and matches repo-python.
+- Metrics:
+
+### Slice 6: C2 (#308) — discoverable authoring-preflight reference
+
+- Objective: A discoverable authoring-preflight reference (attention-state banned vocab + length headroom pointer + regex/string-matching edge checklist) so authors know gated constraints before authoring.
+- Why this approach: check_python_lengths --headroom already exists (#256), so C2 = the missing discoverable reference. New docs/conventions/authoring-preflight.md linked from implementation-discipline.md Change Discipline (the read-before-authoring path). Lightweight+headroom level: no new gate, no edit-time hook.
+- Commits: 285d64c0
+- What changed: docs/conventions/authoring-preflight.md (new); docs/conventions/implementation-discipline.md (link); tests/test_authoring_preflight_reference.py (drift guard).
+- Alternatives rejected:
+- Targeted verification: 3 tests pass (reference exists+linked; banned vocab matches ATTENTION_TERMS drift guard; --headroom mode reports per-file headroom). Doc gates: check_doc_links, check-markdown (513 files 0 errors after MD040 fix), check_doc_near_duplicates, references-link-inventory all clean.
+- Test duplication pressure: Drift guard imports ATTENTION_TERMS from the validator rather than hardcoding the list twice; the doc is the single human-facing copy, the test enforces alignment.
+- Critique: Headroom code win pre-existed; avoided over-delivering (no active tooling) per the issue's process-overhead caution. Drift guard ties the doc vocab to the validator so the reference can't silently rot. Fresh-eye review batched at chunk boundary.
+- Off-goal findings:
+- Lessons carried forward: Enhancement (not bug) -> forward verification, not reproduce-then-fixed. Backticked file paths in prose trip check_doc_links; use markdown links.
 - Metrics:
 
 ## Context Sources
