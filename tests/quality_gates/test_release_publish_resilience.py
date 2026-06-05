@@ -139,6 +139,37 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     assert any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
 
 
+def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_path: Path) -> None:
+    # #312-B1: resume must commit the refreshed charness-artifacts/release/latest.md
+    # BEFORE the push (so .githooks/pre-push's `git diff --quiet -- charness-artifacts`
+    # does not falsely block), and must not regress the retro-trigger payload to the
+    # plan's dry-run (would_write / release_content_paths) version on the resumed
+    # artifact — it must carry the executed (written / final_release_paths) shape.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _simulate_partial_publish(repo)
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute",
+        "--critique-blocked", CRITIQUE_BLOCKED,
+    )
+    assert result.returncode == 0, result.stderr
+
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    commit_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["commit"]]
+    push_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["push"]]
+    assert commit_indices and push_indices, git_log
+    # The refreshed release artifact is committed before the first push: a clean
+    # charness-artifacts/ tree at push time.
+    assert min(commit_indices) < min(push_indices), git_log
+
+    payload = json.loads(result.stdout)
+    retro = payload["retro_trigger_evaluation"]
+    assert retro["evaluated_at"] == "final_release_paths", retro
+    # No dry-run regression: would_write is the dry-run-only closeout status.
+    assert retro["closeout"]["status"] != "would_write", retro
+
+
 def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> None:
     # RN2: resume must RE-VALIDATE before continuing — never push a stale local
     # release commit unchecked. Make the re-validated quality gate fail and assert

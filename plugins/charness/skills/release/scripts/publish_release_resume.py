@@ -23,6 +23,26 @@ def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
     return cli.run(["git", *args], cwd=repo_root).stdout.strip()
 
 
+def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str) -> None:
+    # B1 (#312): the resume refresh of charness-artifacts/release/latest.md (and
+    # any retro-trigger artifact) must be committed BEFORE the push, mirroring the
+    # normal flow's release commit. Otherwise charness-artifacts/ is dirty at push
+    # time and .githooks/pre-push's `git diff --quiet -- charness-artifacts` blocks
+    # with a false "mutated during a read-only quality run" attribution. Guarded on
+    # a real change (modified or new files) so an unchanged refresh stays
+    # idempotent ("nothing to commit").
+    status = cli.run(
+        ["git", "status", "--porcelain", "--", "charness-artifacts"], cwd=repo_root
+    ).stdout.strip()
+    if not status:
+        return
+    cli.run(["git", "add", "--", "charness-artifacts"], cwd=repo_root)
+    cli.run(
+        ["git", "commit", "-m", f"chore(release): commit {tag_name} artifact before resume push"],
+        cwd=repo_root,
+    )
+
+
 def resumable_state(
     repo_root: Path,
     *,
@@ -103,11 +123,23 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     host_payload = cli.safe_real_host_payload(
         repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload
     )
+    # B1 (#312): build the EXECUTED retro-trigger evaluation (written /
+    # final_release_paths), mirroring the normal flow, so the resumed artifact
+    # does not regress to the plan's dry-run (would_write / release_content_paths)
+    # payload. This also persists the retro artifact before it is committed below.
+    payload["retro_trigger_evaluation"] = cli.build_retro_trigger_evaluation(
+        repo_root, plan["release_content_paths"],
+        evaluated_at="final_release_paths", tag_name=tag_name, execute=True,
+    )
     artifact_relpath = cli.write_current_artifact(
         repo_root, adapter_data, payload, host_payload,
         fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
     )
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
+
+    # B1 (#312): commit the refreshed artifact before pushing so the pre-push gate
+    # does not block on a dirty charness-artifacts/ left by the resume refresh.
+    _commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
 
     if not state["tag_remote"]:
         cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
