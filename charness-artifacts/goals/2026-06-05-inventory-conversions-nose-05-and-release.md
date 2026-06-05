@@ -9,12 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (shaped, inert until `/goal`).
-- Next action: activate next session with the `Activation:` command above.
+- Current slice: Slice 2 — convert the 5 import-safe `inventory_*` boundary-bypass
+  tests to in-process (Slice 1 nose 0.5 DONE: gate green, fresh-eye SHIP).
+- Next action: convert `inventory_adapter_gate_design` first, regen boundary
+  baseline, then the remaining four; ratchet green per conversion.
 - Timebox: 3h
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement
-- Activation time: (set at `/goal` activation).
+- Activation time: 2026-06-05 (active).
+- Routing: Slice 1 nose work routed via `find-skills` local-first inventory →
+  `achieve` operator + `quality` (clone-family inventory surface) + bounded
+  fresh-eye `critique` subagent. Slice 3 release → `release`/`announcement`.
 - Discuss before activation: RESOLVED with the user on 2026-06-05. (a) Release
   PUSH is in scope — the release slice pushes to `origin` (outward-facing,
   irreversible); user chose "version bump + push" over no-push and version-only.
@@ -158,6 +163,20 @@ during the run:
 ## Slice Log
 
 _Empty until `/goal` activation._
+
+### Slice 1: Slice 1 — nose 0.5 integration
+
+- Objective: Bump nose version expectation to prefer 0.5, adapt the quality clone-family inventory to nose 0.5 (mode-replace + new JSON object schema), and refresh the nose-baseline from a live 0.5 scan.
+- Why this approach: nose 0.5's --format json changed from a top-level array (0.4) to a top-level object with a families key + tool_version. The inventory read the object as a list and silently reported 0 families. Parse both shapes (backward-compatible), thread tool_version, keep the inventory advisory.
+- Commits: feat(quality): adapt nose clone inventory to nose 0.5 + refresh baseline (this slice)
+- What changed: skills/public/quality/scripts/inventory_nose_clones.py (+ plugin mirror): new _extract_families helper handles 0.5 object and 0.4 array; tool_version threaded into payload + human label; DEFAULT_MODE comment documents 0.5 mode-replace (syntax,semantic,near is a superset of the 0.5 default). integrations/tools/nose.json (+ mirror): version_expectation constraint 0.4.0 -> 0.5.0. charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring-nose-baseline.json: refreshed from live 0.5 scan (raw output, tool_version 0.5.0, 236 families vs prior 230). tests/quality_gates/test_quality_nose_advisory.py: added test_nose_advisory_parses_v05_object_schema; kept the 0.4-array test.
+- Alternatives rejected: Slicing baseline to just .families (a hand-edit/transform of canonical output) — rejected for raw canonical 0.5 output that self-certifies tool_version. Promoting nose findings to a hard gate — explicitly out of scope (scope B).
+- Targeted verification: 3 focused tests pass (missing/0.4-array/0.5-object); py_compile + ruff clean; ./scripts/run-quality.sh --read-only = 71 passed / 0 failed; live inventory prints 'nose clone advisory (nose 0.5.0): findings; 20 families'; plugin mirror byte-identical to canonical.
+- Test duplication pressure: Added one 0.5-schema regression test mirroring the existing 0.4 test shape; no broad new duplication — the two tests intentionally share structure to contrast the two nose JSON schemas.
+- Critique: Bounded fresh-eye subagent review (general-purpose): SHIP, no blockers. 14-shape adversarial sweep of _extract_families confirmed it never raises and always degrades to advisory; mirror byte-identical; baseline has no code consumer (array->object shape change safe); family count rose 230->236 (not masked). One cosmetic non-blocker (timeout path missing tool_version) applied.
+- Off-goal findings:
+- Lessons carried forward: nose 0.5 mode-replace semantics: list every wanted channel explicitly. Tool JSON schema changes are a silent under-report risk for parsers expecting the old top-level shape; a regression test on the exact new schema is the durable guard.
+- Metrics:
 
 ## Context Sources
 

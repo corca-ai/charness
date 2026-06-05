@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
+# nose 0.5 makes --mode REPLACE the default channels (syntax,semantic) rather
+# than add to them, so every channel we want must be listed explicitly.
+# syntax+semantic+near is a superset of the 0.5 default, so this requests
+# strictly more coverage, never less — no silent channel drop under 0.5.
 DEFAULT_MODE = "syntax,semantic,near"
 NOSE_TIMEOUT_SECONDS = 180
 
@@ -114,9 +118,10 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
             "stdout": str(exc.stdout or ""),
             "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s",
             "families": [],
+            "tool_version": "",
         }
     try:
-        families = json.loads(completed.stdout) if completed.stdout.strip() else []
+        parsed = json.loads(completed.stdout) if completed.stdout.strip() else []
     except json.JSONDecodeError as exc:
         return {
             "status": "error",
@@ -124,7 +129,9 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
             "stdout": completed.stdout,
             "stderr": f"nose emitted invalid JSON: {exc}; stderr: {completed.stderr.strip()}",
             "families": [],
+            "tool_version": "",
         }
+    families, tool_version = _extract_families(parsed)
     status = "findings" if families else "clean"
     if completed.returncode != 0:
         status = "error"
@@ -133,8 +140,30 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
         "exit_code": completed.returncode,
         "stdout": "",
         "stderr": completed.stderr.strip(),
-        "families": families if isinstance(families, list) else [],
+        "families": families,
+        "tool_version": tool_version,
     }
+
+
+def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
+    """Return (families, tool_version) across nose 0.4 and 0.5 JSON shapes.
+
+    nose 0.5 emits a top-level object ({"families": [...], "tool_version": ...});
+    nose 0.4 emitted a bare top-level array. Reading the 0.5 object as a list
+    silently yielded zero families, under-reporting the live scan.
+    """
+    if isinstance(parsed, dict):
+        families = parsed.get("families")
+        tool_version = str(parsed.get("tool_version") or "")
+    elif isinstance(parsed, list):
+        families = parsed
+        tool_version = ""
+    else:
+        families = []
+        tool_version = ""
+    if not isinstance(families, list):
+        families = []
+    return [family for family in families if isinstance(family, dict)], tool_version
 
 
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
@@ -147,6 +176,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "advisory": True,
             "repo_root": str(repo_root),
             "paths": roots,
+            "tool_version": "",
             "family_count": 0,
             "families": [],
             "notes": [
@@ -173,6 +203,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "paths": roots,
         "command": " ".join(command),
         "exit_code": result["exit_code"],
+        "tool_version": result.get("tool_version", ""),
         "family_count": len(families),
         "total_dup_lines": sum(int(family.get("dup_lines") or 0) for family in families if isinstance(family, dict)),
         "families": [_family_summary(family) for family in families if isinstance(family, dict)],
@@ -192,8 +223,9 @@ def print_human(payload: dict[str, Any]) -> None:
     if status == "error":
         print(f"ADVISORY: nose inventory error; review manually. {payload.get('stderr', '')}")
         return
+    version_label = payload.get("tool_version") or "unknown"
     print(
-        f"nose clone advisory: {status}; {payload['family_count']} families, "
+        f"nose clone advisory (nose {version_label}): {status}; {payload['family_count']} families, "
         f"{payload['total_dup_lines']} duplicated lines in reported families."
     )
     for index, family in enumerate(payload["families"][:5], start=1):
