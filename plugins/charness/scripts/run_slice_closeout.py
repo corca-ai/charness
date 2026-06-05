@@ -29,13 +29,15 @@ _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browse
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 _slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
 emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
+_slice_closeout_command_executor = import_repo_module(__file__, "scripts.slice_closeout_command_executor")
+execute_command_plan = _slice_closeout_command_executor.execute_command_plan
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
 run_predict_commit = _staged_commit_gate_plan.run_predict_commit
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
-format_broad_pytest_policy_lines = _slice_closeout_broad_gate.format_broad_pytest_policy_lines
+print_broad_pytest_policy = _slice_closeout_broad_gate.print_broad_pytest_policy
 should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad_pytest_policy
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
@@ -120,6 +122,7 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
         "returncode": result.returncode,
         "stdout": result.stdout,
         "stderr": result.stderr,
+        "elapsed_seconds": round(elapsed, 2),
     }
 
 
@@ -259,19 +262,6 @@ def _print_usage_episode(payload: dict[str, object]) -> None:
         print(f"- error: {usage_episode['error']}")
 
 
-def _print_broad_pytest_policy(payload: dict[str, object]) -> None:
-    for line in format_broad_pytest_policy_lines(payload):
-        print(line)
-    skipped = payload.get("skipped_broad_pytest_commands")
-    if isinstance(skipped, list) and skipped:
-        print("Skipped broad pytest commands:")
-        for item in skipped:
-            if isinstance(item, dict) and item.get("command"):
-                print(f"- {item['command']}")
-    if payload.get("verification_lock_required"):
-        print("Verification lock required before broad pytest.")
-
-
 def print_text(payload: dict[str, object]) -> None:
     print(f"Closeout status: {payload['status']}")
     _print_list("Changed paths", payload["changed_paths"])
@@ -291,7 +281,7 @@ def print_text(payload: dict[str, object]) -> None:
         _print_risk_interrupt_plan(risk_interrupt_plan)
 
     _print_headroom(payload)
-    _print_broad_pytest_policy(payload)
+    print_broad_pytest_policy(payload)
     _print_executed_commands(payload)
     _print_usage_episode(payload)
 
@@ -375,6 +365,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-verify", action="store_true")
     parser.add_argument("--skip-broad-pytest", action="store_true", help="Run deterministic checks but skip broad pytest for pre-lock rehearsal.")
     parser.add_argument("--verification-lock", action="store_true", help="Acknowledge that the mutation set is locked before broad pytest runs.")
+    parser.add_argument(
+        "--refresh-broad-pytest-proof",
+        action="store_true",
+        help="Rerun broad pytest even when a cached verification-lock proof exists or was invalidated.",
+    )
     parser.add_argument(
         "--ack-cautilus-skill-review",
         action="store_true",
@@ -471,12 +466,16 @@ def main() -> int:
         payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
         return _emit_payload(payload, as_json=args.json)
 
-    for phase, command in command_plan:
-        result = run_command(repo_root, command, phase)
-        payload["executed_commands"].append(result)
-        if result["returncode"] != 0:
-            payload["status"] = "failed"
-            return _emit_payload(payload, as_json=args.json)
+    should_stop = execute_command_plan(
+        repo_root,
+        command_plan,
+        payload,
+        run_command=run_command,
+        collect_changed_paths=collect_changed_paths,
+        refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
+    )
+    if should_stop:
+        return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
 
     payload["status"] = "completed"
     usage_episode = emit_usage_episode_for_slice_closeout(repo_root, str(payload["status"]))

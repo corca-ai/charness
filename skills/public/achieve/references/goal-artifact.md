@@ -148,7 +148,10 @@ before the closeout reserve begins, completion is blocked unless the artifact
 records `No safe next slice:`, `Early close rationale:`, or a supported
 `Stop condition:` with a concrete reason under `## Final Verification`. These
 lines are plain markdown so a fresh session can continue the clock without host
-memory.
+memory. When an early-close reason is recorded, `## Final Verification` must
+also include `Early close report: <path>` pointing at a checked-in report that
+explains why the run stopped early, what decisions require the user, and what
+waste/retro findings should shape the next run.
 
 When changing the goal artifact shape, update every goal producer that emits a
 new artifact, not only the primary `achieve` template. The current producer

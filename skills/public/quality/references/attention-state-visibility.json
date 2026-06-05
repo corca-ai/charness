@@ -165,10 +165,10 @@
       "rationale": "When no TOML parser (tomllib/tomli) is available the runner cannot read module-path, so the defensive restore is disabled and degrades to a no-op while the mutation run itself proceeds unaffected. A runtime no-op, not a quality/release closeout signal; the message is written to stdout so the disabled safety net is visible rather than silent."
     },
     "scripts/run_slice_closeout.py": {
-      "states": ["disabled", "skipped"],
-      "visibility": ["explicit_skip_summary", "terminal_payload"],
-      "evidence_terms": ["cautilus_plan", "Skipped broad pytest commands", "verification_lock_required"],
-      "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions and prints an explicit skipped broad-pytest summary in pre-lock rehearsal mode."
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["cautilus_plan"],
+      "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions; broad-pytest skip and lock states live in slice_closeout_broad_gate.py."
     },
     "scripts/slice_closeout_broad_gate.py": {
       "states": ["skipped"],
@@ -409,6 +409,12 @@
       "visibility": ["artifact_visible"],
       "evidence_terms": ["skipped"],
       "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
+    },
+    "skills/public/achieve/scripts/goal_artifact_early_close_report.py": {
+      "states": ["skipped"],
+      "visibility": ["artifact_visible", "hard_failure_or_blocker"],
+      "evidence_terms": ["early-close reports cannot be skipped"],
+      "rationale": "Early-close report evidence is required when the goal records an early-close reason; a skipped report line is converted into an invalid skip so the complete gate blocks instead of silently accepting missing user-facing rationale."
     },
     "skills/public/achieve/scripts/goal_artifact_discussion.py": {
       "states": ["skipped"],

@@ -171,7 +171,11 @@ first slice finishes early. A timebox goal may still stop early when continuing
 would be unsafe or needs a user decision, but that is evidence, not vibes:
 record `No safe next slice: <reason>`, `Early close rationale: <reason>`, or a
 specific `Stop condition:` line under `## Final Verification` with enough detail
-for a fresh reviewer to falsify it.
+for a fresh reviewer to falsify it. The same closeout must also bind an
+`Early close report: <path>` artifact that transports the user-facing rationale:
+why the run ended early, which items require the user's decision, and what waste
+or retro findings should change the next run. The report is required even when
+the early stop is correct; correctness does not remove the communication duty.
 
 ## During
 
@@ -315,6 +319,11 @@ At completion the goal artifact should contain:
   artifacts unless they are required by the carrier itself; do not force a
   second docs-only issue-closeout push for them.
 - an automatic retro focused on reducing time, tokens, and waste next time
+- for timeboxed goals that stop before the reserve window, a user-facing early
+  close report with three explicit sections: why early closeout was chosen, what
+  decisions now need the user, and what waste/retro findings explain the gap.
+  A final message that only says "No safe next slice" is incomplete because the
+  user still needs the decision and waste context.
 - the resolved `achieve` adapter policy for closeout publication and Auto-Retro
   disposition. Missing adapters default to `audit-only`; found invalid adapters
   block completion. The adapter, not host-loaded memory, owns whether the normal
@@ -355,7 +364,9 @@ For timebox mode, `upsert_goal.py --status complete` and
 valid `No safe next slice:`, `Early close rationale:`, or supported
 `Stop condition:` line under `## Final Verification`. This catches the failure
 mode where the agent declares the macro target done early and ignores the user's
-time budget.
+time budget. When such an early-close reason is recorded, the After-phase
+evidence gate also requires `Early close report: <path>` so the closeout cannot
+pass without a report for the user.
 
 Mutable `HEAD` claims are live-state claims, not durable proof by themselves.
 When a goal artifact says `current HEAD`, `HEAD is`, or equivalent and also
@@ -493,6 +504,12 @@ whole body):
   cannot spawn the reviewer (graceful degradation to rung 1 only). A
   `host-blocked-subagent` skip on a host that demonstrably *can* spawn is itself
   an audit-flag for the human reader, not a clean pass.
+- `Early close report: <path>` — when `## Final Verification` records
+  `No safe next slice:` or `Early close rationale:`. This is a checked-in,
+  goal-bound report for the user containing the early-stop rationale,
+  user-decision-needed items, and waste/retro findings. No skip form is
+  supported; if the agent can record an early-close reason, it can write the
+  report.
 
 The `## Auto-Retro` blank check (rung 1a) and the `Disposition review:`
 requirement (rung 1b) fire only for goals **`Created:` on or after the rule

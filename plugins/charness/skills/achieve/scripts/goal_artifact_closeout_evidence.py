@@ -61,7 +61,7 @@ NARRATION_REQUIRED_SECTIONS = (
 # refused. ``_normalize_evidence_name`` maps the captured label to
 # ``disposition_review`` automatically.
 _EVIDENCE_LINE = re.compile(
-    r"^[ \t>]*(Retro|Host[- ]log[- ]probe|Disposition[- ]review)\s*:\s*(.+?)\s*$",
+    r"^[ \t>]*(Retro|Host[- ]log[- ]probe|Disposition[- ]review|Early[- ]close[- ]report)\s*:\s*(.+?)\s*$",
     re.MULTILINE | re.IGNORECASE,
 )
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
@@ -143,6 +143,8 @@ def _normalize_evidence_name(label: str) -> str:
         return "retro_artifact"
     if re.fullmatch(r"host[- ]log[- ]probe", label):
         return "host_log_probe"
+    if _early_close_report.is_report_label(label):
+        return EARLY_CLOSE_REPORT_EVIDENCE
     return label.replace(" ", "_").replace("-", "_")
 
 
@@ -196,6 +198,19 @@ def _load_sibling_disposition():
     )
     if spec is None or spec.loader is None:
         raise ImportError("goal_artifact_disposition.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_sibling_early_close_report():
+    """Load the sibling early-close report floor module."""
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_early_close_report",
+        Path(__file__).resolve().parent / "goal_artifact_early_close_report.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_early_close_report.py not found beside goal_artifact_closeout_evidence.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -264,6 +279,9 @@ def _load_sibling_adapter_policy():
 _disposition = _load_sibling_disposition()
 disposition_gate_applies = _disposition.disposition_gate_applies
 apply_disposition_rungs = _disposition.apply_disposition_rungs
+
+_early_close_report = _load_sibling_early_close_report()
+EARLY_CLOSE_REPORT_EVIDENCE = _early_close_report.EARLY_CLOSE_REPORT_EVIDENCE
 
 _coordination = _load_sibling_coordination_floors()
 apply_coordination_floors = _coordination.apply_coordination_floors
@@ -340,6 +358,8 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     required = list(CLOSEOUT_EVIDENCE_NAMES)
     if in_scope:
         required.append(DISPOSITION_REVIEW_EVIDENCE)
+    if _early_close_report.report_required(text):
+        required.append(EARLY_CLOSE_REPORT_EVIDENCE)
     evidence: dict[str, str] = {}
     skips: dict[str, str] = {}
     for name, payload in parsed.items():
@@ -354,6 +374,8 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
         skips=skips,
         kind="achieve-after",
     )
+    _early_close_report.reject_skip(report)
+    _early_close_report.apply_report_shape(report)
 
     # F1 binding: a present file is necessary but not sufficient — each
     # satisfied evidence file must also bind to this goal's identity, else a

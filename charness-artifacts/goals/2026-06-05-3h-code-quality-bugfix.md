@@ -533,6 +533,7 @@ Host metric window: started_at=2026-06-05T07:41:49+09:00 completed_at=2026-06-05
 Retro: charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md
 Host log probe: charness-artifacts/probe/2026-06-05-3h-code-quality-bugfix-host-log-probe.json
 Disposition review: charness-artifacts/critique/2026-06-05-3h-code-quality-bugfix-disposition-review.md
+Early close report: charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix-early-close-report.md
 - Non-claims: no push was performed; #299 is not claimed closed on GitHub; no
   release, installed-host, provider, external-source, or live behavior proof was
   performed; the host metric token snapshots are point-in-time snapshots, not a

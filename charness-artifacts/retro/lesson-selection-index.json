@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 126,
-  "candidate_count": 780,
+  "source_artifact_count": 127,
+  "candidate_count": 784,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -89,6 +89,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:0604ad5e7ae4",
+      "kind": "current_focus",
+      "lesson": "The user correctly pointed out that the completed 2026-06-05 three-hour code-quality goal ended early without delivering the report they needed: why it ended early, which decisions required the user, and what waste was identified.",
+      "normalized_key": "the user correctly pointed out that the completed 2026 06 05 three hour code",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -175,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:265c20de26ae",
+      "kind": "next_improvement",
+      "lesson": "Workflow: for every timeboxed early closeout, include a bound report artifact before status completion so the user receives stop rationale, decisions needed, and waste retro without asking.",
+      "normalized_key": "workflow for every timeboxed early closeout include a bound report artifact before status completion",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6c98974530f4",
       "kind": "next_improvement",
       "lesson": "Workflow: for long test modules with shared fake repo setup, extract reusable fixtures before moving or adding more tests.",
@@ -219,46 +259,6 @@
       "kind": "repeat_trap",
       "lesson": "A sync command was accidentally run while the release-inclusive quality wrapper was still reading generated plugin paths. That created a transient `check_current_pointer_writes` FileNotFound. The gate passed on a stable post-sync rerun, but the overlap was avoidable.",
       "normalized_key": "a sync command was accidentally run while the release inclusive quality wrapper was still",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
-          "date": "2026-06-05",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:e62cb6a3cca8",
-      "kind": "repeat_trap",
-      "lesson": "Broad pytest took 170.70s in closeout, much slower than the latest runtime summary. It was justified as final proof after marker changes, but it should not be repeated inside pre-lock slices.",
-      "normalized_key": "broad pytest took 170 70s in closeout much slower than the latest runtime summary",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-          "date": "2026-06-05",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:eaec30af839e",
-      "kind": "repeat_trap",
-      "lesson": "Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn.",
-      "normalized_key": "several slice log updates needed small repairs after verification changed the exact proof set",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
       "latest_source_date": "2026-06-05",
@@ -357,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0604ad5e7ae4",
+      "kind": "current_focus",
+      "lesson": "The user correctly pointed out that the completed 2026-06-05 three-hour code-quality goal ended early without delivering the report they needed: why it ended early, which decisions required the user, and what waste was identified.",
+      "normalized_key": "the user correctly pointed out that the completed 2026 06 05 three hour code",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3cf4ebd4f07b",
       "kind": "current_focus",
       "lesson": "This retro reviews the active achieve goal `2026-06-05-3h-code-quality-bugfix`: a three-hour code-quality, bug-fix, and skill-health run.",
@@ -431,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:265c20de26ae",
+      "kind": "next_improvement",
+      "lesson": "Workflow: for every timeboxed early closeout, include a bound report artifact before status completion so the user receives stop rationale, decisions needed, and waste retro without asking.",
+      "normalized_key": "workflow for every timeboxed early closeout include a bound report artifact before status completion",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -537,6 +577,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:c817e1b8a43a",
+      "kind": "repeat_trap",
+      "lesson": "The closeout message forced the user to ask a follow-up to get information that should have been included by default.",
+      "normalized_key": "the closeout message forced the user to ask a follow up to get information",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:31d9103f9245",
       "kind": "repeat_trap",
       "lesson": "The first high-value cut was not a nose refactor; the useful work came from standing-test economics. Running nose early was still useful for rejecting clone-count chasing, but the goal should bias toward measured pytest/runtime targets first.",
@@ -571,6 +631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c63977682618",
+      "kind": "repeat_trap",
+      "lesson": "The prior closeout treated the stop condition as sufficient because the local validator accepted `No safe next slice:`. It missed the user's operational need for a compact decision-and-waste report.",
+      "normalized_key": "the prior closeout treated the stop condition as sufficient because the local validator accepted",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md",
           "date": "2026-06-05",
           "section": "Waste"
         }

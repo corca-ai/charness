@@ -13,8 +13,11 @@ the root instruction file but still apply to Charness maintenance work.
   set is locked and rerun with `--verification-lock`; a broad closeout without
   either flag must refuse before launching broad pytest. The runner prints a
   broad-pytest policy mode and recommendation when broad pytest is selected or
-  skipped; record the focused current-diff proof for pre-lock slices rather than
-  treating the skipped broad run as final evidence.
+  skipped. Under `--verification-lock`, broad pytest proof is cached by mutation
+  fingerprint under `.charness/closeout/`; the same locked diff reuses the cached
+  proof, while a changed fingerprint blocks until the operator reruns with
+  `--refresh-broad-pytest-proof`. Record focused current-diff proof for pre-lock
+  slices rather than treating the skipped broad run as final evidence.
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.

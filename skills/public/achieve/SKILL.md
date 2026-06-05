@@ -81,8 +81,7 @@ lifecycle instead of starting a new one.
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
-   - on an unresolvable blocker or `No safe next slice:` closeout, flip status
-     or record the reason with attempted paths, and ask the user when needed
+   - on blocker or `No safe next slice:` closeout, record reason and report artifacts
 3. After — prove and reflect.
    - run the final quality gate or documented substitute; if a broad
      duplicate/pressure gate fails, classify new-slice-local versus accumulated
@@ -90,6 +89,7 @@ lifecycle instead of starting a new one.
    - record high-confidence / live proof, or state explicitly that it was not run
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
+   - if a timeboxed goal stops early, write the report required by `references/lifecycle.md`
    - run `retro` for the automatic efficiency review
    - for a long goal with host timing data, record the goal window with
      `record_metric_window.py` so the probe is goal-scoped, then render the

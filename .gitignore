@@ -15,6 +15,7 @@ plugins/charness/support/gather-slack/.cache/
 .charness/quality/history/runtime-signals-*.jsonl
 .charness/bootstrap-python/
 .charness/retro/
+.charness/closeout/
 .charness/tasks/
 .charness/hitl/runtime/
 .charness/t-events/

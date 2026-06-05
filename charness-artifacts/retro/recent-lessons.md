@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Closed the active 2026-06-05 quality/test-economics goal after the v0.18.0 release. (source: `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`)
-- This retro reviews the active achieve goal `2026-06-05-3h-code-quality-bugfix`: a three-hour code-quality, bug-fix, and skill-health run. (source: `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`)
+- The user correctly pointed out that the completed 2026-06-05 three-hour code-quality goal ended early without delivering the report they needed: why it ended early, which decisions required the user, and what waste was identified. (source: `charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md`)
 
 ## Repeat Traps
 
@@ -32,3 +32,4 @@
 - `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
 - `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`
+- `charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md`
