@@ -334,21 +334,25 @@ def test_setup_inspect_accepts_dedicated_subagent_delegation_section(tmp_path: P
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
+_COMPACT_PRE_303_BLOCK = (
+    "- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation request. "
+    "Canonical scopes: task-completing `setup`, `quality`, `critique`, `release`, and GitHub "
+    "`issue` resolution/closeout review runs. Report a host block explicitly; same-agent "
+    "substitutes are forbidden."
+)
+_COMPACT_ADAPTER_FIRST_RULE = (
+    "- When a skill or repo adapter owns a subagent review, follow that adapter's reviewer tier "
+    "and concrete spawn fields instead of inheriting the parent turn's host defaults."
+)
+
+
+def _compact_agents(*bullets: str) -> str:
+    return "\n".join(["# Agents", "", "## Subagent Delegation", "", *bullets, ""])
+
+
 def test_setup_inspect_accepts_compact_subagent_delegation_section(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _seed_normalize_repo(
-        repo,
-        "\n".join(
-            [
-                "# Agents",
-                "",
-                "## Subagent Delegation",
-                "",
-                "- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation request. Canonical scopes: task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs. Report a host block explicitly; same-agent substitutes are forbidden.",
-                "",
-            ]
-        ),
-    )
+    _seed_normalize_repo(repo, _compact_agents(_COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE))
 
     payload = _run_inspect(repo)
 
@@ -361,6 +365,49 @@ def test_setup_inspect_accepts_compact_subagent_delegation_section(tmp_path: Pat
     assert fresh_eye["missing_task_review_scopes"] == []
     assert "fresh_eye_delegation_rule_drift" not in finding_types
     assert "fresh_eye_task_review_scope_drift" not in finding_types
+
+
+def test_setup_inspect_flags_compact_delegation_missing_adapter_first_reviewer_rule(tmp_path: Path) -> None:
+    # #311: an existing compact AGENTS.md written before the #303 adapter-first
+    # reviewer rule landed carries every PRE-303 required snippet (standing
+    # delegation request, canonical scopes, host block, same-agent forbidden) but
+    # lacks the adapter reviewer-tier language. The inspector must flag it STALE
+    # (never rewrite the body) so the operator is told to backfill the rule. The
+    # `_COMPACT_PRE_303_BLOCK` isolates the missing adapter-first rule as the sole
+    # difference from the accepted block below.
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, _compact_agents(_COMPACT_PRE_303_BLOCK))
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["has_subagent_delegation_section"] is True
+    # The pre-303 compact block is no longer accepted as a complete contract: the
+    # missing adapter reviewer-tier rule fails the compact-contract check, which is
+    # what surfaces the staleness drift finding.
+    assert fresh_eye["compact_contract_present"] is False
+    assert "fresh_eye_delegation_rule_drift" in finding_types
+    recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
+    assert recommendation_priorities["fresh_eye_delegation_rule_drift"] == "review_required"
+
+
+def test_setup_inspect_accepts_compact_delegation_with_adapter_first_reviewer_rule(tmp_path: Path) -> None:
+    # #311 companion: the SAME compact block, with only the adapter-first reviewer
+    # rule added, must NOT falsely flag. This pins that the staleness gate keys on
+    # the adapter rule specifically and does not regress an up-to-date body.
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, _compact_agents(_COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE))
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    fresh_eye = normalization["fresh_eye_review"]
+    assert fresh_eye["compact_contract_present"] is True
+    assert fresh_eye["missing_required_snippets"] == []
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
 
 
 def test_setup_inspect_accepts_generated_compact_subagent_delegation_block(tmp_path: Path) -> None:
@@ -434,20 +481,13 @@ def test_generated_agents_carries_adapter_first_reviewer_rule(tmp_path: Path) ->
 
 
 def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substitute(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_normalize_repo(
-        repo,
-        "\n".join(
-            [
-                "# Agents",
-                "",
-                "## Subagent Delegation",
-                "",
-                "- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation request. Canonical scopes: task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs. Report a host block explicitly; same-agent substitutes are allowed.",
-                "",
-            ]
-        ),
+    # Same-agent ALLOWED block carries the adapter-first rule, so the only failing
+    # condition is the same-agent-forbidden check (not the #311 adapter snippet).
+    allows_same_agent = _COMPACT_PRE_303_BLOCK.replace(
+        "same-agent substitutes are forbidden.", "same-agent substitutes are allowed."
     )
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, _compact_agents(allows_same_agent, _COMPACT_ADAPTER_FIRST_RULE))
 
     payload = _run_inspect(repo)
 

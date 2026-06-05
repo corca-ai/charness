@@ -16,6 +16,10 @@ FRESH_EYE_COMPACT_REQUIRED_SNIPPETS = (
     "standing delegation request",
     "canonical scopes",
     "host block",
+    # Adapter-first subagent-reviewer rule: an existing compact AGENTS.md written
+    # before this rule landed lacks the adapter reviewer-tier language, so the
+    # inspector flags it as stale rather than silently accepting the older body.
+    "reviewer tier and concrete spawn fields",
 )
 FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS = (
     "same-agent substitutes are forbidden",
