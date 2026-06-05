@@ -3,40 +3,45 @@ Date: 2026-06-05
 
 ## Scope
 
-Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.22.0` (tag `v0.22.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.20.0`
-- target version: `0.21.0`
+- previous version: `0.21.0`
+- target version: `0.22.0`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish (the release helper's own gate ran green; the subsequent pre-push gate flaked once on the known usage-episodes test-isolation race #194, then passed clean — the failing test passes in isolation, gitignored live tree only).
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- release push carried the release branch update and tag to `origin`.
-- `gh release view v0.21.0` confirms the published GitHub release (`draft: false`, `prerelease: false`).
+- initial release push carried the release branch update and tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: complete (`origin/main` at the release commit; tag `v0.21.0` pushed)
-- GitHub release record: created and verified — `https://github.com/corca-ai/charness/releases/tag/v0.21.0`
-- public release surface verification: verified via `gh release view v0.21.0`
+- branch/tag push: complete
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.22.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
-- finalize note: the publish helper aborted at its pre-push gate on the #194 flake, so the branch/tag push, GitHub release creation, and this verified record were completed directly; the local release commit + tag the helper prepared were reused unchanged.
 
 ## Public Release Verification
 
-- GitHub release publication: verified — published at `https://github.com/corca-ai/charness/releases/tag/v0.21.0`.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
-- Release adapter focused preflight status: `not_required`.
-- Reason: release adapter did not change in the release delta
-- Focused preflight commands: none executed.
+- Release adapter focused preflight status: `required`.
+- Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
+- Previous release ref: `refs/tags/v0.21.0`
+- Adapter paths in release delta:
+  - `.agents/release-adapter.yaml`
+- Changed adapter fields:
+  - `update_instructions`
+- Focused preflight commands:
+  - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
+  - `pytest tests/quality_gates/test_release_narrative_audit.py -q`
 
 ## Retro Trigger Evaluation
 
@@ -45,34 +50,41 @@ Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-21-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-22-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 0.
-- Evaluated changed paths: 76.
+- Path hits: 7.
+  - `skills/public/release/scripts/publish_release_cli.py`
+  - `skills/public/release/scripts/publish_release_plan.py`
+  - `skills/public/release/scripts/publish_release_preflight.py`
+  - `skills/public/release/scripts/publish_release_resume.py`
+  - `skills/public/release/scripts/publish_release_retro.py`
+  - `skills/support/web-fetch/scripts/acquire_public_url.py`
+  - `skills/support/web-fetch/scripts/agent_browser_session.py`
+- Evaluated changed paths: 60.
+  - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/announcement/latest.md`
-  - `charness-artifacts/critique/2026-06-05-disposition-review-quality-scaffold-and-testability-followups.md`
-  - `charness-artifacts/critique/2026-06-05-v0-21-0-release.md`
-  - `charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring-nose-baseline.json`
+  - `charness-artifacts/critique/2026-06-05-111217-packet.json`
+  - `charness-artifacts/critique/2026-06-05-111217-packet.md`
+  - `charness-artifacts/critique/2026-06-05-302-305-gather-setup-release-robustness-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-05-disposition-review-inventory-conversions-nose-05-and-release.md`
+  - `charness-artifacts/critique/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md`
+  - `charness-artifacts/critique/2026-06-05-issue-303-adapter-first-reviewer-rule.md`
+  - `charness-artifacts/critique/2026-06-05-issue-304-template-inspector-agreement.md`
+  - `charness-artifacts/critique/2026-06-05-issue-305-release-publish-resilience.md`
+  - `charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md`
+  - `charness-artifacts/debug/2026-06-05-issue-302-gather-browser-close-and-clean-runtime.md`
+  - `charness-artifacts/debug/2026-06-05-issue-304-template-inspector-wrap.md`
+  - `charness-artifacts/debug/2026-06-05-issue-305-release-publish-resilience.md`
+  - `charness-artifacts/debug/seam-risk-index.json`
+  - `charness-artifacts/goals/2026-06-05-302-305-gather-setup-release-robustness.md`
+  - `charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release-early-close-report.md`
   - `charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release.md`
-  - `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`
-  - `charness-artifacts/goals/2026-06-05-quality-scaffold-early-close-report.md`
-  - `charness-artifacts/quality/history/2026-06-03-quality-review.md`
-  - `charness-artifacts/quality/latest.md`
-  - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/testability-dsl-initiative.md`
-  - `integrations/tools/nose.json`
-  - `packaging/charness.json`
-  - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/integrations/tools/nose.json`
-  - ... 56 more
+  - `charness-artifacts/issue/2026-06-05-followup-premortem-before-authoring-constrained-surfaces.md`
+  - `charness-artifacts/issue/2026-06-05-followup-repo-copy-invariant-timing.md`
+  - ... 40 more
 
 ## Real-Host Verification
 
@@ -91,7 +103,7 @@ Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-05-v0-21-0-release.md`.
+- Review proof: `charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -106,18 +118,20 @@ Advanced `charness` toward release `0.21.0` (tag `v0.21.0`) through the repo-own
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.21.0 (minor release: nose 0.5 clone-advisory adaptation, five more in-process `inventory_*` quality-gate conversions, and the boundary-bypass testability ratchet + quality-artifact scaffold).
+- Run `charness update` to pull 0.22.0 (minor release: gather/setup/release robustness fixes for #302-#305 plus one additive `setup` operator surface).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
-- NEW NOSE 0.5 SUPPORT - the `quality` clone-family advisory now runs under nose 0.5: it parses the 0.5 JSON object schema (it was silently reading the new schema as zero families) and reports the live nose version. `integrations/tools/nose.json` now prefers nose 0.5.0+. nose stays advisory; the gate still passes without it. Install/upgrade to nose 0.5 via the upstream installer or `brew install corca-ai/tap/nose`.
-- TESTABILITY CONVERSIONS - five more `inventory_*` quality-gate tests run their entrypoint in-process instead of spawning a subprocess, so coverage/type/mutation tooling can see across the old boundary. The repo-local boundary-bypass ratchet dropped 94 -> 90 candidate files (55 -> 51 convertible). Two inventory scripts (`inventory_public_spec_quality`, `inventory_cli_side_effect_probes`) gained the sibling-library import bootstrap so they are genuinely in-process importable.
+- NEW SETUP REVIEWER RULE (#303) - `setup` now generates an adapter-first subagent reviewer rule into a greenfield AGENTS.md: bounded reviewers follow the owning skill/adapter's reviewer tier and concrete spawn fields instead of inheriting the parent turn's host defaults. NOTE - an AGENTS.md that already exists is left untouched (the block is greenfield-only); existing repos that want the rule should add it by hand for now.
+- SETUP DELEGATION FIX (#304) - the compact subagent-delegation block now agrees with the setup inspector across line wraps, so the host-doc generator no longer emits a delegation block its own inspector rejects.
+- GATHER RUNTIME HYGIENE (#302) - `gather`/web-fetch agent-browser sessions are guaranteed to close, and a fail-visible clean-runtime proof reports residue; the runtime guard now also counts reparented-PPID and zombie (`<defunct>`) residue, not just the orphan daemon tree. Pure reparented/zombie residue is the container init's job to reap; `--cleanup-orphans` only clears the orphan daemon tree.
+- RELEASE PUBLISH RESILIENCE (#305) - `publish_release.py` is now resumable (`--resume` re-validates and re-pushes a partial publish), bootstraps safely from the installed plugin cache, and unconditionally blocks publish when adapter `update_instructions` still describe the previous version but not the target (this very note is what that guard checks).
+- Carried-forward (0.21.0) - the `quality` clone-family advisory runs under nose 0.5 (parses the 0.5 JSON object schema, reports the live nose version); `integrations/tools/nose.json` prefers nose 0.5.0+. nose stays advisory; the gate passes without it.
 - Carried-forward (0.18.0) - `quality` runs an `inventory-nose-clones` advisory phase. If `nose` is absent it prints an explicit advisory skip and exits zero; if present on PATH, or via maintainer-local `NOSE_BIN`, it summarizes clone families from `nose scan`.
 - Carried-forward (0.18.0) - `integrations/tools/nose.json` declares upstream install/update/doctor metadata for arbitrary machines. `charness update all` and `charness tool install/update nose` can use the upstream `nose` 0.4.0+ release installer path.
 - Carried-forward (0.18.0) - the hard near-copy gate is document-oriented (`check-doc-near-duplicates`); code clone cleanup starts advisory through `nose`, with `jscpd` still deferred until a baseline/ignore policy is justified.
-- NEW QUALITY RATCHET - `quality` now owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
-- NEW ROUTING - `find-skills` now routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
-- HANDOFF QUEUE - the checked-in handoff now marks the ratchet goal complete and queues the next session for #284 first, then #286, with #285 only if #286 exposes live-issue fixture brittleness.
-- RUNTIME BUDGET - the local x86_64/default `check-doc-near-duplicates` budget is now 13.0s, matching the current release-path workload while remaining an enforced budget below the slower aarch64 profile.
+- Carried-forward (0.21.0) - `quality` owns the boundary-bypass ratchet proof used by the testability initiative: candidate counts, clean-convertible/internal classification, keep-boundary decisions, and schema drift are validated by repo-owned scripts and surfaced in the quality artifact payload.
+- Carried-forward (0.21.0) - `find-skills` routes testability, test DSL, lazy eval, and boundary-bypass-ratchet requests toward `quality`, making the same quality-first ratchet path easier to reuse in downstream Charness repos.
+- Carried-forward (0.21.0) - the local x86_64/default `check-doc-near-duplicates` budget is 13.0s, matching the release-path workload while remaining an enforced budget below the slower aarch64 profile.
 - Carried-forward (0.16.0) - `achieve`/`retro` goal closeout records a goal-scoped `Host metric window:` line (via `record_metric_window.py`) and renders a standardized provider-safe measured-vs-proxy metrics block (`probe_host_logs.py --goal-path <artifact> --format markdown`) that records results, never provider CLI command strings; an absent window surfaces as a non-blocking attention signal at flip-to-complete instead of being reported thread-wide.
 - Carried-forward (0.16.0) - Codex session/token reporter mutation survivors are killed by direct unit tests; no production behavior change.
 - Carried-forward (0.16.0) - `validate_quality_artifact.py --report-all` lists every violation in one pass; the default stays fail-fast and unchanged.
