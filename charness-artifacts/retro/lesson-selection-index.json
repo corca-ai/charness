@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-05",
-  "source_artifact_count": 131,
-  "candidate_count": 798,
+  "source_artifact_count": 132,
+  "candidate_count": 805,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -109,6 +109,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7db04ac6b34e",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-06-05-inventory-conversions-nose-05-and-release`: three bundled slices ending in a release — (1) adapt the `quality` clone-family advisory to nose 0.5, (2) convert the five remaining import-safe `inventory_*` boundary-bypass tests to in-process, (3) full-publish 0.21.0 (push + tag + GitHub release).",
+      "normalized_key": "goal 2026 06 05 inventory conversions nose 05 and release three bundled slices ending",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
           "date": "2026-06-05",
           "section": "Context"
         }
@@ -255,12 +275,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:1eb8a6858727",
+      "candidate_id": "next_improvement:7d15a60573e4",
       "kind": "next_improvement",
-      "lesson": "For future quality goals, collect standing-test economics and top focused durations before acting on clone inventory.",
-      "normalized_key": "for future quality goals collect standing test economics and top focused durations before acting",
+      "lesson": "**capability:** `publish_release.py` should run from the installed plugin cache (resolve `skills.public` regardless of cache layout), or doctor should flag the gap. (issue #N)",
+      "normalized_key": "capability publish release py should run from the installed plugin cache resolve skills public",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
       "latest_source_date": "2026-06-05",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -268,27 +288,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-          "date": "2026-06-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:15f0e23dc769",
-      "kind": "next_improvement",
-      "lesson": "For issue closeout drafts, create or bind critique evidence before running `validate-closeout-draft` so the first validation pass is meaningful.",
-      "normalized_key": "for issue closeout drafts create or bind critique evidence before running validate closeout draft",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -397,6 +397,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7db04ac6b34e",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-06-05-inventory-conversions-nose-05-and-release`: three bundled slices ending in a release — (1) adapt the `quality` clone-family advisory to nose 0.5, (2) convert the five remaining import-safe `inventory_*` boundary-bypass tests to in-process, (3) full-publish 0.21.0 (push + tag + GitHub release).",
+      "normalized_key": "goal 2026 06 05 inventory conversions nose 05 and release three bundled slices ending",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+          "date": "2026-06-05",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:eaee438fdabe",
       "kind": "current_focus",
       "lesson": "Goal `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`: (1) build `scaffold_{handoff,ideation,retro,critique}_artifact.py`, (2) move the boundary-bypass ratchet to Done in `docs/testability-dsl-initiative.md`, (3) convert the import-safe `inventory_*` boundary-bypass cluster to in-process.",
@@ -531,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7d15a60573e4",
+      "kind": "next_improvement",
+      "lesson": "**capability:** `publish_release.py` should run from the installed plugin cache (resolve `skills.public` regardless of cache layout), or doctor should flag the gap. (issue #N)",
+      "normalized_key": "capability publish release py should run from the installed plugin cache resolve skills public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -657,6 +697,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:179f4e3790f8",
+      "kind": "next_improvement",
+      "lesson": "**memory:** persisted here + recent-lessons digest; the nose-schema and sibling-bootstrap lessons are captured in the goal slice log and the testability doc.",
+      "normalized_key": "memory persisted here recent lessons digest the nose schema and sibling bootstrap lessons are",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:380796582f09",
       "kind": "next_improvement",
       "lesson": "the boundary-bypass baseline is regenerated to canonical form (not hand-edited) when adding/removing boundary-crossing tests; decreases are tolerated by `no_increase`, so a stale baseline can lag silently.",
@@ -691,6 +751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md",
+          "date": "2026-06-05",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d80759371383",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** before an irreversible publish whose push runs a flaky/expensive pre-push gate, run that gate once in isolation first (or knowingly expect the flake) so a partial-publish state is not the discovery mechanism. (issue #N)",
+      "normalized_key": "workflow before an irreversible publish whose push runs a flaky expensive pre push gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
           "date": "2026-06-05",
           "section": "Next Improvements"
         }
@@ -837,6 +917,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:6630b0678247",
+      "kind": "repeat_trap",
+      "lesson": "**`publish_release.py` from the installed plugin cache fails its runtime bootstrap** (`ModuleNotFoundError: skills.public`) — a dead end before I switched to the repo-root copy. Small, but it cost one failed attempt.",
+      "normalized_key": "publish release py from the installed plugin cache fails its runtime bootstrap modulenotfounderror skills",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:eaec30af839e",
       "kind": "repeat_trap",
       "lesson": "Several slice-log updates needed small repairs after verification changed the exact proof set. The artifact remained useful, but late proof discoveries caused extra patch churn.",
@@ -977,6 +1077,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:c8b3949dcb81",
+      "kind": "repeat_trap",
+      "lesson": "**The release publish flaked mid-way and left a partial state.** The publish helper's pre-push gate hit the #194 usage-episodes test-isolation race (a parallel gate phase appended to the gitignored live `usage_episode.jsonl` while the round-trip test asserted that tree immutable). The helper had already made the local release commit + tag, so the push failure left commit+tag local with nothing on origin. Recovery cost real time: diagnosing flake-vs-regression (the test passes in isolation), confirming the authoritative `--release` gate had passed, then completing push + `gh release create` + verified-record finalize by hand because the helper is not resumable.",
+      "normalized_key": "the release publish flaked mid way and left a partial state the publish helper",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:120c3e1b07d1",
       "kind": "repeat_trap",
       "lesson": "The `test_release_publish.py` file remains near the advisory length band after this run. The marker change reduced standing cost, but did not yet solve that file's size.",
@@ -991,6 +1111,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
+          "date": "2026-06-05",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fea2411aa343",
+      "kind": "repeat_trap",
+      "lesson": "**Two inventory scripts surfaced a hidden testability gap only at conversion time** — `inventory_public_spec_quality` / `_cli_side_effect_probes` import their sibling `*_lib` bare, relying on `__main__` `sys.path[0]`, so in-process load failed. Caught immediately by the focused test run; one-line bootstrap fix each. Not large waste, but the boundary probe calls them \"import-safe\" without detecting this, so the gap was invisible until exercised.",
+      "normalized_key": "two inventory scripts surfaced a hidden testability gap only at conversion time inventory public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
+      "latest_source_date": "2026-06-05",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
           "date": "2026-06-05",
           "section": "Waste"
         }

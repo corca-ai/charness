@@ -1,6 +1,6 @@
 # Achieve Goal: Finish inventory_* conversions, leverage nose 0.5, and release
 
-Status: draft
+Status: complete
 Created: 2026-06-05
 Activation: `/goal @charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release.md`
 
@@ -9,16 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — release `0.20.0 → 0.21.0` (version bump + manifests +
-  announcement + push). Slices 1 (nose 0.5) and 2 (5 inventory_* conversions)
-  DONE: read-only gate green, fresh-eye SHIP on both.
-- Next action: run the `release` skill to bump version + regen manifests, draft
-  the announcement, run packaging validators, then push to `origin` (final gated
-  step, after all gates green).
+- Current slice: COMPLETE — all four slices done. nose 0.5 (Slice 1), 5
+  inventory_* conversions (Slice 2), and the full 0.21.0 publish (Slice 3,
+  tag + GitHub release) all landed; closeout (Slice 4) done: 3 fresh-eye
+  critiques SHIP, retro persisted, #305 filed, dispositions bound.
+- Next action: none — goal met. Residual: real-host proof owed (dev-machine
+  only); follow-up #305 (publish-flow resilience) filed.
 - Timebox: 3h
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement
-- Activation time: 2026-06-05 (active).
+- Activation time: 2026-06-05T06:00:00+00:00
 - Routing: Slices 1–2 routed via `find-skills` local-first inventory → `achieve`
   operator + `quality` (clone-family inventory + boundary-bypass ratchet) +
   bounded fresh-eye `critique` subagents. Slice 3 release → `release` +
@@ -134,8 +134,8 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 | 1 | nose 0.5 integration: bump `version_expectation`, adapt inventory to 0.5 `--mode` semantics, refresh nose-baseline from a live 0.5 scan | fresh capability the user just upgraded; isolated from the conversions | manifest + inventory edits; live nose 0.5 scan output; refreshed nose-baseline; gate green | done (commit 7bd7d1ee; nose 0.5.0 live, 20 families; gate 71/0) |
 | 2 | Convert the 5 import-safe `inventory_*` boundary-bypass tests to in-process; regen baseline per conversion | continues the prior goal; bounded, two documented patterns | converted tests green; boundary-bypass `candidate_count` drop recorded; ratchet green | done (candidate 94→90, keys 157→152, convertible 55→51; ratchet OK; gate 71/0) |
-| 3 | Release: version bump `0.20.0 → 0.21.0` + manifests + announcement + push | bundle close; user-requested ship | release commit; packaging validators green; pushed to `origin` | pending |
-| 4 | Verify, per-slice fresh-eye critique, retro, goal closeout | closeout | full gate; per-slice critiques; retro; goal check | pending |
+| 3 | Release: version bump `0.20.0 → 0.21.0` + manifests + announcement + push | bundle close; user-requested ship | release commit; packaging validators green; pushed to `origin` | done (full publish: origin/main + tag v0.21.0 + GitHub release; packaging validators green; user chose full publish) |
+| 4 | Verify, per-slice fresh-eye critique, retro, goal closeout | closeout | full gate; per-slice critiques; retro; goal check | done (3 fresh-eye critiques SHIP; retro persisted; #305 filed; goal check passing) |
 
 ## Coordination Cues
 
@@ -162,6 +162,25 @@ during the run:
   `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
+
+### Closeout evidence
+
+- Routing: `find-skills` local-first inventory routed the impl and quality phase work (nose 0.5 inventory fix + 5 inventory_* conversions + boundary-bypass ratchet) under the `achieve` operator, with bounded `critique` subagents per slice and `release`/`announcement`/`retro`/`issue` at closeout.
+- Routing detail: `find-skills` (no adapter; in-repo discovery) → `achieve` goal
+  operator; Slices 1–2 quality work → `quality`; each slice → fresh-eye
+  `critique`; Slice 3 → `release` + `announcement`; closeout → `retro` + `issue`
+  (#305).
+- **Gather:** n/a — `## Context Sources` are all in-repo artifacts/docs; no
+  external URL/Slack/Notion/Docs/Drive source applied.
+- **Release:** full publish verified —
+  `https://github.com/corca-ai/charness/releases/tag/v0.21.0` (tag `v0.21.0`,
+  `origin/main` at the release commit, `gh release view` confirms published).
+  Record: [charness-artifacts/release/latest.md](../release/latest.md);
+  critique: [charness-artifacts/critique/2026-06-05-v0-21-0-release.md](../critique/2026-06-05-v0-21-0-release.md).
+  Real-host proof remains owed (dev-machine only) — recorded, not claimed.
+- **Issue closeout:** n/a — this goal resolved no tracked GitHub issue; it filed
+  follow-up #305 (publish-flow resilience) from the retro, which is a new
+  finding, not a closeout.
 
 ## Slice Log
 
@@ -193,6 +212,20 @@ _Empty until `/goal` activation._
 - Critique: Bounded fresh-eye subagent review (general-purpose): SHIP, no blockers. Verified all 6 invariants: byte-level assertion preservation (spot-checked public_spec 15 sites vs HEAD), exactly 5 keys removed (bootstrap's other 3 kept), exemptions unchanged, canonical regen matches committed baseline byte-for-byte, subprocess path + mirrors intact, internally-spawning tests untouched. Cleared a 91-vs-90 scare (pre-existing export_plugin exemption, ratchet ok:true). Independently ran tests/quality_gates: 1428 passed.
 - Off-goal findings:
 - Lessons carried forward: A script is 'import-safe' to the boundary probe (has main()+__main__) yet still not cleanly in-process loadable if it bare-imports siblings without a __file__ sys.path bootstrap; converting its test surfaces that gap, and the fix belongs in the production script (parity with peers), not a test path-hack.
+- Metrics:
+
+### Slice 3: Slice 3 — release 0.21.0 (full publish)
+
+- Objective: Bump charness 0.20.0 -> 0.21.0, regenerate install manifests, draft the announcement, and full-publish (push origin/main + tag v0.21.0 + GitHub release) per the user's explicit choice.
+- Why this approach: User chose full publish (tag + GitHub release) over branch-push-only when asked, matching the repo's prior v0.20.0 release pattern. Minor bump is the lightest honest level (additive nose 0.5 capability + raised testability; no compatibility break).
+- Commits: b9d2b342 (bump + announcement + critique), 17110205 (Release charness 0.21.0: latest.md + auto-retro), ac3f7f8a (verified-release finalize)
+- What changed: packaging/charness.json + .claude-plugin/marketplace.json + plugins/charness/.claude-plugin/plugin.json + .codex-plugin/plugin.json -> 0.21.0 (bump_version.py + sync). charness-artifacts/announcement/latest.md (draft, delivery_kind none). charness-artifacts/critique/2026-06-05-v0-21-0-release.md (release critique). charness-artifacts/release/latest.md (verified record). Helper-generated auto-retro + lesson index in 17110205.
+- Alternatives rejected: Branch-push-only and stop-before-push were offered to the user; user chose full publish. publish_release.py from the installed plugin cache fails its runtime bootstrap (cannot resolve skills.public); the repo-root copy works.
+- Targeted verification: current_release.py drift []; validate_packaging + validate_packaging_install_surface pass; bounded fresh-eye release critique SHIP (no blockers, announcement accurate, minor bump justified). Helper --release gate passed; push landed clean (pre-push gate 71/0) after one #194 usage-episodes flake; gh release view confirms published v0.21.0; origin/main fully synced (0 ahead).
+- Test duplication pressure: n/a — release slice adds no tests.
+- Critique: Bounded fresh-eye subagent (general-purpose): SHIP 0.21.0, no blockers. Verified minor-bump honesty, zero version drift, packaging green, announcement accuracy (flagged the ratchet figure as conservatively under-claimed, confirmed live nose scan = 20 families), release readiness. Artifact: charness-artifacts/critique/2026-06-05-v0-21-0-release.md.
+- Off-goal findings: Adapter .agents/release-adapter.yaml update_instructions still describe 0.20.0, so the helper-generated latest.md inherited stale User Update Steps (hand-corrected for this release). A proper adapter update_instructions refresh for 0.21.0 is deferred (separate hygiene task). Also: installed-cache publish_release.py runtime-bootstrap failure (skills.public unresolved) is a portability gap worth a follow-up.
+- Lessons carried forward: publish_release.py must be run from the repo-root copy, not the installed plugin cache (cache can't resolve skills.public). The full --release/pre-push gate flakes on the #194 usage-episodes race (live gitignored tree written during the parallel gate); it passes on retry and the test passes in isolation — not a release blocker. Release: full publish (push + tag v0.21.0 + GitHub release) verified at https://github.com/corca-ai/charness/releases/tag/v0.21.0; real-host proof remains owed (dev-machine only).
 - Metrics:
 
 ## Context Sources
@@ -264,14 +297,110 @@ self-critique; full per-slice fresh-eye critique runs during execution.)
 
 Issues or deferred findings discovered during the run.
 
+- **Publish-flow resilience (→ issue #305):** `publish_release.py` is not
+  resumable across a mid-publish failure (it commits+tags before the pre-push
+  gate can fail, leaving a partial state); it cannot run from the installed
+  plugin cache (`ModuleNotFoundError: skills.public`); and the adapter
+  `update_instructions` go stale undetected (focused preflight only fires when
+  the adapter file changes). Filed as a single consolidated issue.
+- **#194 usage-episodes gate flake (already tracked):** the parallel full gate
+  intermittently fails `test_session_capture_cli_install_and_uninstall_round_trip`
+  because a gate phase appends to the gitignored live `usage_episode.jsonl` while
+  that test asserts the tree immutable. Passes in isolation; referenced from
+  #305, not re-filed.
+
 ## Final Verification
 
-_Filled in the After phase._
+- No safe next slice: all four planned slices (nose 0.5, the five inventory_*
+  conversions, the full 0.21.0 publish, and closeout) are complete and verified;
+  the release was the terminal deliverable, so there is no remaining in-scope
+  slice. The done-early policy's "next improvement" (publish-flow resilience) was
+  surfaced by the retro and routed to follow-up #305 — new-goal scope, not an
+  in-bundle slice. Closing inside the timebox reserve because the bundled scope
+  is genuinely exhausted, not to avoid remaining work.
+Early close rationale: all four planned slices (nose 0.5, the five inventory_* conversions, the full 0.21.0 publish, and closeout) completed and verified within the timebox; the release was the terminal deliverable so no in-scope slice remains, and the surfaced follow-up (publish-flow resilience) is out-of-scope, separately tracked as #305.
+
+Retro: charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md
+
+Host log probe: skipped: host-log-not-exposed: no host session-log surface is configured for this repo/run, so there is no transcript to probe; closeout proof is the committed deterministic gate evidence, the live nose 0.5 scan, and the verified GitHub release below.
+
+Disposition review: charness-artifacts/critique/2026-06-05-disposition-review-inventory-conversions-nose-05-and-release.md
+
+Early close report: charness-artifacts/goals/2026-06-05-inventory-conversions-nose-05-and-release-early-close-report.md
+
+- **nose 0.5 (Slice 1):** `nose --version` → `0.5.0`; `integrations/tools/nose.json`
+  prefers nose 0.5.0+. The `inventory-nose-clones` gate runs under 0.5
+  (`nose clone advisory (nose 0.5.0): findings; 20 families`), not advisory-skip;
+  the nose-baseline was refreshed from a live 0.5 scan (`tool_version: 0.5.0`,
+  236 families). A regression test pins the 0.5 object schema. Bounded fresh-eye
+  critique: SHIP.
+- **inventory_\* conversions (Slice 2):** the five named tests are in-process;
+  the boundary-bypass `candidate_count` dropped 94→90 and `candidate_key_count`
+  157→152 (exactly the 5 converted keys, `convertible` 55→51) by real
+  conversion, not exemption (`scripts/boundary-bypass-exemptions.txt` unchanged);
+  `check-boundary-bypass-ratchet` OK. `./scripts/run-quality.sh --read-only` =
+  71 passed / 0 failed. Bounded fresh-eye critique: SHIP (byte-level assertion
+  preservation + canonical baseline regen verified).
+- **release (Slice 3):** `plugins/charness` at `0.21.0` with regenerated
+  manifests (no drift); packaging validators pass. Full publish verified:
+  `origin/main` at the release commit, tag `v0.21.0` pushed, GitHub release
+  published — `https://github.com/corca-ai/charness/releases/tag/v0.21.0`
+  (`gh release view`: draft false, prerelease false). Bounded fresh-eye release
+  critique: SHIP.
+- **Proof levels run:** focused pytest + ruff/py_compile; full read-only gate
+  (71/0) at both code-slice boundaries; the helper `--release` gate; live nose
+  0.5 scan; packaging validators; `gh release view` (live GitHub verification).
+- **Non-claims / residual risk:** Real-host proof (second-machine / clean
+  temp-home install smoke) is **owed, not run** — I worked on the dev machine;
+  the checklist is recorded in `charness-artifacts/release/latest.md`. No
+  Cautilus run (not requested). The publish needed manual recovery after the
+  #194 pre-push flake (the test passes in isolation; the authoritative
+  `--release` gate had already passed); no quality gate was bypassed.
 
 ## User Verification Instructions
 
-_Filled in the After phase._
+- `nose --version` → `0.5.0`; run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+  and confirm `tool_version: "0.5.0"` and a non-zero `family_count` (advisory).
+- `python3 scripts/check_boundary_bypass_ratchet.py` → OK at 90/51/38/23; the
+  five `test_quality_{brittle_source_guards,cli_side_effect_probes,public_spec_quality,skill_ergonomics}.py`
+  and `test_quality_bootstrap.py::*adapter_gate_design*` tests pass in-process
+  (`python3 -m pytest tests/quality_gates/test_quality_skill_ergonomics.py -q`).
+- `git log origin/main -1` shows the release; `gh release view v0.21.0` shows the
+  published release; `https://github.com/corca-ai/charness/releases/tag/v0.21.0`.
+- `charness update` pulls 0.21.0 (operator steps in `charness-artifacts/release/latest.md`).
 
 ## Auto-Retro
 
-_Filled in the After phase._
+Session retro persisted: `charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md`
+(recent-lessons + lesson-selection-index refreshed). Substantive findings:
+
+- **Waste:** the publish flaked mid-way (#194 pre-push race) and left a partial
+  state the non-resumable helper could not continue, forcing hand recovery; the
+  installed-cache `publish_release.py` bootstrap failure cost one dead-end
+  attempt; two inventory scripts hid a sibling-import testability gap until
+  conversion exercised them.
+- **Critical decisions:** diagnosed nose "0 families" as a 0.5 JSON-schema parse
+  bug (not a clean scan) before refreshing the baseline; asked the user about the
+  publish boundary instead of defaulting; fixed the sibling-import gap in the
+  production scripts (not a test path-hack), honoring `a7449e8a`.
+- **Expert counterfactuals:** Gary Klein (pre-mortem) — a "what blocks the push?"
+  pre-mortem would have surfaced the flaky pre-push gate before the irreversible
+  publish. Michael Feathers — "has main()+__main__" is a weak import-safe proxy;
+  a cheap in-process import-smoke would flag the sibling-bootstrap gap earlier.
+- **Sibling search:** external-tool top-level JSON-schema-change → silent-zero
+  parser pattern; the nose inventory was the only unguarded external-schema
+  parser (ratchet/boundary libs parse versioned, drift-checked repo payloads).
+
+Dispositions (each surfaced improvement applied or filed):
+- Pre-flight the flaky/expensive pre-push gate before an irreversible publish →
+  **issue #305**.
+- `publish_release.py` installed-cache bootstrap failure → **issue #305**.
+- Adapter `update_instructions` staleness — immediate refresh to 0.21.0 →
+  **applied** (`.agents/release-adapter.yaml`); systemic detection gap →
+  **issue #305**.
+- nose 0.5 schema-parse regression risk → **applied** (regression test
+  `test_nose_advisory_parses_v05_object_schema`).
+- Memory/lesson capture → **applied** (persisted retro + recent-lessons digest).
+
+Disposition review: complete — every surfaced improvement is bound to
+`applied: <commit this run>` or `issue #305`; no prose-only memory remains.
