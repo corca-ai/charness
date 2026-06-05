@@ -17,18 +17,19 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.20.0`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.20.0`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
 
 ## Release Adapter Preflight
 
@@ -98,6 +99,10 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 - Review proof: `charness-artifacts/critique/2026-06-05-v0-20-0-release.md`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.20.0`.
+
 ## Fresh Checkout Probes
 
 - Fresh-checkout probe status: passed.
@@ -107,7 +112,14 @@ Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #299: `CLOSED` (https://github.com/corca-ai/charness/issues/299)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
+- Issue #300: `CLOSED` (https://github.com/corca-ai/charness/issues/300)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
