@@ -76,6 +76,27 @@ _ACTIVATION_PATH = re.compile(
 _DATE_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}-")
 _LEADING_NUMERIC_CLUSTER = re.compile(r"^\d+(?:[-_]\d+)*")
 
+# Literal scaffold placeholders the goal-artifact template seeds visibly under
+# ``## Final Verification`` (e.g. ``Retro: TODO — fill or skip``). The template
+# makes the closeout obligation visible from the start of a run, but an
+# *untouched* placeholder must never be read as satisfied evidence: a value that
+# is, or begins with, one of these markers is dropped at parse time so the
+# evidence name falls back to ``missing`` and the complete flip is refused. This
+# is the non-weakening guard for the seeded placeholders — relying on
+# "the path TODO does not exist" alone would be fragile (a repo could happen to
+# carry a file literally named ``TODO``/``TBD``).
+_PLACEHOLDER_MARKER = re.compile(r"^(?:(?:TODO|TBD|FIXME)\b|<[^>\n]*>)", re.IGNORECASE)
+
+
+def is_placeholder_value(value: str) -> bool:
+    """True when ``value`` is (or starts with) a literal scaffold placeholder.
+
+    Used to refuse an untouched template ``TODO``/``<path>``/``TBD`` evidence
+    line at parse time. A real repo-relative path never starts with one of these
+    tokens, so this cannot reject a legitimately-bound evidence path.
+    """
+    return _PLACEHOLDER_MARKER.match(value.strip()) is not None
+
 
 def derive_goal_tokens(text: str) -> list[str]:
     """Extract distinctive binding tokens identifying this goal.
@@ -179,6 +200,11 @@ def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
         skip_match = re.match(r"^skipped\s*:\s*(.+)$", raw_value, re.IGNORECASE)
         if skip_match:
             parsed[name] = {"kind": "skip", "value": skip_match.group(1).strip()}
+        elif is_placeholder_value(raw_value):
+            # An untouched template placeholder (``TODO``/``<path>``/``TBD``) is
+            # dropped so the name falls back to ``missing``; the seeded scaffold
+            # line can never be mistaken for satisfied evidence.
+            continue
         else:
             parsed[name] = {"kind": "evidence", "value": raw_value}
     return parsed

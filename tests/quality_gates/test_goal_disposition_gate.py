@@ -360,6 +360,84 @@ def test_block_the_blank_fires_independently_of_review_skip(tmp_path: Path) -> N
     assert report["ok"] is False
 
 
+# --- #315: seeded scaffold placeholders must not satisfy the gate ----------
+
+
+def test_is_placeholder_value_recognizes_literal_markers() -> None:
+    for marker in ("TODO", "TODO — fill or skip", "TBD", "<path>", "<retro-path>", "FIXME"):
+        assert ce.is_placeholder_value(marker) is True
+    # a real bound path never starts with a placeholder marker
+    assert ce.is_placeholder_value("charness-artifacts/retro/2026-06-06-g.md") is False
+    assert ce.is_placeholder_value("skipped: host-log-not-exposed: detail here") is False
+
+
+def test_parse_drops_todo_placeholder_evidence_lines() -> None:
+    # The template seeds visible `Retro: TODO …` / `Host log probe: TODO …` /
+    # `Disposition review: TODO …` lines. An untouched placeholder must NOT be
+    # read as satisfied evidence — it is dropped so the name lands in `missing`.
+    text = (
+        "## Final Verification\n\n"
+        "Retro: TODO — create or explicitly skip with an allowed reason before complete\n"
+        "Host log probe: TODO — create or explicitly skip with an allowed reason before complete\n"
+        "Disposition review: TODO — create or explicitly skip only when policy allows before complete\n"
+    )
+    parsed = ce.parse_closeout_evidence(text)
+    assert parsed == {}  # no placeholder is parsed as evidence or skip
+
+
+def test_placeholder_only_artifact_cannot_pass_complete_evidence_gate(tmp_path: Path) -> None:
+    # An in-scope goal whose Final Verification still carries the untouched
+    # `TODO` scaffold placeholders must be refused: every required evidence name
+    # falls back to `missing`.
+    created = "2026-06-06"
+    text = (
+        "# Achieve Goal: T\n\nStatus: active\nCreated: " + created + "\n"
+        f"Activation: `/goal @charness-artifacts/goals/{created}-{_SLUG}.md`\n\n"
+        "## Final Verification\n\n"
+        "Retro: TODO — create or explicitly skip with an allowed reason before complete\n"
+        "Host log probe: TODO — create or explicitly skip with an allowed reason before complete\n"
+        "Disposition review: TODO — create or explicitly skip only when policy allows before complete\n\n"
+        "## Auto-Retro\n\n"
+        "Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out\n"
+    )
+    report = ce.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is False
+    assert set(report["missing"]) == {"retro_artifact", "host_log_probe", "disposition_review"}
+
+
+def test_auto_retro_placeholder_reads_as_blank_keeping_rung_1a_live() -> None:
+    # Seeding the `Retro dispositions: TODO …` placeholder must not silently
+    # disable rung 1a: an Auto-Retro carrying only the untouched placeholder
+    # still reads as blank-equivalent.
+    placeholder = (
+        "## Auto-Retro\n\nRetro dispositions: TODO — disposition every surfaced "
+        "improvement, or record the explicit no-improvement opt-out\n"
+    )
+    assert disp.auto_retro_is_blank(placeholder) is True
+    # once replaced by a real opt-out or per-improvement record it is non-blank
+    optout = "## Auto-Retro\n\nRetro dispositions: none — every lesson was captured upstream this run\n"
+    assert disp.auto_retro_is_blank(optout) is False
+    assert disp.auto_retro_is_blank("## Auto-Retro\n\napplied: shipped a gate this run\n") is False
+
+
+def test_block_the_blank_fires_when_auto_retro_holds_only_the_placeholder(tmp_path: Path) -> None:
+    # End-to-end: a goal that filled the disposition-review line but left the
+    # seeded Auto-Retro TODO placeholder is still block-the-blank refused.
+    created = "2026-06-06"
+    _seed_evidence(tmp_path, created)
+    review_line = _seed_review(tmp_path, created)  # rung 1b satisfied; isolate rung 1a
+    placeholder = (
+        "Retro dispositions: TODO — disposition every surfaced improvement, or "
+        "record the explicit no-improvement opt-out"
+    )
+    report = ce.check_complete_evidence(
+        tmp_path, _build_goal(created, placeholder, review_line=review_line)
+    )
+    assert report["auto_retro_blank"] is True
+    assert "disposition_blank" in report
+    assert report["ok"] is False
+
+
 # --- corpus invariant: grandfather never retroactively refuses -------------
 
 

@@ -51,6 +51,19 @@ _DISPOSITION_OPTOUT = re.compile(
 )
 _LIST_ITEM = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\S")
 
+# The goal-artifact template seeds a visible ``Retro dispositions: TODO — …``
+# placeholder under ``## Auto-Retro`` so an active run sees the disposition
+# obligation from the start. An *untouched* placeholder line must still read as
+# blank-equivalent, else seeding it would silently disable rung 1a
+# (block-the-blank) for any goal that fills the disposition-review line but never
+# replaces the TODO. The line is treated as content only once the ``TODO`` is
+# replaced by a real disposition (``Retro dispositions: none — …`` opt-out or an
+# ``applied:``/``issue …`` per-improvement record).
+_DISPOSITION_PLACEHOLDER = re.compile(
+    r"^[\s>*-]*Retro dispositions\s*:\s*(?:TODO|TBD|<[^>]*>|FIXME)\b[^\n]*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+
 
 def _mask_fences(text: str) -> str:
     """Blank fenced code-block regions to spaces (length/newlines preserved).
@@ -120,11 +133,18 @@ def _section_body(masked: str, heading: str) -> str | None:
 
 
 def auto_retro_is_blank(text: str) -> bool:
-    """True when the goal's ``## Auto-Retro`` section is absent or whitespace-only
-    (scanned over the Auto-Retro span only, fences masked). This is the only
-    content judgment the deterministic rung makes — emptiness, never substance."""
+    """True when the goal's ``## Auto-Retro`` section is absent, whitespace-only,
+    or carries only the untouched ``Retro dispositions: TODO — …`` scaffold
+    placeholder (scanned over the Auto-Retro span only, fences masked). This is
+    the only content judgment the deterministic rung makes — emptiness, never
+    substance. Treating the seeded placeholder as blank-equivalent keeps rung 1a
+    (block-the-blank) live: seeding a visible TODO must not silently disable it.
+    """
     body = _section_body(_mask_fences(text), "Auto-Retro")
-    return body is None or not body.strip()
+    if body is None or not body.strip():
+        return True
+    residual = _DISPOSITION_PLACEHOLDER.sub("", body)
+    return not residual.strip()
 
 
 def retro_lists_improvements(retro_text: str) -> bool:

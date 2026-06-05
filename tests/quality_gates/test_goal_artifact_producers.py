@@ -38,6 +38,15 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
     )
     achieve_text = goal_lib.goal_path(tmp_path, "2026-06-01", "producer-contract").read_text(encoding="utf-8")
     _assert_goal_shape(achieve_text)
+    # #315: the achieve scaffold (the activated/created artifact) seeds visible
+    # closeout-evidence placeholders so an active run sees the obligation early.
+    for placeholder in (
+        "Retro: TODO",
+        "Host log probe: TODO",
+        "Disposition review: TODO",
+        "Retro dispositions: TODO",
+    ):
+        assert placeholder in achieve_text, placeholder
 
     entry = handoff_lib.HandoffEntry(
         index=1,
@@ -60,3 +69,7 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
     )
     _assert_goal_shape(handoff_text)
     assert "run `/achieve @charness-artifacts/goals/2026-06-01-producer-contract.md`" in handoff_text
+    # The handoff before-phase draft is an unshaped skeleton filled by the
+    # achieve Before-phase; closeout-evidence placeholders are seeded only on the
+    # achieve scaffold (#315), so the pre-shaping draft must not carry them.
+    assert "Retro dispositions: TODO" not in handoff_text
