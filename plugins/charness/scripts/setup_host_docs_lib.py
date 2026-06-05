@@ -3,6 +3,19 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
+COMMIT_DISCIPLINE = """## Commit Discipline
+
+- Commit meaningful work slices as they finish; keep each commit scoped to one
+  understandable unit instead of one giant end-of-run commit.
+- Treat meaningful `charness-artifacts/` changes as repo state and commit them
+  with the work they support.
+- Do not report a task-completing goal as done while meaningful implementation,
+  workflow, or artifact work remains uncommitted, unless the deferral is
+  explicit. The two policies differ: artifact changes are commit targets, and
+  implementation/workflow slices are committed as they finish.
+"""
+
+
 COMPACT_SUBAGENT_DELEGATION = """## Subagent Delegation
 
 - Repo-mandated bounded fresh-eye subagent reviews are a standing delegation
@@ -24,6 +37,8 @@ def render_agents_template(*, skill_routing_markdown: str) -> str:
         "# Agents",
         "",
         skill_routing_markdown.strip(),
+        "",
+        COMMIT_DISCIPLINE.strip(),
         "",
         COMPACT_SUBAGENT_DELEGATION.strip(),
         "",

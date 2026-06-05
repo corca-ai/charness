@@ -28,9 +28,14 @@ def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: P
     completed = _normalize(repo, execute=True)
 
     assert completed["status"] == "completed"
-    assert (repo / "AGENTS.md").read_text(encoding="utf-8").startswith("# Agents\n")
-    assert "## Skill Routing" in (repo / "AGENTS.md").read_text(encoding="utf-8")
-    assert "## Subagent Delegation" in (repo / "AGENTS.md").read_text(encoding="utf-8")
+    written_agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
+    assert written_agents.startswith("# Agents\n")
+    assert "## Skill Routing" in written_agents
+    assert "## Subagent Delegation" in written_agents
+    # #317 seed: the greenfield write path emits the compact commit-discipline
+    # block so a long autonomous run does not leave work uncommitted.
+    assert "## Commit Discipline" in written_agents
+    assert "Commit meaningful work slices as they finish" in written_agents
     assert (repo / "CLAUDE.md").is_symlink()
     assert (repo / "CLAUDE.md").readlink() == Path("AGENTS.md")
 

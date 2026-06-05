@@ -36,6 +36,14 @@ The repo root `<repo-root>/AGENTS.md` should answer:
 - when retro memory is enabled, include `<repo-root>/charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
+- when the repo routes work through Charness goal/skill routing (a
+  `## Skill Routing` block that calls `find-skills`, or explicit Charness
+  goal/achieve routing), keep a compact `## Commit Discipline` rule so a long
+  autonomous run does not leave the whole implementation uncommitted: commit
+  meaningful implementation/workflow slices as they finish, keep commits scoped,
+  and do not report a task-completing goal as done while meaningful work remains
+  uncommitted unless deferral is explicit. This is distinct from, and listed
+  alongside, the durable-artifact commit-target rule below
 - when the repo uses Charness workflows that write durable artifacts under
   `charness-artifacts/`, say those meaningful artifact changes are repo state
   and commit targets, while current-pointer helpers should no-op when

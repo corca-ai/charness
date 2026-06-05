@@ -27,6 +27,16 @@
   concrete host block reporting, and no `same-agent` substitute. The expanded
   template below remains the safest copy-paste default, but validators should
   not force every consumer repo to keep the full rationale in root AGENTS.
+- when `<repo-root>/AGENTS.md` carries Charness goal/skill routing (a
+  `## Skill Routing` block that calls `find-skills`, or explicit Charness
+  goal/achieve routing), it should carry a compact `## Commit Discipline` rule:
+  commit meaningful implementation/workflow slices as they finish, keep commits
+  scoped, and do not report a task-completing goal as done while meaningful work
+  remains uncommitted unless deferral is explicit. Distinguish this from the
+  durable-artifact rule below — slices are committed as they finish, while
+  meaningful `charness-artifacts/` changes are repo state and commit targets.
+  When a goal-routed body lacks this rule, the inspector emits a reviewable
+  `commit_discipline_drift` finding instead of rewriting the existing body
 - when a repo uses Charness durable artifacts, `<repo-root>/AGENTS.md` should say
   meaningful `charness-artifacts/` changes are commit targets, and
   current-pointer helpers should no-op when canonical content has not changed
@@ -131,6 +141,23 @@ failure, including phrasings like:
 
 Keep the repo contract affirmative; report concrete host signals when a runtime
 actually blocks `spawn_agent` instead of pre-conditioning the contract.
+
+When the repo routes work through Charness goals or skills, prefer a short
+`## Commit Discipline` rule like:
+
+- Commit meaningful work slices as they finish; keep each commit scoped to one
+  understandable unit instead of one giant end-of-run commit.
+- Treat meaningful `charness-artifacts/` changes as repo state and commit them
+  with the work they support.
+- Do not report a task-completing goal as done while meaningful implementation,
+  workflow, or artifact work remains uncommitted, unless the deferral is
+  explicit.
+
+Keep this rule compact in root `<repo-root>/AGENTS.md`; the rationale (a long
+autonomous run otherwise leaves the whole implementation uncommitted until a
+human notices) belongs here, not in the root file. The two policies are
+distinct: meaningful `charness-artifacts/` changes are commit targets, and
+meaningful implementation/workflow slices are committed as they finish.
 
 When the repo uses Charness artifacts, prefer a short rule like:
 

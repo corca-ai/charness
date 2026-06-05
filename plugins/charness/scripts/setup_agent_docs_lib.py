@@ -10,6 +10,7 @@ from scripts.setup_agent_docs_fresh_eye_lib import (
     fresh_eye_policy_gaps,
 )
 from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
+from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
@@ -30,6 +31,7 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "fresh_eye_delegation_caveat_weakens_contract": "advisory",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
+    "commit_discipline_drift": "review_required",
 }
 RECOMMENDATION_FINDING_TYPES = set(FINDING_RECOMMENDATION_PRIORITIES)
 
@@ -302,6 +304,7 @@ def detect_agent_docs(
     retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
     fresh_eye_review, fresh_eye_findings = detect_fresh_eye_normalization(agents_text)
     charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
+    commit_discipline, commit_discipline_findings = detect_commit_discipline_policy(agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
         repo_root,
         agents_text,
@@ -320,6 +323,7 @@ def detect_agent_docs(
         *retro_findings,
         *fresh_eye_findings,
         *charness_artifact_findings,
+        *commit_discipline_findings,
         *skill_routing_findings,
         *worktree_adapter_findings,
     ]
@@ -337,6 +341,7 @@ def detect_agent_docs(
             "retro_memory": retro_memory,
             "fresh_eye_review": fresh_eye_review,
             "charness_artifacts": charness_artifacts,
+            "commit_discipline": commit_discipline,
             "skill_routing": skill_routing,
             "worktree_adapter": worktree_adapter,
             "setup_adapter": setup_adapter,
