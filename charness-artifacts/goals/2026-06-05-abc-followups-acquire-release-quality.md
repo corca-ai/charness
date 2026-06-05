@@ -432,12 +432,17 @@ Over-worry raised but not folded:
 - **Authoring into a portable skill package without checking its gate** — while
   authoring this goal's fixes I added bare `#NNN` issue anchors to two portable
   skill-package scripts (a sibling of the attention-state-vocab trap #308's own
-  reference covers); caught at the bundle gate, fixed in `9f08bdc3`. Not filed as
-  a new issue (external write out of this goal's approved scope, which was issue
-  *close* only). Disposition: `applied` — extended
-  `docs/conventions/authoring-preflight.md` with a "Portable skill packages"
-  section (issue-anchor / dated-incident / host-surface gates + a fast
-  `validate_skill_ergonomics` command). See `## Auto-Retro`.
+  reference covers); caught at the bundle gate, fixed in `9f08bdc3`. Disposition:
+  `applied` — extended `docs/conventions/authoring-preflight.md` with a "Portable
+  skill packages" section (issue-anchor / dated-incident / host-surface gates + a
+  fast `validate_skill_ergonomics` command). See `## Auto-Retro`.
+- **Cheap portable/structural gates only run at the bundle boundary** (the deeper
+  #307-class enforcement follow-up) — filed post-completion as **#314** at the
+  user's explicit request (originally deferred because the goal's approved
+  external-write scope was issue *close* only). Reason: `validate_skill_ergonomics`
+  and `check_boundary_bypass_ratchet` are fast/deterministic but run only in the
+  broad gate, and the git pre-commit hook (`staged_commit_gate_plan`) does not
+  consult surface `verify_commands`; route through `quality`.
 
 ## Final Verification
 
