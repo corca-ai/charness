@@ -153,7 +153,37 @@ during the run:
 
 ## Slice Log
 
-_Empty until `/goal` activation._
+### Slice 1 — four artifact scaffolds + tests (2026-06-05)
+
+- Built `scaffold_{handoff,ideation,retro,critique}_artifact.py`, each adapted to
+  its real validator (the goal's "mechanically mirror debug/quality" premise held
+  only for handoff; the other three validators are `--paths`-based and opt-in, and
+  none of the four is a current-pointer artifact). User chose "build all 4, adapt
+  per validator" over narrowing/skipping (see Off-Goal Findings + Interview
+  Decisions).
+- handoff: adapter-backed rolling `docs/handoff.md`, strict 5-section ≤70-line
+  skeleton, `--repo-root .` validator, title guarded to contain "Handoff".
+- ideation: self-contained (no adapter), dated record under
+  `charness-artifacts/ideation/`, valid `## Structured Questions`, `--paths` validator.
+- retro: adapter `output_dir`, canonical sections + `## Sibling Search` bullet with
+  a valid `follow-up:`, `--paths` validator.
+- critique: adapter `output_dir`, `## Structured Findings` + `## Reviewer Tier
+  Evidence` (`pending-parent-spawn`) + a "blocked"-free fresh-eye line,
+  `validate_critique_artifacts.py --paths` validator.
+- Tests: 2 per scaffold (dogfood + consumer-export) + a handoff custom-title guard
+  = 9 tests; symlink-pointer test dropped (N/A — no current-pointer artifacts).
+- Boundary-bypass baseline regenerated to canonical form: +4 `::scripts/export_plugin.py`
+  keys from the new consumer-export tests (mirroring the baselined debug/quality
+  pattern; `convertible_count` 54→57 — a *harder* target, not a faked drop) and
+  baseline caught up to current inventory (`internal_boundary_count` 42→38; 4 keys
+  reclassified import-safe by the prior E402 sweep). No exemptions used.
+- SKILL.md surfacing: added a `$SKILL_DIR` Bootstrap line to ideation only;
+  handoff/retro/critique deferred (handoff is at its ≤161 slice-6 budget — recent-lessons
+  trap #1; retro/critique are at the 200/160 ceilings). Scaffolds stay tested + mirrored.
+- Proof: `./scripts/run-quality.sh --read-only` → 71 passed, 0 failed. Mirrors synced
+  and staged with source. `test_usage_episodes_host_hooks` is a pre-existing parallel-run
+  flake (3/3 green in-tree, green on clean HEAD), not a slice-1 regression.
+- Status: verified; fresh-eye critique in progress before commit.
 
 ## Context Sources
 
@@ -216,6 +246,27 @@ self-critique; full per-slice fresh-eye critique runs during execution.)
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- **Goal premise correction (slice 1):** the goal assumed the four validators
+  mirror the debug/quality single-current-pointer pattern. Reality: only `handoff`
+  is a strict single-artifact validator (and it is a *rolling* fixed `docs/handoff.md`,
+  not a current-pointer `latest.md`). `ideation`/`retro`/`critique` validators are
+  `--paths`-based and opt-in (a near-empty file passes), and `ideation` has no
+  adapter or `scripts/` dir. The goal's `validate_critique_artifact.py` path was
+  also off by one — the real file is `validate_critique_artifacts.py` (plural).
+  Surfaced to the user; chose "build all 4, adapt per validator."
+- **Pre-existing boundary-bypass baseline drift:** before this slice, the committed
+  baseline already lagged current inventory (4 stale keys, `internal_boundary_count`
+  42 vs current 38) — tolerated silently by the `no_increase` policy. The slice-1
+  regen caught it up. Worth a maintainer note that the baseline is regenerated, not
+  hand-edited, when adding boundary-crossing tests.
+- **Flaky gate test:** `tests/test_usage_episodes_host_hooks.py::test_session_capture_cli_install_and_uninstall_round_trip`
+  failed once under the gate's parallel pytest run but is green 3/3 in-tree and on
+  clean HEAD. Pre-existing parallel/host-state flake, not caused by this work.
+- **SKILL.md surfacing deferred:** handoff (≤161 budget), retro/critique (200/160
+  ceilings) cannot take a scaffold-mention line without spilling content to
+  `references/`. Candidate follow-up if scaffold discoverability from those SKILL.md
+  surfaces is wanted.
 
 ## Final Verification
 
