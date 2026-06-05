@@ -50,13 +50,11 @@ lifecycle instead of starting a new one.
      stop conditions, reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`
-   - for consequential defaults in Non-Goals, Boundaries, verification,
-     interview decisions, or critique findings (live/prod proof, issue
-     close/split, broad scope, irreversible side effects, or proof-level
-     non-claims), add a non-empty `Discuss before activation:` summary and
-     resolve or explicitly ask before reporting the goal ready or offering
-     activation; `--pursue-ready` fails on missing/unresolved activation
-     discussion, and a present summary is not proof of resolution
+   - for consequential defaults (live/prod proof, issue close/split, broad scope,
+     irreversible side effects, or proof-level non-claims) in Non-Goals,
+     Boundaries, verification, interview decisions, or critique findings, add a
+     non-empty `Discuss before activation:` summary and resolve or explicitly ask
+     before activation; `--pursue-ready` fails unless that summary is resolved
    - save with `upsert_goal.py` at status `draft`
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself
@@ -80,9 +78,8 @@ lifecycle instead of starting a new one.
      final stage
    - external-side-effect approval (publish/push/remote-CI/apply) is scoped to
      the phase or bundle that requested it and does not carry forward; after an
-     approved lane completes, done-early test-only quality continuation is local
-     by default (batch remote proof, run CI once over the final bundled state)
-     unless the operator explicitly asks or a runtime-affecting slice needs it
+     approved lane, done-early test-only continuation is local by default unless
+     the operator explicitly asks or a runtime-affecting slice needs it earlier
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
@@ -163,8 +160,6 @@ lifecycle instead of starting a new one.
   fail-fasts on an unshaped goal, routing the operator to `/achieve`.
 - Do not require every short prompt to become a goal.
 - Do not run broad quality gates after every small commit.
-- Do not let one phase's external-side-effect approval carry forward to a later
-  phase; done-early test-only continuation is local by default unless asked.
 - Do not make `handoff` the normal running scratchpad while a goal is active.
 - Do not treat the historical slice log as the normal active prompt surface;
   refresh the active operating frame and archive completed detail below it.
