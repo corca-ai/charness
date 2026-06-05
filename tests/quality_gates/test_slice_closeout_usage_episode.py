@@ -37,7 +37,19 @@ def _write_closeout_fixture(repo: Path, adapter: str) -> None:
     (repo / "scripts" / "verify.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
 
-def _run_closeout(repo: Path):
+def _closeout_env(*, quality_mode: str | None = None) -> dict[str, str]:
+    # #312-B2: a closeout running inside a quality run skips the live usage-episode
+    # write. The emission tests below assert the genuine top-level emission path, so
+    # they clear the ambient CHARNESS_QUALITY_MODE that run-quality.sh exports when
+    # the suite itself runs under it; the suppression test sets it explicitly.
+    env = dict(os.environ)
+    env.pop("CHARNESS_QUALITY_MODE", None)
+    if quality_mode is not None:
+        env["CHARNESS_QUALITY_MODE"] = quality_mode
+    return env
+
+
+def _run_closeout(repo: Path, *, quality_mode: str | None = None):
     return run_script(
         "scripts/run_slice_closeout.py",
         "--repo-root",
@@ -45,6 +57,7 @@ def _run_closeout(repo: Path):
         "--paths",
         "README.md",
         "--json",
+        env=_closeout_env(quality_mode=quality_mode),
     )
 
 
@@ -96,6 +109,38 @@ def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path) -> 
     invalid = run_script("scripts/validate_usage_episodes.py", "--repo-root", str(repo), "--json")
     assert invalid.returncode == 1
     assert json.loads(invalid.stdout)["status"] == "invalid_records"
+
+
+def test_run_slice_closeout_skips_usage_episode_inside_quality_run(tmp_path: Path) -> None:
+    # #312-B2: when a closeout runs inside a quality/verification run (signalled by
+    # CHARNESS_QUALITY_MODE, which run-quality.sh exports to its whole process
+    # tree), it must NOT write a live usage episode — that mid-suite write races
+    # tests/test_usage_episodes_host_hooks.py (the #194 state-bleed class). A
+    # genuine top-level slice closeout (no CHARNESS_QUALITY_MODE) still emits.
+    repo = tmp_path / "repo"
+    _write_closeout_fixture(
+        repo,
+        "\n".join(
+            [
+                "version: 1",
+                "repo: charness",
+                "enabled: true",
+                "storage_path: .charness/usage-episodes",
+                "events:",
+                "  - usage_episode",
+                "",
+            ]
+        ),
+    )
+
+    result = _run_closeout(repo, quality_mode="full")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "completed"
+    assert payload["usage_episode"]["status"] == "readonly_quality_run"
+    assert payload["usage_episode"]["emitted"] is False
+    assert not (repo / ".charness" / "usage-episodes" / "usage_episode.jsonl").exists()
 
 
 def test_run_slice_closeout_skips_usage_episode_when_disabled(tmp_path: Path) -> None:

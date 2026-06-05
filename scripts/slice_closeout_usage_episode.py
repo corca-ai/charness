@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import uuid
 from datetime import datetime, timezone
@@ -147,6 +148,21 @@ def _rotate_usage_episode_records(records_path: Path, rotation: object, pending_
 
 
 def emit_usage_episode_for_slice_closeout(repo_root: Path, status: str) -> dict[str, object]:
+    quality_mode = os.environ.get("CHARNESS_QUALITY_MODE")
+    if quality_mode:
+        # #312-B2: a closeout running inside a quality/verification run stays
+        # read-only re: live runtime state. run-quality.sh exports
+        # CHARNESS_QUALITY_MODE to its whole process tree, so any closeout spawned
+        # within it is suppressed here; emitting a live usage episode mid-suite is a
+        # mutation that races tests/test_usage_episodes_host_hooks.py (the #194
+        # state-bleed class). A genuine top-level slice closeout has no
+        # CHARNESS_QUALITY_MODE set and still emits.
+        return {
+            "status": "readonly_quality_run",
+            "emitted": False,
+            "quality_mode": quality_mode,
+        }
+
     adapter_path = repo_root / USAGE_EPISODES_ADAPTER
     if not adapter_path.is_file():
         return {
