@@ -1,20 +1,16 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .support import run_script
+from scripts.setup_host_docs_lib import normalize_host_docs
 
 
-def _normalize(repo: Path, *args: str) -> dict[str, object]:
-    result = run_script(
-        "skills/public/setup/scripts/normalize_host_docs.py",
-        "--repo-root",
-        str(repo),
-        *args,
-    )
-    assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+def _routing_payload(_: Path) -> dict[str, object]:
+    return {"markdown": "## Skill Routing\n\nUse `find-skills` first.\n"}
+
+
+def _normalize(repo: Path, *, execute: bool = False) -> dict[str, object]:
+    return normalize_host_docs(repo, skill_routing_payload=_routing_payload, execute=execute)
 
 
 def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: Path) -> None:
@@ -29,7 +25,7 @@ def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: P
     ]
     assert not (repo / "AGENTS.md").exists()
 
-    completed = _normalize(repo, "--execute")
+    completed = _normalize(repo, execute=True)
 
     assert completed["status"] == "completed"
     assert (repo / "AGENTS.md").read_text(encoding="utf-8").startswith("# Agents\n")
@@ -44,7 +40,7 @@ def test_setup_normalize_host_docs_existing_agents_creates_symlink_only(tmp_path
     repo.mkdir()
     (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
 
-    completed = _normalize(repo, "--execute")
+    completed = _normalize(repo, execute=True)
 
     assert [item["action"] for item in completed["actions"]] == [
         "keep_agents",
@@ -60,7 +56,7 @@ def test_setup_normalize_host_docs_keeps_existing_agents_symlink(tmp_path: Path)
     (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
     (repo / "CLAUDE.md").symlink_to("AGENTS.md")
 
-    completed = _normalize(repo, "--execute")
+    completed = _normalize(repo, execute=True)
 
     assert [item["action"] for item in completed["actions"]] == [
         "keep_agents",
@@ -74,10 +70,8 @@ def test_setup_normalize_host_docs_blocks_real_claude_file(tmp_path: Path) -> No
     repo.mkdir()
     (repo / "CLAUDE.md").write_text("# Claude\n\nSpecific policy.\n", encoding="utf-8")
 
-    result = run_script("skills/public/setup/scripts/normalize_host_docs.py", "--repo-root", str(repo), "--execute")
-    payload = json.loads(result.stdout)
+    payload = _normalize(repo, execute=True)
 
-    assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert payload["blocked"][0]["path"] == "CLAUDE.md"
     assert not (repo / "AGENTS.md").exists()

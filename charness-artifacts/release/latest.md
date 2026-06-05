@@ -1,41 +1,40 @@
 # Release Surface Check
-Date: 2026-06-04
+Date: 2026-06-05
 
 ## Scope
 
-Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.20.0` (tag `v0.20.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.18.0`
-- target version: `0.19.0`
+- previous version: `0.19.0`
+- target version: `0.20.0`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish.
+- `./scripts/run-quality.sh --release` is queued for this publish attempt.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.19.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.20.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.18.0`
+- Previous release ref: `refs/tags/v0.19.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,66 +50,74 @@ Advanced `charness` toward release `0.19.0` (tag `v0.19.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-20-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 1.
+- Surface hits: 2.
   - `checked-in-plugin-export`
+  - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 56.
+- Evaluated changed paths: 82.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-04-quality-economics-refactor-closeout.md`
-  - `charness-artifacts/critique/2026-06-04-release-pytest-economics-closeout.md`
-  - `charness-artifacts/critique/2026-06-05-3h-quality-test-economics-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-05-achieve-timebox-closeout-review.md`
-  - `charness-artifacts/critique/2026-06-05-release-v0.19.0-critique.md`
-  - `charness-artifacts/goals/2026-06-05-3h-quality-test-economics.md`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `.gitignore`
+  - `charness-artifacts/critique/2026-06-04-225531-packet.json`
+  - `charness-artifacts/critique/2026-06-04-225531-packet.md`
+  - `charness-artifacts/critique/2026-06-05-3h-code-quality-bugfix-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-05-issue-299-release-only-sentinel-inventory.md`
+  - `charness-artifacts/critique/2026-06-05-issue-300-host-docs-normalization.md`
+  - `charness-artifacts/critique/2026-06-05-issues-299-300-next-improvements-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-05-v0-20-0-release.md`
+  - `charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix-early-close-report.md`
+  - `charness-artifacts/goals/2026-06-05-3h-code-quality-bugfix.md`
+  - `charness-artifacts/goals/2026-06-05-issues-299-300-next-improvements.md`
+  - `charness-artifacts/issue/2026-06-05-issue-299-closeout-commit-message.md`
+  - `charness-artifacts/issue/2026-06-05-issue-300-closeout-commit-message.md`
+  - `charness-artifacts/probe/2026-06-05-3h-code-quality-bugfix-host-log-probe.json`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md`
-  - `charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/public-skill-dogfood.json`
-  - `packaging/charness.json`
-  - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/skills/achieve/SKILL.md`
-  - `plugins/charness/skills/achieve/references/goal-artifact.md`
-  - ... 36 more
+  - `charness-artifacts/retro/2026-06-05-3h-code-quality-bugfix.md`
+  - `charness-artifacts/retro/2026-06-05-achieve-early-close-report-gap.md`
+  - `charness-artifacts/retro/2026-06-05-issues-299-300-next-improvements.md`
+  - ... 62 more
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
+- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-05-release-v0.19.0-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.19.0`.
+- Review proof: `charness-artifacts/critique/2026-06-05-v0-20-0-release.md`.
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: passed.
+- Fresh-checkout probe status: configured.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.19.0 (minor release: `achieve` timebox continuation plus quality test-economics cleanup).
+- Run `charness update` to pull 0.20.0 (minor release: setup host-docs normalization, release-only sentinel inventory, and achieve closeout/reporting improvements).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
+- NEW SETUP HOST-DOCS PATH - `setup` now exposes `normalize_host_docs.py`, a dry-run-by-default helper for narrow `AGENTS.md` / host-docs-only normalization that preserves `CLAUDE.md -> AGENTS.md` behavior and blocks on real `CLAUDE.md` merge decisions.
+- NEW QUALITY INVENTORY - `quality` includes an advisory release-only sentinel coverage inventory for selected expensive pytest files, so maintainers can see release-only counts, standing counts, and likely standing sentinels before moving more tests out of standing pytest.
+- ACHIEVE CLOSEOUT REPORTING - final reports now call out actual run waste and true unresolved user decisions, and avoid routine publication/push prompts by default.
+- CLOSEOUT COST CONTROL - broad pytest proof is cached for the same locked mutation fingerprint and pre-lock closeout rehearsals skip broad pytest by design.
 - NEW ACHIEVE TIMEBOX MODE - when the user gives a fixed work budget, `achieve` now records `Timebox:`, `Activation time:`, `Closeout reserve:`, and `Done-early policy: continue_next_improvement`.
 - NEW ACHIEVE CLOSEOUT GATE - timeboxed goals cannot flip to `complete` before the closeout reserve window unless `## Final Verification` records a falsifiable `No safe next slice:`, `Early close rationale:`, or supported `Stop condition:` line.
 - QUALITY TEST ECONOMICS - release-only pytest coverage is separated from standing pytest for expensive release publish paths, and quality runner tests share setup helpers without reducing release-path proof.
