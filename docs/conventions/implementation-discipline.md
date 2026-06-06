@@ -74,9 +74,20 @@ the root instruction file but still apply to Charness maintenance work.
 
 ## Generated And Installed Surfaces
 
-- When a repo-local structural fix can also improve the installed Charness user
-  surface, inspect whether a public skill, reference, packaging contract, or
-  [AGENTS.md](../../AGENTS.md) should absorb the lesson before stopping.
+- **Portability classification is a closeout checkpoint, not an optional
+  nicety (retro 2026-06-07).** When a slice adds a *new reusable mechanism* — a
+  repo-root `scripts/*.py`, a new gate, or a generalizable pattern/doctrine
+  (an invariant, failure mode, or cost lesson) — classify it `host-local` vs
+  `skill-capability` before closeout and state the call. In this harness repo do
+  **not** default to repo-local: if the mechanism or its doctrine generalizes,
+  route it to the owning public skill or reference (at minimum a `references/*.md`
+  doctrine line, or a packaging/[AGENTS.md](../../AGENTS.md) absorption) so
+  adopting repos inherit it. A soft "inspect whether a skill should absorb the
+  lesson" version of this rule already existed and still did not fire during a
+  defect-repair slice — the defect-repair frame keeps altitude low, so make the
+  classification explicit rather than remembered. A deterministic nudge (flagging
+  a new repo-root capability script that belongs in a skill) is a tracked
+  follow-up: `follow-up:portability-classification-tripwire`.
 - If a public skill needs repeated bootstrap, adapter resolution, artifact
   naming, or recovery behavior, ship a helper script instead of leaving it as
   prose-only guidance.
