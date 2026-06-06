@@ -20,8 +20,11 @@ runs the activation command.
   continue to the next safe in-scope improvement (do not close on first item).
 - Slice order: (1) quality posture scan → (2) #2b cross-file sibling-scan
   enforcement → (3) #2a advisory RCA-ledger nudge → (4) fold cheap scan wins /
-  file the rest → (5) closeout. #2a (advisory, non-gated) is the most deferrable
-  if the clock is tight.
+  file the rest → (5) advisory epistemic-status + agent-interpretation contract
+  (first cut, **splittable** to issue/spec) → (6) closeout. Run sequentially.
+  Slice 5 is the natural cut point: if the clock or scope demands, split its
+  remainder to an issue (+ optional spec) and proceed to closeout. #2a is the
+  next-most deferrable.
 - Verification cadence: cheap deterministic checks at commit boundaries
   (`run_slice_closeout.py --predict-commit` aggregate); higher-cost or fresh-eye
   proof at slice boundaries; final broad `./scripts/run-quality.sh` at closeout.
@@ -52,10 +55,23 @@ closeout-discipline gap:
 3. **#2a — advisory RCA-ledger nudge.** When a slice adds a new
    `charness-artifacts/debug/*.md` artifact but no `rca-ledger.jsonl` event
    `ref`s it, emit an advisory (exit-0) warning. Non-gated by design.
+4. **Advisory epistemic-status + agent-interpretation contract (first cut,
+   splittable).** Generalize the judgment-over-automation principle exercised in
+   #2b: as deterministic heuristics improve, the agent risks deferring to them
+   instead of interpreting. Land a *pilot* — a shared reference requiring an
+   advisory/heuristic (inference-layer) output to self-declare what it measures,
+   what it is a proxy *for*, its known blind spots, and the interpretation
+   question it cannot answer; and require the consuming skill to answer that
+   question before acting — applied to one pilot surface (the `quality` advisory
+   output and/or the `nose` duplicate advisory). Split the cross-skill rollout to
+   an `issue` (Structural pattern + Triggering instances), promoting to `spec` if
+   it grows. This is positive-form (declare blind spots), NOT a blanket "distrust
+   me" banner, and it does NOT attach to verifiable deterministic facts.
 
-Outcome = an honest refreshed quality posture plus the two closeout-discipline
-improvements committed (or explicitly dispositioned to issues), with the repo
-green on the broad gate.
+Outcome = an honest refreshed quality posture, the two closeout-discipline
+improvements committed (or dispositioned to issues), and a landed first cut of
+the advisory-interpretation contract (or its clean split to issue/spec) — with
+the repo green on the broad gate.
 
 ## Non-Goals
 
@@ -76,6 +92,9 @@ green on the broad gate.
   obviously-correct win falls out of the scan.
 - **Not the carry-forward real-host / second-machine `nose` proof** — separate
   standing item, not this goal.
+- **Not the full cross-skill rollout of the advisory-interpretation contract.**
+  Slice 5 lands a pilot + the shared reference only; the broad rollout across
+  every advisory surface is split to an issue (+ optional spec), by design.
 
 ## Boundaries
 
@@ -119,13 +138,38 @@ green on the broad gate.
   remote publication is assumed only when the operator explicitly asks or a
   runtime-affecting slice requires earlier publication. (This goal plans no
   external side effects — see Non-Goals.)
+- **Advisory-interpretation contract = inference layer only (slice 5).** The
+  self-declaration + agent-interpretation requirement attaches ONLY to
+  heuristic/proxy/ranking outputs (nose duplicate %, ergonomics heuristics,
+  test-economics trend, recommendation rankings). It must NOT attach to
+  verifiable deterministic facts (green gates, counts, AST results): inducing
+  distrust there reintroduces the manual-ritual waste validators exist to
+  remove, contradicting "validator over prose ritual."
+- **No blanket distrust banner (slice 5).** The contract is positive-form — the
+  output declares its blind spots and the interpretation question it cannot
+  answer, and the consumer must answer it — not a generic "don't trust me"
+  string repeated on every output (which habituates the reader into ignoring it
+  and adds noise). It generalizes `automation-promotion`'s "do not repeat
+  without repository-level interpretation" from a passive prohibition into an
+  active requirement; the existing fresh-eye subagent review is the real
+  independent-intelligence backstop.
+- **Slice 5 is splittable by design.** If the pilot + reference exceed the
+  remaining timebox or grow beyond a clean low-noise change (per the
+  `automation-promotion` AUTO_CANDIDATE checklist), split the remainder to an
+  `issue` (Structural pattern + Triggering instances) and optionally a `spec`,
+  record the cut point in `## Off-Goal Findings`, and proceed to closeout. A
+  partial landing is safe because the change is advisory; a clean split is a
+  success, not an early-stop failure.
 - Discuss before activation: Approved at shaping — operator selected scope =
-  full quality scan + fold-in #2, a 3h timebox, and appetite = new
-  gates/validators allowed with the RCA-ledger nudge held advisory-only
-  (anti-gaming). No release/push/tag in this goal; #320 and #184 appear as
-  context only and are neither reopened nor closed here. The one behavior-
-  affecting change (#2b debug-closeout validator) is bounded by the brittleness
-  escape above and gets a fresh-eye slice critique before commit.
+  full quality scan + fold-in #2 + a fourth advisory-interpretation slice
+  (sequential, splittable), a 3h timebox, and appetite = new gates/validators
+  allowed with the RCA-ledger nudge held advisory-only (anti-gaming). No
+  release/push/tag in this goal; #320 and #184 appear as context only and are
+  neither reopened nor closed here. The two behavior-affecting prompt/validator
+  changes (#2b debug-closeout validator; the slice-5 advisory-interpretation
+  contract) are each bounded above (the #2b brittleness escape; the slice-5
+  inference-layer-only + no-blanket-banner + splittable guards) and each get a
+  fresh-eye slice critique before commit.
 
 ## User Acceptance
 
@@ -160,8 +204,9 @@ What the user can do to verify completion directly:
 
 ### High-Confidence Checks
 
-- One bounded fresh-eye slice critique on the #2b validator change (behavior-
-  affecting debug-closeout surface) before its commit, with the slice packet.
+- One bounded fresh-eye slice critique before commit on EACH behavior-affecting
+  prompt/validator slice — the #2b debug-closeout validator and the slice-5
+  advisory-interpretation contract — each with its own slice packet.
 - `quality` skill's four-lens walk + one bounded fresh-eye review for slice 1.
 - Regression floor (scope = `latest.md`/forward-only): the marker check lives in
   the `latest.md` branch only, so the 59 dated artifacts are untouched — prove
@@ -188,7 +233,8 @@ What the user can do to verify completion directly:
 | 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 59 dated artifacts stay green; `sibling-search.md` updated; mirrors synced; fresh-eye critique CLEAR | planned |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | Nudge warns at exit 0 for a new debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` as an advisory line (not a standalone promotable gate); no fail path | planned |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
-| 5 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
+| 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference written (inference-layer self-declaration + required consumer interpretation; explicit "not verifiable facts", no blanket banner); applied to one pilot surface (`quality` advisory and/or `nose`); fresh-eye critique CLEAR; rollout `issue #N` filed (+ `spec` if it grows); split/cut point recorded in Off-Goal Findings | planned |
+| 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
 
 ## Coordination Cues
 
@@ -248,6 +294,11 @@ the originating context by following them in order:
    the ledger surface #2a nudges toward.
 8. [prior 318-319 goal](2026-06-06-318-319-achieve-closeout-and-quality-headroom.md)
    — the most recent completed quality-headroom goal, for format and cadence.
+9. [agent-assessment-invariant](../../skills/shared/references/agent-assessment-invariant.md)
+   and [automation-promotion](../../skills/public/quality/references/automation-promotion.md)
+   — the two existing contracts slice 5 generalizes (agent judgment before human
+   handoff; "do not repeat an automated finding without repository-level
+   interpretation", heuristics stay advisory until a low-noise invariant exists).
 
 ## Interview Decisions
 
@@ -280,6 +331,20 @@ itself so a fresh session sees the design space, not only the closed point.
   closed records. `axis: artifact-lifecycle` — the validator already varies
   current-form strictness by `latest.md` vs dated, so this anchors to an
   existing axis rather than inventing one.
+- **Advisory-interpretation concern → slice or issue** (raised mid-shaping:
+  "as deterministic heuristics/nose improve, the agent may over-defer instead of
+  using its own intelligence; should advisory output carry a 'read critically'
+  prompt?"). Family {fold as a goal slice, file as an issue, defer to ideation}.
+  Chosen: **fold as a sequential, splittable slice 5**. Rejected: issue-only
+  loses the chance to pilot it on the advisory surfaces this goal already
+  touches; defer-to-ideation drops the momentum. The mechanism was refined away
+  from the literal proposal (a blanket "distrust" banner) to a positive-form
+  self-declaration + required consumer interpretation, scoped to the inference
+  layer only — because the repo already trusts verifiable deterministic facts by
+  design (`agent-assessment-invariant.md`, `automation-promotion.md`).
+  `axis: gate-posture` — same automation-vs-judgment axis as the appetite
+  decision; this targets the *advisory* end of it without touching the verified
+  end.
 
 ## Plan Critique Findings
 
