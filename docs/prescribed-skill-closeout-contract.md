@@ -205,6 +205,35 @@ missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
 map). The bidirectional surface where a standalone `/issue` or `/debug` reads the
 active goal is explicitly **deferred** to its own effort.
 
+### Closeout Delegation (orchestrator/sub-goal external proof, #318)
+
+An *opt-in* orchestrated-closeout mode in
+[`goal_artifact_closeout_delegation.py`](../skills/public/achieve/scripts/goal_artifact_closeout_delegation.py),
+wired through the same After-phase evidence gate. It lets a sub-goal close at
+`impl-local`/`carrier` while a *named* orchestrator goal owns the deferred
+external proof, without weakening standalone goals: a goal with no
+`## Closeout Delegation` section, or `Closeout mode: standalone`, is untouched —
+the strict standalone default stays the hard default.
+
+Closeout-state taxonomy (documentation vocabulary; the gate is
+presence/resolution-based, not an exact-token match): `impl-local`, `carrier`,
+`pushed-ci`, `applied-restarted`, `live`, `issue-closed`.
+
+- **orchestrated sub-goal** (`Closeout mode: orchestrated`) — must name an
+  `Orchestrator goal:` and list ≥1 `Delegated proof:` item, so delegation is
+  explicit (named owner + named levels), never silent omission.
+- **orchestrator goal** (`Closeout mode: orchestrator`) — must carry a
+  `Delegated proof checklist:` and resolve *every* item (`verified`,
+  `skipped: <reason>`, or `issue #N`) before it can flip to `complete`; an
+  unresolved item blocks the flip, so the orchestrator cannot silently forget a
+  delegated proof.
+
+Same deterministic-floor philosophy as the disposition/coordination floors:
+presence/resolution-only, clone-safe (artifact text, not git diff), and it never
+classifies whether the prose is "good enough". Opt-in *is* the grandfather: a
+goal earns the gate only by declaring the section, so no pre-existing goal is
+retroactively refused.
+
 ### Integration Points
 
 - `achieve`: `check_goal_artifact.py` invokes the helper when the requested

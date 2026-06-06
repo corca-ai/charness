@@ -611,6 +611,52 @@ post-flip (`check_goal_artifact.py`), like the disposition gate. `impl`,
 these are operator-side cues `achieve` plans into the artifact, never
 `achieve`-only branches in those skills.
 
+### Closeout-state taxonomy
+
+Final closeout proof is not one bit. Name the level a goal actually reached so
+"complete" never implies external proof that did not run. The six levels, from
+local to fully external:
+
+1. `impl-local` — implementation and local deterministic checks complete.
+2. `carrier` — the closeout carrier (direct commit / PR body / release commit)
+   is validated and staged (`issue_tool.py validate-closeout-draft`).
+3. `pushed-ci` — the carrier is pushed and remote CI is verified.
+4. `applied-restarted` — the instance is applied / restarted.
+5. `live` — provider / live proof reached (a real provider roundtrip).
+6. `issue-closed` — the tracked GitHub issue's `CLOSED` state is verified.
+
+A **standalone** goal owns all reached levels itself and names any skipped level
+as an explicit non-claim (Honest Proof Discipline below). This is the strict
+default and is unchanged.
+
+### Orchestrated closeout (orchestrator/sub-goal proof delegation)
+
+When an operator runs a larger **orchestrator** goal that queues sub-goals and
+wants the external-proof boundary owned once at the end, a sub-goal may close at
+`impl-local`/`carrier` and *delegate* the later levels — but only explicitly,
+to a *named* orchestrator, never by silent omission. This is **opt-in**: a goal
+with no `## Closeout Delegation` section, or `Closeout mode: standalone`, keeps
+the strict standalone default (the non-weakening constraint).
+
+A goal opts in with a `## Closeout Delegation` section (see
+`references/goal-artifact.md`). `check_goal_artifact.py` enforces two invariants
+at the `complete` flip (and post-flip), so delegated proof is machine-visible and
+the orchestrator cannot silently forget it:
+
+- an **orchestrated** sub-goal (`Closeout mode: orchestrated`) must name an
+  `Orchestrator goal:` and list at least one `Delegated proof:` item — it cannot
+  delegate into the void or vaguely claim proof is "elsewhere";
+- an **orchestrator** goal (`Closeout mode: orchestrator`) must carry a
+  `Delegated proof checklist:` and resolve *every* item before it can complete —
+  each item is `verified`, `skipped: <reason>`, or `issue #N`; an unresolved item
+  blocks the flip.
+
+The sub-goal records its honest stop as a non-claim under a `Closeout state:`
+line (for example, `impl-local / carrier complete; rest delegated`), and the
+orchestrator's checklist is the durable proof that the delegated levels are
+eventually verified, skipped with a reason, or split into a follow-up issue. The
+pattern never lets a delegated proof be claimed as run when it was not.
+
 ## Honest Proof Discipline
 
 Borrow W. Edwards Deming's Plan-Do-Study-Act emphasis on the *study* step:

@@ -410,6 +410,12 @@
       "evidence_terms": ["skipped"],
       "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
     },
+    "skills/public/achieve/scripts/goal_artifact_closeout_delegation.py": {
+      "states": ["skipped"],
+      "visibility": ["artifact_visible", "hard_failure_or_blocker"],
+      "evidence_terms": ["skipped: <reason>", "verified", "issue #N"],
+      "rationale": "Orchestrator/sub-goal closeout-delegation gate: an orchestrator's delegated-proof checklist item resolves as verified, `skipped: <reason>`, or an issue reference; an unresolved item blocks the complete flip and the reason stays artifact-visible in the goal's `## Closeout Delegation` section."
+    },
     "skills/public/achieve/scripts/goal_artifact_early_close_report.py": {
       "states": ["skipped"],
       "visibility": ["artifact_visible", "hard_failure_or_blocker"],

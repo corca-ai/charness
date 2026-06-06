@@ -121,6 +121,11 @@ def main() -> int:
                         for entry in evidence_report["coordination_missing"]
                     )
                 )
+            if evidence_report.get("closeout_delegation", {}).get("failures"):
+                missing_bits.append(
+                    "closeout delegation: "
+                    + "; ".join(evidence_report["closeout_delegation"]["failures"])
+                )
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(missing_bits)

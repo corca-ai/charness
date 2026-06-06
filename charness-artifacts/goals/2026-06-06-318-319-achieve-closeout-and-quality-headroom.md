@@ -9,18 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 2 (#318 orchestrator-owned closeout proof delegation) — next.
-- Slice 1 (#319) status: implemented + verified (43 targeted tests, predict-commit
-  aggregate green, broad gate 72/0), bounded fresh-eye review found one blocker
-  (ratchet read working tree, not the staged index) — fixed and re-verified.
-  `Close #319` carrier staged on the slice-1 commit; CLOSED state verified post-push.
-- #319 mechanism (decided via `quality`): a changed-file-scoped commit-boundary
-  **ratchet** in `check_skill_surface_preflight.py` (`--changed-skill-md`), wired
-  path-scoped into `staged_commit_gate_plan.py`, plus the #308 preflight reference
-  extension. Full-scan rejected: 5 public skills already sit under the 4-line
-  buffer (issue/release/retro=0, debug/impl=2); the ratchet grandfathers existing
-  debt and blocks only new erosion / brand-new skills without buffer.
-- Next action: commit slice 1 (`Close #319`), then start slice 2 (#318).
+- Current slice: After-phase closeout (both slices implemented + verified).
+- Slice 1 (#319): committed `b92dd9f9` with `Close #319`. Changed-file-scoped
+  commit-boundary headroom **ratchet** (mechanism via `quality`); bounded
+  fresh-eye review found + fixed one blocker (ratchet read working tree, not the
+  staged index). CLOSED state verified post-push (non-claim).
+- Slice 2 (#318): orchestrator/sub-goal closeout-proof delegation (opt-in;
+  standalone default untouched). Mandatory fresh-eye critique (3 angles +
+  counterweight + 2 re-reviews) found + fixed 4 blockers; re-reviews CLEAR /
+  ENFORCEMENT CORRECT. `Close #318` carrier about to commit; CLOSED post-push.
+- Next action: commit slice 2 (`Close #318`), then run the After-phase
+  (retro + disposition review + Auto-Retro + flip to `complete`).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -185,9 +184,15 @@ Recorded during the run:
 - Release: n/a — no version bump or install-manifest edit; `achieve` + `quality`
   contract changes only.
 - Issue closeout (#319): carrier = direct-commit (`Close #319` on the slice-1
-  commit); `issue_tool.py validate-closeout-draft` rehearsed pre-commit;
+  commit `b92dd9f9`); `issue_tool.py validate-closeout-draft` rehearsed pre-commit
+  (`ok: true`); `verify-closeout --expect-state CLOSED` deferred to the
+  maintainer's push (explicit non-claim, per Non-Goals — `achieve` does not push
+  or close).
+- Issue closeout (#318): carrier = direct-commit (`Close #318` on the slice-2
+  commit); classification `deferred-work`; `issue_tool.py validate-closeout-draft`
+  rehearsed pre-commit with `Critique:` binding the resolution critique;
   `verify-closeout --expect-state CLOSED` deferred to the maintainer's push
-  (explicit non-claim, per Non-Goals — `achieve` does not push or close).
+  (explicit non-claim).
 
 ## Activation Discussion
 
@@ -219,6 +224,20 @@ proof level explicitly rather than implying it ran.
 - Critique: Bounded fresh-eye review (general-purpose subagent) found 1 BLOCKER: ratchet read the working tree for 'new' but HEAD for 'base', letting a healthy working tree mask a 0-headroom staged commit. Fixed: 'new' now reads the staged index blob (git show :<rel>) with worktree fallback; added test_scan_changed_skill_md_judges_staged_not_worktree. Re-review requested.
 - Off-goal findings: None.
 - Lessons carried forward: A new commit-boundary gate must judge the staged index, not the working tree, or it inherits the same bypass class it was built to close.
+- Metrics:
+
+### Slice 2: Slice 2 — #318 orchestrator-owned closeout proof delegation
+
+- Objective: Add an opt-in orchestrator/sub-goal external-proof delegation contract to achieve: closeout-state taxonomy + a machine-visible delegated-proof checklist enforced in check_goal_artifact.py, so a sub-goal can honestly close at local/proof-carrier complete while a named orchestrator owns deferred proof — without weakening the strict standalone default.
+- Why this approach: Followed the established floor-module pattern (a leaf goal_artifact_closeout_delegation.py with apply_*(report,text), wired into check_complete_evidence) so it composes with the disposition/coordination/phase-routing floors. Opt-in IS the grandfather: no ## Closeout Delegation section => standalone => strict default untouched. Presence/resolution-based, never a prose classifier (the repo's documented floor philosophy).
+- Commits:
+- What changed: NEW skills/public/achieve/scripts/goal_artifact_closeout_delegation.py; goal_artifact_closeout_evidence.py (loader + apply call); check_goal_artifact.py (surfacing); references/lifecycle.md + references/goal-artifact.md + docs/prescribed-skill-closeout-contract.md (taxonomy + contract); attention-state-visibility.json (skipped declaration); tests/quality_gates/test_goal_artifact_closeout_delegation.py; synced plugins/charness mirror.
+- Alternatives rejected: Auto-derive the orchestrator checklist across goal files (rejected: cross-file, fragile); enforce external push/CI/live as machine checks for all goals (rejected: weakens nothing today and would be a far larger change; charness gate is prose non-claim + evidence floors); min skipped-reason length / cross-goal existence validation (rejected: #305 brittleness; substance is the fresh-eye review's job).
+- Targeted verification: 19 delegation tests + existing goal-artifact/producer/prescribed/closeout suites green; ./scripts/run-quality.sh 72/0; end-to-end CLI repro: orchestrator with an unresolved item blocked with the precise message, resolving cleared it, standalone goal untouched (mode=standalone).
+- Test duplication pressure:
+- Critique: Mandatory bounded fresh-eye critique (3 angles + counterweight + 2 re-reviews). Honesty boundary HELD (standalone provably untouched). 4 BLOCKERs found and fixed (blank-orchestrator-field next-line capture; negated 'verified'; blank-line-in-checklist escape; mode-trailing-text blocking standalone), each with a regression test. Re-reviews: CLEAR / ENFORCEMENT CORRECT. Artifact: charness-artifacts/critique/2026-06-06-318-orchestrated-closeout-delegation.md
+- Off-goal findings: None.
+- Lessons carried forward: A new presence-based gate must err-safe (over-block, never bypass) on ambiguous resolution text; and field-value regexes must anchor same-line ([ \t], not \s) or a blank field silently borrows the next line.
 - Metrics:
 
 ## Context Sources

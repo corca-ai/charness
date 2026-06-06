@@ -158,6 +158,59 @@ new artifact, not only the primary `achieve` template. The current producer
 contract is pinned by the authoring-repo-internal
 `tests/quality_gates/test_goal_artifact_producers.py`.
 
+## Closeout Delegation (optional, orchestrated mode)
+
+A goal stays **standalone** by default — it owns all closeout proof itself and
+needs no extra section. A goal only adds `## Closeout Delegation` when it runs in
+orchestrated mode (`references/lifecycle.md` *Orchestrated closeout*). Absence of
+the section, or `Closeout mode: standalone`, keeps the strict standalone default.
+
+A **sub-goal** that delegates external proof to a named orchestrator:
+
+```markdown
+## Closeout Delegation
+
+- Closeout mode: orchestrated
+- Orchestrator goal: charness-artifacts/goals/<date>-<orchestrator-slug>.md
+- Closeout state: impl-local / carrier complete
+- Delegated proof:
+  - pushed-ci — orchestrator owns the final main push + CI watch
+  - live — orchestrator runs the provider roundtrip
+  - issue-closed — orchestrator verifies #<N> CLOSED after push
+```
+
+An **orchestrator** goal that owns the delegated proof carries a checklist; every
+item must be resolved (`verified`, `skipped: <reason>`, or `issue #N`) before the
+goal can flip to `complete`:
+
+```markdown
+## Closeout Delegation
+
+- Closeout mode: orchestrator
+- Delegated proof checklist:
+  - pushed-ci — verified: CI green on <sha> (<run-url>)
+  - applied-restarted — skipped: apply deferred to next window — operator directed
+  - live — verified: provider roundtrip observed <ts>
+  - issue-closed — issue #<N>
+```
+
+`check_goal_artifact.py` enforces this in
+`goal_artifact_closeout_delegation.py`: an orchestrated sub-goal must name the
+orchestrator and list ≥1 delegated item; an orchestrator must resolve every
+checklist item. The check is presence/resolution-based — it proves the delegated
+proof is recorded and (for the orchestrator) accounted for, not that the prose is
+"good enough". The taxonomy tokens (`impl-local`, `carrier`, `pushed-ci`,
+`applied-restarted`, `live`, `issue-closed`) are the shared vocabulary, not a
+required exact match.
+
+The gate does **not** verify that the named orchestrator goal file exists or that
+its checklist actually covers the sub-goal's delegated items — that substantive
+call is the fresh-eye disposition review's job, the same rung-1 (deterministic
+floor proves the wiring) / rung-2 (intelligence judges substance) split the
+disposition gate uses. The deterministic floor stays narrow and ungameable on
+purpose; tightening it into a cross-goal existence/coverage validator would
+re-import the brittleness the floor philosophy avoids.
+
 ## Metrics Honesty
 
 Slice and final metrics use host-agnostic shallow signals. Prefer

@@ -289,6 +289,24 @@ def _load_sibling_phase_routing():
     return module
 
 
+def _load_sibling_closeout_delegation():
+    """Load the sibling orchestrator/sub-goal closeout-delegation gate.
+
+    A leaf like the disposition/coordination modules (no sibling imports), kept
+    separate so this wrapper stays under the single-file line gate. One-directional:
+    this module depends on it, never the reverse.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_closeout_delegation",
+        Path(__file__).resolve().parent / "goal_artifact_closeout_delegation.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_closeout_delegation.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_sibling_adapter_policy():
     """Load the optional achieve adapter policy leaf module."""
     spec = importlib.util.spec_from_file_location(
@@ -314,6 +332,9 @@ apply_coordination_floors = _coordination.apply_coordination_floors
 
 _phase_routing = _load_sibling_phase_routing()
 apply_phase_routing_floor = _phase_routing.apply_phase_routing_floor
+
+_closeout_delegation = _load_sibling_closeout_delegation()
+apply_closeout_delegation = _closeout_delegation.apply_closeout_delegation
 
 _metric_window = _load_sibling_metric_window()
 metric_window_attention = _metric_window.metric_window_attention
@@ -425,6 +446,13 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # rule date), so it runs unconditionally; the module no-ops when inert.
     apply_coordination_floors(report, text)
     apply_phase_routing_floor(report, text)
+
+    # Orchestrator/sub-goal closeout-proof delegation. Opt-in via a
+    # `## Closeout Delegation` section; an absent section or `Closeout mode:
+    # standalone` is untouched, so the strict standalone default stays the hard
+    # default. Orchestrated sub-goals must name an orchestrator + list delegated
+    # items; orchestrator goals must resolve every delegated checklist item.
+    apply_closeout_delegation(report, text)
 
     # Metric-window affordance: surface whether a goal-scoped `Host metric window:` line
     # was recorded so an absent window is visible at flip-to-complete rather than
