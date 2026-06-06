@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-06",
-  "source_artifact_count": 141,
-  "candidate_count": 835,
+  "source_artifact_count": 142,
+  "candidate_count": 845,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -195,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cf759eab706c",
+      "kind": "current_focus",
+      "lesson": "slice 1 (`324da4e7`): refreshed `quality/latest.md` (stale at v0.20.0 → v0.24.1).",
+      "normalized_key": "slice 1 324da4e7 refreshed quality latest md stale at v0 20 0 v0 24",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:012b36f7451a",
       "kind": "current_focus",
       "lesson": "slice 1 (`b92dd9f9`, `Close #319`): a changed-file-scoped commit-boundary **ratchet** for the SKILL.md `core_nonempty` ≥4 headroom buffer;",
@@ -209,6 +229,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d5ae4d94fe84",
+      "kind": "current_focus",
+      "lesson": "slice 2 (`69c2df9b`): #2b cross-file sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch.",
+      "normalized_key": "slice 2 69c2df9b 2b cross file sibling scan marker enforcement in the validate debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
           "section": "Context"
         }
@@ -235,12 +275,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:cff6d498aa29",
-      "kind": "next_improvement",
-      "lesson": "**memory:** recon-derived \"gotchas\" about which paths are mirrored can be repo-inaccurate — `scripts/` is mirrored to `plugins/charness/scripts/`, not only `skills/`. The standing \"re-verify the brief against real files\" instruction already absorbed this; no separate gate needed.",
-      "normalized_key": "memory recon derived gotchas about which paths are mirrored can be repo inaccurate scripts",
+      "candidate_id": "current_focus:8486270438da",
+      "kind": "current_focus",
+      "lesson": "slice 3 (`238fad72`): #2a advisory RCA-ledger nudge (`rca_link_advisory.py`).",
+      "normalized_key": "slice 3 238fad72 2a advisory rca ledger nudge rca link advisory py",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
       "latest_source_date": "2026-06-06",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -248,19 +288,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
-          "section": "Next Improvements"
+          "section": "Context"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:7df8a2084907",
-      "kind": "next_improvement",
-      "lesson": "**memory:** the authoring-preflight \"portable skill packages\" section already names the issue-anchor trap; this run is another instance, carried into `recent-lessons.md` by this retro.",
-      "normalized_key": "memory the authoring preflight portable skill packages section already names the issue anchor trap",
+      "candidate_id": "current_focus:7aaea97f93dc",
+      "kind": "current_focus",
+      "lesson": "slice 4 (`c97bde77`): folded a length-band refactor; dispositioned scan candidates.",
+      "normalized_key": "slice 4 c97bde77 folded a length band refactor dispositioned scan candidates",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
       "latest_source_date": "2026-06-06",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -268,19 +308,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
-          "section": "Next Improvements"
+          "section": "Context"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:c80f70ec69dc",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** after editing skill-package references/scripts/JSON, run the cheap `run_slice_closeout.py --predict-commit` aggregate (which already runs `validate_skill_ergonomics` + `check-markdown`) *before* the full broad gate — the documented mutate→sync→verify rhythm (verify = the aggregate, not the broad gate). The teeth and the doc already exist; the gap was the habit.",
-      "normalized_key": "workflow after editing skill package references scripts json run the cheap run slice closeout",
+      "candidate_id": "current_focus:222b342a0ea9",
+      "kind": "current_focus",
+      "lesson": "slice 5 (`78da39d7`): advisory-interpretation contract + `nose` pilot; rollout #322.",
+      "normalized_key": "slice 5 78da39d7 advisory interpretation contract nose pilot rollout 322",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
       "latest_source_date": "2026-06-06",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -288,49 +328,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c53591719fb8",
-      "kind": "next_improvement",
-      "lesson": "**workflow / capability:** the SKILL.md `core_nonempty` headroom-buffer test (`remaining ≥ 4`) runs only in the broad gate, not at the commit boundary, so authoring a SKILL.md to the hard 160 limit passes the per-slice gate and fails late. Generalizes #308 (authoring preflight) and #314 (cheap structural gates at the commit boundary) to the SKILL.md core-headroom surface. Disposition: filed as a tracked issue (larger than this goal's scope; needs the per-slice-cost design the #314/#307 caution flags). → see Auto-Retro disposition for the issue number.",
-      "normalized_key": "workflow capability the skill md core nonempty headroom buffer test remaining 4 runs only",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-          "date": "2026-06-06",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:42840315ab43",
-      "kind": "repeat_trap",
-      "lesson": "**Minor:** a markdown inline-code span wrapped across a line in `lifecycle.md`, caught by `check-markdown` in the same broad-gate failure as the anchors.",
-      "normalized_key": "minor a markdown inline code span wrapped across a line in lifecycle md caught",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
-          "date": "2026-06-06",
-          "section": "Waste"
+          "section": "Context"
         }
       ]
     }
@@ -517,6 +517,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cf759eab706c",
+      "kind": "current_focus",
+      "lesson": "slice 1 (`324da4e7`): refreshed `quality/latest.md` (stale at v0.20.0 → v0.24.1).",
+      "normalized_key": "slice 1 324da4e7 refreshed quality latest md stale at v0 20 0 v0 24",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:012b36f7451a",
       "kind": "current_focus",
       "lesson": "slice 1 (`b92dd9f9`, `Close #319`): a changed-file-scoped commit-boundary **ratchet** for the SKILL.md `core_nonempty` ≥4 headroom buffer;",
@@ -531,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d5ae4d94fe84",
+      "kind": "current_focus",
+      "lesson": "slice 2 (`69c2df9b`): #2b cross-file sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch.",
+      "normalized_key": "slice 2 69c2df9b 2b cross file sibling scan marker enforcement in the validate debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
           "section": "Context"
         }
@@ -553,6 +593,86 @@
           "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
           "date": "2026-06-06",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:8486270438da",
+      "kind": "current_focus",
+      "lesson": "slice 3 (`238fad72`): #2a advisory RCA-ledger nudge (`rca_link_advisory.py`).",
+      "normalized_key": "slice 3 238fad72 2a advisory rca ledger nudge rca link advisory py",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7aaea97f93dc",
+      "kind": "current_focus",
+      "lesson": "slice 4 (`c97bde77`): folded a length-band refactor; dispositioned scan candidates.",
+      "normalized_key": "slice 4 c97bde77 folded a length band refactor dispositioned scan candidates",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:222b342a0ea9",
+      "kind": "current_focus",
+      "lesson": "slice 5 (`78da39d7`): advisory-interpretation contract + `nose` pilot; rollout #322.",
+      "normalized_key": "slice 5 78da39d7 advisory interpretation contract nose pilot rollout 322",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:54106ccac33d",
+      "kind": "next_improvement",
+      "lesson": "**capability:** none new. Every miss this session was caught by an existing gate or the existing fresh-eye review at the right boundary — the system worked.",
+      "normalized_key": "capability none new every miss this session was caught by an existing gate or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -597,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:34e1fff8f76d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the `quality/latest.md` 140-line cap and the required-section / `Runtime Signals`-prefix / `Delegated Review`-slow-gate-lens contract are load-bearing; recorded here and in the slice-1 log so the next quality refresh drafts to fit.",
+      "normalized_key": "memory the quality latest md 140 line cap and the required section runtime signals",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c80f70ec69dc",
       "kind": "next_improvement",
       "lesson": "**workflow:** after editing skill-package references/scripts/JSON, run the cheap `run_slice_closeout.py --predict-commit` aggregate (which already runs `validate_skill_ergonomics` + `check-markdown`) *before* the full broad gate — the documented mutate→sync→verify rhythm (verify = the aggregate, not the broad gate). The teeth and the doc already exist; the gap was the habit.",
@@ -611,6 +751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5fabc4ba6569",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** before authoring or refreshing a length-capped durable artifact (`quality/latest.md`=140, `debug/latest.md`=180, goal/handoff caps), read the owning validator's limit + required sections FIRST and draft to fit. The fresh-eye review is a backstop, not the budget check.",
+      "normalized_key": "workflow before authoring or refreshing a length capped durable artifact quality latest md 140",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
           "section": "Next Improvements"
         }
@@ -677,6 +837,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:718011c6564b",
+      "kind": "repeat_trap",
+      "lesson": "Minor, gate-caught (working as intended): slice-3's first test subprocessed the CLI → `check-boundary-bypass-ratchet` flagged a new convertible boundary; I rewrote it in-process. Slice-3 additions also crossed `run_slice_closeout.py` into the python-lengths advisory band → folded a clean provider-extraction refactor in slice 4. Both gates paid for themselves at the right boundary.",
+      "normalized_key": "minor gate caught working as intended slice 3 s first test subprocessed the cli",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:7a185078ef63",
       "kind": "repeat_trap",
       "lesson": "**Minor:** the #314 slice-spec gotcha I wrote (\"scripts/ needs no mirror sync\") was wrong — `scripts/staged_commit_gate_plan.py` is mirrored to `plugins/charness/scripts/`, so the agent had to run the sync. The agent caught it and recorded the correction as a non-claim. My recon-derived gotcha was repo-inaccurate; the agent's re-verify instruction saved it.",
@@ -711,6 +891,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:12e9ac904012",
+      "kind": "repeat_trap",
+      "lesson": "**Slice-1 over-wrote a length-capped artifact, then trimmed in many passes.** I authored a ~230-line comprehensive `quality/latest.md` before checking that `validate_quality_artifact.py` caps it at 140 lines. The slice-1 fresh-eye reviewer caught it (it ran the gate and saw 70/1, not the 71/0 I'd claimed from a stale earlier run). Trimming 90 lines took ~6 edit/measure iterations because markdown rewrapping kept equal-length swaps from reducing the line count. The cap is a known, enforced constraint I should have read first.",
+      "normalized_key": "slice 1 over wrote a length capped artifact then trimmed in many passes i",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md",
           "date": "2026-06-06",
           "section": "Waste"
         }

@@ -1,6 +1,6 @@
 # Achieve Goal: Repo quality scan + closeout-discipline gates
 
-Status: draft
+Status: complete
 Created: 2026-06-06
 Activation: `/goal @charness-artifacts/goals/2026-06-06-quality-scan-closeout-discipline.md`
 Timebox: 3h
@@ -13,14 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 4 — fold cheap scan wins / file the rest** (next).
-  Slices 1–3 committed. Activated 2026-06-06T06:16:29Z; closeout reserve begins
-  2026-06-06T08:56:29Z.
-- Next action: apply only obviously-correct cheap improvements surfaced by the
-  slice-1 scan; route the rest to issues. The scan surfaced no cheap
-  obviously-correct production fix (watch items only: test economics, coverage
-  brush, python-lengths WARN); the nose-interpretation candidate is slice 5.
-  Expect slice 4 to be mostly disposition + carry-forward.
+- Current slice: **complete** — all 6 slices done, closeout finished well within
+  the timebox (closeout reserve began 2026-06-06T08:56:29Z; finished ahead).
+- Outcome: honest refreshed quality posture (71/0 read-only, 72/0 full); #2b +
+  #2a closeout-discipline improvements committed; advisory-interpretation contract
+  first cut landed with the rollout split to #322. Retro persisted; every
+  improvement dispositioned. No release (per Non-Goals).
 - Timebox: 3h from activation; protect the final 20m for broad gate + retro +
   disposition + commit + user closeout. If the macro outcome finishes early,
   continue to the next safe in-scope improvement (do not close on first item).
@@ -240,7 +238,7 @@ What the user can do to verify completion directly:
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | `scripts/rca_link_advisory.py` warns at exit 0 for an added debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` via an `advisory_provider` hook (not a standalone promotable gate); no fail path; 9 in-process tests + wiring test + real-repo smoke; 71/0 | **done** |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | One cheap fold applied (refactor pulling `run_slice_closeout.py` back under the python-lengths advisory band, a slice-3 length-creep); all other candidates dispositioned as gate-tracked watch or maintainer-deferred (#184) in Off-Goal Findings; no new issues; 71/0 | **done** |
 | 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference `advisory-interpretation-contract.md` written (inference-layer self-declaration + consumer-must-answer; explicit "not verified facts"; no blanket banner); applied to the `nose` pilot; consumer requirement in `automation-promotion.md`; 4 tests; rollout split to **issue #322**; cut point in Off-Goal Findings; 71/0; fresh-eye critique folded below | **done** |
-| 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
+| 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` 72/0; session `retro` persisted + RCA event; every improvement dispositioned; Final Verification + User Verification + Auto-Retro written; handoff updated | **done** |
 
 ## Coordination Cues
 
@@ -269,6 +267,18 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`. (#320/#184 are context-only; any new issues
   filed for deferred candidates are off-goal findings, not closeouts.)
+
+**Resolved at closeout:**
+
+- **Routing:** slice 1 → `quality` (find-skills `--recommend-for-task`, matched
+  trigger `quality`); slices 2–5 → `impl`-class (find-skills task-text returned no
+  public-skill match for the validator/advisory/reference implementation verbs —
+  durable code/test/reference work).
+- **Gather:** n/a — all context is repo-local (no external URL/Slack/Notion/Docs).
+- **Release:** n/a — Non-Goals bar any version bump, tag, publish, or push.
+- **Issue closeout:** n/a — this goal closes no tracked issue. New issue **#322**
+  (advisory-interpretation rollout) is an off-goal finding, not a closeout; #321
+  (mutation regression) and #184 (product metrics) are out of scope / deferred.
 
 ## Slice Log
 
@@ -590,16 +600,59 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-06-quality-scan-closeout-discipline.md
+(session retro; recent-lessons + lesson-selection-index refreshed; one RCA event
+appended — `capped-artifact-drafted-before-reading-limit`, source=retro,
+converted, caught_by=gate).
+Host log probe: skipped: not-applicable: cost/turn-count was not this goal's
+question. Evidence is deterministic gate pass/fail (full `run-quality.sh` 72/0)
+and three bounded fresh-eye review verdicts, not host-log efficiency metrics; no
+`Host metric window:` line was set for this goal.
+Disposition review: charness-artifacts/goals/2026-06-06-quality-scan-closeout-discipline.md
+`## Off-Goal Findings` — every slice-1 scan candidate dispositioned (applied /
+gate-tracked watch / split to #322 / maintainer-deferred #184); the slice-5
+fresh-eye critique independently reviewed the splittable cut point.
 
 ## User Verification Instructions
 
-_(Filled at closeout — see User Acceptance for the planned shape: read the
-refreshed quality posture, run the read-only gate, exercise the #2b fixture and
-#2a nudge, and confirm each improvement is dispositioned.)_
+1. **Quality posture:** read `charness-artifacts/quality/latest.md` — v0.24.1
+   posture, 71/0 gates, the `nose`-now-active delta, and the prioritized candidate
+   list. Archived prior pass at `history/2026-06-05-quality-review.md`.
+2. **Green on the final state:** `./scripts/run-quality.sh --read-only` → 71/0
+   (full `./scripts/run-quality.sh` → 72/0).
+3. **#2b enforced:** in a scratch copy, delete the `cross-file:` line from
+   `charness-artifacts/debug/latest.md`'s `## Sibling Search` and run
+   `python3 scripts/validate_debug_artifact.py --repo-root .` — it FAILS with a
+   `cross-file` error; restore it (or add `no cross-file sibling: <reason>`) and it
+   PASSES. Or run `python3 -m pytest tests/test_debug_artifact.py -k cross_file`.
+4. **#2a advisory:** `python3 scripts/rca_link_advisory.py --repo-root . --paths
+   charness-artifacts/debug/2026-06-06-not-in-ledger.md` prints an `ADVISORY:` at
+   exit 0; a path already `ref`'d in `rca-ledger.jsonl` is silent. Or
+   `python3 -m pytest tests/test_rca_link_advisory.py`.
+5. **Slice-5 pilot:** `python3 skills/public/quality/scripts/inventory_nose_clones.py
+   --repo-root .` prints an `INTERPRETATION (...)` self-declaration line.
+6. **Dispositions:** `## Off-Goal Findings` (above) and `## Auto-Retro` (below)
+   show every surfaced improvement as `applied`, `issue #N`, or `gate-tracked
+   watch` — no prose-only memory.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions (every surfaced improvement has a disposition):
+
+- #2b cross-file sibling marker → `applied` (slice 2, `69c2df9b`).
+- #2a RCA-ledger nudge → `applied` (slice 3, `238fad72`).
+- `nose` 1951-dup interpretation → `applied` as the slice-5 pilot (`78da39d7`);
+  cross-skill rollout → `issue #322`.
+- Standing test economics → `gate-tracked watch` (`inventory_standing_test_economics`,
+  advisory-by-design; lever out of scope).
+- Coverage brush → `gate-tracked watch` (`check-runtime-budget` PASS).
+- `goal_artifact_closeout_evidence.py` python-lengths WARN → `gate-tracked watch`
+  (pre-existing, out of scope; `check-python-lengths` self-tracks).
+- `run_slice_closeout.py` length creep (introduced in slice 3) → `applied` fold
+  (slice 4 refactor, `c97bde77`).
+- Retro lesson (capped-artifact-drafted-before-reading-limit) → `applied` to
+  `recent-lessons.md` + one RCA event; no new issue (habit + validators enforce).
+- #321 (mutation regression, newly open) → `out of scope`, flagged for handoff.
+- #184 (product metrics) → `deferred, maintainer judgment` (Non-Goal).
+
+No prose-only memory: each item is a commit, an issue, or a gate that self-tracks.
