@@ -4,7 +4,7 @@ Status: draft
 Created: 2026-06-06
 Activation: `/goal @charness-artifacts/goals/2026-06-06-quality-scan-closeout-discipline.md`
 Timebox: 3h
-Activation time: set at /goal activation (record the ISO start timestamp then)
+Activation time: 2026-06-06T06:16:29Z (closeout reserve begins 2026-06-06T08:56:29Z)
 Closeout reserve: 20m
 Done-early policy: continue_next_improvement
 
@@ -13,8 +13,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (draft).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-06-quality-scan-closeout-discipline.md`.
+- Current slice: **slice 1 — quality posture scan** (active). Activated
+  2026-06-06T06:16:29Z; closeout reserve begins 2026-06-06T08:56:29Z.
+- Next action: run the `quality` skill four-lens walk + bounded fresh-eye review,
+  refresh `charness-artifacts/quality/latest.md` (stale at v0.20.0; repo now
+  v0.24.1), and surface the prioritized candidate list scoping slices 2–4.
 - Timebox: 3h from activation; protect the final 20m for broad gate + retro +
   disposition + commit + user closeout. If the macro outcome finishes early,
   continue to the next safe in-scope improvement (do not close on first item).
@@ -229,7 +232,7 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md`; `run-quality.sh --read-only` PASS; bounded fresh-eye review; prioritized candidate list (incl. `nose` advisory) | planned |
+| 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md` (140 lines, validators green); `run-quality.sh --read-only` 71/0; bounded fresh-eye review REVISE→folded; prioritized candidate list + nose-now-active delta | **done** |
 | 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 59 dated artifacts stay green; `sibling-search.md` updated; mirrors synced; fresh-eye critique CLEAR | planned |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | Nudge warns at exit 0 for a new debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` as an advisory line (not a standalone promotable gate); no fail path | planned |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
@@ -265,6 +268,38 @@ during the run:
   filed for deferred candidates are off-goal findings, not closeouts.)
 
 ## Slice Log
+
+### Slice 1 — Quality posture scan (done, 2026-06-06)
+
+- **Routing:** `find-skills --recommend-for-task` → `quality` (public skill),
+  matched trigger `quality`; adapter local-first defaults (no trusted roots).
+- **Result:** refreshed `charness-artifacts/quality/latest.md` (was stale at
+  v0.20.0; now v0.24.1, 140 lines, passes `validate-quality-artifact` +
+  `validate-inventory-consumption` + `validate-quality-closeout-contract`).
+  Archived prior pass to `history/2026-06-05-quality-review.md`.
+- **Gates:** `run-quality.sh --read-only` = 71 passed, 0 failed (~43s, profile
+  `local-linux-x86_64-36cpu`). `plan_cautilus_proof.py` next_action=none → no
+  eval. `validate_usage_episodes` 596 / `validate_attention_state_visibility` 72.
+- **Key delta:** `inventory-nose-clones` is now ACTIVE — the `nose` binary
+  (0.5.0) is present locally, where the goal premise assumed absent. 20 families
+  / 1951 dup-lines, dominated by intentional per-package `resolve_adapter.py`
+  boilerplate. This becomes slice 5's pilot surface (proxy-needs-interpretation),
+  not a new gate. The goal's "nose absent" framing is corrected as a non-claim.
+- **Fresh-eye review:** one bounded reviewer (read-only, shared parent worktree,
+  `high-leverage`) → **REVISE → folded**. Critical catch: my first comprehensive
+  draft was 230 lines and tripped `validate-quality-artifact`'s 140-line cap
+  (flipping the gate to 70/1); trimmed to 140 to restore 71/0. Also corrected the
+  coverage bullet (`check-coverage` is changed-path-gated, did not run this turn;
+  44.x s is a recorded sample). Verdict after fold: no new repo-owned gate
+  missing — tier is "extend existing gates", #2b/#2a targeted correctly.
+- **Candidate list → slice scoping:** #2b (cross-file sibling marker, slice 2,
+  AUTO_CANDIDATE) and #2a (RCA-ledger nudge, slice 3, advisory-by-design)
+  confirmed as the only real enforcement holes; nose-interpretation → slice 5;
+  test-economics + coverage-brush + python-lengths WARN = watch items (slice 4
+  carry-forward, no cheap obviously-correct fold surfaced).
+- **Non-claims:** the 44.x s coverage timing is a recorded prior-run sample, not
+  this `--read-only` invocation; the `nose` proof is local-profile only (real-host
+  second-machine proof remains a separate carry-forward).
 
 ## Context Sources
 

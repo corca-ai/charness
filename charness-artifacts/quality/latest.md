@@ -1,139 +1,140 @@
 # Quality Review
-Date: 2026-06-05
+Date: 2026-06-06
 
 ## Scope
 
-Open `/charness:quality` posture pass on a clean `main` at `v0.20.0`, in sync
-with `origin/main`, after the 0.20.0 release and #293–#300 closeouts. No bug was
-named, so this is a full re-derivation: re-resolved the adapter and gate/source
-surface, ran the existing gates, walked the four lenses, ran a bounded fresh-eye
-reviewer. The wrong-boundary suspect was standing test-economics drift — a real
-upward trend but advisory-by-design with its lever already shipped, not
-architecture/ownership drift. No production source changed; the deliverable is
-the honest posture.
+Open `/charness:quality` posture pass on clean `main` at `v0.24.1`, run as
+**slice 1 of the `2026-06-06-quality-scan-closeout-discipline` achieve goal**.
+The prior artifact was stale at `v0.20.0` (0.21.0–0.24.1 shipped without a
+refresh), so this is a full re-derivation: gates, four lenses, one bounded
+fresh-eye reviewer. Deliverable = honest posture **plus a prioritized candidate
+list scoping the goal's slices 2–5**. No production source changed; routing
+`find-skills` → `quality`. Concept lens: no architecture/ownership drift; the one
+standing tension is enforcement-vs-judgment (two unenforced debug-closeout steps,
+see Missing).
 
 ## Current Gates
 
-- `./scripts/run-quality.sh --read-only`: 71 passed, 0 failed, 41.2s (profile
-  `local-linux-x86_64-36cpu`). All families green: packaging/import-safety,
-  command-docs/doc-links/markdown, spec/specdown/run-evals,
-  secrets/supply-chain/actions/shell, pytest/test-completeness/production-ratio/
-  boundary-bypass-ratchet, coverage, current-pointer, inventory-consumption,
-  closeout-contract validators.
-- `validate_usage_episodes.py`: 548 records validated; `report_usage_episodes.py`
-  flags the expected product-success veto gaps — an engineering signal, not
-  product-success proof. `validate_attention_state_visibility.py`: 71 files, no
-  hidden exit-zero attention state.
+- `./scripts/run-quality.sh --read-only`: **71 passed, 0 failed, ~43.5s**
+  (profile `local-linux-x86_64-36cpu`) on the final trimmed state. The reviewer
+  caught an intermediate 230-line draft of this artifact tripping
+  `validate-quality-artifact`'s 140-line cap (70/1); trimming restored 71/0.
+- Advisory exit-0 WARN: `check-python-lengths` flags
+  `skills/public/achieve/scripts/goal_artifact_closeout_evidence.py` at 348 code
+  lines in band `[330,360]` (hard limit 360) — a trim nudge, exit 0.
+- `validate_usage_episodes.py`: 596 records; `report_usage_episodes.py` flags the
+  expected product-success veto gaps (engineering signal, not product proof);
+  `validate_attention_state_visibility.py`: 72 files, no hidden exit-zero state.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
-  rendered by `render_runtime_summary.py` this turn; profile
-  `local-linux-x86_64-36cpu`; runtime visibility configured.
-- runtime hot spots: `check-coverage` 45.2s latest / 44.1s median vs 45.0s budget
-  (brushing ceiling, see Advisory); `pytest` 15.3s / 43.4s median, budget 140.0s;
-  `check-current-pointer-writes` 13.3s / 12.9s; `check-duplicates` 10.0s / 11.9s.
-- coverage gate: `run-quality --read-only` passed (71 passed, 0 failed);
-  `check-runtime-budget` PASS, so the coverage brush is within enforced tolerance.
-- evaluator depth: no live Cautilus (`plan_cautilus_proof.py` next_action=none /
-  must_ask_before_running=true); proof is deterministic gates + one fresh-eye review.
+  rendered by `render_runtime_summary.py` (via `record_quality_runtime.py`) this
+  turn; profile `local-linux-x86_64-36cpu`; runtime visibility configured.
+- runtime hot spots: `check-coverage` 44.5s / 44.8s median vs 45.0s budget
+  (recorded sample); `pytest` 17.0s / 17.7s, budget 140.0s;
+  `check-current-pointer-writes` 13.4s; `check-duplicates` 10.0s.
+- coverage gate: `run-quality --read-only` passed; `check-runtime-budget` PASS.
+  `check-coverage` is changed-path-gated and did **not** run this turn (only
+  markdown changed), so its 44.x s is the last recorded full-run sample, enforced
+  and green when it runs, brushing budget (see Advisory).
+- evaluator depth: no live Cautilus (`plan_cautilus_proof.py` next_action=none);
+  proof is deterministic gates + one fresh-eye review.
 
 ## Healthy
 
-- All 71 gates pass; spot-checked gates prove behavior not wording —
-  `check_export_safe_imports.py` (AST import-safety) and
-  `check_boundary_bypass_ratchet.py` (no-increase ratchet) have real fail
-  semantics.
-- `inventory_lint_ignores.py`: `blanket`=0, file-level=0, every suppression
-  `scope`=inline; `codes` dominated by E402 (post-bootstrap import order) plus a
-  few ANN001/BLE001 — zero production-logic suppressions.
+- All 71 run gates pass with real fail semantics (`check_export_safe_imports.py`
+  AST import-safety, `check_boundary_bypass_ratchet.py` no-increase ratchet).
+- `inventory_lint_ignores.py`: `blanket`=0, file-level=0, `scope`=inline for all
+  75 suppressions (down from 101); `codes` = 66 E402 + 5 ANN001 + 4 documented
+  BLE001 — zero production-logic suppressions.
 - `inventory_skill_ergonomics.py`: `checked_skill_count`=23,
   `heuristic_finding_count`=17, `prose_review_status`=required; `subcheck_counts`
-  shows the only non-zero subcheck is `host_surface_reference_count`=92 (mode/
-  option pressure, prose ritual, trigger overlap, path ambiguity all 0).
-- prose review result: no trigger-overlap, undertrigger, mode/option pressure,
-  taste-policing, or repeated-prose-ritual smell across 19 public + 4 support
-  skills; the only flag is the deferred host-surface advisory.
-- `inventory_public_spec_quality.py`: 4 specs, `source_guard_row_count`=0, thin
-  `executable_block_count` (1 e2e + 1 smoke) — no brittle source guards, no
-  duplicated proof. CLI-ergonomics, gate-verbosity, dual-implementation
-  inventories also scan clean.
+  has one non-zero subcheck, `host_surface_reference`=92 (deferred portability),
+  all of `core_overfill`/`mode_option_pressure`/`prose_ritual`/`path_ambiguity` 0.
+- prose review result: across 19 public + 4 support skills, no trigger-overlap,
+  undertrigger, mode/option pressure, taste-policing, or prose-ritual smell — the
+  only non-zero signal is the deferred `host_surface_reference` advisory.
+- `inventory_public_spec_quality.py`: 4 specs, `source_guard_row_count`=0 and
+  `pointer_proof_marker_count`=0, thin `executable_block_count` (8; e2e=1+smoke=1)
+  — no brittle source guards, no duplicated proof at the wrong layer.
 
 ## Weak
 
-- `inventory_standing_test_economics.py` keeps rising: `test_file_count`=247 (231
-  on 2026-06-03, 188 on 2026-05-24); `nested_cli_file_count`=109 (was 104). It is
-  advisory-by-design (no fail path) and tracked, but the slow release-only CLI
-  lifecycle tail is the durable watch item; the next real win is shrinking that
-  surface, not pruning tests or adding a count ceiling.
+- `inventory_standing_test_economics.py` keeps rising: `test_file_count`=258 (247
+  on 06-05); `nested_cli_file_count`=118 (was 109). Advisory-by-design;
+  `runner_snippets` show the fan-out is real-binary smoke, not in-process proof
+  via subprocess (no hidden broad-test compensation). Durable lever = shrink the
+  release-only CLI lifecycle surface, not pruning tests.
 
 ## Missing
 
-- No missing standing gate. The four lenses are covered by existing enforcement;
-  open items are deferred-by-judgment, not enforcement holes.
+- **Two enforcement holes this goal closes** (not deferred-by-judgment):
+  - #2b: the sibling-search reference requires a cross-file scan but
+    `validate_debug_artifact.py` only shape-checks `## Sibling Search` via
+    `validate_sibling_followups` — a within-file-only scan passes. Real gap
+    (reviewer-confirmed); slice 2 adds an author-marker check in the `latest.md`
+    branch (Option A; the 59 dated artifacts stay untouched).
+  - #2a: a new `debug/*.md` with no matching `rca-ledger.jsonl` `ref` is
+    unenforced — deliberately non-gated (anti-gaming); slice 3 adds an exit-0
+    nudge. No other missing gate; tier = "extend existing gates" (reviewer-confirmed).
 
 ## Deferred
 
-- #184 (product success metrics) deferred by design pending maintainer judgment;
-  the usage-episode report deliberately vetoes product-success claims.
-- `host_surface_reference` skill references are intentionally advisory/deferred
-  (count 104 → 92, improving), not a blocking portability violation.
-- `inventory-nose-clones` skipped because the optional `nose` binary is absent —
-  an integration-manifest dependency, not a repo requirement.
+- #184 (product-success metrics) deferred by design pending maintainer judgment;
+  `host_surface_reference` references (subcheck=92) are intentional portability
+  advisories, not a blocking violation.
+- Real-host / second-machine `nose` proof is a separate carry-forward (since
+  v0.23.0); this pass proves `nose` runs on the local profile only.
 
 ## Advisory
 
-- `check-coverage` runs 45.2s latest / 44.1s median against its 45.0s budget on
-  this profile — brushing the ceiling. `check-runtime-budget` still PASS, so a
-  watch item, not a breach; revisit if a median crosses budget.
-- `inventory_lint_ignores.py` reports 101 inline suppressions vs 85 last pass,
-  but the canonical delta is ~7 new `# noqa: E402` from the shared git-inventory
-  and mutation-summary extraction refactors (the rest is generated `plugins/`
-  mirror doubling). Revisit if any blanket/file-level suppression appears or codes
-  spread beyond E402/ANN001/BLE001 into production logic.
+- **`nose` clone inventory is now ACTIVE (delta from prior posture).** The `nose`
+  binary (0.5.0) is present, so `inventory-nose-clones` ran: `family_count`=20,
+  `total_dup_lines`=1951, `advisory`=true. The headline overstates real debt —
+  the largest families are intentional per-package boilerplate (family #1 = 86
+  members / 425 dup_lines of `resolve_adapter.py` duplicated for portability);
+  the tool's `notes` say "refactoring candidates, not standing quality failures."
+  This is the proxy-needs-interpretation surface slice 5 pilots (reviewer
+  spot-checked top families, confirmed intentional).
+- `check-coverage` brushes its 45.0s budget (44.5s/44.8s recorded);
+  `check-runtime-budget` PASS, so a watch item, not a breach.
 
 ## Delegated Review
 
-- Delegated Review: executed. Tier requested `high-leverage` (adapter
-  `reviewer_tiers` null → host default reviewer); read-only in the shared parent
-  worktree.
-- One bounded fresh-eye reviewer adversarially challenged the healthy/green call
-  across five points and returned SOUND: no scattered/undeclared enforcement (all
-  17 inventories declared or opted out), test-economics genuinely advisory with
-  its lever shipped (#299), the lint delta benign E402 refactor fallout (0
-  production suppressions), `host_surface_reference` correctly deferred and
-  trending down. No revision required; no new deterministic gate surfaced.
+- Delegated Review: **executed**. Tier `high-leverage` (adapter `reviewer_tiers`
+  null → host default); read-only in the shared parent worktree.
+- The reviewer challenged the green/healthy call across 6 claims and returned
+  **REVISE → folded**: VERIFIED the nose-intentional, lint, test-economics, and
+  #2b-gap claims, and caught one real blocker — an intermediate 230-line draft
+  tripped `validate-quality-artifact`'s 140-line cap (70/1), fixed by trimming to
+  71/0 (it also corrected the coverage bullet). No new repo-owned gate missing.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof)
-  were not separately re-delegated — standing test economics is an unchanged
+  were not separately re-delegated: standing test economics is an unchanged
   advisory carry-forward, not the slice under review.
 
 ## Commands Run
 
-- `find-skills` → `quality`; adapter + artifact bootstrap.
-  `./scripts/run-quality.sh --read-only` (×2 incl. final lock). `plan_cautilus_proof.py`
-  (next_action=none → no eval), `validate_usage_episodes.py`,
-  `report_usage_episodes.py`, `validate_attention_state_visibility.py`.
-- `inventory_skill_ergonomics.py`, `inventory_standing_test_economics.py`,
+- `find-skills` → `quality`; `resolve_adapter.py` / `bootstrap_adapter.py`
+  (unchanged) / `resolve_quality_artifact.py`; `run-quality.sh --read-only`;
+  `plan_cautilus_proof.py` (next_action=none → no eval),
+  `validate_usage_episodes.py`, `report_usage_episodes.py`,
+  `validate_attention_state_visibility.py`, `render_runtime_summary.py`.
+- Inventories (fields engaged in Healthy/Weak/Advisory above):
+  `inventory_standing_test_economics.py`, `inventory_skill_ergonomics.py`,
   `inventory_lint_ignores.py`, `inventory_public_spec_quality.py`,
-  `inventory_cli_ergonomics.py`, `inventory_standing_gate_verbosity.py`,
-  `inventory_dual_implementation.py`, `render_runtime_summary.py`.
-- `gh issue list/view` (#184 open; #293–#300 closed); one bounded fresh-eye
-  reviewer subagent (read-only).
+  `inventory_nose_clones.py`. One bounded fresh-eye reviewer (read-only).
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: none this turn — fresh-eye review confirmed no
-  repo-owned deterministic gate is hidden; the tier is "extend existing gates."
-- passive `AUTO_EXISTING`: passive because existing inventories already cover both
-  watch items (`check-runtime-budget` on the coverage brush, lint-ignore on the
-  suppression trend); act only if a median crosses budget or a blanket appears.
-- passive `NON_AUTOMATABLE`: keep watching standing test economics because the
-  real win is shrinking the release-only CLI lifecycle surface (the #299 sentinel
-  report makes that measurable), not pruning tests.
-- passive `NON_AUTOMATABLE`: continue #184 because product-success target and
-  metric choices need maintainer judgment, not a gate.
+- active `AUTO_CANDIDATE`: **#2b cross-file sibling-scan marker** in the
+  `validate_debug_artifact.py` `latest.md` branch (slice 2) — promotes the
+  reference's cross-file requirement from prose to enforcement.
+- passive `AUTO_EXISTING`: #2a RCA-ledger nudge stays exit-0 advisory because the rca-conversion-ledger spec fixes the append as anti-gaming (slice 3).
+- passive `NON_AUTOMATABLE`: keep watching test economics because the win is shrinking the release-only CLI surface, and #184 because it needs maintainer judgment.
+- passive advisory: the `nose` 1951-dup headline stays a proxy until slice 5's interpretation contract makes its blind spots self-declaring.
 
 ## History
 
+- [2026-06-05 quality review](history/2026-06-05-quality-review.md)
 - [2026-06-03 quality review](history/2026-06-03-quality-review.md)
-- [2026-05-24 quality review](history/2026-05-24-quality-review.md)
