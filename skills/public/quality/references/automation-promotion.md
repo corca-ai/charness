@@ -81,3 +81,15 @@ When the same confidence gap can be closed either by shrinking production
 surface or by adding more tests, prefer the smaller production surface first if
 behavior and signal both improve. Test growth is not the default answer when
 design simplification removes the risk more directly.
+
+## Interpreting inference-layer advisories
+
+The "unless you are adding repository level interpretation" clause above is not
+optional for inference-layer proxies (clone/duplicate %, ergonomics heuristics,
+test-economics trends, recommendation rankings). When such an output declares an
+interpretation question per
+[advisory-interpretation-contract.md](../../../shared/references/advisory-interpretation-contract.md),
+answer that question for this repo before repeating, ranking, or escalating the
+number — e.g. the `nose` clone advisory's "intentional boilerplate vs extractable
+debt?" The contract is inference-layer only; verified facts (green gates, counts,
+AST results) stay trusted, never re-litigated.

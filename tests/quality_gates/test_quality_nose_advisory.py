@@ -75,6 +75,54 @@ def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
     assert payload["family_count"] == 1
     assert payload["total_dup_lines"] == 12
     assert payload["families"][0]["sample_locations"][0]["file"] == "scripts/a.py"
+    # Advisory-interpretation contract: the proxy self-declares its blind spots
+    # and the question the consumer must answer (inference-layer, not a verdict).
+    interpretation = payload["interpretation"]
+    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
+    assert all(interpretation[field].strip() for field in interpretation)
+
+
+def test_nose_advisory_emits_interpretation_self_declaration(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_nose = bin_dir / "nose"
+    fake_nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import json
+            import sys
+
+            assert sys.argv[1] == "scan"
+            print(json.dumps([
+                {
+                    "value": 10.0, "members": 2, "files": 2, "modules": 1,
+                    "languages": 1, "mean_score": 1.0, "dup_lines": 12,
+                    "shared_lines": 10, "params": 1,
+                    "locations": [
+                        {"file": "scripts/a.py", "start_line": 1, "end_line": 10, "name": "a", "kind": "Function"},
+                        {"file": "scripts/b.py", "start_line": 1, "end_line": 10, "name": "b", "kind": "Function"}
+                    ]
+                }
+            ]))
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_nose.chmod(0o755)
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""},
+    )
+    assert result.returncode == 0
+    assert "INTERPRETATION" in result.stdout
+    assert "Consumer must answer first" in result.stdout
+    assert "intentional" in result.stdout  # the load-bearing blind spot
 
 
 def test_nose_advisory_parses_v05_object_schema(tmp_path: Path) -> None:

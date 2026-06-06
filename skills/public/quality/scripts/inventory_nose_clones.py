@@ -166,6 +166,24 @@ def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
     return [family for family in families if isinstance(family, dict)], tool_version
 
 
+# Advisory interpretation contract (see skills/shared/references/
+# advisory-interpretation-contract.md): this inference-layer proxy self-declares
+# its blind spots and the question the consumer must answer before acting.
+INTERPRETATION = {
+    "measures": "lexical clone families (near-duplicate code spans) at/above the scan threshold",
+    "proxy_for": "refactorable duplication debt that a shared helper could remove",
+    "blind_spots": (
+        "intentional per-skill-package boilerplate (e.g. resolve_adapter.py copied "
+        "for portability) counts as duplication and inflates the line total; "
+        "lexical, so it misses semantic duplication and over-counts deliberate copies"
+    ),
+    "interpretation_question": (
+        "which of these families are intentional/portability boilerplate versus "
+        "genuinely extractable debt for THIS repo?"
+    ),
+}
+
+
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     roots = [str(path) for path in (args.path or DEFAULT_PATHS)]
@@ -208,6 +226,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "total_dup_lines": sum(int(family.get("dup_lines") or 0) for family in families if isinstance(family, dict)),
         "families": [_family_summary(family) for family in families if isinstance(family, dict)],
         "stderr": result["stderr"],
+        "interpretation": dict(INTERPRETATION),
         "notes": [
             "nose findings are refactoring candidates, not standing quality failures.",
             "Review only extractable non-bootstrap families before changing code; do not chase every reported family.",
@@ -237,6 +256,14 @@ def print_human(payload: dict[str, Any]) -> None:
             f"ADVISORY: nose family #{index}: members={family['members']} "
             f"dup_lines={family['dup_lines']} shared_lines={family['shared_lines']} "
             f"params={family['params']} samples={samples}"
+        )
+    interpretation = payload.get("interpretation")
+    if isinstance(interpretation, dict):
+        print(
+            "INTERPRETATION (inference-layer proxy, not a verdict): "
+            f"measures {interpretation['measures']}; proxy for "
+            f"{interpretation['proxy_for']}; blind spots: {interpretation['blind_spots']}. "
+            f"Consumer must answer first: {interpretation['interpretation_question']}"
         )
 
 

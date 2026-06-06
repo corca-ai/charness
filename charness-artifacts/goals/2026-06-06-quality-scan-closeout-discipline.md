@@ -239,7 +239,7 @@ What the user can do to verify completion directly:
 | 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 60 dated artifacts stay green; `sibling-search.md` + scaffold updated; mirrors synced; 35 tests pass; fresh-eye critique CLEAR; 71/0 | **done** |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | `scripts/rca_link_advisory.py` warns at exit 0 for an added debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` via an `advisory_provider` hook (not a standalone promotable gate); no fail path; 9 in-process tests + wiring test + real-repo smoke; 71/0 | **done** |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | One cheap fold applied (refactor pulling `run_slice_closeout.py` back under the python-lengths advisory band, a slice-3 length-creep); all other candidates dispositioned as gate-tracked watch or maintainer-deferred (#184) in Off-Goal Findings; no new issues; 71/0 | **done** |
-| 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference written (inference-layer self-declaration + required consumer interpretation; explicit "not verifiable facts", no blanket banner); applied to one pilot surface (`quality` advisory and/or `nose`); fresh-eye critique CLEAR; rollout `issue #N` filed (+ `spec` if it grows); split/cut point recorded in Off-Goal Findings | planned |
+| 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference `advisory-interpretation-contract.md` written (inference-layer self-declaration + consumer-must-answer; explicit "not verified facts"; no blanket banner); applied to the `nose` pilot; consumer requirement in `automation-promotion.md`; 4 tests; rollout split to **issue #322**; cut point in Off-Goal Findings; 71/0; fresh-eye critique folded below | **done** |
 | 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
 
 ## Coordination Cues
@@ -366,6 +366,44 @@ during the run:
   `check-boundary-bypass-ratchet` (a *new* convertible boundary). Rewrote the
   test fully in-process (the ratchet's intended direction) — ratchet green, no
   exemption needed. Mirror synced.
+
+### Slice 5 — advisory-interpretation contract pilot (2026-06-06)
+
+- **Routing:** `impl`-class (reference + script change). Behavior-affecting →
+  fresh-eye critique required (verdict folded below).
+- **Change:** new shared reference
+  `skills/shared/references/advisory-interpretation-contract.md` — an
+  inference-layer output self-declares measures / proxy-for / blind-spots /
+  interpretation-question, and the consumer must answer the question before
+  acting. Inference-layer ONLY (explicitly excludes verified facts: green gates,
+  counts, AST results); positive-form, no blanket distrust banner. Generalizes
+  `automation-promotion.md` + `agent-assessment-invariant.md` from passive
+  prohibition to active requirement. **Pilot:** `inventory_nose_clones.py` emits
+  an `interpretation` self-declaration (payload + a `print_human` INTERPRETATION
+  line) — measures lexical clone families, proxies refactorable debt, blind to
+  intentional per-package boilerplate, asks "intentional vs extractable?".
+  `automation-promotion.md` gains the consumer-must-answer requirement.
+- **Split / cut point (by design):** the cross-skill rollout to the other
+  inference-layer surfaces (ergonomics heuristics, test-economics trend,
+  lint-suppression pressure, length smell, recommendation rankings, runtime
+  trend) is split to **issue #322** (Structural pattern + Triggering instances +
+  proposed rollout; promote to `spec` if it grows). The pilot + reference + one
+  consumer requirement is the clean low-noise first cut; the rest is the issue.
+- **Proof:** `pytest tests/quality_gates/test_quality_nose_advisory.py` = 4 passed
+  (asserts the 4-field self-declaration + the human INTERPRETATION line). Real
+  output prints the INTERPRETATION line. Mirror synced; doc-links fixed
+  (`../../../shared/...`). `run-quality.sh --read-only` = 71/0.
+- **Fresh-eye critique:** bounded reviewer (read-only, shared parent worktree) →
+  **CLEAR**. Verified all five design boundaries: (A) the contract explicitly
+  protects verified facts (inference-layer only, quotes "validator over prose
+  ritual"); (B) positive-form per-measure declaration, not a habituating distrust
+  banner; (C) the `nose` self-declaration is truthful — independently confirmed
+  16 near-identical `resolve_adapter.py` files across skill packages match the
+  declared blind spot — and the consumer requirement is actionable; (D) faithful
+  passive→active generalization of `automation-promotion.md` +
+  `agent-assessment-invariant.md` (a tightening, not a contradiction); (E) clean
+  low-noise, exit-0, no scope creep, rollout correctly split to #322. No blocking
+  corrections.
 
 ## Context Sources
 
@@ -531,6 +569,19 @@ authoritative correction (also in `quality/latest.md` and the slice-1 log).
 gate-tracked (existing advisory inventory/gate owns the memory) or
 deferred-by-maintainer-judgment (#184). The advisory-interpretation rollout issue
 belongs to slice 5.
+
+**Slice 5 split → issue [#322](https://github.com/corca-ai/charness/issues/322):**
+the cross-skill rollout of the advisory-interpretation contract to the remaining
+inference-layer surfaces (ergonomics heuristics, test-economics trend,
+lint-suppression pressure, length smell, recommendation rankings, runtime trend)
+is split to #322 by design. Slice 5 landed the shared reference + the `nose`
+pilot + one consumer requirement; #322 carries the rollout (promote to `spec` if
+it grows). This is a clean split, not an early-stop.
+
+**New open issue observed (out of scope, for the next session):**
+[#321](https://github.com/corca-ai/charness/issues/321) "Mutation test regression
+on main" (opened 2026-06-06, after the handoff). Not touched here — out of this
+goal's scope; flagged for handoff at closeout.
 
 ## Final Verification
 
