@@ -41,10 +41,11 @@
 2. **#321 (newly open) — "Mutation test regression on main"** (opened
    2026-06-06). Not yet investigated; route via `issue` resolve (bug-class →
    causal review first). Out of scope for the completed quality-scan goal.
-3. **#322 (newly filed) — advisory-interpretation contract rollout.** Extend the
-   slice-5 pilot to the remaining inference-layer surfaces (ergonomics, test
-   economics, lint pressure, length smell, recommendation rankings, runtime
-   trend); promote to a `spec` if it grows.
+3. **#322 — advisory-interpretation rollout** + 2 open questions (saved, no
+   re-scan: [nose-clone-interpretation](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md)):
+   Q1 classify nose families in-tool to kill false positives (folds into #322);
+   Q2 is the per-package adapter duplication an unavoidable limit or a revisitable
+   tradeoff (`ideation`→`spec`). Promote #322 to `spec` if it grows.
 4. **#320 follow-ups:** the
    [pre-merge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
    (folds in #251/#260) and `follow-up:mutation-selection-budget-setup-libs`.
