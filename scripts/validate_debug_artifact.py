@@ -35,6 +35,7 @@ validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempt
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 validate_title = _scripts_artifact_validator_module.validate_title
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
+is_trivial_short_circuit = _scripts_artifact_validator_module.is_trivial_short_circuit
 
 SIBLING_BOUNDARY_HEADINGS = (
     "## Seam Risk",
@@ -42,6 +43,9 @@ SIBLING_BOUNDARY_HEADINGS = (
     "## Prevention",
     "## Related Prior Incidents",
 )
+SIBLING_SEARCH_HEADING = "## Sibling Search"
+CROSS_FILE_MARKER = "cross-file:"
+NO_CROSS_FILE_SIBLING_MARKER = "no cross-file sibling:"
 SIBLING_SOURCE_REFERENCE = "skills/public/debug/references/sibling-search.md"
 
 MAX_ARTIFACT_LINES = 180
@@ -202,6 +206,41 @@ def validate_current_invariant_proof(lines: list[str]) -> None:
     )
 
 
+def validate_cross_file_sibling_marker(lines: list[str]) -> None:
+    """Require the current debug artifact's `## Sibling Search` to declare cross-file scope.
+
+    The sibling-search reference requires the scan to leave the subject file (the
+    `same layer` and `abstraction up` axes name siblings "in different files,
+    different layers"). `validate_sibling_followups` only checks decision and
+    `follow-up:` shape, so a within-file-only scan still passes today. This adds an
+    explicit author marker, modeled on the `follow-up:` requirement: the section
+    must carry either `cross-file: <path-or-axis>` (a named sibling outside the
+    subject file) or `no cross-file sibling: <reason>` (a justified escape). The
+    marker is authored, not parsed from prose, because the real corpus records
+    siblings as free-form axis bullets and the schema has no `Subject:` source-file
+    field to diff a foreign `file:line` against — a parser would mass-regress
+    correct artifacts or collapse to a gameable "any path mention" check. The
+    trivial-fix short-circuit satisfies it, matching `validate_sibling_followups`.
+    Like `follow-up:`, this is an honesty contract surfaced for fresh-eye review,
+    not an anti-gaming gate.
+    """
+    section = section_lines(lines, SIBLING_SEARCH_HEADING, SIBLING_BOUNDARY_HEADINGS)
+    if any(is_trivial_short_circuit(line) for line in section):
+        return
+    for line in section:
+        lowered = line.lower()
+        for marker in (NO_CROSS_FILE_SIBLING_MARKER, CROSS_FILE_MARKER):
+            position = lowered.find(marker)
+            if position != -1 and lowered[position + len(marker) :].strip():
+                return
+    raise ValidationError(
+        "current debug artifact `## Sibling Search` must declare cross-file scope: add "
+        "`cross-file: <path-or-axis>` naming a sibling outside the subject file, or "
+        "`no cross-file sibling: <reason>` as a justified escape (the trivial-fix "
+        f"short-circuit also satisfies it); see {SIBLING_SOURCE_REFERENCE}."
+    )
+
+
 def validate_debug_artifact(path: Path) -> None:
     lines = read_lines(path)
     validate_title(
@@ -223,6 +262,7 @@ def validate_debug_artifact(path: Path) -> None:
         validate_candidate_causes(lines)
         validate_current_invariant_proof(lines)
         validate_sibling_followups(lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE)
+        validate_cross_file_sibling_marker(lines)
         validate_current_interrupt_sections(lines)
         return
 

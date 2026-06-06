@@ -79,6 +79,30 @@ the current fix, keep diagnostic-only, mark an intentional boundary, or defer
 as a follow-up. Record the decision with location so the next reader inherits
 the list.
 
+## Declare cross-file scope
+
+A sibling search that never leaves the subject file has not done the `same layer`
+or `abstraction up` axes — both look for the pattern "in different files,
+different layers." To keep that requirement enforceable rather than aspirational,
+the closeout of the current artifact (`debug/latest.md`) must record an explicit
+marker in `## Sibling Search`:
+
+- `cross-file: <path-or-axis note>` — name at least one sibling location that
+  lives outside the subject file (the file the bug was found in). This can be a
+  standalone bullet or an inline `| cross-file: ...` field on an axis bullet.
+- `no cross-file sibling: <reason>` — the justified escape when the pattern
+  genuinely cannot exist outside the subject file (e.g., a config unique to one
+  module). State why, so a reviewer can judge the claim.
+
+The trivial-fix short-circuit (`n/a — trivial fix; no plausible siblings`) also
+satisfies the marker. `validate_debug_artifact.py` enforces this on the
+`latest.md` form only (forward-only — the dated corpus stays immutable). The
+marker is **authored**, not parsed from the prose axis bullets: the schema has no
+`Subject:` source-file field to diff a foreign `file:line` against, so a parser
+would either mass-regress correct artifacts or collapse to a gameable "any path
+mention" check. Like `follow-up:`, the marker is an honesty contract that
+surfaces the cross-file judgment for fresh-eye review, not an anti-gaming gate.
+
 ## Persist `valid follow-up` decisions
 
 When a sibling is classified `valid follow-up outside the slice`, the closeout

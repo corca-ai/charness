@@ -81,6 +81,8 @@ def render_template(*, title: str, date_text: str) -> str:
                     "",
                     "- Mental model: TODO",
                     "- TODO axis: TODO location | decision: TODO | proof: TODO",
+                    "- cross-file: TODO name a sibling outside the subject file"
+                    " (or replace this line with `no cross-file sibling: <reason>`)",
                     "",
                 ]
             )

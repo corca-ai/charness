@@ -93,6 +93,7 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "- Mental model: synthetic copy fixtures treat runtime roots as input",
                 "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+                "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py",
                 "",
                 "## Seam Risk",
                 "",
@@ -470,3 +471,69 @@ def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_wit
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "proof-backed no-action reason" in result.stderr
+
+
+# --- #2b: cross-file sibling-scan marker (latest.md / forward-only) -----------
+
+CROSS_FILE_LINE = "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py"
+
+
+def test_validate_debug_artifact_rejects_latest_sibling_search_without_cross_file_marker(
+    tmp_path: Path,
+) -> None:
+    # A within-file-only `## Sibling Search` (no cross-file declaration) must FAIL
+    # on the current `latest.md` form — the gap #2b closes.
+    artifact = valid_current_artifact().replace(CROSS_FILE_LINE + "\n", "")
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "cross-file" in result.stderr
+    assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_no_cross_file_sibling_escape(tmp_path: Path) -> None:
+    # The justified escape `no cross-file sibling: <reason>` PASSES.
+    artifact = valid_current_artifact().replace(
+        CROSS_FILE_LINE,
+        "- no cross-file sibling: the fixture-root logic lives only in this test module",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_rejects_empty_cross_file_marker(tmp_path: Path) -> None:
+    # `cross-file:` with no value is not a declaration.
+    artifact = valid_current_artifact().replace(CROSS_FILE_LINE, "- cross-file:")
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "cross-file" in result.stderr
+
+
+def test_validate_debug_artifact_cross_file_marker_not_required_for_dated_records(
+    tmp_path: Path,
+) -> None:
+    # The marker check is latest.md/forward-only: a dated artifact missing the
+    # marker still passes, so the historical corpus is never retro-regressed.
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    dated = valid_current_artifact().replace(CROSS_FILE_LINE + "\n", "")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(dated, encoding="utf-8")
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
+
+
+def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_path: Path) -> None:
+    # A trivial-fix `## Sibling Search` (no axes, no cross-file line) is satisfied
+    # by the short-circuit alone, matching `validate_sibling_followups`.
+    artifact = valid_current_artifact().replace(
+        "- Mental model: synthetic copy fixtures treat runtime roots as input\n"
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n"
+        + CROSS_FILE_LINE
+        + "\n",
+        "- n/a — trivial fix; no plausible siblings\n",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr

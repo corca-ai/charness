@@ -13,11 +13,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 1 — quality posture scan** (active). Activated
+- Current slice: **slice 3 — #2a advisory RCA-ledger nudge** (next). Slices 1
+  (quality scan) and 2 (#2b marker enforcement) committed. Activated
   2026-06-06T06:16:29Z; closeout reserve begins 2026-06-06T08:56:29Z.
-- Next action: run the `quality` skill four-lens walk + bounded fresh-eye review,
-  refresh `charness-artifacts/quality/latest.md` (stale at v0.20.0; repo now
-  v0.24.1), and surface the prioritized candidate list scoping slices 2–4.
+- Next action: add an exit-0 advisory nudge that warns when a slice adds a new
+  dated `debug/*.md` artifact with no matching `rca-ledger.jsonl` `ref`, wired
+  into the `run_slice_closeout.py --predict-commit` predict path (model on
+  `_print_headroom`); silent when a `ref` exists. No fail path.
 - Timebox: 3h from activation; protect the final 20m for broad gate + retro +
   disposition + commit + user closeout. If the macro outcome finishes early,
   continue to the next safe in-scope improvement (do not close on first item).
@@ -233,7 +235,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md` (140 lines, validators green); `run-quality.sh --read-only` 71/0; bounded fresh-eye review REVISE→folded; prioritized candidate list + nose-now-active delta | **done** |
-| 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 59 dated artifacts stay green; `sibling-search.md` updated; mirrors synced; fresh-eye critique CLEAR | planned |
+| 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 60 dated artifacts stay green; `sibling-search.md` + scaffold updated; mirrors synced; 35 tests pass; fresh-eye critique CLEAR; 71/0 | **done** |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | Nudge warns at exit 0 for a new debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` as an advisory line (not a standalone promotable gate); no fail path | planned |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
 | 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference written (inference-layer self-declaration + required consumer interpretation; explicit "not verifiable facts", no blanket banner); applied to one pilot surface (`quality` advisory and/or `nose`); fresh-eye critique CLEAR; rollout `issue #N` filed (+ `spec` if it grows); split/cut point recorded in Off-Goal Findings | planned |
@@ -300,6 +302,44 @@ during the run:
 - **Non-claims:** the 44.x s coverage timing is a recorded prior-run sample, not
   this `--read-only` invocation; the `nose` proof is local-profile only (real-host
   second-machine proof remains a separate carry-forward).
+
+### Slice 2 — #2b cross-file sibling marker enforcement (2026-06-06)
+
+- **Routing:** `find-skills --recommend-for-task` returned no public-skill match
+  for the validator-implementation task text (verbs add/check/validator match no
+  trigger noun); this is durable `impl`-class work (the owner of code/validator/
+  test changes). Recorded as `Routing: impl (find-skills task-text empty)`.
+- **Change:** new `validate_cross_file_sibling_marker(lines)` in
+  `scripts/validate_debug_artifact.py`, called in the `path.name == "latest.md"`
+  branch only (after `validate_sibling_followups`). Requires `## Sibling Search`
+  to carry `cross-file: <path-or-axis>` OR `no cross-file sibling: <reason>`
+  (trivial-fix short-circuit also satisfies). Authored marker, not a prose parser
+  — the brittleness-escape decision from the plan critique. Documented in
+  `sibling-search.md` ("## Declare cross-file scope"); scaffold template gains a
+  `cross-file:` prompt line so new artifacts are born compliant.
+- **Forward-only scope:** the check lives in the latest.md branch only; the 60
+  dated artifacts route through the else-branch and are untouched (goal said 59;
+  actual corpus is 60 dated + latest.md — count corrected as a non-claim).
+  Truthful `cross-file:` marker added to the current `debug/latest.md` (#320) so
+  the gate stays green — the #320 selection-budget axis genuinely names the two
+  `setup_*_lib` files outside the subject `staged_commit_gate_plan.py`. Not
+  reopening #320 (no coverage relitigation).
+- **Proof:** `pytest tests/test_debug_artifact.py tests/test_debug_scaffold.py`
+  = 35 passed (5 new: missing-marker FAILS, escape PASSES, empty-marker FAILS,
+  dated-not-required PASSES, trivial-short-circuit satisfies).
+  `validate_debug_artifact.py` exit 0 over the real 61-file corpus.
+  `run-quality.sh --read-only` = 71/0. Mirror synced (`sync_root_plugin_manifests`).
+  Caught + fixed one inline-code-span wrap in the ref doc (the recurring
+  `check-markdown` trap from recent-lessons).
+- **Fresh-eye critique:** bounded reviewer (read-only, shared parent worktree) →
+  **CLEAR**. Independently verified: (A) the marker check is reached ONLY in the
+  `latest.md` branch — traced the code + re-ran the 61-file corpus, dated artifacts
+  bypass it; (B) marker logic sound, `cross-file:` does not substring-collide with
+  `no cross-file sibling:`, empty markers fail, case-insensitive; (C) the #320
+  `cross-file:` marker is truthful — confirmed `setup_agent_docs_fresh_eye_lib.py`
+  / `setup_commit_discipline_lib.py` exist outside the subject; (D) no gap /
+  regression / over-reach, test coverage comprehensive, scaffold round-trips. No
+  blocking corrections.
 
 ## Context Sources
 

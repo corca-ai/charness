@@ -126,6 +126,10 @@ non-coverage signal, not part of this fix.
   follow-up: follow-up:mutation-selection-budget-setup-libs
 - main()-CLI axis: 277-293 uncovered | pre-existing, not a changed line here |
   proof: not in #320 proof targets.
+- cross-file: the selection-budget axis above names the two `setup_*_lib` files
+  outside the subject `staged_commit_gate_plan.py`; the return-site and
+  other-error-branch axes stay within the subject file (marker added by the #2b
+  cross-file-scope enforcement, slice 2 of the quality-scan goal).
 
 ## Seam Risk
 
