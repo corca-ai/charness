@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 144,
-  "candidate_count": 852,
+  "source_artifact_count": 145,
+  "candidate_count": 859,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -145,6 +145,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c9100ce899d6",
+      "kind": "current_focus",
+      "lesson": "Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0.",
+      "normalized_key": "landed the changed line mutation coverage producer slice 2 lever a b pushed and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -179,6 +199,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e66b3bffb089",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the consumer's verdict is silently misleading when `--head-sha` excludes the worktree. Add a `check_changed_line_mutation_coverage.py` warning when the analyzed head == `HEAD` and the worktree has uncommitted mutation-pool changes, or a documented worktree-range dry-run. Cheap tripwire, kills the false-green. (follow-up:changed-line-gate-worktree-dryrun-warning)",
+      "normalized_key": "capability the consumer s verdict is silently misleading when head sha excludes the worktree",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:eab4c360420d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this lesson, persisted here + refreshed into recent-lessons.",
+      "normalized_key": "memory this lesson persisted here refreshed into recent lessons",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -225,12 +285,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:59ac4bea0c60",
-      "kind": "repeat_trap",
-      "lesson": "The gate logic lives in repo-root `scripts/check_changed_line_mutation_coverage.py` and is wired into charness's `run-quality.sh`; the transferable doctrine (stale-coverage freshness guard, the producer-cost lesson) was never written to `skills/public/quality/references/mutation-testing.md`. Other repos adopting the `quality` skill therefore inherit none of it.",
-      "normalized_key": "the gate logic lives in repo root scripts check changed line mutation coverage py",
+      "candidate_id": "next_improvement:0c8a702eebae",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When dogfooding the changed-line gate on an uncommitted slice, run the consumer over **base→worktree** (a range that includes uncommitted / staged work), never `base..HEAD` when HEAD is the parent. And before the expensive producer, run the cheap gates the broad pytest enforces (esp. `python3 scripts/check_spec_evidence_durability.py`). Owner: a short note next to the producer guidance in `docs/conventions/implementation-discipline.md`.",
+      "normalized_key": "workflow when dogfooding the changed line gate on an uncommitted slice run the consumer",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
       "latest_source_date": "2026-06-07",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -238,19 +298,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
           "date": "2026-06-07",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:c336190e3eac",
+      "candidate_id": "repeat_trap:fd942bb4da3a",
       "kind": "repeat_trap",
-      "lesson": "The miss was caught by the **user**, not by any gate or self-check — the portability principle (CLAUDE.md \"keep the harness portable\") relied on the agent remembering it mid-defect-repair, and it did not fire. Unrecorded, the lesson would have rotted.",
-      "normalized_key": "the miss was caught by the user not by any gate or self check",
+      "lesson": "**A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1.",
+      "normalized_key": "a deterministic gate blind spot run slice closeout skip broad pytest run first green",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
       "latest_source_date": "2026-06-07",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -258,89 +318,29 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
           "date": "2026-06-07",
           "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:62682ac779a9",
-      "kind": "current_focus",
-      "lesson": "Closeout review of the `2026-06-06-306-316-open-followups` achieve goal: resolve six open follow-ups (#306, #311, #314, #315, #316, #317) via a sequential dynamic workflow, then a release.",
-      "normalized_key": "closeout review of the 2026 06 06 306 316 open followups achieve goal resolve",
+      "candidate_id": "repeat_trap:69380aa5bfd1",
+      "kind": "repeat_trap",
+      "lesson": "**A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → \"blocking: []\" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence.",
+      "normalized_key": "a misleading false green pre commit dry run the pre commit consumer dry run",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-          "date": "2026-06-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f142bbd1ad87",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.24.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 24 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a6f4a972fdaa",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.24.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 24 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:86d96687663d",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.25.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 25 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Waste"
         }
       ]
     }
@@ -477,6 +477,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c9100ce899d6",
+      "kind": "current_focus",
+      "lesson": "Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0.",
+      "normalized_key": "landed the changed line mutation coverage producer slice 2 lever a b pushed and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -511,6 +531,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e66b3bffb089",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the consumer's verdict is silently misleading when `--head-sha` excludes the worktree. Add a `check_changed_line_mutation_coverage.py` warning when the analyzed head == `HEAD` and the worktree has uncommitted mutation-pool changes, or a documented worktree-range dry-run. Cheap tripwire, kills the false-green. (follow-up:changed-line-gate-worktree-dryrun-warning)",
+      "normalized_key": "capability the consumer s verdict is silently misleading when head sha excludes the worktree",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:eab4c360420d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this lesson, persisted here + refreshed into recent-lessons.",
+      "normalized_key": "memory this lesson persisted here refreshed into recent lessons",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -553,6 +613,86 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0c8a702eebae",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When dogfooding the changed-line gate on an uncommitted slice, run the consumer over **base→worktree** (a range that includes uncommitted / staged work), never `base..HEAD` when HEAD is the parent. And before the expensive producer, run the cheap gates the broad pytest enforces (esp. `python3 scripts/check_spec_evidence_durability.py`). Owner: a short note next to the producer guidance in `docs/conventions/implementation-discipline.md`.",
+      "normalized_key": "workflow when dogfooding the changed line gate on an uncommitted slice run the consumer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fd942bb4da3a",
+      "kind": "repeat_trap",
+      "lesson": "**A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1.",
+      "normalized_key": "a deterministic gate blind spot run slice closeout skip broad pytest run first green",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:69380aa5bfd1",
+      "kind": "repeat_trap",
+      "lesson": "**A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → \"blocking: []\" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence.",
+      "normalized_key": "a misleading false green pre commit dry run the pre commit consumer dry run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2f637bd189f6",
+      "kind": "repeat_trap",
+      "lesson": "**Serial discovery behind a 6-min gate.** Each run surfaced one new issue; I fixed one, paid another ~6 min, found the next. 2-3 of the four runs were avoidable with earlier/batched detection.",
+      "normalized_key": "serial discovery behind a 6 min gate each run surfaced one new issue i",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Waste"
         }
       ]
     },

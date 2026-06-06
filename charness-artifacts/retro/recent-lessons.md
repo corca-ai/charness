@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 - This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
-- Closeout review of the `2026-06-06-306-316-open-followups` achieve goal: resolve six open follow-ups (#306, #311, #314, #315, #316, #317) via a sequential dynamic workflow, then a release. (source: `charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`; sources: 10)
-- The gate logic lives in repo-root `scripts/check_changed_line_mutation_coverage.py` and is wired into charness's `run-quality.sh`; the transferable doctrine (stale-coverage freshness guard, the producer-cost lesson) was never written to `skills/public/quality/references/mutation-testing.md`. Other repos adopting the `quality` skill therefore inherit none of it. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
-- The miss was caught by the **user**, not by any gate or self-check — the portability principle (CLAUDE.md "keep the harness portable") relied on the agent remembering it mid-defect-repair, and it did not fire. Unrecorded, the lesson would have rotted. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
-- **Minor:** a markdown inline-code span wrapped across a line in `lifecycle.md`, caught by `check-markdown` in the same broad-gate failure as the anchors. (source: `charness-artifacts/retro/2026-06-06-318-319-closeout.md`)
+- **A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
+- **A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → "blocking: []" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
+- **Serial discovery behind a 6-min gate.** Each run surfaced one new issue; I fixed one, paid another ~6 min, found the next. 2-3 of the four runs were avoidable with earlier/batched detection. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`; sources: 10)
 - **capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
-- **memory:** this lesson (recorded here + refreshed into recent-lessons). The concrete instance follow-up — promote the gate's lessons to `quality`'s mutation-testing reference — is already captured as handoff Next Session #3 and in the premerge-gate spec "Skill portability". (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
-- **workflow:** at `spec`/`impl` closeout in this harness repo, when a slice adds a NEW reusable mechanism (repo-root script, gate, or generalizable pattern), require a one-line classification — `host-local` vs `skill-capability` — before closeout. Make the portability question a checkpoint, not a principle. Owner: `docs/conventions/implementation-discipline.md`. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
+- **capability:** the consumer's verdict is silently misleading when `--head-sha` excludes the worktree. Add a `check_changed_line_mutation_coverage.py` warning when the analyzed head == `HEAD` and the worktree has uncommitted mutation-pool changes, or a documented worktree-range dry-run. Cheap tripwire, kills the false-green. (follow-up:changed-line-gate-worktree-dryrun-warning) (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
+- **memory:** this lesson, persisted here + refreshed into recent-lessons. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 
 ## Selection Policy
 
@@ -34,9 +34,8 @@
 - `charness-artifacts/retro/2026-06-05-v0-21-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-05-v0-22-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-05-v0-23-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md`
-- `charness-artifacts/retro/2026-06-06-318-319-closeout.md`
 - `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`
+- `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
