@@ -94,14 +94,20 @@ green on the broad gate.
   modeled on how `validate_sibling_followups` already requires `follow-up:`.
   This is a new shape contract, so the slice must also update
   `skills/public/debug/references/sibling-search.md` to document the marker.
-- **#2b enforcement scope must be declared (plan-critique blocker, folded).**
-  Today the validator applies the current-form `## Sibling Search` checks only
-  to `debug/latest.md`; dated artifacts go through the section-order branch
-  whose `REQUIRED_SECTIONS` omits `## Sibling Search`. Decide in the slice
-  critique between **(a)** extend the marker requirement to all dated artifacts
-  — which forces a corpus migration or an explicit grandfather of the existing
-  41 token-less artifacts — or **(b)** `latest.md`-form / forward-only
-  enforcement. Pick one explicitly; do not leave it implicit.
+- **#2b enforcement scope = `latest.md` / forward-only (decided at shaping).**
+  Add the cross-file marker check inside the `path.name == "latest.md"` branch
+  of `validate_debug_artifact.py:214` (where the other current-form checks
+  already live), NOT in the shared `validate_sibling_followups` (which runs on
+  all 60 artifacts and would mass-regress the 41 token-less historical ones). A
+  new debug artifact is the current pointer (`latest.md`) at closeout, so this
+  enforces the marker on every new closeout exactly when it is authored — no
+  corpus migration, no grandfather list, history stays immutable. Rejected
+  all-dated enforcement: it edits immutable records (retroactively asserting a
+  scan that may not map) or adds a maintained date-cutoff exemption, for the low
+  marginal value of re-validating closed artifacts. Non-claim to record in the
+  slice: if two debug artifacts are created in one slice, only the last is
+  `latest.md` and gets the strict check that cycle (dominant flow is
+  one-at-a-time).
 - **Phase barriers:** treat `mutate -> sync -> verify -> publish` as hard. Any
   `scripts/*.py` edit is mirrored to `plugins/charness/scripts/` (and the
   `mutants/` mirror); run the sync before the verify gate, not after.
@@ -157,14 +163,13 @@ What the user can do to verify completion directly:
 - One bounded fresh-eye slice critique on the #2b validator change (behavior-
   affecting debug-closeout surface) before its commit, with the slice packet.
 - `quality` skill's four-lens walk + one bounded fresh-eye review for slice 1.
-- Regression floor (corrected per plan critique): the validator only applies
-  the current-form `## Sibling Search` checks to `debug/latest.md` today, so a
-  naive "re-run across the corpus" proves almost nothing. The real floor depends
-  on the scope decision: if #2b extends to dated artifacts, **hard-assert** the
-  new marker rule PASSES all 41 existing `## Sibling Search`-bearing artifacts
-  (which the prose-bullet corpus will not satisfy under a foreign-`file:line`
-  rule — hence the author-marker design); if `latest.md`/forward-only, state
-  that and drop the across-corpus claim. Either way the assertion is explicit
+- Regression floor (scope = `latest.md`/forward-only): the marker check lives in
+  the `latest.md` branch only, so the 59 dated artifacts are untouched — prove
+  it by re-running `validate_debug_artifact.py` over the real corpus and
+  confirming all dated artifacts still pass unchanged (no historical
+  regression). Prove the new rule with fixtures: a `latest.md`-form artifact
+  whose `## Sibling Search` lacks the marker FAILS; one carrying `cross-file:`
+  or `no cross-file sibling: <reason>` PASSES. Either way the assertion is explicit
   code/test, not prose.
 
 ### External Or Live Proof
@@ -180,7 +185,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md`; `run-quality.sh --read-only` PASS; bounded fresh-eye review; prioritized candidate list (incl. `nose` advisory) | planned |
-| 2 | #2b sibling-scan marker enforcement in `validate_debug_artifact.py` (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | First decide enforcement scope (latest.md/forward-only vs all-dated-with-grandfather); validator fails a `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; `sibling-search.md` updated; mirrors synced; regression assertion per the corrected floor; fresh-eye critique CLEAR | planned |
+| 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 59 dated artifacts stay green; `sibling-search.md` updated; mirrors synced; fresh-eye critique CLEAR | planned |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | Nudge warns at exit 0 for a new debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` as an advisory line (not a standalone promotable gate); no fail path | planned |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
 | 5 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
@@ -266,6 +271,15 @@ itself so a fresh session sees the design space, not only the closed point.
   advisory; standing test economics is advisory-by-design). The RCA-nudge
   carve-out is anchored to that existing axis, not a global "everything must
   gate" default.
+- **#2b enforcement scope** (resolved at shaping after the plan critique) —
+  family {`latest.md`/forward-only, all-dated + migrate/grandfather}. Chosen:
+  **`latest.md`/forward-only**. Rationale: a new debug artifact is `latest.md`
+  at closeout, so forward-only enforcement catches every new closeout without
+  editing the 41 immutable historical artifacts. Rejected all-dated: history
+  churn or a maintained cutoff exemption for the low value of re-validating
+  closed records. `axis: artifact-lifecycle` — the validator already varies
+  current-form strictness by `latest.md` vs dated, so this anchors to an
+  existing axis rather than inventing one.
 
 ## Plan Critique Findings
 
