@@ -28,6 +28,29 @@ pre-merge detection follow-up that was never built.
   from the previous completed mutation run; only `schedule` events compute it, so
   a `workflow_dispatch` cannot prove a changed-line fix.
 
+## Sibling Population (cross-codebase scan, from #320)
+
+A structural scan beyond the single #320 file shows the class is broad, not
+isolated:
+
+- **9 `except SurfaceError` handlers** (closest same-family siblings of the #320
+  fix): `check_changed_surfaces.py:92`, `run_slice_closeout.py:491`,
+  `render_critique_section_changed_surfaces.py:94`, `validate_surfaces.py:36`,
+  `plan_cautilus_proof.py:257`, `select_verifiers.py:117`,
+  `retro/.../check_auto_trigger.py:230`, `release/.../check_real_host_proof.py:136`,
+  plus the fixed `staged_commit_gate_plan.py:72`.
+- **~75 structural degrade-return twins** (`except <Specific>Error:` → trivial
+  `return/pass/continue`) across mutation-pool `scripts/**` and `skills/**`.
+
+Each sibling module has unit tests, so none are test-orphaned. But a faithful
+per-line coverage verdict on these degrade branches needs the gate's
+subprocess-capturing probe (parallel + `COVERAGE_PROCESS_START`) — a plain
+`coverage run` reports subprocess-only CLI lines as 0% (measurement artifact,
+not a gap). This is the point: each of these is a latent #320 the moment its
+line is *changed*, and only a pre-merge gate running the faithful probe over the
+changed range catches them in-slice. The sibling breadth is the motivation for
+this spec, not a list of 84 things to hand-cover.
+
 ## Decision To Make
 
 Should a pre-merge or per-slice gate force coverage of newly-added changed lines
