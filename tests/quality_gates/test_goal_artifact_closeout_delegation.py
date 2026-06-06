@@ -210,6 +210,15 @@ def test_orchestrator_mode_with_trailing_comment_still_enforced() -> None:
     assert report["ok"] is False
 
 
+def test_closeout_state_levels_are_documented_in_lifecycle() -> None:
+    # CLOSEOUT_STATE_LEVELS is the single source for the taxonomy; the canonical
+    # lifecycle reference must name every level so the docs and the constant can
+    # never drift (this is what makes the exported tuple load-bearing).
+    lifecycle = (_SCRIPTS.parent / "references" / "lifecycle.md").read_text(encoding="utf-8")
+    missing = [level for level in deleg.CLOSEOUT_STATE_LEVELS if level not in lifecycle]
+    assert not missing, f"lifecycle.md is missing closeout-state levels: {missing}"
+
+
 def test_fenced_delegation_section_is_not_parsed() -> None:
     # The goal-artifact docs show the section inside a code fence; a fenced
     # heading must not activate the gate (it parses as undeclared/standalone).

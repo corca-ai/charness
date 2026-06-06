@@ -27,9 +27,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Documentation vocabulary for the six closeout-proof levels. The gate is
-# resolution-based and does not require these exact tokens; they are exported so
-# the docs and any producer can name the same levels.
+# The six closeout-proof levels — the single source for the taxonomy vocabulary.
+# The gate itself is resolution-based and does not require these exact tokens; a
+# drift test keeps the canonical lifecycle reference in sync with this tuple so
+# the docs and this constant cannot diverge.
 CLOSEOUT_STATE_LEVELS = (
     "impl-local",
     "carrier",
