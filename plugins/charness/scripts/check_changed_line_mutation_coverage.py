@@ -33,7 +33,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -44,7 +43,10 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_numbers,
     changed_line_scope_gap_targets,
+    changed_pool_fingerprint,
     classify_changed_line_scope_gap,
+    coverage_fingerprint_marker_path,
+    write_coverage_fingerprint_marker,
 )
 from scripts.mutation_sampling_lib import (  # noqa: E402
     load_file_statement_lines,
@@ -80,36 +82,26 @@ def parse_args() -> argparse.Namespace:
         "--require-fresh-coverage",
         action="store_true",
         help=(
-            "Only trust a coverage JSON whose sibling marker `<coverage-json>.head` "
-            "records the current head SHA; otherwise skip non-blocking. The pre-push "
-            "wiring sets this so a STALE coverage source (produced for an older commit) "
-            "cannot raise false 'uncovered changed line' positives. The closeout "
-            "producer writes the marker when it refreshes coverage."
+            "Only trust a coverage JSON whose sibling marker `<coverage-json>.fingerprint` "
+            "matches the current changed-pool content fingerprint; otherwise skip "
+            "non-blocking. The pre-push wiring sets this so a STALE coverage source "
+            "(produced before the changed lines existed) cannot raise false 'uncovered "
+            "changed line' positives. The closeout producer writes the marker when it "
+            "refreshes coverage."
         ),
     )
     parser.add_argument(
-        "--write-head-marker",
+        "--write-fresh-marker",
         action="store_true",
         help=(
-            "Producer mode: after coverage exists for the analyzed head, write the "
-            "sibling `<coverage-json>.head` marker recording that head SHA so the "
-            "pre-push consumer (`--require-fresh-coverage`) can trust the coverage."
+            "Producer mode: after coverage exists for the analyzed range, write the "
+            "sibling `<coverage-json>.fingerprint` marker recording the changed-pool "
+            "content fingerprint so the pre-push consumer (`--require-fresh-coverage`) "
+            "can trust the coverage. Uses a plain (no dynamic_context) probe so the "
+            "coverage JSON stays small."
         ),
     )
     return parser.parse_args()
-
-
-def _resolve_sha(repo_root: Path, ref: str) -> str | None:
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", ref],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (subprocess.CalledProcessError, OSError):
-        return None
-    return result.stdout.strip() or None
 
 
 def _emit(report: dict) -> None:
@@ -121,22 +113,25 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     trusted for a cheap pre-push verdict, else None.
 
     Two guards keep the pre-push (read-only) wiring both cheap and safe:
-    - ``--require-fresh-coverage``: a coverage JSON whose sibling ``.head`` marker
-      does not record the analyzed head is STALE (it may predate the changed
-      lines), so trusting it would raise false positives; skip instead.
+    - ``--require-fresh-coverage``: a coverage JSON whose sibling ``.fingerprint``
+      marker does not match the current changed-pool content fingerprint is STALE
+      (it may predate the changed lines), so trusting it would raise false
+      positives; skip instead. The fingerprint is content-based and computed over
+      base→worktree, so it stays valid across the producer's pre-commit run and
+      the consumer's post-commit (pre-push) check of the same code.
     - ``--skip-if-no-coverage``: no coverage JSON at all; skip rather than fall
       through to the slow probe.
     """
     base = {"ok": True, "blocking": [], "base_sha": base_sha, "head_sha": head_sha}
     if args.require_fresh_coverage and coverage_json.is_file():
-        head_marker = coverage_json.with_name(coverage_json.name + ".head")
-        recorded_head = head_marker.read_text(encoding="utf-8").strip() if head_marker.is_file() else None
-        current_head = _resolve_sha(repo_root, head_sha)
-        if recorded_head is None or current_head is None or recorded_head != current_head:
+        marker = coverage_fingerprint_marker_path(coverage_json)
+        recorded = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
+        current = changed_pool_fingerprint(repo_root, base_sha)
+        if recorded is None or recorded != current:
             return {**base, "reason": (
-                f"coverage source is stale: marker {recorded_head or 'absent'} != head "
-                f"{current_head or 'unresolved'}; changed-line teeth skipped (non-blocking). "
-                "Re-run the closeout producer to refresh coverage for this head."
+                f"coverage source is stale: fingerprint marker {recorded or 'absent'} != current "
+                f"{current}; changed-line teeth skipped (non-blocking). "
+                "Re-run the closeout producer to refresh coverage for this range."
             )}
     if args.skip_if_no_coverage and not coverage_json.is_file():
         return {**base, "reason": (
@@ -146,20 +141,23 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     return None
 
 
-def _ensure_coverage(args, repo_root: Path, coverage_json: Path, head_sha: str) -> None:
-    """Produce coverage when needed (the slow probe), and in producer mode stamp
-    the `.head` marker so the pre-push consumer's `--require-fresh-coverage` can
-    trust the coverage was built for this head. Skip guards run before this, so
-    here a missing/stale reuse target means "run the probe"."""
+def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) -> None:
+    """Produce coverage when needed, and in producer mode stamp the
+    `.fingerprint` marker so the pre-push consumer's `--require-fresh-coverage`
+    can trust the coverage was built for this changed-pool content. Skip guards
+    run before this, so here a missing/stale reuse target means "run the probe".
+
+    The producer probe drops `dynamic_context` (lever A): the changed-line
+    verdict only needs executed-vs-missing lines, and per-test context is what
+    blew the coverage JSON up to ~1.34 GB. Subprocess capture is retained."""
     if not args.reuse_coverage or not coverage_json.is_file():
         config = args.config if args.config.is_absolute() else repo_root / args.config
-        run_test_coverage(repo_root, read_test_command(config), coverage_json)
-    if args.write_head_marker:
-        resolved_head = _resolve_sha(repo_root, head_sha)
-        if resolved_head:
-            coverage_json.with_name(coverage_json.name + ".head").write_text(
-                resolved_head + "\n", encoding="utf-8"
-            )
+        run_test_coverage(
+            repo_root, read_test_command(config), coverage_json,
+            dynamic_context=not args.write_fresh_marker,
+        )
+    if args.write_fresh_marker:
+        write_coverage_fingerprint_marker(repo_root, coverage_json, base_sha)
 
 
 def main() -> int:
@@ -193,7 +191,7 @@ def main() -> int:
     if skip is not None:
         _emit(skip)
         return 0
-    _ensure_coverage(args, repo_root, coverage_json, head_sha)
+    _ensure_coverage(args, repo_root, coverage_json, base_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
 
     blocking = classify_changed_line_scope_gap(

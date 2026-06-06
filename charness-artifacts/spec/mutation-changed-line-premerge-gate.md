@@ -3,7 +3,8 @@
 Date: 2026-06-06 (refreshed from draft handoff; forced-interrupt carry-forward)
 Source: debug #320 (`charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md`),
 recurrence #321 (`Mutation test regression on main`, closed per-file 2026-06-06).
-Status: **spec — ready for impl** (first slice named below).
+Status: **impl — slice 1 (consumer) + slice 2 (producer, lever A+B) delivered**;
+gate active pending push-time verification (Slice Status below).
 Seam class: repeated symptom on one seam (#219 -> #251 -> #260 -> #320 -> #321).
 
 ## Problem (Seam, not the single file)
@@ -286,55 +287,78 @@ The cheap, safe **consumer** half of Option A:
   range safely **skips** (stale coverage, no `.head` marker) — proving the
   freshness guard neutralises the stale-coverage false positives it surfaced
   (it had flagged 3 changed files on the real range before the guard). AC-WIRE
-  proven at reproducer level (`test_require_fresh_coverage_fires_when_marker_matches_head`);
+  proven at reproducer level (renamed in Slice 2 to
+  `test_require_fresh_coverage_fires_when_marker_matches_fingerprint`);
   AC-CLEAN is additionally enforced by the existing pre-push `git diff --quiet --
   charness-artifacts` hook check.
 
-### Slice 2 — producer mechanism (PARTIAL — mechanism delivered; auto-run BLOCKED on a cheaper coverage strategy)
+> **Superseded by Slice 2:** the freshness marker described here as the commit-SHA
+> `.head` file is now the content-based `.fingerprint` marker — the SHA identity
+> would have made the closeout-piggybacked producer's pre-commit stamp never match
+> the consumer's post-commit check. See Slice 2 "Freshness identity changed".
 
-Delivered: `--write-head-marker` (producer mode) on
-`check_changed_line_mutation_coverage.py` — after coverage exists for the analyzed
-head it stamps the `<coverage-json>.head` marker the consumer's
-`--require-fresh-coverage` trusts. Extracted to `_ensure_coverage`
-(length-gate clean); unit-tested with a mocked probe
-(`test_write_head_marker_stamps_coverage_with_head`).
+### Slice 2 — producer (DELIVERED via lever A+B, 2026-06-07)
 
-**Cost finding (blocks auto-wiring — discovered by running the real probe).** The
-faithful coverage probe is `run_test_coverage` over the cosmic-ray test-command
-`python3 -m pytest -q -m 'not release_only' tests` **with `dynamic_context`
-(per-test) instrumentation**. Run live over the unpushed range it was **>10 min**
-and the previous export produced a **~1.34 GB** `test-coverage.json` — pathological
-for routine use. So the operator's chosen "run_slice_closeout step" host is NOT
-viable with the full faithful probe: it would roughly double pool-touching
-closeout latency AND choke on a giant coverage artifact. The producer mechanism is
-correct, but a **cheaper coverage strategy is required before any auto-run**:
-- scope coverage to the changed pool files' relevant tests (not the whole suite);
-- and/or drop `dynamic_context` for the changed-line verdict (per-test context is
-  not needed to answer "is this changed line executed?"), which collapses the
-  dataset size;
-- and/or keep the producer an explicit, infrequent maintainer command, not a
-  per-closeout step.
+The cheap producer is wired. Lever A+B as decided:
 
-**Decided next-session approach = A+B (operator, 2026-06-07):** drop
-`dynamic_context` AND piggyback the producer coverage onto the broad pytest the
-closeout already runs — one coverage-instrumented run, small artifact, no
-double-run. The subprocess-only blind spot of plain `--cov` stays a deferred
-concern (the pre-push `git diff --quiet -- charness-artifacts` check and the
-consumer freshness guard remain the safety net). The producer marker mechanism is
-already built; remaining work is the instrumented-broad-pytest wiring + emit +
-lock-phase placement.
+- **Lever A — drop `dynamic_context`.** `run_test_coverage` gained a
+  `dynamic_context` flag (default True for the faithful sampler path); the
+  producer passes `dynamic_context=False`, which omits the per-test rcfile
+  context + `--show-contexts` export. Per-test context was the **~1.34 GB** size
+  driver; the changed-line verdict only needs executed-vs-missing lines.
+  **Subprocess capture (`COVERAGE_PROCESS_START`) is retained**, so plain `--cov`
+  gains no new subprocess blind spot — strictly better than the assumed plain
+  `--cov`, while still small.
+- **Lever B — piggyback, no double-run.** `run_slice_closeout.py
+  --produce-mutation-coverage` (requires `--verification-lock`) instruments the
+  **closeout broad pytest itself** under plain coverage (one run), then exports
+  `reports/mutation/test-coverage.json` and stamps the freshness marker. New <!-- reproduction-source -->
+  module `scripts/mutation_coverage_producer.py` + executor routing
+  (`broad_pytest_producer` bypasses proof-reuse so the producing run always
+  executes). `reports/mutation/` is gitignored → AC-CLEAN preserved.
 
-**Verification strategy for the deferred producer = via the push (operator):** the
-expensive faithful-probe local run is NOT re-run to verify; instead the producer
-slice is proven by the real push — the pre-push consumer gate (now with fresh
-coverage) plus the scheduled mutation cron as backstop. Accepted trade-off: a
-false positive blocks the push (safe — fix and retry), a false negative is caught
-by the cron post-merge (no worse than today). Iterate if the push surfaces an
-error. Bundle the push + release together next session.
+**Freshness identity changed from commit-SHA → content fingerprint (supersedes
+slice 1's `.head` marker).** Closeout runs **pre-commit** (verify → commit), so a
+closeout-piggybacked producer stamps the *parent* SHA while the pre-push consumer
+checks the *committed tip* SHA — with the slice-1 SHA marker the gate would
+silently skip on **every** push (a permanent false-negative, defeating the seam
+fix). The marker is now `<coverage-json>.fingerprint` = a content hash of the
+changed eligible pool files over `base→worktree`
+(`mutation_changed_files_lib.changed_pool_fingerprint`), which is identical at the
+producer's pre-commit run and the consumer's post-commit (clean-tree) check of the
+same code. Consumer (`--require-fresh-coverage`) recomputes and compares; producer
+(`--write-fresh-marker` / the closeout producer) stamps it. Content-based is also
+more correct than SHA: a no-op recommit/rebase that does not touch the pool no
+longer needlessly invalidates fresh coverage. Operator-confirmed direction
+("우리 목적에 맞으려면 뭐가 최선?" → content fingerprint, 2026-06-07).
 
-Until the cheap producer lands, the consumer (slice 1) stays safe and inactive
-(skips on stale/absent coverage), and a maintainer can run the producer manually
-(`--write-head-marker`) before a pool-touching push.
+**Verification strategy = via the push (operator):** the expensive faithful-probe
+local run is NOT re-run; the producer slice is proven by the real push — run the
+producer on the committed tip (so the marker matches the pushed HEAD), then the
+pre-push consumer gate fires against fresh, matching coverage, with the scheduled
+cron as backstop. Accepted trade-off: a false positive blocks the push (safe — fix
+and retry), a false negative is caught by the cron post-merge (no worse than
+today). Bundle the push + release.
+
+The cosmic-ray test set (full `tests`) and the closeout broad set
+(`tests/quality_gates tests/control_plane tests/test_*.py`) differ: a changed line
+covered only by an excluded test (e.g. `tests/charness_cli`) reads as uncovered in
+the piggybacked coverage → a possible false positive. This is the accepted
+"false-positive blocks the push (fix+retry)" trade-off, not a silent gap. The
+subprocess-only escalation engine stays deferred (Deferred Decisions).
+
+**Tests:** producer + executor routing + guard + fingerprint freshness
+(`tests/quality_gates/test_mutation_coverage_producer.py`,
+`test_changed_line_mutation_coverage.py`). A manual fallback remains:
+`check_changed_line_mutation_coverage.py --write-fresh-marker` runs a plain
+(no-`dynamic_context`) full-suite probe + stamps the same fingerprint marker.
+
+**Portability classification (closeout checkpoint):** the producer module + wiring
+are **host-local** (charness `run_slice_closeout.py` / broad-pytest shape /
+`reports/mutation/` paths). The transferable *doctrine* (content-fingerprint
+freshness, drop-`dynamic_context` producer-cost lesson) belongs in
+`skills/public/quality/references/mutation-testing.md` — that promotion is the
+separate handoff "Skill portability" follow-up, not this slice.
 
 ### Skill portability (follow-up — surfaced by operator 2026-06-07)
 

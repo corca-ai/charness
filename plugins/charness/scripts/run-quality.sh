@@ -499,11 +499,12 @@ fi
 # with origin/main) — the recurring #219->#251->#260->#320->#321 class — before the
 # scheduled cron re-derives it post-merge. Cheap and safe by construction: it NEVER
 # runs the slow coverage probe here (--skip-if-no-coverage) and it only trusts a
-# coverage source FRESH for the current head (--require-fresh-coverage), so a stale
-# reports/mutation/test-coverage.json cannot raise false positives — it skips
-# non-blocking instead. With no fresh coverage, or no origin/main base, it is
-# non-blocking by construction. The producer that writes fresh coverage + the
-# `.head` marker is a dedicated closeout step (follow-up slice).
+# coverage source FRESH for the current changed-pool content (--require-fresh-coverage,
+# a `.fingerprint` marker match), so a stale reports/mutation/test-coverage.json cannot
+# raise false positives — it skips non-blocking instead. With no fresh coverage, or no
+# origin/main base, it is non-blocking by construction. The producer that writes fresh
+# coverage + the `.fingerprint` marker is the closeout step
+# `run_slice_closeout.py --produce-mutation-coverage` (run with --verification-lock).
 CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
 queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"

@@ -6,6 +6,7 @@ in `mutation_sampling_lib`; this module answers the change-set question only.
 
 from __future__ import annotations
 
+import hashlib
 import re
 import subprocess
 from pathlib import Path
@@ -179,6 +180,72 @@ def line_source_text(repo_root: Path, path: str, ref: str | None = None) -> list
         return source_path.read_text(encoding="utf-8").splitlines()
     except OSError:
         return []
+
+
+def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
+    """Eligible mutation-pool files that differ from ``base_sha`` in the worktree.
+
+    Diffs ``base_sha`` against the WORKING TREE (no ``..head``) on purpose: the
+    closeout producer runs pre-commit (HEAD is still the parent), while the
+    pre-push consumer runs post-commit. Comparing base→worktree at both points
+    yields the same changed-file set and the same on-disk content across the
+    commit boundary, which is what lets the freshness fingerprint match.
+
+    Note: ``git diff`` lists tracked changes only, so a brand-new pool file that
+    is still untracked at the producer's pre-commit run is omitted there but
+    included once committed — a fingerprint mismatch that makes the consumer skip
+    non-blocking (safe). Running the producer on the committed tip (the intended
+    pre-push flow) avoids it.
+    """
+    if not base_sha:
+        return []
+    from scripts.sample_mutation_files import list_eligible, mutation_pathspecs  # noqa: E402
+
+    command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
+    result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
+    changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
+    return sorted(changed & set(list_eligible(repo_root)))
+
+
+def _safe_read_bytes(path: Path) -> bytes:
+    """File bytes, or an ``<absent>`` sentinel when the path cannot be read (a
+    deleted/replaced pool file or a TOCTOU race between the diff and the read) so
+    the fingerprint stays a stable digest instead of crashing the gate."""
+    try:
+        return path.read_bytes()
+    except OSError:
+        return b"<absent>"
+
+
+def changed_pool_fingerprint(repo_root: Path, base_sha: str) -> str:
+    """Content fingerprint of the changed eligible pool files over base→worktree.
+
+    Stable across the pre-commit→commit boundary (the producer stamps it, the
+    consumer recomputes and compares), and content-based rather than commit-SHA
+    based so a no-op recommit/rebase that does not touch the pool does not
+    needlessly invalidate fresh coverage. An ``origin/main`` advance changes
+    ``base_sha`` and so re-invalidates, which is correct: coverage produced
+    against an older base should be re-produced.
+    """
+    digest = hashlib.sha256()
+    digest.update(b"charness-changed-pool-fingerprint-v1\n")
+    digest.update((base_sha or "").encode() + b"\n")
+    for path in changed_pool_files_vs_base(repo_root, base_sha):
+        digest.update(f"{path}:".encode())
+        digest.update(hashlib.sha256(_safe_read_bytes(repo_root / path)).hexdigest().encode())
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def coverage_fingerprint_marker_path(coverage_json: Path) -> Path:
+    """Sibling marker the producer stamps and the consumer trusts for freshness."""
+    return coverage_json.with_name(coverage_json.name + ".fingerprint")
+
+
+def write_coverage_fingerprint_marker(repo_root: Path, coverage_json: Path, base_sha: str) -> str:
+    fingerprint = changed_pool_fingerprint(repo_root, base_sha)
+    coverage_fingerprint_marker_path(coverage_json).write_text(fingerprint + "\n", encoding="utf-8")
+    return fingerprint
 
 
 def classify_changed_file_exclusions(

@@ -220,15 +220,23 @@ def test_skip_if_no_coverage_still_blocks_when_present(tmp_path: Path) -> None:
     assert "scripts/foo.py" in payload["blocking"]
 
 
+def _fingerprint(repo: Path, base: str) -> str:
+    return _load_teeth().changed_pool_fingerprint(repo, base)
+
+
+def _marker_path(cov: Path) -> Path:
+    return cov.with_name(cov.name + ".fingerprint")
+
+
 def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None:
-    # A coverage source with NO `.head` marker is treated as stale: the pre-push
-    # teeth skip non-blocking rather than trust coverage that may predate the
-    # changed lines (the stale-coverage false-positive class found in the wiring
-    # smoke). Without this guard a stale reports/mutation/test-coverage.json would
-    # block a legitimate push.
+    # A coverage source with NO `.fingerprint` marker is treated as stale: the
+    # pre-push teeth skip non-blocking rather than trust coverage that may predate
+    # the changed lines (the stale-coverage false-positive class found in the
+    # wiring smoke). Without this guard a stale reports/mutation/test-coverage.json
+    # would block a legitimate push.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # would block if trusted
-    # no <cov>.head marker written
+    # no <cov>.fingerprint marker written
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -245,7 +253,7 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
 def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> None:
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])
-    cov.with_name(cov.name + ".head").write_text("0" * 40, encoding="utf-8")  # wrong sha
+    _marker_path(cov).write_text("0" * 64, encoding="utf-8")  # wrong fingerprint
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -256,13 +264,13 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
     assert "stale" in json.loads(result.stdout)["reason"]
 
 
-def test_require_fresh_coverage_fires_when_marker_matches_head(tmp_path: Path) -> None:
+def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: Path) -> None:
     # The freshness guard does NOT defang the teeth: a coverage source whose
-    # `.head` marker matches the analyzed head still blocks an uncovered changed
-    # line (AC-WIRE — fresh coverage keeps its teeth).
+    # `.fingerprint` marker matches the current changed-pool content still blocks
+    # an uncovered changed line (AC-WIRE — fresh coverage keeps its teeth).
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b uncovered
-    cov.with_name(cov.name + ".head").write_text(head, encoding="utf-8")
+    _marker_path(cov).write_text(_fingerprint(repo, base), encoding="utf-8")
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -275,15 +283,18 @@ def test_require_fresh_coverage_fires_when_marker_matches_head(tmp_path: Path) -
     assert "scripts/foo.py" in payload["blocking"]
 
 
-def test_write_head_marker_stamps_coverage_with_head(tmp_path: Path, monkeypatch) -> None:
+def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypatch) -> None:
     # Producer mode (closeout): after coverage is produced, write the
-    # `<coverage-json>.head` marker = the analyzed head SHA so the pre-push
-    # consumer's --require-fresh-coverage can later trust it.
+    # `<coverage-json>.fingerprint` marker = the changed-pool content fingerprint
+    # so the pre-push consumer's --require-fresh-coverage can later trust it. The
+    # producer probe drops dynamic_context (lever A), so the stub records the kwarg.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     teeth = _load_teeth()
     cov_path = repo / "reports" / "mutation" / "test-coverage.json"
+    seen = {}
 
-    def fake_probe(repo_root, test_command, coverage_json) -> None:
+    def fake_probe(repo_root, test_command, coverage_json, *, dynamic_context=True) -> None:
+        seen["dynamic_context"] = dynamic_context
         Path(coverage_json).parent.mkdir(parents=True, exist_ok=True)
         Path(coverage_json).write_text(
             json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
@@ -296,27 +307,31 @@ def test_write_head_marker_stamps_coverage_with_head(tmp_path: Path, monkeypatch
         sys,
         "argv",
         ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-         "--coverage-json", str(cov_path), "--write-head-marker"],
+         "--coverage-json", str(cov_path), "--write-fresh-marker"],
     )
 
     rc = teeth.main()
 
     assert rc == 0
-    marker = cov_path.with_name(cov_path.name + ".head")
-    assert marker.is_file(), "producer must write the .head marker"
-    assert marker.read_text(encoding="utf-8").strip() == head
+    assert seen["dynamic_context"] is False, "producer drops dynamic_context (lever A)"
+    marker = _marker_path(cov_path)
+    assert marker.is_file(), "producer must write the .fingerprint marker"
+    assert marker.read_text(encoding="utf-8").strip() == _fingerprint(repo, base)
 
 
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
     # Covers the run-the-probe branch (the default, no --reuse-coverage): the
     # heavy gate probe + config read are stubbed so the test stays fast while the
-    # branch executes and the produced coverage drives a clean verdict.
+    # branch executes and the produced coverage drives a clean verdict. Without
+    # --write-fresh-marker the consumer probe keeps dynamic_context (the faithful
+    # path).
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     teeth = _load_teeth()
     called = {}
 
-    def fake_probe(repo_root, test_command, coverage_json) -> None:
+    def fake_probe(repo_root, test_command, coverage_json, *, dynamic_context=True) -> None:
         called["probe"] = True
+        called["dynamic_context"] = dynamic_context
         Path(coverage_json).parent.mkdir(parents=True, exist_ok=True)
         Path(coverage_json).write_text(
             json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
@@ -335,4 +350,5 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
     rc = teeth.main()
 
     assert called.get("probe") is True  # the run-the-probe branch executed
+    assert called["dynamic_context"] is True
     assert rc == 0

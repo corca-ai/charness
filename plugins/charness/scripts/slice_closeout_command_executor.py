@@ -17,10 +17,19 @@ def execute_command_plan(
     run_command: Callable[[Path, str, str], dict[str, object]],
     collect_changed_paths: Callable[[Path], list[str]],
     refresh_broad_pytest_proof: bool,
+    broad_pytest_producer: Callable[[Path, str, str], dict[str, object]] | None = None,
 ) -> bool:
-    """Run commands, mutating ``payload``; return true when closeout should stop."""
+    """Run commands, mutating ``payload``; return true when closeout should stop.
+
+    When ``broad_pytest_producer`` is set, the broad pytest command is run
+    through it (instrumented for plain mutation coverage) instead of the plain
+    ``run_command``, and the proof-reuse path is bypassed so the producing run
+    always executes — fresh coverage is the whole point of producer mode.
+    """
     for phase, command in command_plan:
-        if _broad_gate.is_broad_pytest_command(command):
+        is_broad = _broad_gate.is_broad_pytest_command(command)
+        producing = is_broad and broad_pytest_producer is not None
+        if is_broad and not producing:
             if _maybe_reuse_or_block_broad(
                 repo_root,
                 payload,
@@ -31,12 +40,15 @@ def execute_command_plan(
                 continue
             if payload.get("status") == "blocked":
                 return True
-        result = run_command(repo_root, command, phase)
+        if producing:
+            result = broad_pytest_producer(repo_root, command, phase)
+        else:
+            result = run_command(repo_root, command, phase)
         payload["executed_commands"].append(result)
         if result["returncode"] != 0:
             payload["status"] = "failed"
             return True
-        if _broad_gate.is_broad_pytest_command(command):
+        if is_broad:
             _record_broad(repo_root, payload, command, result, collect_changed_paths)
     return False
 

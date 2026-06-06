@@ -37,9 +37,11 @@ _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_g
 run_predict_commit = _staged_commit_gate_plan.run_predict_commit
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 _rca_link_advisory = import_repo_module(__file__, "scripts.rca_link_advisory")
+_mutation_coverage_producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
 print_broad_pytest_policy = _slice_closeout_broad_gate.print_broad_pytest_policy
 should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad_pytest_policy
+closeout_producer_or_error = _mutation_coverage_producer.closeout_producer_or_error
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
 
@@ -340,6 +342,16 @@ def _maybe_block_on_risk_interrupt(
     return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
 
 
+def _resolve_broad_producer(args, repo_root: Path, run_command):
+    """Resolve the closeout broad-pytest mutation-coverage producer (or None) from
+    args. Raises ``SurfaceError`` on misuse (e.g. --produce-mutation-coverage
+    without --verification-lock) so the entrypoint reports it and exits non-zero."""
+    producer, error = closeout_producer_or_error(args, repo_root, run_command)
+    if error is not None:
+        raise SurfaceError(error)
+    return producer
+
+
 def _advise_staged_reversion(repo_root: Path) -> None:
     # Advisory (#258): surface a staged reversion (index != HEAD while worktree
     # == HEAD) at closeout, before the human commit. Reads git directly; the
@@ -370,6 +382,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--refresh-broad-pytest-proof",
         action="store_true",
         help="Rerun broad pytest even when a cached verification-lock proof exists or was invalidated.",
+    )
+    parser.add_argument(
+        "--produce-mutation-coverage",
+        action="store_true",
+        help=(
+            "At the verification-lock broad pytest, run it under plain coverage "
+            "(one instrumented run, no double-run) and emit reports/mutation/"
+            "test-coverage.json plus a freshness fingerprint marker for the pre-push "
+            "changed-line gate. Requires --verification-lock."
+        ),
     )
     parser.add_argument(
         "--ack-cautilus-skill-review",
@@ -468,6 +490,8 @@ def main() -> int:
         payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
         return _emit_payload(payload, as_json=args.json)
 
+    broad_pytest_producer = _resolve_broad_producer(args, repo_root, run_command)
+
     should_stop = execute_command_plan(
         repo_root,
         command_plan,
@@ -475,6 +499,7 @@ def main() -> int:
         run_command=run_command,
         collect_changed_paths=collect_changed_paths,
         refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
+        broad_pytest_producer=broad_pytest_producer,
     )
     if should_stop:
         return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))

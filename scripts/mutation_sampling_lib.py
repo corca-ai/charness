@@ -69,56 +69,57 @@ def coverage_run_command(test_command: str, data_file: Path) -> list[str]:
     )
 
 
-def run_test_coverage(repo_root: Path, test_command: str, coverage_json: Path) -> None:
+def _sitecustomize_source(*, dynamic_context: bool) -> str:
+    """sitecustomize that always enables subprocess coverage capture.
+
+    The per-test `switch_context` block is only emitted for the faithful
+    `dynamic_context` probe; the plain producer (the changed-line verdict only
+    needs executed-vs-missing lines) drops it, which is what collapses the
+    coverage JSON from the ~1.34 GB per-test export down to a small artifact.
+    `coverage.process_startup()` stays in both modes so subprocess-executed
+    lines are still measured (no new subprocess blind spot vs the faithful probe).
+    """
+    lines = ["import os", "import coverage", "", "coverage.process_startup()"]
+    if dynamic_context:
+        lines += [
+            "current = coverage.Coverage.current()",
+            "raw_context = os.environ.get('PYTEST_CURRENT_TEST', '').split(' (', 1)[0]",
+            "if current is not None and raw_context:",
+            "    path_part, *rest = raw_context.split('::')",
+            "    if path_part.endswith('.py'):",
+            "        context = path_part[:-3].replace('/', '.')",
+            "        if rest:",
+            "            context += '.' + '.'.join(rest)",
+            "    else:",
+            "        context = raw_context",
+            "    current.switch_context(context)",
+        ]
+    return "\n".join(lines) + "\n"
+
+
+def _write_coverage_config(
+    repo_root: Path, coverage_json: Path, *, dynamic_context: bool
+) -> tuple[Path, Path, Path]:
     coverage_json.parent.mkdir(parents=True, exist_ok=True)
     data_file = coverage_json.with_name(".mutation-coverage")
     rcfile = coverage_json.with_name(".mutation-coveragerc")
     sitecustomize_dir = coverage_json.with_name(".mutation-sitecustomize")
     sitecustomize_dir.mkdir(parents=True, exist_ok=True)
     sitecustomize_dir.joinpath("sitecustomize.py").write_text(
-        "\n".join(
-            [
-                "import os",
-                "import coverage",
-                "",
-                "coverage.process_startup()",
-                "current = coverage.Coverage.current()",
-                "raw_context = os.environ.get('PYTEST_CURRENT_TEST', '').split(' (', 1)[0]",
-                "if current is not None and raw_context:",
-                "    path_part, *rest = raw_context.split('::')",
-                "    if path_part.endswith('.py'):",
-                "        context = path_part[:-3].replace('/', '.')",
-                "        if rest:",
-                "            context += '.' + '.'.join(rest)",
-                "    else:",
-                "        context = raw_context",
-                "    current.switch_context(context)",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+        _sitecustomize_source(dynamic_context=dynamic_context), encoding="utf-8"
     )
-    rcfile.write_text(
-        "\n".join(
-            [
-                "[run]",
-                f"data_file = {data_file}",
-                f"source = {repo_root}",
-                "dynamic_context = test_function",
-                "disable_warnings = dynamic-conflict",
-                "parallel = True",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    if data_file.exists():
-        data_file.unlink()
-    for stale_shard in data_file.parent.glob(data_file.name + ".*"):
-        stale_shard.unlink()
-    command = coverage_run_command(test_command, data_file)
+    rc_lines = ["[run]", f"data_file = {data_file}", f"source = {repo_root}"]
+    if dynamic_context:
+        rc_lines += ["dynamic_context = test_function", "disable_warnings = dynamic-conflict"]
+    rc_lines += ["parallel = True", ""]
+    rcfile.write_text("\n".join(rc_lines), encoding="utf-8")
+    return data_file, rcfile, sitecustomize_dir
+
+
+def coverage_subprocess_env(rcfile: Path, sitecustomize_dir: Path) -> dict[str, str]:
+    """Environment that turns on coverage in pytest and its subprocesses."""
     existing_pythonpath = os.environ.get("PYTHONPATH")
-    env = {
+    return {
         **os.environ,
         "COVERAGE_PROCESS_START": str(rcfile),
         "COVERAGE_RCFILE": str(rcfile),
@@ -128,40 +129,66 @@ def run_test_coverage(repo_root: Path, test_command: str, coverage_json: Path) -
             else os.pathsep.join([str(sitecustomize_dir), existing_pythonpath])
         ),
     }
-    subprocess.run(command, cwd=repo_root, check=True, env=env)
+
+
+def clear_stale_coverage_data(data_file: Path) -> None:
+    if data_file.exists():
+        data_file.unlink()
+    for stale_shard in data_file.parent.glob(data_file.name + ".*"):
+        stale_shard.unlink()
+
+
+def combine_and_export_coverage(
+    repo_root: Path,
+    rcfile: Path,
+    data_file: Path,
+    coverage_json: Path,
+    env: dict[str, str],
+    *,
+    show_contexts: bool,
+) -> None:
+    # stdout=DEVNULL: coverage's "Combined N files" / "Wrote JSON report" info
+    # lines would otherwise pollute a `run_slice_closeout.py --json` payload when
+    # the producer piggybacks on the broad pytest. Errors still surface on stderr.
     subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "coverage",
-            "combine",
-            "--rcfile",
-            str(rcfile),
-            "--data-file",
-            str(data_file),
-            str(coverage_json.parent),
-        ],
-        cwd=repo_root,
-        check=True,
-        env=env,
+        [sys.executable, "-m", "coverage", "combine", "--rcfile", str(rcfile),
+         "--data-file", str(data_file), str(coverage_json.parent)],
+        cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL,
     )
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "coverage",
-            "json",
-            "--rcfile",
-            str(rcfile),
-            "--show-contexts",
-            "--data-file",
-            str(data_file),
-            "-o",
-            str(coverage_json),
-        ],
-        cwd=repo_root,
-        check=True,
-        env=env,
+    json_command = [
+        sys.executable, "-m", "coverage", "json", "--rcfile", str(rcfile),
+        *(["--show-contexts"] if show_contexts else []),
+        "--data-file", str(data_file), "-o", str(coverage_json),
+    ]
+    subprocess.run(json_command, cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL)
+
+
+def prepare_plain_coverage(
+    repo_root: Path, coverage_json: Path
+) -> tuple[Path, Path, dict[str, str]]:
+    """Set up a plain (no `dynamic_context`) coverage run and return
+    ``(data_file, rcfile, env)`` so a caller can run an arbitrary instrumented
+    command (e.g. the closeout broad pytest) and then call
+    :func:`combine_and_export_coverage` with ``show_contexts=False``."""
+    data_file, rcfile, sitecustomize_dir = _write_coverage_config(
+        repo_root, coverage_json, dynamic_context=False
+    )
+    clear_stale_coverage_data(data_file)
+    return data_file, rcfile, coverage_subprocess_env(rcfile, sitecustomize_dir)
+
+
+def run_test_coverage(
+    repo_root: Path, test_command: str, coverage_json: Path, *, dynamic_context: bool = True
+) -> None:
+    data_file, rcfile, sitecustomize_dir = _write_coverage_config(
+        repo_root, coverage_json, dynamic_context=dynamic_context
+    )
+    clear_stale_coverage_data(data_file)
+    command = coverage_run_command(test_command, data_file)
+    env = coverage_subprocess_env(rcfile, sitecustomize_dir)
+    subprocess.run(command, cwd=repo_root, check=True, env=env)
+    combine_and_export_coverage(
+        repo_root, rcfile, data_file, coverage_json, env, show_contexts=dynamic_context
     )
 
 

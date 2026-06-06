@@ -1,0 +1,128 @@
+"""Closeout producer for the changed-line mutation-coverage pre-push gate.
+
+Lever A+B (decided 2026-06-07): instead of a dedicated slow `dynamic_context`
+probe, the closeout's broad pytest run is *itself* instrumented with plain
+coverage (one run, no double-run), then exported small and stamped with a
+freshness fingerprint. The pre-push consumer
+(`check_changed_line_mutation_coverage.py --require-fresh-coverage`) trusts that
+coverage when its `.fingerprint` marker matches the current changed-pool content.
+
+Spec: charness-artifacts/spec/mutation-changed-line-premerge-gate.md (Slice 2).
+This wiring is charness-host-local (closeout-specific); the transferable doctrine
+lives in skills/public/quality/references/mutation-testing.md.
+"""
+from __future__ import annotations
+
+import shlex
+import subprocess
+from pathlib import Path
+from typing import Callable
+
+from runtime_bootstrap import import_repo_module
+
+_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
+_changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
+
+DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
+_COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
+PRODUCE_REQUIRES_LOCK_ERROR = (
+    "--produce-mutation-coverage requires --verification-lock and is incompatible "
+    "with --skip-broad-pytest (it instruments the locked broad pytest)"
+)
+
+
+def instrument_broad_command(command: str, data_file: Path) -> str:
+    """Rewrite a `pytest ...` / `python3 -m pytest ...` command to run under
+    plain `coverage run`, preserving the remaining arguments verbatim (the
+    `tests/test_*.py` glob must stay unquoted so bash still expands it)."""
+    coverage_prefix = f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} -m pytest "
+    for pytest_prefix in ("python3 -m pytest ", "pytest "):
+        if command.startswith(pytest_prefix):
+            return coverage_prefix + command[len(pytest_prefix):]
+    raise ValueError(f"not an instrumentable pytest command: {command!r}")
+
+
+def _with_coverage_env(env: dict[str, str], command: str) -> str:
+    exports = "; ".join(f"export {key}={shlex.quote(env[key])}" for key in _COVERAGE_ENV_KEYS)
+    return f"{exports}; {command}"
+
+
+def produce_broad_coverage(
+    repo_root: Path,
+    command: str,
+    *,
+    base_sha: str,
+    coverage_json: Path,
+    run_command: Callable[[Path, str, str], dict[str, object]],
+    phase: str = "verify",
+) -> dict[str, object]:
+    """Run the broad pytest command under plain coverage and, on success, export
+    a small coverage JSON plus the freshness fingerprint marker the consumer
+    trusts. Returns a ``run_command``-shaped result dict (the original command is
+    preserved so the broad-pytest proof cache keys still match)."""
+    data_file, rcfile, env = _sampling.prepare_plain_coverage(repo_root, coverage_json)
+    instrumented = _with_coverage_env(env, instrument_broad_command(command, data_file))
+    result = dict(run_command(repo_root, instrumented, phase))
+    result["command"] = command
+    result["produced_mutation_coverage"] = False
+    if result.get("returncode") == 0:
+        _sampling.combine_and_export_coverage(
+            repo_root, rcfile, data_file, coverage_json, env, show_contexts=False
+        )
+        fingerprint = _changed_files.write_coverage_fingerprint_marker(
+            repo_root, coverage_json, base_sha
+        )
+        result["produced_mutation_coverage"] = True
+        result["mutation_coverage_json"] = str(coverage_json)
+        result["mutation_coverage_fingerprint"] = fingerprint
+    return result
+
+
+def default_mutation_base_sha(repo_root: Path) -> str:
+    """The merge-base with origin/main — the same base the pre-push consumer uses
+    so the producer's freshness fingerprint matches the consumer's recomputation."""
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "merge-base", "origin/main", "HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def make_closeout_producer(
+    repo_root: Path,
+    run_command: Callable[[Path, str, str], dict[str, object]],
+    *,
+    base_sha_resolver: Callable[[Path], str] = default_mutation_base_sha,
+) -> Callable[[Path, str, str], dict[str, object]]:
+    """A ``(repo_root, command, phase) -> result`` producer bound to the current
+    base SHA and the default coverage-json path, for the closeout executor."""
+    base_sha = base_sha_resolver(repo_root)
+    coverage_json = repo_root / DEFAULT_COVERAGE_JSON
+
+    def producer(rr: Path, command: str, phase: str) -> dict[str, object]:
+        return produce_broad_coverage(
+            rr, command, base_sha=base_sha, coverage_json=coverage_json,
+            run_command=run_command, phase=phase,
+        )
+
+    return producer
+
+
+def closeout_producer_or_error(
+    args: object,
+    repo_root: Path,
+    run_command: Callable[[Path, str, str], dict[str, object]],
+) -> tuple[Callable[[Path, str, str], dict[str, object]] | None, str | None]:
+    """Resolve the closeout broad-pytest producer from parsed args.
+
+    Returns ``(producer, None)`` when producing is requested and valid,
+    ``(None, error)`` on misuse (produce without the verification lock, or with
+    --skip-broad-pytest so there is no broad run to instrument), and
+    ``(None, None)`` when producing is not requested.
+    """
+    if not getattr(args, "produce_mutation_coverage", False):
+        return None, None
+    if not getattr(args, "verification_lock", False) or getattr(args, "skip_broad_pytest", False):
+        return None, PRODUCE_REQUIRES_LOCK_ERROR
+    return make_closeout_producer(repo_root, run_command), None
