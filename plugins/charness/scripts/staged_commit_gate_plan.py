@@ -112,6 +112,36 @@ def _mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     ]
 
 
+def _skill_core_headroom_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    """#319: gate changed public/support SKILL.md cores against the core_nonempty
+    >=4 headroom buffer at the commit boundary (a ratchet that grandfathers
+    existing under-buffer skills), so authoring to the 160 hard limit no longer
+    passes the per-slice gate and fails only the broad core-headroom test.
+    """
+    staged_skill_md = [
+        path
+        for path in paths
+        if path.startswith(("skills/public/", "skills/support/"))
+        and path.endswith("/SKILL.md")
+        and path.count("/") == 3
+    ]
+    if not staged_skill_md:
+        return []
+    return [
+        GateCommand(
+            "check-skill-core-headroom (staged)",
+            (
+                "python3",
+                "scripts/check_skill_surface_preflight.py",
+                "--repo-root",
+                str(repo_root),
+                "--changed-skill-md",
+                *staged_skill_md,
+            ),
+        )
+    ]
+
+
 def staged_commit_gate_plan(
     repo_root: Path,
     staged_paths: list[str] | None = None,
@@ -185,6 +215,8 @@ def staged_commit_gate_plan(
     if any(path.endswith(".md") for path in paths):
         plan.append(GateCommand("check-doc-links", ("python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root))))
         plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
+
+    plan.extend(_skill_core_headroom_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
     # agrees with the per-slice aggregate on the cheap structural subset.

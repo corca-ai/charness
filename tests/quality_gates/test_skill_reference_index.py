@@ -134,7 +134,7 @@ def test_achieve_root_uses_reference_index_with_core_headroom() -> None:
     report = preflight.build_report(ROOT, str(skill_path), 0, False)
 
     assert "- `references/index.md`" in skill_text
-    assert report["headroom"]["core_nonempty"]["remaining"] >= 4
+    assert report["headroom"]["core_nonempty"]["remaining"] >= preflight.CORE_NONEMPTY_HEADROOM_BUFFER
     for reference in (
         "references/lifecycle.md",
         "references/goal-artifact.md",

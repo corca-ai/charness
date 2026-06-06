@@ -79,6 +79,28 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     assert "staged-plugin-mirror-drift" in labels
 
 
+def test_staged_commit_plan_gates_changed_skill_md_core_headroom() -> None:
+    # #319: a changed public/support SKILL.md pulls the commit-boundary core
+    # headroom ratchet into the plan, scoped to exactly that path.
+    plan = staged_commit_gate_plan(ROOT, ["skills/public/demo/SKILL.md"], ruff_path="")
+    gate = next((c for c in plan if c.label == "check-skill-core-headroom (staged)"), None)
+    assert gate is not None
+    assert gate.argv == (
+        "python3",
+        "scripts/check_skill_surface_preflight.py",
+        "--repo-root",
+        str(ROOT),
+        "--changed-skill-md",
+        "skills/public/demo/SKILL.md",
+    )
+
+
+def test_staged_commit_plan_skips_core_headroom_without_changed_skill_md() -> None:
+    # A reference edit or a non-skill change must not pull the SKILL.md core gate.
+    for paths in (["skills/public/demo/references/note.md"], ["scripts/new_helper.py"], ["README.md"]):
+        assert "check-skill-core-headroom (staged)" not in _labels(paths)
+
+
 def test_gate_command_serializes_to_dict() -> None:
     assert GateCommand("demo", ("python3", "demo.py")).as_dict() == {
         "label": "demo",

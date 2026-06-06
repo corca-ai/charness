@@ -38,3 +38,12 @@ def test_authoring_preflight_lists_current_attention_vocabulary() -> None:
 # The headroom affordance the reference points at (check_python_lengths --headroom)
 # is exercised by tests/quality_gates/test_closeout_headroom_and_mirror_gate.py, so
 # it is not re-driven here (avoids a duplicate subprocess boundary-bypass candidate).
+
+
+def test_authoring_preflight_names_skill_core_headroom_buffer() -> None:
+    # #319 drift guard: the reference must name the SKILL.md core-headroom buffer
+    # and the commit-boundary checker, so the preflight list does not silently
+    # omit the trap that the new ratchet now enforces.
+    text = PREFLIGHT_DOC.read_text(encoding="utf-8")
+    assert "SKILL.md core headroom" in text
+    assert "check_skill_surface_preflight.py" in text

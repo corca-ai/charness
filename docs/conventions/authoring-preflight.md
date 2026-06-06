@@ -59,6 +59,29 @@ forced during #302.
 near-limit *changed* files at every slice closeout, so this is workflow signal, not memory
 (#256). The advisory never blocks; the length gate is the hard floor.
 
+## SKILL.md core headroom
+
+A `skills/public/**` or `skills/support/**` `SKILL.md` core (frontmatter and body
+above the exempt `## Load-Bearing Anchors` / `## References` sections) is governed
+by *two* separate limits: a hard `core_nonempty` ceiling of **160** lines, and a
+broad-gate test that additionally requires at least **4** lines of headroom below
+that ceiling. Authoring a core to exactly 160 (0 headroom) passes the hard limit
+but fails the headroom buffer — the trap that bit `achieve/SKILL.md` during the
+306-317 goal.
+
+[check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
+gates this buffer at the commit boundary for *changed* SKILL.md files (it runs in
+[staged_commit_gate_plan.py](../../scripts/staged_commit_gate_plan.py) and so in
+`run_slice_closeout.py --predict-commit`), instead of only in the broad gate. It
+is a ratchet: a change that drops a core below the 4-line buffer is blocked, but a
+skill already under buffer is grandfathered until an edit erodes it further. Check
+headroom before authoring, and on a block move prose into `references/` or a
+helper `scripts/` file rather than trimming to the hard limit:
+
+```bash
+python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md
+```
+
 ## Portable skill packages
 
 A file under `skills/public/**` or `skills/support/**` ships as a *portable*

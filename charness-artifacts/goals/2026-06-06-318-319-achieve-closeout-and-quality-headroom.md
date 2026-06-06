@@ -9,8 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-06-318-319-achieve-closeout-and-quality-headroom.md`.
+- Current slice: slice 2 (#318 orchestrator-owned closeout proof delegation) — next.
+- Slice 1 (#319) status: implemented + verified (43 targeted tests, predict-commit
+  aggregate green, broad gate 72/0), bounded fresh-eye review found one blocker
+  (ratchet read working tree, not the staged index) — fixed and re-verified.
+  `Close #319` carrier staged on the slice-1 commit; CLOSED state verified post-push.
+- #319 mechanism (decided via `quality`): a changed-file-scoped commit-boundary
+  **ratchet** in `check_skill_surface_preflight.py` (`--changed-skill-md`), wired
+  path-scoped into `staged_commit_gate_plan.py`, plus the #308 preflight reference
+  extension. Full-scan rejected: 5 public skills already sit under the 4-line
+  buffer (issue/release/retro=0, debug/impl=2); the ratchet grandfathers existing
+  debt and blocks only new erosion / brand-new skills without buffer.
+- Next action: commit slice 1 (`Close #319`), then start slice 2 (#318).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -165,6 +175,20 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Recorded during the run:
+
+- Routing: session-start `find-skills` → `achieve` goal pursuit; slice-1 #319
+  mechanism decided via `quality`; closeout carrier via `issue`; bounded
+  fresh-eye review via subagent (CLAUDE.md pre-delegated quality/critique scope).
+- Gather: n/a — no external source; both issues are repo-internal (read with
+  `gh issue view 318/319`, not a `gather`-class external source).
+- Release: n/a — no version bump or install-manifest edit; `achieve` + `quality`
+  contract changes only.
+- Issue closeout (#319): carrier = direct-commit (`Close #319` on the slice-1
+  commit); `issue_tool.py validate-closeout-draft` rehearsed pre-commit;
+  `verify-closeout --expect-state CLOSED` deferred to the maintainer's push
+  (explicit non-claim, per Non-Goals — `achieve` does not push or close).
+
 ## Activation Discussion
 
 Discuss before activation: CONFIRMED — the consequential decisions were surfaced
@@ -182,6 +206,20 @@ prod / release proof is in scope, and the final report will name that skipped
 proof level explicitly rather than implying it ran.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — #319 commit-boundary SKILL.md core-headroom coverage
+
+- Objective: Close the commit-boundary coverage gap for the SKILL.md core_nonempty >=4 headroom buffer so authoring to the 160 hard limit no longer passes the per-slice gate and fails only the broad gate.
+- Why this approach: Routed mechanism through quality: a changed-file-scoped ratchet, not a full-scan gate, because 5 public skills already sit under the buffer (issue/release/retro=0, debug/impl=2) so a full-scan gate would retroactively break unrelated commits. Matches the issue's 'changed SKILL.md files' framing and the repo's check_boundary_bypass_ratchet idiom; reuses the existing core_nonempty single source (no third copy).
+- Commits:
+- What changed: scripts/check_skill_surface_preflight.py (CORE_NONEMPTY_HEADROOM_BUFFER constant + evaluate_core_headroom ratchet + scan_changed_skill_md + --changed-skill-md mode, reads staged index blob for 'new'); scripts/staged_commit_gate_plan.py (_skill_core_headroom_gates path-scoped GateCommand); docs/conventions/authoring-preflight.md (#308 preflight reference extension); 4 test files; synced plugins/charness mirror.
+- Alternatives rejected: Full-scan hard gate (rejected: retroactively breaks 5 grandfathered skills); #308 preflight-reference-only / prose-only (rejected by quality: leaves an automatable rule as prose); a new standalone checker script (rejected: would be a 3rd copy of core_nonempty).
+- Targeted verification: 43 targeted tests pass (ratchet unit cases, git-backed staged-content scan, divergence test, CLI, plan labels, refactored broad-gate achieve test, authoring-preflight drift guard); run_slice_closeout --predict-commit aggregate green; ./scripts/run-quality.sh 72/0; end-to-end repro: staging a 0-headroom SKILL.md blocks even after the working tree is repaired (judges the staged index).
+- Test duplication pressure:
+- Critique: Bounded fresh-eye review (general-purpose subagent) found 1 BLOCKER: ratchet read the working tree for 'new' but HEAD for 'base', letting a healthy working tree mask a 0-headroom staged commit. Fixed: 'new' now reads the staged index blob (git show :<rel>) with worktree fallback; added test_scan_changed_skill_md_judges_staged_not_worktree. Re-review requested.
+- Off-goal findings: None.
+- Lessons carried forward: A new commit-boundary gate must judge the staged index, not the working tree, or it inherits the same bypass class it was built to close.
+- Metrics:
 
 ## Context Sources
 
@@ -274,7 +312,16 @@ re-verifies the folded revisions without re-running critique.
 
 ## Off-Goal Findings
 
-None yet — recorded here during the run and filed through `issue` when found.
+- Slice 1 (#319) resolution critique surfaced a recurrence idea: a meta-test that
+  flags any *blocking* buffer/headroom assertion (distinct from a hard limit) that
+  lacks a commit-boundary equivalent. Counterweight triage: **Valid but Defer,
+  leaning Over-Worry** — the class currently has population 1 (the #319 surface
+  itself, now fixed), a `remaining >= N` regex meta-test is the #305 brittleness
+  trap and adds #307/#314 latency, and the generalization is already the
+  `recent-lessons.md` line-19 disposition that #319 resolves. Disposition:
+  **not built, no fresh issue filed** (per counterweight); revisit trigger = a
+  *second* blocking buffer/headroom constant is introduced. Recorded as a
+  non-claim in `charness-artifacts/critique/2026-06-06-319-commit-boundary-headroom.md`.
 
 ## Final Verification
 

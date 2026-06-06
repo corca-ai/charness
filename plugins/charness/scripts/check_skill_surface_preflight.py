@@ -14,6 +14,11 @@ from runtime_bootstrap import repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 MAX_SKILL_MD_LINES = 200
 MAX_CORE_NONEMPTY_LINES = 160
+# A changed SKILL.md must keep at least this many core_nonempty lines of headroom
+# below MAX_CORE_NONEMPTY_LINES. This buffer is the single source of truth shared
+# by the broad-gate core-headroom test and the commit-boundary ratchet below, so
+# the two surfaces can never disagree on the buffer width.
+CORE_NONEMPTY_HEADROOM_BUFFER = 4
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 
 
@@ -108,6 +113,119 @@ def _headroom(current: int, limit: int, preview_delta: int) -> dict[str, Any]:
         "remaining_after_preview": remaining_after_preview,
         "blocked": remaining_after_preview < 0,
     }
+
+
+def _is_skill_core_path(rel: str) -> bool:
+    parts = Path(rel).parts
+    return (
+        len(parts) == 4
+        and parts[0] == "skills"
+        and parts[1] in {"public", "support"}
+        and parts[3] == "SKILL.md"
+    )
+
+
+def _git_show(repo_root: Path, ref: str) -> str | None:
+    result = subprocess.run(
+        ["git", "show", ref],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout if result.returncode == 0 else None
+
+
+def _base_core_nonempty(repo_root: Path, rel: str) -> int | None:
+    """core_nonempty of the committed (HEAD) version, or None when untracked."""
+    text = _git_show(repo_root, f"HEAD:{rel}")
+    return None if text is None else _core_nonempty_lines(text)
+
+
+def _changed_skill_text(repo_root: Path, rel: str, target: Path) -> str | None:
+    """Content that will be committed: the staged index blob (``git show :<rel>``),
+    so the commit-boundary gate judges what is actually being committed rather than
+    a working tree that may diverge from the index. Falls back to the working tree
+    when the path is not in the index (ad-hoc/unstaged invocation)."""
+    staged = _git_show(repo_root, f":{rel}")
+    if staged is not None:
+        return staged
+    return target.read_text(encoding="utf-8") if target.is_file() else None
+
+
+def evaluate_core_headroom(
+    new_core: int,
+    base_core: int | None,
+    *,
+    limit: int = MAX_CORE_NONEMPTY_LINES,
+    buffer: int = CORE_NONEMPTY_HEADROOM_BUFFER,
+) -> dict[str, Any]:
+    """Ratchet verdict for one changed SKILL.md core_nonempty count.
+
+    Blocks only when the change leaves the core under the >=``buffer`` headroom
+    AND the change made headroom worse (or the surface is brand new). An existing
+    surface already under buffer is grandfathered: it may stay flat or improve,
+    but it may not erode further while under buffer. A newly tracked surface has
+    no base, so it must carry the buffer from the start.
+    """
+    new_remaining = limit - new_core
+    base_remaining = None if base_core is None else limit - base_core
+    under_buffer = new_remaining < buffer
+    regressed = base_remaining is None or new_remaining < base_remaining
+    return {
+        "limit": limit,
+        "buffer": buffer,
+        "new_core": new_core,
+        "new_remaining": new_remaining,
+        "base_core": base_core,
+        "base_remaining": base_remaining,
+        "under_buffer": under_buffer,
+        "regressed": regressed,
+        "blocked": under_buffer and regressed,
+    }
+
+
+def scan_changed_skill_md(repo_root: Path, paths: list[str]) -> dict[str, Any]:
+    """Commit-boundary core-headroom ratchet over changed SKILL.md paths."""
+    checked: list[dict[str, Any]] = []
+    for raw in paths:
+        rel = Path(raw).as_posix()
+        if not _is_skill_core_path(rel):
+            continue
+        new_text = _changed_skill_text(repo_root, rel, repo_root / rel)
+        if new_text is None:
+            continue
+        row = evaluate_core_headroom(
+            _core_nonempty_lines(new_text),
+            _base_core_nonempty(repo_root, rel),
+        )
+        row["path"] = rel
+        checked.append(row)
+    blocked = [row["path"] for row in checked if row["blocked"]]
+    return {
+        "status": "blocked" if blocked else "ok",
+        "blocked": blocked,
+        "checked": checked,
+    }
+
+
+def format_changed_human(report: dict[str, Any]) -> str:
+    lines = [f"skill-core-headroom: {report['status']}"]
+    for row in report["checked"]:
+        verdict = "BLOCK" if row["blocked"] else "ok"
+        was = "new" if row["base_remaining"] is None else str(row["base_remaining"])
+        lines.append(
+            f"- {row['path']}: {row['new_remaining']} left "
+            f"(buffer {row['buffer']}, was {was}) [{verdict}]"
+        )
+    if report["status"] == "blocked":
+        lines.append(
+            "Changed SKILL.md core dropped below the core_nonempty headroom "
+            f"buffer ({CORE_NONEMPTY_HEADROOM_BUFFER} lines). Move prose into "
+            "references/ or scripts/ to restore headroom before the broad gate "
+            "core-headroom test fails late."
+        )
+    return "\n".join(lines)
 
 
 def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
@@ -248,13 +366,29 @@ def format_human(report: dict[str, Any]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--path", required=True, help="Skill SKILL.md or references/*.md path")
+    parser.add_argument("--path", help="Skill SKILL.md or references/*.md path (single-surface preflight)")
+    parser.add_argument(
+        "--changed-skill-md",
+        nargs="*",
+        help="Changed SKILL.md paths to gate with the commit-boundary core-headroom ratchet",
+    )
     parser.add_argument("--preview-delta", type=int, default=0, help="Planned added lines for this target")
     parser.add_argument("--run-checks", action="store_true", help="Run targeted read-only validators now")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+
+    if args.changed_skill_md is not None:
+        report = scan_changed_skill_md(repo_root, args.changed_skill_md)
+        if args.json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(format_changed_human(report))
+        return 1 if report["status"] == "blocked" else 0
+
+    if not args.path:
+        parser.error("--path is required unless --changed-skill-md is given")
     if args.preview_delta < 0:
         parser.error("--preview-delta must be non-negative")
     try:

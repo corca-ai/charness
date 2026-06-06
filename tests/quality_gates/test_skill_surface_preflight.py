@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -87,3 +88,168 @@ def test_skill_surface_preflight_rejects_non_skill_surface(tmp_path: Path) -> No
 
     with pytest.raises(preflight.PreflightError, match="target must live under skills/public"):
         preflight.build_report(repo.resolve(), str(outside), 0, False)
+
+
+# --- #319: commit-boundary core_nonempty headroom-buffer ratchet ---
+
+
+_LIMIT = preflight.MAX_CORE_NONEMPTY_LINES
+_BUFFER = preflight.CORE_NONEMPTY_HEADROOM_BUFFER
+
+
+def _skill_with_core(core: int) -> str:
+    lines = ["---", "name: demo", 'description: "Demo skill."', "---", "", "# Demo"]
+    lines.extend(f"Core line {index}" for index in range(core - 1))
+    lines.extend(["", "## References", "", "- `references/note.md`"])
+    return "\n".join(lines) + "\n"
+
+
+def test_skill_with_core_helper_counts_match_core_nonempty() -> None:
+    # Guards the test fixture itself: the broad-gate computation must agree with
+    # what _skill_with_core claims, or the ratchet cases below would be vacuous.
+    assert preflight._core_nonempty_lines(_skill_with_core(_LIMIT)) == _LIMIT
+    assert preflight._core_nonempty_lines(_skill_with_core(_LIMIT - 10)) == _LIMIT - 10
+
+
+def test_evaluate_core_headroom_blocks_healthy_skill_dropped_below_buffer() -> None:
+    # The #316 triggering instance generalized: a skill with headroom edited down
+    # to the hard limit (0 remaining) is blocked at the commit boundary.
+    verdict = preflight.evaluate_core_headroom(_LIMIT, _LIMIT - (_BUFFER + 4))
+    assert verdict["new_remaining"] == 0
+    assert verdict["blocked"] is True
+
+
+def test_evaluate_core_headroom_grandfathers_existing_under_buffer_flat_edit() -> None:
+    # A skill already at the limit (0 remaining) may take a flat edit without being
+    # retroactively blocked -- the ratchet only blocks fresh erosion.
+    verdict = preflight.evaluate_core_headroom(_LIMIT, _LIMIT)
+    assert verdict["under_buffer"] is True
+    assert verdict["regressed"] is False
+    assert verdict["blocked"] is False
+
+
+def test_evaluate_core_headroom_allows_under_buffer_improvement() -> None:
+    verdict = preflight.evaluate_core_headroom(_LIMIT - 1, _LIMIT)
+    assert verdict["under_buffer"] is True
+    assert verdict["blocked"] is False
+
+
+def test_evaluate_core_headroom_blocks_brand_new_surface_without_buffer() -> None:
+    verdict = preflight.evaluate_core_headroom(_LIMIT - (_BUFFER - 2), None)
+    assert verdict["base_remaining"] is None
+    assert verdict["blocked"] is True
+
+
+def test_evaluate_core_headroom_allows_healthy_change() -> None:
+    verdict = preflight.evaluate_core_headroom(_LIMIT - (_BUFFER + 2), _LIMIT - (_BUFFER + 6))
+    assert verdict["under_buffer"] is False
+    assert verdict["blocked"] is False
+
+
+def _git_stage(repo: Path, rel: str, content: str) -> None:
+    (repo / rel).write_text(content, encoding="utf-8")
+    subprocess.run(["git", "add", rel], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def _git_commit_skill(repo: Path, rel: str, content: str) -> None:
+    (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    _git_stage(repo, rel, content)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "base"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_scan_changed_skill_md_blocks_new_drop_below_buffer(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    rel = "skills/public/demo/SKILL.md"
+    _git_commit_skill(repo, rel, _skill_with_core(_LIMIT - (_BUFFER + 4)))
+    _git_stage(repo, rel, _skill_with_core(_LIMIT))
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), [rel])
+    assert report["status"] == "blocked"
+    assert report["blocked"] == [rel]
+
+
+def test_scan_changed_skill_md_judges_staged_not_worktree(tmp_path: Path) -> None:
+    # #319 honesty: the gate must judge what is being committed (the index), not a
+    # working tree that was repaired after a bad version was staged.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    rel = "skills/public/demo/SKILL.md"
+    healthy = _skill_with_core(_LIMIT - (_BUFFER + 4))
+    _git_commit_skill(repo, rel, healthy)
+    _git_stage(repo, rel, _skill_with_core(_LIMIT))  # stage the 0-headroom version
+    (repo / rel).write_text(healthy, encoding="utf-8")  # repair only the working tree
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), [rel])
+    assert report["status"] == "blocked"
+    assert report["blocked"] == [rel]
+
+
+def test_scan_changed_skill_md_grandfathers_existing_under_buffer(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    rel = "skills/support/demo/SKILL.md"
+    _git_commit_skill(repo, rel, _skill_with_core(_LIMIT))
+    # Reword a core line in place: still 0 remaining, not made worse.
+    _git_stage(
+        repo,
+        rel,
+        _skill_with_core(_LIMIT).replace("Core line 0", "Reworded core line"),
+    )
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), [rel])
+    assert report["status"] == "ok"
+    assert report["checked"][0]["base_remaining"] == 0
+
+
+def test_scan_changed_skill_md_blocks_brand_new_skill_without_buffer(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    rel = "skills/public/fresh/SKILL.md"
+    target = repo / rel
+    target.parent.mkdir(parents=True)
+    target.write_text(_skill_with_core(_LIMIT - (_BUFFER - 1)), encoding="utf-8")
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), [rel])
+    assert report["status"] == "blocked"
+    assert report["checked"][0]["base_remaining"] is None
+
+
+def test_scan_changed_skill_md_ignores_non_skill_core_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "note.md").write_text("# Note\n", encoding="utf-8")
+    report = preflight.scan_changed_skill_md(repo.resolve(), ["docs/note.md"])
+    assert report == {"status": "ok", "blocked": [], "checked": []}
+
+
+def test_changed_skill_md_cli_blocks_with_exit_one(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    rel = "skills/public/demo/SKILL.md"
+    _git_commit_skill(repo, rel, _skill_with_core(_LIMIT - (_BUFFER + 4)))
+    _git_stage(repo, rel, _skill_with_core(_LIMIT))
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md", rel],
+    )
+    assert preflight.main() == 1
+    assert "BLOCK" in capsys.readouterr().out
+
+
+def test_changed_skill_md_cli_empty_list_is_ok(tmp_path: Path, monkeypatch) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(
+        "sys.argv",
+        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md", "--json"],
+    )
+    assert preflight.main() == 0
