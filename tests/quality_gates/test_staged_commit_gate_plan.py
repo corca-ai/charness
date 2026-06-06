@@ -369,6 +369,16 @@ def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: P
     assert fast_surface_verify_gates(ROOT, []) == []
 
 
+def test_fast_surface_verify_gates_degrade_on_surface_error() -> None:
+    # #320: a manifest that loads but cannot match the changed paths makes
+    # surfaces matching raise SurfaceError (here a repo-escaping path trips
+    # normalize_repo_path). The commit-boundary gate must degrade to no extra
+    # gates rather than propagate the error -- covers the
+    # `except SurfaceError: return []` branch the mutation gate flagged as a
+    # test-uncovered changed line.
+    assert fast_surface_verify_gates(ROOT, ["../escape.py"]) == []
+
+
 def test_unrelated_change_adds_no_fast_surface_gates() -> None:
     # #314: a markdown-only change whose surfaces declare no fast checker must
     # not pull the fast subset into the pre-commit plan (no broad widening).
