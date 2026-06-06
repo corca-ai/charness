@@ -1,6 +1,6 @@
 # Achieve Goal: Fix #318 (orchestrator-owned achieve closeout proof) and #319 (SKILL.md headroom-buffer commit-boundary coverage)
 
-Status: draft
+Status: complete
 Created: 2026-06-06
 Activation: `/goal @charness-artifacts/goals/2026-06-06-318-319-achieve-closeout-and-quality-headroom.md`
 
@@ -9,17 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: After-phase closeout (both slices implemented + verified).
-- Slice 1 (#319): committed `b92dd9f9` with `Close #319`. Changed-file-scoped
-  commit-boundary headroom **ratchet** (mechanism via `quality`); bounded
-  fresh-eye review found + fixed one blocker (ratchet read working tree, not the
-  staged index). CLOSED state verified post-push (non-claim).
-- Slice 2 (#318): orchestrator/sub-goal closeout-proof delegation (opt-in;
-  standalone default untouched). Mandatory fresh-eye critique (3 angles +
-  counterweight + 2 re-reviews) found + fixed 4 blockers; re-reviews CLEAR /
-  ENFORCEMENT CORRECT. `Close #318` carrier about to commit; CLOSED post-push.
-- Next action: commit slice 2 (`Close #318`), then run the After-phase
-  (retro + disposition review + Auto-Retro + flip to `complete`).
+- Status: **complete** — both slices shipped + verified; After-phase done.
+- Slice 1 (#319): `b92dd9f9` (`Close #319`) — changed-file commit-boundary
+  headroom **ratchet** (mechanism via `quality`); fresh-eye review found + fixed
+  one blocker (read the staged index, not the working tree).
+- Slice 2 (#318): `9bc40f2a` (`Close #318`) — opt-in orchestrator/sub-goal
+  closeout-proof delegation (standalone default untouched). Mandatory critique
+  (3 angles + counterweight + 2 re-reviews) found + fixed 4 blockers; re-reviews
+  CLEAR / ENFORCEMENT CORRECT.
+- After-phase: retro + host-log probe + fresh-eye disposition review (CLEAR) +
+  Auto-Retro recorded; `check_goal_artifact.py` passes. Remaining: maintainer
+  push closes `#318`/`#319` (`CLOSED` is an explicit non-claim).
+- Next action: none — goal complete; closeout commit carries the artifacts.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -176,23 +177,10 @@ during the run:
 
 Recorded during the run:
 
-- Routing: session-start `find-skills` → `achieve` goal pursuit; slice-1 #319
-  mechanism decided via `quality`; closeout carrier via `issue`; bounded
-  fresh-eye review via subagent (CLAUDE.md pre-delegated quality/critique scope).
-- Gather: n/a — no external source; both issues are repo-internal (read with
-  `gh issue view 318/319`, not a `gather`-class external source).
-- Release: n/a — no version bump or install-manifest edit; `achieve` + `quality`
-  contract changes only.
-- Issue closeout (#319): carrier = direct-commit (`Close #319` on the slice-1
-  commit `b92dd9f9`); `issue_tool.py validate-closeout-draft` rehearsed pre-commit
-  (`ok: true`); `verify-closeout --expect-state CLOSED` deferred to the
-  maintainer's push (explicit non-claim, per Non-Goals — `achieve` does not push
-  or close).
-- Issue closeout (#318): carrier = direct-commit (`Close #318` on the slice-2
-  commit); classification `deferred-work`; `issue_tool.py validate-closeout-draft`
-  rehearsed pre-commit with `Critique:` binding the resolution critique;
-  `verify-closeout --expect-state CLOSED` deferred to the maintainer's push
-  (explicit non-claim).
+- Routing: find-skills routed this run — impl (both slices), quality (#319 gate mechanism + the broad gates), issue (#318/#319 closeout carriers), plus fresh-eye review/critique via subagents (CLAUDE.md pre-delegated quality/critique scope).
+- Gather: n/a — no external source; both issues are repo-internal, read with `gh issue view 318/319`, not a `gather`-class external source.
+- Release: n/a — no version bump or install-manifest edit; `achieve` + `quality` contract changes only.
+- Issue closeout: #319 carrier direct-commit (`Close #319` on `b92dd9f9`) + #318 carrier direct-commit (`Close #318` on `9bc40f2a`); both `issue_tool.py validate-closeout-draft` returned `ok: true` (#318 with a bound `Critique:`); `verify-closeout --expect-state CLOSED` deferred to the maintainer's push (explicit non-claim, per Non-Goals — `achieve` does not push or close).
 
 ## Activation Discussion
 
@@ -344,16 +332,88 @@ re-verifies the folded revisions without re-running critique.
 
 ## Final Verification
 
-Pending — completed in the After-phase after both slices, the final quality gate,
-and the bounded fresh-eye + disposition review.
+Both slices shipped as independent commits, each with its own `Close #N` carrier,
+and each verified against the goal.
+
+- Slice 1 (#319) — `b92dd9f9`: changed-file-scoped commit-boundary headroom
+  ratchet. 43 targeted tests; `run_slice_closeout --predict-commit` aggregate
+  green; `./scripts/run-quality.sh` 72/0; end-to-end repro blocks a 0-headroom
+  staged SKILL.md before the broad gate and grandfathers already-under-buffer
+  skills. Bounded fresh-eye review found + fixed one blocker (read the staged
+  index, not the working tree); re-review CLEAR.
+- Slice 2 (#318) — `9bc40f2a`: opt-in orchestrator/sub-goal closeout-proof
+  delegation. 19 delegation tests + goal-artifact/producer/prescribed suites;
+  `./scripts/run-quality.sh` 72/0; CLI repro blocks an orchestrator with an
+  unresolved item, clears on resolution, leaves standalone untouched. Mandatory
+  fresh-eye critique (3 angles + counterweight + 2 re-reviews) confirmed the
+  honesty boundary HELD and found + fixed 4 blockers; re-reviews CLEAR /
+  ENFORCEMENT CORRECT.
+
+Closeout-state taxonomy reached (this is a *standalone* goal — strict default):
+
+- `impl-local`: complete (both slices).
+- `carrier`: complete — `Close #319` on `b92dd9f9`, `Close #318` on `9bc40f2a`;
+  `issue_tool.py validate-closeout-draft` returned `ok: true` for both.
+- `pushed-ci`: NOT reached — explicit non-claim; `achieve` does not push, and the
+  repo runs no push/tag CI on the released SHA. The maintainer's push closes the
+  issues.
+- `applied-restarted` / `live`: n/a — repo-internal `achieve`/`quality` contract
+  change; no runtime, provider, or release proof was in scope (named, not run).
+- `issue-closed`: NOT reached — explicit non-claim; `#318`/`#319` are OPEN at
+  closeout and verified `CLOSED` post-push by the maintainer.
+
+Residual risks / non-claims: no live/prod/release proof ran (none in scope); the
+`#318` delegation gate's negated-`verified` guard err-safes (over-block, never
+bypass) on ambiguous resolution prose — a known, documented, deferred polish.
+
+Retro: charness-artifacts/retro/2026-06-06-318-319-closeout.md
+Host log probe: charness-artifacts/probe/2026-06-06-318-319.json
+Disposition review: charness-artifacts/critique/2026-06-06-318-319-disposition-review.md
 
 ## User Verification Instructions
 
-Pending — written at closeout. The `## User Acceptance` section above states the
-intended user-facing checks; the closeout will confirm which actually ran.
+- `gh issue view 319` / `gh issue view 318` show the `Close #N` carriers on
+  `b92dd9f9` / `9bc40f2a`; both read `CLOSED` after the maintainer pushes.
+- #319: author any `skills/public/<skill>/SKILL.md` down to 160 `core_nonempty`
+  lines (0 headroom), `git add` it, and run
+  `python3 scripts/check_skill_surface_preflight.py --repo-root . --changed-skill-md <path>`
+  (or `run_slice_closeout.py --predict-commit`) — it BLOCKS before the broad
+  gate. An already-under-buffer skill edited without further erosion is allowed.
+- #318: read `skills/public/achieve/references/lifecycle.md` (Orchestrated
+  closeout) and `references/goal-artifact.md` (## Closeout Delegation). Add a
+  `## Closeout Delegation` orchestrator section with an unresolved checklist item
+  to a `Status: complete` goal and run `check_goal_artifact.py` — it refuses with
+  a `closeout delegation` issue; resolving the item (`verified` / `skipped:
+  <reason>` / `issue #N`) clears it; a goal with no section stays `standalone`.
+- `./scripts/run-quality.sh` runs green (72/0).
 
 ## Auto-Retro
 
-Pending — produced by the `retro` skill at closeout, with each surfaced
-improvement dispositioned (`applied: <what>` or `issue #N`) or a single
-`Retro dispositions: none — <reason>` line.
+Session retro persisted at
+`charness-artifacts/retro/2026-06-06-318-319-closeout.md` (digest refreshed in
+`recent-lessons.md`). Substance:
+
+- **Waste:** re-hit the authoring-preflight "portable skill packages" trap —
+  slice 2 embedded `(#318)` anchors in the achieve/quality *packages*, caught by
+  `validate_skill_ergonomics` only after the full broad gate ran (the cheap
+  commit-boundary checker would have caught it in <1s). Minor: a length-gate
+  extract refactor and a wrapped markdown code span, both caught at their gates.
+- **Critical decisions:** #319 changed-file ratchet (not full-scan, to grandfather
+  5 under-buffer skills); honoring the #319 staged-index blocker; #318 opt-in +
+  presence/resolution-based gate; running the #318 critique before lock-in.
+- **Expert counterfactuals:** Klein pre-mortem (write the adversarial input table
+  — negations/blanks/trailing clauses — as the *first* tests for a honesty gate);
+  Hoare correct-by-construction (line-field value regexes anchor to `[ \t]`, not
+  `\s`).
+- **Sibling search:** the blank-field-borrows-next-line regex pattern also exists
+  in `_EVIDENCE_LINE` and the timebox regexes, but every sibling **fails safe**
+  (downstream existence/binding/parse rejection, or a stricter-requirement
+  direction); only the delegation `Orchestrator goal:` check was exploitable
+  (pure-presence) and is fixed this run.
+
+Retro dispositions: none — both surfaced findings are non-actionable as new teeth
+or issues: the portable-package waste is a habit miss already covered by the
+existing commit-boundary `validate_skill_ergonomics` gate plus the documented
+mutate→sync→verify rhythm, and the sibling regex pattern is fail-safe in every
+sibling (no exploit to fix, no follow-up to file). The lesson is carried as
+memory in `recent-lessons.md`.

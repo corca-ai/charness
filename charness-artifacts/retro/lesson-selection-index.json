@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-06",
-  "source_artifact_count": 138,
-  "candidate_count": 826,
+  "source_artifact_count": 139,
+  "candidate_count": 833,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -135,6 +135,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:012b36f7451a",
+      "kind": "current_focus",
+      "lesson": "slice 1 (`b92dd9f9`, `Close #319`): a changed-file-scoped commit-boundary **ratchet** for the SKILL.md `core_nonempty` ≥4 headroom buffer;",
+      "normalized_key": "slice 1 b92dd9f9 close 319 a changed file scoped commit boundary ratchet for the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d1a4608382fc",
+      "kind": "current_focus",
+      "lesson": "slice 2 (`9bc40f2a`, `Close #318`): an opt-in orchestrator/sub-goal closeout-proof delegation contract for `achieve`. What matters next: the maintainer's push closes #318/#319 (CLOSED state is an explicit non-claim here — `achieve` does not push).",
+      "normalized_key": "slice 2 9bc40f2a close 318 an opt in orchestrator sub goal closeout proof delegation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cff6d498aa29",
       "kind": "next_improvement",
       "lesson": "**memory:** recon-derived \"gotchas\" about which paths are mirrored can be repo-inaccurate — `scripts/` is mirrored to `plugins/charness/scripts/`, not only `skills/`. The standing \"re-verify the brief against real files\" instruction already absorbed this; no separate gate needed.",
@@ -149,6 +189,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7df8a2084907",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the authoring-preflight \"portable skill packages\" section already names the issue-anchor trap; this run is another instance, carried into `recent-lessons.md` by this retro.",
+      "normalized_key": "memory the authoring preflight portable skill packages section already names the issue anchor trap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c80f70ec69dc",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** after editing skill-package references/scripts/JSON, run the cheap `run_slice_closeout.py --predict-commit` aggregate (which already runs `validate_skill_ergonomics` + `check-markdown`) *before* the full broad gate — the documented mutate→sync→verify rhythm (verify = the aggregate, not the broad gate). The teeth and the doc already exist; the gap was the habit.",
+      "normalized_key": "workflow after editing skill package references scripts json run the cheap run slice closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
           "date": "2026-06-06",
           "section": "Next Improvements"
         }
@@ -175,6 +255,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:42840315ab43",
+      "kind": "repeat_trap",
+      "lesson": "**Minor:** a markdown inline-code span wrapped across a line in `lifecycle.md`, caught by `check-markdown` in the same broad-gate failure as the anchors.",
+      "normalized_key": "minor a markdown inline code span wrapped across a line in lifecycle md caught",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8b489702b8da",
+      "kind": "repeat_trap",
+      "lesson": "**Minor (gate caught it early):** slice 1's first edit pushed `staged_commit_gate_plan` to 105 lines (limit 100); `check_python_lengths` at the predict-commit boundary caught it, forcing a clean extract-helper refactor. Working as intended — the cheap boundary gate paid for itself.",
+      "normalized_key": "minor gate caught it early slice 1 s first edit pushed staged commit gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:7a185078ef63",
       "kind": "repeat_trap",
       "lesson": "**Minor:** the #314 slice-spec gotcha I wrote (\"scripts/ needs no mirror sync\") was wrong — `scripts/staged_commit_gate_plan.py` is mirrored to `plugins/charness/scripts/`, so the agent had to run the sync. The agent caught it and recorded the correction as a non-claim. My recon-derived gotcha was repo-inaccurate; the agent's re-verify instruction saved it.",
@@ -191,126 +311,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
           "date": "2026-06-06",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7e74fb72df1a",
-      "kind": "repeat_trap",
-      "lesson": "**The single real defect slipped past the in-workflow review and was caught only by the main-loop broad gate.** The 4-dimension fresh-eye review returned 0 findings, yet `--release` immediately failed: #316's slice compressed `achieve/SKILL.md` to *exactly* the 160 core-nonempty hard limit (0 headroom), which `test_achieve_root_uses_reference_index_with_core_headroom` rejects (requires ≥4 buffer). The per-slice gate (`run_slice_closeout --predict-commit`) excludes broad pytest by design, and the review agents did not run the broad suite either — so a deterministic, already-existing test caught a regression that no slice-boundary check did. The bundle gate is the *correct* safety net and it worked, but the authoring agent satisfied the hard length gate while missing the separate headroom-buffer test. This is the #308 authoring-preflight lesson recurring on a *different* length surface (SKILL.md core headroom, not `check_python_lengths`).",
-      "normalized_key": "the single real defect slipped past the in workflow review and was caught only",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-      "latest_source_date": "2026-06-06",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
-          "date": "2026-06-06",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9c22221e311c",
-      "kind": "current_focus",
-      "lesson": "Closed the active 2026-06-05 quality/test-economics goal after the v0.18.0 release.",
-      "normalized_key": "closed the active 2026 06 05 quality test economics goal after the v0 18",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-3h-quality-test-economics-closeout.md",
-          "date": "2026-06-05",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:770e40013c4c",
-      "kind": "current_focus",
-      "lesson": "Closeout of the `2026-06-05-302-305-gather-setup-release-robustness` achieve goal: four independent robustness fixes (setup template↔inspector agreement, setup adapter-first reviewer rule, gather agent-browser close + clean-runtime proof, release publish resilience), each with regression tests and a `Close #N` direct-commit closeout.",
-      "normalized_key": "closeout of the 2026 06 05 302 305 gather setup release robustness achieve goal",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-302-305-gather-setup-release-robustness-closeout.md",
-          "date": "2026-06-05",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:83429e11873b",
-      "kind": "current_focus",
-      "lesson": "Closeout review of the A~C parallel follow-up goal: gather/web-fetch acquisition signal fidelity (#310/#309), release publish-flow resilience (#312 B1+B2), and quality-gate economics (#307/#308).",
-      "normalized_key": "closeout review of the a c parallel follow up goal gather web fetch acquisition",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-abc-followups-closeout.md",
-          "date": "2026-06-05",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:7db04ac6b34e",
-      "kind": "current_focus",
-      "lesson": "Goal `2026-06-05-inventory-conversions-nose-05-and-release`: three bundled slices ending in a release — (1) adapt the `quality` clone-family advisory to nose 0.5, (2) convert the five remaining import-safe `inventory_*` boundary-bypass tests to in-process, (3) full-publish 0.21.0 (push + tag + GitHub release).",
-      "normalized_key": "goal 2026 06 05 inventory conversions nose 05 and release three bundled slices ending",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-inventory-conversions-nose-05-and-release.md",
-          "date": "2026-06-05",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:eaee438fdabe",
-      "kind": "current_focus",
-      "lesson": "Goal `charness-artifacts/goals/2026-06-05-quality-scaffold-and-testability-followups.md`: (1) build `scaffold_{handoff,ideation,retro,critique}_artifact.py`, (2) move the boundary-bypass ratchet to Done in `docs/testability-dsl-initiative.md`, (3) convert the import-safe `inventory_*` boundary-bypass cluster to in-process.",
-      "normalized_key": "goal charness artifacts goals 2026 06 05 quality scaffold and testability followups md 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
-      "latest_source_date": "2026-06-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-quality-scaffold-and-testability-followups.md",
-          "date": "2026-06-05",
-          "section": "Context"
         }
       ]
     }
@@ -437,6 +437,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:012b36f7451a",
+      "kind": "current_focus",
+      "lesson": "slice 1 (`b92dd9f9`, `Close #319`): a changed-file-scoped commit-boundary **ratchet** for the SKILL.md `core_nonempty` ≥4 headroom buffer;",
+      "normalized_key": "slice 1 b92dd9f9 close 319 a changed file scoped commit boundary ratchet for the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d1a4608382fc",
+      "kind": "current_focus",
+      "lesson": "slice 2 (`9bc40f2a`, `Close #318`): an opt-in orchestrator/sub-goal closeout-proof delegation contract for `achieve`. What matters next: the maintainer's push closes #318/#319 (CLOSED state is an explicit non-claim here — `achieve` does not push).",
+      "normalized_key": "slice 2 9bc40f2a close 318 an opt in orchestrator sub goal closeout proof delegation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cff6d498aa29",
       "kind": "next_improvement",
       "lesson": "**memory:** recon-derived \"gotchas\" about which paths are mirrored can be repo-inaccurate — `scripts/` is mirrored to `plugins/charness/scripts/`, not only `skills/`. The standing \"re-verify the brief against real files\" instruction already absorbed this; no separate gate needed.",
@@ -451,6 +491,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7df8a2084907",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the authoring-preflight \"portable skill packages\" section already names the issue-anchor trap; this run is another instance, carried into `recent-lessons.md` by this retro.",
+      "normalized_key": "memory the authoring preflight portable skill packages section already names the issue anchor trap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c80f70ec69dc",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** after editing skill-package references/scripts/JSON, run the cheap `run_slice_closeout.py --predict-commit` aggregate (which already runs `validate_skill_ergonomics` + `check-markdown`) *before* the full broad gate — the documented mutate→sync→verify rhythm (verify = the aggregate, not the broad gate). The teeth and the doc already exist; the gap was the habit.",
+      "normalized_key": "workflow after editing skill package references scripts json run the cheap run slice closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
           "date": "2026-06-06",
           "section": "Next Improvements"
         }
@@ -477,6 +557,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:42840315ab43",
+      "kind": "repeat_trap",
+      "lesson": "**Minor:** a markdown inline-code span wrapped across a line in `lifecycle.md`, caught by `check-markdown` in the same broad-gate failure as the anchors.",
+      "normalized_key": "minor a markdown inline code span wrapped across a line in lifecycle md caught",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8b489702b8da",
+      "kind": "repeat_trap",
+      "lesson": "**Minor (gate caught it early):** slice 1's first edit pushed `staged_commit_gate_plan` to 105 lines (limit 100); `check_python_lengths` at the predict-commit boundary caught it, forcing a clean extract-helper refactor. Working as intended — the cheap boundary gate paid for itself.",
+      "normalized_key": "minor gate caught it early slice 1 s first edit pushed staged commit gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:7a185078ef63",
       "kind": "repeat_trap",
       "lesson": "**Minor:** the #314 slice-spec gotcha I wrote (\"scripts/ needs no mirror sync\") was wrong — `scripts/staged_commit_gate_plan.py` is mirrored to `plugins/charness/scripts/`, so the agent had to run the sync. The agent caught it and recorded the correction as a non-claim. My recon-derived gotcha was repo-inaccurate; the agent's re-verify instruction saved it.",
@@ -491,6 +611,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md",
+          "date": "2026-06-06",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dc5d151d0257",
+      "kind": "repeat_trap",
+      "lesson": "**Re-hit the authoring-preflight \"portable skill packages\" trap (the costliest waste).** Slice 2 added `(#318)` issue anchors into the achieve/quality skill *packages* (references + a script docstring + the attention-state JSON rationale). `validate_skill_ergonomics` flagged `portable_package_issue_anchor` — but only after I ran the full broad gate (~70s) instead of the cheap commit-boundary aggregate first. The authoring-preflight reference documents this exact trap and the <1s checker; the miss was not consulting it at authoring time. Cost: 2 extra broad-gate runs + 2 fix cycles.",
+      "normalized_key": "re hit the authoring preflight portable skill packages trap the costliest waste slice 2",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
+      "latest_source_date": "2026-06-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-318-319-closeout.md",
           "date": "2026-06-06",
           "section": "Waste"
         }
