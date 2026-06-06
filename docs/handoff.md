@@ -13,58 +13,49 @@
 
 ## Current State
 
-- **Mutation changed-line premerge-gate: spec + slice 1 (consumer) + slice 2
-  (producer mechanism) landed, unreleased.** 13 commits on `main` ahead of
-  `origin` (`f862b0dd`..`6a3facf6`). The #320/#321 **5th-recurrence** seam is now
-  addressed in code: the
-  [premerge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
-  is impl-ready; the **consumer** is wired into pre-push (`run-quality.sh`
-  read-only, reuse-fresh-coverage-or-skip, never the slow probe, non-blocking when
-  stale/absent); the **producer** marker mechanism (`--write-head-marker`) is built
-  and unit-tested. Each slice had full verification; slice 1 had a bounded
-  fresh-eye review (REVISE folded).
-- **Producer auto-run is BLOCKED on a cost decision** (the crux for next session):
-  the faithful probe is the full suite with `dynamic_context` coverage — run live
-  it was **>10 min** and produced a **~1.34 GB** coverage JSON. Do NOT auto-wire
-  the full probe. See spec "Slice 2 — Cost finding".
-- Forced risk-interrupt is **consumed in the spec** (`plan_risk_interrupt` ->
-  `handoff-recorded` when the spec is in-slice); it stays "live" on a clean tree
-  until the gate is active — the producer slice touches the spec, satisfying it.
-- **#321 CLOSED** (same seam as #320, band-aided per-file again 2026-06-06). Open
-  issues: **#322, #184**. v0.24.1 shipped (unchanged).
+- **v0.25.0 shipped** (tag `v0.25.0`, GitHub release verified). The changed-line
+  mutation-coverage **pre-push gate is now ACTIVE end-to-end**: slice 1 consumer
+  (`run-quality.sh`) + slice 2 producer landed. Tree clean, `origin/main` even.
+- **Producer = lever A+B** (drop `dynamic_context`, keep subprocess capture;
+  piggyback the closeout broad pytest, one instrumented run). Run it with
+  `run_slice_closeout.py --produce-mutation-coverage` (requires
+  `--verification-lock`) — emits `reports/mutation/test-coverage.json` + a
+  **content-fingerprint** `.fingerprint` marker (supersedes slice-1's SHA `.head`;
+  closeout runs pre-commit, so SHA would silently skip — see spec "Freshness
+  identity changed"). The gate proved itself on the release push (caught a real
+  uncovered `__main__` dispatch + two of its own edge branches; all covered).
+- Open issues: **#322, #184**. #320/#321 stay closed.
 
 ## Next Session
 
-1. **Producer (A+B) + push + release — bundled (decided 2026-06-07).** Land the
-   producer with the chosen lever: **drop `dynamic_context` + piggyback coverage
-   onto the broad pytest closeout already runs** (one instrumented run, small
-   artifact, no double-run). **Verify via the push**, not a fresh local faithful
-   probe: the pre-push consumer gate + the scheduled cron backstop are the proof;
-   false-positive blocks the push (fix+retry), false-negative caught post-merge;
-   iterate if the push errors. Then bundle the push + release. Owner:
-   premerge-gate spec "Slice 2" + "Decided next-session approach".
-2. **#322 (scope C, spec-first) — the original pick this session pivoted off.**
-   Breadth: 4-field self-declaration rollout to ~6 inference surfaces, **plus** the
-   nose family classifier (Q1). `spec`-first per the #322 body. Saved analysis:
+1. **Human real-host smoke for v0.25.0 (release left it open).** `charness update`
+   on a clean temp-home + the nose tool-doctor/install/sync checklist in
+   [release latest](../charness-artifacts/release/latest.md). Cannot be done by
+   the agent; confirm before treating the operator surface as proven.
+2. **#322 (scope C, spec-first).** 4-field self-declaration rollout to ~6
+   inference surfaces **plus** the nose family classifier (Q1). `spec`-first per
+   the #322 body. Saved analysis:
    [nose-clone interpretation](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md).
-3. **Skill portability of the gate's lessons (so other repos benefit).** At
-   minimum add the pattern + freshness-guard + producer-cost lesson to
+3. **Skill portability of the gate's lessons.** Promote the pattern +
+   freshness-guard + producer-cost lesson to
    [mutation-testing.md](../skills/public/quality/references/mutation-testing.md);
-   optionally promote the gate to a `quality`-skill capability + adapter contract
-   (libs-packaging decision). Route via `create-skill`/`quality`; see spec.
+   optionally offer the gate as a `quality` capability + adapter contract
+   (libs-packaging decision). Route via `create-skill`/`quality`; see spec
+   "Skill portability".
 4. Backlog: **#184** — 제품 성공 기준과 핵심 메트릭 정의.
 
 ## Discuss
 
-- **No push/tag CI.** The local `--release` gate is the bundle proof; worth
-  deciding whether to add light push/tag CI. (Producer lever + verification are
-  decided — see Next Session #1 / spec.)
+- **No push/tag CI.** The local `--release` gate is the bundle proof (just
+  exercised for v0.25.0). Worth deciding whether to add light push/tag CI, and
+  whether to mirror the changed-line gate into a CI-PR check (spec
+  "Deferred Decisions").
 
 ## References
 
 - [premerge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
-  (canonical; Slice Status + Cost finding),
-  [#320 debug](../charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md)
-- [nose-clone interpretation (#322 Q1/Q2)](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md)
+  (canonical; Slice 2 delivered, freshness identity, portability follow-up),
+  [release v0.25.0 critique](../charness-artifacts/critique/2026-06-07-release-v0-25-0.md)
+- [nose-clone interpretation (#322)](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md),
   [quality latest](../charness-artifacts/quality/latest.md)
