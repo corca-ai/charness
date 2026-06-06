@@ -18,6 +18,13 @@ the root instruction file but still apply to Charness maintenance work.
   proof, while a changed fingerprint blocks until the operator reruns with
   `--refresh-broad-pytest-proof`. Record focused current-diff proof for pre-lock
   slices rather than treating the skipped broad run as final evidence.
+- When a slice changes eligible mutation-pool Python files, add
+  `--produce-mutation-coverage` to the final `--verification-lock` closeout: it
+  instruments that one broad pytest run with plain coverage (no double run) and
+  emits `reports/mutation/test-coverage.json` plus the `.fingerprint` freshness
+  marker the pre-push changed-line gate (`check-changed-line-mutation-coverage`)
+  reuses. Without a fresh producer run the gate skips non-blocking, so run the
+  producer before a pool-touching push to keep the gate active.
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.
