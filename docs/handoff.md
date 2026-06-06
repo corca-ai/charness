@@ -13,29 +13,39 @@
 
 ## Current State
 
-- **v0.24.0 is shipped and verified.** Tag `v0.24.0`, GitHub release live, all
-  version surfaces at 0.24.0, `main` in sync with `origin`. Release:
-  <https://github.com/corca-ai/charness/releases/tag/v0.24.0>.
-- **#318 and #319 are CLOSED** (verified). Shipped via the `2026-06-06-318-319`
-  achieve goal (complete) as two committed slices, then a minor release:
-  - #319 — commit-boundary SKILL.md `core_nonempty` ≥4 headroom **ratchet**
-    (changed-file-scoped; mechanism chosen via `quality`).
-  - #318 — opt-in orchestrator/sub-goal closeout-proof **delegation** gate for
-    `achieve` (standalone default unchanged).
-  - Each slice fresh-eye reviewed CLEAR; standalone + release critiques CLEAR;
-    local `--release` gate green is the bundle proof.
+- **v0.24.1 is shipped and verified.** Tag `v0.24.1`, GitHub release live, all
+  version surfaces at 0.24.1, `main` in sync with `origin`. Release:
+  <https://github.com/corca-ai/charness/releases/tag/v0.24.1>.
+- **#320 is CLOSED** (verified). Patch release: covered the
+  `staged_commit_gate_plan.py:72-73` `except SurfaceError: return []` degrade
+  branch (mutation changed-line blocker) with a targeted-mutant proof. Bounded
+  fresh-eye debug + release critiques CLEAR. The recurring changed-line class was
+  escalated to a spec (see Next Session #3).
+- Prior shipped state: **v0.24.0 / #318 / #319** (achieve goal complete). Do not
+  reopen unless current verification contradicts the shipped evidence.
 
 ## Next Session
 
-1. **Pending operator real-host proof** (the only release follow-up): the v0.24.0
-   publish reported `real_host_required: true` — run the standing `nose`
-   checklist on a second machine / clean temp-home (`charness update` +
-   `charness tool doctor/install nose`). This was also pending for v0.23.0; do it
-   once for the current published surface.
-2. Open backlog (route through `find-skills` then `issue`/`ideation`): **#184** —
-   제품 성공 기준과 핵심 메트릭 정의 (the only remaining open issue).
-3. Do not reopen #318/#319 or the 318-319 goal unless current verification
-   contradicts the shipped evidence.
+1. **Planned focus: full repo quality scan + improvements** via `find-skills` ->
+   `quality` (`nose` clone advisory). Fold in #2 while there.
+2. **Closeout-discipline gap (diagnosed 2026-06-06, #320 slice)** — a real
+   prompt/validator slice; run `critique` + read recent-lessons first, do NOT
+   rush. Two prompt-only debug-closeout steps silently slipped (the one that
+   auto-fired, `validate-debug-seam-index`, was the gated one):
+   - RCA-ledger append is prompt-only + deliberately non-gated
+     ([rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md),
+     anti-gaming). Consider an **advisory** nudge (warn when a slice adds a debug
+     artifact but no RCA event refs it); no forced gate.
+   - Cross-file sibling scan is required by the sibling-search reference (axis 1)
+     but unenforced — a within-file `## Sibling Search` still passes
+     `validate_debug_artifact` (shape-only).
+3. **#320 follow-ups:** the
+   [pre-merge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
+   (folds in #251/#260; sibling population recorded there) and
+   `follow-up:mutation-selection-budget-setup-libs`.
+4. **Real-host proof** (carry-forward; not re-triggered by v0.24.1): standing
+   `nose` checklist on a second machine / clean temp-home, pending since v0.23.0.
+5. Backlog: **#184** — 제품 성공 기준과 핵심 메트릭 정의 (only other open issue).
 
 ## Discuss
 
@@ -50,11 +60,11 @@
 
 ## References
 
+- [#320 debug](../charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md),
+  [pre-merge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md),
+  [v0.24.1 release critique](../charness-artifacts/critique/2026-06-06-v0.24.1-release-critique.md),
+  [v0.24.1 release auto-retro](../charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md)
 - [318-319 goal](../charness-artifacts/goals/2026-06-06-318-319-achieve-closeout-and-quality-headroom.md),
-  [closeout retro](../charness-artifacts/retro/2026-06-06-318-319-closeout.md),
-  [v0.24.0 release auto-retro](../charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md)
-- [#319 critique](../charness-artifacts/critique/2026-06-06-319-commit-boundary-headroom.md),
-  [#318 critique](../charness-artifacts/critique/2026-06-06-318-orchestrated-closeout-delegation.md),
   [v0.24.0 release critique](../charness-artifacts/critique/2026-06-06-v0.24.0-release-critique.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md),
   [quality latest](../charness-artifacts/quality/latest.md)
