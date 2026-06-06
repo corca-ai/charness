@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -65,11 +66,75 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Reuse an existing coverage JSON instead of running the (slow) gate probe.",
     )
+    parser.add_argument(
+        "--skip-if-no-coverage",
+        action="store_true",
+        help=(
+            "When no coverage JSON exists, skip non-blocking (exit 0) instead of "
+            "running the slow probe. The pre-push (read-only) wiring uses this so the "
+            "teeth stay cheap; the coverage source is produced by the full/closeout run "
+            "and reused here."
+        ),
+    )
+    parser.add_argument(
+        "--require-fresh-coverage",
+        action="store_true",
+        help=(
+            "Only trust a coverage JSON whose sibling marker `<coverage-json>.head` "
+            "records the current head SHA; otherwise skip non-blocking. The pre-push "
+            "wiring sets this so a STALE coverage source (produced for an older commit) "
+            "cannot raise false 'uncovered changed line' positives. The closeout "
+            "producer writes the marker when it refreshes coverage."
+        ),
+    )
     return parser.parse_args()
+
+
+def _resolve_sha(repo_root: Path, ref: str) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", ref],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, OSError):
+        return None
+    return result.stdout.strip() or None
 
 
 def _emit(report: dict) -> None:
     print(json.dumps(report, indent=2, sort_keys=True))
+
+
+def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: str, head_sha: str) -> dict | None:
+    """Return a non-blocking skip report when the coverage source cannot be
+    trusted for a cheap pre-push verdict, else None.
+
+    Two guards keep the pre-push (read-only) wiring both cheap and safe:
+    - ``--require-fresh-coverage``: a coverage JSON whose sibling ``.head`` marker
+      does not record the analyzed head is STALE (it may predate the changed
+      lines), so trusting it would raise false positives; skip instead.
+    - ``--skip-if-no-coverage``: no coverage JSON at all; skip rather than fall
+      through to the slow probe.
+    """
+    base = {"ok": True, "blocking": [], "base_sha": base_sha, "head_sha": head_sha}
+    if args.require_fresh_coverage and coverage_json.is_file():
+        head_marker = coverage_json.with_name(coverage_json.name + ".head")
+        recorded_head = head_marker.read_text(encoding="utf-8").strip() if head_marker.is_file() else None
+        current_head = _resolve_sha(repo_root, head_sha)
+        if recorded_head is None or current_head is None or recorded_head != current_head:
+            return {**base, "reason": (
+                f"coverage source is stale: marker {recorded_head or 'absent'} != head "
+                f"{current_head or 'unresolved'}; changed-line teeth skipped (non-blocking). "
+                "Re-run the closeout producer to refresh coverage for this head."
+            )}
+    if args.skip_if_no_coverage and not coverage_json.is_file():
+        return {**base, "reason": (
+            f"no coverage source at {args.coverage_json}: changed-line teeth skipped "
+            "(non-blocking). Coverage is produced by the full/closeout run and reused here."
+        )}
+    return None
 
 
 def main() -> int:
@@ -99,6 +164,10 @@ def main() -> int:
         return 0
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
+    if skip is not None:
+        _emit(skip)
+        return 0
     if not args.reuse_coverage or not coverage_json.is_file():
         config = args.config if args.config.is_absolute() else repo_root / args.config
         run_test_coverage(repo_root, read_test_command(config), coverage_json)

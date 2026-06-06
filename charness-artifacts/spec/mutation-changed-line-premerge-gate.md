@@ -85,26 +85,40 @@ mutation-pool file fails locally — with an actionable `path:line` target —
    reproducer already exits 0 on no-base), so it never blocks a first push.
    Rationale: charness commits land directly on `main`; the unpushed range is
    exactly what the cron will later diff.
-3. **Cost = `--reuse-coverage` cheap default; one coverage probe, reused.** Reuse
-   the coverage already produced in the pre-push run for the changed lines (the
-   common case: #320 `staged_commit_gate_plan.py:72-73`, #321
-   `resolve_adapter.py:49`). Because the reproducer's probe already captures
-   subprocess coverage via `COVERAGE_PROCESS_START`, a single faithful probe (or a
-   reused coverage JSON) is enough for in-process **and** subprocess-executed
-   lines; no per-file escalation engine is in this slice. The residual
-   subprocess-only false-positive edge is a **deferred probe**, not a slice-1
-   build (see Deferred Decisions). Rationale: near-zero marginal cost at pre-push;
-   do not build a classifier the existing probe already obviates.
+3. **Cost = producer-at-closeout, consumer-reuses-or-skips (revised in impl —
+   see P1).** P1 is resolved: the pre-push `run-quality.sh --read-only` run
+   produces **no** reusable coverage JSON (run-quality runs pytest without
+   coverage; `reports/mutation/test-coverage.json` is gitignored and written only <!-- reproduction-source -->
+   by the mutation pipeline). So the original "reuse the coverage produced in the
+   pre-push run" premise was false. The cost model is therefore split:
+   - **Consumer (pre-push, this slice):** the wired gate **never** runs the slow
+     probe here. It reuses coverage only when it exists AND is **fresh** for the
+     current head (`--reuse-coverage --skip-if-no-coverage --require-fresh-coverage`),
+     else it skips non-blocking. Cheap and safe by construction.
+   - **Producer (closeout, next slice):** a dedicated closeout step runs the
+     faithful probe (only when eligible pool files changed) and persists
+     `reports/mutation/test-coverage.json` plus a `.head` marker for the consumer <!-- reproduction-source -->
+     to trust. The coverage cost lives here, at the boundary the operator chose
+     (Option A), not on every push.
+   The subprocess-only false-positive edge stays a **deferred probe** (Deferred
+   Decisions); the freshness guard already neutralises the broader *stale*-coverage
+   false-positive class found in the wiring smoke (a stale JSON would otherwise
+   block legitimate pushes).
 4. **No threshold/budget relaxation.** Per `mutation-testing.md`, the durable fix
    is *covering the lines*, never lowering a floor. This spec is about detection
    *timing*, not scoring thresholds.
 
 ## Probe Questions (answer through the impl slice, not up front)
 
-- **P1 — coverage-JSON source at pre-push.** Does the read-only `run-quality.sh`
-  pre-push path already emit a reusable coverage JSON (`--coverage-json`), or must
-  the gate produce one? Wire to the existing artifact if present; otherwise the
-  slice adds the minimal coverage emission.
+- **P1 — coverage-JSON source at pre-push. RESOLVED (impl).** The pre-push
+  `run-quality.sh --read-only` path emits **no** reusable coverage JSON; pytest
+  runs without coverage and `reports/mutation/test-coverage.json` is gitignored, <!-- reproduction-source -->
+  written only by the mutation pipeline. → The gate must not rely on a pre-push
+  coverage source: the **producer** (closeout, next slice) emits it; the
+  **consumer** (this slice) reuses it only when fresh, else skips non-blocking.
+  A second fact surfaced in the wiring smoke: reusing a **stale** coverage JSON
+  flags recently-changed lines as uncovered (false positives) — answered by the
+  `--require-fresh-coverage` `.head`-marker guard.
 - **P2 — failure UX.** Confirm the blocking output prints actionable
   `path:line` targets (the script already targets this) and a one-line "cover
   these lines" pointer to `mutation-testing.md`, not a raw traceback.
@@ -249,17 +263,42 @@ This file is canonical during implementation. The debug artifact
 is the root-cause record; `mutation-testing.md` owns the durable per-file fix
 doctrine.
 
-## First Implementation Slice
+## Slice Status
 
-Scope: **cheap wiring only** (no escalation engine). Wire
-`check_changed_line_mutation_coverage.py` into `run-quality.sh` read-only
-(pre-push) mode as `queue_selected "check-changed-line-mutation-coverage"`,
-defaulting to `--reuse-coverage` over the push range, and add **AC-WIRE** and
-**AC-CLEAN** to `tests/quality_gates/` (the existing reproducer unit tests stay
-as-is). Resolve P1–P2 in-slice. Stop condition: AC-WIRE fails the *wired* gate on
-a reintroduced #320-class line, AC-PASS/AC-CLEAN stay green, and the read-only run
-leaves the tree clean.
+### Slice 1 — consumer wiring (DELIVERED, this session)
 
-**Explicitly out of slice 1** (named follow-up): the subprocess-only
+The cheap, safe **consumer** half of Option A:
+
+- **Reproducer guards** (`check_changed_line_mutation_coverage.py`):
+  `--skip-if-no-coverage` (no coverage source → skip non-blocking, never the slow
+  probe) and `--require-fresh-coverage` (a coverage JSON whose `.head` marker does
+  not match the analyzed head is stale → skip non-blocking). Skip logic extracted
+  to `_coverage_source_skip` (length-gate clean).
+- **Wiring** (`run-quality.sh`): `queue_selected "check-changed-line-mutation-coverage"`
+  over `git merge-base origin/main HEAD ..HEAD`, with
+  `--reuse-coverage --skip-if-no-coverage --require-fresh-coverage` — never runs
+  the slow probe in run-quality; non-blocking when no fresh coverage / no base.
+- **Tests**: 5 new reproducer unit tests (skip-absent, skip-still-blocks,
+  fresh-marker-absent/mismatch/match) + fixture stub
+  (`QUALITY_PYTHON_STUBS`) + attention-state declaration
+  (`attention-state-visibility.json`, state `skipped`).
+- **Verified**: 12/12 reproducer tests; the wiring smoke over the real unpushed
+  range safely **skips** (stale coverage, no `.head` marker) — proving the
+  freshness guard neutralises the stale-coverage false positives it surfaced
+  (it had flagged 3 changed files on the real range before the guard). AC-WIRE
+  proven at reproducer level (`test_require_fresh_coverage_fires_when_marker_matches_head`);
+  AC-CLEAN is additionally enforced by the existing pre-push `git diff --quiet --
+  charness-artifacts` hook check.
+
+### Slice 2 — producer (NEXT)
+
+Add a dedicated **closeout** step that runs the faithful coverage probe (only when
+eligible pool files changed) and persists `reports/mutation/test-coverage.json` <!-- reproduction-source -->
+**plus** the `.head` marker the consumer requires. This activates the teeth in
+normal operation; until it lands, the consumer safely skips. Decide the exact
+closeout host (run_slice_closeout step vs run-quality full-mode), keeping the slow
+probe out of every-push latency.
+
+**Explicitly out of both slices** (named follow-ups): the subprocess-only
 false-positive escalation engine (Deferred Decisions) and the selection-budget
-follow-up. Do not let either expand slice 1.
+follow-up.

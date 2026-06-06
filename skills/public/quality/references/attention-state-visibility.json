@@ -32,6 +32,12 @@
       "evidence_terms": ["disabled_reason", "Create .agents/cautilus-adapter.yaml"],
       "rationale": "Disabled Cautilus policy is exposed through adapter payloads and operator-facing next-action text."
     },
+    "scripts/check_changed_line_mutation_coverage.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["skipped (non-blocking)", "--skip-if-no-coverage"],
+      "rationale": "The pre-push changed-line mutation-coverage teeth emit an explicit non-blocking skip (exit 0) in the JSON payload `reason` when there is no fresh coverage source for the current head (--skip-if-no-coverage / --require-fresh-coverage). The skip is surfaced in the terminal payload so a stale/absent coverage source cannot read as a clean blocking-clear pass; teeth only fire on a fresh coverage source."
+    },
     "scripts/check_cli_skill_surface.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload"],

@@ -183,6 +183,98 @@ def test_passes_when_no_eligible_pool_file_changed(tmp_path: Path) -> None:
     assert "no eligible" in payload["reason"]
 
 
+def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None:
+    # Pre-push (read-only) wiring: a changed pool file with NO coverage source must
+    # skip non-blocking rather than fall through to the slow probe. This is what
+    # keeps run-quality.sh --read-only cheap at the pre-push boundary.
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    absent = repo / "reports" / "mutation" / "test-coverage.json"  # never written
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(absent),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["blocking"] == []
+    assert "no coverage source" in payload["reason"]
+
+
+def test_skip_if_no_coverage_still_blocks_when_present(tmp_path: Path) -> None:
+    # --skip-if-no-coverage only skips when coverage is ABSENT; when a coverage
+    # source exists the teeth still fire on an uncovered changed line (AC-WIRE at
+    # the reproducer level — the consumer keeps its teeth once the producer runs).
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b left uncovered
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "scripts/foo.py" in payload["blocking"]
+
+
+def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None:
+    # A coverage source with NO `.head` marker is treated as stale: the pre-push
+    # teeth skip non-blocking rather than trust coverage that may predate the
+    # changed lines (the stale-coverage false-positive class found in the wiring
+    # smoke). Without this guard a stale reports/mutation/test-coverage.json would
+    # block a legitimate push.
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # would block if trusted
+    # no <cov>.head marker written
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["blocking"] == []
+    assert "stale" in payload["reason"]
+
+
+def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> None:
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])
+    cov.with_name(cov.name + ".head").write_text("0" * 40, encoding="utf-8")  # wrong sha
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "stale" in json.loads(result.stdout)["reason"]
+
+
+def test_require_fresh_coverage_fires_when_marker_matches_head(tmp_path: Path) -> None:
+    # The freshness guard does NOT defang the teeth: a coverage source whose
+    # `.head` marker matches the analyzed head still blocks an uncovered changed
+    # line (AC-WIRE — fresh coverage keeps its teeth).
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b uncovered
+    cov.with_name(cov.name + ".head").write_text(head, encoding="utf-8")
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "scripts/foo.py" in payload["blocking"]
+
+
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
     # Covers the run-the-probe branch (the default, no --reuse-coverage): the
     # heavy gate probe + config read are stubbed so the test stays fast while the

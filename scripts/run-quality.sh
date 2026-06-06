@@ -493,6 +493,19 @@ fi
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
+# Changed-line mutation-coverage pre-merge teeth (spec:
+# charness-artifacts/spec/mutation-changed-line-premerge-gate.md). Blocks uncovered
+# changed lines in eligible mutation-pool files over the unpushed range (merge-base
+# with origin/main) — the recurring #219->#251->#260->#320->#321 class — before the
+# scheduled cron re-derives it post-merge. Cheap and safe by construction: it NEVER
+# runs the slow coverage probe here (--skip-if-no-coverage) and it only trusts a
+# coverage source FRESH for the current head (--require-fresh-coverage), so a stale
+# reports/mutation/test-coverage.json cannot raise false positives — it skips
+# non-blocking instead. With no fresh coverage, or no origin/main base, it is
+# non-blocking by construction. The producer that writes fresh coverage + the
+# `.head` marker is a dedicated closeout step (follow-up slice).
+CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
+queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
