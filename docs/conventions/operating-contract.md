@@ -121,6 +121,14 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   #249). So `## Next Session` carries only the cross-issue judgment the tracker
   cannot express — coupling, sequencing rationale, the recommended first move —
   not a complete, frequently-stale list that duplicates the tracker.
+- **Wire retro improvements at closeout, do not just record them.** When a
+  session ran a retro, the closeout handoff write must reflect its
+  `Next Improvements` in `## Next Session` (or apply the cheap ones, or file an
+  issue/owner for the rest). A lesson that lives only in `recent-lessons` rots —
+  this is a repeat trap caught by the user more than once (portability miss
+  2026-06-07; producer-rerun retro-wiring miss 2026-06-07). At handoff refresh,
+  explicitly check the latest `charness-artifacts/retro/*` `Next Improvements`
+  against the new `## Next Session`.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.
