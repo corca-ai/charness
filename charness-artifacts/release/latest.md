@@ -3,12 +3,12 @@ Date: 2026-06-06
 
 ## Scope
 
-Advanced `charness` toward release `0.24.0` (tag `v0.24.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.24.1` (tag `v0.24.1`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.23.0`
-- target version: `0.24.0`
+- previous version: `0.24.0`
+- target version: `0.24.1`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.24.0` (tag `v0.24.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.24.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.24.1`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.23.0`
+- Previous release ref: `refs/tags/v0.24.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,57 +50,37 @@ Advanced `charness` toward release `0.24.0` (tag `v0.24.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 2.
+- Surface hits: 1.
   - `checked-in-plugin-export`
-  - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 44.
+- Evaluated changed paths: 13.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-05-225242-packet.json`
-  - `charness-artifacts/critique/2026-06-05-225242-packet.md`
-  - `charness-artifacts/critique/2026-06-06-306-317-posthoc-critique.md`
-  - `charness-artifacts/critique/2026-06-06-318-319-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-06-318-orchestrated-closeout-delegation.md`
-  - `charness-artifacts/critique/2026-06-06-319-commit-boundary-headroom.md`
-  - `charness-artifacts/critique/2026-06-06-v0.24.0-release-critique.md`
-  - `charness-artifacts/goals/2026-06-06-306-316-open-followups.md`
-  - `charness-artifacts/goals/2026-06-06-318-319-achieve-closeout-and-quality-headroom.md`
-  - `charness-artifacts/probe/2026-06-06-318-319.json`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `charness-artifacts/critique/2026-06-06-v0.24.1-release-critique.md`
+  - `charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md`
+  - `charness-artifacts/debug/latest.md`
+  - `charness-artifacts/debug/seam-risk-index.json`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-06-318-319-closeout.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/conventions/authoring-preflight.md`
+  - `charness-artifacts/spec/mutation-changed-line-premerge-gate.md`
   - `docs/handoff.md`
-  - `docs/prescribed-skill-closeout-contract.md`
-  - ... 24 more
+  - `packaging/charness.json`
+  - `plugins/charness/.claude-plugin/plugin.json`
+  - `plugins/charness/.codex-plugin/plugin.json`
+  - `tests/quality_gates/test_staged_commit_gate_plan.py`
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- No configured release-time real-host verification trigger matched this slice.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
-- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
-- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
-- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- No configured release-time real-host proof trigger matched this slice.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-06-v0.24.0-release-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.24.0`.
+- Review proof: `charness-artifacts/critique/2026-06-06-v0.24.1-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -112,20 +91,14 @@ Advanced `charness` toward release `0.24.0` (tag `v0.24.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #318: `CLOSED` (https://github.com/corca-ai/charness/issues/318)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `True`
-- Issue #319: `CLOSED` (https://github.com/corca-ai/charness/issues/319)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.24.0 (minor release: two additive features — #318 orchestrator-owned achieve sub-goal closeout-proof delegation, and #319 commit-boundary SKILL.md core-headroom gate).
+- Run `charness update` to pull 0.24.1 (patch release: test-coverage repair for #320 — the staged commit-gate plan's `except SurfaceError` degrade branch (`staged_commit_gate_plan.py:72-73`) is now covered, clearing the scheduled mutation gate's changed-line blocker; no operator action and no behavior change).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
+- Carried-forward (0.24.0, minor) - two additive features detailed below: #318 orchestrator-owned achieve sub-goal closeout-proof delegation, and #319 commit-boundary SKILL.md core-headroom gate.
 - ACHIEVE ORCHESTRATED CLOSEOUT (#318) - `achieve` adds an OPT-IN orchestrator/sub-goal proof-delegation mode: a sub-goal may close at local/proof-carrier complete while a NAMED orchestrator goal owns the deferred external proof. A goal with no `## Closeout Delegation` section is unchanged - the strict standalone default stays the hard default. An orchestrator's delegated-proof checklist must resolve every item (verified / skipped with a reason / a follow-up issue ref) before it can flip to complete.
 - QUALITY COMMIT-BOUNDARY HEADROOM GATE (#319) - the SKILL.md `core_nonempty` >=4 headroom buffer is now enforced at the commit boundary for CHANGED public/support SKILL.md files (a ratchet that grandfathers skills already under buffer and blocks new erosion), not only in the broad gate. The existing broad-gate headroom test is unchanged.
 - Carried-forward (0.23.0) - six open follow-ups #306/#311/#314/#315/#316/#317: mutation-coverage honesty, setup inspector + commit-discipline seeding, commit-boundary gate reconciliation, and achieve closeout/approval-boundary clarity.
