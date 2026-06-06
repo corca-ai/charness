@@ -81,6 +81,16 @@ def advisory_lines(repo_root: Path, changed_paths: Sequence[str]) -> list[str]:
     return lines
 
 
+def provider(repo_root: Path, _selected_paths: Sequence[str]) -> list[str]:
+    """Advisory provider for `run_slice_closeout.py --predict-commit`.
+
+    Re-derives added-only staged paths so the nudge keys on "a slice *adds* a new
+    debug artifact", independent of the ACM set the gate plan uses for command
+    planning. Exit-0 informational lines only; never blocks.
+    """
+    return advisory_lines(repo_root, staged_added_paths(repo_root))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="RCA-link advisory nudge (exit 0 always).")
     parser.add_argument("--repo-root", type=Path, default=Path("."))

@@ -238,7 +238,7 @@ What the user can do to verify completion directly:
 | 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md` (140 lines, validators green); `run-quality.sh --read-only` 71/0; bounded fresh-eye review REVISE→folded; prioritized candidate list + nose-now-active delta | **done** |
 | 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 60 dated artifacts stay green; `sibling-search.md` + scaffold updated; mirrors synced; 35 tests pass; fresh-eye critique CLEAR; 71/0 | **done** |
 | 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | `scripts/rca_link_advisory.py` warns at exit 0 for an added debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` via an `advisory_provider` hook (not a standalone promotable gate); no fail path; 9 in-process tests + wiring test + real-repo smoke; 71/0 | **done** |
-| 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
+| 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | One cheap fold applied (refactor pulling `run_slice_closeout.py` back under the python-lengths advisory band, a slice-3 length-creep); all other candidates dispositioned as gate-tracked watch or maintainer-deferred (#184) in Off-Goal Findings; no new issues; 71/0 | **done** |
 | 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference written (inference-layer self-declaration + required consumer interpretation; explicit "not verifiable facts", no blanket banner); applied to one pilot surface (`quality` advisory and/or `nose`); fresh-eye critique CLEAR; rollout `issue #N` filed (+ `spec` if it grows); split/cut point recorded in Off-Goal Findings | planned |
 | 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
 
@@ -497,7 +497,40 @@ now resolved by the author-marker design.
 
 ## Off-Goal Findings
 
-_(None yet — record issue references and reasons here during the run.)_
+**Slice-1 candidate dispositions (slice 4):**
+
+- **#2b cross-file sibling marker** → `applied` (slice 2, committed `69c2df9b`).
+- **#2a RCA-ledger nudge** → `applied` (slice 3, committed `238fad72`).
+- **`nose` 1951-dup-line interpretation** → slice 5 pilot + rollout issue
+  (filed in slice 5, not here).
+- **Standing test economics** (`test_file_count`=258, `nested_cli_file_count`=118,
+  rising) → `watch, gate-tracked` by `inventory_standing_test_economics`
+  (advisory-by-design, no fail path). Durable lever = shrink the release-only CLI
+  lifecycle surface, an explicit Non-Goal here. No new issue: the advisory
+  inventory IS the durable tracking (validator over prose ritual).
+- **Coverage brush** (`check-coverage` 44.5s/44.8s vs 45.0s) → `watch,
+  gate-tracked` by `check-runtime-budget` (PASS). No new issue.
+- **`goal_artifact_closeout_evidence.py` python-lengths WARN** (348 in band
+  `[330,360]`) → `watch, gate-tracked`. Pre-existing, exit-0 advisory, an
+  `achieve`-skill script outside this goal's debug/quality-closeout scope; the
+  `check-python-lengths` WARN self-tracks every run. No new issue.
+
+**Cheap fold applied (slice 4):** my slice-3 change crossed `run_slice_closeout.py`
+into the `[432,480]` python-lengths advisory warn band (433 code lines). Folded a
+clean refactor — moved the `_rca_link_advisory_provider` wrapper into
+`rca_link_advisory.provider` (better cohesion; the provider lives with the
+advisory module) — pulling the file back under the band. 71/0 holds.
+
+**Non-claim / goal-premise correction:** the goal's shaping text assumed the
+`nose` binary is absent (a deferred integration-manifest dependency). The slice-1
+scan found `nose` 0.5.0 present locally, so `inventory-nose-clones` is ACTIVE.
+The shaped Goal/Non-Goals text is left as the historical contract; this is the
+authoritative correction (also in `quality/latest.md` and the slice-1 log).
+
+**No new GitHub issues filed in slice 4:** every remaining candidate is either
+gate-tracked (existing advisory inventory/gate owns the memory) or
+deferred-by-maintainer-judgment (#184). The advisory-interpretation rollout issue
+belongs to slice 5.
 
 ## Final Verification
 

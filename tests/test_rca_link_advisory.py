@@ -85,3 +85,11 @@ def test_main_exit_zero_and_warns_when_unlinked(tmp_path: Path, capsys) -> None:
     assert rc == 0
     assert "ADVISORY" in out
     assert DEBUG_ARTIFACT in out
+
+
+def test_provider_returns_empty_without_staged_additions(tmp_path: Path) -> None:
+    # The predict-commit provider re-derives staged additions; with no git repo /
+    # no staged adds it yields no advisory and ignores the passed selected set.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    assert nudge.provider(repo, ["some/selected/path.py"]) == []

@@ -391,14 +391,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
-def _rca_link_advisory_provider(repo_root: Path, _selected_paths) -> list[str]:
-    # #2a advisory: re-derive added-only staged paths so the nudge keys on "a slice
-    # *adds* a new debug artifact", independent of the ACM set the gate plan uses
-    # for command planning. Exit-0 informational lines only; never blocks.
-    added = _rca_link_advisory.staged_added_paths(repo_root)
-    return _rca_link_advisory.advisory_lines(repo_root, added)
-
-
 def main() -> int:
     args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
@@ -410,7 +402,7 @@ def main() -> int:
             plan_only=args.plan_only,
             run_command=run_command,
             emit_payload=_emit_payload,
-            advisory_provider=_rca_link_advisory_provider,
+            advisory_provider=_rca_link_advisory.provider,
         )
 
     _advise_staged_reversion(repo_root)
