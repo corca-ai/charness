@@ -87,6 +87,15 @@ def parse_args() -> argparse.Namespace:
             "producer writes the marker when it refreshes coverage."
         ),
     )
+    parser.add_argument(
+        "--write-head-marker",
+        action="store_true",
+        help=(
+            "Producer mode: after coverage exists for the analyzed head, write the "
+            "sibling `<coverage-json>.head` marker recording that head SHA so the "
+            "pre-push consumer (`--require-fresh-coverage`) can trust the coverage."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -137,6 +146,22 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     return None
 
 
+def _ensure_coverage(args, repo_root: Path, coverage_json: Path, head_sha: str) -> None:
+    """Produce coverage when needed (the slow probe), and in producer mode stamp
+    the `.head` marker so the pre-push consumer's `--require-fresh-coverage` can
+    trust the coverage was built for this head. Skip guards run before this, so
+    here a missing/stale reuse target means "run the probe"."""
+    if not args.reuse_coverage or not coverage_json.is_file():
+        config = args.config if args.config.is_absolute() else repo_root / args.config
+        run_test_coverage(repo_root, read_test_command(config), coverage_json)
+    if args.write_head_marker:
+        resolved_head = _resolve_sha(repo_root, head_sha)
+        if resolved_head:
+            coverage_json.with_name(coverage_json.name + ".head").write_text(
+                resolved_head + "\n", encoding="utf-8"
+            )
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -168,9 +193,7 @@ def main() -> int:
     if skip is not None:
         _emit(skip)
         return 0
-    if not args.reuse_coverage or not coverage_json.is_file():
-        config = args.config if args.config.is_absolute() else repo_root / args.config
-        run_test_coverage(repo_root, read_test_command(config), coverage_json)
+    _ensure_coverage(args, repo_root, coverage_json, head_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
 
     blocking = classify_changed_line_scope_gap(

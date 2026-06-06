@@ -290,15 +290,36 @@ The cheap, safe **consumer** half of Option A:
   AC-CLEAN is additionally enforced by the existing pre-push `git diff --quiet --
   charness-artifacts` hook check.
 
-### Slice 2 — producer (NEXT)
+### Slice 2 — producer mechanism (PARTIAL — mechanism delivered; auto-run BLOCKED on a cheaper coverage strategy)
 
-Add a dedicated **closeout** step that runs the faithful coverage probe (only when
-eligible pool files changed) and persists `reports/mutation/test-coverage.json` <!-- reproduction-source -->
-**plus** the `.head` marker the consumer requires. This activates the teeth in
-normal operation; until it lands, the consumer safely skips. Decide the exact
-closeout host (run_slice_closeout step vs run-quality full-mode), keeping the slow
-probe out of every-push latency.
+Delivered: `--write-head-marker` (producer mode) on
+`check_changed_line_mutation_coverage.py` — after coverage exists for the analyzed
+head it stamps the `<coverage-json>.head` marker the consumer's
+`--require-fresh-coverage` trusts. Extracted to `_ensure_coverage`
+(length-gate clean); unit-tested with a mocked probe
+(`test_write_head_marker_stamps_coverage_with_head`).
 
-**Explicitly out of both slices** (named follow-ups): the subprocess-only
+**Cost finding (blocks auto-wiring — discovered by running the real probe).** The
+faithful coverage probe is `run_test_coverage` over the cosmic-ray test-command
+`python3 -m pytest -q -m 'not release_only' tests` **with `dynamic_context`
+(per-test) instrumentation**. Run live over the unpushed range it was **>10 min**
+and the previous export produced a **~1.34 GB** `test-coverage.json` — pathological
+for routine use. So the operator's chosen "run_slice_closeout step" host is NOT
+viable with the full faithful probe: it would roughly double pool-touching
+closeout latency AND choke on a giant coverage artifact. The producer mechanism is
+correct, but a **cheaper coverage strategy is required before any auto-run**:
+- scope coverage to the changed pool files' relevant tests (not the whole suite);
+- and/or drop `dynamic_context` for the changed-line verdict (per-test context is
+  not needed to answer "is this changed line executed?"), which collapses the
+  dataset size;
+- and/or keep the producer an explicit, infrequent maintainer command, not a
+  per-closeout step.
+
+This is a real product/policy decision for the next session — do not auto-wire the
+full probe. Until a cheap producer lands, the consumer (slice 1) stays safe and
+inactive (skips on stale/absent coverage), and a maintainer can run the producer
+manually before a pool-touching push.
+
+**Explicitly out of all slices** (named follow-ups): the subprocess-only
 false-positive escalation engine (Deferred Decisions) and the selection-budget
 follow-up.

@@ -275,6 +275,38 @@ def test_require_fresh_coverage_fires_when_marker_matches_head(tmp_path: Path) -
     assert "scripts/foo.py" in payload["blocking"]
 
 
+def test_write_head_marker_stamps_coverage_with_head(tmp_path: Path, monkeypatch) -> None:
+    # Producer mode (closeout): after coverage is produced, write the
+    # `<coverage-json>.head` marker = the analyzed head SHA so the pre-push
+    # consumer's --require-fresh-coverage can later trust it.
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    teeth = _load_teeth()
+    cov_path = repo / "reports" / "mutation" / "test-coverage.json"
+
+    def fake_probe(repo_root, test_command, coverage_json) -> None:
+        Path(coverage_json).parent.mkdir(parents=True, exist_ok=True)
+        Path(coverage_json).write_text(
+            json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(teeth, "run_test_coverage", fake_probe)
+    monkeypatch.setattr(teeth, "read_test_command", lambda config: "python3 -m pytest -q")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+         "--coverage-json", str(cov_path), "--write-head-marker"],
+    )
+
+    rc = teeth.main()
+
+    assert rc == 0
+    marker = cov_path.with_name(cov_path.name + ".head")
+    assert marker.is_file(), "producer must write the .head marker"
+    assert marker.read_text(encoding="utf-8").strip() == head
+
+
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
     # Covers the run-the-probe branch (the default, no --reuse-coverage): the
     # heavy gate probe + config read are stubbed so the test stays fast while the
