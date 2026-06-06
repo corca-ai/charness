@@ -24,7 +24,14 @@ the root instruction file but still apply to Charness maintenance work.
   emits `reports/mutation/test-coverage.json` plus the `.fingerprint` freshness
   marker the pre-push changed-line gate (`check-changed-line-mutation-coverage`)
   reuses. Without a fresh producer run the gate skips non-blocking, so run the
-  producer before a pool-touching push to keep the gate active.
+  producer before a pool-touching push to keep the gate active. To check your own
+  uncommitted slice early, run the producer (it stamps the marker over
+  base->worktree) then the consumer, or run the consumer over a head that
+  includes the worktree — a manual `--head-sha HEAD` dry-run **before commit** is
+  a false green (HEAD is the parent, so `base..HEAD` excludes your changes and
+  they are judged only post-commit). Also run the cheap doc gates the broad
+  pytest enforces (e.g. `python3 scripts/check_spec_evidence_durability.py`)
+  before paying for the producer run (retro 2026-06-07).
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.

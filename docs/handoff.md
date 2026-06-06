@@ -42,7 +42,11 @@
    optionally offer the gate as a `quality` capability + adapter contract
    (libs-packaging decision). Route via `create-skill`/`quality`; see spec
    "Skill portability".
-4. Backlog: **#184** — 제품 성공 기준과 핵심 메트릭 정의.
+4. **Changed-line gate false-green tripwire** (`follow-up:changed-line-gate-worktree-dryrun-warning`,
+   [retro](../charness-artifacts/retro/2026-06-07-producer-rerun-waste.md)): warn
+   in `check_changed_line_mutation_coverage.py` when `--head-sha HEAD` excludes an
+   uncommitted pool-file change, so a pre-commit dry-run cannot read false-green.
+5. Backlog: **#184** — 제품 성공 기준과 핵심 메트릭 정의.
 
 ## Discuss
 
