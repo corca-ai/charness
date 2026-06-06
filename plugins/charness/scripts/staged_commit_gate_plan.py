@@ -233,9 +233,13 @@ def run_predict_commit(
     plan_only: bool,
     run_command,
     emit_payload,
+    advisory_provider=None,
 ) -> int:
     selected_paths = paths if paths is not None else collect_staged_paths(repo_root)
     command_plan = staged_commit_gate_plan(repo_root, selected_paths)
+    # Advisory providers emit exit-0 informational lines (e.g. the RCA-link nudge)
+    # that never block the commit; staged_commit_gate_plan stays surface-agnostic.
+    advisories = list(advisory_provider(repo_root, selected_paths)) if advisory_provider else []
     payload: dict[str, object] = {
         "status": "planned" if plan_only else "completed",
         "changed_paths": selected_paths,
@@ -244,7 +248,11 @@ def run_predict_commit(
             for command in command_plan
         ],
         "executed_commands": [],
+        "advisories": advisories,
     }
+    if not as_json:
+        for line in advisories:
+            print(line)
     if plan_only:
         if as_json:
             return emit_payload(payload, as_json=as_json)

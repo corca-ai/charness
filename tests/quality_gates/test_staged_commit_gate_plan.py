@@ -245,6 +245,44 @@ def test_run_predict_commit_non_json_plan_empty_fail_and_success(capsys) -> None
     assert "charness pre-commit: ok" in capsys.readouterr().out
 
 
+def test_run_predict_commit_surfaces_advisory_provider_lines(capsys) -> None:
+    # #2a: advisory providers emit exit-0 informational lines that never change the
+    # return code; they appear in text output and carry into the json payload.
+    def provider(repo_root: Path, selected_paths: list[str]) -> list[str]:
+        return ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
+
+    rc = run_predict_commit(
+        ROOT,
+        paths=["README.md"],
+        as_json=False,
+        plan_only=False,
+        run_command=_runner(0),
+        emit_payload=_payload_sink,
+        advisory_provider=provider,
+    )
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "ADVISORY: example nudge" in out
+    assert "- charness-artifacts/debug/x.md" in out
+
+    captured: list[dict[str, object]] = []
+
+    def capture_sink(payload: dict[str, object], *, as_json: bool) -> int:
+        captured.append(payload)
+        return 0
+
+    run_predict_commit(
+        ROOT,
+        paths=["README.md"],
+        as_json=True,
+        plan_only=False,
+        run_command=_runner(0),
+        emit_payload=capture_sink,
+        advisory_provider=provider,
+    )
+    assert captured[-1]["advisories"] == ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
+
+
 def test_predict_commit_rejects_length_violating_staged_python(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

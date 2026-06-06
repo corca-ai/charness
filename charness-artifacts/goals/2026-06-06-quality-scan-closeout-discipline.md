@@ -13,13 +13,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 3 — #2a advisory RCA-ledger nudge** (next). Slices 1
-  (quality scan) and 2 (#2b marker enforcement) committed. Activated
-  2026-06-06T06:16:29Z; closeout reserve begins 2026-06-06T08:56:29Z.
-- Next action: add an exit-0 advisory nudge that warns when a slice adds a new
-  dated `debug/*.md` artifact with no matching `rca-ledger.jsonl` `ref`, wired
-  into the `run_slice_closeout.py --predict-commit` predict path (model on
-  `_print_headroom`); silent when a `ref` exists. No fail path.
+- Current slice: **slice 4 — fold cheap scan wins / file the rest** (next).
+  Slices 1–3 committed. Activated 2026-06-06T06:16:29Z; closeout reserve begins
+  2026-06-06T08:56:29Z.
+- Next action: apply only obviously-correct cheap improvements surfaced by the
+  slice-1 scan; route the rest to issues. The scan surfaced no cheap
+  obviously-correct production fix (watch items only: test economics, coverage
+  brush, python-lengths WARN); the nose-interpretation candidate is slice 5.
+  Expect slice 4 to be mostly disposition + carry-forward.
 - Timebox: 3h from activation; protect the final 20m for broad gate + retro +
   disposition + commit + user closeout. If the macro outcome finishes early,
   continue to the next safe in-scope improvement (do not close on first item).
@@ -236,7 +237,7 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | 1 | Quality posture scan (`find-skills` → `quality`) | Handoff Next Session #1 planned focus; surfaces the improvement candidates that scope slices 2–4 | Refreshed `quality/latest.md` (140 lines, validators green); `run-quality.sh --read-only` 71/0; bounded fresh-eye review REVISE→folded; prioritized candidate list + nose-now-active delta | **done** |
 | 2 | #2b sibling-scan marker enforcement in the `validate_debug_artifact.py` `latest.md` branch (+ reference doc) | Diagnosed in the #320 slice; the reference's cross-file requirement is unenforced (shape-only) | Marker check added to the `latest.md` branch only; fails a `latest.md`-form `## Sibling Search` missing the `cross-file:` / `no cross-file sibling:` marker, passes one with it; 60 dated artifacts stay green; `sibling-search.md` + scaffold updated; mirrors synced; 35 tests pass; fresh-eye critique CLEAR; 71/0 | **done** |
-| 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | Nudge warns at exit 0 for a new debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` as an advisory line (not a standalone promotable gate); no fail path | planned |
+| 3 | #2a advisory RCA-ledger nudge (exit-0, in the slice-closeout aggregate) | Diagnosed in the #320 slice; prompt-only append is deliberately non-gated, so add advisory detection of unlinked debug artifacts | `scripts/rca_link_advisory.py` warns at exit 0 for an added debug artifact with no matching ledger `ref`, silent when a `ref` exists; wired into `run_slice_closeout.py --predict-commit` via an `advisory_provider` hook (not a standalone promotable gate); no fail path; 9 in-process tests + wiring test + real-repo smoke; 71/0 | **done** |
 | 4 | Fold cheap scan wins / file the rest | Keep the goal honest: apply only obviously-correct cheap improvements, route the rest to issues | Applied diffs or `issue #N` references for each candidate; watch-item carry-forward recorded | planned |
 | 5 | Advisory epistemic-status + agent-interpretation contract (first cut, **splittable**) | Generalizes the #2b judgment-over-automation principle; the goal already touches advisory surfaces (scan, nose, RCA nudge) so it is the natural pilot home | Shared reference written (inference-layer self-declaration + required consumer interpretation; explicit "not verifiable facts", no blanket banner); applied to one pilot surface (`quality` advisory and/or `nose`); fresh-eye critique CLEAR; rollout `issue #N` filed (+ `spec` if it grows); split/cut point recorded in Off-Goal Findings | planned |
 | 6 | Closeout | Bundle proof + reflection within the closeout reserve | Full `./scripts/run-quality.sh` PASS; `retro`; every improvement dispositioned; Final Verification + non-claims written | planned |
@@ -340,6 +341,31 @@ during the run:
   / `setup_commit_discipline_lib.py` exist outside the subject; (D) no gap /
   regression / over-reach, test coverage comprehensive, scaffold round-trips. No
   blocking corrections.
+
+### Slice 3 — #2a advisory RCA-ledger nudge (2026-06-06)
+
+- **Routing:** `impl`-class (no find-skills public-skill match for the
+  advisory-helper task text). Advisory-only slice → no fresh-eye critique
+  required by the goal (High-Confidence Checks scope critique to #2b + slice 5).
+- **Change:** new `scripts/rca_link_advisory.py` (export-safe, standalone
+  `main()` per the verification plan) detects dated `debug/*.md` additions with no
+  matching `rca-ledger.jsonl` `ref` and emits exit-0 `ADVISORY:` lines (silent
+  when linked, `latest.md` pointer excluded). Wired into the predict-commit
+  aggregate via a generic `advisory_provider` hook added to
+  `staged_commit_gate_plan.run_predict_commit` (kept RCA-free) — the provider in
+  `run_slice_closeout.py` re-derives added-only staged paths. Never blocks; not a
+  promotable gate (no failure path).
+- **Proof:** `tests/test_rca_link_advisory.py` (9 in-process tests:
+  classification, linked→silent, unlinked→warn, pointer/non-debug ignored,
+  ledger-absent→warn, `main()` exit-0 both ways) + a `run_predict_commit`
+  advisory-wiring test in `test_staged_commit_gate_plan.py`. Real-repo smoke:
+  a ledger-linked path is silent, an unlinked path warns at exit 0; a staged
+  temp debug artifact surfaced the advisory through the full predict-commit
+  aggregate then `pre-commit: ok`. `run-quality.sh --read-only` = 71/0.
+- **Caught + fixed:** the first test subprocessed the CLI, which tripped
+  `check-boundary-bypass-ratchet` (a *new* convertible boundary). Rewrote the
+  test fully in-process (the ratchet's intended direction) — ratchet green, no
+  exemption needed. Mirror synced.
 
 ## Context Sources
 
