@@ -30,9 +30,10 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to pull 0.24.0 (minor release: two additive features — #318 orchestrator-owned achieve sub-goal closeout-proof delegation, and #319 commit-boundary SKILL.md core-headroom gate).
+- Run `charness update` to pull 0.24.1 (patch release: test-coverage repair for #320 — the staged commit-gate plan's `except SurfaceError` degrade branch (`staged_commit_gate_plan.py:72-73`) is now covered, clearing the scheduled mutation gate's changed-line blocker; no operator action and no behavior change).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
+- Carried-forward (0.24.0, minor) - two additive features detailed below: #318 orchestrator-owned achieve sub-goal closeout-proof delegation, and #319 commit-boundary SKILL.md core-headroom gate.
 - ACHIEVE ORCHESTRATED CLOSEOUT (#318) - `achieve` adds an OPT-IN orchestrator/sub-goal proof-delegation mode: a sub-goal may close at local/proof-carrier complete while a NAMED orchestrator goal owns the deferred external proof. A goal with no `## Closeout Delegation` section is unchanged - the strict standalone default stays the hard default. An orchestrator's delegated-proof checklist must resolve every item (verified / skipped with a reason / a follow-up issue ref) before it can flip to complete.
 - QUALITY COMMIT-BOUNDARY HEADROOM GATE (#319) - the SKILL.md `core_nonempty` >=4 headroom buffer is now enforced at the commit boundary for CHANGED public/support SKILL.md files (a ratchet that grandfathers skills already under buffer and blocks new erosion), not only in the broad gate. The existing broad-gate headroom test is unchanged.
 - Carried-forward (0.23.0) - six open follow-ups #306/#311/#314/#315/#316/#317: mutation-coverage honesty, setup inspector + commit-discipline seeding, commit-boundary gate reconciliation, and achieve closeout/approval-boundary clarity.
