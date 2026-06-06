@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-06-05
+Date: 2026-06-06
 
 ## Scope
 
-Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.24.0` (tag `v0.24.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.22.0`
-- target version: `0.23.0`
+- previous version: `0.23.0`
+- target version: `0.24.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.23.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.24.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.22.0`
+- Previous release ref: `refs/tags/v0.23.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,36 +50,34 @@ Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-05-v0-23-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 2.
-  - `skills/public/release/scripts/publish_release_resume.py`
-  - `skills/support/web-fetch/scripts/acquire_public_url.py`
-- Evaluated changed paths: 71.
+- Path hits: 0.
+- Evaluated changed paths: 44.
   - `.agents/release-adapter.yaml`
-  - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-05-abc-followups-resolution-critique.md`
-  - `charness-artifacts/critique/2026-06-05-v0.22.0-release-critique.md`
-  - `charness-artifacts/critique/2026-06-06-306-317-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-06-v0.23.0-release-critique.md`
-  - `charness-artifacts/goals/2026-06-05-abc-followups-acquire-release-quality.md`
+  - `charness-artifacts/critique/2026-06-05-225242-packet.json`
+  - `charness-artifacts/critique/2026-06-05-225242-packet.md`
+  - `charness-artifacts/critique/2026-06-06-306-317-posthoc-critique.md`
+  - `charness-artifacts/critique/2026-06-06-318-319-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-06-318-orchestrated-closeout-delegation.md`
+  - `charness-artifacts/critique/2026-06-06-319-commit-boundary-headroom.md`
+  - `charness-artifacts/critique/2026-06-06-v0.24.0-release-critique.md`
   - `charness-artifacts/goals/2026-06-06-306-316-open-followups.md`
-  - `charness-artifacts/metrics/rca-ledger.jsonl`
-  - `charness-artifacts/probe/2026-06-05-abc-followups-acquire-release-quality-host-log.json`
-  - `charness-artifacts/probe/2026-06-06-306-316-open-followups.json`
+  - `charness-artifacts/goals/2026-06-06-318-319-achieve-closeout-and-quality-headroom.md`
+  - `charness-artifacts/probe/2026-06-06-318-319.json`
   - `charness-artifacts/quality/sloc-inventory/latest.json`
-  - `charness-artifacts/retro/2026-06-05-abc-followups-closeout.md`
-  - `charness-artifacts/retro/2026-06-06-306-317-open-followups-closeout.md`
+  - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/retro/2026-06-06-318-319-closeout.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
   - `docs/conventions/authoring-preflight.md`
-  - `docs/conventions/implementation-discipline.md`
   - `docs/handoff.md`
-  - ... 51 more
+  - `docs/prescribed-skill-closeout-contract.md`
+  - ... 24 more
 
 ## Real-Host Verification
 
@@ -99,11 +96,7 @@ Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-06-v0.23.0-release-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.23.0`.
+- Review proof: `charness-artifacts/critique/2026-06-06-v0.24.0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -114,32 +107,16 @@ Advanced `charness` toward release `0.23.0` (tag `v0.23.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #306: `CLOSED` (https://github.com/corca-ai/charness/issues/306)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #311: `CLOSED` (https://github.com/corca-ai/charness/issues/311)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `True`
-- Issue #314: `CLOSED` (https://github.com/corca-ai/charness/issues/314)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #315: `CLOSED` (https://github.com/corca-ai/charness/issues/315)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #316: `CLOSED` (https://github.com/corca-ai/charness/issues/316)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
-- Issue #317: `CLOSED` (https://github.com/corca-ai/charness/issues/317)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-- Run `charness update` to pull 0.23.0 (minor release: six open follow-ups #306/#311/#314/#315/#316/#317 — mutation-coverage honesty, setup inspector + commit-discipline seeding, commit-boundary gate reconciliation, and achieve closeout/approval-boundary clarity).
+- Run `charness update` to pull 0.24.0 (minor release: two additive features — #318 orchestrator-owned achieve sub-goal closeout-proof delegation, and #319 commit-boundary SKILL.md core-headroom gate).
 - Restart Claude Code or Codex if the host cache still shows the previous version.
 - No new manual migration is required beyond the normal `charness update` flow; existing non-timeboxed goals remain unaffected.
+- ACHIEVE ORCHESTRATED CLOSEOUT (#318) - `achieve` adds an OPT-IN orchestrator/sub-goal proof-delegation mode: a sub-goal may close at local/proof-carrier complete while a NAMED orchestrator goal owns the deferred external proof. A goal with no `## Closeout Delegation` section is unchanged - the strict standalone default stays the hard default. An orchestrator's delegated-proof checklist must resolve every item (verified / skipped with a reason / a follow-up issue ref) before it can flip to complete.
+- QUALITY COMMIT-BOUNDARY HEADROOM GATE (#319) - the SKILL.md `core_nonempty` >=4 headroom buffer is now enforced at the commit boundary for CHANGED public/support SKILL.md files (a ratchet that grandfathers skills already under buffer and blocks new erosion), not only in the broad gate. The existing broad-gate headroom test is unchanged.
+- Carried-forward (0.23.0) - six open follow-ups #306/#311/#314/#315/#316/#317: mutation-coverage honesty, setup inspector + commit-discipline seeding, commit-boundary gate reconciliation, and achieve closeout/approval-boundary clarity.
 - MUTATION-COVERAGE HONESTY (#306) - the recurring subprocess-only scaffold CLI class is now covered in-process, so the scheduled mutation gate's changed-line signal stops self-healing into ~2 auto-issues/day; the gate stays blocking on genuinely-uncovered changed lines.
 - SETUP STALE-AGENTS FLAG (#311) - the setup inspector now flags an existing AGENTS.md that predates the #303 adapter-first reviewer rule as stale. Report-only: existing AGENTS.md bodies are never rewritten.
 - COMMIT-BOUNDARY GATE RECONCILIATION (#314) - the fast structural checkers (`validate_skill_ergonomics`, `check_boundary_bypass_ratchet`) now run in the per-slice aggregate, and the per-slice aggregate and the literal git pre-commit hook run the same fast gate subset (generalizes #307).
