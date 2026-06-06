@@ -27,35 +27,38 @@
   the faithful probe is the full suite with `dynamic_context` coverage — run live
   it was **>10 min** and produced a **~1.34 GB** coverage JSON. Do NOT auto-wire
   the full probe. See spec "Slice 2 — Cost finding".
-- Forced risk-interrupt for the seam is **consumed in the spec**
-  (`plan_risk_interrupt` -> `handoff-recorded` when the spec is in-slice). It
-  stays "live" on a clean tree until the gate is fully active; the producer slice
-  touches the spec, which satisfies the planner.
+- Forced risk-interrupt is **consumed in the spec** (`plan_risk_interrupt` ->
+  `handoff-recorded` when the spec is in-slice); it stays "live" on a clean tree
+  until the gate is active — the producer slice touches the spec, satisfying it.
 - **#321 CLOSED** (same seam as #320, band-aided per-file again 2026-06-06). Open
   issues: **#322, #184**. v0.24.1 shipped (unchanged).
 
 ## Next Session
 
-1. **Producer cheaper-coverage decision (the blocker).** Make the producer cheap
-   enough to auto-run, then land it + activate the gate. Options in the spec:
-   scope coverage to the changed pool files' tests / drop `dynamic_context` for the
-   changed-line verdict / keep the producer an opt-in maintainer command. Owner:
-   premerge-gate spec "Slice 2".
+1. **Producer (A+B) + push + release — bundled (decided 2026-06-07).** Land the
+   producer with the chosen lever: **drop `dynamic_context` + piggyback coverage
+   onto the broad pytest closeout already runs** (one instrumented run, small
+   artifact, no double-run). **Verify via the push**, not a fresh local faithful
+   probe: the pre-push consumer gate + the scheduled cron backstop are the proof;
+   false-positive blocks the push (fix+retry), false-negative caught post-merge;
+   iterate if the push errors. Then bundle the push + release. Owner:
+   premerge-gate spec "Slice 2" + "Decided next-session approach".
 2. **#322 (scope C, spec-first) — the original pick this session pivoted off.**
    Breadth: 4-field self-declaration rollout to ~6 inference surfaces, **plus** the
    nose family classifier (Q1). `spec`-first per the #322 body. Saved analysis:
    [nose-clone interpretation](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md).
-3. **Release decision (13 unpushed commits).** Bundle into the next release (with
-   `release` + the local `--release` gate) or keep building.
+3. **Skill portability of the gate's lessons (so other repos benefit).** At
+   minimum add the pattern + freshness-guard + producer-cost lesson to
+   [mutation-testing.md](../skills/public/quality/references/mutation-testing.md);
+   optionally promote the gate to a `quality`-skill capability + adapter contract
+   (libs-packaging decision). Route via `create-skill`/`quality`; see spec.
 4. Backlog: **#184** — 제품 성공 기준과 핵심 메트릭 정의.
 
 ## Discuss
 
 - **No push/tag CI.** The local `--release` gate is the bundle proof; worth
-  deciding whether to add light push/tag CI.
-- **Producer cost model.** Faithful full-suite `dynamic_context` coverage is the
-  wrong cost model for routine pre-merge teeth — the cheaper-coverage choice is
-  the crux that unblocks the gate.
+  deciding whether to add light push/tag CI. (Producer lever + verification are
+  decided — see Next Session #1 / spec.)
 
 ## References
 

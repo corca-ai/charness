@@ -315,10 +315,47 @@ correct, but a **cheaper coverage strategy is required before any auto-run**:
 - and/or keep the producer an explicit, infrequent maintainer command, not a
   per-closeout step.
 
-This is a real product/policy decision for the next session — do not auto-wire the
-full probe. Until a cheap producer lands, the consumer (slice 1) stays safe and
-inactive (skips on stale/absent coverage), and a maintainer can run the producer
-manually before a pool-touching push.
+**Decided next-session approach = A+B (operator, 2026-06-07):** drop
+`dynamic_context` AND piggyback the producer coverage onto the broad pytest the
+closeout already runs — one coverage-instrumented run, small artifact, no
+double-run. The subprocess-only blind spot of plain `--cov` stays a deferred
+concern (the pre-push `git diff --quiet -- charness-artifacts` check and the
+consumer freshness guard remain the safety net). The producer marker mechanism is
+already built; remaining work is the instrumented-broad-pytest wiring + emit +
+lock-phase placement.
+
+**Verification strategy for the deferred producer = via the push (operator):** the
+expensive faithful-probe local run is NOT re-run to verify; instead the producer
+slice is proven by the real push — the pre-push consumer gate (now with fresh
+coverage) plus the scheduled mutation cron as backstop. Accepted trade-off: a
+false positive blocks the push (safe — fix and retry), a false negative is caught
+by the cron post-merge (no worse than today). Iterate if the push surfaces an
+error. Bundle the push + release together next session.
+
+Until the cheap producer lands, the consumer (slice 1) stays safe and inactive
+(skips on stale/absent coverage), and a maintainer can run the producer manually
+(`--write-head-marker`) before a pool-touching push.
+
+### Skill portability (follow-up — surfaced by operator 2026-06-07)
+
+This gate is currently a **charness-repo-local** capability: the logic lives in
+repo-root `scripts/check_changed_line_mutation_coverage.py` (mirrored into the
+plugin export but NOT presented as a `quality`-skill capability), and the wiring
+is charness-host-specific (`run-quality.sh` / pre-push). Per "keep the harness
+portable", the **lessons** should benefit any repo adopting the `quality` skill:
+- **Doctrine (cheap, high-value):** add to
+  `skills/public/quality/references/mutation-testing.md` the pre-merge
+  changed-line-coverage teeth pattern, the **stale-coverage freshness-guard**
+  rule (never trust coverage not stamped for the analyzed head), and the
+  **producer-cost lesson** (faithful full-suite `dynamic_context` coverage is the
+  wrong cost model for routine teeth — drop `dynamic_context` / piggyback).
+- **Capability (larger):** offer the gate as a `quality`-skill script + an adapter
+  wiring contract so adopting repos can enable it, instead of only shipping a
+  repo-root script. This needs the mutation libs (`mutation_changed_files_lib`,
+  `mutation_sampling_lib`, `sample_mutation_files`) reachable from the skill —
+  a packaging decision, not just a move.
+Route through `create-skill`/`quality` next session; the doctrine update is the
+minimum that lets other repos benefit.
 
 **Explicitly out of all slices** (named follow-ups): the subprocess-only
 false-positive escalation engine (Deferred Decisions) and the selection-budget
