@@ -3,17 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 60,
-  "indexed_artifact_count": 48,
+  "source_artifact_count": 61,
+  "indexed_artifact_count": 49,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 7,
-    "operator-visible-recovery": 16
+    "operator-visible-recovery": 15,
+    "repeated-symptom": 2
   },
   "generalization_pressure_counts": {
-    "monitor": 48
+    "factor-now": 2,
+    "monitor": 47
   },
   "entries": [
     {
@@ -675,18 +677,32 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-320-mutation-changed-line-coverage",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "the scheduled mutation gate keeps failing post-merge because a newly",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/mutation-changed-line-premerge-gate.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-274-mutation-workflow-tokei-dependency",
+      "interrupt_id": "issue-320-mutation-changed-line-coverage",
       "risk_classes": [
-        "operator-visible-recovery"
+        "repeated-symptom"
       ],
-      "seam": "GitHub Actions runner environment versus local validation environment.",
-      "generalization_pressure": "monitor",
+      "seam": "the scheduled mutation gate keeps failing post-merge because a newly",
+      "generalization_pressure": "factor-now",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/goals/2026-06-02-274-261-mutation-regression-and-standard-decision.md",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/mutation-changed-line-premerge-gate.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [
