@@ -133,6 +133,9 @@ backstops escape; the cost is a wasted round-trip, recurring #308 / #325 / #329.
 - Mental model (wrong): "the gate is missing / was added after the regression,
   so add coverage." Correct: coverage exists and predates the regression; the
   gap is ordering/latency + slice-boundary discretion.
+- cross-file: the gated behavior spans validators OUTSIDE the subject
+  orchestrators (`run_slice_closeout.py`/`staged_commit_gate_plan.py`) —
+  ergonomics, attention-state, and the `SKILL.md` preflight validators.
 - axis: closeout entry paths | `.githooks/pre-commit` vs full
   `run_slice_closeout.py` | decision: sibling — both must produce the cheap
   verdict first; Slice 2 reconciles via one shared plan | proof: predict-commit
@@ -144,8 +147,7 @@ backstops escape; the cost is a wasted round-trip, recurring #308 / #325 / #329.
 - axis: path resolution | `collect_staged_paths` vs `collect_changed_paths` |
   decision: follow-up:slice-2-path-resolution-parity | proof: source read.
 - axis: `--no-verify` / inactive hook | decision: not a sibling — bounded by
-  pre-push + `validate_maintainer_setup` (confirm-not-rebuild, goal B4) | proof:
-  pre-push runs the broad gate.
+  pre-push + `validate_maintainer_setup` (confirm-not-rebuild, B4).
 
 ## Seam Risk
 

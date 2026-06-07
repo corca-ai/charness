@@ -7,6 +7,13 @@ the root instruction file but still apply to Charness maintenance work.
 
 - Repo-owned diff obligations live in [.agents/surfaces.json](../../.agents/surfaces.json);
   use `python3 scripts/check_changed_surfaces.py --repo-root .` to inspect them.
+- The full `run_slice_closeout.py` runs the cheap structural sweep FIRST
+  (`staged_commit_gate_plan` subset: `validate_skill_ergonomics`,
+  `validate_attention_state_visibility`, the `SKILL.md` authoring preflight),
+  fail-fast, before surface-match / cautilus / broad pytest. A #329-class
+  regression therefore blocks at the cheap boundary in <1s instead of deferring
+  to the slow gate (#332). A `structural-sweep` failure phase in closeout output
+  means a cheap presence/structural gate fired; fix it before rerunning.
 - Run `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
   as a pre-lock rehearsal when the slice spans generated surfaces or multiple
   validator families. Before the final broad closeout, record that the mutation

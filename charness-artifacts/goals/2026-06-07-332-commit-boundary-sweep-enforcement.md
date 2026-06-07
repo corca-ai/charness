@@ -1,6 +1,6 @@
 # Achieve Goal: Make the commit-boundary structural sweep non-discretionary (#332)
 
-Status: active
+Status: complete
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md`
 
@@ -14,11 +14,11 @@ asked.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1-3 COMPLETE (root cause + fix + regression test, with
-  the fix-boundary fresh-eye critique BLOCKER folded); Slice 4 (closeout) next.
-- Next action: Slice 4 — doc sync, full `run_slice_closeout.py` gate, stage
-  `Close #332`, `issue` validate-closeout-draft rehearsal, RCA ledger event,
-  retro + disposition review.
+- Current slice: COMPLETE — all 4 slices done. Root cause + fix (structural sweep
+  runs first in the full closeout) + regression test + closeout, with the
+  fix-boundary fresh-eye critique BLOCKER folded (re-review SHIP).
+- Next action: commit Slice 4 with `Close #332` staged; the maintainer's push
+  auto-closes #332. No further agent action.
 - Slice 1 root cause (proven, falsifiable): both #329 gates
   (`validate_skill_ergonomics`, `validate_attention_state_visibility`) are fully
   wired into BOTH the cheap predict-commit plan and the full-closeout verify
@@ -188,7 +188,7 @@ After activation completes, the user can verify directly:
 | 1 | Root-cause (debug) why the #329-class regressions reached the slow broad gate despite active pre-commit + pre-push hooks | A bug-class issue gets a falsifiable root cause before any fix; coverage largely exists already, so a wrong fix is the main risk | `charness-artifacts/debug/` artifact that (a) pins each #329 instance to its owning gate, (b) proves via `git log -p`/reflog whether the commit ran pre-commit at all (`--no-verify`/hook-not-run) or the cheap subset was skipped for the 7-min broad run, (c) records the *falsified* "post-#329 wiring" hypothesis, + a failing repro | done — `2026-06-07-332-commit-boundary-sweep-latency.md`: each gate pinned to its surface, "post-#329 wiring" + "pure coverage gap" FALSIFIED by git timing + cheap-plan repro (rc=1, 0.8s); root cause = latency/ordering + slice-boundary discretion |
 | 2 | Close the confirmed gap at the pre-commit boundary (likely: run the cheap structural subset first / non-skippably, or surface a bypass) — extend coverage/install only if Slice 1 proves it | Single source of truth; presence/structural only; do not rebuild existing affordances | `staged_commit_gate_plan` change blocking the reproduced violation at the cheap boundary; no duplicate of `validate_maintainer_setup` | done — `staged_commit_gate_plan.py` gains the `STRUCTURAL_SWEEP_LABELS` subset + `block_on_structural_sweep`; `run_slice_closeout.py` full path runs it FIRST (before surface-match/cautilus/broad pytest). No new judgment, no parallel mechanism, no `validate_maintainer_setup` duplicate. Fresh-eye critique: BLOCKER (main() over function limit) folded |
 | 3 | Add a regression test that pins the blocked-at-commit behavior | Memory-only reminders failed across three sessions; convert to teeth | `tests/quality_gates/...` test green on fix, red without it (staged-index based) | done — 5 tests in `test_staged_commit_gate_plan.py`; the e2e `test_full_closeout_blocks_329_class_violation_at_structural_sweep` verified red-without-fix / green-with-fix; 26/26 file + 122 closeout-touching tests green |
-| 4 | Closeout: doc sync, full gate, stage `Close #332`, retro + disposition review | Make the change auditable and self-applying next run | full `run_slice_closeout.py` PASS; `Close #332` staged; retro + disposition-review artifacts | planned |
+| 4 | Closeout: doc sync, full gate, stage `Close #332`, retro + disposition review | Make the change auditable and self-applying next run | full `run_slice_closeout.py` PASS; `Close #332` staged; retro + disposition-review artifacts | done — implementation-discipline.md doc line; broad gate PASS; retro + critique (disposition review) + RCA ledger event; `Close #332` staged on the Slice 4 commit |
 
 ## Coordination Cues
 
@@ -198,18 +198,15 @@ below are the *plan*, confirmed via `find-skills` during the run. `achieve` owns
 this slot and the closeout floors; `find-skills` owns which skill answers a
 boundary.
 
-- **Routing (planned)**: Slice 1 → `debug` (root cause); Slice 2 → `impl`
-  (gate-plan / install wiring); Slice 3 → `quality` + `impl` (regression test);
-  Slice 4 → `quality` (final gate) + `issue` (closeout). Confirm via `find-skills`
-  and record the returned route at completion.
+- Routing: find-skills routed this run = `debug` (Slice 1 root cause) + `impl` (Slice 2 gate-plan wiring) + `quality` (Slice 3 regression test + Slice 4 final gate) + `issue` (Slice 4 closeout); confirmed via `find-skills` during the run, no support/integration/external route returned (in-repo gate work).
 - **Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped from
   GitHub issue #332 (via `gh issue view 332`) and local repo files only.**
 - **Release: n/a — gate hardening with no version bump or install-manifest edit
   expected. Revisit only if a release is later cut to ship the gate.**
-- **Issue closeout (planned)**: `#332` via `direct-commit` carrier (`Close #332`
-  on the Slice 4 commit), validated with the `issue` skill's
-  `validate-closeout-draft --carrier direct-commit --commit-message-file ...`
-  rehearsal before commit.
+- Issue closeout: #332 via `direct-commit` carrier — `Close #332` staged on the
+  Slice 4 commit; rehearsed with the `issue` skill's `validate-closeout-draft
+  --carrier direct-commit --commit-message-file <closeout msg>` before commit
+  (the maintainer's push auto-closes #332).
 - **RCA ledger (planned)**: record ONE converted event at Slice 4 closeout
   (`--source debug --event-kind repeated_correction --converted --durable-kind
   test --class-key commit-boundary-structural-sweep-discretionary --caught-by
@@ -273,6 +270,21 @@ boundary.
     non-corrupting (source==mirror sha256, all changes intact).
   - Proof: 26/26 gate-plan + 122 closeout-touching tests green; ruff /
     py_compile / lengths (function gate passes) / mirror byte-synced.
+
+- **Slice 4 (closeout), 2026-06-07.** Routed via `find-skills` → `quality` (final
+  gate) + `issue` (closeout).
+  - Doc sync: `docs/conventions/implementation-discipline.md` documents the
+    structural-sweep-first closeout behavior + the `structural-sweep` failure
+    phase. Portability classification: host-local (charness maintenance tooling;
+    doctrine extends the in-code #314 reconciliation) — stated in the retro.
+  - Broad gate: full `./scripts/run-quality.sh --read-only` PASS over the final
+    state (encompasses broad pytest + all validators; the same gate pre-push runs).
+  - RCA ledger: one converted `repeated_correction` event recorded
+    (`commit-boundary-structural-sweep-discretionary`, durable_kind=gate, ref #332).
+  - Closeout artifacts: retro + critique (disposition review) + refreshed
+    recent-lessons digest. `issue validate-closeout-draft --carrier direct-commit`
+    rehearsal passed; `Close #332` staged on this commit (maintainer push
+    auto-closes). `check_goal_artifact` green at `complete`.
 
 ## Context Sources
 
@@ -377,9 +389,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md
+Host log probe: skipped: host-log-not-exposed: no host/runtime behavior is claimed (External Or Live Proof = none); the proof is the broad gate + standing deterministic gates (commit-boundary structural sweep, broad pytest), not a host/runtime probe, so there is no host log to probe.
+Disposition review: charness-artifacts/critique/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md
 
 ## User Verification Instructions
 
@@ -397,4 +409,18 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions: none — every surfaced improvement is dispositioned in
+`charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`
+`## Next Improvements`; all resolved as `none — <reason>` this run (clean
+execution: self-corrected habits + a registered follow-up, no new teeth or issues
+warranted); restated per-improvement below (all valid forms):
+
+- Check function-length, not just file-length `--headroom`, when adding to a
+  length-warn-band file. Disposition: none — checklist habit; the function-length
+  gate already has teeth (it caught the breach via the fresh-eye reviewer).
+- The god-module `run_slice_closeout.py` is at 474/480. Disposition: none —
+  registered `follow-up:run-slice-closeout-module-split` + handoff Next-Session
+  candidate; the file passes (advisory) and the split is a #332 Non-Goal.
+- A bounded reviewer ran a forbidden worktree-mutating `git checkout`. Disposition:
+  none — the contract already forbids it (fresh-eye-subagent-review.md, #258); a
+  recorded, independently-re-verified near-miss, not new teeth.

@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 61,
-  "indexed_artifact_count": 49,
+  "source_artifact_count": 62,
+  "indexed_artifact_count": 50,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 7,
+    "none": 9,
     "operator-visible-recovery": 15,
-    "repeated-symptom": 2
+    "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
-    "factor-now": 2,
-    "monitor": 47
+    "factor-now": 1,
+    "monitor": 49
   },
   "entries": [
     {
@@ -691,18 +691,32 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-06-07-332-commit-boundary-sweep-latency.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none — local gate-ordering change, no external/host seam",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-320-mutation-changed-line-coverage",
+      "interrupt_id": "none",
       "risk_classes": [
-        "repeated-symptom"
+        "none"
       ],
-      "seam": "the scheduled mutation gate keeps failing post-merge because a newly",
-      "generalization_pressure": "factor-now",
+      "seam": "none — local gate-ordering change, no external/host seam",
+      "generalization_pressure": "monitor",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/mutation-changed-line-premerge-gate.md",
-      "forced": true
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md",
+      "forced": false
     }
   ],
   "skipped_artifacts": [
