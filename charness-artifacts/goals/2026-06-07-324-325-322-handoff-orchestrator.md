@@ -293,6 +293,20 @@ contract versus a reference-only update.
 - Lessons carried forward: Broad pytest at the bundle boundary caught a stale SKILL.md prose-pin (test_issue_closeout_discipline) that the skip-broad commit gate missed; the changed-line mutation gate caught an uncovered error branch (issue_tool.py 209-210). Committing B1b before the release stage made the release-commit mutation analysis trustworthy (committed history, not a false-green --head-sha HEAD dry-run).
 - Metrics: 3 producer runs: run1 failed (prose-pin test), run2 blocked (uncovered 209-210), run3 green — each retry fixed a real gap, not waste; release_only run reused once.
 
+### Slice 4: B2 — handoff-4 changed-line gate false-green tripwire
+
+- Objective: Bake B1c's guard into a permanent non-blocking warning: check_changed_line_mutation_coverage.py warns when the analyzed head resolves to HEAD and an eligible mutation-pool file has uncommitted worktree changes (the base..HEAD false-green dry-run).
+- Why this approach: false_green_warning() helper (testable with an injected eligible set, independent of list_eligible globbing a temp repo); threaded into all emitted reports + stderr; non-blocking (the in-range verdict stands).
+- Commits:
+- What changed: scripts/check_changed_line_mutation_coverage.py (false_green_warning + _head_resolves_to_head + uncommitted_pool_changes + _git_lines + _attach_warning + main wiring), tests/quality_gates/test_changed_line_mutation_coverage.py (+7 tests), docs/conventions/implementation-discipline.md (dry-run trap now warns), charness-artifacts/spec/mutation-changed-line-premerge-gate.md (handoff-4 update note).
+- Alternatives rejected:
+- Targeted verification: 20/20 changed-line gate tests pass (13 existing + 7 new: helper fires/silent x3, e2e report+stderr, two defensive _git_lines branches). New mutation-pool lines all test-covered so the gate stays green for the maintainer's eventual push.
+- Test duplication pressure: +7 tests; reuse the existing _seed_repo_with_changed_pool_file/_write_coverage/_run harness (no new scaffolding); each test asserts a distinct branch (fires, 3 silent guards, e2e threading, 2 defensive).
+- Critique: Deferred to the final cross-slice closeout review (handoff-4 is a small, well-tested non-blocking warning, not one of the goal's named critique bundles).
+- Off-goal findings:
+- Lessons carried forward: A warning surfaced in ALL emit paths (early-return + skip + final) via _attach_warning, since the false-green case often produces the 'no eligible changed' early return (the uncommitted changes are exactly what is excluded).
+- Metrics:
+
 ## Context Sources
 
 A fresh session can reconstruct the originating context by following these in

@@ -319,6 +319,79 @@ def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypa
     assert marker.read_text(encoding="utf-8").strip() == _fingerprint(repo, base)
 
 
+def _dirty_pool_file(repo: Path) -> None:
+    """Append an UNCOMMITTED change to the pool file (worktree, not committed)."""
+    foo = repo / "scripts" / "foo.py"
+    foo.write_text(foo.read_text(encoding="utf-8") + "\n\ndef c():\n    return 3\n", encoding="utf-8")
+
+
+def test_false_green_warning_fires_for_uncommitted_pool_change(tmp_path: Path) -> None:
+    # handoff-4: head resolves to HEAD + an eligible pool file has uncommitted
+    # worktree changes -> base..HEAD excludes them -> false-green warning.
+    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    teeth = _load_teeth()
+    warning = teeth.false_green_warning(repo, "HEAD", {"scripts/foo.py"})
+    assert warning is not None
+    assert "FALSE GREEN" in warning
+    assert "scripts/foo.py" in warning
+
+
+def test_false_green_warning_silent_when_worktree_clean(tmp_path: Path) -> None:
+    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)  # committed, clean
+    teeth = _load_teeth()
+    assert teeth.false_green_warning(repo, "HEAD", {"scripts/foo.py"}) is None
+
+
+def test_false_green_warning_silent_when_change_outside_pool(tmp_path: Path) -> None:
+    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    teeth = _load_teeth()
+    # foo.py is dirty but not in the eligible set -> not a pool concern -> silent.
+    assert teeth.false_green_warning(repo, "HEAD", {"scripts/other.py"}) is None
+
+
+def test_false_green_warning_silent_when_head_is_not_HEAD(tmp_path: Path) -> None:
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    teeth = _load_teeth()
+    # Analyzing an explicit earlier ref is not the head==HEAD false-green case.
+    assert teeth.false_green_warning(repo, base, {"scripts/foo.py"}) is None
+
+
+def test_git_lines_empty_outside_git_repo(tmp_path: Path) -> None:
+    # `git` in a non-repo dir exits non-zero -> _git_lines returns [] (the
+    # returncode != 0 branch), so the warning helper stays silent rather than crash.
+    teeth = _load_teeth()
+    assert teeth.uncommitted_pool_changes(tmp_path, {"scripts/foo.py"}) == []
+
+
+def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> None:
+    # OSError (e.g. git absent) -> _git_lines returns [] instead of propagating.
+    teeth = _load_teeth()
+
+    def boom(*_args, **_kwargs):
+        raise OSError("git not found")
+
+    monkeypatch.setattr(teeth.subprocess, "run", boom)
+    assert teeth._git_lines(tmp_path, ["status"]) == []
+    assert teeth._head_resolves_to_head(tmp_path, "some-ref") is False
+
+
+def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> None:
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)  # uncommitted def c, excluded from base..HEAD
+    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])  # in-range lines covered
+    result = _run(repo, base, head, cov)  # --head-sha <HEAD sha> -> resolves to HEAD
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True  # in-range verdict still clean
+    assert "warning" in payload and "FALSE GREEN" in payload["warning"]
+    assert "scripts/foo.py" in payload["warning"]
+    assert "WARNING (changed-line mutation gate)" in result.stderr
+
+
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
     # Covers the run-the-probe branch (the default, no --reuse-coverage): the
     # heavy gate probe + config read are stubbed so the test stays fast while the

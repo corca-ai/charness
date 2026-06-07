@@ -29,7 +29,10 @@ the root instruction file but still apply to Charness maintenance work.
   base->worktree) then the consumer, or run the consumer over a head that
   includes the worktree — a manual `--head-sha HEAD` dry-run **before commit** is
   a false green (HEAD is the parent, so `base..HEAD` excludes your changes and
-  they are judged only post-commit). Also run the cheap doc gates the broad
+  they are judged only post-commit). The consumer now **warns** (non-blocking
+  `warning` field + stderr) when the analyzed head resolves to `HEAD` and an
+  eligible mutation-pool file has uncommitted worktree changes, so this trap is
+  surfaced instead of silently passing (handoff-4). Also run the cheap doc gates the broad
   pytest enforces (e.g. `python3 scripts/check_spec_evidence_durability.py`)
   before paying for the producer run (retro 2026-06-07).
 - Run and record the critique required by

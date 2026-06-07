@@ -5,6 +5,12 @@ Source: debug #320 (`charness-artifacts/debug/2026-06-06-issue-320-mutation-chan
 recurrence #321 (`Mutation test regression on main`, closed per-file 2026-06-06).
 Status: **impl — slice 1 (consumer) + slice 2 (producer, lever A+B) delivered**;
 gate active pending push-time verification (Slice Status below).
+Update (handoff-4, 2026-06-07): the consumer now emits a non-blocking
+false-green `warning` (report field + stderr) when the analyzed head resolves to
+`HEAD` and an eligible mutation-pool file has uncommitted worktree changes — the
+`base..HEAD` range excludes them, so a clean verdict is a false green for those
+changes (`false_green_warning` in `check_changed_line_mutation_coverage.py`,
+covered by `tests/quality_gates/test_changed_line_mutation_coverage.py`).
 Seam class: repeated symptom on one seam (#219 -> #251 -> #260 -> #320 -> #321).
 
 ## Problem (Seam, not the single file)

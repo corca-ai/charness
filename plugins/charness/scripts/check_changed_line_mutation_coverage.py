@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -108,6 +109,12 @@ def _emit(report: dict) -> None:
     print(json.dumps(report, indent=2, sort_keys=True))
 
 
+def _attach_warning(report: dict, warning: str | None) -> dict:
+    if warning:
+        report["warning"] = warning
+    return report
+
+
 def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: str, head_sha: str) -> dict | None:
     """Return a non-blocking skip report when the coverage source cannot be
     trusted for a cheap pre-push verdict, else None.
@@ -160,6 +167,53 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
         write_coverage_fingerprint_marker(repo_root, coverage_json, base_sha)
 
 
+def _git_lines(repo_root: Path, args: list[str]) -> list[str]:
+    try:
+        result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def _head_resolves_to_head(repo_root: Path, head_sha: str) -> bool:
+    if head_sha == "HEAD":
+        return True
+    resolved = _git_lines(repo_root, ["rev-parse", head_sha])
+    head = _git_lines(repo_root, ["rev-parse", "HEAD"])
+    return bool(resolved) and bool(head) and resolved[0] == head[0]
+
+
+def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
+    """Eligible mutation-pool files with uncommitted worktree changes vs HEAD."""
+    changed = set(_git_lines(repo_root, ["diff", "--name-only", "HEAD"]))
+    return sorted(path for path in changed if path in eligible)
+
+
+def false_green_warning(repo_root: Path, head_sha: str, eligible: set[str]) -> str | None:
+    """handoff-4 tripwire: warn when this run is a false-green dry-run.
+
+    When the analyzed head resolves to ``HEAD`` and the worktree has uncommitted
+    mutation-pool changes, the ``base..HEAD`` range EXCLUDES those changes — so a
+    clean verdict is a false green for them (the exact trap recorded in
+    ``charness-artifacts/retro/2026-06-07-producer-rerun-waste.md``: HEAD is the
+    parent of the uncommitted changes, so they are judged only post-commit).
+    Non-blocking — it warns; the verdict for the in-range lines stands.
+    """
+    if not _head_resolves_to_head(repo_root, head_sha):
+        return None
+    uncommitted = uncommitted_pool_changes(repo_root, eligible)
+    if not uncommitted:
+        return None
+    return (
+        f"analyzed head resolves to HEAD but {len(uncommitted)} mutation-pool file(s) have "
+        f"uncommitted worktree changes excluded from base..HEAD ({', '.join(uncommitted)}); "
+        "those changes are NOT analyzed, so a clean changed-line verdict is a FALSE GREEN for "
+        "them. Commit them, then re-run, before trusting this result."
+    )
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -175,21 +229,24 @@ def main() -> int:
         return 0
 
     all_eligible = set(list_eligible(repo_root))
+    fg_warning = false_green_warning(repo_root, head_sha, all_eligible)
+    if fg_warning:
+        sys.stderr.write(f"WARNING (changed-line mutation gate): {fg_warning}\n")
     changed_before_coverage = [p for p in list_changed(repo_root, base_sha, head_sha) if p in all_eligible]
     if not changed_before_coverage:
-        _emit({
+        _emit(_attach_warning({
             "ok": True,
             "blocking": [],
             "base_sha": base_sha,
             "head_sha": head_sha,
             "reason": "no eligible mutation-pool files changed in this range",
-        })
+        }, fg_warning))
         return 0
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
     if skip is not None:
-        _emit(skip)
+        _emit(_attach_warning(skip, fg_warning))
         return 0
     _ensure_coverage(args, repo_root, coverage_json, base_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
@@ -220,7 +277,7 @@ def main() -> int:
             _executed, missing = statement_lines[path]
             blocking_detail[path] = {"changed_and_missing": sorted(changed & missing)}
 
-    _emit({
+    _emit(_attach_warning({
         "ok": not blocking,
         "base_sha": base_sha,
         "head_sha": head_sha,
@@ -235,7 +292,7 @@ def main() -> int:
                 "entry, mutate that exact line, record the failing test, then revert."
             ),
         },
-    })
+    }, fg_warning))
     if blocking:
         missing_targets = sorted(set(blocking) - set(blocking_targets))
         if missing_targets:
