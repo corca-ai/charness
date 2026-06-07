@@ -231,3 +231,19 @@ mutation_testing:
     log: reports/mutation/run.log
   declined: false
 # <<< mutation_testing (charness propose) <<<
+standing_doc_provenance:
+  # Dogfood the provenance-placement policy (#325). standing_docs are the
+  # timeless rule docs; tracking ledgers and per-goal specs / dated
+  # dispositions stay out. See docs/conventions/provenance-placement.md.
+  standing_docs:
+    - docs/conventions/operating-contract.md
+    - docs/conventions/implementation-discipline.md
+    - docs/conventions/authoring-preflight.md
+    - docs/conventions/provenance-placement.md
+    - docs/prescribed-skill-closeout-contract.md
+  tracking_allowlist:
+    - docs/support-tool-followup.md
+    - docs/deferred-decisions.md
+    - docs/product-success-metrics.md
+    - docs/artifact-policy.md
+  inline_allow_marker: provenance-allow

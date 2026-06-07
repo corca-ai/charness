@@ -86,3 +86,10 @@ mutation_testing:
     sample_md: reports/mutation/sample.md
     log: reports/mutation/run.log
   declined: false
+standing_doc_provenance:
+  # Empty standing_docs keeps the provenance-placement check inert (opt-in).
+  # List your standing-rule docs to inherit it; allowlist tracking ledgers.
+  # See references/standing-doc-provenance.md.
+  standing_docs: []
+  tracking_allowlist: []
+  inline_allow_marker: provenance-allow

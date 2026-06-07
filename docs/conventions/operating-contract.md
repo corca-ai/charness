@@ -125,8 +125,7 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   session ran a retro, the closeout handoff write must reflect its
   `Next Improvements` in `## Next Session` (or apply the cheap ones, or file an
   issue/owner for the rest). A lesson that lives only in `recent-lessons` rots —
-  this is a repeat trap caught by the user more than once (portability miss
-  2026-06-07; producer-rerun retro-wiring miss 2026-06-07). At handoff refresh,
+  this is a repeat trap caught by the user more than once. At handoff refresh,
   explicitly check the latest `charness-artifacts/retro/*` `Next Improvements`
   against the new `## Next Session`.
 - If the user correctly points out a missed issue, broken assumption, or

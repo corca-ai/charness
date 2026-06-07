@@ -167,12 +167,12 @@ Dynamic — re-pick at each boundary by dependency and risk.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 policy spec | #325 | spec-first; the policy decides the check | provenance-placement policy doc: standing-vs-tracking classes, load-bearing-`(#NNN)` rule, record-layer link rule | planned |
-| S2 portable check + allowlist | #325 | the policy needs teeth | standing-doc provenance check (enforcement-surface decided here) + standing-vs-tracking allowlist + tests (flag / allowlist / load-bearing) | planned |
-| S3 dogfood sweep | #325 | prove the policy on the census docs | charness standing docs swept; `Close #325` staged | planned |
+| S1 policy spec | #325 | spec-first; the policy decides the check | provenance-placement policy doc: standing-vs-tracking classes, load-bearing-`(#NNN)` rule, record-layer link rule | done |
+| S2 portable check + allowlist | #325 | the policy needs teeth | standing-doc provenance check (enforcement-surface decided here) + standing-vs-tracking allowlist + tests (flag / allowlist / load-bearing) | done |
+| S3 dogfood sweep | #325 | prove the policy on the census docs | charness standing docs swept; `Close #325` staged | done |
 | S4 mutation-testing.md reference | handoff-3 | cheap, independent | pattern + freshness-guard + producer-cost lesson recorded | planned |
 | S5 gate-as-quality-capability + adapter | handoff-3 | operator chose build | the changed-line gate exposed as a `quality` capability + adapter contract; resolution/dogfood proof | planned |
-| S6 closeout-checkpoint broadening | #325-related | root-cause fix | implementation-discipline portability checkpoint broadened to improvements/issues/policies (or split to a sub-issue) | planned |
+| S6 closeout-checkpoint broadening | #325-related | root-cause fix | implementation-discipline portability checkpoint broadened to improvements/issues/policies (or split to a sub-issue) | done |
 
 ## Coordination Cues
 
@@ -208,6 +208,44 @@ this session. Consequential defaults and their resolutions:
   (`axis: enforcement-surface`); not a blocker to activation.
 
 ## Slice Log
+
+- **S1 (policy spec) — done.** Spec
+  `charness-artifacts/spec/issue-325-provenance-placement-policy.md` +
+  policy doc `docs/conventions/provenance-placement.md`.
+  `axis: enforcement-surface` **resolved → a `quality` capability** (config-driven
+  via the quality adapter, the seam consuming repos already inherit; rejected
+  repo-root linter = charness-local, and authoring-preflight = skill-package-only
+  scope). Routing: `spec` (per coordination cues).
+- **S2 (portable check + allowlist + tests) — done.**
+  `skills/public/quality/scripts/standing_doc_provenance_lib.py` +
+  `check_standing_doc_provenance.py` (reuse `skill_text_quality_lib`
+  ISSUE_ANCHOR_RE/DATED_INCIDENT_RE + ISO-date + masking of inline-code / link
+  targets / slash-paths so sanctioned placements don't over-fire). New
+  `standing_doc_provenance` adapter block (`quality_policy_defaults.py` +
+  `quality_adapter_lib.py`), inert default in `adapter.example.yaml`, contract
+  doc, reference `standing-doc-provenance.md`, attention-state declaration.
+  10 pytest cases (flag / allowlist / load-bearing / inert / sanctioned / stacked
+  link-text / invalid-adapter). Routing: `quality`/`create-skill` surface.
+- **S3 (dogfood sweep + stage Close #325) — done.** charness `standing_docs` =
+  the 4 issue-named contract docs + `provenance-placement.md`; tracking
+  allowlist = the 4 ledgers. Probe resolved: `handoff-chunked-routing.md`
+  (per-goal spec) + `ai-ml-engineering-patterns.md` (dated disposition record)
+  are NOT standing-rule → excluded. Swept 4 docs (diary noise → record-layer
+  links / terse refs; load-bearing grandfather dates → backticked literals).
+  Check now returns 0 on the 5 configured docs (AC5). Routing: `impl`.
+- **S6 (closeout-checkpoint broadening) — done.** `implementation-discipline.md`
+  portability checkpoint now fires for two scopes (new mechanism + improvement /
+  issue / policy), not only code mechanisms; provenance moved to a retro link.
+  No sub-issue split (contained single-bullet rewrite). Routing: `impl`.
+- **#325 bundle verification — done.** Broad `run_slice_closeout.py
+  --verification-lock` green (broad pytest + ruff + validate_skills +
+  validate_skill_ergonomics + check-markdown + doc-links + mirror-drift +
+  ownership-overlap + attention-state-visibility). Bounded fresh-eye `critique`:
+  `charness-artifacts/critique/2026-06-07-issue-325-provenance-policy.md`
+  (ship; one exit-code doc nit found + fixed; over/under-fire + inheritability
+  seeds probed and cleared). Cautilus: `next_action: none` (ask-before-run,
+  additive `quality` reference change) → deterministic validation owned closeout;
+  no `cautilus evaluate` invoked per the on-demand contract.
 
 ## Context Sources
 

@@ -2,9 +2,9 @@
 
 Know the deterministic constraint *before* you author into a gated surface, so an
 existing gate (or a fresh-eye reviewer) does not catch an avoidable rework cycle
-after the fact. This reference gathers the three traps from the #302–#305
-robustness goal (#308): banned attention-state vocabulary, single-file length
-headroom, and string-matching edge cases. It adds no new gate and no edit-time
+after the fact. This reference gathers the three robustness traps: banned
+attention-state vocabulary, single-file length headroom, and string-matching
+edge cases (#308). It adds no new gate and no edit-time
 hook — the gates already exist; this is the discoverable list of what they check.
 
 Read this alongside the headroom and skill-surface preflight bullets in

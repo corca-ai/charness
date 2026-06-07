@@ -64,6 +64,7 @@ Quality-specific fields:
 - `review_commands`
 - `security_commands`
 - `mutation_testing`
+- `standing_doc_provenance`
 
 Use explicit empty lists to record an intentional opt-out.
 Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
@@ -395,6 +396,29 @@ absent block is treated identically to the empty-commands block — both surface
 as `missing` to the propose probe. Unknown top-level or nested sub-keys land in
 warnings (precedent: silent-ignore in `coverage_floor_policy`; here surfaced as
 a warning so typo drift is visible).
+
+`standing_doc_provenance` declares the provenance-placement check
+(`check_standing_doc_provenance.py`). It enforces that standing/contract-rule
+docs state the timeless rule and keep provenance terse — at most one
+load-bearing trailing `(#NNN)`, never stacked dates / incident-names in rule
+prose. The check generalizes the skill-package anchor gate to standing docs. See
+`standing-doc-provenance.md` for the policy and the field contract.
+
+Fields:
+
+- `standing_docs` — globs of the standing-rule docs to scan (default `[]`). An
+  empty list makes the check **inert** (stack-neutral, opted out), so a consuming
+  repo opts in by listing its rule docs.
+- `tracking_allowlist` — globs excluded even when a `standing_docs` glob matches
+  them (default `[]`). Tracking ledgers whose issue refs are load-bearing
+  (follow-up / deferred-decision / metrics docs) belong here.
+- `inline_allow_marker` — per-line escape-hatch substring (default
+  `"provenance-allow"`). A rule line containing it is skipped, so a genuinely
+  load-bearing dated fact can stay with a visible opt-out.
+
+A scanned line is flagged when it carries an ISO date, two or more issue refs,
+or a dated-incident phrase; a single trailing `(#NNN)` with no date never flags.
+Fenced code blocks are skipped. Unknown sub-keys land in warnings.
 
 ## Design Rules
 

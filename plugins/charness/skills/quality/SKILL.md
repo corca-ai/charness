@@ -190,6 +190,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/security-uv.md`
 - `references/skill-quality.md`
 - `references/skill-ergonomics.md`
+- `references/standing-doc-provenance.md`
 - `references/standing-gate-verbosity.md`
 - `references/startup-probes.md`
 - `references/testability-and-selection.md`

@@ -95,6 +95,18 @@ MUTATION_TESTING_COMMAND_SLOTS = frozenset(DEFAULT_MUTATION_TESTING["commands"].
 MUTATION_TESTING_AUTO_ISSUE_KEYS = frozenset(DEFAULT_MUTATION_TESTING["auto_issue"].keys())
 MUTATION_TESTING_REPORT_PATH_KEYS = frozenset(DEFAULT_MUTATION_TESTING["report_paths"].keys())
 
+# DEFAULT_STANDING_DOC_PROVENANCE is opt-in/inert: empty `standing_docs` makes
+# check_standing_doc_provenance.py a no-op so the portable default stays
+# stack-neutral (precedent: empty mutation_testing.commands). A consuming repo
+# opts in by listing its standing-rule docs; the provenance-placement policy
+# lives in docs/conventions/provenance-placement.md.
+DEFAULT_STANDING_DOC_PROVENANCE: dict[str, Any] = {
+    "standing_docs": [],
+    "tracking_allowlist": [],
+    "inline_allow_marker": "provenance-allow",
+}
+STANDING_DOC_PROVENANCE_KNOWN_KEYS = frozenset(DEFAULT_STANDING_DOC_PROVENANCE.keys())
+
 
 def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
     return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
@@ -350,6 +362,47 @@ def validate_mutation_testing(
             warnings.append(f"unknown mutation_testing sub-key: {key}")
             continue
         _apply_mutation_top_key(key, raw, validated, errors, warnings)
+    return validated
+
+
+def _standing_doc_provenance_defaults() -> dict[str, Any]:
+    return {
+        "standing_docs": list(DEFAULT_STANDING_DOC_PROVENANCE["standing_docs"]),
+        "tracking_allowlist": list(DEFAULT_STANDING_DOC_PROVENANCE["tracking_allowlist"]),
+        "inline_allow_marker": DEFAULT_STANDING_DOC_PROVENANCE["inline_allow_marker"],
+    }
+
+
+def validate_standing_doc_provenance(
+    value: Any, errors: list[str], warnings: list[str]
+) -> dict[str, Any] | None:
+    """Validate the standing_doc_provenance adapter block.
+
+    Returns None when absent; defaults are supplied by infer_quality_defaults.
+    `standing_docs` / `tracking_allowlist` are glob lists; `inline_allow_marker`
+    is the per-line escape-hatch substring. Unknown sub-keys land in warnings so
+    typo drift is visible (precedent: validate_mutation_testing).
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("standing_doc_provenance must be a mapping")
+        return None
+    validated = _standing_doc_provenance_defaults()
+    for key, raw in value.items():
+        if key not in STANDING_DOC_PROVENANCE_KNOWN_KEYS:
+            warnings.append(f"unknown standing_doc_provenance sub-key: {key}")
+            continue
+        if key in {"standing_docs", "tracking_allowlist"}:
+            if not (isinstance(raw, list) and all(isinstance(entry, str) for entry in raw)):
+                errors.append(f"standing_doc_provenance.{key} must be a list of strings")
+                continue
+            validated[key] = list(raw)
+        elif key == "inline_allow_marker":
+            if not isinstance(raw, str) or not raw:
+                errors.append("standing_doc_provenance.inline_allow_marker must be a non-empty string")
+                continue
+            validated[key] = raw
     return validated
 
 

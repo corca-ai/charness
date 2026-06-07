@@ -18,10 +18,12 @@ from scripts.quality_policy_defaults import (
     DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
     DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+    DEFAULT_STANDING_DOC_PROVENANCE,
     validate_coverage_floor_policy,
     validate_mutation_testing,
     validate_prompt_asset_policy,
     validate_skill_ergonomics_gate_rules,
+    validate_standing_doc_provenance,
 )
 
 STRING_FIELDS = (
@@ -176,6 +178,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "review_commands": [],
         "security_commands": [],
         "mutation_testing": copy.deepcopy(DEFAULT_MUTATION_TESTING),
+        "standing_doc_provenance": copy.deepcopy(DEFAULT_STANDING_DOC_PROVENANCE),
     }
 
 
@@ -282,6 +285,14 @@ def _apply_mutation_testing(
         validated["mutation_testing"] = block
 
 
+def _apply_standing_doc_provenance(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    block = validate_standing_doc_provenance(data.get("standing_doc_provenance"), errors, warnings)
+    if block is not None:
+        validated["standing_doc_provenance"] = block
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -300,6 +311,7 @@ def validate_quality_adapter_data(
     _apply_policy_fields(data, validated, errors)
     _apply_list_fields(data, validated, errors)
     _apply_mutation_testing(data, validated, errors, warnings)
+    _apply_standing_doc_provenance(data, validated, errors, warnings)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

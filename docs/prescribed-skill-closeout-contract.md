@@ -1,8 +1,8 @@
 # Prescribed Skill Closeout Contract
 
 This document is the implementation contract for the
-[#230 + #229](https://github.com/corca-ai/charness/issues/230) self-substitution
-pattern fix. It owns the cross-cutting design that
+[self-substitution pattern fix](https://github.com/corca-ai/charness/issues/230)
+(#230). It owns the cross-cutting design that
 [the achieve goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md)
 points at, before any of the three sibling closeout surfaces (`achieve` /
 `issue` / `release`) drift on their own.
@@ -85,7 +85,7 @@ wrapper supplies the contract.
 
 Presence is necessary but not sufficient: a closeout could cite any
 pre-existing artifact in the repo and pass the presence check (the #233 F1
-hole — demonstrated live by pointing `Retro:` at a 2026-04-10 retro from an
+hole — demonstrated live by pointing `Retro:` at a pre-existing retro from an
 unrelated goal). The helper exposes a reusable
 `evidence_binds_to_context(path, *, tokens)` predicate: an evidence file
 binds when its basename or content contains a distinctive context token. The
@@ -105,7 +105,7 @@ still calls the same presence-only `check()` today.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ 2026-05-30 only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the routing/gather/release/issue **coordination floors** (separate, presence-only — gather/release `Created` ≥ 2026-05-31; issue `Created` ≥ 2026-06-02; phase routing `Created` ≥ 2026-06-04; see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Routing:`/`Gather:`/`Release:`/`Issue closeout:` step or `n/a — <reason>` opt-out |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ `2026-05-30` only** — `disposition_review` (#253; a bound fresh-eye disposition-review artifact); plus the routing/gather/release/issue **coordination floors** (separate, presence-only — gather/release `Created` ≥ `2026-05-31`; issue `Created` ≥ `2026-06-02`; phase routing `Created` ≥ `2026-06-04`; see *Coordination Floors* below) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only with `host-blocked-subagent`); coordination floors via a `Routing:`/`Gather:`/`Release:`/`Issue closeout:` step or `n/a — <reason>` opt-out |
 | `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
@@ -198,8 +198,8 @@ detection is scoped to `## Coordination Cues` so a goal body that merely
 dates are floor-specific: gather/release apply to goals Created ≥ `2026-05-31`,
 issue closeout applies to goals Created ≥ `2026-06-02`, and phase routing
 applies to goals Created ≥ `2026-06-04`. The gather/release floors landed
-2026-05-30, but several same-day goals predate them, so the
-2026-05-31 cutoff grandfathers every in-flight goal;
+`2026-05-30`, but several same-day goals predate them, so the
+`2026-05-31` cutoff grandfathers every in-flight goal;
 missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
 `find-skills` owns *which* skill answers a boundary (never an inline phase→skill
 map). The bidirectional surface where a standalone `/issue` or `/debug` reads the

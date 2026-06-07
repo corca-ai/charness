@@ -34,7 +34,8 @@ the root instruction file but still apply to Charness maintenance work.
   eligible mutation-pool file has uncommitted worktree changes, so this trap is
   surfaced instead of silently passing (handoff-4). Also run the cheap doc gates the broad
   pytest enforces (e.g. `python3 scripts/check_spec_evidence_durability.py`)
-  before paying for the producer run (retro 2026-06-07).
+  before paying for the producer run (see the
+  [producer-rerun retro](../../charness-artifacts/retro/2026-06-07-producer-rerun-waste.md)).
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.
@@ -92,19 +93,27 @@ the root instruction file but still apply to Charness maintenance work.
 ## Generated And Installed Surfaces
 
 - **Portability classification is a closeout checkpoint, not an optional
-  nicety (retro 2026-06-07).** When a slice adds a *new reusable mechanism* — a
-  repo-root `scripts/*.py`, a new gate, or a generalizable pattern/doctrine
-  (an invariant, failure mode, or cost lesson) — classify it `host-local` vs
-  `skill-capability` before closeout and state the call. In this harness repo do
-  **not** default to repo-local: if the mechanism or its doctrine generalizes,
-  route it to the owning public skill or reference (at minimum a `references/*.md`
-  doctrine line, or a packaging/[AGENTS.md](../../AGENTS.md) absorption) so
-  adopting repos inherit it. A soft "inspect whether a skill should absorb the
-  lesson" version of this rule already existed and still did not fire during a
-  defect-repair slice — the defect-repair frame keeps altitude low, so make the
-  classification explicit rather than remembered. A deterministic nudge (flagging
-  a new repo-root capability script that belongs in a skill) is a tracked
-  follow-up: `follow-up:portability-classification-tripwire`.
+  nicety.** It fires for two scopes, not one:
+  - a *new reusable mechanism* — a repo-root `scripts/*.py`, a new gate, or a
+    generalizable pattern/doctrine (an invariant, failure mode, or cost lesson);
+  - an *improvement, issue, or policy* whose resolution should be inheritable by
+    charness-consuming repos — a new operating rule, a contract, a lint/check, or
+    a lesson that other repos would also want.
+
+  For either scope, classify it `host-local` vs `skill-capability` before
+  closeout and state the call. In this harness repo do **not** default to
+  repo-local: if the mechanism, policy, or doctrine generalizes, route it to the
+  owning public skill or reference (at minimum a `references/*.md` doctrine line,
+  a `quality`/skill capability, or a packaging/[AGENTS.md](../../AGENTS.md)
+  absorption) so adopting repos inherit it, not just charness. A soft "inspect
+  whether a skill should absorb the lesson" version of this rule already existed
+  and still did not fire during a defect-repair slice — the low-altitude framing
+  of defect, improvement, or issue work keeps the call out of view — so make the
+  classification explicit rather than remembered. The narrower code-mechanism-only
+  reading is exactly why a portable policy nearly shipped repo-local; see the
+  [portability-miss retro](../../charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md).
+  A deterministic nudge (flagging a new repo-root capability script that belongs in
+  a skill) is a tracked follow-up: `follow-up:portability-classification-tripwire`.
 - If a public skill needs repeated bootstrap, adapter resolution, artifact
   naming, or recovery behavior, ship a helper script instead of leaving it as
   prose-only guidance.

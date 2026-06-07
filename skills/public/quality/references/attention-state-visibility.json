@@ -26,6 +26,12 @@
       "evidence_terms": ["skipped_artifacts"],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
     },
+    "skills/public/quality/scripts/check_standing_doc_provenance.py": {
+      "states": ["skipped"],
+      "visibility": ["hard_failure_or_blocker", "operator_summary"],
+      "evidence_terms": ["skipped", "inert"],
+      "rationale": "The only `skipped` string is the adapter-invalid stderr message, which exits 1 (a hard failure/blocker, not an exit-0 pass). The command's genuine exit-0 attention state is `inert` (opt-out: empty standing_doc_provenance.standing_docs), surfaced verbatim in the plain summary and the JSON `inert` field, so an opted-out repo cannot read as a silent clean pass."
+    },
     "scripts/cautilus_adapter_lib.py": {
       "states": ["disabled"],
       "visibility": ["structured_warning", "terminal_payload"],
