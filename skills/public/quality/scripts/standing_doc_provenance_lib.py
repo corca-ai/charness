@@ -26,6 +26,7 @@ if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
 import skill_text_quality_lib as tqlib  # noqa: E402
+from git_inventory_lib import visible_repo_files  # noqa: E402
 
 ISO_DATE_RE = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
@@ -61,15 +62,26 @@ def _resolve_paths(repo_root: Path, standing_docs: list[str], tracking_allowlist
     Allowlist entries are matched both as globs and as posix-relative prefixes so
     a consuming repo can allowlist a single file or a whole tree.
     """
+    # Gitignore-aware file source: never check provenance of an ignored/untracked
+    # doc. `visible_repo_files` returns the git-visible set, or None when git
+    # listing is unavailable (e.g. a non-git fixture) — in which case the raw glob
+    # stands. This keeps the config-driven glob from becoming a blind repo-wide
+    # scan (inventory-gitignore-scan-hygiene).
+    visible = visible_repo_files(repo_root, require_git=False, context="standing-doc provenance scan")
     allowed: set[Path] = set()
     for pattern in tracking_allowlist:
-        allowed.update(p.resolve() for p in repo_root.glob(pattern))
+        for candidate in repo_root.glob(pattern):
+            resolved_candidate = candidate.resolve()
+            if visible is None or resolved_candidate in visible:
+                allowed.add(resolved_candidate)
     selected: dict[Path, None] = {}
     for pattern in standing_docs:
         for path in sorted(repo_root.glob(pattern)):
             if not path.is_file():
                 continue
             resolved = path.resolve()
+            if visible is not None and resolved not in visible:
+                continue
             if resolved in allowed:
                 continue
             rel = resolved.relative_to(repo_root.resolve()).as_posix()

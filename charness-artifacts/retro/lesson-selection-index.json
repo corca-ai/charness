@@ -11,7 +11,7 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 147,
+  "source_artifact_count": 148,
   "candidate_count": 870,
   "top_candidates": [
     {
@@ -247,7 +247,7 @@
     {
       "candidate_id": "next_improvement:d6705371df6a",
       "kind": "next_improvement",
-      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: candidate fold into the existing `issue #328` (authoring-preflight prose-pin pre-check) scope; decide there vs a new issue.",
+      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: scope-extension comment posted to the existing `issue #328` (authoring-preflight prose-pin pre-check) recording these additional gates on the destination, so a future build covers the whole set.",
       "normalized_key": "capability extend check skill surface preflight py or a sibling to run the portable",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
@@ -579,7 +579,7 @@
     {
       "candidate_id": "next_improvement:d6705371df6a",
       "kind": "next_improvement",
-      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: candidate fold into the existing `issue #328` (authoring-preflight prose-pin pre-check) scope; decide there vs a new issue.",
+      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: scope-extension comment posted to the existing `issue #328` (authoring-preflight prose-pin pre-check) recording these additional gates on the destination, so a future build covers the whole set.",
       "normalized_key": "capability extend check skill surface preflight py or a sibling to run the portable",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
