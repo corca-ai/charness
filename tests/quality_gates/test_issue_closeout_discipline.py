@@ -43,9 +43,14 @@ def test_issue_shaping_requires_external_source_identity() -> None:
 
     assert "source identity" in shaping
     assert "Slack thread" in shaping
+    assert "preserve the original user context" in shaping
     assert "External-Source Identity" in closeout
     assert "gathered" in closeout
-    assert "external source identity when filed from a Slack thread" in skill
+    # #324: the Source block must mark an external origin and require one
+    # auditable preservation form (Source text / Re-read obligation / degraded).
+    assert "Source origin:" in closeout
+    assert "Re-read obligation:" in closeout
+    assert "preserved original context" in skill
 
 
 def test_issue_skill_guardrails_block_silent_retarget_and_chat_memory_closeout() -> None:

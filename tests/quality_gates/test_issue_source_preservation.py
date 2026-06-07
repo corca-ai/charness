@@ -108,6 +108,15 @@ def test_require_external_flags_missing_origin_marker(tmp_path: Path) -> None:
     assert payload["external_marker_missing"] is True
 
 
+def test_check_source_preservation_missing_body_file(tmp_path: Path) -> None:
+    missing = tmp_path / "does-not-exist.md"
+    result = run_script(SCRIPT, "check-source-preservation", "--body-file", str(missing))
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "body file not found" in payload["error"]
+
+
 def test_degraded_reason_satisfies_contract(tmp_path: Path) -> None:
     body = (
         "## Source\n\n"

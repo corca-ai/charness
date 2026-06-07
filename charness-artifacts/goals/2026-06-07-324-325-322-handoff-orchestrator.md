@@ -279,6 +279,20 @@ contract versus a reference-only update.
 - Lessons carried forward: Issue numbers must NOT appear in standing skill package prose/refs/fixtures — validate_skill_ergonomics (issue_anchor_in_core / portable_package_issue_anchor) already enforces #325's principle; provenance belongs in commit/goal/dogfood tracking docs. Inline code spans must not wrap across source lines (check-markdown).
 - Metrics:
 
+### Slice 3: B1c — #324 release stage (v0.26.0, stage-only)
+
+- Objective: Stage the v0.26.0 release surface (version bump + generated manifests + update_instructions + release record) carrying Close #324 + feature closeout ledger; prove locally; stop before push/tag.
+- Why this approach: Minor bump (new check-source-preservation subcommand + new maintained closeout behavior, additive, no migration). Manual stage-only commit (publish helper pushes); B1b committed separately so the release-stage mutation analysis sees the #324 Python as committed history, not an uncommitted false-green dry-run.
+- Commits:
+- What changed: packaging/charness.json + generated plugin manifests + marketplace (0.25.0->0.26.0), .agents/release-adapter.yaml update_instructions (0.26.0 + #324, 0.25.0 demoted to carried-forward), charness-artifacts/release/latest.md (staged record, explicit non-claims), test_issue_closeout_discipline.py prose-pin fix + test_issue_source_preservation.py missing-body-file branch test.
+- Alternatives rejected:
+- Targeted verification: Broad pytest 2399 passed/4 skipped (-m 'not release_only') via the mutation-coverage producer; release_only 26 passed; changed-line mutation coverage ACTIVE+GREEN base->worktree (base b60d5c7c -> #324 Python in 7dcfb43d; ok:true, blocking:[]); commit message validated via validate-closeout-draft (draft_verified, feature ledger complete, Close #324, Critique bound).
+- Test duplication pressure: +2 tests this slice: one prose-pin update (replaces a brittle exact-string SKILL.md pin with the new contract phrasing + Source origin/Re-read obligation asserts) and one error-branch test (missing body file) that the changed-line mutation gate required; no duplication.
+- Critique: Rides B1b's bounded fresh-eye critique (charness-artifacts/critique/2026-06-07-324-source-preservation.md) — the release stage adds no new logic, only the version surface; a short release-hygiene critique scope (version drift none, generated surfaces synced, publish boundary = stage-only, operator risk = staged-to-publish).
+- Off-goal findings:
+- Lessons carried forward: Broad pytest at the bundle boundary caught a stale SKILL.md prose-pin (test_issue_closeout_discipline) that the skip-broad commit gate missed; the changed-line mutation gate caught an uncovered error branch (issue_tool.py 209-210). Committing B1b before the release stage made the release-commit mutation analysis trustworthy (committed history, not a false-green --head-sha HEAD dry-run).
+- Metrics: 3 producer runs: run1 failed (prose-pin test), run2 blocked (uncovered 209-210), run3 green — each retry fixed a real gap, not waste; release_only run reused once.
+
 ## Context Sources
 
 A fresh session can reconstruct the originating context by following these in
