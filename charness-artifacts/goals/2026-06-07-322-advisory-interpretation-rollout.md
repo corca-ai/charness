@@ -356,3 +356,10 @@ Retro dispositions (full detail in
    into the warn band) — disposition: already covered by the existing
    recent-lessons headroom lesson; no new entry needed. The rollout dogfooded the
    length contract and resolved the two warn-band hits in-flight.
+4. **Boundary-bypass ratchet block (biggest rework cycle)** — a new test file used
+   subprocess calls and was blocked at commit; rewritten in-process. Disposition:
+   reinforces the existing #308-class authoring-preflight repeat-trap (read the
+   gated-surface constraint before authoring); no new tooling — the gap was
+   discipline. Recorded as the concrete instance in the retro.
+5. **Commit-exit misread** (read piped `tail`'s exit, not `git commit`'s) —
+   disposition: noted, no action; too minor for a standing lesson.

@@ -42,6 +42,21 @@ skipped; fresh-eye critique returned no blockers.
   the change; appending a 26-line constant pushed them into the warn band. The
   recent-lessons "check headroom before a large addition" applies to constants
   too, not just functions.
+- **Boundary-bypass ratchet block — a full test rewrite (the biggest rework
+  cycle).** The new `test_python_length_interpretation.py` was first written with
+  `run_script(...)` subprocess calls. The pre-commit `check_boundary_bypass_ratchet`
+  blocked the commit (`no_increase` policy; one new candidate key) and I rewrote
+  the whole file to drive `main()` in-process (importlib + sys.argv +
+  redirect_stdout). The sibling per-surface tests I had already read carry an
+  explicit "in-process boundary conversion (testability-dsl-initiative)" comment —
+  the convention was visible, but I authored a NEW test file against a gated
+  surface without checking the constraint first. This is the same #308-class
+  authoring-preflight trap already in recent-lessons (author into a gated surface
+  before reading the constraint). Existing test files kept subprocess because
+  their boundary was already in the baseline; only a NEW file trips the ratchet.
+- **Commit-exit misread (minor).** `git commit ... | tail` then `$?` read tail's
+  exit (0), masking that the pre-commit hook had aborted the commit. Capture the
+  pipeline head's status (or run without a pipe) when a hook can block.
 
 ## Improvement dispositions
 
@@ -58,6 +73,18 @@ skipped; fresh-eye critique returned no blockers.
    comment plus this retro lesson cover it for now.
 3. **No new repeat-trap entry needed** beyond the existing near-limit-append and
    authoring-preflight lessons already in `recent-lessons.md`.
+4. **In-process-first for new tests of repo scripts.** A NEW test file exercising
+   a repo script should drive `main()` in-process (importlib + `sys.argv` +
+   `redirect_stdout`), not spawn a subprocess, because `check_boundary_bypass_ratchet`
+   blocks a new subprocess candidate key. **Disposition: reinforces the existing
+   #308-class authoring-preflight repeat-trap** (read the gated surface's
+   constraint before authoring) rather than a new lesson; the boundary-bypass
+   ratchet + sibling-test convention already encode it. No new tooling — the gap
+   was discipline (I had read the convention), so the durable fix is the
+   preflight habit, not another check. Recorded here as the concrete instance.
+5. **Commit-exit misread (process nit).** **Disposition: noted, no action** —
+   capture the blocking command's own exit status, don't read a piped `tail`'s.
+   Too minor for a standing lesson.
 
 ## Proof
 
