@@ -291,13 +291,11 @@ read-only in the shared parent worktree) run at the bundle boundary. Result:
 
 ## Off-Goal Findings
 
-- **Meta-validator for the contract (deferred capability, not filed).** A gate
-  enumerating the inference-layer surfaces and asserting each emits the 4-field
-  declaration AND a paired consumer line would prevent a future half-contract
-  surface. Not built and not filed as a sub-issue: the keep-per-surface decision
-  did not require it and scope did not clearly grow. Surfaced to the operator —
-  file as a sub-issue only if they want it tracked (the goal's "split if scope
-  grows" frame applies if/when it becomes spec-worthy).
+- **Meta-validator for the contract — FILED as #330** (https://github.com/corca-ai/charness/issues/330).
+  A gate enumerating the inference-layer surfaces and asserting each emits the
+  4-field declaration AND a paired consumer line would prevent a future
+  half-contract surface. Not built in #322 (keep-per-surface decision did not
+  require it); filed as a follow-up sub-issue at operator request.
 - **Coverage "brush" trend** (named in S6's surface line) was not separately
   instrumented beyond `render_runtime_summary.py` runtime hot spots; recorded as
   a deferred surface, not a regression.
