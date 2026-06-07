@@ -1,6 +1,6 @@
 # Achieve Goal: Make the commit-boundary structural sweep non-discretionary (#332)
 
-Status: draft
+Status: active
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md`
 
@@ -14,8 +14,24 @@ asked.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md`.
+- Current slice: Slice 1 (root-cause debug) COMPLETE; Slice 2 (fix) next.
+- Next action: Slice 2 — run the cheap `staged_commit_gate_plan` structural
+  subset FIRST inside `run_slice_closeout.py`'s full path (fail-fast, reusing the
+  predict-commit plan as single source of truth), with a Slice-2 fix-boundary
+  fresh-eye critique; then Slice 3 regression test, Slice 4 closeout.
+- Slice 1 root cause (proven, falsifiable): both #329 gates
+  (`validate_skill_ergonomics`, `validate_attention_state_visibility`) are fully
+  wired into BOTH the cheap predict-commit plan and the full-closeout verify
+  phase, and BOTH predate #329 (`a09e6d95` 2026-06-06, `86a905d7` 2026-05-31 vs
+  #329 `7f0231e3` 2026-06-07). They reached the slow boundary not from a coverage
+  or wiring gap (both FALSIFIED) but because the cheap sweep only *runs* on
+  `git commit` / `--predict-commit` / full closeout — and at the #329 slice
+  boundary the agent ran a hand-picked manual subset that invoked none. The full
+  closeout also runs surface-match + cautilus BEFORE the verify-phase structural
+  gates, so even there the cheap verdict is not produced first. Artifact:
+  `charness-artifacts/debug/2026-06-07-332-commit-boundary-sweep-latency.md`
+  (+ `latest.md`). Staged-index repro: `--predict-commit` blocks a fresh
+  undeclared-`skipped` `scripts/*.py` at rc=1 in 0.8s.
 - Verification cadence: cheap deterministic checks at commit boundaries
   (`run_slice_closeout.py --predict-commit`); higher-cost or fresh-eye proof at
   slice boundaries; final broad pytest + full `run_slice_closeout.py` at closeout.
@@ -169,7 +185,7 @@ After activation completes, the user can verify directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Root-cause (debug) why the #329-class regressions reached the slow broad gate despite active pre-commit + pre-push hooks | A bug-class issue gets a falsifiable root cause before any fix; coverage largely exists already, so a wrong fix is the main risk | `charness-artifacts/debug/` artifact that (a) pins each #329 instance to its owning gate, (b) proves via `git log -p`/reflog whether the commit ran pre-commit at all (`--no-verify`/hook-not-run) or the cheap subset was skipped for the 7-min broad run, (c) records the *falsified* "post-#329 wiring" hypothesis, + a failing repro | planned |
+| 1 | Root-cause (debug) why the #329-class regressions reached the slow broad gate despite active pre-commit + pre-push hooks | A bug-class issue gets a falsifiable root cause before any fix; coverage largely exists already, so a wrong fix is the main risk | `charness-artifacts/debug/` artifact that (a) pins each #329 instance to its owning gate, (b) proves via `git log -p`/reflog whether the commit ran pre-commit at all (`--no-verify`/hook-not-run) or the cheap subset was skipped for the 7-min broad run, (c) records the *falsified* "post-#329 wiring" hypothesis, + a failing repro | done — `2026-06-07-332-commit-boundary-sweep-latency.md`: each gate pinned to its surface, "post-#329 wiring" + "pure coverage gap" FALSIFIED by git timing + cheap-plan repro (rc=1, 0.8s); root cause = latency/ordering + slice-boundary discretion |
 | 2 | Close the confirmed gap at the pre-commit boundary (likely: run the cheap structural subset first / non-skippably, or surface a bypass) — extend coverage/install only if Slice 1 proves it | Single source of truth; presence/structural only; do not rebuild existing affordances | `staged_commit_gate_plan` change blocking the reproduced violation at the cheap boundary; no duplicate of `validate_maintainer_setup` | planned |
 | 3 | Add a regression test that pins the blocked-at-commit behavior | Memory-only reminders failed across three sessions; convert to teeth | `tests/quality_gates/...` test green on fix, red without it (staged-index based) | planned |
 | 4 | Closeout: doc sync, full gate, stage `Close #332`, retro + disposition review | Make the change auditable and self-applying next run | full `run_slice_closeout.py` PASS; `Close #332` staged; retro + disposition-review artifacts | planned |
@@ -194,10 +210,42 @@ boundary.
   on the Slice 4 commit), validated with the `issue` skill's
   `validate-closeout-draft --carrier direct-commit --commit-message-file ...`
   rehearsal before commit.
+- **RCA ledger (planned)**: record ONE converted event at Slice 4 closeout
+  (`--source debug --event-kind repeated_correction --converted --durable-kind
+  test --class-key commit-boundary-structural-sweep-discretionary --caught-by
+  human --ref #332`); the recurrence-preventing durable artifact is the Slice 3
+  regression test. Not recorded at Slice 1 (work unit not yet closed/converted).
 
 ## Slice Log
 
-_No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+- **Slice 1 (root-cause debug), 2026-06-07.** Routed via `find-skills` → `debug`.
+  - Pinned each #329 gate to its owning surface: `validate_skill_ergonomics`
+    (`skill-packages`, skill-package-only), `validate_attention_state_visibility`
+    (`repo-python`, `scripts/**`+`skills/**` `*.py`). Both run in BOTH the cheap
+    predict-commit plan AND the full-closeout verify phase (verify cmds #7/#12,
+    before broad pytest — not broad-pytest-only).
+  - FALSIFIED "post-#329 wiring": ergonomics `a09e6d95` (2026-06-06) and
+    attention-state `86a905d7` (2026-05-31) both predate #329 `7f0231e3`
+    (2026-06-07). FALSIFIED "pure coverage gap": the cheap plan blocks the
+    violation. `--no-verify`/inactive-hook ruled out (`core.hooksPath`=.githooks
+    active; pre-push backstop; #329 was caught pre-commit at the agent's
+    voluntary full-closeout, never escaped).
+  - Root cause: latency/ordering + slice-boundary discretion — the cheap sweep
+    only *runs* on `git commit` / `--predict-commit` / full closeout, and at the
+    #329 slice boundary the agent ran a hand-picked manual subset that invoked
+    none; the full closeout also runs surface-match + cautilus before the
+    verify-phase structural gates, so the cheap verdict is not produced first.
+  - Repro (staged index, NOT `base..HEAD`): a fresh undeclared-`skipped`
+    `scripts/*.py`, staged, blocked by `--predict-commit` at rc=1 in 0.8s; tree
+    cleaned. Artifact: `charness-artifacts/debug/2026-06-07-332-commit-boundary-sweep-latency.md`
+    (+ `latest.md`), `validate_debug_artifact` green.
+  - Slice 2 fix shape (proven, for fresh-eye critique at the fix boundary):
+    prepend the cheap `staged_commit_gate_plan` structural subset to
+    `run_slice_closeout.py`'s full path, fail-fast, reusing the predict-commit
+    plan — single source of truth, no new judgment, no parallel mechanism.
+    Follow-up `follow-up:slice-2-path-resolution-parity`: the cheap path keys on
+    the staged index, the full path on the working-tree diff; feed the cheap
+    subset the closeout's resolved changed paths.
 
 ## Context Sources
 
