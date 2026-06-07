@@ -1,6 +1,6 @@
 # Achieve Goal: Orchestrator: #324 (release-first) + #325 + #322 + handoff 2-4
 
-Status: draft
+Status: active
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-324-325-322-handoff-orchestrator.md`
 
