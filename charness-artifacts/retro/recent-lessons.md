@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`; sources: 10)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
 - **A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 - **A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → "blocking: []" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 - **Authoring-preflight skip for new skill-package files.** I authored new `skills/public/quality/scripts/*.py` + `references/*.md` without first running `check_skill_surface_preflight.py` / skimming `authoring-preflight.md`, so the issue-anchor / dated-incident / author-cite / attention-state-declaration constraints bit after the fact — the #308-class trap already in recent-lessons. (source: `charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`; sources: 10)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
 - **capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
 - **capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: scope-extension comment posted to the existing `issue #328` (authoring-preflight prose-pin pre-check) recording these additional gates on the destination, so a future build covers the whole set. (source: `charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md`)
 - **capability — prose-pin pre-check + authoring-preflight prompt (the real tooling gap):** a cheap check that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest), plus a lighter prompt to run `check_skill_surface_preflight.py` / `authoring-preflight.md` before editing a gated surface. **Disposition: `issue #328`** (https://github.com/corca-ai/charness/issues/328) — filed off-goal; decide there whether it folds into the #325 child goal or stands alone. (source: `charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md`)
@@ -41,3 +41,4 @@
 - `charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md`
 - `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`
 - `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
+- `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
