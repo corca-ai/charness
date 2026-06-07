@@ -11,8 +11,8 @@ command; shaping happened, no slices were executed.
 
 ## Active Operating Frame
 
-- Current slice: COMPLETE — all five slices (S1–S5) landed; #330 closing on push.
-- Next action: push the carrier (staged `Closes #330`), then `verify-closeout --expect-state CLOSED`. Done-early candidates (#329 retro disposition floor, #184 product metrics) remain open for a future session per `## Discuss Before Activation`.
+- Current slice: COMPLETE — all five slices (S1–S5) landed; #330 verified CLOSED.
+- Next action: none for this goal. Done-early candidates (#329 retro disposition floor, #184 product metrics) remain open for a future session per `## Discuss Before Activation`.
 - Mode: spec-light — small per-check slices; promote to a `spec` only if the meta-validator needs a shared inference-layer surface registry.
 - Timebox: until the chosen objective is complete; re-pick the next slice at each boundary.
 - Activation time: set by the next session at `/goal`.
@@ -214,8 +214,10 @@ here. Fill during the run:
   `charness-artifacts/critique/2026-06-07-issue-330-metavalidator-gate-hardening.md`.
 - `validate-closeout-draft` (feature, direct-commit): `draft_verified`
   (resolution_critique ok, close keyword present). Retro + lesson-index + recent-lessons
-  refreshed. Closes via the staged `Closes #330` keyword on push; `verify-closeout
-  --expect-state CLOSED` recorded after push.
+  refreshed. Carrier commit `2eaf66f8` (staged `Closes #330`); pushed through the
+  full pre-push gate (73 gates passed, 0 failed, incl. the new
+  `validate-inference-interpretation`). `verify-closeout --expect-state CLOSED`:
+  `status: verified`, state CLOSED, no mismatches, critique bound. #330 CLOSED.
 
 ## Context Sources
 
