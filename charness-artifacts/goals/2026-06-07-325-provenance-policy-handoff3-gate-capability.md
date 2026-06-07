@@ -1,6 +1,6 @@
 # Achieve Goal: #325 provenance-placement policy + portable check + handoff-3 gate-as-quality-capability
 
-Status: draft
+Status: complete
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md`
 
@@ -11,13 +11,15 @@ runs the activation command. It was shaped by the
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md`.
+- Current slice: COMPLETE — all six slices delivered in two commits
+  (`7e931999` Close #325 staged, `0f97effb` handoff-3); retro + disposition
+  review done.
+- Next action: maintainer pushes `origin/main` (closes #325). No agent push/tag.
 - Mode: spec-first — decide the provenance-placement policy and the
   enforcement-surface home, then implement the portable check, sweep the dogfood
   docs, and (handoff-3) build the mutation-gate `quality` capability + adapter.
-- Timebox: until objective complete (no hard wall-clock cap); re-pick the next
-  slice at each boundary by dependency and risk.
+- Time policy: until objective complete (no hard wall-clock cap — not
+  timeboxed); re-pick the next slice at each boundary by dependency and risk.
 - Activation time: (set at `/goal` activation)
 - Closeout reserve: ~15% for final verification + bounded critique + retro.
 - Done-early policy: continue_next_improvement
@@ -184,14 +186,12 @@ surface), `impl` (the sweep + the checkpoint broadening), `issue` (#325 closeout
 + any split). `debug: n/a — #325 and handoff-3 are policy/portability design
 work, not behavior defects.` Record actual routes at completion.
 
-- **Routing** — query `find-skills` per phase; record `Routing:` evidence.
-- **Gather step** — `Gather: n/a — issue bodies via gh; no external web/Slack
-  source` (confirm at runtime).
-- **Release step** — `Release: n/a — no version bump expected` unless the
-  capability changes a release surface; record `Release: <ref>` if it does.
-- **Issue closeout step** — `Issue closeout:` names #325 (carrier = direct
-  commit), close-keyword state, and the `validate-closeout-draft` /
-  `verify-closeout` proof; handoff-3 is internal (no GitHub issue).
+Recorded actual routes (anchored step lines for the closeout floors):
+
+- Routing: find-skills routed each phase — spec (#325 policy) · impl (sweep + checkpoint broadening) · quality (portable checks + handoff-3 capability) · create-skill (gate capability surface) · issue (#325 closeout). debug n/a — policy/portability design, not a behavior defect.
+- Gather: n/a — issue bodies via gh; no external web/Slack source.
+- Release: n/a — no version bump; the gate capability changed no release surface.
+- Issue closeout: #325 — carrier = direct commit 7e931999; close keyword `Close #325` staged (issue OPEN until maintainer push); proof = the commit-msg closeout gate (passed) + resolution critique charness-artifacts/critique/2026-06-07-issue-325-provenance-policy.md. handoff-3 is internal (no GitHub issue).
 
 ## Discuss Before Activation
 
@@ -339,17 +339,55 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>` at the After-phase. The complete gate
 rejects a literal `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md
+Host log probe: charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-06-07-325-h3-disposition-review.md
+
+Host-log probe scope: thread-wide (no per-goal metric window configured) —
+429 function calls, 139 patch applications, 4 subagent spawns.
 
 ## User Verification Instructions
 
-(Final results recorded at closeout; the user-runnable checks are in
-`## User Acceptance`.) At closeout this section names the exact commands the user
-can run, what is staged versus pushed, and which proof levels the agent did not
-run (push/tag, GitHub release, cross-repo inheritance).
+Staged in two local commits on `main`, NOT pushed (`git log --oneline origin/main..HEAD`):
+`7e931999` (#325 bundle, `Close #325` staged) and `0f97effb` (handoff-3).
+`gh issue view 325` is still **OPEN** — it closes only on the maintainer's push.
+
+Commands the user can run to verify:
+
+- **#325 policy** — `sed -n '1,40p' docs/conventions/provenance-placement.md`.
+- **#325 check (flag/allowlist/load-bearing/inert):**
+  `python3 -m pytest tests/quality_gates/test_standing_doc_provenance.py -q`.
+- **#325 dogfood sweep is clean:**
+  `python3 skills/public/quality/scripts/check_standing_doc_provenance.py --repo-root .`
+  → "OK: 5 standing doc(s) scanned; no drifted provenance."
+- **#325 checkpoint broadening:** `sed -n '95,116p' docs/conventions/implementation-discipline.md`.
+- **handoff-3 reference:** the "Changed-Line Coverage Gate (portable pattern)"
+  section in `skills/public/quality/references/mutation-testing.md`.
+- **handoff-3 capability resolves + runs:**
+  `python3 -m pytest tests/quality_gates/test_changed_line_coverage_gate.py -q`, and the
+  charness dogfood `python3 skills/public/quality/scripts/check_changed_line_coverage.py --repo-root . --base-sha $(git rev-parse origin/main) --head-sha HEAD --json`.
+
+Proof levels the agent did NOT run (named so closeout cannot silently claim them):
+no push/tag/GitHub release (maintainer's); no cross-repo inheritance proof on a
+real second consuming repo (the adapter contract is proven by the fixture tests
++ charness dogfood, not on a second repo); broad mutation-score run stays CI-only.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro: charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md.
+Disposition review (bound fresh-eye): `dispositions-sound` —
+charness-artifacts/critique/2026-06-07-325-h3-disposition-review.md.
+
+Retro dispositions:
+
+- **workflow** (batch the portable-surface validators upfront for slices adding
+  new skill-package files) → applied as a next-session workflow lesson +
+  recorded in `charness-artifacts/retro/recent-lessons.md`. Disposition: memory.
+- **capability** (extend `check_skill_surface_preflight.py` to run the
+  portable-package gate set as one pre-author/pre-closeout tripwire) → fold-
+  candidate into `issue #328` (confirmed OPEN + #325-adjacent by the disposition
+  reviewer); decision deferred there. Disposition: issue (#328).
+- **memory** (recurrence persisted) → done: retro + recent-lessons + lesson-
+  selection-index refreshed and committed in the closeout commit.
+- **Sibling Search** (serial-discovery-behind-a-gate is transferable) →
+  recurrence of an existing tracked lesson; boost, no new issue. Disposition: memory.

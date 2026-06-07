@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 146,
-  "candidate_count": 864,
+  "source_artifact_count": 147,
+  "candidate_count": 870,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -185,6 +185,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:327db1b60d64",
+      "kind": "current_focus",
+      "lesson": "Pursued the merged `/goal` (`2026-06-07-325-provenance-policy-handoff3-gate-capability`): #325 (provenance-placement policy + portable standing-doc check + dogfood sweep + closeout-checkpoint broadening) and handoff-3 (changed-line mutation gate as a portable `quality` capability + adapter).",
+      "normalized_key": "pursued the merged goal 2026 06 07 325 provenance policy handoff3 gate capability 325",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -219,6 +239,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d6705371df6a",
+      "kind": "next_improvement",
+      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: candidate fold into the existing `issue #328` (authoring-preflight prose-pin pre-check) scope; decide there vs a new issue.",
+      "normalized_key": "capability extend check skill surface preflight py or a sibling to run the portable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -299,46 +339,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:eab4c360420d",
-      "kind": "next_improvement",
-      "lesson": "**memory:** this lesson, persisted here + refreshed into recent-lessons.",
-      "normalized_key": "memory this lesson persisted here refreshed into recent lessons",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:80b509870bea",
-      "kind": "next_improvement",
-      "lesson": "**memory:** this lesson (recorded here + refreshed into recent-lessons). The concrete instance follow-up — promote the gate's lessons to `quality`'s mutation-testing reference — is already captured as handoff Next Session #3 and in the premerge-gate spec \"Skill portability\".",
-      "normalized_key": "memory this lesson recorded here refreshed into recent lessons the concrete instance follow up",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -517,6 +517,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:327db1b60d64",
+      "kind": "current_focus",
+      "lesson": "Pursued the merged `/goal` (`2026-06-07-325-provenance-policy-handoff3-gate-capability`): #325 (provenance-placement policy + portable standing-doc check + dogfood sweep + closeout-checkpoint broadening) and handoff-3 (changed-line mutation gate as a portable `quality` capability + adapter).",
+      "normalized_key": "pursued the merged goal 2026 06 07 325 provenance policy handoff3 gate capability 325",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -551,6 +571,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d6705371df6a",
+      "kind": "next_improvement",
+      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: candidate fold into the existing `issue #328` (authoring-preflight prose-pin pre-check) scope; decide there vs a new issue.",
+      "normalized_key": "capability extend check skill surface preflight py or a sibling to run the portable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -677,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:83d640b2878d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this retro + the recent-lessons digest carry the recurrence.",
+      "normalized_key": "memory this retro the recent lessons digest carry the recurrence",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:19bfc370560f",
       "kind": "next_improvement",
       "lesson": "**process meta-miss — invalid dispositions shipped and the floor did not catch them (operator caught it).** This retro's FIRST pass emitted two `Disposition: memory` (prose-only, invalid) lines plus one hedged \"candidate issue OR fold, not filed\"; the achieve disposition floor is presence/binding-only by design and a session retro runs no disposition review, so nothing flagged the agent's own invalid self-grading until the operator asked twice. **Disposition: `issue #329`** (https://github.com/corca-ai/charness/issues/329) — a narrow presence/enum check that rejects the bare `memory` disposition value (same shape as `validate_proposal_fields.py`'s Destination enum), not a content classifier.",
@@ -711,6 +771,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ab2371f60403",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When a slice adds NEW skill-package files (`skills/public/*/scripts` or `references/*`), run the portable-surface validator BATCH upfront — before the first broad closeout — in one pass: `validate_skills`, `validate_skill_ergonomics`, `check_skill_ownership_overlap`, `validate_attention_state_visibility`, `check_doc_links`, `check-markdown`, `ruff`. Collapses the serial fix/re-run loop into one detection round.",
+      "normalized_key": "workflow when a slice adds new skill package files skills public scripts or references",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -777,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:5deecb4bee34",
+      "kind": "repeat_trap",
+      "lesson": "**Authoring-preflight skip for new skill-package files.** I authored new `skills/public/quality/scripts/*.py` + `references/*.md` without first running `check_skill_surface_preflight.py` / skimming `authoring-preflight.md`, so the issue-anchor / dated-incident / author-cite / attention-state-declaration constraints bit after the fact — the #308-class trap already in recent-lessons.",
+      "normalized_key": "authoring preflight skip for new skill package files i authored new skills public quality",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2f637bd189f6",
       "kind": "repeat_trap",
       "lesson": "**Serial discovery behind a 6-min gate.** Each run surfaced one new issue; I fixed one, paid another ~6 min, found the next. 2-3 of the four runs were avoidable with earlier/batched detection.",
@@ -791,6 +891,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:317f90c46992",
+      "kind": "repeat_trap",
+      "lesson": "**Serial validator discovery behind the broad closeout (dominant).** After the cheap aggregate passed, the `--verification-lock` closeout surfaced portable-surface validator failures ONE AT A TIME across ~7 fix then re-run cycles: `check_doc_links` (bare path to markdown link), `check-markdown` (wrapped inline code span), `validate_skills` (author-repo cite), `check_skill_ownership_overlap` (`retro/` token in a docstring), `validate_attention_state_visibility` (`skipped` term undeclared), `validate_skill_ergonomics` (issue anchors in package scripts), then `ruff` (import sort). This is the recent-lessons repeat trap \"serial discovery behind a gate\" — each discovery cheap, but paid serially. Most were predictable from the skill-package authoring constraints.",
+      "normalized_key": "serial validator discovery behind the broad closeout dominant after the cheap aggregate passed the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
           "date": "2026-06-07",
           "section": "Waste"
         }
