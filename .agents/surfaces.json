@@ -79,17 +79,15 @@
         ".gitleaks.toml",
         ".secretlintignore",
         "README.md",
-        "charness-artifacts/**/*.md",
+        "charness-artifacts/*.md",
         "docs/*.md",
-        "docs/**/*.md",
         "evals/*.md",
-        "evals/**/*.md",
-        "packaging/**/*.md",
-        "integrations/**/*.md",
-        "skills/**/*.md"
+        "packaging/*.md",
+        "integrations/*.md",
+        "skills/*.md"
       ],
       "derived_paths": [
-        "plugins/charness/**/*.md"
+        "plugins/charness/*.md"
       ],
       "sync_commands": [],
       "verify_commands": [
@@ -100,7 +98,8 @@
       ],
       "notes": [
         "Keep human-facing docs in sync with generated markdown copies.",
-        "Run the markdown and link checks before closeout."
+        "Run the markdown and link checks before closeout.",
+        "Markdown source/derived patterns use <dir>/*.md, NOT <dir>/**/*.md: matching is fnmatch (* crosses /), so *.md covers top-level and nested while the bare **/ form misses a top-level <dir>/<file>.md (e.g. packaging/README.md, which previously escaped these checks at closeout) (#331)."
       ]
     },
     {
@@ -552,7 +551,7 @@
         "scripts/upstream_release_lib.py"
       ],
       "derived_paths": [
-        ".charness/**/*.json",
+        ".charness/*.json",
         "plugins/charness/integrations/**",
         "plugins/charness/scripts/**"
       ],
@@ -590,14 +589,13 @@
         ".gitignore",
         "pyproject.toml",
         "charness",
-        "scripts/**/*.py",
+        "scripts/*.py",
         "tests/*.py",
-        "tests/**/*.py",
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/**/*.py"
+        "plugins/charness/scripts/*.py"
       ],
       "sync_commands": [],
       "verify_commands": [
@@ -612,7 +610,8 @@
         "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",
         "Release-only install/update lifecycle tests are excluded from the standing Python closeout gate and should run for release, packaging, or tool lifecycle changes.",
         "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep.",
-        "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate."
+        "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate.",
+        "scripts source pattern is scripts/*.py, NOT scripts/**/*.py: matching is fnmatch (* crosses /), so scripts/*.py matches both top-level and nested scripts; the bare **/ form matched zero of the all-top-level scripts and silently kept this whole verify set out of scripts closeouts (#331)."
       ]
     },
     {
@@ -620,7 +619,6 @@
       "description": "Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.",
       "source_paths": [
         "scripts/*.py",
-        "scripts/**/*.py",
         "skills/public/*/scripts/*.py",
         "skills/support/*/scripts/*.py"
       ],
@@ -631,7 +629,7 @@
       ],
       "notes": [
         "inventory-gitignore-scan-hygiene was a full run-quality.sh-only gate, so the #325 standing_doc_provenance_lib.py repo_root.glob debt shipped at #325 closeout and only surfaced at the v0.27.0 push (#328). Pulling the cheap (<1s) scan into slice closeout catches it at authoring time.",
-        "source_paths list scripts/*.py and scripts/**/*.py separately because surface matching is fnmatch, not recursive glob; the bare ** form does not match a top-level scripts/<file>.py."
+        "Use scripts/*.py (not scripts/**/*.py): surface matching is fnmatch where * crosses /, so scripts/*.py covers both top-level and nested scripts while the bare **/ form misses a top-level scripts/<file>.py (#331)."
       ]
     }
   ]

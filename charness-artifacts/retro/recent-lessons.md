@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Closed #331 (the fnmatch closeout-coverage gap filed during the #328 session), prompted by the operator's "retrospect waste + design the next chunk" request. (source: `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`)
 - Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
-- One pursue session of the `2026-06-07-324-325-322-handoff-orchestrator` goal: B1 (#324 source-preservation contract + v0.26.0 release — pushed/tagged/published, #324 CLOSED), B2 (handoff-4 false-green warning), and B3/B4 shaped as child `/achieve` goals. (source: `charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
+- a `validate_surfaces` lint that flags any `<dir>/**/*.X` source pattern lacking a `<dir>/*.X` sibling, so the idiom footgun cannot return. Disposition: deferred -> handoff Next Session candidate (anchor surface-idiom-lint), not filed, to avoid issue sprawl for a small hardening. (source: `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`)
 - At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff "open" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session. (source: `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`)
 - broaden slice-closeout coverage to top-level scripts (the repo-python fnmatch gap). Disposition: issue -> filed as #331 with the decision framing (source-path widening vs recursive `**`, needs a closeout-cost critique). (source: `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`)
-- **capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap. (source: `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`)
 
 ## Selection Policy
 
@@ -37,9 +37,8 @@
 - `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md`
 - `charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md`
 - `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`
-- `charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md`
+- `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`
 - `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`

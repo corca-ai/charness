@@ -54,9 +54,9 @@ _BOUNDARY_RATCHET = "python3 scripts/check_boundary_bypass_ratchet.py --repo-roo
 
 def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
     # #328 gate-phase coverage: a top-level scripts/<file>.py change pulls the
-    # gitignore scan-hygiene gate into slice closeout. The bare scripts/**/*.py
-    # form would miss this (fnmatch is not recursive), so the surface lists the
-    # top-level scripts/*.py form too.
+    # gitignore scan-hygiene gate into slice closeout. The surface uses
+    # scripts/*.py (fnmatch * crosses /, so it covers top-level and nested) rather
+    # than the bare scripts/**/*.py form, which misses top-level scripts (#331).
     assert _GITIGNORE_SCAN in _verify_commands_for("scripts/rca_link_advisory.py")
 
 
@@ -82,6 +82,37 @@ def test_boundary_bypass_ratchet_runs_at_slice_closeout_for_new_test_file() -> N
     # calls) surfaces at slice closeout via the repo-python surface, not only at
     # the literal git pre-commit.
     assert _BOUNDARY_RATCHET in _verify_commands_for("tests/quality_gates/test_new_thing.py")
+
+
+def test_repo_markdown_surface_matches_top_level_packaging_readme() -> None:
+    # #331 sibling: packaging/README.md (top-level) escaped repo-markdown's
+    # packaging/**/*.md (non-recursive fnmatch) and so skipped check-markdown,
+    # check_doc_links, and check-secrets at closeout. The <dir>/*.md idiom covers
+    # both top-level and nested.
+    verify = _verify_commands_for("packaging/README.md")
+    assert "./scripts/check-markdown.sh" in verify
+    assert "python3 scripts/check_doc_links.py --repo-root ." in verify
+
+
+def test_repo_python_surface_matches_top_level_scripts() -> None:
+    # #331 regression guard: every scripts/ file is top-level, and the bare
+    # scripts/**/*.py idiom (non-recursive fnmatch) matched none of them, silently
+    # keeping the whole repo-python verify set (boundary-ratchet, broad pytest) out
+    # of every scripts closeout. scripts/*.py matches top-level AND nested.
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/run_slice_closeout.py",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "repo-python" in {surface["surface_id"] for surface in payload["matched_surfaces"]}
+    verify = payload["verify_commands"]
+    assert _BOUNDARY_RATCHET in verify
+    assert any(command.startswith("pytest ") for command in verify)
 
 
 def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:

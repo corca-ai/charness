@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 150,
-  "candidate_count": 877,
+  "source_artifact_count": 151,
+  "candidate_count": 884,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -155,6 +155,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:75416fe861d8",
+      "kind": "current_focus",
+      "lesson": "Closed #331 (the fnmatch closeout-coverage gap filed during the #328 session), prompted by the operator's \"retrospect waste + design the next chunk\" request.",
+      "normalized_key": "closed 331 the fnmatch closeout coverage gap filed during the 328 session prompted by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c9100ce899d6",
       "kind": "current_focus",
       "lesson": "Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0.",
@@ -275,6 +295,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7cf737008145",
+      "kind": "next_improvement",
+      "lesson": "a `validate_surfaces` lint that flags any `<dir>/**/*.X` source pattern lacking a `<dir>/*.X` sibling, so the idiom footgun cannot return. Disposition: deferred -> handoff Next Session candidate (anchor surface-idiom-lint), not filed, to avoid issue sprawl for a small hardening.",
+      "normalized_key": "a validate surfaces lint that flags any dir x source pattern lacking a dir",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a3cfc51f5332",
       "kind": "next_improvement",
       "lesson": "At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff \"open\" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session.",
@@ -309,46 +349,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c16386d38fa1",
-      "kind": "next_improvement",
-      "lesson": "**capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap.",
-      "normalized_key": "capability explore a deterministic nudge flag a newly added repo root scripts py that",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d6705371df6a",
-      "kind": "next_improvement",
-      "lesson": "**capability:** Extend `check_skill_surface_preflight.py` (or a sibling) to run the portable-package gate set as a single pre-author/pre-closeout tripwire that reports ALL findings at once — its current scope missed attention-state declaration coverage, ownership-overlap, and author-repo cites together. Disposition: scope-extension comment posted to the existing `issue #328` (authoring-preflight prose-pin pre-check) recording these additional gates on the destination, so a future build covers the whole set.",
-      "normalized_key": "capability extend check skill surface preflight py or a sibling to run the portable",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -497,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:75416fe861d8",
+      "kind": "current_focus",
+      "lesson": "Closed #331 (the fnmatch closeout-coverage gap filed during the #328 session), prompted by the operator's \"retrospect waste + design the next chunk\" request.",
+      "normalized_key": "closed 331 the fnmatch closeout coverage gap filed during the 328 session prompted by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c9100ce899d6",
       "kind": "current_focus",
       "lesson": "Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0.",
@@ -613,6 +633,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7cf737008145",
+      "kind": "next_improvement",
+      "lesson": "a `validate_surfaces` lint that flags any `<dir>/**/*.X` source pattern lacking a `<dir>/*.X` sibling, so the idiom footgun cannot return. Disposition: deferred -> handoff Next Session candidate (anchor surface-idiom-lint), not filed, to avoid issue sprawl for a small hardening.",
+      "normalized_key": "a validate surfaces lint that flags any dir x source pattern lacking a dir",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -777,6 +817,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:5d3eb2ab3f81",
+      "kind": "next_improvement",
+      "lesson": "for an issue closeout, write the structured closeout body and run `verify-closeout` as a draft (no `--expect-state`) BEFORE committing, so the jtbd/boundary/.../Critique schema does not force an amend. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
+      "normalized_key": "for an issue closeout write the structured closeout body and run verify closeout as",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:eab4c360420d",
       "kind": "next_improvement",
       "lesson": "**memory:** this lesson, persisted here + refreshed into recent-lessons.",
@@ -851,6 +911,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e9b8621ef001",
+      "kind": "next_improvement",
+      "lesson": "stage tracked files (`git add`) before running tracked-file-scanning gates (boundary-ratchet scans `git ls-files`); a standalone run over an untracked working tree gives a false green. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
+      "normalized_key": "stage tracked files git add before running tracked file scanning gates boundary ratchet scans",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -991,6 +1071,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ddb7bf271e38",
+      "kind": "repeat_trap",
+      "lesson": "**Boundary-ratchet false-green on an untracked file.** Ran `check_boundary_bypass_ratchet` standalone (rc=0, \"clean\"), then `git add -A` + predict-commit failed it — the ratchet scans `git ls-files`, and my new test was untracked at the standalone run. One convert-to-in-process round-trip. Same class as recent-lessons' `--head-sha HEAD`-while-parent false-green.",
+      "normalized_key": "boundary ratchet false green on an untracked file ran check boundary bypass ratchet standalone",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ccfa4b6c6100",
+      "kind": "repeat_trap",
+      "lesson": "**Issue-closeout commit body schema learned after committing.** First #328 commit was prose -> `verify-closeout` failed (missing jtbd/boundary/.../critique binding) -> schema spelunking + amend.",
+      "normalized_key": "issue closeout commit body schema learned after committing first 328 commit was prose verify",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:852bdc853315",
+      "kind": "repeat_trap",
+      "lesson": "Minor: a surfaces.json Edit missed a trailing-comma context and had to retry.",
+      "normalized_key": "minor a surfaces json edit missed a trailing comma context and had to retry",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
           "date": "2026-06-07",
           "section": "Waste"
         }

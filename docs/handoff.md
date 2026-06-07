@@ -13,17 +13,12 @@
 
 ## Current State
 
-- **v0.27.0 shipped** (tag `v0.27.0`,
-  [GitHub release](https://github.com/corca-ai/charness/releases/tag/v0.27.0)
-  verified). Tree clean, `origin/main` even. Bundled the #322
-  advisory-interpretation contract rollout, the #325 provenance-placement policy
-  plus portable standing-doc check, and the handoff-3 changed-line coverage gate —
-  all additive, opt-in/inert by default.
-- **#322 CLOSED** (advisory-interpretation contract rolled out to six
-  inference-layer surfaces; per-surface 4-field `interpretation` self-declaration
-  with a paired consumer requirement; verified facts stay trusted). Closeout:
-  [critique](../charness-artifacts/critique/2026-06-07-issue-322-advisory-interpretation-rollout.md),
-  [retro](../charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md).
+- **v0.27.0 shipped** (tag `v0.27.0`, release verified; tree clean, `origin/main`
+  even). Bundled #322, the #325 provenance policy + portable standing-doc check,
+  and the handoff-3 changed-line gate — all additive/opt-in.
+- **#322 CLOSED** (advisory-interpretation contract on six inference-layer
+  surfaces; 4-field declaration + paired consumer line). Closeout:
+  [critique](../charness-artifacts/critique/2026-06-07-issue-322-advisory-interpretation-rollout.md).
 - **#328 CLOSED** (preflight-gate-phase-coverage goal): landed a prose-pin
   pre-check (advisory, wired into slice closeout), a one-shot authoring-preflight
   (`--run-checks` now runs the full portable-package gate set) with a closeout
@@ -33,18 +28,23 @@
   [Critique](../charness-artifacts/critique/2026-06-07-issue-328-preflight-gate-phase-coverage.md).
   #328 had been accidentally auto-closed by a stray close keyword in `12e9d54b`;
   reopened and resolved for real.
+- **#331 CLOSED** (same family): reconciled the closeout matcher idiom
+  manifest-wide to `<dir>/*.md|py` (fnmatch `*` crosses `/`); the bare
+  `<dir>/**/*.X` matched zero top-level scripts and let a top-level packaging
+  README slip the markdown gate.
+  [Critique](../charness-artifacts/critique/2026-06-07-issue-331-closeout-fnmatch-idiom.md).
 - **#327 triaged, not re-pointed:** mutation *score* passes (88.9%/91.9% vs 80%);
-  the CI FAILs are the intermittent changed-line selection-budget signal on
-  *scheduled* main runs — low-severity, non-blocking for development.
-- Open issues: **#331** (closeout misses top-level scripts — fnmatch, new),
-  **#330** (meta-validator, #322 follow-up), **#329** (retro disposition floor),
-  **#327** (scheduled mutation signal), **#184** (product metrics).
+  CI FAILs are the intermittent changed-line selection-budget signal on
+  *scheduled* main runs — low-severity, non-blocking.
+- Open issues: **#330** (meta-validator, #322 follow-up), **#329** (retro
+  disposition floor), **#327** (scheduled mutation signal), **#184** (product
+  metrics).
 
 ## Next Session
 
-- **#331 (gate-phase follow-up, same family as #328):** repo-python's
-  non-recursive fnmatch misses top-level scripts at closeout; decide source-path
-  widening vs recursive `**` semantics — needs a critique on the closeout-cost.
+- **Surface-idiom lint (candidate, anchor surface-idiom-lint):** a
+  `validate_surfaces` check flagging any `<dir>/**/*.X` source pattern without a
+  `<dir>/*.X` sibling, so the closeout-matcher footgun (#331) cannot return.
 - Candidate objectives: **#330** (meta-validator — clean #322 sequel), **#329**
   (retro disposition floor), **#184** (product metrics; needs ideation/spec).
 - **Human real-host smoke for v0.27.0 (release left it open).** `charness update`
