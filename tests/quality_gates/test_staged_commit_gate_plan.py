@@ -8,11 +8,14 @@ from pathlib import Path
 
 from scripts.staged_commit_gate_plan import (
     FAST_SURFACE_VERIFY_COMMANDS,
+    STRUCTURAL_SWEEP_LABELS,
     GateCommand,
+    block_on_structural_sweep,
     collect_staged_paths,
     fast_surface_verify_gates,
     run_predict_commit,
     staged_commit_gate_plan,
+    structural_sweep_gates,
 )
 from scripts.surfaces_lib import load_surfaces, match_surfaces
 
@@ -405,6 +408,125 @@ def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: P
     # reconciliation degrades cleanly so the existing pre-commit fixtures hold.
     assert fast_surface_verify_gates(tmp_path, ["skills/public/critique/SKILL.md"]) == []
     assert fast_surface_verify_gates(ROOT, []) == []
+
+
+# --- #332: the cheap structural sweep must run first in the full closeout ------
+
+
+def _sweep_sink(payload: dict[str, object], *, as_json: bool, stderr_message: str | None = None) -> int:
+    return 0 if payload["status"] not in {"blocked", "failed"} else 1
+
+
+def test_structural_sweep_gates_select_only_the_named_subset() -> None:
+    # #332: the sweep is exactly the presence/structural gates, drawn FROM
+    # staged_commit_gate_plan (single source of truth) -- never ruff/lengths/
+    # py_compile/skills/run-evals (those stay in verify, not the cheap sweep).
+    paths = ["scripts/x.py", "skills/public/demo/scripts/y.py", "skills/public/demo/SKILL.md"]
+    sweep_labels = {gate.label for gate in structural_sweep_gates(ROOT, paths)}
+    assert sweep_labels <= STRUCTURAL_SWEEP_LABELS
+    plan_labels = {gate.label for gate in staged_commit_gate_plan(ROOT, paths, ruff_path="")}
+    assert sweep_labels <= plan_labels  # the sweep is a strict subset of the plan
+    for excluded in ("ruff (staged)", "py_compile (staged)", "check-python-lengths (staged)", "run-evals"):
+        assert excluded not in sweep_labels
+
+
+def test_structural_sweep_covers_each_329_class_file_type() -> None:
+    # #332 B2: coverage is per-gate, not uniform. attention-state fires on a
+    # scripts/*.py; ergonomics on a skill-package file; the preflight on SKILL.md.
+    assert "validate-attention-state-visibility" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
+    assert "validate-skill-ergonomics" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/demo/scripts/y.py"])}
+    assert "check-skill-core-headroom (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/demo/SKILL.md"])}
+    # docs-only change pulls no structural sweep gate (no-op).
+    assert structural_sweep_gates(ROOT, ["docs/x.md"]) == []
+
+
+def test_block_on_structural_sweep_blocks_then_passes() -> None:
+    # #332: a failed sweep gate blocks the full closeout (returns non-zero, status
+    # blocked, records the failing label); a clean sweep returns None and lets the
+    # closeout proceed.
+    failing = {"status": "x", "changed_paths": ["scripts/x.py"]}
+    rc = block_on_structural_sweep(
+        ROOT, failing, as_json=True, plan_only=False, run_command=_runner(1), emit_payload=_sweep_sink
+    )
+    assert rc == 1
+    assert failing["status"] == "blocked"
+    assert failing["structural_sweep"]["failed_label"] == "validate-attention-state-visibility"
+
+    clean = {"status": "x", "changed_paths": ["scripts/x.py"]}
+    assert block_on_structural_sweep(
+        ROOT, clean, as_json=True, plan_only=False, run_command=_runner(0), emit_payload=_sweep_sink
+    ) is None
+    assert clean["structural_sweep"]["status"] == "ok"
+    assert clean["status"] == "x"  # untouched -> closeout continues
+
+
+def test_block_on_structural_sweep_is_noop_in_plan_only() -> None:
+    # plan_only surfaces the sweep through planned_commands, so the blocker no-ops.
+    payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
+    assert block_on_structural_sweep(
+        ROOT, payload, as_json=True, plan_only=True, run_command=_runner(1), emit_payload=_sweep_sink
+    ) is None
+    assert "structural_sweep" not in payload
+
+
+def _minimal_surfaces(repo: Path) -> Path:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    manifest = repo / ".agents" / "surfaces.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "repo-python",
+                        "description": "repo python",
+                        "source_paths": ["scripts/**"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": [],
+                        "notes": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return manifest
+
+
+def test_full_closeout_blocks_329_class_violation_at_structural_sweep(tmp_path: Path) -> None:
+    # #332 high-confidence: the FULL closeout (not --predict-commit) blocks a
+    # #329-class attention violation at the cheap structural sweep BEFORE reaching
+    # surface-match/cautilus/broad pytest. Red without the fix: with the sweep
+    # blocker removed the closeout would proceed to status=completed.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    manifest = _minimal_surfaces(repo)
+    scripts = repo / "scripts"
+    scripts.mkdir()
+    _write_executable(
+        scripts / "validate_attention_state_visibility.py",
+        "#!/usr/bin/env python3\nimport sys\nprint('undeclared skipped', file=sys.stderr)\nraise SystemExit(1)\n",
+    )
+    (scripts / "bad.py").write_text("STATE = 'skipped'\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(repo),
+        "--surfaces-path",
+        str(manifest),
+        "--skip-broad-pytest",
+        "--allow-unmatched",
+        "--json",
+        "--paths",
+        "scripts/bad.py",
+    )
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1, result.stderr
+    assert payload["status"] == "blocked"
+    assert payload["structural_sweep"]["failed_label"] == "validate-attention-state-visibility"
 
 
 def test_fast_surface_verify_gates_degrade_on_surface_error() -> None:

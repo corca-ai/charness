@@ -225,6 +225,110 @@ def staged_commit_gate_plan(
     return plan
 
 
+# #332: the cheap structural sweep -- the presence/structural gates a new
+# skill-package or scripts/*.py edit must NOT be able to defer to the slow broad
+# gate (the recurring #308/#325/#329 class). Selected by label from
+# staged_commit_gate_plan so the plan stays the single source of truth (no
+# parallel gate list): ergonomics (skill packages), attention-state visibility
+# (scripts/**+skills/** *.py), and the SKILL.md authoring preflight. The full
+# run_slice_closeout path runs this subset FIRST, fail-fast, so the cheap verdict
+# precedes surface-match / cautilus / broad pytest -- reconciling the broad path
+# with the --predict-commit boundary instead of reaching the gates only late.
+STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
+    {
+        "validate-attention-state-visibility",
+        "validate-skill-ergonomics",
+        "check-skill-core-headroom (staged)",
+    }
+)
+
+
+def structural_sweep_gates(repo_root: Path, paths: list[str] | None = None) -> list[GateCommand]:
+    """The #332 cheap structural-sweep subset of ``staged_commit_gate_plan``.
+
+    Reuses ``staged_commit_gate_plan`` (single source of truth) and filters to
+    the presence/structural gates named in the #332 goal, so the full closeout
+    runs the same cheap verdict first without re-running ruff/lengths/skills/
+    run-evals from the verify phase. Empty for changes that touch no structural
+    file class (e.g. docs-only), so it is a no-op there.
+    """
+    return [
+        command
+        for command in staged_commit_gate_plan(repo_root, paths)
+        if command.label in STRUCTURAL_SWEEP_LABELS
+    ]
+
+
+def structural_sweep_planned_commands(repo_root: Path, paths: list[str]) -> list[dict[str, str]]:
+    """#332: the structural sweep rendered as ``--plan-only`` planned commands,
+    prepended to the full closeout plan so plan output reflects what runs first."""
+    return [
+        {"phase": "structural-sweep", "command": shlex.join(gate.argv)}
+        for gate in structural_sweep_gates(repo_root, paths)
+    ]
+
+
+def run_structural_sweep_preflight(repo_root: Path, paths: list[str], *, run_command) -> dict[str, object]:
+    """Run the #332 cheap structural sweep fail-fast (first non-zero gate stops).
+
+    Returns a payload with ``status`` (``ok``/``failed``), the planned gate
+    labels, executed results, and the first ``failed_label``.
+    """
+    gates = structural_sweep_gates(repo_root, paths)
+    executed: list[dict[str, object]] = []
+    for command in gates:
+        result = run_command(repo_root, shlex.join(command.argv), "structural-sweep")
+        executed.append(result)
+        if result["returncode"] != 0:
+            return {
+                "status": "failed",
+                "planned": [gate.label for gate in gates],
+                "executed": executed,
+                "failed_label": command.label,
+            }
+    return {
+        "status": "ok",
+        "planned": [gate.label for gate in gates],
+        "executed": executed,
+        "failed_label": None,
+    }
+
+
+def block_on_structural_sweep(
+    repo_root: Path,
+    payload: dict[str, object],
+    *,
+    as_json: bool,
+    plan_only: bool,
+    run_command,
+    emit_payload,
+) -> int | None:
+    """#332 fail-fast guard for the full ``run_slice_closeout`` path.
+
+    Runs the cheap structural sweep FIRST so its verdict precedes surface-match /
+    cautilus / broad pytest. Mirrors the ``_maybe_block_on_*`` helpers: returns
+    an exit code when blocking, else ``None``. No-op in ``plan_only`` (the sweep
+    commands are surfaced through the planned output instead).
+    """
+    if plan_only:
+        return None
+    sweep = run_structural_sweep_preflight(repo_root, list(payload["changed_paths"]), run_command=run_command)
+    payload["structural_sweep"] = sweep
+    if sweep["status"] != "failed":
+        return None
+    payload["status"] = "blocked"
+    payload["error"] = (
+        f"cheap structural sweep failed at `{sweep['failed_label']}` (#332): the "
+        "#329-class commit-boundary gate must not defer to the broad gate; fix and rerun"
+    )
+    if not as_json:
+        failing = sweep["executed"][-1]
+        for stream, target in ((failing["stdout"], sys.stdout), (failing["stderr"], sys.stderr)):
+            if stream:
+                print(stream, end="" if stream.endswith("\n") else "\n", file=target)
+    return emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+
+
 def run_predict_commit(
     repo_root: Path,
     *,

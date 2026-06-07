@@ -14,11 +14,11 @@ asked.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 (root-cause debug) COMPLETE; Slice 2 (fix) next.
-- Next action: Slice 2 — run the cheap `staged_commit_gate_plan` structural
-  subset FIRST inside `run_slice_closeout.py`'s full path (fail-fast, reusing the
-  predict-commit plan as single source of truth), with a Slice-2 fix-boundary
-  fresh-eye critique; then Slice 3 regression test, Slice 4 closeout.
+- Current slice: Slices 1-3 COMPLETE (root cause + fix + regression test, with
+  the fix-boundary fresh-eye critique BLOCKER folded); Slice 4 (closeout) next.
+- Next action: Slice 4 — doc sync, full `run_slice_closeout.py` gate, stage
+  `Close #332`, `issue` validate-closeout-draft rehearsal, RCA ledger event,
+  retro + disposition review.
 - Slice 1 root cause (proven, falsifiable): both #329 gates
   (`validate_skill_ergonomics`, `validate_attention_state_visibility`) are fully
   wired into BOTH the cheap predict-commit plan and the full-closeout verify
@@ -186,8 +186,8 @@ After activation completes, the user can verify directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Root-cause (debug) why the #329-class regressions reached the slow broad gate despite active pre-commit + pre-push hooks | A bug-class issue gets a falsifiable root cause before any fix; coverage largely exists already, so a wrong fix is the main risk | `charness-artifacts/debug/` artifact that (a) pins each #329 instance to its owning gate, (b) proves via `git log -p`/reflog whether the commit ran pre-commit at all (`--no-verify`/hook-not-run) or the cheap subset was skipped for the 7-min broad run, (c) records the *falsified* "post-#329 wiring" hypothesis, + a failing repro | done — `2026-06-07-332-commit-boundary-sweep-latency.md`: each gate pinned to its surface, "post-#329 wiring" + "pure coverage gap" FALSIFIED by git timing + cheap-plan repro (rc=1, 0.8s); root cause = latency/ordering + slice-boundary discretion |
-| 2 | Close the confirmed gap at the pre-commit boundary (likely: run the cheap structural subset first / non-skippably, or surface a bypass) — extend coverage/install only if Slice 1 proves it | Single source of truth; presence/structural only; do not rebuild existing affordances | `staged_commit_gate_plan` change blocking the reproduced violation at the cheap boundary; no duplicate of `validate_maintainer_setup` | planned |
-| 3 | Add a regression test that pins the blocked-at-commit behavior | Memory-only reminders failed across three sessions; convert to teeth | `tests/quality_gates/...` test green on fix, red without it (staged-index based) | planned |
+| 2 | Close the confirmed gap at the pre-commit boundary (likely: run the cheap structural subset first / non-skippably, or surface a bypass) — extend coverage/install only if Slice 1 proves it | Single source of truth; presence/structural only; do not rebuild existing affordances | `staged_commit_gate_plan` change blocking the reproduced violation at the cheap boundary; no duplicate of `validate_maintainer_setup` | done — `staged_commit_gate_plan.py` gains the `STRUCTURAL_SWEEP_LABELS` subset + `block_on_structural_sweep`; `run_slice_closeout.py` full path runs it FIRST (before surface-match/cautilus/broad pytest). No new judgment, no parallel mechanism, no `validate_maintainer_setup` duplicate. Fresh-eye critique: BLOCKER (main() over function limit) folded |
+| 3 | Add a regression test that pins the blocked-at-commit behavior | Memory-only reminders failed across three sessions; convert to teeth | `tests/quality_gates/...` test green on fix, red without it (staged-index based) | done — 5 tests in `test_staged_commit_gate_plan.py`; the e2e `test_full_closeout_blocks_329_class_violation_at_structural_sweep` verified red-without-fix / green-with-fix; 26/26 file + 122 closeout-touching tests green |
 | 4 | Closeout: doc sync, full gate, stage `Close #332`, retro + disposition review | Make the change auditable and self-applying next run | full `run_slice_closeout.py` PASS; `Close #332` staged; retro + disposition-review artifacts | planned |
 
 ## Coordination Cues
@@ -246,6 +246,33 @@ boundary.
     Follow-up `follow-up:slice-2-path-resolution-parity`: the cheap path keys on
     the staged index, the full path on the working-tree diff; feed the cheap
     subset the closeout's resolved changed paths.
+
+- **Slices 2-3 (fix + regression test), 2026-06-07.** Routed via `find-skills`
+  → `impl` + `quality`.
+  - `scripts/staged_commit_gate_plan.py`: added `STRUCTURAL_SWEEP_LABELS`
+    (attention-state, ergonomics, SKILL.md core-headroom preflight — exactly the
+    #329-class gates), `structural_sweep_gates` (label-filtered SUBSET of
+    `staged_commit_gate_plan`, single source of truth), `structural_sweep_planned_commands`,
+    `run_structural_sweep_preflight` (fail-fast), and `block_on_structural_sweep`
+    (mirrors the `_maybe_block_on_*` shape).
+  - `scripts/run_slice_closeout.py`: `main()` now runs the sweep FIRST via a new
+    `_run_preexecution_blocks` helper (sweep → advise → unmatched → cautilus →
+    risk), before surface-match/cautilus/broad pytest. `--plan-only` lists the
+    sweep first. Path-resolution parity (`follow-up:slice-2-path-resolution-parity`)
+    resolved: the sweep is fed the full closeout's resolved `changed_paths`.
+  - `tests/quality_gates/test_staged_commit_gate_plan.py`: +5 tests; the e2e
+    `test_full_closeout_blocks_329_class_violation_at_structural_sweep` drives
+    real `main()` over a tmp repo, verified red-without-fix / green-with-fix.
+  - Fresh-eye slice critique (bounded subagent `a0c76fcd06b21618b`, read-only,
+    shared parent worktree): **BLOCKER** — `main()` exceeded the 100-line
+    function limit (the exact gate this PR hardens). Folded: extracted
+    `_run_preexecution_blocks`; `main()` back under limit, behavior unchanged.
+    File-length now 474/480 (advisory; the file was already in the warn band
+    pre-#332). Recorded `follow-up:run-slice-closeout-module-split` (god-module
+    split is a #332 Non-Goal). Reviewer's own `git checkout` slip verified
+    non-corrupting (source==mirror sha256, all changes intact).
+  - Proof: 26/26 gate-plan + 122 closeout-touching tests green; ruff /
+    py_compile / lengths (function gate passes) / mirror byte-synced.
 
 ## Context Sources
 

@@ -38,6 +38,8 @@ _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_pyth
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
 run_predict_commit = _staged_commit_gate_plan.run_predict_commit
+block_on_structural_sweep = _staged_commit_gate_plan.block_on_structural_sweep
+structural_sweep_planned_commands = _staged_commit_gate_plan.structural_sweep_planned_commands
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 _rca_link_advisory = import_repo_module(__file__, "scripts.rca_link_advisory")
 _mutation_coverage_producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
@@ -416,6 +418,38 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) -> int | None:
+    """Fail-fast pre-execution gate chain; returns an exit code on the first block.
+    #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
+    risk interrupt / broad pytest), then advisories, unmatched, cautilus, risk.
+    """
+    blocked = block_on_structural_sweep(
+        repo_root,
+        payload,
+        as_json=args.json,
+        plan_only=args.plan_only,
+        run_command=run_command,
+        emit_payload=_emit_payload,
+    )
+    if blocked is not None:
+        return blocked
+
+    advise_prose_pin(repo_root, payload["changed_paths"])
+    advise_skill_surface_preflight(repo_root, payload["changed_paths"])
+
+    blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
+    if blocked is not None:
+        return blocked
+
+    blocked = _maybe_block_on_cautilus(
+        repo_root, payload, as_json=args.json, ack_skill_review=args.ack_cautilus_skill_review
+    )
+    if blocked is not None:
+        return blocked
+
+    return _maybe_block_on_risk_interrupt(repo_root, payload, as_json=args.json)
+
+
 def main() -> int:
     args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
@@ -443,23 +477,7 @@ def main() -> int:
         payload["status"] = "noop"
         return _emit_payload(payload, as_json=args.json)
 
-    advise_prose_pin(repo_root, payload["changed_paths"])
-    advise_skill_surface_preflight(repo_root, payload["changed_paths"])
-
-    blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
-    if blocked is not None:
-        return blocked
-
-    blocked = _maybe_block_on_cautilus(
-        repo_root,
-        payload,
-        as_json=args.json,
-        ack_skill_review=args.ack_cautilus_skill_review,
-    )
-    if blocked is not None:
-        return blocked
-
-    blocked = _maybe_block_on_risk_interrupt(repo_root, payload, as_json=args.json)
+    blocked = _run_preexecution_blocks(repo_root, payload, args)
     if blocked is not None:
         return blocked
 
@@ -487,7 +505,9 @@ def main() -> int:
 
     if args.plan_only:
         payload["status"] = "planned"
-        payload["planned_commands"] = [{"phase": phase, "command": command} for phase, command in command_plan]
+        payload["planned_commands"] = structural_sweep_planned_commands(
+            repo_root, list(payload["changed_paths"])
+        ) + [{"phase": phase, "command": command} for phase, command in command_plan]
         return _emit_payload(payload, as_json=args.json)
 
     unsafe_blockers = _unsafe_command_blockers(command_plan)
