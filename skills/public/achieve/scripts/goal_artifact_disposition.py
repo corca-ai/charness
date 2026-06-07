@@ -23,6 +23,7 @@ nor ``goal_artifact_closeout_evidence.py`` approaches the single-file line gate.
 """
 from __future__ import annotations
 
+import importlib.util
 import re
 from datetime import date
 from pathlib import Path
@@ -196,6 +197,69 @@ def _bound_retro_path(report: dict[str, Any]):
     return found
 
 
+_FORM_MODULE = None
+
+
+def _load_shared_form():
+    """Load the shared disposition-form grammar (``scripts/disposition_form.py``).
+
+    Parent-walks to ``scripts/`` exactly like the closeout wrapper resolves
+    ``check_prescribed_skill_executed_lib``, so the single source of grammar
+    resolves both in-tree and in the installed export. Cached at module level;
+    lazy so importing this leaf standalone never requires the shared module.
+    """
+    global _FORM_MODULE
+    if _FORM_MODULE is not None:
+        return _FORM_MODULE
+    here = Path(__file__).resolve()
+    for ancestor in here.parents:
+        candidate = ancestor / "scripts" / "disposition_form.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("disposition_form", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            _FORM_MODULE = module
+            return module
+    raise ImportError("scripts/disposition_form.py not found above goal_artifact_disposition.py")
+
+
+def apply_disposition_form_floor(report: dict[str, Any], text: str) -> None:
+    """Disposition rung 1c: reject invalid disposition **forms** in
+    ``## Auto-Retro`` for goals Created on/after the form rule date.
+
+    Form/enum only (never a content classifier): a bare ``memory``/prose-only
+    disposition fails; ``applied: …``/``issue #N``/``none — <reason>`` pass, even
+    when vague. Its own enforce-from-date (later than rungs 1a/1b) grandfathers
+    every goal frozen before the floor existed. The grammar lives once in the
+    shared module so neither this gate nor the session-retro validator forks it.
+    """
+    form = _load_shared_form()
+    created = goal_created_date(text)
+    enforced = form.is_form_enforced(created)
+    report["disposition_form_scope"] = {
+        "enforced": enforced,
+        "created": created.isoformat() if created else None,
+        "rule_date": form.DISPOSITION_FORM_RULE_DATE.isoformat(),
+    }
+    if not enforced:
+        return
+    body = _section_body(_mask_fences(text), "Auto-Retro")
+    if not body:
+        return
+    invalid = form.invalid_dispositions(body)
+    if invalid:
+        report["disposition_form"] = {
+            "invalid": [{"marker": e["marker"], "value": e["value"]} for e in invalid],
+            "reason": (
+                "one or more `## Auto-Retro` disposition lines use an invalid form; each must be "
+                f"{form.VALID_FORM_SUMMARY} — a bare `memory`/prose-only disposition is rejected"
+            ),
+        }
+        report["ok"] = False
+
+
 def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -> None:
     """Attach the disposition-gate verdict to ``report`` (mutates in place).
 
@@ -206,6 +270,9 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
     blank check must still fire). The substantive per-improvement judgment is
     rung 2's job — recorded for a human, never scored here.
     """
+    # Rung 1c (the disposition-form floor) runs first and on its own
+    # enforce-from-date, so it fires even when rungs 1a/1b are grandfathered.
+    apply_disposition_form_floor(report, text)
     created = goal_created_date(text)
     report["disposition_scope"] = {
         "in_scope": in_scope,

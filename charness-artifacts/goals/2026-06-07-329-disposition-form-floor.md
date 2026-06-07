@@ -1,6 +1,6 @@
 # Achieve Goal: Reject invalid prose-only retro dispositions with a form/enum floor (#329)
 
-Status: draft
+Status: complete
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md`
 
@@ -11,12 +11,19 @@ activation command; shaping happened, no slices were executed.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md`, then re-confirm the primary + the one open scope lever against `## Discuss Before Activation`.
+- Current slice: COMPLETE — S1–S4 done; floor landed, reviewed, closeout evidence bound, `check_goal_artifact` green.
+- Next action: commit (staged `Closes #329`) + push (approved lane) + `verify-closeout --expect-state CLOSED`.
+- Activated 2026-06-07; reach lever resolved to the recommended **BOTH** (achieve Auto-Retro + session retro) since activation did not re-point. Primary unchanged: #329.
+- S1 contract (resolved):
+  - **Valid forms** (markdown-tolerant, leading-token enum): `applied …` (leading token `applied`), `issue/issues … #N` (leading `issue(s)`/`#N` AND contains `#\d+`), `none [—–:-] <reason>` (separator + non-empty reason).
+  - **Invalid (rejected):** bare `memory` / `memory -> …` / prose-only / unfiled `issue` with no `#N` / bare `none`. Form only — vague-but-valid `applied: tweak` passes (never a content classifier).
+  - **Parse surface:** `Disposition:` (per-improvement) + `Retro dispositions:` (aggregate) lines, fence-masked; achieve scopes to `## Auto-Retro`, retro scopes to `## Next Improvements`. Untouched `TODO/<…>` placeholders are skipped (rung 1a owns block-the-blank).
+  - **Enforce-from-date = 2026-06-08** (`DISPOSITION_FORM_RULE_DATE`), `observed >= date` enforced, fail-closed on undatable. Set to the day AFTER today so #330 (frozen `complete`, Created 2026-06-07, carries `memory ->`/`fix (folded)`), this #329 goal, and the triggering retros are all grandfathered — honoring the Goodhart Non-Goal. The floor takes effect for next-session artifacts; tests exercise it with synthetic future/past dates.
+  - **Home:** shared leaf `scripts/disposition_form.py` (single source of grammar; ships to `plugins/charness/scripts/`); achieve folds it into `apply_disposition_rungs` (wrapper at 348/360 — untouched); retro validator imports it same-root.
 - Mode: spec-light — one small validator + wiring; promote to a `spec` only if the floor needs a shared disposition-grammar surface reused by more than the two call sites.
-- Timebox: until #329 is resolved; re-pick the next slice at each boundary.
-- Activation time: set by the next session at `/goal`.
-- Closeout reserve: keep the last boundary for bundle verify + one bounded fresh-eye critique + retro.
+- Timebox: 8h
+- Activation time: 2026-06-07
+- Closeout reserve: 90m
 - Done-early policy: continue_next_improvement (if #329 lands early, re-point to #184 with an explicit ideation/spec scope reset, not a quick slice).
 - Verification cadence: cheap deterministic checks at commit boundaries; targeted `pytest` + fresh-eye review at slice boundaries; broad `pytest` + one bounded `critique` at the bundle boundary.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed files and owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
@@ -117,27 +124,58 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 | Define the disposition-form contract: valid prefixes (`applied:`, `issue #N`, `none — <reason>`), invalid (bare `memory` / prose-only); decide the parse surface (Auto-Retro `Retro dispositions:` lines + per-line dispositions) + the enforce-from-date + the reach (achieve-only vs +session-retro) | Foundation for #329; the issue names the template and the cardinal "form not substance" rule | a written form spec + the enforce-date + the reach decision | planned |
-| S2 | Implement the form/enum check + tests (negative guards: bare `memory ->` fails; the 3 valid forms pass; pre-date grandfathered; vague-but-valid form passes) | The core of #329 | checker + tests; a `Disposition: memory` line fails, `applied:`/`issue #N`/`none — <reason>` pass | planned |
-| S3 | Wire the floor into achieve goal closeout (`goal_artifact_disposition`/`check_goal_artifact`) and — per the Discuss reach decision — `validate_retro_artifact` for session retros, with enforce-date grandfathering | Make it a standing gate at the surfaces where invalid dispositions actually shipped | gate runs; appears in closeout + (if extended) session-retro validation | planned |
-| S4 | Close #329 + bundle verify + bounded critique + retro | Closeout | staged close; broad pytest; fresh-eye critique; validate-closeout-draft | planned |
+| S1 | Define the disposition-form contract: valid prefixes (`applied:`, `issue #N`, `none — <reason>`), invalid (bare `memory` / prose-only); decide the parse surface (Auto-Retro `Retro dispositions:` lines + per-line dispositions) + the enforce-from-date + the reach (achieve-only vs +session-retro) | Foundation for #329; the issue names the template and the cardinal "form not substance" rule | a written form spec + the enforce-date + the reach decision | done (frame S1 contract) |
+| S2 | Implement the form/enum check + tests (negative guards: bare `memory ->` fails; the 3 valid forms pass; pre-date grandfathered; vague-but-valid form passes) | The core of #329 | checker + tests; a `Disposition: memory` line fails, `applied:`/`issue #N`/`none — <reason>` pass | done (`scripts/disposition_form.py` + 18-case test) |
+| S3 | Wire the floor into achieve goal closeout (`goal_artifact_disposition`/`check_goal_artifact`) and — per the Discuss reach decision — `validate_retro_artifact` for session retros, with enforce-date grandfathering | Make it a standing gate at the surfaces where invalid dispositions actually shipped | gate runs; appears in closeout + (if extended) session-retro validation | done (BOTH surfaces wired; mirror synced) |
+| S4 | Close #329 + bundle verify + bounded critique + retro | Closeout | staged close; broad pytest; fresh-eye critique; validate-closeout-draft | done (broad pytest 2567 passed; SHIP-WITH-NITS critique folded; retro; check_goal_artifact green) |
 
 ## Coordination Cues
 
-Routing deferred to `find-skills` — no hard-coded phase→skill map here. Fill
+Routing deferred to `find-skills` — no hard-coded phase→skill map here. Filled
 during the run:
 
-- **Routing** — query `find-skills` per phase; #329 is `impl` + `quality`; record
-  the route returned.
-- **Gather** — `Gather: n/a — no external source; all context is in-repo issues
-  and validators.`
-- **Release** — `Release: n/a unless a shipped capability warrants a version
-  bump.`
-- **Issue closeout** — #329; direct-commit carrier; staged close keyword;
-  `validate-closeout-draft` (draft, before commit) then `verify-closeout
-  --expect-state CLOSED` proof.
+- Routing: find-skills routed to achieve = impl + quality + issue (issue-phase = close #329 + file off-goal #332); read-only, local-first, no support/integration/external route returned — the work is in-repo validator + gate wiring.
+- Gather: n/a — no external source to fetch; all context is in-repo issues and
+  validators (the #329 GitHub issue is the tracked-issue reference, not a gather
+  source).
+- Release: n/a — no shipped runtime capability warrants a version bump; this is an
+  internal validator/closeout-gate change only.
+- Issue closeout: #329 — direct-commit carrier; staged `Closes #329`; then
+  `verify-closeout --expect-state CLOSED` proof after push.
 
 ## Slice Log
+
+- **S1–S3 (impl bundle), 2026-06-07.** Landed the disposition-form floor.
+  - New shared leaf `scripts/disposition_form.py` (single source of grammar):
+    `evaluate_disposition_form` (markdown-tolerant leading-token enum), `scan_dispositions`
+    (fence-masked marker scan of `Disposition:`/`Retro dispositions:`), `invalid_dispositions`,
+    `is_form_enforced` (`DISPOSITION_FORM_RULE_DATE = 2026-06-08`, fail-closed). Ships to
+    `plugins/charness/scripts/`.
+  - Achieve: `goal_artifact_disposition.apply_disposition_form_floor` (rung 1c) loads the shared
+    leaf via parent-walk; runs first inside `apply_disposition_rungs` on its own enforce-date;
+    scopes `## Auto-Retro`; sets `report["disposition_form"]` + `ok=False`. Wrapper untouched
+    (was 348/360).
+  - Session retro: `validate_retro_artifact.validate_disposition_forms` scopes `## Next
+    Improvements`, keys enforce-date off the retro `Date:` line; raises `ValidationError`.
+  - Proof: targeted 18-case test green; existing disposition/retro/goal-artifact suites 102 green;
+    ruff/lengths/export-safe/plugin-import-smoke green; mirror synced. Corpus safety: 0 completed
+    goals retroactively form-failed (Goodhart Non-Goal honored — all Created ≤ 2026-06-07).
+
+- **S4 (closeout), 2026-06-07.** Bundle verify + fresh-eye critique + retro + close.
+  - Broad pytest: 2567 passed, 4 skipped (the only failure — a self-introduced preflight
+    regression — was folded; see below).
+  - Bounded fresh-eye review (parent-delegated, independent context): SHIP-WITH-NITS;
+    both real findings folded before ship — (1) dateless historical retros were
+    fail-closed into enforcement → filename-date fallback; (2) `none-actionable`
+    compound-word false-accept → separator tightening. Critique:
+    `charness-artifacts/critique/2026-06-07-issue-329-disposition-form-floor.md`.
+  - Two self-introduced gate regressions surfaced by the broad gate and folded:
+    portable-package issue anchors in the achieve leaf (`validate_skill_ergonomics`)
+    and a stray `skipped` term (`validate_attention_state_visibility`). Generalized as
+    off-goal **#332** (recurring authoring-preflight trap #308/#325/#329) and the retro's
+    main waste lesson.
+  - Retro `charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md`
+    (dogfooded with valid disposition forms). `check_goal_artifact` green.
 
 ## Context Sources
 
@@ -198,14 +236,22 @@ Pre-activation shaping notes (the next session runs the real fresh-eye critique)
 
 ## Off-Goal Findings
 
+- **#332 — authoring-preflight / commit-boundary structural-sweep is not reliably
+  run on new skill-package + script edits (recurring #308/#325/#329).** Filed
+  upstream-harness. Surfaced as this session's biggest waste: two self-introduced
+  gate regressions (portable-package issue anchor + attention-state `skipped` term)
+  caught only at the broad-pytest boundary though both are commit-boundary gates.
+  Out of #329 scope (gate automation, not the disposition floor); recorded here per
+  the off-goal-findings contract.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` or an explicit
 `skipped: <allowed-reason>: <detail>` before flipping to complete.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md
+Host log probe: skipped: host-log-not-exposed: no host/runtime behavior is claimed (External Or Live Proof = none); the proof is broad pytest (2567 passed) + the standing deterministic gates, not a host/runtime probe, so there is no host log to probe.
+Disposition review: charness-artifacts/critique/2026-06-07-issue-329-disposition-form-floor.md
 
 ## User Verification Instructions
 
@@ -233,4 +279,16 @@ enforce-from-date grandfathering). One real lever to confirm or re-point at
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions: applied + issue #332 + none — every surfaced improvement is
+dispositioned in `charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md`
+`## Next Improvements`; restated per-improvement below (all valid forms, dogfooding
+the floor this goal lands):
+
+- Recurring commit-boundary structural-sweep trap (3rd instance #308/#325/#329; two
+  self-introduced gate regressions caught only at broad pytest). Disposition: issue #332.
+- Enforce-from-date grandfather needs a corpus/identity-aware fallback, not a single
+  date-line parse. Disposition: applied: landed the filename-date fallback in
+  `validate_retro_artifact._retro_observed_date` + regression tests this run.
+- Extend the floor's reach to other disposition emitters. Disposition: none — the two
+  surfaces #329 named are gated at source and derived digests inherit it; no third
+  surface has shipped an invalid form, so no new teeth are warranted yet.

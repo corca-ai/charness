@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -14,6 +16,14 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
+
+# Shared single source of the disposition-form grammar (#329); imported same-root
+# so the session-retro `## Next Improvements` floor never forks achieve parsing.
+disposition_form = import_repo_module(__file__, "scripts.disposition_form")
+
+NEXT_IMPROVEMENTS_HEADING = "## Next Improvements"
+DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
+_DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
 
 RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
 GENERATED_DIGEST = "recent-lessons.md"
@@ -83,6 +93,75 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
     return sorted(candidates)
 
 
+def _retro_date(lines: list[str]) -> date | None:
+    """Parse the retro's ``Date: YYYY-MM-DD`` line; ``None`` when absent/malformed."""
+    for line in lines[:5]:
+        match = _DATE_LINE.match(line.strip())
+        if match:
+            try:
+                return date.fromisoformat(match.group(1))
+            except ValueError:
+                return None
+    return None
+
+
+def _date_from_filename(path: Path) -> date | None:
+    """The leading ``YYYY-MM-DD`` of the retro filename, ``None`` when absent."""
+    match = re.match(r"(\d{4}-\d{2}-\d{2})", path.name)
+    if not match:
+        return None
+    try:
+        return date.fromisoformat(match.group(1))
+    except ValueError:
+        return None
+
+
+def _retro_observed_date(path: Path, lines: list[str]) -> date | None:
+    """The retro's effective date for grandfathering: the in-body ``Date:`` line,
+    else the leading ``YYYY-MM-DD`` of the filename. Many frozen historical retros
+    predate the ``Date:`` header convention but are still dated by filename, so the
+    filename fallback keeps them grandfathered (Goodhart Non-Goal). Only a retro
+    with neither falls through to ``None`` -> fail-closed enforcement, which also
+    blocks dodging the floor by stripping the date line of a current-dated file."""
+    return _retro_date(lines) or _date_from_filename(path)
+
+
+def _next_improvements_body(lines: list[str]) -> str:
+    """Return the ``## Next Improvements`` section body (heading excluded), from
+    its heading to the next ``## `` heading or EOF. Empty string when absent."""
+    start = None
+    for index, line in enumerate(lines):
+        if line.strip() == NEXT_IMPROVEMENTS_HEADING:
+            start = index + 1
+            break
+    if start is None:
+        return ""
+    end = len(lines)
+    for index in range(start, len(lines)):
+        if lines[index].startswith("## "):
+            end = index
+            break
+    return "\n".join(lines[start:end])
+
+
+def validate_disposition_forms(lines: list[str], observed_date: date | None) -> None:
+    """Fail when an in-scope retro's ``## Next Improvements`` carries a disposition
+    line in an invalid form (#329). Grandfathered for retros dated before the
+    form rule date; form/enum only — substance stays the reviewer's job."""
+    if not disposition_form.is_form_enforced(observed_date):
+        return
+    invalid = disposition_form.invalid_dispositions(_next_improvements_body(lines))
+    if not invalid:
+        return
+    offenders = "; ".join(f"`{entry['marker']}: {entry['value'][:80]}`" for entry in invalid)
+    raise ValidationError(
+        f"`{NEXT_IMPROVEMENTS_HEADING}` has {len(invalid)} disposition line(s) in an invalid form "
+        f"(offenders: {offenders}); each disposition must be one of "
+        f"{disposition_form.VALID_FORM_SUMMARY} — a bare `memory`/prose-only disposition is rejected. "
+        f"See {DISPOSITION_FORM_REFERENCE}."
+    )
+
+
 def validate_retro_artifact(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     validate_sibling_followups(
@@ -90,6 +169,7 @@ def validate_retro_artifact(path: Path) -> None:
         boundary_headings=SIBLING_BOUNDARY_HEADINGS,
         source_reference=SIBLING_SOURCE_REFERENCE,
     )
+    validate_disposition_forms(lines, _retro_observed_date(path, lines))
 
 
 def main() -> int:

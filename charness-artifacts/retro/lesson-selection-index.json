@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 152,
-  "candidate_count": 891,
+  "source_artifact_count": 153,
+  "candidate_count": 897,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -151,6 +151,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
           "date": "2026-06-07",
           "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:12f82577cde1",
+      "kind": "current_focus",
+      "lesson": "Activated the shaped achieve goal `2026-06-07-329-disposition-form-floor` and ran it end to end: built a narrow presence/enum **form** floor (#329) that rejects the named-invalid prose-only `Disposition: memory` and requires one of `applied: <change>` / `issue #N` / `none — <reason>`, form-only (never a content classifier).",
+      "normalized_key": "activated the shaped achieve goal 2026 06 07 329 disposition form floor and ran",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+          "date": "2026-06-07",
+          "section": "Context"
         }
       ]
     },
@@ -333,26 +353,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:a3cfc51f5332",
-      "kind": "next_improvement",
-      "lesson": "At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff \"open\" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session.",
-      "normalized_key": "at task start verify the target issue s real state open closed last close",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -493,6 +493,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
           "date": "2026-06-07",
           "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:12f82577cde1",
+      "kind": "current_focus",
+      "lesson": "Activated the shaped achieve goal `2026-06-07-329-disposition-form-floor` and ran it end to end: built a narrow presence/enum **form** floor (#329) that rejects the named-invalid prose-only `Disposition: memory` and requires one of `applied: <change>` / `issue #N` / `none — <reason>`, form-only (never a content classifier).",
+      "normalized_key": "activated the shaped achieve goal 2026 06 07 329 disposition form floor and ran",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+          "date": "2026-06-07",
+          "section": "Context"
         }
       ]
     },
@@ -837,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:da4def1552c2",
+      "kind": "next_improvement",
+      "lesson": "extend the disposition-form floor's reach to other emitters only if a real invalid form ships from them. Disposition: none — the two surfaces #329 named (achieve Auto-Retro + session Next-Improvements) are now gated at source and derived digests inherit it; no third surface has shipped an invalid form, so no new teeth are warranted yet.",
+      "normalized_key": "extend the disposition form floor s reach to other emitters only if a real",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5d3eb2ab3f81",
       "kind": "next_improvement",
       "lesson": "for an issue closeout, write the structured closeout body and run `verify-closeout` as a draft (no `--expect-state`) BEFORE committing, so the jtbd/boundary/.../Critique schema does not force an amend. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
@@ -1017,6 +1057,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:20b4a730edcc",
+      "kind": "next_improvement",
+      "lesson": "when a slice touches a NEW `scripts/*.py` or a portable skill package, run the slice-closeout surface-gate runner on the changed surfaces (it already wires `validate_skill_ergonomics` + `validate_attention_state_visibility` per #314/#328) at the commit boundary — do not defer those cheap structural gates to the broad-pytest bundle boundary. Disposition: issue #332 — escalated this recurring trap (3rd instance: #308/#325/#329) to make the commit-boundary structural sweep non-discretionary; memory-only reminders have not stopped it (source: this retro).",
+      "normalized_key": "when a slice touches a new scripts py or a portable skill package run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:bfc494d1db1d",
       "kind": "next_improvement",
       "lesson": "when a structural gate asserts a substring anchor against prose, choose anchors that live on a single line — markdown wraps text, so a multi-word anchor can straddle a `\\n` and false-negative. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
@@ -1031,6 +1091,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cd0a1fb92935",
+      "kind": "next_improvement",
+      "lesson": "when building an enforce-from-date grandfather, probe the REAL corpus (including older header/date conventions) before trusting a single date-line parse; add a filename/identity fallback so frozen artifacts are not fail-closed into retroactive enforcement. Disposition: applied: landed the filename-date fallback in `validate_retro_artifact._retro_observed_date` + regression tests this run (source: this retro).",
+      "normalized_key": "when building an enforce from date grandfather probe the real corpus including older header",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -1337,6 +1417,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ba744aa4cf18",
+      "kind": "repeat_trap",
+      "lesson": "**The dateless-retro grandfather gap was caught by the reviewer, not by me.** My retro floor fail-closed on a missing `Date:` line; 93/152 frozen retros predate that header, so 4 would have been retroactively failed under `--all` — a direct Goodhart Non-Goal violation. The bounded review found it; I folded a filename-date fallback before ship. Cheap to fix, avoidable by probing the real corpus up front.",
+      "normalized_key": "the dateless retro grandfather gap was caught by the reviewer not by me my",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:59ac4bea0c60",
       "kind": "repeat_trap",
       "lesson": "The gate logic lives in repo-root `scripts/check_changed_line_mutation_coverage.py` and is wired into charness's `run-quality.sh`; the transferable doctrine (stale-coverage freshness guard, the producer-cost lesson) was never written to `skills/public/quality/references/mutation-testing.md`. Other repos adopting the `quality` skill therefore inherit none of it.",
@@ -1391,6 +1491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3ad5d83a1d74",
+      "kind": "repeat_trap",
+      "lesson": "**Two self-introduced gate regressions surfaced only at the broad-pytest boundary, not at the commit boundary (biggest process waste).** My `(#329)` comments in the portable achieve leaf tripped `validate_skill_ergonomics`' `portable_package_issue_anchor`, and a stray `skipped` term in a docstring tripped `validate_attention_state_visibility`. Both are **already wired as commit-boundary slice-closeout gates** (`.agents/surfaces.json` #314/#328), but at the slice boundary I ran only ruff + lengths + targeted pytest + export-safe + plugin-smoke — I did NOT run the slice-closeout surface-gate runner on my changed `scripts/`+`skills/` surfaces, so the broad gate (7 min) caught what a cheap commit-boundary sweep would have caught immediately. No harm shipped (caught before close), but it cost a full broad-pytest round-trip.",
+      "normalized_key": "two self introduced gate regressions surfaced only at the broad pytest boundary not at",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
           "date": "2026-06-07",
           "section": "Waste"
         }
