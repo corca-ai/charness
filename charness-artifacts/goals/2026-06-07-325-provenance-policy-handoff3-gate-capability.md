@@ -384,9 +384,13 @@ Retro dispositions:
   new skill-package files) → applied as a next-session workflow lesson +
   recorded in `charness-artifacts/retro/recent-lessons.md`. Disposition: memory.
 - **capability** (extend `check_skill_surface_preflight.py` to run the
-  portable-package gate set as one pre-author/pre-closeout tripwire) → fold-
-  candidate into `issue #328` (confirmed OPEN + #325-adjacent by the disposition
-  reviewer); decision deferred there. Disposition: issue (#328).
+  portable-package gate set as one pre-author/pre-closeout tripwire) →
+  **scope-extension comment posted to `issue #328`** recording the additional
+  gates this session found (attention-state declaration, ownership-overlap,
+  author-repo cite) so a future #328 build covers the whole set, not just the
+  three originally enumerated:
+  https://github.com/corca-ai/charness/issues/328#issuecomment-4641520695.
+  Disposition: issue (#328), captured on the destination.
 - **memory** (recurrence persisted) → done: retro + recent-lessons + lesson-
   selection-index refreshed and committed in the closeout commit.
 - **Sibling Search** (serial-discovery-behind-a-gate is transferable) →

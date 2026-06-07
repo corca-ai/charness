@@ -78,8 +78,9 @@ critiques. Next: maintainer push (issue stays OPEN); release surfaces untouched.
   run the portable-package gate set as a single pre-author/pre-closeout tripwire
   that reports ALL findings at once — its current scope missed attention-state
   declaration coverage, ownership-overlap, and author-repo cites together.
-  Disposition: candidate fold into the existing `issue #328`
-  (authoring-preflight prose-pin pre-check) scope; decide there vs a new issue.
+  Disposition: scope-extension comment posted to the existing `issue #328`
+  (authoring-preflight prose-pin pre-check) recording these additional gates on
+  the destination, so a future build covers the whole set.
 - **memory:** this retro + the recent-lessons digest carry the recurrence.
 
 ## Sibling Search
