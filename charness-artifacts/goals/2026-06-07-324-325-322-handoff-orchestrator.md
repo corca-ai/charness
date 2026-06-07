@@ -9,8 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-324-325-322-handoff-orchestrator.md`.
+- Current slice: B1+B2 done & committed; B3+B4 shaped as child `/achieve` goals.
+- Status: **active** — awaiting (a) operator activation+completion of the two
+  child goals, and (b) the maintainer's push/tag of v0.26.0 (auto-closes #324).
+- Done this session (local commits, NOT pushed; `main` ahead of origin by 5):
+  - B1a/B1b/B1c (#324): provider-neutral external-source preservation contract +
+    fixture + tests; v0.26.0 release surface staged with `Close #324`; local
+    `--release` gate components green; changed-line mutation coverage active+green
+    base→worktree. Commits `7dcfb43d`, `e0043ac9`.
+  - B2 (handoff-4): false-green changed-line dry-run warning + tests. Commit `2f9c5f8c`.
+- Next action (operator): `/goal @charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md`,
+  then `/goal @charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md`;
+  and push/tag v0.26.0 to auto-close #324.
+- This orchestrator does **not** auto-execute the child goals (preserves the
+  `/achieve` shape → `/goal` pursue boundary).
 - Mode: implementation-continuation, **orchestrator** — one auditable goal that
   resolves five deduped objectives as a multi-goal run with **dynamic
   workflow**: the next bundle is re-picked at each boundary, and a spec-first
@@ -305,6 +317,34 @@ contract versus a reference-only update.
 - Critique: Deferred to the final cross-slice closeout review (handoff-4 is a small, well-tested non-blocking warning, not one of the goal's named critique bundles).
 - Off-goal findings:
 - Lessons carried forward: A warning surfaced in ALL emit paths (early-return + skip + final) via _attach_warning, since the false-green case often produces the 'no eligible changed' early return (the uncommitted changes are exactly what is excluded).
+- Metrics:
+
+### Slice 5: B3 — #325 + handoff-3 shaped as a child /achieve goal
+
+- Objective: Per operator decision (shape as child goals), shape the #325 provenance-policy + portable-check + handoff-3 gate-as-quality-capability bundle as a dedicated child /achieve goal, inert until /goal.
+- Why this approach: Spec-first deep-shaping objective; the orchestrator shapes but does not auto-execute child goals (preserves the /achieve shape -> /goal pursue boundary). handoff-3 scoped to BUILD the quality capability + adapter (operator decision).
+- Commits:
+- What changed: charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md (draft, pursue_ready=True). Seed found this session: validate_skill_ergonomics/skill_text_quality_lib already enforce issue-anchor/dated-incident prohibition for skill packages; #325 generalizes to standing docs with a standing-vs-tracking allowlist.
+- Alternatives rejected:
+- Targeted verification: check_goal_artifact.py --pursue-ready: pursue_ready=True, placeholders=0, discussion_ready=True. Child goal NOT activated/executed by the orchestrator.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings: Child goal reference: charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md — activate with /goal to pursue. Sub-issue split allowed if scope grows (operator).
+- Lessons carried forward: Child goal Discuss-before-activation summary MUST sit before ## Slice Log; the validator (goal_artifact_discussion._summary_content) only scans the pre-Slice-Log region.
+- Metrics:
+
+### Slice 6: B4 — #322 shaped as a child /achieve goal
+
+- Objective: Per operator decision, shape the #322 advisory-interpretation rollout (4-field self-declaration across the remaining inference-layer surfaces + paired consumer requirements) as a dedicated child /achieve goal, inert until /goal.
+- Why this approach: Spec-light rollout; orchestrator shapes but does not auto-execute. Inference-layer only (verified facts stay trusted); spec-promotion deferred to a shared-schema decision slice.
+- Commits:
+- What changed: charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md (draft, pursue_ready=True). Grounded in the #322 body's 6 remaining surfaces + the nose pilot template.
+- Alternatives rejected:
+- Targeted verification: check_goal_artifact.py --pursue-ready: pursue_ready=True, placeholders=0, discussion_ready=True. Child goal NOT activated/executed.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings: Child goal reference: charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md — activate with /goal to pursue. Sub-issue split allowed if a shared schema/validator becomes spec-worthy.
+- Lessons carried forward: Both spec-first objectives became child goals per the operator's explicit choice; the orchestrator's own completion now depends on the user activating + completing the two children (the achieve shape->pursue boundary is preserved across sessions).
 - Metrics:
 
 ## Context Sources
