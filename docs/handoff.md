@@ -42,11 +42,11 @@
 
 ## Next Session
 
-- **Surface-idiom lint (candidate, anchor surface-idiom-lint):** a
-  `validate_surfaces` check flagging any `<dir>/**/*.X` source pattern without a
-  `<dir>/*.X` sibling, so the closeout-matcher footgun (#331) cannot return.
-- Candidate objectives: **#330** (meta-validator — clean #322 sequel), **#329**
-  (retro disposition floor), **#184** (product metrics; needs ideation/spec).
+- **Shaped achieve goal ready (pursue-ready):**
+  [330-metavalidator-gate-hardening](../charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md)
+  — `/goal @charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md`.
+  Primary #330 (advisory-interpretation meta-validator); bundles the #331
+  surface-idiom lint; re-points to #329 / #184 in its Discuss section.
 - **Human real-host smoke for v0.27.0 (release left it open).** `charness update`
   on a clean temp-home / second machine + the nose tool-doctor/install/sync
   checklist in [release latest](../charness-artifacts/release/latest.md). Cannot
