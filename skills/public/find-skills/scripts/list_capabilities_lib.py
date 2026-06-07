@@ -7,6 +7,20 @@ from pathlib import Path
 from typing import Any
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
+
+# Advisory interpretation contract (see shared/references/
+# advisory-interpretation-contract.md): the recommendation RANKING is an
+# inference-layer proxy, so it self-declares blind spots and the question the
+# routing consumer must answer. NOTE: this rides only the recommendation output,
+# never the capability *inventory* (the list of installed skills/paths/triggers
+# is a verified fact and stays trusted). Field values are single-line by design to
+# keep this capability module under its length warn band.
+RECOMMENDATION_INTERPRETATION = {
+    "measures": "trigger / intent-phrase and task-text overlap between the request and registered skill/support/tool metadata, ranked into a recommended route",
+    "proxy_for": "which installed capability actually fits the task",
+    "blind_spots": "matches declared trigger vocabulary, not task semantics — a strong phrase match can still be the wrong route, and a genuinely-fitting skill whose metadata lacks the phrase ranks low or is absent; an empty ranking is not proof that no capability exists",
+    "interpretation_question": "does the top-ranked route actually fit THIS task and repo state, or is it a trigger-phrase coincidence (and is a better-fitting skill missing from the ranking)?",
+}
 # Temporary canonical source for workflow integrations until a manifest-backed
 # workflow registry exists.
 WORKFLOW_RECOMMENDATIONS = [
@@ -327,6 +341,7 @@ def build_inventory_payload(
         "For validation-shaped requests, rerun with "
         "`--recommendation-role validation --next-skill-id <skill-id>`."
     ) if show_note else None
+    has_recommendations = any([tool_recommendations, support_skill_recommendations, workflow_recommendations, public_skill_recommendations])
     return {
         "adapter": {
             "found": adapter["found"],
@@ -351,4 +366,7 @@ def build_inventory_payload(
         "public_skill_recommendations": public_skill_recommendations or [],
         "public_recommendation_query": public_recommendation_query,
         "support_recommendation_note": note,
+        # Inference-layer self-declaration rides the ranking only; absent when no
+        # recommendation was produced so it never attaches to the verified inventory.
+        **({"recommendation_interpretation": dict(RECOMMENDATION_INTERPRETATION)} if has_recommendations else {}),
     }

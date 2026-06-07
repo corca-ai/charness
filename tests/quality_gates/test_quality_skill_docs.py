@@ -5,6 +5,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_recommended_next_gates_ranking_declares_inference_layer_interpretation() -> None:
+    # Advisory-interpretation contract rollout (#322): the `Recommended Next Gates`
+    # ordering is an inference-layer ranking authored as prose, so the consuming
+    # `quality` references declare it as such and carry the consumer-must-answer
+    # requirement (both halves), while keeping verified gate results trusted.
+    gate_classification = (
+        ROOT / "skills" / "public" / "quality" / "references" / "gate-classification.md"
+    ).read_text(encoding="utf-8")
+    automation_promotion = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+
+    assert "inference-layer" in gate_classification
+    assert "advisory-interpretation-contract.md" in gate_classification
+    assert "interpretation question" in gate_classification
+    # Verified gate results stay trusted; only the ordering is re-interpreted.
+    assert "stay trusted" in gate_classification
+
+    # Paired consumer requirement enumerates recommendation rankings as a surface.
+    assert "recommendation rankings" in automation_promotion
+    assert "Recommended Next Gates" in automation_promotion
+
+
 def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     ergonomics = (

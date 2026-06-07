@@ -114,6 +114,42 @@ def test_inventory_lint_ignores_skips_vendored_paths(tmp_path: Path) -> None:
     assert paths == {"scripts/demo.py"}
 
 
+def _inventory_plain(repo: Path) -> str:
+    buffer = io.StringIO()
+    saved_argv = _MODULE.sys.argv
+    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo)]
+    try:
+        with contextlib.redirect_stdout(buffer):
+            assert _MODULE.main() == 0
+    finally:
+        _MODULE.sys.argv = saved_argv
+    return buffer.getvalue()
+
+
+def test_inventory_lint_ignores_emits_interpretation_self_declaration(tmp_path: Path) -> None:
+    # Advisory-interpretation contract rollout (#322): suppression pressure is an
+    # inference-layer trend; assert both halves — the 4-field self-declaration and
+    # the paired consumer-must-answer requirement in the consuming `quality`
+    # reference.
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "demo.py").write_text("import sys  # noqa: F401\n", encoding="utf-8")
+
+    interpretation = _inventory_json(repo)["interpretation"]
+    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
+    assert all(interpretation[field].strip() for field in interpretation)
+
+    plain = _inventory_plain(repo)
+    assert "INTERPRETATION" in plain
+    assert "Consumer must answer first" in plain
+    assert "intentional" in plain  # the load-bearing blind spot
+
+    reference = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+    assert "inventory_lint_ignores.py" in reference
+
+
 def test_inventory_lint_ignores_skips_python_string_literals(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

@@ -233,6 +233,12 @@ def _summary_payload(payload: dict[str, object]) -> dict[str, object]:
             "workflow_recommendations": payload.get("workflow_recommendations", []),
             "public_skill_recommendations": payload.get("public_skill_recommendations", []),
             "public_recommendation_query": payload.get("public_recommendation_query"),
+            # Inference-layer self-declaration; present only when a ranking was produced.
+            **(
+                {"recommendation_interpretation": payload["recommendation_interpretation"]}
+                if payload.get("recommendation_interpretation")
+                else {}
+            ),
         },
     }
 

@@ -597,3 +597,30 @@ def test_recommend_for_task_public_match_handles_space_bounded_name_in_korean(tm
     payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "hitl 로 문서를 검토합시다")
 
     assert [entry["id"] for entry in payload["public_skill_recommendations"]] == ["hitl"]
+
+
+def test_recommendation_ranking_carries_interpretation_self_declaration(tmp_path: Path) -> None:
+    # Advisory-interpretation contract rollout (#322): the recommendation RANKING is
+    # inference-layer, so it self-declares the 4 fields. The verified capability
+    # inventory stays clean — no declaration rides a run that produced no ranking.
+    _write_find_skills_adapter(tmp_path)
+    _write_public_skill(tmp_path, "hitl", "Bounded human review loop.")
+
+    summary = _run_list_capabilities(tmp_path, "--recommend-for-task", "hitl review this branch", "--summary")
+    recommendations = summary["recommendations"]
+    assert [entry["id"] for entry in recommendations["public_skill_recommendations"]] == ["hitl"]
+    interpretation = recommendations["recommendation_interpretation"]
+    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
+    assert all(interpretation[field].strip() for field in interpretation)
+    assert "coincidence" in interpretation["interpretation_question"]
+
+    # Cardinal-error guard: a plain inventory (no recommendation query) must NOT
+    # attach the declaration — it would otherwise ride the verified inventory.
+    plain = _run_list_capabilities(tmp_path)
+    assert "recommendation_interpretation" not in plain
+
+    reference = (
+        REPO_ROOT / "skills" / "public" / "find-skills" / "references" / "discovery-order.md"
+    ).read_text(encoding="utf-8")
+    assert "recommendation_interpretation" in reference
+    assert "Interpreting the recommendation ranking" in reference

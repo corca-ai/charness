@@ -86,10 +86,36 @@ design simplification removes the risk more directly.
 
 The "unless you are adding repository level interpretation" clause above is not
 optional for inference-layer proxies (clone/duplicate %, ergonomics heuristics,
-test-economics trends, recommendation rankings). When such an output declares an
-interpretation question per
+test-economics trends, recommendation rankings, length/pressure smells, runtime
+trends). When such an output declares an `interpretation` self-declaration per
 [advisory-interpretation-contract.md](../../../shared/references/advisory-interpretation-contract.md),
-answer that question for this repo before repeating, ranking, or escalating the
-number — e.g. the `nose` clone advisory's "intentional boilerplate vs extractable
-debt?" The contract is inference-layer only; verified facts (green gates, counts,
-AST results) stay trusted, never re-litigated.
+answer its declared interpretation question for this repo before repeating,
+ranking, or escalating the number. The contract is inference-layer only; verified
+facts (green gates, counts, AST results) stay trusted, never re-litigated.
+
+Per-surface interpretation questions the consumer must answer first (one line per
+inference-layer surface, not a banner repeated per invocation):
+
+- `inventory_nose_clones.py` (clone families): which families are intentional /
+  portability boilerplate versus genuinely extractable debt for THIS repo?
+- `inventory_skill_ergonomics.py` (ergonomics heuristics / `subcheck_counts`):
+  which heuristic hits are real ergonomic/portability debt versus intentional
+  structure the lexical heuristic cannot distinguish?
+- `inventory_standing_test_economics.py` (test-economics trend): is the
+  test-file / nested-CLI growth paying for real isolation and coverage value, or
+  is it startup-cost waste THIS repo should consolidate?
+- `inventory_lint_ignores.py` (suppression pressure): which suppressions are
+  justified, provenance-bearing deferrals versus normalized debt THIS repo should
+  structurally fix?
+- `check_python_lengths.py` warn band / `--headroom` near-limit (length smell —
+  the hard over-limit gate and the function-length AST check stay verified facts,
+  never re-litigated): is a warn-band file an honest cohesive unit near its limit,
+  or genuine over-accumulation THIS repo should split now?
+- recommendation rankings (`find-skills` `recommendation_interpretation`; this
+  artifact's `Recommended Next Gates` ordering — see
+  [gate-classification.md](./gate-classification.md)): does the top-ranked item
+  genuinely fit THIS repo's current state, or is it a generic default / a
+  trigger-phrase coincidence the ranking cannot contextualize?
+- `render_runtime_summary.py` (runtime hot-spot trend): is a hot spot a real
+  standing cost THIS repo should budget or optimize, or transient machine noise /
+  a cost that already buys necessary proof?

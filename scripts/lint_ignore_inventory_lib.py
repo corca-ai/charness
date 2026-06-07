@@ -27,6 +27,29 @@ ESLINT_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Advisory interpretation contract (see skills/shared/references/
+# advisory-interpretation-contract.md): suppression pressure is an
+# inference-layer trend, so the inventory self-declares blind spots and the
+# question the `quality` consumer must answer before treating it as debt.
+INTERPRETATION = {
+    "measures": (
+        "lint-suppression sites — `# noqa`, `# ruff: noqa`, `# pylint: disable`, and "
+        "`eslint-disable` comments, counted by scope (file/inline), blanket-vs-coded, "
+        "and tool"
+    ),
+    "proxy_for": "normalized lint debt — suppressions that defer a structural fix instead of paying it",
+    "blind_spots": (
+        "counts suppression comments, not their justification — an intentional, "
+        "provenance-bearing file-level ignore (e.g. a launcher's import-order "
+        "`# ruff: noqa: E402`) counts the same as undocumented debt; it cannot read "
+        "whether a suppression is cheaper than the fix it defers"
+    ),
+    "interpretation_question": (
+        "which of these suppressions are justified, provenance-bearing deferrals "
+        "versus normalized debt THIS repo should structurally fix?"
+    ),
+}
+
 
 def _iter_candidate_files(repo_root: Path, vendored: list[str]) -> list[Path]:
     paths: list[Path] = []
@@ -158,5 +181,6 @@ def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = N
             "Blanket or file-level ignores are stronger review targets than narrow rule-specific inline suppressions.",
             "When the same ignore shape repeats, prefer a structural seam over proliferating more comments.",
         ],
+        "interpretation": dict(INTERPRETATION),
         "findings": findings,
     }

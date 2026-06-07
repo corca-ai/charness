@@ -22,6 +22,37 @@ runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_bu
 
 RUNTIME_SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 
+# Advisory interpretation contract (see skills/shared/references/
+# advisory-interpretation-contract.md): the runtime hot-spot ranking is an
+# inference-layer trend, so it self-declares blind spots and the question the
+# `quality` consumer must answer before budgeting or optimizing a hot spot.
+INTERPRETATION = {
+    "measures": (
+        "recent per-label gate/test elapsed times (latest sample and recent median) "
+        "from structured runtime signals, ranked into hot spots"
+    ),
+    "proxy_for": "where standing runtime cost concentrates — the gates worth budgeting or speeding up",
+    "blind_spots": (
+        "a sample reflects one machine's state — a cold cache, a noisy neighbor, or a "
+        "one-off spike can rank a usually-cheap gate hot; it cannot separate a true "
+        "standing dominator from transient machine noise, nor judge whether the cost "
+        "buys necessary proof"
+    ),
+    "interpretation_question": (
+        "is this hot spot a real standing cost THIS repo should budget or optimize, or "
+        "transient machine noise / a cost that already buys necessary proof?"
+    ),
+}
+
+
+def _interpretation_line() -> str:
+    return (
+        "- runtime interpretation (inference-layer trend, not a verdict): "
+        f"measures {INTERPRETATION['measures']}; proxy for {INTERPRETATION['proxy_for']}; "
+        f"blind spots: {INTERPRETATION['blind_spots']}. "
+        f"Consumer must answer first: {INTERPRETATION['interpretation_question']}"
+    )
+
 
 def _format_elapsed(ms: int | None) -> str:
     if ms is None:
@@ -75,7 +106,7 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
             f"`{RUNTIME_SIGNALS_PATH}` rendered by `render_runtime_summary.py`{provenance}; profile `{profile}`."
         )
         hot_spots = f"- runtime hot spots: {_format_hotspots(hotspots)}."
-        return [source, hot_spots, visibility]
+        return [source, hot_spots, visibility, _interpretation_line()]
 
     if signals_present:
         return [
@@ -100,15 +131,21 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
     )
     signals_present = (repo_root / RUNTIME_SIGNALS_PATH).is_file()
     lines = render_markdown_lines(report, repo_root=repo_root, signals_present=signals_present)
-    return {
+    hotspots = report.get("runtime_hotspots") or []
+    summary = {
         "runtime_profile": report["runtime_profile"],
         "signals_path": str(RUNTIME_SIGNALS_PATH),
         "signals_present": signals_present,
-        "runtime_hotspots": report.get("runtime_hotspots", []),
+        "runtime_hotspots": hotspots,
         "runtime_visibility_findings": report.get("runtime_visibility_findings", []),
         "missing_samples": report.get("missing_samples", []),
         "markdown_lines": lines,
     }
+    # Inference-layer self-declaration rides the hot-spot ranking only; absent when
+    # there are no hot spots so it never attaches to an empty/verified report.
+    if hotspots:
+        summary["interpretation"] = dict(INTERPRETATION)
+    return summary
 
 
 def main() -> int:

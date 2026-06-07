@@ -42,6 +42,30 @@ MARKDOWN_HELPERS = {
 DEFAULT_REVIEW_PROMPTS = elib.DEFAULT_REVIEW_PROMPTS
 RUNTIME_INSTALL_REVIEW_PROMPTS = elib.RUNTIME_INSTALL_REVIEW_PROMPTS
 
+# Advisory interpretation contract (see skills/shared/references/
+# advisory-interpretation-contract.md): the ergonomics heuristics are an
+# inference-layer proxy, so they self-declare blind spots and the question the
+# `quality` consumer must answer before treating a hit as debt.
+INTERPRETATION = {
+    "measures": (
+        "per-skill ergonomic/portability heuristic hits — long core, mode/option "
+        "pressure, prose-ritual fences, ambiguous helper paths, package issue/dated "
+        "anchors, host-surface references, and unlisted reference files (the "
+        "`subcheck_counts` rollup)"
+    ),
+    "proxy_for": "skill packages that are hard to read, maintain, or port to another host",
+    "blind_spots": (
+        "lexical/structural counting — a long but well-sectioned core, an intentional "
+        "host-surface reference inside an adapter example, or deliberate per-package "
+        "boilerplate each counts as a hit; it cannot see whether the trigger boundary "
+        "is honest or whether the prose actually reads well"
+    ),
+    "interpretation_question": (
+        "which of these heuristic hits are real ergonomic/portability debt for THIS "
+        "skill versus intentional structure the lexical heuristic cannot distinguish?"
+    ),
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -156,6 +180,7 @@ def main() -> int:
         "adapter_load_mode": adapter.get("load_mode", "permissive"),
         **status,
         **findings,
+        "interpretation": dict(INTERPRETATION),
         "skills": skills,
     }
     if args.json:
@@ -180,6 +205,14 @@ def main() -> int:
                 f"{item['skill_path']}: type={item['skill_type']} lines={item['core_nonempty_lines']} "
                 f"refs={item['reference_file_count']} scripts={item['script_file_count']} "
                 f"heuristics={heuristics}"
+            )
+        if skills:
+            interpretation = payload["interpretation"]
+            print(
+                "INTERPRETATION (inference-layer heuristic, not a verdict): "
+                f"measures {interpretation['measures']}; proxy for "
+                f"{interpretation['proxy_for']}; blind spots: {interpretation['blind_spots']}. "
+                f"Consumer must answer first: {interpretation['interpretation_question']}"
             )
     return 0
 

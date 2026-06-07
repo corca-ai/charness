@@ -11,8 +11,11 @@ runs the activation command. It was shaped by the
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md`.
+- Current slice: COMPLETE — S1–S7 done; `Close #322` staged (issue OPEN until
+  maintainer push). Bundle verified (broad pytest 2511 passed / 4 skipped),
+  bounded fresh-eye critique returned no blockers, schema decision recorded
+  (keep-per-surface).
+- Next action: maintainer review + push of the staged closeout commit.
 - Mode: spec-light rollout — replicate the `nose` pilot's 4-field
   `interpretation` self-declaration across the remaining inference-layer
   surfaces; promote to a `spec` only if a shared schema/validator emerges.
@@ -137,13 +140,46 @@ slice (declaration + consumer requirement + test).
 
 | Slice | Surface | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 | `inventory_skill_ergonomics.py` | richest inference output; sets the pattern | 4-field declaration + ergonomics consumer requirement + test | planned |
-| S2 | `inventory_standing_test_economics.py` | trend signal | declaration + consumer requirement + test | planned |
-| S3 | `inventory_lint_ignores.py` | suppression-pressure trend | declaration + consumer requirement + test | planned |
-| S4 | `check_python_lengths.py` warn-band | advisory length smell | declaration on the warn-band advisory only (not the hard gate) + test | planned |
-| S5 | recommendation rankings (`find-skills`, `quality` Recommended Next Gates) | rankings are proxies | declaration on the recommendation/ranking output + consumer requirement | planned |
-| S6 | runtime/coverage trend | hot spots / coverage brush | declaration + consumer requirement + test | planned |
-| S7 | schema decision + `Close #322` | converge | shared-schema-or-keep-per-surface decision recorded; closeout staged | planned |
+| S1 | `inventory_skill_ergonomics.py` | richest inference output; sets the pattern | 4-field declaration + ergonomics consumer requirement + test | DONE |
+| S2 | `inventory_standing_test_economics.py` | trend signal | declaration + consumer requirement + test | DONE |
+| S3 | `inventory_lint_ignores.py` | suppression-pressure trend | declaration + consumer requirement + test | DONE |
+| S4 | `check_python_lengths.py` warn-band | advisory length smell | declaration on the warn-band advisory only (not the hard gate) + test | DONE |
+| S5 | recommendation rankings (`find-skills`, `quality` Recommended Next Gates) | rankings are proxies | declaration on the recommendation/ranking output + consumer requirement | DONE |
+| S6 | runtime/coverage trend | hot spots / coverage brush | declaration + consumer requirement + test | DONE (runtime hot spots; coverage brush noted as deferred) |
+| S7 | schema decision + `Close #322` | converge | shared-schema-or-keep-per-surface decision recorded; closeout staged | DONE |
+
+## Slice Log
+
+- **S1 ergonomics** — `INTERPRETATION` in `inventory_skill_ergonomics.py`
+  (payload + human, gated `if skills`); consumer line in `automation-promotion.md`;
+  test in `test_quality_skill_ergonomics.py`. `Routing: impl`.
+- **S2 test-economics** — declaration in the emitter script
+  `inventory_standing_test_economics.py` (relocated from the lib at S7 to clear
+  the length warn band); consumer line in `automation-promotion.md`; test in
+  `test_standing_test_economics.py`.
+- **S3 lint-ignores** — `INTERPRETATION` in `lint_ignore_inventory_lib.py`
+  (repo-root `scripts/`), printed by `inventory_lint_ignores.py`; consumer line in
+  `automation-promotion.md`; test in `test_quality_lint_ignores.py`.
+- **S4 length warn-band** — `INTERPRETATION` in `check_python_lengths.py` on the
+  warn-band + `--headroom` near-limit ONLY (`ADVISORY:`-prefixed so the standing
+  gate surfaces it); cardinal-error guards (no declaration on over-limit / clean
+  pass / function-length / exact headroom). Consumer line in
+  `automation-promotion.md`; new `test_python_length_interpretation.py`.
+- **S5 recommendation rankings** — find-skills `recommendation_interpretation` in
+  `list_capabilities_lib.py` (gated on `has_recommendations`, never on the
+  verified inventory), surfaced via `list_capabilities.py`; consumer in
+  `discovery-order.md`. Quality `Recommended Next Gates` ordering (agent-authored
+  prose) declared inference-layer in `gate-classification.md`. Consumer line in
+  `automation-promotion.md`; tests in `test_find_skills_task_recommendations.py`
+  and `test_quality_skill_docs.py`.
+- **S6 runtime hot spots** — `INTERPRETATION` in `render_runtime_summary.py`
+  (markdown bullet + JSON, gated on hot spots existing); consumer line in
+  `automation-promotion.md`; test in `test_runtime_budget_gate.py`. Coverage
+  "brush" beyond runtime hot spots left as a deferred surface (not separately
+  instrumented).
+- **S7 converge** — schema decision recorded (keep-per-surface; see
+  `## Discuss Before Activation` resolution below); bundle verified; bounded
+  fresh-eye critique (no blockers); `Close #322` staged.
 
 ## Coordination Cues
 
@@ -154,13 +190,18 @@ shared schema emerges), `quality` (verification cadence + the inference-layer
 surfaces it owns), `issue` (#322 closeout + any split). `debug: n/a — #322 is a
 contract rollout, not a behavior defect.` Record actual routes at completion.
 
-- **Routing** — query `find-skills` per phase; record `Routing:` evidence.
-- **Gather step** — `Gather: n/a — issue body via gh; no external source.`
+- **Routing** — `find-skills --recommend-for-task` routed the per-surface rollout
+  to `impl` (public skill); verification routed through `quality`'s inference-layer
+  surfaces; closeout via `issue` tooling. `Routing: find-skills -> impl` (recorded).
+- **Gather step** — `Gather: n/a — issue #322 body via gh; no external source.`
 - **Release step** — `Release: n/a — no release surface (inference-layer prose +
-  inventory output only).`
-- **Issue closeout step** — `Issue closeout:` names #322 (carrier = direct
-  commit), close-keyword state, and the `validate-closeout-draft` /
-  `verify-closeout` proof.
+  inventory output only; no version bump/tag/publish).`
+- **Issue closeout step** — `Issue closeout:` #322, carrier = direct-commit, close
+  keyword `Close #322` staged in
+  `charness-artifacts/issue/2026-06-07-issue-322-closeout-commit-message.md`;
+  classification feature; ledger + `Critique #322` present;
+  `issue_validate_closeout_draft.py` rehearsal green; `gh issue view 322` = OPEN
+  (stays open until maintainer push).
 
 ## Discuss Before Activation
 
@@ -175,7 +216,19 @@ this session. Consequential defaults and their resolutions:
   default; promote to a shared schema/validator `spec` only if the rollout grows
   beyond a handful of surfaces. Recorded either way.
 
-## Slice Log
+### Spec promotion — S7 resolution (recorded)
+
+**Keep per-surface (spec-light); no shared schema/validator forced.** Across the
+six rolled-out surfaces plus the pilot, the 4-field declaration is irreducibly
+per-surface content (the value of the contract), and the per-kind render wording
+is deliberate honest framing — not duplication to eliminate. The only genuinely
+near-identical duplication is the test-assertion shape (small, clear). A shared
+schema would add indirection without removing the irreducible per-surface
+content, so the rollout did not grow a genuine shared-schema need. Deferred
+capability (not built, surfaced to the operator): a meta-validator that
+enumerates the inference-layer surfaces and asserts each emits the 4-field
+declaration AND a paired consumer line — a regression backstop beyond #322's
+scope; file as a sub-issue only if the operator wants it tracked.
 
 ## Context Sources
 
@@ -215,23 +268,39 @@ reason, and the anti-anchoring axis result.
 
 ## Plan Critique Findings
 
-Reviewer provenance: to be run as a bounded fresh-eye `critique` at the bundle
-boundary during pursuit. Seeded concerns to fold:
+Reviewer provenance: bounded fresh-eye `critique` subagent (independent context,
+read-only in the shared parent worktree) run at the bundle boundary. Result:
+`charness-artifacts/critique/2026-06-07-issue-322-advisory-interpretation-rollout.md`.
+**No blockers, no should-fix; one dispositioned NIT.** Seeded concerns, resolved:
 
-- **Verified-fact contamination** — the cardinal error. Bind a spot-check that a
-  deterministic surface stays untouched; the critique explicitly hunts for any
-  declaration on a verified output.
-- **Noise accumulation** — N surfaces each adding a block risks banner fatigue;
-  keep each terse and positive-form, and watch whether the consumer requirement
-  belongs once-per-reference rather than per-output.
-- **Half-contract risk** — a self-declaration with no paired consumer
-  requirement is incomplete; the per-surface test asserts BOTH halves.
+- **Verified-fact contamination (cardinal error)** — none found. The two
+  highest-risk surfaces (length, find-skills) each have a verified-fact variant
+  adjacent to the inference-layer one; the declaration is gated (warn-band-only;
+  ranking-produced-only; hot-spots-only) and cardinal-error negative-assertion
+  tests guard the over-limit / clean-pass / function-length / plain-inventory /
+  empty-report facts.
+- **Noise accumulation** — each declaration is terse positive-form; the consumer
+  requirement lives once-per-reference (the per-surface list in
+  `automation-promotion.md`, plus `discovery-order.md` and `gate-classification.md`),
+  not per-invocation.
+- **Half-contract risk** — none; every surface's test asserts BOTH halves.
+- **NIT (dispositioned, kept):** lint-ignores and test-economics emit the human
+  declaration on every successful on-demand run (matching the `nose` pilot); not
+  the cardinal error (fully inference-layer surfaces, declaration is about the
+  measure). See the critique artifact for the disposition rationale.
 
 ## Off-Goal Findings
 
-(None yet — file off-goal findings via `issue`, recording only the reference and
-reason here. Per the operator decision, split #322 into a tracked sub-issue if a
-shared schema/validator becomes its own `spec`-worthy unit.)
+- **Meta-validator for the contract (deferred capability, not filed).** A gate
+  enumerating the inference-layer surfaces and asserting each emits the 4-field
+  declaration AND a paired consumer line would prevent a future half-contract
+  surface. Not built and not filed as a sub-issue: the keep-per-surface decision
+  did not require it and scope did not clearly grow. Surfaced to the operator —
+  file as a sub-issue only if they want it tracked (the goal's "split if scope
+  grows" frame applies if/when it becomes spec-worthy).
+- **Coverage "brush" trend** (named in S6's surface line) was not separately
+  instrumented beyond `render_runtime_summary.py` runtime hot spots; recorded as
+  a deferred surface, not a regression.
 
 ## Final Verification
 
@@ -240,17 +309,50 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>` at the After-phase. The complete gate
 rejects a literal `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md
+Host log probe: skipped: no-installed-machine-state-change: the rollout adds
+  inference-layer prose + inventory-output declarations only; no install/update,
+  tool-doctor, or operator-machine surface changed, so there is no host-log
+  probe to run.
+Disposition review: charness-artifacts/critique/2026-06-07-issue-322-advisory-interpretation-rollout.md
+  (bounded fresh-eye critique — the dispositioned NIT and the deferred
+  meta-validator capability are recorded there and in `## Off-Goal Findings`).
 
 ## User Verification Instructions
 
-(Final results recorded at closeout; the user-runnable checks are in
-`## User Acceptance`.) At closeout this section names the exact commands the user
-can run, what is staged versus pushed, and which proof levels the agent did not
-run (push/tag, GitHub release, provider/live).
+Staged (committed locally, NOT pushed): the rollout + `Close #322` closeout
+commit. `gh issue view 322` is still OPEN; it auto-closes only on the maintainer's
+push/merge. Proof levels the agent did NOT run: push/tag, GitHub release, any
+provider/live proof.
+
+Commands the user can run to verify directly:
+
+- Declarations present (spot-check a few surfaces):
+  - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . | grep INTERPRETATION`
+  - `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . | grep INTERPRETATION`
+  - `python3 skills/public/quality/scripts/inventory_lint_ignores.py --repo-root . | grep INTERPRETATION`
+  - `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "hitl review" --summary | grep recommendation_interpretation`
+- Cardinal-error spot-check (a verified fact stays clean): a clean
+  `check_python_lengths.py` pass prints `Validated ... file(s).` with NO
+  `INTERPRETATION` line; an over-limit failure carries none either.
+- Paired consumer requirements: `grep -n "Per-surface interpretation questions" skills/public/quality/references/automation-promotion.md`
+  and the `Interpreting the recommendation ranking` section in
+  `skills/public/find-skills/references/discovery-order.md`.
+- Tests: `python3 -m pytest tests/quality_gates/test_python_length_interpretation.py tests/quality_gates/test_runtime_budget_gate.py tests/test_find_skills_task_recommendations.py -q`.
+- `gh issue view 322` → OPEN.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions (full detail in
+`charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md`):
+
+1. **Meta-validator for the contract** — disposition: deferred capability,
+   surfaced to operator, not built (out of #322 scope; keep-per-surface did not
+   require it).
+2. **Surfacing-prefix tripwire** (a check that a declaration on a STANDING
+   `run-quality.sh` gate carries a surfaced prefix) — disposition: deferred (low
+   frequency; the warn-band comment + this retro lesson cover it).
+3. **Near-limit-append trap** (constants, not just functions, can push a file
+   into the warn band) — disposition: already covered by the existing
+   recent-lessons headroom lesson; no new entry needed. The rollout dogfooded the
+   length contract and resolved the two warn-band hits in-flight.

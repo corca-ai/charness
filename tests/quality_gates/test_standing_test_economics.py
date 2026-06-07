@@ -144,6 +144,44 @@ def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path
     assert footprint["seed_totals"]["charness-repo-seed"]["disk_bytes"] >= 24
 
 
+def test_standing_test_economics_emits_interpretation_self_declaration(tmp_path: Path) -> None:
+    # Advisory-interpretation contract rollout (#322): the test-economics trend is
+    # an inference-layer proxy; assert both halves — the 4-field self-declaration
+    # in the inventory output and the paired consumer-must-answer requirement in
+    # the consuming `quality` reference.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "tests").mkdir()
+    (repo / "tests" / "test_real.py").write_text("def test_real():\n    assert True\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    interpretation = json.loads(result.stdout)["interpretation"]
+    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
+    assert all(interpretation[field].strip() for field in interpretation)
+
+    plain = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "INTERPRETATION" in plain.stdout
+    assert "Consumer must answer first" in plain.stdout
+    assert "intentional" in plain.stdout  # the load-bearing blind spot
+
+    reference = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+    assert "inventory_standing_test_economics.py" in reference
+
+
 def test_pytest_temp_footprint_tolerates_disappearing_temp_dirs(tmp_path: Path, monkeypatch) -> None:
     lib = _load_inventory_lib()
     root = tmp_path / f"pytest-of-{getpass.getuser()}"

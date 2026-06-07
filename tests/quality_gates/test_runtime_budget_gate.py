@@ -477,11 +477,36 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["signals_present"] is True
-    assert payload["markdown_lines"] == [
+    assert payload["markdown_lines"][:3] == [
         "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `default`.",
         "- runtime hot spots: `pytest` 15.0s latest / 14.0s median, budget 22.0s.",
         "- runtime visibility: weak due to `runtime_visibility_missing_startup_probes`; Add at least one standing startup probe for agent-facing CLI or adapter startup.",
     ]
+    # Advisory-interpretation contract rollout (#322): the hot-spot ranking is
+    # inference-layer, so a 4th interpretation bullet rides the lines and the JSON.
+    assert payload["markdown_lines"][3].startswith("- runtime interpretation (inference-layer trend, not a verdict):")
+    interpretation = payload["interpretation"]
+    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
+    assert all(interpretation[field].strip() for field in interpretation)
+    assert "transient" in interpretation["blind_spots"]  # the load-bearing blind spot
+
+
+def test_render_runtime_summary_omits_interpretation_without_hotspots(tmp_path: Path) -> None:
+    # Cardinal-error guard: no hot spots -> no inference-layer declaration (it must
+    # never attach to an empty report; only a produced ranking is re-interpreted).
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["runtime_hotspots"] == []
+    assert "interpretation" not in payload
+    assert not any("runtime interpretation" in line for line in payload["markdown_lines"])
+
+    reference = (
+        Path(__file__).resolve().parents[2]
+        / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+    assert "render_runtime_summary.py" in reference
 
 
 def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Path) -> None:

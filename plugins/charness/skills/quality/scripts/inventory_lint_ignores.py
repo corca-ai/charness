@@ -34,6 +34,14 @@ def main() -> int:
         for finding in payload["findings"]:
             codes = ",".join(finding["codes"]) or "*"
             print(f"{finding['tool']}:{finding['scope']}:{codes} {finding['path']}:{finding['line']}")
+        interpretation = payload.get("interpretation")
+        if isinstance(interpretation, dict):
+            print(
+                "INTERPRETATION (inference-layer trend, not a verdict): "
+                f"measures {interpretation['measures']}; proxy for "
+                f"{interpretation['proxy_for']}; blind spots: {interpretation['blind_spots']}. "
+                f"Consumer must answer first: {interpretation['interpretation_question']}"
+            )
         if payload["adapter_valid"] is False:
             print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
     return 0

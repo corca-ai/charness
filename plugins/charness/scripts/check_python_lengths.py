@@ -35,6 +35,42 @@ REPO_SCRIPT_FILE_WARN = 432
 SKILL_HELPER_FILE_WARN = 330
 TEST_FILE_WARN = 720
 
+# Advisory interpretation contract (see skills/shared/references/
+# advisory-interpretation-contract.md). This attaches ONLY to the advisory
+# warn-band/headroom signal — a length *smell*. The hard limit (over-limit
+# ValidationError) and the function-length AST check are verified deterministic
+# facts and stay trusted: they never carry this declaration.
+INTERPRETATION = {
+    "measures": (
+        "a gated file's tokei Python code-line count sitting inside its per-class "
+        "advisory warn band [warn, limit] (below the hard length limit)"
+    ),
+    "proxy_for": "a file accreting toward the hard length limit — over-accumulation that will soon force a split",
+    "blind_spots": (
+        "counts code lines, not cohesion — an intentional, well-factored module near "
+        "its limit sits in the band the same as a grab-bag that should already be "
+        "split; it cannot see whether the lines belong together"
+    ),
+    "interpretation_question": (
+        "is this warn-band file an honest cohesive unit near its limit, or genuine "
+        "over-accumulation THIS repo should split now?"
+    ),
+}
+
+
+def _print_warn_band_interpretation() -> None:
+    # `ADVISORY:` prefix is load-bearing: run-quality.sh only surfaces a *passing*
+    # gate's output matching ^(WARNING|WARN|WEAK|ADVISORY)(:|space), so an
+    # unprefixed INTERPRETATION line would be logged but never shown on a warn-band
+    # pass — silently defeating the declaration (the same trap the warn-band
+    # constants comment documents).
+    print(
+        "ADVISORY: INTERPRETATION (inference-layer length smell, not a verdict): "
+        f"measures {INTERPRETATION['measures']}; proxy for "
+        f"{INTERPRETATION['proxy_for']}; blind spots: {INTERPRETATION['blind_spots']}. "
+        f"Consumer must answer first: {INTERPRETATION['interpretation_question']}"
+    )
+
 
 class ValidationError(Exception):
     pass
@@ -260,8 +296,15 @@ def main() -> int:
     root = args.repo_root.resolve()
     if args.headroom:
         rows = headroom_for(args.paths or [], root)
+        near = [r["path"] for r in rows if r["near_limit"]]
         if args.json:
-            print(json.dumps({"headroom": rows}, ensure_ascii=False, indent=2))
+            payload: dict[str, object] = {"headroom": rows}
+            # The exact `limit - current` headroom values are verified facts; the
+            # warn-band/near-limit judgment is the inference layer, so the
+            # self-declaration rides only when a near-limit smell is present.
+            if near:
+                payload["interpretation"] = dict(INTERPRETATION)
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
         else:
             for row in rows:
                 flag = " NEAR-LIMIT" if row["near_limit"] else ""
@@ -269,12 +312,12 @@ def main() -> int:
                     f"headroom: {row['path']}: {row['lines']}/{row['limit']} code lines "
                     f"({row['headroom']} left){flag}"
                 )
-            near = [r["path"] for r in rows if r["near_limit"]]
             if near:
                 print(
                     f"WARN: {len(near)} file(s) near the length limit; consider a new "
                     "module before adding more: " + ", ".join(near)
                 )
+                _print_warn_band_interpretation()
         return 0
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing
@@ -298,6 +341,7 @@ def main() -> int:
             f"WARN: {len(warnings)} file(s) within the advisory file-length warn band "
             "(exit 0; trim before they reach the hard limit)."
         )
+        _print_warn_band_interpretation()
     return 0
 
 
