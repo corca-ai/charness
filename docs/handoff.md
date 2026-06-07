@@ -24,20 +24,29 @@
   with a paired consumer requirement; verified facts stay trusted). Closeout:
   [critique](../charness-artifacts/critique/2026-06-07-issue-322-advisory-interpretation-rollout.md),
   [retro](../charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md).
-- Open issues: **#330** (meta-validator for the contract — #322 follow-up),
-  **#329** (retro disposition floor), **#328** (cheap upstream pre-checks),
-  **#327** (mutation test regression on main, `mutation-test`), **#184** (product
-  metrics).
+- **#328 CLOSED** (preflight-gate-phase-coverage goal): landed a prose-pin
+  pre-check (advisory, wired into slice closeout), a one-shot authoring-preflight
+  (`--run-checks` now runs the full portable-package gate set) with a closeout
+  ADVISORY pointer, and a dedicated `python-scan-hygiene` surface that pulls the
+  gitignore-scan-hygiene gate into slice closeout (retro-lesson-index was already
+  reachable).
+  [Critique](../charness-artifacts/critique/2026-06-07-issue-328-preflight-gate-phase-coverage.md).
+  #328 had been accidentally auto-closed by a stray close keyword in `12e9d54b`;
+  reopened and resolved for real.
+- **#327 triaged, not re-pointed:** mutation *score* passes (88.9%/91.9% vs 80%);
+  the CI FAILs are the intermittent changed-line selection-budget signal on
+  *scheduled* main runs — low-severity, non-blocking for development.
+- Open issues: **#331** (closeout misses top-level scripts — fnmatch, new),
+  **#330** (meta-validator, #322 follow-up), **#329** (retro disposition floor),
+  **#327** (scheduled mutation signal), **#184** (product metrics).
 
 ## Next Session
 
-- **Shaped achieve goal ready:**
-  [preflight-gate-phase-coverage](../charness-artifacts/goals/2026-06-08-preflight-gate-phase-coverage.md)
-  — activate with `/goal @charness-artifacts/goals/2026-06-08-preflight-gate-phase-coverage.md`.
-  Primary objective: resolve #328 (prose-pin pre-check + authoring-preflight
-  prompt) and close the gate-phase coverage gap (cheap full-suite gates that only
-  run at push should fire at slice closeout). Candidate re-points in the goal's
-  `Discuss Before Activation`: #330, #327 (triage severity first), #329, #184.
+- **#331 (gate-phase follow-up, same family as #328):** repo-python's
+  non-recursive fnmatch misses top-level scripts at closeout; decide source-path
+  widening vs recursive `**` semantics — needs a critique on the closeout-cost.
+- Candidate objectives: **#330** (meta-validator — clean #322 sequel), **#329**
+  (retro disposition floor), **#184** (product metrics; needs ideation/spec).
 - **Human real-host smoke for v0.27.0 (release left it open).** `charness update`
   on a clean temp-home / second machine + the nose tool-doctor/install/sync
   checklist in [release latest](../charness-artifacts/release/latest.md). Cannot

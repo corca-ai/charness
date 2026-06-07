@@ -614,6 +614,25 @@
         "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep.",
         "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate."
       ]
+    },
+    {
+      "surface_id": "python-scan-hygiene",
+      "description": "Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.",
+      "source_paths": [
+        "scripts/*.py",
+        "scripts/**/*.py",
+        "skills/public/*/scripts/*.py",
+        "skills/support/*/scripts/*.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing"
+      ],
+      "notes": [
+        "inventory-gitignore-scan-hygiene was a full run-quality.sh-only gate, so the #325 standing_doc_provenance_lib.py repo_root.glob debt shipped at #325 closeout and only surfaced at the v0.27.0 push (#328). Pulling the cheap (<1s) scan into slice closeout catches it at authoring time.",
+        "source_paths list scripts/*.py and scripts/**/*.py separately because surface matching is fnmatch, not recursive glob; the bare ** form does not match a top-level scripts/<file>.py."
+      ]
     }
   ]
 }

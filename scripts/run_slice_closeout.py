@@ -31,6 +31,9 @@ _slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_clos
 emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
 _slice_closeout_command_executor = import_repo_module(__file__, "scripts.slice_closeout_command_executor")
 execute_command_plan = _slice_closeout_command_executor.execute_command_plan
+_slice_closeout_advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
+advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
+advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
@@ -439,6 +442,9 @@ def main() -> int:
     if not payload["changed_paths"]:
         payload["status"] = "noop"
         return _emit_payload(payload, as_json=args.json)
+
+    advise_prose_pin(repo_root, payload["changed_paths"])
+    advise_skill_surface_preflight(repo_root, payload["changed_paths"])
 
     blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
     if blocked is not None:

@@ -245,6 +245,21 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
             "message": "Relative markdown/file links must resolve from the edited markdown file.",
             "command": "python3 scripts/check_doc_links.py --repo-root .",
         },
+        {
+            "id": "skill_ergonomics",
+            "message": "Portable-package edits must avoid bare issue anchors, dated incidents, and host-surface references (or declare them).",
+            "command": "python3 scripts/validate_skill_ergonomics.py --repo-root .",
+        },
+        {
+            "id": "ownership_overlap",
+            "message": "Cross-namespace tokens (charness-artifacts/<other>/, .agents/<other>-adapter.yaml) need an allowlist entry with a reason.",
+            "command": "python3 scripts/check_skill_ownership_overlap.py --repo-root .",
+        },
+        {
+            "id": "attention_state",
+            "message": "A new exit-zero attention term in a package script must be declared in attention-state-visibility.json.",
+            "command": "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
+        },
     ]
     if skill_kind == "public":
         rows.append(
@@ -272,14 +287,43 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
     return rows
 
 
-def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
-    commands = [
-        ("validate_skills", ["python3", "scripts/validate_skills.py", "--repo-root", str(repo_root)]),
-        ("check_doc_links", ["python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root)]),
+def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
+    """The full portable-package gate set this preflight runs in one pass (#328).
+
+    Reporting all of these at once is the point: authoring into a skill package
+    otherwise pays for them as serial commit-boundary gate failures (ergonomics
+    issue-anchor, cross-namespace ownership overlap, exit-zero attention term),
+    one round-trip at a time. Keep this aligned with the skill-package surface
+    verify_commands in .agents/surfaces.json.
+    """
+    root = str(repo_root)
+    return [
+        ("validate_skills", ["python3", "scripts/validate_skills.py", "--repo-root", root]),
+        ("validate_skill_ergonomics", ["python3", "scripts/validate_skill_ergonomics.py", "--repo-root", root]),
+        ("check_skill_ownership_overlap", ["python3", "scripts/check_skill_ownership_overlap.py", "--repo-root", root]),
+        (
+            "validate_attention_state_visibility",
+            [
+                "python3",
+                "scripts/validate_attention_state_visibility.py",
+                "--repo-root",
+                root,
+                "--scan-root",
+                "scripts",
+                "--scan-root",
+                "skills",
+                "--scan-root-map",
+                "../charness-support=skills/support",
+            ],
+        ),
+        ("check_doc_links", ["python3", "scripts/check_doc_links.py", "--repo-root", root]),
         ("check_markdown", ["./scripts/check-markdown.sh"]),
     ]
+
+
+def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
-    for check_id, command in commands:
+    for check_id, command in _check_commands(repo_root):
         completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
         results.append(
             {

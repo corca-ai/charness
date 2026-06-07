@@ -108,6 +108,40 @@ catches these before the broad gate:
 python3 scripts/validate_skill_ergonomics.py --repo-root .
 ```
 
+### One-shot portable-package preflight
+
+Authoring into a skill package otherwise pays for the portable-package gates as
+*serial* commit-boundary failures — one round-trip each for the ergonomics
+issue-anchor, a cross-namespace ownership overlap, and a new exit-zero
+attention-state term. Run them all at once instead:
+
+```bash
+python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md --run-checks
+```
+
+`--run-checks` reports `validate_skills`, `validate_skill_ergonomics`,
+`check_skill_ownership_overlap`, `validate_attention_state_visibility`,
+`check_doc_links`, and `check-markdown` together, so the whole portable-package
+set surfaces in one pass. `run_slice_closeout.py` also prints an `ADVISORY:`
+pointer to this command when a slice edits a gated `skills/public/**` or
+`skills/support/**` surface.
+
+## Doc/SKILL prose and path pins
+
+A `tests/` literal-string assertion that copies prose from a doc/SKILL.md, or
+references one by path, breaks when you reword the prose or rename/delete the
+file — and the broad pytest only surfaces it minutes later. Before paying for
+that cycle, check which test pins your changed surfaces:
+
+```bash
+python3 scripts/check_prose_pin.py --repo-root .
+```
+
+It reads the working-tree diff and reports the likely-broken pins (the test file,
+line, and the pinned phrase or path). It is advisory by default (`--strict` exits
+non-zero), and `run_slice_closeout.py` surfaces the same `WARN:` lines at slice
+closeout before the broad pytest runs.
+
 ## Regex / string-matching edges
 
 When a check matches a version, identifier, or other token by string content,

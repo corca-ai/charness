@@ -103,11 +103,48 @@ activation:
 
 | Slice | What | Expected evidence | Status |
 | --- | --- | --- | --- |
-| S1 | Triage #327 severity (is the mutation gate red on main?) | a one-line verdict; if red, re-point primary to #327 | planned |
-| S2 | Prose-pin pre-check (#328) | checker + test; catches a literal-string test assertion on a renamed doc/SKILL path | planned |
-| S3 | Authoring-preflight prompt (#328) | prompt/affordance wired where gated surfaces are edited; test | planned |
-| S4 | Gate-phase coverage: pull cheap full-suite gates into slice closeout | gitignore-scan-hygiene + retro-index caught at slice closeout; test | planned |
-| S5 | Close #328 + bundle verify + bounded critique + retro | staged close; broad pytest; fresh-eye critique | planned |
+| S1 | Triage #327 severity (is the mutation gate red on main?) | a one-line verdict; if red, re-point primary to #327 | done |
+| S2 | Prose-pin pre-check (#328) | checker + test; catches a literal-string test assertion on a renamed doc/SKILL path | done |
+| S3 | Authoring-preflight prompt (#328) | prompt/affordance wired where gated surfaces are edited; test | done |
+| S4 | Gate-phase coverage: pull cheap full-suite gates into slice closeout | gitignore-scan-hygiene + retro-index caught at slice closeout; test | done |
+| S5 | Close #328 + bundle verify + bounded critique + retro | staged close; broad pytest; fresh-eye critique | in progress |
+
+## Outcomes (this session)
+
+- **S1 verdict (#327): not a hard-red bug-class blocker; primary kept.** The
+  mutation *score* passes consistently (88.9%/91.9% vs 80%). The CI FAILs are the
+  changed-line *blocking signal* — eligible changed files dropped by selection
+  budgets — on *scheduled* main runs, and they are intermittent (last 12 runs
+  alternate pass/fail). Scheduled-only + score-green + flaky-selection = real but
+  low-severity and non-blocking for development. Not re-pointed.
+- **#328 was accidentally closed** by a stray `resolves #328` in the body of the
+  handoff commit `12e9d54b` (which only touched the goal file + handoff); the
+  actual work had not landed. Reopened, landed the work, closing via the carrier
+  commit.
+- **S2 — prose-pin pre-check:** `scripts/check_prose_pin.py` (advisory; flags
+  tests/ string literals that pin prose removed from a changed doc, and tests/
+  references to renamed/deleted doc/SKILL paths). Wired as a slice-closeout
+  advisory (`scripts/slice_closeout_advisories.py`). Test:
+  `tests/quality_gates/test_check_prose_pin.py`.
+- **S3 — authoring-preflight prompt:** extended
+  `check_skill_surface_preflight.py --run-checks` to the full portable-package
+  gate set (validate_skill_ergonomics, check_skill_ownership_overlap,
+  validate_attention_state_visibility) so it reports ALL findings in one pass
+  (per the #328 scope-extension comment); added the one-shot-preflight +
+  prose-pin sections to `authoring-preflight.md`; added a closeout `ADVISORY:`
+  pointer when a gated skill surface is edited. Tests + drift guards added.
+- **S4 — gate-phase coverage:** added a dedicated `python-scan-hygiene` surface
+  to `.agents/surfaces.json` so `inventory-gitignore-scan-hygiene` runs at slice
+  closeout for top-level scripts, nested scripts, and skill scripts (the #325
+  class). Confirmed `validate-retro-lesson-index` was already reachable at slice
+  closeout via the `retro-lesson-selection-index` surface. Tests in
+  `test_surface_obligations.py` cover gitignore-scan, retro-index, and the
+  boundary-ratchet acceptance cases.
+- **Follow-up filed (#331):** the `repo-python` surface's `scripts/**/*.py`
+  pattern does not match top-level `scripts/<file>.py` under fnmatch, so that
+  surface's whole verify set (boundary-ratchet, ruff, lengths, attention-state,
+  broad pytest) skips top-level scripts at slice closeout. Bigger blast radius
+  (closeout cost) — deferred to its own critique/slice.
 
 ## Coordination Cues
 

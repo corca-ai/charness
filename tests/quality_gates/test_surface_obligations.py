@@ -31,6 +31,59 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "./scripts/check-markdown.sh" in payload["verify_commands"]
 
 
+def _verify_commands_for(*paths: str) -> list[str]:
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        *paths,
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)["verify_commands"]
+
+
+_GITIGNORE_SCAN = (
+    "python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py "
+    "--repo-root . --require-empty --require-git-file-listing"
+)
+_RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
+_BOUNDARY_RATCHET = "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ."
+
+
+def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
+    # #328 gate-phase coverage: a top-level scripts/<file>.py change pulls the
+    # gitignore scan-hygiene gate into slice closeout. The bare scripts/**/*.py
+    # form would miss this (fnmatch is not recursive), so the surface lists the
+    # top-level scripts/*.py form too.
+    assert _GITIGNORE_SCAN in _verify_commands_for("scripts/rca_link_advisory.py")
+
+
+def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_skill_scripts() -> None:
+    # #325 was a skills/public/quality script using repo_root.glob; it shipped at
+    # #325 closeout and only failed at the v0.27.0 push. It is now caught at slice
+    # closeout.
+    assert _GITIGNORE_SCAN in _verify_commands_for(
+        "skills/public/quality/scripts/standing_doc_provenance_lib.py"
+    )
+
+
+def test_retro_lesson_index_check_runs_at_slice_closeout() -> None:
+    # The retro lesson-index freshness check is reachable at slice closeout for a
+    # changed retro artifact (the surface also syncs --write first).
+    assert _RETRO_INDEX_CHECK in _verify_commands_for(
+        "charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md"
+    )
+
+
+def test_boundary_bypass_ratchet_runs_at_slice_closeout_for_new_test_file() -> None:
+    # The boundary-ratchet motivating case (a new tests/ file with subprocess
+    # calls) surfaces at slice closeout via the repo-python surface, not only at
+    # the literal git pre-commit.
+    assert _BOUNDARY_RATCHET in _verify_commands_for("tests/quality_gates/test_new_thing.py")
+
+
 def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:
     result = run_script(
         "scripts/check_changed_surfaces.py",

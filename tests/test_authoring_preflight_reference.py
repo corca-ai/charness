@@ -47,3 +47,13 @@ def test_authoring_preflight_names_skill_core_headroom_buffer() -> None:
     text = PREFLIGHT_DOC.read_text(encoding="utf-8")
     assert "SKILL.md core headroom" in text
     assert "check_skill_surface_preflight.py" in text
+
+
+def test_authoring_preflight_points_at_one_shot_preflight_and_prose_pin() -> None:
+    # #328 drift guard: the reference must point at the one-shot --run-checks
+    # preflight and the prose/path-pin pre-check, so the cheap upstream checks stay
+    # the path of least resistance instead of a remembered ritual.
+    text = PREFLIGHT_DOC.read_text(encoding="utf-8")
+    assert "--run-checks" in text
+    assert "check_prose_pin.py" in text
+    assert "prose and path pins" in text.lower()

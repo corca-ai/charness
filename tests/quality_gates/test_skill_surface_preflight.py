@@ -80,6 +80,33 @@ def test_skill_surface_preflight_reference_preview_preserves_core_headroom(
     assert "plugin_mirror_sync" in {row["id"] for row in payload["couplings"]}
 
 
+def test_check_commands_cover_full_portable_package_gate_set() -> None:
+    # #328: the one-shot --run-checks preflight must report ALL the portable-package
+    # gates at once (a narrower set leaves ~4 commit-boundary round-trips uncaught).
+    ids = {check_id for check_id, _command in preflight._check_commands(Path("."))}
+    assert {
+        "validate_skills",
+        "validate_skill_ergonomics",
+        "check_skill_ownership_overlap",
+        "validate_attention_state_visibility",
+        "check_doc_links",
+        "check_markdown",
+    } <= ids
+
+
+def test_run_checks_reports_all_portable_package_gates_on_real_repo() -> None:
+    # Integration: the extended gate set runs clean against the committed repo, so
+    # --run-checks is a true one-shot preflight rather than a partial subset.
+    from .support import ROOT
+
+    report = preflight.build_report(ROOT, "skills/public/quality/SKILL.md", 0, True)
+    seen = {row["id"] for row in report["checks"]}
+    assert "validate_skill_ergonomics" in seen
+    assert "check_skill_ownership_overlap" in seen
+    assert "validate_attention_state_visibility" in seen
+    assert report["check_failures"] == []
+
+
 def test_skill_surface_preflight_rejects_non_skill_surface(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     outside = repo / "docs" / "note.md"

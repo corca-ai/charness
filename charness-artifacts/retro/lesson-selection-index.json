@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 149,
-  "candidate_count": 871,
+  "source_artifact_count": 150,
+  "candidate_count": 877,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -235,6 +235,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a3abd42d61ba",
+      "kind": "current_focus",
+      "lesson": "Resolved #328 (cheap upstream pre-checks: prose-pin scan + authoring-preflight prompt) and closed the gate-phase coverage gap under the `2026-06-08-preflight-gate-phase-coverage` achieve goal.",
+      "normalized_key": "resolved 328 cheap upstream pre checks prose pin scan authoring preflight prompt and closed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -251,6 +271,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3cfc51f5332",
+      "kind": "next_improvement",
+      "lesson": "At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff \"open\" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session.",
+      "normalized_key": "at task start verify the target issue s real state open closed last close",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fc90eea04166",
+      "kind": "next_improvement",
+      "lesson": "broaden slice-closeout coverage to top-level scripts (the repo-python fnmatch gap). Disposition: issue -> filed as #331 with the decision framing (source-path widening vs recursive `**`, needs a closeout-cost critique).",
+      "normalized_key": "broaden slice closeout coverage to top level scripts the repo python fnmatch gap disposition",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -289,66 +349,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7660984d5947",
-      "kind": "next_improvement",
-      "lesson": "**capability — prose-pin pre-check + authoring-preflight prompt (the real tooling gap):** a cheap check that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest), plus a lighter prompt to run `check_skill_surface_preflight.py` / `authoring-preflight.md` before editing a gated surface. **Disposition: `issue #328`** (https://github.com/corca-ai/charness/issues/328) — filed off-goal; decide there whether it folds into the #325 child goal or stands alone.",
-      "normalized_key": "capability prose pin pre check authoring preflight prompt the real tooling gap a cheap",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e66b3bffb089",
-      "kind": "next_improvement",
-      "lesson": "**capability:** the consumer's verdict is silently misleading when `--head-sha` excludes the worktree. Add a `check_changed_line_mutation_coverage.py` warning when the analyzed head == `HEAD` and the worktree has uncommitted mutation-pool changes, or a documented worktree-range dry-run. Cheap tripwire, kills the false-green. (follow-up:changed-line-gate-worktree-dryrun-warning)",
-      "normalized_key": "capability the consumer s verdict is silently misleading when head sha excludes the worktree",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:8c504d6e2cee",
-      "kind": "next_improvement",
-      "lesson": "**execution habit — feed the bottleneck only pre-checked work:** before the ~6-min mutation-coverage producer, grep `tests/` for prose-pins of changed docs and eyeball coverage of new source branches. **Disposition: `issue #328`** (the cheap prose-pin check is the actionable surface; same issue).",
-      "normalized_key": "execution habit feed the bottleneck only pre checked work before the 6 min mutation",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -577,6 +577,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a3abd42d61ba",
+      "kind": "current_focus",
+      "lesson": "Resolved #328 (cheap upstream pre-checks: prose-pin scan + authoring-preflight prompt) and closed the gate-phase coverage gap under the `2026-06-08-preflight-gate-phase-coverage` achieve goal.",
+      "normalized_key": "resolved 328 cheap upstream pre checks prose pin scan authoring preflight prompt and closed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -593,6 +613,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3cfc51f5332",
+      "kind": "next_improvement",
+      "lesson": "At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff \"open\" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session.",
+      "normalized_key": "at task start verify the target issue s real state open closed last close",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fc90eea04166",
+      "kind": "next_improvement",
+      "lesson": "broaden slice-closeout coverage to top-level scripts (the repo-python fnmatch gap). Disposition: issue -> filed as #331 with the decision framing (source-path widening vs recursive `**`, needs a closeout-cost critique).",
+      "normalized_key": "broaden slice closeout coverage to top level scripts the repo python fnmatch gap disposition",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -797,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d88df47c32d0",
+      "kind": "next_improvement",
+      "lesson": "the non-recursive-fnmatch surface-matching quirk is a repeat trap for anyone wiring a gate into a surface. Disposition: memory -> recent-lessons digest refresh this session (source: this retro).",
+      "normalized_key": "the non recursive fnmatch surface matching quirk is a repeat trap for anyone wiring",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:eb883f10d125",
       "kind": "next_improvement",
       "lesson": "**workflow:** at `spec`/`impl` closeout in this harness repo, when a slice adds a NEW reusable mechanism (repo-root script, gate, or generalizable pattern), require a one-line classification — `host-local` vs `skill-capability` — before closeout. Make the portability question a checkpoint, not a principle. Owner: `docs/conventions/implementation-discipline.md`.",
@@ -917,6 +997,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:12f276a4e49b",
+      "kind": "repeat_trap",
+      "lesson": "My first advisory wiring pushed `run_slice_closeout.py` to 476/480 code lines (4 left), forcing a mid-slice extraction. Mild rework — but the length advisory fired at slice time, which is exactly the catch-debt-at-slice-time behavior this goal builds, so it was cheap and self-demonstrating, not silent.",
+      "normalized_key": "my first advisory wiring pushed run slice closeout py to 476 480 code lines",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2f637bd189f6",
       "kind": "repeat_trap",
       "lesson": "**Serial discovery behind a 6-min gate.** Each run surfaced one new issue; I fixed one, paid another ~6 min, found the next. 2-3 of the four runs were avoidable with earlier/batched detection.",
@@ -971,6 +1071,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4e372da9a50a",
+      "kind": "repeat_trap",
+      "lesson": "The goal + handoff framed #328 as OPEN; it had actually been auto-closed by a stray `resolves #328` in the handoff commit body. Reconciling that (close-event + commit inspection) was a short detour before real work could start.",
+      "normalized_key": "the goal handoff framed 328 as open it had actually been auto closed by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
           "date": "2026-06-07",
           "section": "Waste"
         }
