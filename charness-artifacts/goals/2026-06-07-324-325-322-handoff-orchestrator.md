@@ -472,6 +472,13 @@ read-only), run this session against the draft plan.
   commit, not before the edit). Filed as the proper disposition of the retro's
   actionable tooling improvement (memory-only was invalid). #325-adjacent;
   fold-vs-stand decided there.
+- **#329** (https://github.com/corca-ai/charness/issues/329) — Retro disposition
+  floor does not reject invalid (prose-only `memory`) dispositions. Reason: this
+  session's first retro pass shipped invalid `memory`-only dispositions; the
+  presence/binding-only floor (and a session retro's lack of any disposition
+  review) did not catch the agent's own invalid self-grading — the operator did,
+  twice. Proper disposition of that process meta-miss: a narrow presence/enum
+  check (upstream-harness), not a content classifier.
 
 ## Final Verification
 

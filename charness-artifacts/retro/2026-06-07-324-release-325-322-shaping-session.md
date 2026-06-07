@@ -108,6 +108,16 @@ corrected below.)
   ~6-min mutation-coverage producer, grep `tests/` for prose-pins of changed
   docs and eyeball coverage of new source branches. **Disposition: `issue #328`**
   (the cheap prose-pin check is the actionable surface; same issue).
+- **process meta-miss — invalid dispositions shipped and the floor did not catch
+  them (operator caught it).** This retro's FIRST pass emitted two
+  `Disposition: memory` (prose-only, invalid) lines plus one hedged
+  "candidate issue OR fold, not filed"; the achieve disposition floor is
+  presence/binding-only by design and a session retro runs no disposition review,
+  so nothing flagged the agent's own invalid self-grading until the operator
+  asked twice. **Disposition: `issue #329`**
+  (https://github.com/corca-ai/charness/issues/329) — a narrow presence/enum
+  check that rejects the bare `memory` disposition value (same shape as
+  `validate_proposal_fields.py`'s Destination enum), not a content classifier.
 
 ## Sibling Search
 
