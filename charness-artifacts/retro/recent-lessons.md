@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- `achieve` goal: split `scripts/run_slice_closeout.py` (474/480, in the length warn band) into the orchestrator plus a cohesive reporting module, behavior-preserving, with the plugin mirror byte-synced. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
 - Activated and ran the shaped achieve goal `2026-06-07-332-commit-boundary-sweep-enforcement` end to end. (source: `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`)
-- Activated the shaped achieve goal `2026-06-07-329-disposition-form-floor` and ran it end to end: built a narrow presence/enum **form** floor (#329) that rejects the named-invalid prose-only `Disposition: memory` and requires one of `applied: <change>` / `issue #N` / `none — <reason>`, form-only (never a content classifier). (source: `charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
+- **One avoidable gate failure cost a second full read-only gate run (~45s).** I hand-wrote the critique artifact and omitted the `## Reviewer Tier Evidence` section that `validate_critique_artifacts` requires; the gate caught it, I added the section, and re-ran the whole gate. Root cause: the critique skill's documented path produces a *prepare packet* with the reviewer-tier shape but does not route final-artifact authoring through `scaffold_critique_artifact.py` (the scaffold exists but no `SKILL.md`/reference cites it), so a hand-author can miss validator-required sections. Low-severity, but repeatable. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
+- Otherwise low waste: the byte-preserving migration script and pre-captured baselines made the proof cheap and unambiguous on the first pass. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
 - **A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
-- **A leaked repro file caused two false test failures.** A `rm -f` with a zsh glob (`_repro_v2*.pyc`) hit `nomatch` and aborted the whole cleanup line, so a `scripts/_repro_v2.py` containing `"skipped"` survived into a later pytest run — the structural sweep correctly flagged it (a real validation of the fix) but it read as 2 surface-obligations regressions until I traced it to my own stray file. (source: `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`)
-- **A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → "blocking: []" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
-- a bounded fresh-eye reviewer ran a forbidden worktree-mutating `git checkout` and recovered only because the mirror still held the unstaged change. Disposition: none — the contract already forbids worktree-mutating ops (`skills/shared/references/fresh-eye-subagent-review.md`, #258); the reviewer self-disclosed and the integrity was independently re-verified, so this is a recorded near-miss, not new teeth (source: this retro). (source: `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`)
-- a `validate_surfaces` lint that flags any `<dir>/**/*.X` source pattern lacking a `<dir>/*.X` sibling, so the idiom footgun cannot return. Disposition: deferred -> handoff Next Session candidate (anchor surface-idiom-lint), not filed, to avoid issue sprawl for a small hardening. (source: `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`)
-- At task start, verify the target issue's real state (open/closed + last close event) before trusting the goal/handoff "open" framing. Disposition: memory -> recorded in this retro + recent-lessons digest refresh this session. (source: `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`)
+- **capability:** The critique skill's prepare-packet path and the `scaffold_critique_artifact.py` scaffold are disconnected; the scaffold is uncited in `SKILL.md`/references. Candidate follow-up: cite the scaffold from the critique skill (or have prepare-packet emit an artifact stub with the required headings) so the validator-required shape is present by construction. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
+- **memory:** Persisted to recent-lessons (below) so the next critique author does not relearn the reviewer-tier-evidence requirement. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
+- **workflow:** When authoring a charness critique artifact, check `validate_critique_artifacts` required sections (or run `scaffold_critique_artifact.py`) BEFORE hand-writing — `## Reviewer Tier Evidence` with 4 fields and a host-exposure-state from the fixed set is mandatory. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
 
 ## Selection Policy
 
@@ -37,9 +37,7 @@
 - `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`
-- `charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md`
-- `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`
 - `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`
 - `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`
