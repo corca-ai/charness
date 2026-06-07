@@ -9,20 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: B1+B2 done & committed; B3+B4 shaped as child `/achieve` goals.
-- Status: **active** — awaiting (a) operator activation+completion of the two
-  child goals, and (b) the maintainer's push/tag of v0.26.0 (auto-closes #324).
-- Done this session (local commits, NOT pushed; `main` ahead of origin by 5):
+- Current slice: B1 RELEASED + B2 done & pushed; B3+B4 shaped as child `/achieve` goals.
+- Status: **active** — the only remaining work is operator activation+completion
+  of the two child goals; once both complete, this orchestrator can flip to
+  `complete` (its After-phase: final verification + retro + Auto-Retro).
+- Done & PUSHED (origin/main at `3201cccc`):
   - B1a/B1b/B1c (#324): provider-neutral external-source preservation contract +
-    fixture + tests; v0.26.0 release surface staged with `Close #324`; local
-    `--release` gate components green; changed-line mutation coverage active+green
-    base→worktree. Commits `7dcfb43d`, `e0043ac9`.
+    fixture + 12 tests; **v0.26.0 RELEASED** — pushed/tagged, GitHub release
+    published (`https://github.com/corca-ai/charness/releases/tag/v0.26.0`),
+    **#324 CLOSED**. Commits `7dcfb43d`, `e0043ac9`; verification `3201cccc`.
+    (Operator explicitly authorized the push, overriding the stage-and-stop default.)
   - B2 (handoff-4): false-green changed-line dry-run warning + tests. Commit `2f9c5f8c`.
 - Next action (operator): `/goal @charness-artifacts/goals/2026-06-07-325-provenance-policy-handoff3-gate-capability.md`,
-  then `/goal @charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md`;
-  and push/tag v0.26.0 to auto-close #324.
+  then `/goal @charness-artifacts/goals/2026-06-07-322-advisory-interpretation-rollout.md`.
 - This orchestrator does **not** auto-execute the child goals (preserves the
-  `/achieve` shape → `/goal` pursue boundary).
+  `/achieve` shape → `/goal` pursue boundary). After both child goals complete,
+  a session flips this orchestrator to `complete`.
+- Remaining non-claim: the v0.25.0/v0.26.0 real-host smoke (handoff item 1) is a
+  human async step, still not run by the agent.
 - Mode: implementation-continuation, **orchestrator** — one auditable goal that
   resolves five deduped objectives as a multi-goal run with **dynamic
   workflow**: the next bundle is re-picked at each boundary, and a spec-first
