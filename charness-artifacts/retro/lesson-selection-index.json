@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-06-07",
   "source_artifact_count": 146,
-  "candidate_count": 864,
+  "candidate_count": 863,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -205,26 +205,6 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:da20dab8fa8a",
-      "kind": "next_improvement",
-      "lesson": "**capability (candidate):** a tiny `quality`/`authoring-preflight` helper that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest). This is adjacent to the #325 child goal's standing-doc check work. Disposition: candidate `issue #N` (operator's call) OR fold into the `2026-06-07-325-provenance-policy-handoff3-gate-capability` child goal — recorded here, not auto-filed.",
-      "normalized_key": "capability candidate a tiny quality authoring preflight helper that given changed doc skill paths",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
       "candidate_id": "next_improvement:c16386d38fa1",
       "kind": "next_improvement",
       "lesson": "**capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap.",
@@ -239,6 +219,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7660984d5947",
+      "kind": "next_improvement",
+      "lesson": "**capability — prose-pin pre-check + authoring-preflight prompt (the real tooling gap):** a cheap check that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest), plus a lighter prompt to run `check_skill_surface_preflight.py` / `authoring-preflight.md` before editing a gated surface. **Disposition: `issue #328`** (https://github.com/corca-ai/charness/issues/328) — filed off-goal; decide there whether it folds into the #325 child goal or stands alone.",
+      "normalized_key": "capability prose pin pre check authoring preflight prompt the real tooling gap a cheap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -265,10 +265,30 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:fd876fe9c2dd",
+      "candidate_id": "next_improvement:8c504d6e2cee",
       "kind": "next_improvement",
-      "lesson": "**memory:** persist this retro + refresh recent-lessons.",
-      "normalized_key": "memory persist this retro refresh recent lessons",
+      "lesson": "**execution habit — feed the bottleneck only pre-checked work:** before the ~6-min mutation-coverage producer, grep `tests/` for prose-pins of changed docs and eyeball coverage of new source branches. **Disposition: `issue #328`** (the cheap prose-pin check is the actionable surface; same issue).",
+      "normalized_key": "execution habit feed the bottleneck only pre checked work before the 6 min mutation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b21a80b5ad1c",
+      "kind": "next_improvement",
+      "lesson": "**execution habit — run the existing preflight first:** before editing a gated `SKILL.md`/reference, run `check_skill_surface_preflight.py` + skim `authoring-preflight.md`. **Disposition: `none — the markdown/length/ergonomics gates already exist and fired at commit; the residual is execution-sequencing, not a missing gate. The tooling angle (make the preflight the path of least resistance) is tracked in #328.`**",
+      "normalized_key": "execution habit run the existing preflight first before editing a gated skill md reference",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
       "latest_source_date": "2026-06-07",
@@ -319,26 +339,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:34a6e49cd9ca",
-      "kind": "next_improvement",
-      "lesson": "**workflow (applied as habit):** before editing a gated `SKILL.md`/reference, run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <n>` and skim `authoring-preflight.md` (length headroom, inline-code-span, issue-anchor, banned vocab). The repo already ships these — the miss was not running them first. Disposition: `memory` (this artifact + recent-lessons) — the gates exist; the fix is sequencing, not a new gate.",
-      "normalized_key": "workflow applied as habit before editing a gated skill md reference run python3 scripts",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -537,26 +537,6 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:da20dab8fa8a",
-      "kind": "next_improvement",
-      "lesson": "**capability (candidate):** a tiny `quality`/`authoring-preflight` helper that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest). This is adjacent to the #325 child goal's standing-doc check work. Disposition: candidate `issue #N` (operator's call) OR fold into the `2026-06-07-325-provenance-policy-handoff3-gate-capability` child goal — recorded here, not auto-filed.",
-      "normalized_key": "capability candidate a tiny quality authoring preflight helper that given changed doc skill paths",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
       "candidate_id": "next_improvement:c16386d38fa1",
       "kind": "next_improvement",
       "lesson": "**capability:** explore a deterministic nudge — flag a newly-added repo-root `scripts/*.py` that implements a generalizable capability and ask whether it belongs in a skill. Classification stays judgment, but a prompt-level tripwire in the impl/quality contract is feasible and cheap.",
@@ -571,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7660984d5947",
+      "kind": "next_improvement",
+      "lesson": "**capability — prose-pin pre-check + authoring-preflight prompt (the real tooling gap):** a cheap check that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest), plus a lighter prompt to run `check_skill_surface_preflight.py` / `authoring-preflight.md` before editing a gated surface. **Disposition: `issue #328`** (https://github.com/corca-ai/charness/issues/328) — filed off-goal; decide there whether it folds into the #325 child goal or stands alone.",
+      "normalized_key": "capability prose pin pre check authoring preflight prompt the real tooling gap a cheap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -597,10 +597,30 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:fd876fe9c2dd",
+      "candidate_id": "next_improvement:8c504d6e2cee",
       "kind": "next_improvement",
-      "lesson": "**memory:** persist this retro + refresh recent-lessons.",
-      "normalized_key": "memory persist this retro refresh recent lessons",
+      "lesson": "**execution habit — feed the bottleneck only pre-checked work:** before the ~6-min mutation-coverage producer, grep `tests/` for prose-pins of changed docs and eyeball coverage of new source branches. **Disposition: `issue #328`** (the cheap prose-pin check is the actionable surface; same issue).",
+      "normalized_key": "execution habit feed the bottleneck only pre checked work before the 6 min mutation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b21a80b5ad1c",
+      "kind": "next_improvement",
+      "lesson": "**execution habit — run the existing preflight first:** before editing a gated `SKILL.md`/reference, run `check_skill_surface_preflight.py` + skim `authoring-preflight.md`. **Disposition: `none — the markdown/length/ergonomics gates already exist and fired at commit; the residual is execution-sequencing, not a missing gate. The tooling angle (make the preflight the path of least resistance) is tracked in #328.`**",
+      "normalized_key": "execution habit run the existing preflight first before editing a gated skill md reference",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
       "latest_source_date": "2026-06-07",
@@ -651,46 +671,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:34a6e49cd9ca",
-      "kind": "next_improvement",
-      "lesson": "**workflow (applied as habit):** before editing a gated `SKILL.md`/reference, run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <n>` and skim `authoring-preflight.md` (length headroom, inline-code-span, issue-anchor, banned vocab). The repo already ships these — the miss was not running them first. Disposition: `memory` (this artifact + recent-lessons) — the gates exist; the fix is sequencing, not a new gate.",
-      "normalized_key": "workflow applied as habit before editing a gated skill md reference run python3 scripts",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:064d1b4bf7d2",
-      "kind": "next_improvement",
-      "lesson": "**workflow (applied as habit):** before paying for the mutation-coverage producer, run two cheap pre-checks — (1) `grep -rn \"<changed literal phrase>\" tests/` for prose-pin assertions on any doc/SKILL.md changed; (2) eyeball coverage of any NEW source branch. Disposition: `memory`.",
-      "normalized_key": "workflow applied as habit before paying for the mutation coverage producer run two cheap",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }

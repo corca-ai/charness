@@ -463,8 +463,15 @@ read-only), run this session against the draft plan.
 
 ## Off-Goal Findings
 
-(None yet — file off-goal findings via `issue`, recording only the reference and
-reason here.)
+- **#328** (https://github.com/corca-ai/charness/issues/328) — Cheap upstream
+  pre-checks before expensive/late verification (prose-pin scan +
+  authoring-preflight prompt). Reason: the session retro
+  (`charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md`)
+  surfaced two waste classes (a doc/SKILL prose change broke a literal-string
+  pin test caught only at broad pytest; authoring-preflight constraints caught at
+  commit, not before the edit). Filed as the proper disposition of the retro's
+  actionable tooling improvement (memory-only was invalid). #325-adjacent;
+  fold-vs-stand decided there.
 
 ## Final Verification
 

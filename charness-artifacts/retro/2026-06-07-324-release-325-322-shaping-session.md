@@ -84,25 +84,30 @@ separately (a deliberate correctness move, below).
 
 ## Next Improvements
 
-- **workflow (applied as habit):** before editing a gated `SKILL.md`/reference,
-  run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path
-  <file> --preview-delta <n>` and skim `authoring-preflight.md` (length
-  headroom, inline-code-span, issue-anchor, banned vocab). The repo already ships
-  these — the miss was not running them first.
-  Disposition: `memory` (this artifact + recent-lessons) — the gates exist; the
-  fix is sequencing, not a new gate.
-- **workflow (applied as habit):** before paying for the mutation-coverage
-  producer, run two cheap pre-checks — (1) `grep -rn "<changed literal phrase>"
-  tests/` for prose-pin assertions on any doc/SKILL.md changed; (2) eyeball
-  coverage of any NEW source branch. Disposition: `memory`.
-- **capability (candidate):** a tiny `quality`/`authoring-preflight` helper that,
-  given changed doc/SKILL paths, greps `tests/` for literal-string assertions
-  referencing them (catches prose-pin breakage before broad pytest). This is
-  adjacent to the #325 child goal's standing-doc check work.
-  Disposition: candidate `issue #N` (operator's call) OR fold into the
-  `2026-06-07-325-provenance-policy-handoff3-gate-capability` child goal —
-  recorded here, not auto-filed.
-- **memory:** persist this retro + refresh recent-lessons.
+Disposition rule applied (achieve floor): every actionable improvement resolves
+to `applied: <committed change>` or `issue #N`; prose-only `memory` is NOT a
+valid disposition; `none — <reason>` only when nothing is actionable. (The first
+pass of this retro wrongly dispositioned two items as `memory` and hedged one —
+corrected below.)
+
+- **capability — prose-pin pre-check + authoring-preflight prompt (the real
+  tooling gap):** a cheap check that, given changed doc/SKILL paths, greps
+  `tests/` for literal-string assertions referencing them (catches prose-pin
+  breakage before broad pytest), plus a lighter prompt to run
+  `check_skill_surface_preflight.py` / `authoring-preflight.md` before editing a
+  gated surface. **Disposition: `issue #328`**
+  (https://github.com/corca-ai/charness/issues/328) — filed off-goal; decide
+  there whether it folds into the #325 child goal or stands alone.
+- **execution habit — run the existing preflight first:** before editing a gated
+  `SKILL.md`/reference, run `check_skill_surface_preflight.py` + skim
+  `authoring-preflight.md`. **Disposition: `none — the markdown/length/ergonomics
+  gates already exist and fired at commit; the residual is execution-sequencing,
+  not a missing gate. The tooling angle (make the preflight the path of least
+  resistance) is tracked in #328.`**
+- **execution habit — feed the bottleneck only pre-checked work:** before the
+  ~6-min mutation-coverage producer, grep `tests/` for prose-pins of changed
+  docs and eyeball coverage of new source branches. **Disposition: `issue #328`**
+  (the cheap prose-pin check is the actionable surface; same issue).
 
 ## Sibling Search
 
@@ -113,8 +118,8 @@ axis scan for the two transferable patterns:
   literal doc/skill prose; any edit to a doc whose literal text a test asserts
   can break the suite only at broad pytest. Decision: **generalize** — the
   "grep tests/ for literal pins of changed doc paths" pre-check applies to every
-  doc/skill prose edit, not just this one. Candidate folds into the #325 child
-  goal (standing-doc tooling) or a small `quality` helper.
+  doc/skill prose edit, not just this one. Tracked in `issue #328` (fold-vs-stand
+  decision deferred there).
 - **Paying for an expensive gate before cheap upstream filters** — transferable
   to any expensive verification (broad pytest, coverage producer, real-host
   proof). Decision: **monitor** — the goal's skip-broad cadence is correct; the
