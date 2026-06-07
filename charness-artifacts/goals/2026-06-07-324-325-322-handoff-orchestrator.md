@@ -251,6 +251,34 @@ contract versus a reference-only update.
 
 ## Slice Log
 
+### Slice 1: B1a — #324 contract-gap analysis
+
+- Objective: Map where the issue workflow under-preserves external-source context (design gap, not a bug; debug: n/a — design-gap).
+- Why this approach: Sharpen the missing invariant into concrete code-level gaps before writing the contract.
+- Commits:
+- What changed: charness-artifacts/quality/2026-06-07-324-source-preservation-gap.md (G1-G5 gap table + B1b design implications).
+- Alternatives rejected:
+- Targeted verification: Code read of issue create/closeout path: issue_create.py (byte-identity only), issue_verify_closeout_body.py::_missing_ledger_fields (no source field), issue-shaping.md + closeout-discipline.md (identity-only, 'do not paste' contradicts form 1).
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward: Current Source block is identity-only and actively discourages verbatim preservation; closeout validators never consult any source field; portability needs axis: external-source-provider framing (Slack is one adapter, not the schema).
+- Metrics:
+
+### Slice 2: B1b — #324 source-preservation contract + fixture
+
+- Objective: Provider-neutral source-preservation contract (axis: external-source-provider): externally-sourced issues must preserve original context as Source text / Re-read obligation / Source degraded reason; verify-closeout + validate-closeout-draft block when none; check-source-preservation covers the creation side.
+- Why this approach: Add a pure presence-check in the body helper (reuses _body_fields) so both closeout validators inherit it; expose a creation-side subcommand for the fixture; keep Slack as one adapter instance, not the schema.
+- Commits:
+- What changed: issue_verify_closeout_body.py (evaluate_source_preservation), issue_verify_closeout.py (wire into ok+payload), issue_tool.py (check-source-preservation subcommand), references closeout-discipline.md/issue-shaping.md/SKILL.md, fixtures/slack-thread-source-preservation.json, tests/test_issue_source_preservation.py (11), docs/public-skill-dogfood.json (frozen evidence + reviewed_on 2026-06-07), charness-artifacts/quality/2026-06-07-324-source-preservation-gap.md. Plugin mirror synced.
+- Alternatives rejected:
+- Targeted verification: 11 new tests pass; existing issue closeout suite 32/32; full run_slice_closeout.py deterministic aggregate green (ruff, lengths, validate_skills, validate_skill_ergonomics incl. issue-anchor gate, markdown, doc-links, packaging, mirror-drift, dogfood). Broad pytest deferred to B1 bundle boundary.
+- Test duplication pressure: 11 tests reuse the _bug_closeout_body pattern but assert a distinct surface (source-preservation); low duplication with existing closeout tests — no overlapping assertions. One pure-function unit test guards parser robustness (>-quoted multi-line).
+- Critique: charness-artifacts/critique/2026-06-07-324-source-preservation.md — bounded fresh-eye subagent (read-only), VERDICT ship-as-is, no blockers; over-worries (fenced-excerpt false-neg, degraded declarability, discriminator evasion) ruled deliberate presence-gate design.
+- Off-goal findings:
+- Lessons carried forward: Issue numbers must NOT appear in standing skill package prose/refs/fixtures — validate_skill_ergonomics (issue_anchor_in_core / portable_package_issue_anchor) already enforces #325's principle; provenance belongs in commit/goal/dogfood tracking docs. Inline code spans must not wrap across source lines (check-markdown).
+- Metrics:
+
 ## Context Sources
 
 A fresh session can reconstruct the originating context by following these in

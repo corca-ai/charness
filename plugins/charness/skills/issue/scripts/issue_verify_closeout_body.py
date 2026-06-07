@@ -112,6 +112,51 @@ def _missing_ledger_fields(text: str, classification: str) -> list[str]:
     return missing
 
 
+_SOURCE_ORIGIN_ALIASES = ("source origin",)
+_SOURCE_TEXT_ALIASES = ("source text", "source context")
+_REREAD_ALIASES = ("re read obligation", "re read requirement", "reread obligation")
+_DEGRADED_ALIASES = ("source degraded reason", "degraded reason")
+_PRESERVATION_ALIASES = ("source preservation", "preservation")
+
+
+def evaluate_source_preservation(text: str) -> dict:
+    """Provider-neutral source-preservation check for an issue/closeout body.
+
+    `axis: external-source-provider` — Slack is one adapter instance, not the
+    schema. The body is *externally sourced* iff it carries a substantive
+    ``Source origin:`` marker (internal-only issues omit it and stay exempt).
+
+    When externally sourced, the contract requires at least one auditable
+    preservation form: (1) ``Source text:`` (verbatim-enough excerpt), (2) ``Re-read
+    obligation:`` (stable identity + explicit re-read-before-resolve duty), or
+    (3) ``Source degraded reason:`` (the source was inaccessible — say so).
+
+    Presence-only by design, mirroring the ledger checks: a present-but-thin
+    value passes; only a missing form on an external-sourced body fails. The
+    reviewer judges substance.
+    """
+    fields = _body_fields(text)
+    origin = _first_field(fields, _SOURCE_ORIGIN_ALIASES)
+    external_sourced = _has_substantive_value(origin)
+    preservation_declared = _first_field(fields, _PRESERVATION_ALIASES)
+    forms_present: list[str] = []
+    if _has_substantive_value(_first_field(fields, _SOURCE_TEXT_ALIASES)):
+        forms_present.append("source-text")
+    if _has_substantive_value(_first_field(fields, _REREAD_ALIASES)):
+        forms_present.append("re-read-required")
+    if _has_substantive_value(_first_field(fields, _DEGRADED_ALIASES)):
+        forms_present.append("degraded")
+    missing = external_sourced and not forms_present
+    return {
+        "external_sourced": external_sourced,
+        "origin": origin if external_sourced else None,
+        "preservation_declared": preservation_declared,
+        "forms_present": forms_present,
+        "missing": missing,
+        "ok": not missing,
+    }
+
+
 def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[int]:
     found: set[int] = set()
     selected_repo = repo.lower()

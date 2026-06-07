@@ -144,37 +144,84 @@ This release helper path is already its own verifier surface; ordinary
 `issue resolve` work uses `issue_tool.py verify-closeout` instead of reworking
 the release helper.
 
-## External-Source Identity
+## External-Source Identity And Preservation
 
-When the issue is filed from an external originating context — Slack thread,
-Notion page, Google Doc, Drive file, gathered artifact, web URL, or other
-non-repo evidence — the body must include a canonical source identity block.
+`axis: external-source-provider`. Slack is one adapter instance, **not** the
+schema. The same contract covers Notion, Google Workspace, Drive files,
+browser-gathered pages, gathered artifacts, web URLs, and any external
+conversation source. Charness owns this invariant; adapters (e.g. a Ceal Slack
+gather) may satisfy it, but only when the issue points to the asset/source
+identity clearly enough for a fresh session.
 
-Required fields when an external source exists:
+When the issue is filed from an external originating context, the body must
+carry a `Source` block that (a) marks the external origin, and (b) **preserves
+the original user context** so a future resolver understands the requested
+intent without the current session's memory.
 
-- canonical URL of the source (or stable identifier)
-- local gathered-artifact path when the source was captured by `gather`
+Required marker:
+
+- `Source origin:` — the external provider (`slack`, `notion`,
+  `google-workspace`, `browser`, `web`, …). Its presence is what makes the
+  preservation requirement apply; internal-only issues omit it.
+
+Identity fields (use a stable identity so a fresh session can re-find the
+source):
+
+- `Source identity:` — canonical URL or stable identifier of the source
+- `gathered:` — local gathered-artifact path when captured by `gather`
   (typically under `charness-artifacts/gather/<date>-<topic>.md`)
-- access mode (`public`, `private-grant`, `browser-mediated`, etc.) when
-  available from `gather` output
-- freshness (the `gather` artifact date or the last-fetched timestamp)
+- `access:` — access mode (`public`, `private-grant`, `browser-mediated`, …)
+- `freshness:` — the `gather` artifact date or last-fetched timestamp
 
-Format suggestion:
+Preservation — supply **at least one** of these auditable forms:
+
+1. `Source text:` — relevant original source text, verbatim enough that a
+   future resolver understands the intent without session memory. Form 1 is
+   **allowed and encouraged** for distributed-thread intent: paste the
+   load-bearing excerpt (keep it scoped; do not dump the whole thread). Quote
+   it with `>` prefixes so inner `key: value` lines are not misread as fields.
+2. `Re-read obligation:` — a stable `Source identity:` plus an explicit duty
+   that the resolving agent must re-read / verify that source before resolving
+   or closing.
+3. `Source degraded reason:` — when the source is **inaccessible** during
+   resolution, say so explicitly here; the closeout then classifies the proof
+   as degraded rather than silently closing on missing context.
+
+Format suggestion (form 1 + identity):
 
 ```text
 ## Source
 
-- thread: https://corca.slack.com/archives/.../p<ts>
+- Source origin: slack
+- Source identity: https://corca.slack.com/archives/.../p<ts>
 - gathered: charness-artifacts/gather/2026-05-09-<topic>.md
 - access: private-grant (slack-bot)
 - freshness: 2026-05-09T02:14Z
+- Source preservation: source-text
+- Source text: |
+    > earlier: "managed/dynamic progress tips, not hard-coded copy"
+    > now: "and the raw timestamp needs a shared time-rendering rule"
+```
+
+Form 2 swaps the last two lines for:
+
+```text
+- Source preservation: re-read-required
+- Re-read obligation: resolver must re-read Source identity before resolving or closing
 ```
 
 Internal-only issues (filed from current repo state, failing commands, or
-local files) are not required to carry an external Source block. The
-discriminator is *did the originating context live outside this repo*; when
-yes, source identity is required, when no, the existing evidence/JTBD is
+local files) carry no `Source origin:` and are exempt. The discriminator is
+*did the originating context live outside this repo*; when yes, the marker +
+one preservation form are required, when no, the existing evidence/JTBD is
 enough.
 
-This consumes `gather` output by reference: do not paste the full source
-content into the body.
+Enforcement: `issue_tool.py verify-closeout` and `validate-closeout-draft`
+fail (block) when the carrier body marks an external `Source origin:` but
+carries none of the three preservation forms — missing source preservation is
+a workflow risk, not optional prose style.
+`issue_tool.py check-source-preservation --body-file <path>` runs the same
+check over a created issue body or local artifact (add `--require-external` to assert the
+issue must be externally sourced). This consumes `gather` output by reference
+for identity, but form 1 deliberately preserves the load-bearing excerpt
+in-body.

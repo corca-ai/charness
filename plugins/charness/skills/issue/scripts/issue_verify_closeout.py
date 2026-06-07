@@ -35,6 +35,7 @@ _first_field = _BODY._first_field
 _has_substantive_value = _BODY._has_substantive_value
 _missing_ledger_fields = _BODY._missing_ledger_fields
 _missing_close_keywords = _BODY._missing_close_keywords
+evaluate_source_preservation = _BODY.evaluate_source_preservation
 
 
 def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None) -> str:
@@ -181,6 +182,7 @@ def verify_closeout(
     )
     missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
     missing_fields = _missing_ledger_fields(body, classification)
+    source_preservation = evaluate_source_preservation(body)
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
         if not _has_substantive_value(reason_value):
@@ -228,6 +230,7 @@ def verify_closeout(
         and not missing_fields
         and not state_mismatches
         and not manual_comment_missing
+        and not source_preservation["missing"]
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
     return {
@@ -246,5 +249,6 @@ def verify_closeout(
         "state_mismatches": state_mismatches,
         "manual_comment_missing": manual_comment_missing,
         "resolution_critique_check": resolution_critique_check,
+        "source_preservation": source_preservation,
         "verified_state": verified_state,
     }

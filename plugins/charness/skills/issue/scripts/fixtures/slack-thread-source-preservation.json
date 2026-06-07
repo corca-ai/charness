@@ -1,0 +1,15 @@
+{
+  "description": "Issue filed from a Slack-like thread where the immediate message references earlier context distributed across the surrounding thread. Provider-neutral: Slack is one adapter instance, not the schema (axis: external-source-provider).",
+  "thread": [
+    {"author": "PM", "ts": "p1", "text": "managed/dynamic progress tips should be real, not hard-coded copy with anti-repeat behavior"},
+    {"author": "PM", "ts": "p2", "text": "also the raw timestamp needs a shared time-rendering requirement, not a one-off fix"},
+    {"author": "PM", "ts": "p3", "text": "and the stop/terminate/cancel/restart control authority questions are still unclear"},
+    {"author": "Eng", "ts": "p4", "text": "filing an issue for the timestamp thing"}
+  ],
+  "immediate_message_ts": "p4",
+  "why_it_matters": "The immediate message (p4) only references the timestamp; the broader product intent lives in p1-p3. Preserving only the immediate paraphrase loses the thread's intent — the downstream-waiter fallout this contract prevents.",
+  "created_body_source_text": "## Problem\n\nRaw timestamp rendering needs a shared time-rendering requirement.\n\n## Source\n\n- Source origin: slack\n- Source identity: https://corca.slack.com/archives/C0EXAMPLE/p4\n- access: private-grant (slack-bot)\n- freshness: 2026-06-07T02:14Z\n- Source preservation: source-text\n- Source text: |\n    > p1: managed/dynamic progress tips should be real, not hard-coded copy\n    > p2: the raw timestamp needs a shared time-rendering requirement\n    > p3: stop/terminate/cancel/restart control authority is unclear\n",
+  "created_body_reread": "## Problem\n\nRaw timestamp rendering needs a shared time-rendering requirement.\n\n## Source\n\n- Source origin: slack\n- Source identity: https://corca.slack.com/archives/C0EXAMPLE/p4\n- access: private-grant (slack-bot)\n- freshness: 2026-06-07T02:14Z\n- Source preservation: re-read-required\n- Re-read obligation: resolver must re-read Source identity (the full p1-p4 thread) before resolving or closing\n",
+  "created_body_unpreserved": "## Problem\n\nRaw timestamp rendering needs a shared time-rendering requirement.\n\n## Source\n\n- Source origin: slack\n- Source identity: https://corca.slack.com/archives/C0EXAMPLE/p4\n- access: private-grant (slack-bot)\n- freshness: 2026-06-07T02:14Z\n",
+  "created_body_internal": "## Problem\n\nA local validator crashes on empty input.\n\n## Evidence\n\n- repro: `python3 scripts/foo.py` raises ValueError\n"
+}

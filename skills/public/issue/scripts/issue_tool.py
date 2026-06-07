@@ -26,6 +26,7 @@ BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 CREATE = _load_local("issue_create")
 VERIFY = _load_local("issue_verify_closeout")
+VERIFY_BODY = _load_local("issue_verify_closeout_body")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
 BACKEND_PROBE_TIMEOUT_SECONDS = 60
 
@@ -202,6 +203,26 @@ def command_verify_closeout(args: argparse.Namespace) -> int:
     return 0 if result["ok"] else 2
 
 
+def command_check_source_preservation(args: argparse.Namespace) -> int:
+    body_file = args.body_file.resolve()
+    if not body_file.is_file():
+        emit({"ok": False, "error": f"body file not found: {body_file}"})
+        return 2
+    result = VERIFY_BODY.evaluate_source_preservation(body_file.read_text(encoding="utf-8"))
+    require_external = bool(args.require_external)
+    external_missing = require_external and not result["external_sourced"]
+    ok = result["ok"] and not external_missing
+    payload: dict[str, Any] = {
+        **result,
+        "ok": ok,
+        "require_external": require_external,
+        "external_marker_missing": external_missing,
+        "body_file": str(body_file),
+    }
+    emit(payload)
+    return 0 if ok else 1
+
+
 def command_resolve_invocation(args: argparse.Namespace) -> int:
     adapter = ADAPTER.load_adapter(args.repo_root.resolve())
     if not adapter["valid"]:
@@ -326,6 +347,18 @@ def build_parser() -> argparse.ArgumentParser:
         emit=emit,
         verifier=VERIFY,
     )
+
+    source = subparsers.add_parser(
+        "check-source-preservation",
+        help="Check a created issue body / artifact for the provider-neutral source-preservation contract",
+    )
+    source.add_argument("--body-file", type=Path, required=True, help="Path to the issue body or local artifact to check")
+    source.add_argument(
+        "--require-external",
+        action="store_true",
+        help="Fail when no `Source origin:` marker is present (assert the issue is externally sourced)",
+    )
+    source.set_defaults(func=command_check_source_preservation)
 
     brief = subparsers.add_parser("brief-path", help="Print the durable brief path for an issue number on the given date")
     brief.add_argument("--number", type=int, required=True, help="Issue number whose brief path should be returned")

@@ -18,10 +18,16 @@ The receiver should understand what happened before seeing any proposed fix:
   milestone to satisfy a request; if no existing milestone fits, leave it
   unassigned and say so explicitly. If the selected backend exposes no milestone
   capability, report the gap honestly rather than guessing
-- source identity (required when the originating context is external —
-  Slack thread, Notion page, doc, gathered artifact, web URL): canonical
-  URL plus local gathered-artifact path, access mode, and freshness when
-  available. See `closeout-discipline.md` for the section shape.
+- source identity and preservation (required when the originating context is
+  external — Slack thread, Notion page, doc, gathered artifact, web URL):
+  mark the external origin with `Source origin:`, give a stable
+  `Source identity:` (canonical URL plus gathered-artifact path, access mode,
+  and freshness when available), **and** preserve the original user context in
+  one auditable form — a verbatim-enough `Source text:`, a
+  `Re-read obligation:` (must re-read the source before resolving/closing), or
+  a `Source degraded reason:` (the source was inaccessible).
+  `axis: external-source-provider` — Slack is one adapter instance, not the
+  schema. See `closeout-discipline.md` for the section shape and the checks.
 - weak direction: optional candidate outcome, explicitly non-binding
 
 Avoid writing the issue as "implement this mechanism" unless the user is

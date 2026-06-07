@@ -56,8 +56,8 @@ repo by created date. It must not use the current session's last created issue.
    existing issue duplicates, and repository state over broad research.
 3. Write the issue as problem context first: situation, user/operator
    experience, JTBD, evidence, cost/confusion/blocker, target-repo labels via
-   selected backend, and external source identity when filed from a Slack thread
-   or other external source.
+   selected backend, and — for an external source — source identity **and**
+   preserved original context, per `references/issue-shaping.md`.
 4. Add only an optional weak solution direction (`This may be solved by...`,
    `A useful outcome might be...`); avoid prescribing.
 5. Create the issue through `selected_backend` with
@@ -159,8 +159,8 @@ repo by created date. It must not use the current session's last created issue.
 - Do not silently retarget on retry: surface `target_unavailable` instead of
   falling through to another accessible repo.
 - Render `issue new` closeout only from the verified `{repo, number, url}`
-  ledger; include canonical source identity (URL, gathered-artifact path,
-  access mode, freshness) when filed from an external source.
+  ledger; for an external source add source identity + a preserved-context form
+  (`verify-closeout` blocks a closeout that preserves neither).
 - Do not treat multiple issues as independent when one issue changes the design
   boundary for another.
 - Do not misclassify to bypass review or brief: bug → other (skips causal
