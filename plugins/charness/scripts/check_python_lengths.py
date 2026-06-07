@@ -23,6 +23,17 @@ TEST_FILE_MAX = 800
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 
+# Advisory function-length warn band (AST-span lines). A function within
+# ``[warn, limit]`` is surfaced by ``--headroom`` so a slice learns a *function*
+# is near its hard limit BEFORE adding to it (#332). The file-only headroom
+# missed this: an agent reading "23 left" for the file added to a function that
+# was already at the 100-line limit, and the breach surfaced only at the commit
+# gate / fresh-eye review. Function length is a deterministic AST-span fact, so
+# (like the hard function gate) this proximity signal carries no INTERPRETATION
+# rider.
+FUNCTION_WARN = 90
+TEST_FUNCTION_WARN = 135
+
 # Advisory file-length warn band (tokei Python code lines only — function limits
 # stay hard-only and AST-span based because tokei does not report function-level
 # counts). A file in ``[warn, limit]`` keeps exit 0 but emits a ``WARN:`` line so
@@ -200,6 +211,13 @@ def function_limit_for(path: Path, root: Path) -> int:
     return FUNCTION_MAX
 
 
+def function_warn_for(path: Path, root: Path) -> int:
+    relative = path.relative_to(root)
+    if relative.parts[:1] == ("tests",):
+        return TEST_FUNCTION_WARN
+    return FUNCTION_WARN
+
+
 def validate_function_lengths(path: Path, root: Path) -> None:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     limit = function_limit_for(path, root)
@@ -247,6 +265,45 @@ def headroom_for(paths: list[Path], root: Path) -> list[dict[str, object]]:
     return rows
 
 
+def function_headroom_for(paths: list[Path], root: Path) -> list[dict[str, object]]:
+    """Advisory near-limit FUNCTION report (AST-span lines) for the gated subset
+    of ``paths``. Closes the #332 authoring-time blind spot: the file-only
+    ``headroom_for`` reports ``limit - current`` per *file* but says nothing about
+    a *function* already at its hard limit, so a slice adding to that function
+    only learns at the commit gate / fresh-eye review. Returns one row per
+    function in ``[warn, limit]`` (the ones a slice should split before growing).
+    """
+    targets = select_targets(root, paths=paths, require_git=False)
+    rows: list[dict[str, object]] = []
+    for path in targets:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except SyntaxError:
+            continue
+        limit = function_limit_for(path, root)
+        warn = function_warn_for(path, root)
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if node.lineno is None or node.end_lineno is None:
+                continue
+            length = node.end_lineno - node.lineno + 1
+            if length >= warn:
+                rows.append(
+                    {
+                        "path": path.relative_to(root).as_posix(),
+                        "function": node.name,
+                        "lines": length,
+                        "measurement": "ast-span-lines",
+                        "limit": limit,
+                        "warn": warn,
+                        "headroom": limit - length,
+                        "near_limit": True,
+                    }
+                )
+    return rows
+
+
 def select_targets(
     root: Path, *, paths: list[Path] | None, require_git: bool
 ) -> list[Path]:
@@ -286,8 +343,9 @@ def main() -> int:
         action="store_true",
         help=(
             "Advisory mode (#256): print `limit - current` headroom per gated file "
-            "instead of gating, so a slice can choose new-module-vs-append before "
-            "writing. Current is measured as tokei Python code lines."
+            "AND per near-limit function (#332) instead of gating, so a slice can "
+            "choose new-module-vs-append / extract-a-helper before writing. File "
+            "current is tokei Python code lines; function current is AST-span lines."
         ),
     )
     parser.add_argument("--json", action="store_true", help="JSON output (with --headroom).")
@@ -296,9 +354,10 @@ def main() -> int:
     root = args.repo_root.resolve()
     if args.headroom:
         rows = headroom_for(args.paths or [], root)
+        function_rows = function_headroom_for(args.paths or [], root)
         near = [r["path"] for r in rows if r["near_limit"]]
         if args.json:
-            payload: dict[str, object] = {"headroom": rows}
+            payload: dict[str, object] = {"headroom": rows, "function_headroom": function_rows}
             # The exact `limit - current` headroom values are verified facts; the
             # warn-band/near-limit judgment is the inference layer, so the
             # self-declaration rides only when a near-limit smell is present.
@@ -312,12 +371,23 @@ def main() -> int:
                     f"headroom: {row['path']}: {row['lines']}/{row['limit']} code lines "
                     f"({row['headroom']} left){flag}"
                 )
+            for row in function_rows:
+                print(
+                    f"headroom: {row['path']}::{row['function']}(): {row['lines']}/{row['limit']} "
+                    f"function lines ({row['headroom']} left) NEAR-LIMIT"
+                )
             if near:
                 print(
                     f"WARN: {len(near)} file(s) near the length limit; consider a new "
                     "module before adding more: " + ", ".join(near)
                 )
                 _print_warn_band_interpretation()
+            if function_rows:
+                labels = ", ".join(f"{r['path']}::{r['function']}()" for r in function_rows)
+                print(
+                    f"WARN: {len(function_rows)} function(s) near the {FUNCTION_MAX}-line limit; "
+                    "extract a helper before adding to them: " + labels
+                )
         return 0
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing

@@ -88,12 +88,15 @@ via `find-skills` → debug/impl/quality/issue (in-repo, no external source).
 
 ## Next Improvements
 
-- workflow: when adding to a file already in the length warn band, run the full
-  `check_python_lengths` (function + file), not just the `--headroom` file number —
-  `main()` was already at the 100-line function limit. Disposition: none — a
-  checklist habit captured in this retro; the function-length gate already has
-  teeth (it caught the breach via the reviewer), so no new mechanism is warranted;
-  the digest regenerates from this retro (source: this retro).
+- workflow/tooling: the authoring-time `check_python_lengths --headroom` advisory
+  reported FILE headroom only, so adding to `main()` (already at the 100-line
+  function limit) drew no warning — the breach surfaced only at the commit gate /
+  fresh-eye review. Disposition: applied: added function-length headroom to
+  `check_python_lengths --headroom` (text + JSON `function_headroom`, AST-span
+  based) so it surfaces near-limit *functions* at authoring time, with regression
+  tests in `tests/quality_gates/test_closeout_headroom_and_mirror_gate.py`;
+  upgraded from the initial `none` on operator review that `none` under-disposed a
+  real recurrence-preventing tooling gap (source: this retro).
 - capability: the god-module `run_slice_closeout.py` is at 474/480; the next
   addition will breach the file limit. Disposition: none — registered
   `follow-up:run-slice-closeout-module-split` + handoff Next-Session candidate;

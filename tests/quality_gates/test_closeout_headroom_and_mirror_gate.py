@@ -85,6 +85,55 @@ def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:
     assert "top_level.py" not in result.stdout
 
 
+def _skill_helper_with_function(repo: Path, name: str, func_lines: int) -> Path:
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True, exist_ok=True)
+    path = helper_dir / name
+    body = "\n".join(f"    x{i} = {i}" for i in range(func_lines - 1))
+    path.write_text(f"def big():\n{body}\n\n\ndef small():\n    return 1\n", encoding="utf-8")
+    return path
+
+
+def test_function_headroom_flags_near_limit_function(tmp_path: Path) -> None:
+    # #332: --headroom surfaces a near-limit FUNCTION (AST-span), not just files,
+    # so a slice extracts a helper before growing it past the hard limit. `big`
+    # spans 95 lines (warn 90 / limit 100); `small` is short and must not flag.
+    repo = tmp_path / "repo"
+    helper = _skill_helper_with_function(repo, "bigfn.py", 95)
+    result = run_script(
+        "scripts/check_python_lengths.py", "--repo-root", str(repo), "--headroom", "--paths", str(helper)
+    )
+    assert result.returncode == 0  # advisory: never blocks
+    assert "bigfn.py::big(): 95/100 function lines (5 left) NEAR-LIMIT" in result.stdout
+    assert "::small()" not in result.stdout
+    assert "WARN:" in result.stdout and "function(s) near the 100-line limit" in result.stdout
+
+
+def test_function_headroom_json_shape(tmp_path: Path) -> None:
+    import json
+
+    repo = tmp_path / "repo"
+    helper = _skill_helper_with_function(repo, "bigfn.py", 95)
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--headroom",
+        "--json",
+        "--paths",
+        str(helper),
+    )
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    rows = payload["function_headroom"]
+    assert any(
+        r["function"] == "big" and r["lines"] == 95 and r["limit"] == 100 and r["headroom"] == 5
+        and r["measurement"] == "ast-span-lines"
+        for r in rows
+    ), rows
+    assert all(r["function"] != "small" for r in rows)
+
+
 # --- #257 staged plugin-mirror drift (hard gate) ---------------------------
 
 mirror_gate = importlib.import_module("scripts.check_staged_mirror_drift")

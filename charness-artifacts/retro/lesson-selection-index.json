@@ -1157,26 +1157,6 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:e76a7fae8022",
-      "kind": "next_improvement",
-      "lesson": "when adding to a file already in the length warn band, run the full `check_python_lengths` (function + file), not just the `--headroom` file number — `main()` was already at the 100-line function limit. Disposition: none — a checklist habit captured in this retro; the function-length gate already has teeth (it caught the breach via the reviewer), so no new mechanism is warranted; the digest regenerates from this retro (source: this retro).",
-      "normalized_key": "when adding to a file already in the length warn band run the full",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
       "candidate_id": "next_improvement:cd0a1fb92935",
       "kind": "next_improvement",
       "lesson": "when building an enforce-from-date grandfather, probe the REAL corpus (including older header/date conventions) before trusting a single date-line parse; add a filename/identity fallback so frozen artifacts are not fail-closed into retroactive enforcement. Disposition: applied: landed the filename-date fallback in `validate_retro_artifact._retro_observed_date` + regression tests this run (source: this retro).",
@@ -1211,6 +1191,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e84566920e6a",
+      "kind": "next_improvement",
+      "lesson": "workflow/tooling: the authoring-time `check_python_lengths --headroom` advisory reported FILE headroom only, so adding to `main()` (already at the 100-line function limit) drew no warning — the breach surfaced only at the commit gate / fresh-eye review. Disposition: applied: added function-length headroom to `check_python_lengths --headroom` (text + JSON `function_headroom`, AST-span based) so it surfaces near-limit *functions* at authoring time, with regression tests in `tests/quality_gates/test_closeout_headroom_and_mirror_gate.py`; upgraded from the initial `none` on operator review that `none` under-disposed a real recurrence-preventing tooling gap (source: this retro).",
+      "normalized_key": "workflow tooling the authoring time check python lengths headroom advisory reported file headroom only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }

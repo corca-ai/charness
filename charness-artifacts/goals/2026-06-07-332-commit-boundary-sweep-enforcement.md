@@ -409,15 +409,18 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: none — every surfaced improvement is dispositioned in
-`charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`
-`## Next Improvements`; all resolved as `none — <reason>` this run (clean
-execution: self-corrected habits + a registered follow-up, no new teeth or issues
-warranted); restated per-improvement below (all valid forms):
+Retro dispositions: applied + none — every surfaced improvement is dispositioned
+in `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`
+`## Next Improvements`; one `applied` (function-length headroom tooling fix,
+upgraded from `none` on operator review) and two `none — <reason>` (a registered
+follow-up + a recorded reviewer near-miss); restated per-improvement below (all
+valid forms):
 
-- Check function-length, not just file-length `--headroom`, when adding to a
-  length-warn-band file. Disposition: none — checklist habit; the function-length
-  gate already has teeth (it caught the breach via the fresh-eye reviewer).
+- The authoring-time `check_python_lengths --headroom` reported FILE headroom
+  only, hiding `main()` at the 100-line function limit. Disposition: applied:
+  added function-length headroom (near-limit functions, AST-span) to
+  `check_python_lengths --headroom` + tests (upgraded from `none` on operator
+  review — `none` under-disposed a real recurrence-preventing tooling gap).
 - The god-module `run_slice_closeout.py` is at 474/480. Disposition: none —
   registered `follow-up:run-slice-closeout-module-split` + handoff Next-Session
   candidate; the file passes (advisory) and the split is a #332 Non-Goal.
