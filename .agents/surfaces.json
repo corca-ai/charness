@@ -615,6 +615,34 @@
       ]
     },
     {
+      "surface_id": "inference-interpretation-contract",
+      "description": "Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.",
+      "source_paths": [
+        ".agents/inference-interpretation-surfaces.json",
+        "scripts/validate_inference_interpretation.py",
+        "skills/shared/references/advisory-interpretation-contract.md",
+        "skills/public/quality/scripts/inventory_nose_clones.py",
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "skills/public/quality/scripts/inventory_standing_test_economics.py",
+        "skills/public/quality/scripts/render_runtime_summary.py",
+        "scripts/lint_ignore_inventory_lib.py",
+        "scripts/check_python_lengths.py",
+        "skills/public/find-skills/scripts/list_capabilities_lib.py",
+        "skills/public/quality/references/automation-promotion.md",
+        "skills/public/find-skills/references/discovery-order.md",
+        "skills/public/quality/references/gate-classification.md"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing"
+      ],
+      "notes": [
+        "When a new inference-layer surface is added, register it in .agents/inference-interpretation-surfaces.json AND add its declaration file to source_paths here so the contract re-verifies at slice closeout (#330).",
+        "The meta-validator is structural and file-granular: it asserts each registered surface emits the 4-field interpretation declaration with non-empty values plus a paired consumer line, and fails closed on any unregistered 4-field declaration. Intra-file inference-vs-verified gating stays owned by the per-surface #322 tests."
+      ]
+    },
+    {
       "surface_id": "python-scan-hygiene",
       "description": "Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.",
       "source_paths": [

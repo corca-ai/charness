@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 151,
-  "candidate_count": 884,
+  "source_artifact_count": 152,
+  "candidate_count": 889,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -151,6 +151,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
           "date": "2026-06-07",
           "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a9166c6954f9",
+      "kind": "current_focus",
+      "lesson": "Activated the shaped achieve goal `2026-06-07-330-metavalidator-gate-hardening` and ran it end to end: built the #330 meta-validator (enumerate inference-layer surfaces; assert the 4-field `interpretation` declaration + paired consumer-must-answer line; fail closed on any unregistered declaration), bundled the #331-deferred surface-idiom lint, wired both as standing + slice-closeout gates, and staged `Closes #330`.",
+      "normalized_key": "activated the shaped achieve goal 2026 06 07 330 metavalidator gate hardening and ran",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Context"
         }
       ]
     },
@@ -333,26 +353,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:fc90eea04166",
-      "kind": "next_improvement",
-      "lesson": "broaden slice-closeout coverage to top-level scripts (the repo-python fnmatch gap). Disposition: issue -> filed as #331 with the decision framing (source-path widening vs recursive `**`, needs a closeout-cost critique).",
-      "normalized_key": "broaden slice closeout coverage to top level scripts the repo python fnmatch gap disposition",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -493,6 +493,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
           "date": "2026-06-07",
           "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a9166c6954f9",
+      "kind": "current_focus",
+      "lesson": "Activated the shaped achieve goal `2026-06-07-330-metavalidator-gate-hardening` and ran it end to end: built the #330 meta-validator (enumerate inference-layer surfaces; assert the 4-field `interpretation` declaration + paired consumer-must-answer line; fail closed on any unregistered declaration), bundled the #331-deferred surface-idiom lint, wired both as standing + slice-closeout gates, and staged `Closes #330`.",
+      "normalized_key": "activated the shaped achieve goal 2026 06 07 330 metavalidator gate hardening and ran",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Context"
         }
       ]
     },
@@ -957,6 +977,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:5d56d202500c",
+      "kind": "next_improvement",
+      "lesson": "when a gate's purpose is to fail closed, the bounded review packet should explicitly ask the reviewer to attack the closure (enumerate escape forms), not only confirm the registered set passes. The AnnAssign gap proves a happy-path review would have missed it. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
+      "normalized_key": "when a gate s purpose is to fail closed the bounded review packet should",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bfc494d1db1d",
+      "kind": "next_improvement",
+      "lesson": "when a structural gate asserts a substring anchor against prose, choose anchors that live on a single line — markdown wraps text, so a multi-word anchor can straddle a `\\n` and false-negative. Disposition: memory -> recent-lessons digest refreshed this session (source: this retro).",
+      "normalized_key": "when a structural gate asserts a substring anchor against prose choose anchors that live",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:eb883f10d125",
       "kind": "next_improvement",
       "lesson": "**workflow:** at `spec`/`impl` closeout in this harness repo, when a slice adds a NEW reusable mechanism (repo-root script, gate, or generalizable pattern), require a one-line classification — `host-local` vs `skill-capability` — before closeout. Make the portability question a checkpoint, not a principle. Owner: `docs/conventions/implementation-discipline.md`.",
@@ -1091,6 +1151,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8eb4ffd88b6f",
+      "kind": "repeat_trap",
+      "lesson": "**Doc-anchor line-wrap false-negative (one validator round-trip).** The prose anchor `\"it is blind to\"` did not match gate-classification.md because the text wraps as `it is\\nblind to` — a substring anchor cannot span a markdown line break. Caught on the first live validator run, fixed by choosing single-line anchors. Cheap, but avoidable by checking anchor/line geometry up front.",
+      "normalized_key": "doc anchor line wrap false negative one validator round trip the prose anchor it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:726ed5585eac",
+      "kind": "repeat_trap",
+      "lesson": "**Fail-closed gap survived my own authoring; the fresh-eye caught it.** My leak scan only walked `ast.Assign`, so the natural annotated form `INTERPRETATION: dict = {...}` would have escaped registration — silently defeating the gate's entire purpose one surface later. I had even written \"any nesting\" in the docstring, an overclaim. The bounded review found it; I folded `AnnAssign` handling + an honest scope boundary before ship.",
+      "normalized_key": "fail closed gap survived my own authoring the fresh eye caught it my leak",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
           "date": "2026-06-07",
           "section": "Waste"
         }

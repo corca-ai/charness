@@ -4,11 +4,22 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import re
 import subprocess
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 SURFACES_PATH = Path(".agents/surfaces.json")
+
+# A `<dir>/**/*.X` pattern is the #331 closeout-matcher footgun: surface matching
+# is fnmatch, where `*` already crosses `/`, so `**/*.X` requires an intermediate
+# directory segment and silently misses a top-level `<dir>/<file>.X`. The lint
+# below requires the strict-superset `<dir>/*.X` sibling to be present; it does
+# NOT rewrite matching semantics (that was #331's rejected Option B).
+# The optional `<dir>/` prefix also catches a root-level `**/*.X` (no directory),
+# which is the same footgun: fnmatch `*` crosses `/`, so `**/*.py` misses a
+# top-level `top.py`. Its required sibling is the bare `*.X`.
+_RECURSIVE_EXTENSION_PATTERN = re.compile(r"^(?:(?P<dir>.+)/)?\*\*/\*(?P<ext>\.[^/*]+)$")
 
 
 class SurfaceError(Exception):
@@ -37,6 +48,24 @@ def _require_string_list(value: object, field: str) -> list[str]:
     return result
 
 
+def _check_surface_idiom(patterns: list[str], field: str) -> None:
+    pattern_set = set(patterns)
+    for pattern in patterns:
+        match = _RECURSIVE_EXTENSION_PATTERN.match(pattern)
+        if match is None:
+            continue
+        directory = match.group("dir")
+        sibling = f"{directory}/*{match.group('ext')}" if directory else f"*{match.group('ext')}"
+        if sibling not in pattern_set:
+            raise SurfaceError(
+                f"`{field}` pattern `{pattern}` uses the non-recursive-fnmatch footgun "
+                f"`<dir>/**/*.X` without its `<dir>/*.X` sibling `{sibling}`: surface matching "
+                f"is fnmatch where `*` crosses `/`, so `**/*.X` requires an intermediate "
+                f"directory and silently misses a top-level `<dir>/<file>{match.group('ext')}` "
+                f"(#331). Add `{sibling}` (a strict superset) or replace the pattern with it."
+            )
+
+
 def _validate_generated_markdown_entry(entry: object, field: str) -> dict[str, str]:
     if not isinstance(entry, dict):
         raise SurfaceError(f"`{field}` must be an object")
@@ -60,6 +89,8 @@ def _validate_surface(surface: object, index: int) -> dict[str, Any]:
     description = _require_string(surface.get("description"), f"{field}.description")
     source_paths = [normalize_repo_path(path) for path in _require_string_list(surface.get("source_paths"), f"{field}.source_paths")]
     derived_paths = [normalize_repo_path(path) for path in _require_string_list(surface.get("derived_paths"), f"{field}.derived_paths")]
+    _check_surface_idiom(source_paths, f"{field}.source_paths")
+    _check_surface_idiom(derived_paths, f"{field}.derived_paths")
     sync_commands = _require_string_list(surface.get("sync_commands"), f"{field}.sync_commands")
     verify_commands = _require_string_list(surface.get("verify_commands"), f"{field}.verify_commands")
     notes = _require_string_list(surface.get("notes"), f"{field}.notes")

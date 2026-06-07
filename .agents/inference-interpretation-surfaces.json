@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "contract_reference": "skills/shared/references/advisory-interpretation-contract.md",
+  "declaration_fields": [
+    "measures",
+    "proxy_for",
+    "blind_spots",
+    "interpretation_question"
+  ],
+  "leak_scan": {
+    "exclude_prefixes": [
+      "plugins/",
+      "mutants/",
+      "tests/"
+    ],
+    "note": "The meta-validator AST-scans every git-tracked *.py outside exclude_prefixes for a module-level dict carrying all declaration_fields. Every such declaration must be registered as a `python` surface below. An unregistered declaration is a gate failure: either a verified fact leaked a distrust declaration (the contract's cardinal error) or a new inference-layer surface was added without registering its consumer pairing. Excludes: plugins/ and mutants/ are derived/working mirrors validated elsewhere; tests/ construct expected-shape dicts as fixtures, not live surfaces."
+  },
+  "surfaces": [
+    {
+      "surface_id": "nose-clones",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_nose_clones.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "which families are intentional",
+      "note": "Pilot surface: lexical clone families. Consumer (quality) answers which families are intentional boilerplate vs extractable debt before treating the total as debt."
+    },
+    {
+      "surface_id": "skill-ergonomics",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "which heuristic hits are real ergonomic",
+      "note": "Ergonomics heuristics / subcheck_counts. Declaration gated on `if skills` (a no-measure state when unconfigured)."
+    },
+    {
+      "surface_id": "standing-test-economics",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_standing_test_economics.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "test-file / nested-CLI growth paying for real isolation",
+      "note": "Test-economics trend. Declaration lives in the script wrapper (relocated from the lib during #322 to stay under the length warn band)."
+    },
+    {
+      "surface_id": "lint-ignores",
+      "kind": "python",
+      "declaration_file": "scripts/lint_ignore_inventory_lib.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "provenance-bearing deferrals versus normalized debt",
+      "note": "Suppression pressure. Declaration is defined in the lib and emitted by inventory_lint_ignores.py (the emitter only subscripts the imported dict, so it is not itself a declaration site)."
+    },
+    {
+      "surface_id": "python-lengths",
+      "kind": "python",
+      "declaration_file": "scripts/check_python_lengths.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "is a warn-band file an honest cohesive unit near its limit",
+      "note": "Length smell (warn band / --headroom near-limit) ONLY. The hard over-limit gate and the function-length AST check are verified facts and never carry the declaration; this validator is file-granular and relies on the per-surface #322 tests for that intra-file boundary."
+    },
+    {
+      "surface_id": "find-skills-recommendation",
+      "kind": "python",
+      "declaration_file": "skills/public/find-skills/scripts/list_capabilities_lib.py",
+      "declaration_symbol": "RECOMMENDATION_INTERPRETATION",
+      "consumer_reference": "skills/public/find-skills/references/discovery-order.md",
+      "consumer_anchor": "does the top-ranked route actually fit THIS task and repo state",
+      "note": "Recommendation ranking. Declaration rides only when a ranking is produced (has_recommendations); the plain capability inventory is a verified fact and stays clean."
+    },
+    {
+      "surface_id": "runtime-hot-spots",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/render_runtime_summary.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "standing cost THIS repo should budget or optimize",
+      "note": "Runtime hot-spot trend. Declaration rides only when hot spots exist."
+    },
+    {
+      "surface_id": "quality-next-gates-ranking",
+      "kind": "prose",
+      "declaration_file": "skills/public/quality/references/gate-classification.md",
+      "prose_anchors": [
+        "It measures *your* judged leverage",
+        "the single highest-value next proof move",
+        "blind to maintenance burden",
+        "answer its interpretation question"
+      ],
+      "consumer_reference": "skills/public/quality/references/gate-classification.md",
+      "consumer_anchor": "does the top-ranked gate genuinely",
+      "note": "Agent-authored `Recommended Next Gates` prose ranking. No Python declaration dict exists, so it is registered as prose and checked by anchor presence (the 4 framing elements + the consumer-answer line). Out of the python leak scan by design; the declaration and consumer live in the same self-consuming doc."
+    }
+  ]
+}

@@ -81,6 +81,7 @@ QUALITY_PYTHON_STUBS = (
     ("report-usage-episodes", "report_usage_episodes.py"),
     ("check-cli-skill-surface", "check_cli_skill_surface.py"),
     ("validate-surfaces", "validate_surfaces.py"),
+    ("validate-inference-interpretation", "validate_inference_interpretation.py"),
     ("validate-public-skill-validation", "validate_public_skill_validation.py"),
     ("validate-public-skill-dogfood", "validate_public_skill_dogfood.py"),
     ("validate-cautilus-scenarios", "validate_cautilus_scenarios.py"),

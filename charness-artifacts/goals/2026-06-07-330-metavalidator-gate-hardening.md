@@ -1,6 +1,6 @@
 # Achieve Goal: Harden the advisory-interpretation contract + close cheap gate-coverage debt
 
-Status: draft
+Status: complete
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md`
 
@@ -11,8 +11,8 @@ command; shaping happened, no slices were executed.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md`, then re-confirm the primary against `## Discuss Before Activation` (the operator may re-point to a candidate below).
+- Current slice: COMPLETE — all five slices (S1–S5) landed; #330 closing on push.
+- Next action: push the carrier (staged `Closes #330`), then `verify-closeout --expect-state CLOSED`. Done-early candidates (#329 retro disposition floor, #184 product metrics) remain open for a future session per `## Discuss Before Activation`.
 - Mode: spec-light — small per-check slices; promote to a `spec` only if the meta-validator needs a shared inference-layer surface registry.
 - Timebox: until the chosen objective is complete; re-pick the next slice at each boundary.
 - Activation time: set by the next session at `/goal`.
@@ -115,8 +115,11 @@ Routing deferred to `find-skills` (its `--recommend-for-task` /
 `--recommendation-role --next-skill-id` engine) — no hard-coded phase→skill map
 here. Fill during the run:
 
-- **Routing** — query `find-skills` per phase; #330 + surface-idiom-lint are
-  `impl` + `quality`; record the route returned.
+- **Routing** — `find-skills` (read-only, local-first) returned no support/
+  integration match for the task text and no external route; the work is in-repo
+  `impl` + `quality` (build the validator + lint, wire the standing gate). Route
+  recorded; no new public/support skill warranted (reused existing checker
+  patterns + the #322 declaration shape).
 - **Gather** — `Gather: n/a — no external source; all context is in-repo issues
   and artifacts.`
 - **Release** — `Release: n/a unless a shipped capability warrants a version
@@ -127,6 +130,92 @@ here. Fill during the run:
   --expect-state CLOSED` proof.
 
 ## Slice Log
+
+### S1 — enumerate surfaces + contract (done 2026-06-07)
+
+- **Enumeration source decided: scan + registry hybrid (fails closed).** A
+  registry `.agents/inference-interpretation-surfaces.json` lists the known
+  inference-layer surfaces (declaration file/symbol + paired consumer reference +
+  anchor). The validator ALSO AST-scans every git-tracked `*.py` (excluding
+  `plugins/`, `mutants/`, `tests/`) for a module-level dict literal carrying all
+  four declaration fields; every such declaration MUST be registered. An
+  empirical scan found exactly **7** Python declarations (the registry's python
+  set), so a new/8th declaration anywhere fails closed — this is the discovery the
+  plan-critique asked for instead of a hard-coded list of six.
+- **The 7 Python declarations** (all carry exactly `measures` / `proxy_for` /
+  `blind_spots` / `interpretation_question`): `inventory_nose_clones.py`,
+  `inventory_skill_ergonomics.py`, `inventory_standing_test_economics.py`,
+  `scripts/lint_ignore_inventory_lib.py`, `scripts/check_python_lengths.py`,
+  `list_capabilities_lib.py` (`RECOMMENDATION_INTERPRETATION`),
+  `render_runtime_summary.py`.
+- **8th surface = prose.** The quality `Recommended Next Gates` ranking has no
+  Python dict; it is declared in prose in `gate-classification.md`. Registered as
+  `kind: prose` with anchor-presence checks (4 framing elements + consumer line),
+  so enumeration stays faithful to the six #322 surfaces.
+- **Verified-fact exclusion is structural + file-granular.** No Python file
+  outside the registry may DEFINE a 4-field declaration (leak guard). Intra-file
+  gating (declaration rides only the warn-band path, never the over-limit gate)
+  stays owned by the per-surface #322 tests + fresh-eye review — the meta-validator
+  is NOT a content classifier (Non-Goal).
+- **Portability:** registry absent + zero declarations found -> no-op pass;
+  declarations found + registry absent -> fail. Our repo ships the registry.
+
+### S2 — meta-validator + tests (done 2026-06-07)
+
+- New `scripts/validate_inference_interpretation.py`: loads + structurally
+  validates the registry, AST-scans for 4-field dicts (leak guard), asserts each
+  registered python surface's symbol is a 4-field non-empty dict + paired consumer
+  anchor, checks prose anchors, and is portable (no-op when registry absent +
+  no declarations). Uses `scripts.repo_file_listing.iter_repo_files` (git listing)
+  so it satisfies `python-scan-hygiene`. The gate's own output is a verified fact
+  and carries no declaration.
+- New `tests/quality_gates/test_inference_interpretation_meta_validator.py`: 16
+  tests, in-process (no new boundary-ratchet candidate). Negative guards: empty
+  field, removed symbol (drift), missing consumer pairing, unregistered LEAK,
+  excluded-prefix non-leak, prose anchor missing, registry-absent-with-declarations
+  fail, malformed registry. Live test asserts the real 8-surface contract holds.
+- Proof: 16/16 pass; ruff, check_python_lengths, attention-state-visibility,
+  gitignore-scan-hygiene, boundary-bypass-ratchet all green on touched files.
+
+### S3 — wire the standing gate (done 2026-06-07)
+
+- `run-quality.sh`: queued `validate-inference-interpretation` after
+  `validate-surfaces`. CI/local parity is asymmetric (a fatter local gate is
+  correct), so no CI workflow change is needed.
+- `tests/quality_gates/support.py`: added the gate stub so the quality-runner
+  tests' stubbed repo stays green.
+- `.agents/surfaces.json`: new `inference-interpretation-contract` surface so the
+  meta-validator runs at slice closeout when the registry, validator, contract
+  doc, any declaration file, or any consumer reference changes.
+- Synced the plugin export (`scripts/` is mirrored); packaging,
+  packaging-committed, export-safe-imports all green. test_quality_runner +
+  test_surface_obligations: 64 passed.
+
+### S4 — surface-idiom lint (done 2026-06-07)
+
+- `scripts/surfaces_lib.py`: `_check_surface_idiom` + `_RECURSIVE_EXTENSION_PATTERN`
+  wired into `_validate_surface` for both source_paths and derived_paths. Flags any
+  `<dir>/**/*.X` lacking its `<dir>/*.X` sibling (fnmatch `*` crosses `/`, so
+  `**/*.X` misses a top-level file — the #331 footgun). It does NOT change matching
+  semantics (no recursive-glob matcher — #331's rejected Option B).
+- `tests/quality_gates/test_surface_obligations.py`: +3 tests (footgun-without-sibling
+  fails; footgun-with-sibling passes; bare `<dir>/**` / `<dir>/*/refs/**` pass). 35
+  surface tests pass. Current manifest is already reconciled, so the lint guards
+  reintroduction. Mirror synced.
+
+### S5 — close #330 + bundle verify + critique + retro (done 2026-06-07)
+
+- Bundle proof: broad pytest 2394 passed / 4 skipped / 26 deselected; live
+  meta-validator + validate_surfaces green; all touched-surface gates green;
+  mirror byte-match.
+- Bounded fresh-eye review (parent-delegated, independent context): SHIP-WITH-NITS;
+  all 3 findings folded before ship (AnnAssign leak hardening, root-level idiom
+  lint, prose-anchor tightening). Critique:
+  `charness-artifacts/critique/2026-06-07-issue-330-metavalidator-gate-hardening.md`.
+- `validate-closeout-draft` (feature, direct-commit): `draft_verified`
+  (resolution_critique ok, close keyword present). Retro + lesson-index + recent-lessons
+  refreshed. Closes via the staged `Closes #330` keyword on push; `verify-closeout
+  --expect-state CLOSED` recorded after push.
 
 ## Context Sources
 
@@ -197,9 +286,9 @@ Pre-activation shaping notes (the next session runs the real fresh-eye critique)
 Closeout evidence — replace each `TODO` with a bound `<path>` or an explicit
 `skipped: <allowed-reason>: <detail>` before flipping to complete.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md
+Host log probe: skipped: local-deterministic-goal: no host/runtime behavior is claimed (External Or Live Proof = none); the proof is broad pytest (2394 passed) + the standing deterministic gates, not a host/runtime probe.
+Disposition review: charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md `## Next Improvements` + the reviewer-finding dispositions in `## Auto-Retro` below.
 
 ## User Verification Instructions
 
@@ -209,4 +298,20 @@ surface-idiom lint fail; confirm #330 is CLOSED.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions (every surfaced improvement dispositioned):
+
+- **Fresh-eye NIT — AnnAssign leak-scan gap + docstring overclaim.** Disposition:
+  fix (folded before ship) — added `ast.AnnAssign` handling + honest scope
+  docstring + detection/leak tests. Also memory -> recent-lessons ("attack the
+  closure" review lesson).
+- **Fresh-eye NIT — root-level `**/*.X` idiom-lint gap.** Disposition: fix (folded)
+  — optional `<dir>/` prefix + bare `*.X` sibling + test.
+- **Fresh-eye QUESTION — generic prose anchors.** Disposition: fix (folded) —
+  tightened to distinctive substrings; gate was already fail-closed via the
+  distinctive anchors.
+- **Waste — doc-anchor line-wrap false-negative.** Disposition: memory ->
+  recent-lessons digest refreshed this session (single-line anchors when asserting
+  against wrapped prose).
+- **Sibling — non-literal dict declaration forms (`dict(...)`/dynamic).**
+  Disposition: in-scope documented non-claim, not a follow-up (#330 Non-Goal: no
+  content classifier; owned by per-surface #322 tests).

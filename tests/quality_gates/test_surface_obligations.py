@@ -357,6 +357,69 @@ def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
     assert "duplicate surface id `dup`" in result.stderr
 
 
+def _write_surfaces(repo: Path, source_paths: list[str]) -> None:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "idiom",
+                        "description": "idiom lint fixture",
+                        "source_paths": source_paths,
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": [],
+                        "notes": [],
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_validate_surfaces_rejects_recursive_extension_without_sibling(tmp_path: Path) -> None:
+    # The #331 footgun: `<dir>/**/*.X` under fnmatch silently misses a top-level
+    # `<dir>/<file>.X`. The lint must fail closed when the `<dir>/*.X` sibling is absent.
+    repo = tmp_path / "repo"
+    _write_surfaces(repo, ["scripts/**/*.py"])
+    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "non-recursive-fnmatch footgun" in result.stderr
+    assert "scripts/*.py" in result.stderr
+
+
+def test_validate_surfaces_accepts_recursive_extension_with_sibling(tmp_path: Path) -> None:
+    # Keeping the `**/*.X` form is allowed as long as the strict-superset sibling is present.
+    repo = tmp_path / "repo"
+    _write_surfaces(repo, ["scripts/**/*.py", "scripts/*.py"])
+    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_surfaces_rejects_root_level_recursive_extension(tmp_path: Path) -> None:
+    # A root-level `**/*.X` (no `<dir>` prefix) is the same footgun: it misses a
+    # top-level `top.py`. Its required sibling is the bare `*.X` (fresh-eye NIT).
+    repo = tmp_path / "repo"
+    _write_surfaces(repo, ["**/*.py"])
+    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "non-recursive-fnmatch footgun" in result.stderr
+    assert "sibling `*.py`" in result.stderr
+
+
+def test_validate_surfaces_allows_bare_recursive_dir_glob(tmp_path: Path) -> None:
+    # `<dir>/**` (no extension) and `<dir>/*/refs/**` are not the footgun and must pass.
+    repo = tmp_path / "repo"
+    _write_surfaces(repo, ["skills/public/**", "skills/public/*/references/**"])
+    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

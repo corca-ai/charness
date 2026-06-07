@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Activated the shaped achieve goal `2026-06-07-330-metavalidator-gate-hardening` and ran it end to end: built the #330 meta-validator (enumerate inference-layer surfaces; assert the 4-field `interpretation` declaration + paired consumer-must-answer line; fail closed on any unregistered declaration), bundled the #331-deferred surface-idiom lint, wired both as standing + slice-closeout gates, and staged `Closes #330`. (source: `charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md`)
 - Closed #331 (the fnmatch closeout-coverage gap filed during the #328 session), prompted by the operator's "retrospect waste + design the next chunk" request. (source: `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`)
-- Landed the changed-line mutation-coverage producer (slice 2, lever A+B), pushed, and released v0.25.0. (source: `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`)
 
 ## Repeat Traps
 
@@ -39,6 +39,7 @@
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-07-325-h3-provenance-gate-capability.md`
 - `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`
+- `charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md`
 - `charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md`
 - `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
