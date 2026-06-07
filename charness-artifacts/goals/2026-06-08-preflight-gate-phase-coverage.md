@@ -1,6 +1,7 @@
 # Achieve Goal: catch authoring/closeout debt at slice time, not push time
 
-Status: draft (shaped for the next session)
+Status: COMPLETE (2026-06-07) — #328 resolved + gate-phase coverage closed; see
+`## Outcomes` and `## Final Verification`.
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-08-preflight-gate-phase-coverage.md`
 
@@ -107,7 +108,7 @@ activation:
 | S2 | Prose-pin pre-check (#328) | checker + test; catches a literal-string test assertion on a renamed doc/SKILL path | done |
 | S3 | Authoring-preflight prompt (#328) | prompt/affordance wired where gated surfaces are edited; test | done |
 | S4 | Gate-phase coverage: pull cheap full-suite gates into slice closeout | gitignore-scan-hygiene + retro-index caught at slice closeout; test | done |
-| S5 | Close #328 + bundle verify + bounded critique + retro | staged close; broad pytest; fresh-eye critique | in progress |
+| S5 | Close #328 + bundle verify + bounded critique + retro | staged close; broad pytest; fresh-eye critique | done |
 
 ## Outcomes (this session)
 
@@ -170,10 +171,21 @@ A fresh session can reconstruct context from, in order:
 
 ## Final Verification
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Status: COMPLETE. #328 CLOSED (COMPLETED); carrier commit `1e7dd613` pushed to
+`origin/main`; `verify-closeout --expect-state CLOSED` returns ok with no state
+mismatches; full `run-quality.sh --read-only` 72 passed / 0 failed.
+
+Retro: done — `charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md`.
+Host log probe: skipped — allowed reason: a clean, fully-instrumented code session
+(git + targeted/broad pytest + full quality gate output all captured); no host
+anomaly or refusal to investigate, so a host-log probe would add no signal.
+Disposition review: done — all surfaced improvements dispositioned in the retro
+`Next Improvements` (workflow -> recent-lessons; capability -> issue #331; memory
+-> recent-lessons digest refreshed this session).
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions: complete — three improvements surfaced and each given a
+concrete destination (verify-issue-state-first habit -> recent-lessons;
+top-level-scripts closeout coverage -> #331; non-recursive-fnmatch surface trap
+-> recent-lessons digest). No no-improvement opt-out needed.
