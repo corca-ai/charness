@@ -93,3 +93,10 @@ standing_doc_provenance:
   standing_docs: []
   tracking_allowlist: []
   inline_allow_marker: provenance-allow
+changed_line_mutation_gate:
+  # Empty eligible_globs keeps the changed-line coverage gate inert (opt-in).
+  # List the globs of source the gate guards and point coverage_json at the
+  # coverage.py report your full/scheduled run emits. See references/mutation-testing.md.
+  coverage_json: reports/mutation/test-coverage.json
+  eligible_globs: []
+  exclude_globs: []

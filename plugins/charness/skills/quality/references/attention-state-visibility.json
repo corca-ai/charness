@@ -26,6 +26,18 @@
       "evidence_terms": ["skipped_artifacts"],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
     },
+    "skills/public/quality/scripts/changed_line_coverage_gate_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary"],
+      "evidence_terms": ["gate skipped (non-blocking)"],
+      "rationale": "Helper that builds the portable changed-line coverage gate's non-blocking skip reasons (no base SHA, no eligible change, no coverage report, or a stale fingerprint). Each skip carries an explicit `reason` surfaced by check_changed_line_coverage.py, so a missing/stale coverage source cannot read as a clean blocking-clear pass; teeth only fire on fresh coverage."
+    },
+    "skills/public/quality/scripts/check_changed_line_coverage.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["skipped", "reason"],
+      "rationale": "The portable changed-line coverage gate emits explicit non-blocking skips (exit 0) in the JSON/plain `reason` when there is no base SHA, no eligible change, no coverage report, or a stale fingerprint. The skip is surfaced in the terminal payload so a missing/old coverage source cannot read as a clean pass; an invalid adapter fails closed (exit 1)."
+    },
     "skills/public/quality/scripts/check_standing_doc_provenance.py": {
       "states": ["skipped"],
       "visibility": ["hard_failure_or_blocker", "operator_summary"],

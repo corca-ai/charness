@@ -178,6 +178,63 @@ literal paths (`stryker.log`) are renamed to neutral equivalents (`run.log`)
 and stack-coupled values (`commands.*`) ship empty so the portable-defaults
 preset stays stack-neutral.
 
+## Changed-Line Coverage Gate (portable pattern)
+
+A full mutation run is too slow for every push, but the recurring regression
+class — a changed line that ships with no test covering it — is cheap to catch
+locally. `check_changed_line_coverage.py` (a `quality` capability) reproduces
+just the **blocking** signal of the scheduled gate: a changed pool file whose
+changed lines over `base..head` lack coverage. It does not run mutants; it
+**reuses** a coverage.py report the full/scheduled run already produced.
+
+Configure it with the `changed_line_mutation_gate` adapter block
+(`coverage_json`, `eligible_globs`, `exclude_globs`). It is stack-neutral — the
+eligible set is glob-driven, not sourced from a tool config — so a consuming repo
+inherits the gate without the mutation-runner wiring. Empty `eligible_globs`
+keeps it inert. Base/head come from `--base-sha`/`--head-sha` or
+`MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
+
+### Freshness guard: content fingerprint, not a commit SHA
+
+Reusing a coverage report is only safe if the report was built for the code being
+judged. The producer stamps a sibling `<coverage_json>.fingerprint` marker; the
+consumer recomputes it and **skips non-blocking** on a mismatch, so a stale
+report can never raise a false "uncovered changed line".
+
+The marker is a **content** hash of the changed eligible files over
+**base → working tree**, not a commit SHA, on purpose: a producer that runs at
+**pre-commit** time (HEAD is still the parent) and a consumer that runs at
+**pre-push** time (post-commit) see the same on-disk content, so the fingerprint
+matches across the commit boundary — a SHA-keyed marker would silently mismatch
+and skip. A content hash also survives a no-op recommit/rebase that does not
+touch the pool, while a base advance correctly re-invalidates.
+
+If another flow already stamps `<coverage_json>.fingerprint` for the same
+report (e.g. a tool-specific producer with a different eligible-file source),
+point this gate at a distinct `coverage_json` so the two markers do not clobber
+each other — divergent fingerprints make each gate read the other's marker as
+stale and skip non-blocking (never a false fail, but also no teeth).
+
+### Producer cost: one instrumented run, no second pass
+
+Coverage for the gate should piggyback the run you already pay for (the
+full/closeout test run), instrumented once with plain statement coverage — not a
+separate coverage pass. Drop per-test `dynamic_context` for this report: the gate
+only needs executed-vs-missing lines, and per-test context can balloon the
+coverage JSON by orders of magnitude. Run the cheap deterministic doc/lint gates
+*before* paying for the instrumented run so a late failure does not force a
+re-pay.
+
+### The false-green dry-run trap
+
+A pre-commit dry-run with `--head-sha HEAD` is a **false green** when the
+mutation-pool change is still uncommitted: HEAD is the parent, so `base..HEAD`
+excludes the change and the gate judges nothing. Either run the producer (which
+stamps the marker over base → worktree) then the consumer, or analyze a head that
+includes the worktree. The capability **warns** (non-blocking) when the analyzed
+head resolves to `HEAD` while eligible files have uncommitted changes, so the
+trap surfaces instead of reading as a clean pass.
+
 ## Fixing a changed-line-coverage regression
 
 When a run FAILs on the **blocking** "changed files with uncovered changed

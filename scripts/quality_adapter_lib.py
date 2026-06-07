@@ -9,6 +9,7 @@ from scripts.adapter_lib import load_yaml_file
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
+    DEFAULT_CHANGED_LINE_MUTATION_GATE,
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_MUTATION_TESTING,
     DEFAULT_PROMPT_ASSET_POLICY,
@@ -19,6 +20,7 @@ from scripts.quality_policy_defaults import (
     DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     DEFAULT_STANDING_DOC_PROVENANCE,
+    validate_changed_line_mutation_gate,
     validate_coverage_floor_policy,
     validate_mutation_testing,
     validate_prompt_asset_policy,
@@ -179,6 +181,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "security_commands": [],
         "mutation_testing": copy.deepcopy(DEFAULT_MUTATION_TESTING),
         "standing_doc_provenance": copy.deepcopy(DEFAULT_STANDING_DOC_PROVENANCE),
+        "changed_line_mutation_gate": copy.deepcopy(DEFAULT_CHANGED_LINE_MUTATION_GATE),
     }
 
 
@@ -293,6 +296,14 @@ def _apply_standing_doc_provenance(
         validated["standing_doc_provenance"] = block
 
 
+def _apply_changed_line_mutation_gate(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    block = validate_changed_line_mutation_gate(data.get("changed_line_mutation_gate"), errors, warnings)
+    if block is not None:
+        validated["changed_line_mutation_gate"] = block
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -312,6 +323,7 @@ def validate_quality_adapter_data(
     _apply_list_fields(data, validated, errors)
     _apply_mutation_testing(data, validated, errors, warnings)
     _apply_standing_doc_provenance(data, validated, errors, warnings)
+    _apply_changed_line_mutation_gate(data, validated, errors, warnings)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

@@ -65,6 +65,7 @@ Quality-specific fields:
 - `security_commands`
 - `mutation_testing`
 - `standing_doc_provenance`
+- `changed_line_mutation_gate`
 
 Use explicit empty lists to record an intentional opt-out.
 Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
@@ -419,6 +420,32 @@ Fields:
 A scanned line is flagged when it carries an ISO date, two or more issue refs,
 or a dated-incident phrase; a single trailing `(#NNN)` with no date never flags.
 Fenced code blocks are skipped. Unknown sub-keys land in warnings.
+
+`changed_line_mutation_gate` declares the portable changed-line coverage gate
+(`check_changed_line_coverage.py`). It reproduces a scheduled mutation gate's
+blocking signal locally — a changed file whose changed lines over `base..head`
+lack test coverage — by reusing a coverage.py report a full / scheduled run
+produced, gated by a content-fingerprint freshness marker. It is stack-neutral:
+the eligible-file set comes from globs, not a tool-specific config. See
+`mutation-testing.md`.
+
+Fields:
+
+- `coverage_json` — path to the reused coverage.py JSON report (default
+  `reports/mutation/test-coverage.json`). The producer stamps a sibling
+  `<coverage_json>.fingerprint` marker.
+- `eligible_globs` — globs of source the gate guards (default `[]`). An empty
+  list makes the gate **inert** (stack-neutral, opted out); a consuming repo opts
+  in by listing the globs.
+- `exclude_globs` — globs removed from the eligible set (default `[]`), e.g.
+  `**/tests/**`.
+
+Base/head come from `--base-sha`/`--head-sha` or `MUTATION_BASE_SHA`/
+`MUTATION_HEAD_SHA` (head defaults to `HEAD`). The gate skips non-blocking (exit
+0) when there is no base SHA, no eligible change, no coverage report, or a stale
+fingerprint — so a missing/old coverage source never false-fails; it warns when
+analyzing `HEAD` would exclude uncommitted eligible changes. Unknown sub-keys
+land in warnings.
 
 ## Design Rules
 

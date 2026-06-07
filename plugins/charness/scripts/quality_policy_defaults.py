@@ -107,6 +107,17 @@ DEFAULT_STANDING_DOC_PROVENANCE: dict[str, Any] = {
 }
 STANDING_DOC_PROVENANCE_KNOWN_KEYS = frozenset(DEFAULT_STANDING_DOC_PROVENANCE.keys())
 
+# DEFAULT_CHANGED_LINE_MUTATION_GATE is opt-in/inert: empty `eligible_globs`
+# makes check_changed_line_coverage.py a no-op so the portable default stays
+# stack-neutral. A consuming repo lists the globs of files the gate guards and
+# points `coverage_json` at the coverage.py report its full/scheduled run emits.
+DEFAULT_CHANGED_LINE_MUTATION_GATE: dict[str, Any] = {
+    "coverage_json": "reports/mutation/test-coverage.json",
+    "eligible_globs": [],
+    "exclude_globs": [],
+}
+CHANGED_LINE_MUTATION_GATE_KNOWN_KEYS = frozenset(DEFAULT_CHANGED_LINE_MUTATION_GATE.keys())
+
 
 def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
     return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
@@ -401,6 +412,47 @@ def validate_standing_doc_provenance(
         elif key == "inline_allow_marker":
             if not isinstance(raw, str) or not raw:
                 errors.append("standing_doc_provenance.inline_allow_marker must be a non-empty string")
+                continue
+            validated[key] = raw
+    return validated
+
+
+def _changed_line_mutation_gate_defaults() -> dict[str, Any]:
+    return {
+        "coverage_json": DEFAULT_CHANGED_LINE_MUTATION_GATE["coverage_json"],
+        "eligible_globs": list(DEFAULT_CHANGED_LINE_MUTATION_GATE["eligible_globs"]),
+        "exclude_globs": list(DEFAULT_CHANGED_LINE_MUTATION_GATE["exclude_globs"]),
+    }
+
+
+def validate_changed_line_mutation_gate(
+    value: Any, errors: list[str], warnings: list[str]
+) -> dict[str, Any] | None:
+    """Validate the changed_line_mutation_gate adapter block.
+
+    Returns None when absent; defaults are supplied by infer_quality_defaults.
+    `eligible_globs` / `exclude_globs` are glob lists (empty eligible => inert);
+    `coverage_json` is the reused coverage.py report path. Unknown sub-keys land
+    in warnings (precedent: validate_mutation_testing).
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("changed_line_mutation_gate must be a mapping")
+        return None
+    validated = _changed_line_mutation_gate_defaults()
+    for key, raw in value.items():
+        if key not in CHANGED_LINE_MUTATION_GATE_KNOWN_KEYS:
+            warnings.append(f"unknown changed_line_mutation_gate sub-key: {key}")
+            continue
+        if key in {"eligible_globs", "exclude_globs"}:
+            if not (isinstance(raw, list) and all(isinstance(entry, str) for entry in raw)):
+                errors.append(f"changed_line_mutation_gate.{key} must be a list of strings")
+                continue
+            validated[key] = list(raw)
+        elif key == "coverage_json":
+            if not isinstance(raw, str) or not raw:
+                errors.append("changed_line_mutation_gate.coverage_json must be a non-empty string")
                 continue
             validated[key] = raw
     return validated

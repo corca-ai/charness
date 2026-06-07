@@ -170,8 +170,8 @@ Dynamic — re-pick at each boundary by dependency and risk.
 | S1 policy spec | #325 | spec-first; the policy decides the check | provenance-placement policy doc: standing-vs-tracking classes, load-bearing-`(#NNN)` rule, record-layer link rule | done |
 | S2 portable check + allowlist | #325 | the policy needs teeth | standing-doc provenance check (enforcement-surface decided here) + standing-vs-tracking allowlist + tests (flag / allowlist / load-bearing) | done |
 | S3 dogfood sweep | #325 | prove the policy on the census docs | charness standing docs swept; `Close #325` staged | done |
-| S4 mutation-testing.md reference | handoff-3 | cheap, independent | pattern + freshness-guard + producer-cost lesson recorded | planned |
-| S5 gate-as-quality-capability + adapter | handoff-3 | operator chose build | the changed-line gate exposed as a `quality` capability + adapter contract; resolution/dogfood proof | planned |
+| S4 mutation-testing.md reference | handoff-3 | cheap, independent | pattern + freshness-guard + producer-cost lesson recorded | done |
+| S5 gate-as-quality-capability + adapter | handoff-3 | operator chose build | the changed-line gate exposed as a `quality` capability + adapter contract; resolution/dogfood proof | done |
 | S6 closeout-checkpoint broadening | #325-related | root-cause fix | implementation-discipline portability checkpoint broadened to improvements/issues/policies (or split to a sub-issue) | done |
 
 ## Coordination Cues
@@ -246,6 +246,27 @@ this session. Consequential defaults and their resolutions:
   seeds probed and cleared). Cautilus: `next_action: none` (ask-before-run,
   additive `quality` reference change) → deterministic validation owned closeout;
   no `cautilus evaluate` invoked per the on-demand contract.
+- **S4 (mutation-testing.md reference) — done.** Added a "Changed-Line Coverage
+  Gate (portable pattern)" section to
+  `skills/public/quality/references/mutation-testing.md`: the reuse-a-coverage-
+  report pattern, the content-fingerprint freshness guard (why content not SHA;
+  base→worktree stability across the commit boundary), the producer-cost lesson
+  (one instrumented run, drop dynamic_context), and the false-green `--head-sha
+  HEAD` dry-run trap. Routing: `quality`.
+- **S5 (gate-as-quality-capability + adapter) — done.** New portable capability
+  `skills/public/quality/scripts/check_changed_line_coverage.py` +
+  `changed_line_coverage_gate_lib.py` reading the new `changed_line_mutation_gate`
+  adapter block (glob-driven eligible set, inert default), reusing the
+  tool-neutral classifier + coverage.py reader (exported to the plugin → genuinely
+  inheritable). 6 pytest cases + a charness dogfood run (resolved the adapter,
+  listed changed eligible files, non-blocking stale-coverage skip + false-green
+  warning, exit 0). charness keeps its cosmic-ray-coupled active gate; this is the
+  portable sibling. Routing: `create-skill`/`quality`.
+- **handoff-3 verification — done.** Broad `run_slice_closeout.py
+  --verification-lock` green; bounded fresh-eye `critique`
+  `charness-artifacts/critique/2026-06-07-handoff3-changed-line-gate-capability.md`
+  (ship; inheritability seed confirmed in a bare /tmp repo; 2 nits — marker-
+  collision doc warning + a clarity comment — found and fixed).
 
 ## Context Sources
 

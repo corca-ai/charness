@@ -247,3 +247,17 @@ standing_doc_provenance:
     - docs/product-success-metrics.md
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
+changed_line_mutation_gate:
+  # Portable changed-line coverage gate (handoff-3). Dogfood config: the eligible
+  # globs mirror the mutation pool; coverage_json is the report the closeout
+  # producer emits. charness's active pre-push gate stays the cosmic-ray-coupled
+  # scripts/check_changed_line_mutation_coverage.py; this block proves the
+  # portable quality capability resolves the same surface. See
+  # skills/public/quality/references/mutation-testing.md.
+  coverage_json: reports/mutation/test-coverage.json
+  eligible_globs:
+    - scripts/**/*.py
+    - skills/public/**/*.py
+    - skills/support/**/*.py
+  exclude_globs:
+    - "**/tests/**"
