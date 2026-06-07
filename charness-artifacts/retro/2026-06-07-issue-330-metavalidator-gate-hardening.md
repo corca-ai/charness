@@ -42,6 +42,16 @@ in-repo, no external source).
   defeating the gate's entire purpose one surface later. I had even written
   "any nesting" in the docstring, an overclaim. The bounded review found it; I
   folded `AnnAssign` handling + an honest scope boundary before ship.
+- **Pipe-exit misread masked a HARD gate as advisory (biggest process waste; a
+  repeat-trap recurrence).** I checked `validate_handoff_artifact` with
+  `... | tail; echo "rc=$?"`, so `$?` was `tail`'s exit (0), not the validator's.
+  The handoff length is a HARD gate (rc=1 at >70 lines), but I read it as a
+  non-blocking advisory and trimmed the handoff three times under that false
+  belief before running the command bare and seeing the true `rc=1`. This is the
+  4th recent instance of the "trusted a misleading green/exit" family
+  (`--head-sha HEAD` false-green; boundary-ratchet on an untracked file; `git
+  commit | tail` masking a hook abort; now this) — memory-only dispositions have
+  not stopped it recurring.
 
 ## Critical Decisions
 
@@ -84,6 +94,16 @@ in-repo, no external source).
   not only confirm the registered set passes. The AnnAssign gap proves a happy-path
   review would have missed it. Disposition: memory -> recent-lessons digest refreshed
   this session (source: this retro).
+- workflow: never check a gate's pass/fail with `cmd | tail; echo $?` — the pipe
+  makes `$?` report `tail`, not the gate. Read the gate's own exit: run it bare, or
+  use a `run(){ "$@" >/tmp/o 2>&1; rc=$?; ...; }` true-exit wrapper (which I adopted
+  mid-session for the cheap-gate sweep, and which worked). Disposition: memory +
+  ESCALATE-IF-RECUR -> recent-lessons refreshed this session; because this is the
+  4th recurrence of the misleading-green family, the next instance should not get
+  another memory note but a committed gate-runner helper / checklist item that
+  captures true exits (source: this retro). NOT filed as an issue now (no new tool
+  is warranted yet for a discipline gap I have a working pattern for), but the floor
+  is raised: one more recurrence converts this to a tooling/issue disposition.
 
 ## Persisted
 

@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-06-07",
   "source_artifact_count": 152,
-  "candidate_count": 889,
+  "candidate_count": 891,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -917,6 +917,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:de4ef0515a06",
+      "kind": "next_improvement",
+      "lesson": "never check a gate's pass/fail with `cmd | tail; echo $?` — the pipe makes `$?` report `tail`, not the gate. Read the gate's own exit: run it bare, or use a `run(){ \"$@\" >/tmp/o 2>&1; rc=$?; ...; }` true-exit wrapper (which I adopted mid-session for the cheap-gate sweep, and which worked). Disposition: memory + ESCALATE-IF-RECUR -> recent-lessons refreshed this session; because this is the 4th recurrence of the misleading-green family, the next instance should not get another memory note but a committed gate-runner helper / checklist item that captures true exits (source: this retro). NOT filed as an issue now (no new tool is warranted yet for a discipline gap I have a working pattern for), but the floor is raised: one more recurrence converts this to a tooling/issue disposition.",
+      "normalized_key": "never check a gate s pass fail with cmd tail echo the pipe makes",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:19bfc370560f",
       "kind": "next_improvement",
       "lesson": "**process meta-miss — invalid dispositions shipped and the floor did not catch them (operator caught it).** This retro's FIRST pass emitted two `Disposition: memory` (prose-only, invalid) lines plus one hedged \"candidate issue OR fold, not filed\"; the achieve disposition floor is presence/binding-only by design and a session retro runs no disposition review, so nothing flagged the agent's own invalid self-grading until the operator asked twice. **Disposition: `issue #329`** (https://github.com/corca-ai/charness/issues/329) — a narrow presence/enum check that rejects the bare `memory` disposition value (same shape as `validate_proposal_fields.py`'s Destination enum), not a content classifier.",
@@ -1251,6 +1271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-issue-328-preflight-gate-phase-coverage.md",
+          "date": "2026-06-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ab3f3e8915ee",
+      "kind": "repeat_trap",
+      "lesson": "**Pipe-exit misread masked a HARD gate as advisory (biggest process waste; a repeat-trap recurrence).** I checked `validate_handoff_artifact` with `... | tail; echo \"rc=$?\"`, so `$?` was `tail`'s exit (0), not the validator's. The handoff length is a HARD gate (rc=1 at >70 lines), but I read it as a non-blocking advisory and trimmed the handoff three times under that false belief before running the command bare and seeing the true `rc=1`. This is the 4th recent instance of the \"trusted a misleading green/exit\" family (`--head-sha HEAD` false-green; boundary-ratchet on an untracked file; `git commit | tail` masking a hook abort; now this) — memory-only dispositions have not stopped it recurring.",
+      "normalized_key": "pipe exit misread masked a hard gate as advisory biggest process waste a repeat",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
           "date": "2026-06-07",
           "section": "Waste"
         }

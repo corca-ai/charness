@@ -314,6 +314,11 @@ Retro dispositions (every surfaced improvement dispositioned):
 - **Waste — doc-anchor line-wrap false-negative.** Disposition: memory ->
   recent-lessons digest refreshed this session (single-line anchors when asserting
   against wrapped prose).
+- **Waste — pipe-exit misread masked a HARD gate as advisory (4th recurrence of
+  the misleading-green family).** Disposition: memory + ESCALATE-IF-RECUR ->
+  recent-lessons refreshed; never check a gate's pass/fail via `cmd | tail; echo $?`
+  (use a true-exit wrapper); one more recurrence converts this to a committed
+  gate-runner helper / issue rather than another memory note.
 - **Sibling — non-literal dict declaration forms (`dict(...)`/dynamic).**
   Disposition: in-scope documented non-claim, not a follow-up (#330 Non-Goal: no
   content classifier; owned by per-surface #322 tests).
