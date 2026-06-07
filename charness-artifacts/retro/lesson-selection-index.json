@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-07",
-  "source_artifact_count": 145,
-  "candidate_count": 859,
+  "source_artifact_count": 146,
+  "candidate_count": 864,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -165,6 +165,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:619c52c729f1",
+      "kind": "current_focus",
+      "lesson": "One pursue session of the `2026-06-07-324-325-322-handoff-orchestrator` goal: B1 (#324 source-preservation contract + v0.26.0 release — pushed/tagged/published, #324 CLOSED), B2 (handoff-4 false-green warning), and B3/B4 shaped as child `/achieve` goals.",
+      "normalized_key": "one pursue session of the 2026 06 07 324 325 322 handoff orchestrator goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -181,6 +201,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:da20dab8fa8a",
+      "kind": "next_improvement",
+      "lesson": "**capability (candidate):** a tiny `quality`/`authoring-preflight` helper that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest). This is adjacent to the #325 child goal's standing-doc check work. Disposition: candidate `issue #N` (operator's call) OR fold into the `2026-06-07-325-provenance-policy-handoff3-gate-capability` child goal — recorded here, not auto-filed.",
+      "normalized_key": "capability candidate a tiny quality authoring preflight helper that given changed doc skill paths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -219,6 +259,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fd876fe9c2dd",
+      "kind": "next_improvement",
+      "lesson": "**memory:** persist this retro + refresh recent-lessons.",
+      "normalized_key": "memory persist this retro refresh recent lessons",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
@@ -265,12 +325,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:eb883f10d125",
+      "candidate_id": "next_improvement:34a6e49cd9ca",
       "kind": "next_improvement",
-      "lesson": "**workflow:** at `spec`/`impl` closeout in this harness repo, when a slice adds a NEW reusable mechanism (repo-root script, gate, or generalizable pattern), require a one-line classification — `host-local` vs `skill-capability` — before closeout. Make the portability question a checkpoint, not a principle. Owner: `docs/conventions/implementation-discipline.md`.",
-      "normalized_key": "workflow at spec impl closeout in this harness repo when a slice adds a",
+      "lesson": "**workflow (applied as habit):** before editing a gated `SKILL.md`/reference, run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <n>` and skim `authoring-preflight.md` (length headroom, inline-code-span, issue-anchor, banned vocab). The repo already ships these — the miss was not running them first. Disposition: `memory` (this artifact + recent-lessons) — the gates exist; the fix is sequencing, not a new gate.",
+      "normalized_key": "workflow applied as habit before editing a gated skill md reference run python3 scripts",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
       "latest_source_date": "2026-06-07",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -278,69 +338,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:0c8a702eebae",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** When dogfooding the changed-line gate on an uncommitted slice, run the consumer over **base→worktree** (a range that includes uncommitted / staged work), never `base..HEAD` when HEAD is the parent. And before the expensive producer, run the cheap gates the broad pytest enforces (esp. `python3 scripts/check_spec_evidence_durability.py`). Owner: a short note next to the producer guidance in `docs/conventions/implementation-discipline.md`.",
-      "normalized_key": "workflow when dogfooding the changed line gate on an uncommitted slice run the consumer",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-          "date": "2026-06-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:fd942bb4da3a",
-      "kind": "repeat_trap",
-      "lesson": "**A deterministic-gate blind spot.** `run_slice_closeout --skip-broad-pytest` (run first, green) does NOT run `check_spec_evidence_durability` (it is a broad-pytest test), so the spec-citation miss only surfaced at minute 6 of run1.",
-      "normalized_key": "a deterministic gate blind spot run slice closeout skip broad pytest run first green",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-          "date": "2026-06-07",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:69380aa5bfd1",
-      "kind": "repeat_trap",
-      "lesson": "**A misleading false-green pre-commit dry-run.** The pre-commit consumer dry-run used `--head-sha HEAD` while HEAD was the *parent* (changes uncommitted), so `base..HEAD` EXCLUDED my changes → \"blocking: []\" looked safe, but the gate only judged my changes after commit (drove run3→run4). The dry-run gave false confidence.",
-      "normalized_key": "a misleading false green pre commit dry run the pre commit consumer dry run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-producer-rerun-waste.md",
-          "date": "2026-06-07",
-          "section": "Waste"
         }
       ]
     }
@@ -497,6 +497,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:619c52c729f1",
+      "kind": "current_focus",
+      "lesson": "One pursue session of the `2026-06-07-324-325-322-handoff-orchestrator` goal: B1 (#324 source-preservation contract + v0.26.0 release — pushed/tagged/published, #324 CLOSED), B2 (handoff-4 false-green warning), and B3/B4 shaped as child `/achieve` goals.",
+      "normalized_key": "one pursue session of the 2026 06 07 324 325 322 handoff orchestrator goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3b1badcff276",
       "kind": "current_focus",
       "lesson": "This session built the changed-line mutation-coverage premerge-gate (spec + slice 1 consumer + slice 2 producer mechanism) as a **charness-repo-local** capability.",
@@ -513,6 +533,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
           "date": "2026-06-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:da20dab8fa8a",
+      "kind": "next_improvement",
+      "lesson": "**capability (candidate):** a tiny `quality`/`authoring-preflight` helper that, given changed doc/SKILL paths, greps `tests/` for literal-string assertions referencing them (catches prose-pin breakage before broad pytest). This is adjacent to the #325 child goal's standing-doc check work. Disposition: candidate `issue #N` (operator's call) OR fold into the `2026-06-07-325-provenance-policy-handoff3-gate-capability` child goal — recorded here, not auto-filed.",
+      "normalized_key": "capability candidate a tiny quality authoring preflight helper that given changed doc skill paths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -557,6 +597,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:fd876fe9c2dd",
+      "kind": "next_improvement",
+      "lesson": "**memory:** persist this retro + refresh recent-lessons.",
+      "normalized_key": "memory persist this retro refresh recent lessons",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:eab4c360420d",
       "kind": "next_improvement",
       "lesson": "**memory:** this lesson, persisted here + refreshed into recent-lessons.",
@@ -591,6 +651,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:34a6e49cd9ca",
+      "kind": "next_improvement",
+      "lesson": "**workflow (applied as habit):** before editing a gated `SKILL.md`/reference, run `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <n>` and skim `authoring-preflight.md` (length headroom, inline-code-span, issue-anchor, banned vocab). The repo already ships these — the miss was not running them first. Disposition: `memory` (this artifact + recent-lessons) — the gates exist; the fix is sequencing, not a new gate.",
+      "normalized_key": "workflow applied as habit before editing a gated skill md reference run python3 scripts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+          "date": "2026-06-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:064d1b4bf7d2",
+      "kind": "next_improvement",
+      "lesson": "**workflow (applied as habit):** before paying for the mutation-coverage producer, run two cheap pre-checks — (1) `grep -rn \"<changed literal phrase>\" tests/` for prose-pin assertions on any doc/SKILL.md changed; (2) eyeball coverage of any NEW source branch. Disposition: `memory`.",
+      "normalized_key": "workflow applied as habit before paying for the mutation coverage producer run two cheap",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
+      "latest_source_date": "2026-06-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-324-release-325-322-shaping-session.md",
           "date": "2026-06-07",
           "section": "Next Improvements"
         }
