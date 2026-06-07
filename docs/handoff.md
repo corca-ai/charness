@@ -33,21 +33,21 @@
   surface-idiom lint. Standing gate + slice-closeout surface. Closeout:
   [critique](../charness-artifacts/critique/2026-06-07-issue-330-metavalidator-gate-hardening.md),
   [retro](../charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md).
-- **#327 triaged, not re-pointed:** mutation *score* passes (88.9%/91.9% vs 80%);
-  CI FAILs are the intermittent changed-line selection-budget signal on
-  *scheduled* main runs — low-severity, non-blocking.
-- Open issues: **#329** (retro disposition floor), **#327** (scheduled mutation
-  signal), **#184** (product metrics).
+- Open issues (verified via `gh`): **#329** (retro disposition floor), **#184**
+  (product metrics). #327 (scheduled mutation signal) is now CLOSED.
 
 ## Next Session
 
+- **Shaped achieve goal ready (pursue-ready):**
+  [329-disposition-form-floor](../charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md)
+  — `/goal @charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md`.
+  Primary #329 (reject prose-only `memory` dispositions with a form/enum floor;
+  dogfooded — this session's own #330 retro emitted `Disposition: memory ->`). One
+  open lever in its Discuss: achieve-only vs also session-retro reach (recommended
+  BOTH). Re-points to #184 (product metrics; needs ideation/spec).
 - **#330 complete** (goal
   [330-metavalidator-gate-hardening](../charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md)
-  is `Status: complete`). Remaining open-issue candidates: **#329** (retro
-  disposition floor — small tooling hardening; hit again this session, the floor
-  accepted the prose-only dispositions it should scrutinize), **#184** (product
-  metrics — needs ideation/spec, not a quick slice). Either is a fresh `/goal` or
-  `issue` pickup.
+  is `Status: complete`).
 - **Human real-host smoke for v0.27.0 (release left it open).** `charness update`
   on a clean temp-home / second machine + the nose tool-doctor/install/sync
   checklist in [release latest](../charness-artifacts/release/latest.md). Cannot
