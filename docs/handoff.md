@@ -13,46 +13,33 @@
 
 ## Current State
 
-- **v0.27.0 shipped** (tag `v0.27.0`, release verified; tree clean, `origin/main`
-  even). Bundled #322, the #325 provenance policy + portable standing-doc check,
-  and the handoff-3 changed-line gate — all additive/opt-in.
-- **#322 CLOSED** (advisory-interpretation contract on six inference-layer
-  surfaces; now enforced by #330's meta-validator).
-- **#328 CLOSED** (preflight-gate-phase-coverage): prose-pin pre-check,
-  one-shot authoring-preflight (`--run-checks` runs the full portable-package gate
-  set), and a `python-scan-hygiene` slice-closeout surface.
-  [Critique](../charness-artifacts/critique/2026-06-07-issue-328-preflight-gate-phase-coverage.md).
-- **#331 CLOSED** (same family): reconciled the closeout matcher idiom
-  manifest-wide to the `<dir>/*.md|py` form (fnmatch `*` crosses `/`); the bare
-  `**/*.X` missed top-level files and let a packaging README slip the markdown gate.
-  [Critique](../charness-artifacts/critique/2026-06-07-issue-331-closeout-fnmatch-idiom.md).
-- **#330 CLOSED** (advisory-interpretation meta-validator, #322 sequel): a
-  registry + `validate-inference-interpretation` gate assert each inference-layer
-  surface (8: 7 python + 1 prose) emits the 4-field declaration + paired consumer
-  line and fail closed on any unregistered declaration. Bundled the #331-deferred
-  surface-idiom lint. Standing gate + slice-closeout surface. Closeout:
-  [critique](../charness-artifacts/critique/2026-06-07-issue-330-metavalidator-gate-hardening.md),
-  [retro](../charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md).
-- Open issues (verified via `gh`): **#329** (retro disposition floor), **#184**
-  (product metrics). #327 (scheduled mutation signal) is now CLOSED.
+- **v0.27.0 shipped** (tag `v0.27.0`, release verified; `origin/main` even).
+- **CLOSED this cycle:** #322 (advisory-interpretation contract), #328 (preflight
+  phase coverage), #331 (closeout matcher idiom), #330 (interpretation
+  meta-validator), #329 (retro disposition-form floor) — detail in their
+  critiques/retros under `charness-artifacts/`.
+- **#332 done, awaiting push** (commit-boundary sweep non-discretionary): the full
+  closeout now runs the cheap structural sweep FIRST (before
+  surface-match/cautilus/broad pytest); `Close #332` staged on `9f2b9005`; a
+  follow-up `applied` added function-length headroom to `--headroom`. Closeout:
+  [critique](../charness-artifacts/critique/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md),
+  [retro](../charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md).
+- Open issues (`gh`): **#184** (product metrics); **#332** OPEN until push.
 
 ## Next Session
 
-- **Shaped achieve goal ready (pursue-ready):**
-  [329-disposition-form-floor](../charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md)
-  — `/goal @charness-artifacts/goals/2026-06-07-329-disposition-form-floor.md`.
-  Primary #329 (reject prose-only `memory` dispositions with a form/enum floor;
-  dogfooded — this session's own #330 retro emitted `Disposition: memory ->`). One
-  open lever in its Discuss: achieve-only vs also session-retro reach (recommended
-  BOTH). Re-points to #184 (product metrics; needs ideation/spec).
-- **#330 complete** (goal
-  [330-metavalidator-gate-hardening](../charness-artifacts/goals/2026-06-07-330-metavalidator-gate-hardening.md)
-  is `Status: complete`).
-- **Human real-host smoke for v0.27.0 (release left it open).** `charness update`
-  on a clean temp-home / second machine + the nose tool-doctor/install/sync
-  checklist in [release latest](../charness-artifacts/release/latest.md). Cannot
-  be done by the agent; confirm before treating the v0.27.0 operator surface as
-  proven.
+- **Push the staged #332 closeout** (maintainer; `achieve` does not push): 5
+  commits in `origin/main..HEAD` carry `Close #332`, auto-closing it; the pre-push
+  broad gate is the attestation. Optional pre-push: run the mutation-coverage
+  producer (`--verification-lock --produce-mutation-coverage`) so the changed-line
+  gate activates on the touched mutation-pool files.
+- **`follow-up:run-slice-closeout-module-split`** — the closeout runner is at
+  474/480 (advisory band); split its `main()` phases into a module before adding
+  more (#332 Non-Goal, deferred not filed).
+- **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
+- **v0.27.0 human real-host smoke** (release left open; agent cannot do):
+  `charness update` on a clean temp-home + the nose checklist in
+  [release latest](../charness-artifacts/release/latest.md).
 
 ## Discuss
 
