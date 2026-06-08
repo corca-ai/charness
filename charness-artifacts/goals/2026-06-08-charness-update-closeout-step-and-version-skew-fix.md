@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — `goal-activation-preflight-surface`. Slices 1 & 2 DONE (committed; Slice 2 fresh-eye critique SHIP).
-- Next action: surface the goal `Activation:` preamble shape in `check_artifact_surface_preflight.py` (preamble extraction, not the `## Heading` template-section source); tests; verdict-equality; fresh-eye critique at the boundary. Note: the preflight builds its OWN validator command from `surface.validator` (independent of the Slice-2 scaffold citation path).
+- Current slice: Slice 4 — bundle proof + REAL release + push + on-machine `charness update`. Slices 1-3 DONE (committed; Slices 2 & 3 fresh-eye critique SHIP, Slice 3 after a round-1 HOLD fix).
+- Next action: broad gate (`run-quality.sh --read-only`) + release gate (`--release`); then cut the real release (publish_release.py), `git push origin main`, run `charness update` on this machine, re-verify (doctor + scaffold==gate dogfood), record executed proof. #335 rides along (auto-closes on the next green scheduled mutation run).
 - Timebox: 4h
 - Activation time: TBD (set at `/goal`)
 - Closeout reserve: 45m
@@ -140,7 +140,7 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | 1 | Add `charness update` (this machine) as a required release-closeout step in the `release` contract/docs; fold in the v0.27.0 real-host smoke | the operator-requested durable fix for the version-skew class | the release contract/docs name the step; release-skill dogfood | done |
 | 2 | Fix the scaffold/repo-validator skew: `debug`/`critique` (+ siblings) scaffolds cite the repo-local `scripts/` validator when present; tests; critique | the deeper root that masks gate failures between updates | scaffold emits the repo validator; before/after verdict unchanged; SHIP critique | done |
-| 3 | `goal-activation-preflight-surface`: surface the goal `Activation:` preamble shape in the preflight (preamble extraction); tests; critique | the carried-over deferred follow-up; completes the goal-artifact family | `--type goal-activation` surfaces the shape; verdicts unchanged; SHIP critique | planned |
+| 3 | `goal-activation-preflight-surface`: surface the goal `Activation:` preamble shape in the preflight (preamble extraction); tests; critique | the carried-over deferred follow-up; completes the goal-artifact family | `--type goal-activation` surfaces the shape; verdicts unchanged; SHIP critique | done |
 | 4 | Bundle proof + REAL release + push + on-machine `charness update` + end-to-end verify; #335 rides along | the operator-requested end-to-end proof | broad + release gates PASS; tag + push done; `charness update` succeeds; scaffold==gate re-verified; #335 pending the next scheduled run | planned |
 
 ## Coordination Cues
@@ -194,6 +194,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Fresh-eye bounded subagent (general-purpose a5ca10ceae751f405): VERDICT SHIP, no blockers. Artifact: charness-artifacts/critique/2026-06-08-slice-2-scaffold-cites-repo-local-validator-version-skew-fix.md. Independently confirmed verdict-equality, mirror byte-identity, regression-test precondition as a real guard, and that check_artifact_surface_preflight.py is independent of the scaffold validator_command.
 - Off-goal findings:
 - Lessons carried forward: check_artifact_surface_preflight.py builds its OWN validator command from surface.validator and only calls scaffolds for shape text — relevant to Slice 3 (preflight surface) which is independent of this scaffold citation path.
+- Metrics:
+
+### Slice 3: Slice 3 — goal-activation preflight surface (Activation preamble)
+
+- Objective: Complete author-time shape coverage of the goal-artifact family: surface the goal Activation: preamble line shape via check_artifact_surface_preflight.py --type goal-activation. The Activation: line is a PREAMBLE line (pre-first ## ), so it needs preamble extraction, not the ## Heading template-section source.
+- Why this approach: New template_preamble shape source + _extract_preamble (lines up to the first ## ). Author-time-only: validator=None, commit_boundary=False, with an owner override naming the real enforcer. Additive optional Surface fields (template_preamble, owner) defaulted AFTER paths_arg so existing positional instantiations/replace tests are untouched.
+- Commits:
+- What changed: scripts/check_artifact_surface_preflight.py (+ byte-identical plugins/charness mirror): goal-activation surface, _extract_preamble, _shape_text/emit_stub/describe wiring, docstring; tests/quality_gates/test_check_artifact_surface_preflight.py (+4 tests); charness-artifacts/spec/artifact-shape-preflight-coverage.md (deferred follow-up flipped to DONE).
+- Alternatives rejected:
+- Targeted verification: 33 preflight tests PASS (29 baseline verdict-equality + 4 new); py_compile+ruff clean; lengths ok; mirror byte-identical; --type goal-activation surfaces the Activation: preamble; no commit-boundary/blocking behavior added (surface_for_path None for goal files, commit_boundary=False).
+- Test duplication pressure: 4 new tests, each a distinct assertion (preamble unit / surface describe / emit_stub / live-template single-source); no duplication of the existing goal-* surface tests — they exercise the new preamble code path and the owner-override branch specifically.
+- Critique: Fresh-eye bounded subagent (general-purpose a9dc870c3281165bd): round-1 HOLD (real blocker: owner message misattributed enforcement to --pursue-ready, which SKIPS the Activation check; default check_goal is the enforcer) -> fixed -> round-2 SHIP. Artifact: charness-artifacts/critique/2026-06-08-slice-3-goal-activation-preflight-surface-activation-preamble.md.
+- Off-goal findings:
+- Lessons carried forward: When a preflight surface NAMES an enforcement command, verify the command actually enforces the surfaced shape — --pursue-ready and the default check_goal_artifact.py check different things; the fresh-eye empirical run caught the misattribution that a string-only self-check would have missed.
 - Metrics:
 
 ## Context Sources

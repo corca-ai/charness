@@ -121,9 +121,16 @@ changes):
 
 Fresh-eye critique: `charness-artifacts/critique/2026-06-08-issue-335-closeout-floor-preflight.md` (SHIP).
 
-**Follow-up (`goal-activation-preflight-surface`, deferred).** The `Activation:`
-preamble line (`goal_artifact_template.md:5`) is NOT surfaced — it is enforced at
-activation-readiness (not the closeout-floor class this slice closes) and needs
-preamble extraction rather than the `## Heading` template-section source. A
-trivial follow-up would complete author-time coverage of the goal-artifact family;
-it is not a hole in the closed recurrence class.
+**Follow-up (`goal-activation-preflight-surface`, DONE 2026-06-08).** The
+`Activation:` preamble line (`goal_artifact_template.md:5`) is now surfaced by the
+`goal-activation` registry surface (`--type goal-activation`). Because it is a
+preamble line (before any `## Heading`), it uses a new `template_preamble` shape
+source + `_extract_preamble` (pre-first-`## ` lines), not the `## Heading`
+template-section source. Author-time-only: `validator=None`, `commit_boundary=False`,
+with an `owner` override naming the real enforcement path — the DEFAULT
+`check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line
+requirement, e.g. `charness goal check --goal-path <goal>`), NOT `--pursue-ready`
+(which skips the section/Activation check) and not the complete flip. This completes
+author-time coverage of the goal-artifact family (activation / coordination /
+closeout / early-close). Behavior-preserving: no existing surface or validator
+verdict changed (tests in `tests/quality_gates/test_check_artifact_surface_preflight.py`).

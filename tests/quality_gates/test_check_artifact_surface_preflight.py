@@ -349,6 +349,53 @@ def test_goal_early_close_emit_stub_round_trips_the_floor_validator(tmp_path: Pa
     assert ecr.validate_report_shape(report) == []
 
 
+# --- goal-activation-preflight-surface: the `Activation:` preamble line ---------
+
+
+def test_extract_preamble_stops_at_first_h2() -> None:
+    text = "# Title\n\nStatus: draft\nActivation: `/goal @x.md`\n\nintro para\n## Section\nbody\n"
+    out = preflight._extract_preamble(text)
+    assert "# Title" in out
+    assert "Activation: `/goal @x.md`" in out
+    assert "intro para" in out
+    assert "## Section" not in out and "body" not in out
+    # a template with no preamble (starts at an H2) reports the miss, never crashes.
+    assert preflight._extract_preamble("## First\nbody\n") == "(template preamble not found)"
+
+
+def test_goal_activation_surface_reads_activation_preamble() -> None:
+    surface = preflight.surface_for_type("goal-activation")
+    assert surface is not None
+    assert surface.validator is None
+    assert surface.scaffold is None
+    assert surface.commit_boundary is False  # checked at activation-readiness, not a commit gate
+    assert surface.template_preamble is not None  # preamble source, not a `## Heading` section
+    out = preflight.describe(ROOT, surface, target_rel=None)
+    # surfaces the preamble shape (the Activation line + Status/Created), not a section.
+    assert "Activation: `/goal @" in out
+    assert "Status:" in out
+    # owner line names the REAL enforcer — the default check_goal_artifact.py check
+    # (goal_lib.check_goal's Activation:-line requirement) — and explicitly rules out
+    # --pursue-ready (which skips it) and the complete-flip default.
+    assert "check_goal_artifact.py" in out
+    assert "NOT `--pursue-ready`" in out
+    assert "achieve closeout (check_goal_artifact.py at the complete flip)" not in out
+
+
+def test_emit_stub_goal_activation_points_at_template_preamble() -> None:
+    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-activation"))
+    assert code == 0
+    assert "no scaffold script" in text
+    assert "goal_artifact_template.md" in text
+
+
+def test_goal_activation_surface_lives_in_the_real_goal_preamble() -> None:
+    # The surfaced shape must match the live template preamble (single source), so
+    # the author sees exactly what `check_goal_artifact.py` requires.
+    template = (ROOT / "skills/public/achieve/scripts/goal_artifact_template.md").read_text(encoding="utf-8")
+    assert "Activation: `/goal @{goal_rel}`" in template.split("## ", 1)[0]
+
+
 def test_module_main_guard_executes(monkeypatch) -> None:
     # cover `sys.exit(main())` (the __main__ guard) in-process via runpy, not a
     # subprocess, so the dispatcher stays off the boundary-bypass ratchet.

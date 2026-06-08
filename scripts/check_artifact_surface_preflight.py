@@ -12,9 +12,11 @@ required shape before the broad gate rather than by failing it
 
 The registry below is the generalization: one place that knows the artifact-
 authoring family. Each surface declares a *shape source* — a ``scaffold`` script
-(stub-by-construction) or a ``template`` section (the goal template already seeds
-the closeout block) — plus its owning validator. The dispatcher reads shape from
-that source; it adds no new shape requirement and changes no validator verdict.
+(stub-by-construction), a ``template`` section (the goal template already seeds
+the closeout block), or a ``template`` preamble (the goal `Activation:` line that
+lives before any `## Heading`) — plus its owning validator. The dispatcher reads
+shape from that source; it adds no new shape requirement and changes no validator
+verdict.
 """
 from __future__ import annotations
 
@@ -46,6 +48,8 @@ class Surface:
     commit_boundary: bool  # relocate the validator's verdict to the commit gate
     note: str
     paths_arg: bool = True  # validator accepts --paths; False => validate-all default
+    template_preamble: str | None = None  # template_path; preamble (pre-first-`## `) shape source
+    owner: str | None = None  # override for the validator=None owner line (default: achieve complete-flip)
 
     def excludes(self, rel: str) -> bool:
         # retro validator skips its rolled-up memory + archived history.
@@ -110,6 +114,18 @@ REGISTRY: tuple[Surface, ...] = (
         "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
         None, False,
         "Early-close report shape (Why early closeout / What user decisions / Waste and retro); the scaffold prints the author-time stub, enforced by the achieve early-close-report floor at the complete flip.",
+    ),
+    # goal-activation-preflight-surface follow-up: the `Activation:` line is a
+    # PREAMBLE line (goal_artifact_template.md:5), not a `## Heading`, so it needs
+    # preamble extraction rather than the template-section source. Author-time-only
+    # (the `Activation:` line is enforced by the DEFAULT `check_goal_artifact.py`
+    # check, i.e. `goal_lib.check_goal`; `--pursue-ready` skips it), so
+    # commit_boundary=False and validator=None.
+    Surface(
+        "goal-activation", None, None, None, None, False,
+        "Goal preamble shape: the `Activation:` `/goal @<goal-rel-path>` line (with `Status:`/`Created:`) required in every goal artifact's preamble; a preamble line, not a `## Heading` section.",
+        template_preamble=_GOAL_TEMPLATE,
+        owner="achieve goal validation — the default `check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line requirement; e.g. `charness goal check --goal-path <goal>`). NOT `--pursue-ready` (which skips the section/Activation check) and not the complete flip.",
     ),
     Surface(
         "debug", "charness-artifacts/debug/",
@@ -176,6 +192,11 @@ def _shape_text(repo_root: Path, surface: Surface) -> str:
         if tpl.is_file():
             return _extract_section(tpl.read_text(encoding="utf-8"), heading)
         return f"(template {tpl_rel} not found)"
+    if surface.template_preamble:
+        tpl = repo_root / surface.template_preamble
+        if tpl.is_file():
+            return _extract_preamble(tpl.read_text(encoding="utf-8"))
+        return f"(template {surface.template_preamble} not found)"
     return "(no shape source registered)"
 
 
@@ -193,6 +214,18 @@ def _extract_section(text: str, heading: str) -> str:
         if capturing:
             out.append(line)
     return "\n".join(out).rstrip() + "\n" if out else f"(section {heading} not found in template)"
+
+
+def _extract_preamble(text: str) -> str:
+    """The template's preamble — every line from the top up to (excluding) the
+    first `## ` H2. This is the title + `Status:`/`Created:`/`Activation:` block
+    that lives before any section, which `_extract_section` cannot reach."""
+    out: list[str] = []
+    for line in text.splitlines():
+        if line.startswith("## "):
+            break
+        out.append(line)
+    return "\n".join(out).rstrip() + "\n" if out else "(template preamble not found)"
 
 
 def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> str:
@@ -221,7 +254,8 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
             if proc.returncode != 0:
                 out.append((proc.stderr or proc.stdout).strip())
     else:
-        out.append("owning validator: achieve closeout (check_goal_artifact.py at the complete flip)")
+        owner = surface.owner or "achieve closeout (check_goal_artifact.py at the complete flip)"
+        out.append(f"owning validator: {owner}")
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -231,9 +265,14 @@ def emit_stub(repo_root: Path, surface: Surface) -> tuple[str, int]:
         if proc.returncode == 0:
             return proc.stdout, 0
         return (proc.stderr or proc.stdout), 1
+    source = (
+        surface.template_section.split("|")[0]
+        if surface.template_section
+        else surface.template_preamble or "(no template source)"
+    )
     return (
         f"{surface.artifact_type} has no scaffold script; its shape is seeded by "
-        f"{surface.template_section.split('|')[0]} — author into that block directly.\n"
+        f"{source} — author into that block directly.\n"
     ), 0
 
 
