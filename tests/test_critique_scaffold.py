@@ -47,6 +47,21 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     # would otherwise demand a host/tool signal citation.
     assert "blocked" not in template.lower()
 
+    # The scaffold surfaces the validator's allowed enums at author time as an
+    # inline legend, so an author substituting a value picks from the valid set
+    # instead of inventing one that only fails at validate-time (the documented
+    # 3-round-trip critique-authoring trap). The legend is an HTML comment so it
+    # is ignored by both the validator's `- `-only parsers and markdownlint.
+    assert "allowed enums (substitute only these)" in template
+    assert "bundle-anyway" in template and "valid-but-defer" in template
+    assert "file-issue" in template and "document" in template
+    assert "allowed Host exposure state:" in template
+    assert "requested_fields_sent" in template and "host-defaulted" in template
+    # Same enums exposed programmatically for non-template consumers.
+    enums = payload["allowed_enums"]
+    assert enums["structured_findings"]["bin"]
+    assert "host-confirmed:" in " ".join(enums["couplings"])
+
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     artifact_path.write_text(template, encoding="utf-8")
@@ -59,6 +74,27 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     )
     assert validation.returncode == 0, validation.stderr
     assert "Validated 1 critique artifact" in validation.stdout
+
+
+def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> None:
+    """By-construction single-source-of-truth: the enums the scaffold surfaces at
+    author time MUST equal the validator's enforced frozensets, so the legend can
+    never silently drift from the contract it is meant to make discoverable. If a
+    future change adds/renames a validator enum without updating the scaffold (or
+    vice versa), this test fails instead of an author hitting a validate->fix
+    round-trip on a value the scaffold told them was allowed."""
+    from scripts import validate_critique_artifacts as validator
+
+    result = run_script(SCAFFOLD, "--repo-root", str(tmp_path), "--json")
+    assert result.returncode == 0, result.stderr
+    enums = json.loads(result.stdout)["allowed_enums"]
+
+    assert set(enums["structured_findings"]["bin"]) == set(validator.STRUCTURED_BINS)
+    assert set(enums["structured_findings"]["evidence"]) == set(validator.STRUCTURED_EVIDENCE)
+    assert set(enums["structured_findings"]["action"]) == set(validator.STRUCTURED_ACTIONS)
+    assert set(enums["reviewer_tier_host_exposure_state"]) == set(
+        validator.REVIEWER_TIER_HOST_STATES
+    )
 
 
 def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

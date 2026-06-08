@@ -31,6 +31,41 @@ load_adapter = _resolve_adapter.load_adapter
 # otherwise demand a host/tool signal).
 
 
+# Allowed enum values the critique validator enforces, surfaced at author time so
+# substituting a value picks from the valid set instead of inventing one that only
+# fails at validate-time. These MUST stay equal to the validator's frozensets
+# (scripts/validate_critique_artifacts.py: STRUCTURED_BINS / STRUCTURED_EVIDENCE /
+# STRUCTURED_ACTIONS / REVIEWER_TIER_HOST_STATES); a drift test pins the equality so
+# this legend cannot silently diverge from the enforced contract.
+ALLOWED_BINS = ("act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer")
+ALLOWED_EVIDENCE = ("strong", "moderate", "weak", "contested")
+ALLOWED_ACTIONS = ("fix", "file-issue", "document", "defer")
+ALLOWED_HOST_EXPOSURE_STATES = (
+    "pending-parent-spawn",
+    "requested_fields_sent",
+    "metadata-hidden",
+    "host-defaulted",
+    "unsupported",
+    "applied",
+)
+
+
+def allowed_enums() -> dict[str, object]:
+    """The validator's allowed enum sets, surfaced for programmatic consumers."""
+    return {
+        "structured_findings": {
+            "bin": list(ALLOWED_BINS),
+            "evidence": list(ALLOWED_EVIDENCE),
+            "action": list(ALLOWED_ACTIONS),
+        },
+        "reviewer_tier_host_exposure_state": list(ALLOWED_HOST_EXPOSURE_STATES),
+        "couplings": [
+            "action: file-issue requires a parseable follow-up: (issue URL or 'deferred <handoff-anchor>')",
+            "Host exposure state: applied requires Application state: host-confirmed: <signal>",
+        ],
+    }
+
+
 def default_title(title: str | None) -> str:
     return title if title else "Critique Review"
 
@@ -45,10 +80,20 @@ def render_template(*, title: str, date_text: str) -> str:
     lines.extend(["## Decision Under Review", "", "TODO the change or decision under critique, in one or two lines.", ""])
     lines.extend(["## Failure Angles", "", "- TODO a distinct failure angle and why it could bite.", ""])
     lines.extend(["## Counterweight Pass", "", "- TODO separate the real blockers from over-worry.", ""])
+    bins_legend = " | ".join(ALLOWED_BINS)
+    evidence_legend = " | ".join(ALLOWED_EVIDENCE)
+    actions_legend = " | ".join(ALLOWED_ACTIONS)
+    host_states_legend = " | ".join(ALLOWED_HOST_EXPOSURE_STATES)
     lines.extend(
         [
             "## Structured Findings",
             "",
+            "<!-- allowed enums (substitute only these) — "
+            f"bin: {bins_legend}; "
+            f"evidence: {evidence_legend}; "
+            f"action: {actions_legend}. "
+            "action: file-issue also needs a follow-up: (issue URL or 'deferred ' "
+            "plus a handoff anchor). -->",
             "- F1 | bin: act-before-ship | evidence: moderate | ref: TODO path-or-line"
             " | action: fix | note: TODO the blocker to fix before shipping",
             "- F2 | bin: over-worry | evidence: weak | ref: TODO path-or-line"
@@ -60,6 +105,8 @@ def render_template(*, title: str, date_text: str) -> str:
         [
             "## Reviewer Tier Evidence",
             "",
+            f"<!-- allowed Host exposure state: {host_states_legend}. Use applied "
+            "only with Application state: host-confirmed: plus a concrete signal. -->",
             "- Requested tier: TODO the fresh-eye reviewer tier requested.",
             "- Requested spawn fields: TODO the fields sent to the host spawn surface.",
             "- Host exposure state: pending-parent-spawn",
@@ -110,6 +157,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
         "validator_command": validator_command(repo_root, write_artifact_path),
+        "allowed_enums": allowed_enums(),
     }
 
 
