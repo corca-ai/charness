@@ -29,6 +29,29 @@ If the repo adapter declares `update_instructions`, treat those as the
 canonical operator-facing refresh path for already published installs instead of
 guessing product-specific commands in the helper output.
 
+## Maintainer Dev-Machine Install Refresh
+
+For `charness`, refreshing the maintainer/authoring machine's own installed copy
+is a **required release-closeout step**, not optional hygiene. After publish
+verifies, run `charness update` on this dev machine so the installed plugin at
+`~/.agents/src/charness` stays `== repo`, then re-verify (`charness doctor` /
+`python3 scripts/doctor.py --repo-root . --json` plus a cited-check == repo-gate
+spot check) and record the `charness update` output as executed proof in
+`charness-artifacts/release/latest.md`.
+
+This closes the **installed-vs-repo version-skew class**. The motivating miss:
+the `debug`/`critique` scaffolds cited the *installed* plugin's
+`validate_debug_artifact.py`, which was looser than the repo's own, so a
+scaffold-blessed artifact passed locally but failed the broad gate. Keeping the
+installed surface `== repo` after every release stops the cited check from
+drifting away from the gate. (The deeper root — scaffolds preferring the
+repo-local `scripts/` validator when present — is fixed separately; this step is
+the standing belt-and-suspenders.)
+
+This step subsumes the previously open v0.27.0/v0.28.0 real-host smoke: it is
+folded into the standing real-host checklist below rather than tracked as a
+perpetually-open one-off.
+
 If a repo treats a version bump as a published release boundary rather than a
 private maintainer checkpoint, do not leave push, tag, and GitHub release as
 separate ad hoc steps. Ship one repo-owned publish helper so maintainers do not

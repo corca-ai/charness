@@ -154,6 +154,12 @@ Operationally this means:
 
 - the official operator install path is a thin `charness` CLI rooted at the
   managed checkout `~/.agents/src/charness`
+- refreshing the maintainer/authoring machine's own managed checkout is a
+  required release-closeout step: after publish, run `charness update` here so
+  the installed plugin surface stays `== repo`. This closes the installed-vs-repo
+  version-skew class (a scaffold or check that cites the installed plugin can
+  otherwise diverge from the repo gate). The `release` skill owns the contract;
+  see [install-surface](../skills/public/release/references/install-surface.md)
 - operators do not need to clone `charness` manually before first install when
   they already have a usable `charness` binary; `charness init` may materialize
   that managed checkout internally from its configured repo URL

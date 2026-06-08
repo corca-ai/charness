@@ -1,6 +1,6 @@
 # Achieve Goal: Add the charness-update release-closeout step + fix the scaffold/repo-validator version-skew + goal-activation preflight surface, proven end-to-end by a real push + release + on-machine update (with #335 closing alongside)
 
-Status: draft
+Status: active
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`
 
@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`.
+- Current slice: Slice 2 — scaffold cites the repo-local `scripts/` validator (skew root). Slice 1 DONE (committed).
+- Next action: locate the `debug`/`critique` (+ sibling) scaffolds that emit the *installed* validator command; prefer the repo-local `scripts/` validator when present; tests + before/after verdict-equality; fresh-eye critique at the boundary.
 - Timebox: 4h
 - Activation time: TBD (set at `/goal`)
 - Closeout reserve: 45m
@@ -138,7 +138,7 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Add `charness update` (this machine) as a required release-closeout step in the `release` contract/docs; fold in the v0.27.0 real-host smoke | the operator-requested durable fix for the version-skew class | the release contract/docs name the step; release-skill dogfood | planned |
+| 1 | Add `charness update` (this machine) as a required release-closeout step in the `release` contract/docs; fold in the v0.27.0 real-host smoke | the operator-requested durable fix for the version-skew class | the release contract/docs name the step; release-skill dogfood | done |
 | 2 | Fix the scaffold/repo-validator skew: `debug`/`critique` (+ siblings) scaffolds cite the repo-local `scripts/` validator when present; tests; critique | the deeper root that masks gate failures between updates | scaffold emits the repo validator; before/after verdict unchanged; SHIP critique | planned |
 | 3 | `goal-activation-preflight-surface`: surface the goal `Activation:` preamble shape in the preflight (preamble extraction); tests; critique | the carried-over deferred follow-up; completes the goal-artifact family | `--type goal-activation` surfaces the shape; verdicts unchanged; SHIP critique | planned |
 | 4 | Bundle proof + REAL release + push + on-machine `charness update` + end-to-end verify; #335 rides along | the operator-requested end-to-end proof | broad + release gates PASS; tag + push done; `charness update` succeeds; scaffold==gate re-verified; #335 pending the next scheduled run | planned |
@@ -167,6 +167,20 @@ during the run:
 ## Slice Log
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+
+### Slice 1: Slice 1 — charness update as required release-closeout step
+
+- Objective: Make refreshing the maintainer/authoring machine's own managed install (charness update) a REQUIRED release-closeout step so the installed surface stays == repo, killing the installed-vs-repo version-skew class. Fold the open v0.27.0/0.28.0 real-host smoke into the standing checklist.
+- Why this approach: Closeout-step-only mechanism (operator-chosen; NO drift detector). Portable release/SKILL.md states the rule generically via the adapter's declared update path; the concrete charness update command lives in the charness-specific install-surface.md reference + the adapter real_host_checklist + docs/host-packaging.md.
+- Commits:
+- What changed: release/SKILL.md (step 8 fold + Output Shape entry + guardrail clause; net core 160->158, headroom restored 0->2); release/references/install-surface.md (new Maintainer Dev-Machine Install Refresh section + rationale); .agents/release-adapter.yaml (prepended dev-machine charness update item to real_host_checklist); docs/host-packaging.md (closeout-step note); plugins/charness mirror byte-synced.
+- Alternatives rejected:
+- Targeted verification: 46 release tests PASS (test_release_real_host/publish/publish_real_host_delta/backend); skill-contracts PASS; phase-barrier+Critique pinned phrases preserved; commit-boundary core-headroom ratchet ok (2 left, was 0 — improved, not regressed); staged mirror matches sources; check_real_host_proof.py surfaces the new dev-machine step first when docs/host-packaging.md changes; adapter resolves clean.
+- Test duplication pressure: n/a — no tests added/expanded this slice (docs/contract + adapter only); existing release tests reused.
+- Critique: Slice-level scoped self-check; fresh-eye critique is scheduled at the Slice-2 (scaffold-skew) and Slice-3 (preflight) boundaries per the verification plan. No compatibility/visibility change here (additive contract + meaning-preserving compression).
+- Off-goal findings:
+- Lessons carried forward: release SKILL.md was at the 160 core cap; additive contract work must offset with meaning-preserving compression to satisfy the #319 commit-boundary headroom ratchet.
+- Metrics:
 
 ## Context Sources
 

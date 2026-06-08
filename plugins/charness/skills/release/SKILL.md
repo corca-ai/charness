@@ -85,14 +85,13 @@ verified.
    - major only when compatibility or invocation expectations break
 5. Apply the release mutation through the repo helper.
    - prefer the checked-in bump helper over manual JSON edits
-   - if the repo couples version, push, tag, and GitHub release, prefer one
-     checked-in publish helper that closes all four in order
-   - if the helper only starts a later workflow publish step, record that
-     boundary honestly instead of calling the release finished at tag push
+   - if the repo couples version+push+tag+GitHub release, prefer one checked-in
+     publish helper that closes all four in order
+   - if the helper only starts a later workflow publish step, record that boundary
+     honestly instead of calling the release finished at tag push
    - sync generated install surfaces immediately after bumping
-   - refresh the durable release record so the committed `latest.md` documents
-     the target tag before push, or make the generated public release notes
-     self-contained enough that stale checked-in records cannot mislead readers
+   - refresh the committed `latest.md` to document the target tag before push, or
+     make generated release notes self-contained so stale records cannot mislead
    - keep release work phase-ordered: mutate, then sync generated surfaces,
      then verify, then push/tag/publish
 6. Verify the local release surface.
@@ -103,35 +102,31 @@ verified.
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
    - if `fresh_checkout_probes` are declared, run them before tag publish and
-     report their status; if none are declared, say that no fresh-checkout
-     proof was configured
-   - if `check_requested_review_gate.py` reports requested review unavailability,
-     fix the gate, select a correct adapter, or record an explicit waiver before
-     publish/tag
+     report status; if none are declared, say no fresh-checkout proof was configured
+   - if `check_requested_review_gate.py` reports review unavailability, fix the
+     gate, select a correct adapter, or record an explicit waiver before publish/tag
    - if CLI, bundled-skill, launcher, or install seams moved, run the declared
      surface checks and report startup proof when applicable
-   - run `audit_public_release_narrative.py` so the committed `latest.md`
-     mentions the target tag, carries the expected sections and ledger entries,
-     and any provided `--notes-file` is rejected when it points at a mutable
-     source-tree record at the target tag
+   - run `audit_public_release_narrative.py` so the committed `latest.md` names the
+     target tag with expected sections/ledger, and rejects a `--notes-file` at a mutable source-tree record
 7. Close the public release boundary.
    - distinguish `local/tag state complete`, `workflow publication complete`,
      and `public release surface verified`
    - if a repo has tag-triggered or otherwise async publication, do not treat
      helper success or tag push alone as publish completion
-   - if the repo has no repo-owned public verifier yet, leave the release
-     explicitly open at that boundary instead of implying it already closed
-   - render closeout only from the verified release ledger (tag, version,
-     URL when available) per `../../shared/references/closeout-discipline.md`;
-     once the target package is named, treat it as durable workflow state
-     and surface `target_unavailable` instead of silently retargeting
-   - when the release resolves GitHub issues, pass `--close-issue <number>` so
-     the helper preflights `gh issue view`, writes close keywords, verifies
-     GitHub state after publication, and manually closes only if needed
-8. End with operator-facing update steps.
-   - how operators refresh the managed `charness` install
-   - what Claude and Codex still need after `charness update`
-   - what still requires manual human confirmation
+   - if the repo has no repo-owned public verifier yet, leave the release explicitly open at that boundary
+   - render closeout only from the verified release ledger (tag, version, URL) per
+     `closeout-discipline.md`; once the target is named, surface `target_unavailable` instead of silently retargeting
+   - when the release resolves GitHub issues, pass `--close-issue <number>` so the
+     helper preflights `gh issue view`, writes close keywords, and verifies/falls back to manual close
+8. End with update steps, then refresh the maintainer's own install.
+   - how operators refresh the managed install, what hosts still need after
+     update, and what still requires manual human confirmation
+   - when a managed install surface is declared, the maintainer also runs the
+     declared update path on the authoring machine after publish so the local
+     installed surface stays `== repo`, then re-verifies and records the output;
+     this closes the installed-vs-repo skew that lets a cited installed check
+     diverge from the repo gate (detail: `references/install-surface.md`)
 
 ## Output Shape
 
@@ -145,6 +140,7 @@ The result should usually include:
 - `Release State`
 - `Public Release Verification`
 - `User Update Steps`
+- `Maintainer Install Refresh` when a managed install surface is declared
 - `Real-Host Proof` when the adapter says a human-run smoke is required
 - `Startup Proof` when startup-probe surfaces moved
 - `Open Risks`
@@ -164,7 +160,9 @@ The result should usually include:
   `charness-artifacts/release/latest.md` at the target tag URL); generate
   self-contained notes or audit the file before passing `--notes-file`.
 - Do not mutate installed host caches from inside the skill; update instructions
-  belong in the closeout.
+  belong in the closeout. When a managed install surface is declared, the
+  maintainer still runs the declared update path as a closeout step so the local
+  installed surface ends `== repo` (no cited-check vs repo-gate skew).
 - Do not turn host-specific human proof into fake standing CI. If a support or
   install surface still depends on PATH, package managers, or host cache
   state, say so explicitly and carry a short checklist.
