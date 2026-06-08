@@ -1,6 +1,6 @@
 # Achieve Goal: Harden two recurring harness gate seams: the changed-line mutation gate (#335) + the authoring-preflight closeout-floor surface
 
-Status: active
+Status: complete
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md`
 
@@ -12,9 +12,9 @@ bug-class CI regression, so it gets a causal review before any fix.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 (closeout: broad gate, retro, #335 issue closeout, handoff).
-- Next action: broad `run-quality.sh --read-only`; retro; #335 issue closeout
-  (carrier + verifier proof); handoff; fill Final Verification + Auto-Retro.
+- Current slice: COMPLETE (all 5 slices done; awaiting maintainer push).
+- Next action: maintainer pushes `origin/main..HEAD`; #335 auto-closes on the next
+  green scheduled mutation run (agent cannot push/trigger CI).
 - Timebox: 4h
 - Activation time: 2026-06-08
 - Closeout reserve: 45m
@@ -156,7 +156,7 @@ What the user can do to verify completion directly:
 | 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | done |
 | 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | done |
 | 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | done |
-| 5 | Closeout: broad gate, retro, dogfooded disposition, #335 issue closeout, handoff | make it auditable | full gate PASS; retro + disposition; #335 closed + verified | planned |
+| 5 | Closeout: broad gate, retro, dogfooded disposition, #335 issue closeout, handoff | make it auditable | full gate PASS; retro + disposition; #335 closed + verified | done |
 
 ## Coordination Cues
 
@@ -166,21 +166,12 @@ engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slo
 and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
-- **Routing** — Routing: `find-skills` recommended `debug` for Slice 1 (recorded
-  at session start); Slices 2–4 ran `impl`+`quality`+`critique` and Slice 5
-  `quality`+`retro`+`issue` per the slice plan — the executed route matched the plan.
-- **Gather** — Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped
-  entirely from the in-repo #335 issue body and the v0.28.0 closeout artifacts.
-- **Release** — Release: n/a — no release surface touched and no version bump; the
-  #335 fix is test coverage plus a non-blocking gate-surfacing change, not a release;
-  `achieve` does not push.
-- **Issue closeout** — Issue closeout: #335 — carrier: the scheduled mutation-test
-  workflow marker (it auto-closes the issue on the next green run; the agent cannot
-  push or trigger CI). Verifier proof: the local mutation-coverage producer is green
-  over the next-run range (`858c9eab..HEAD`, `ok: true, blocking: []`) plus the
-  Slice-3 recurrence reduction; recorded as a pending external close, not claimed.
-  #184: Issue closeout: n/a — product-level success metrics, tracked context only,
-  needs `ideation`/`spec` rather than a slice in this goal.
+Recorded route + floors (filled at closeout; line-start form per the floors):
+
+Routing: `find-skills` recommended `debug` for Slice 1 (recorded at session start); the recorded impl/debug/quality/issue work was routed through find-skills rather than staying achieve-only — Slices 2–4 ran impl+quality+critique and Slice 5 quality+retro+issue, the executed route matching the plan.
+Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped entirely from the in-repo #335 issue body and the v0.28.0 closeout artifacts.
+Release: n/a — no release surface touched and no version bump; the #335 fix is test coverage plus a non-blocking gate-surfacing change, not a release; `achieve` does not push.
+Issue closeout: #335 — carrier: the scheduled mutation-test workflow marker (it auto-closes the issue on the next green run; the agent cannot push or trigger CI). Verifier proof: the local mutation-coverage producer is green over the next-run range (`858c9eab..HEAD`, `ok: true, blocking: []`) plus the Slice-3 recurrence reduction; recorded as a pending external close, not claimed. #184: Issue closeout: n/a — product-level success metrics, tracked context only, needs `ideation`/`spec` rather than a slice in this goal.
 
 ## Slice Log
 
@@ -259,6 +250,25 @@ during the run:
   line — enforced at activation-readiness, needs preamble extraction). Recorded in
   `charness-artifacts/spec/artifact-shape-preflight-coverage.md` + Off-Goal Findings.
 
+### Slice 5 — closeout (done, 2026-06-08)
+
+- Retro: `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`
+  (validates; recent-lessons + lesson-index refreshed). Host-log probe:
+  `charness-artifacts/probe/2026-06-08-issue-335-goal-closeout.md` (repeated broad
+  gates: none — no gate-rerun waste).
+- Coordination floors filled (Routing/Gather/Release/Issue closeout); Final
+  Verification + Auto-Retro dispositions bound; goal validator green.
+- #335 issue closeout: carrier = the scheduled mutation-test workflow marker
+  (auto-closes on the next green run; agent cannot push/trigger CI); verifier proof
+  = local producer green over the next-run range. Recorded as a pending external
+  close, not claimed. Handoff updated.
+- Broad gate `run-quality.sh --read-only`: the changed-line consumer now VERIFIES
+  green over the merge-base range (fresh fingerprint-stamped coverage), not skip;
+  one real gap fixed (debug-artifact cross-file marker — the repo-root validator is
+  stricter than the installed-plugin one the scaffold cited).
+- Non-claim: the next scheduled mutation CI run is the authoritative #335 verdict;
+  the agent cannot run it. The local producer over the next-run range is the proxy.
+
 ## Context Sources
 
 Follow these in order to reconstruct the goal from a cold start:
@@ -328,8 +338,8 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `TODO` / `<path>` / `TBD` until you do.
 
 Retro: charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md
-Host log probe: charness-artifacts/probe/2026-06-08-issue-335-goal-closeout.md
-Disposition review: skipped: no-disposition-surface: all surfaced improvements are dispositioned inline in the retro `## Next Improvements` and this goal's `## Auto-Retro`; no separate disposition-review artifact applies for this goal.
+Host log probe: charness-artifacts/probe/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md
+Disposition review: charness-artifacts/critique/2026-06-08-gate-recurrence-mutation-and-closeout-preflight-disposition-review.md
 
 ## User Verification Instructions
 
