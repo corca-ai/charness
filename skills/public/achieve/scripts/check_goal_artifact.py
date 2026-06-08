@@ -81,6 +81,8 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
         bits.append("disposition form: " + evidence_report["disposition_form"]["reason"])
     if evidence_report.get("recurrence_lineage"):
         bits.append("recurrence-lineage floor: " + evidence_report["recurrence_lineage"]["reason"])
+    if evidence_report.get("residual_ledger", {}).get("reason"):
+        bits.append("residual-ledger floor: " + evidence_report["residual_ledger"]["reason"])
     if evidence_report.get("coordination_missing"):
         bits.append(
             "coordination floors: "

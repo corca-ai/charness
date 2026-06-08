@@ -381,6 +381,15 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
     # rungs 1a/1b are grandfathered.
     apply_structural_followup_floor(report, text, retro_text)
     created = goal_created_date(text)
+    # Rung 1f (the residual-ledger floor): each `## Residual Ledger` row must
+    # carry a concrete disposition, so a prose-only `defer`/`recorded in retro`
+    # residual is refused. Own enforce-from-date; inert with no ledger rows. The
+    # heavy logic lives in the shared grammar so this at-cap leaf stays minimal.
+    ledger = _load_shared_form().residual_ledger_report(text, created)
+    report["residual_ledger_scope"] = ledger["scope"]
+    if ledger.get("problem"):
+        report["residual_ledger"] = ledger
+        report["ok"] = False
     report["disposition_scope"] = {
         "in_scope": in_scope,
         "created": created.isoformat() if created else None,

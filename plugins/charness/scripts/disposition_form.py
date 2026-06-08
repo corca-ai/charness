@@ -46,7 +46,10 @@ from datetime import date
 # Clone-safe: an in-file constant, not mtime.
 DISPOSITION_FORM_RULE_DATE = date(2026, 6, 8)
 
-VALID_FORM_SUMMARY = "`applied: <change>` / `issue #N` / `none — <reason>`"
+VALID_FORM_SUMMARY = (
+    "`applied: <change>` / `issue #N` / `none — <reason>` / "
+    "`accepted-risk: <reason>` / `out-of-scope: <reason>`"
+)
 
 # Markers whose value carries a disposition. ``Retro dispositions:`` (aggregate,
 # achieve per-goal) is tried before the singular ``Disposition:`` so the longer
@@ -76,6 +79,16 @@ _ISSUE_NUM = re.compile(r"#\d+")
 # em/en-dash or colon (not used inside compound words) needs no leading space.
 _NONE = re.compile(r"^none\b[ \t]*(?:[—–:]|[ \t]-)[ \t]*\S", re.IGNORECASE)
 
+# The #339 additive arms: `accepted-risk: <reason>` / `out-of-scope: <reason>`.
+# Same separator discipline as `_NONE` (colon/em–en-dash, or a whitespace-bearing
+# plain hyphen) so a compound word is never split, then a non-empty reason. The
+# `\b` after the literal token rejects a glued compound (`accepted-risky`,
+# `out-of-scoped`). These extend the shared disposition grammar (never fork it);
+# `evaluate_destination_form` explicitly excludes them so the #337 structural-
+# follow-up destination vocabulary is byte-for-byte behavior-preserved.
+_ACCEPTED_RISK = re.compile(r"^accepted-risk\b[ \t]*(?:[—–:]|[ \t]-)[ \t]*\S", re.IGNORECASE)
+_OUT_OF_SCOPE = re.compile(r"^out-of-scope\b[ \t]*(?:[—–:]|[ \t]-)[ \t]*\S", re.IGNORECASE)
+
 # Recurrence-lineage marker for ``issue``-routed dispositions: one of
 # ``recurs``/``recurrence``/``lineage``/``novel`` then a colon then non-empty
 # content. Presence/enum only (like the form floor and ``Destination`` enum) —
@@ -95,6 +108,18 @@ _RECURRENCE_LINEAGE = re.compile(r"(?i)\b(?:recurs|recurrence|lineage|novel)\b[ 
 # every artifact dated on/before the landing day is grandfathered. Clone-safe:
 # an in-file constant, not mtime.
 STRUCTURAL_FOLLOWUP_RULE_DATE = date(2026, 6, 9)
+
+# Residual/disposition LEDGER floor (#339). A `## Residual Ledger` row that names a
+# residual risk / non-claim / proof gap must resolve to one concrete disposition,
+# so a prose-only `defer` / `recorded in retro` / `future work` no longer satisfies
+# closeout. Lands 2026-06-09; enforcement begins the NEXT day so every artifact
+# Created on/before the landing day is grandfathered (the established
+# `DISPOSITION_FORM_RULE_DATE` / `STRUCTURAL_FOLLOWUP_RULE_DATE` precedent — the
+# broad gate stays green). The two new disposition arms above are additive/
+# permissive (accepting more forms can never break an existing artifact), so only
+# this presence/form FLOOR carries an enforce-from date. Clone-safe: in-file
+# content, not mtime.
+RESIDUAL_LEDGER_RULE_DATE = date(2026, 6, 10)
 
 # The four destination forms, a superset of the disposition forms above plus
 # `repo-local guard: <path>` (a consuming-repo guard). Presence/enum only — the
@@ -147,6 +172,10 @@ def evaluate_disposition_form(value: str) -> dict:
         return {"ok": True, "kind": "issue", "value": cleaned, "reason": ""}
     if _NONE.match(cleaned):
         return {"ok": True, "kind": "none", "value": cleaned, "reason": ""}
+    if _ACCEPTED_RISK.match(cleaned):
+        return {"ok": True, "kind": "accepted-risk", "value": cleaned, "reason": ""}
+    if _OUT_OF_SCOPE.match(cleaned):
+        return {"ok": True, "kind": "out-of-scope", "value": cleaned, "reason": ""}
     return {
         "ok": False,
         "kind": "invalid",
@@ -173,7 +202,10 @@ def evaluate_destination_form(value: str) -> dict:
     if _REPO_LOCAL_GUARD.match(cleaned):
         return {"ok": True, "kind": "repo-local-guard", "value": cleaned, "reason": ""}
     base = evaluate_disposition_form(value)
-    if base["ok"]:
+    # The #339 `accepted-risk:`/`out-of-scope:` arms are residual-ledger forms, NOT
+    # structural-follow-up destinations; excluding them keeps `evaluate_destination_form`
+    # byte-for-byte behavior-preserved for every input (the #337 Non-Goal).
+    if base["ok"] and base["kind"] not in ("accepted-risk", "out-of-scope"):
         return base
     return {
         "ok": False,
@@ -326,3 +358,182 @@ def evaluate_structural_followup(section_text: str) -> dict:
             ),
         }
     return {"problem": None}
+
+
+# ---------------------------------------------------------------------------
+# Residual/disposition LEDGER floor (#339).
+#
+# Generalizes the #337 destination floor to a full residual ledger: every
+# closeout residual risk / non-claim / proof gap listed in a `## Residual Ledger`
+# table must resolve to one concrete disposition. The valid residual forms are
+# `applied:` / `issue #N` / `accepted-risk:` / `out-of-scope:` — a bare `none`
+# is NOT a residual disposition (a named residual resolves affirmatively, never
+# to "nothing"), and a prose-only `defer` / `recorded in retro` / `future work`
+# is rejected. Presence/form-enum only (the fixed #337/#329/#253 doctrine): a
+# vague-but-valid `accepted-risk: <reason>` passes; the reviewer/human judges
+# whether the residual was honestly dispositioned and whether any residual was
+# omitted. The floor never REQUIRES a ledger — an absent or empty ledger does not
+# fire (no over-fire on a no-residual closeout).
+# ---------------------------------------------------------------------------
+
+RESIDUAL_DISPOSITION_FORM_SUMMARY = (
+    "`applied: <artifact/change>` / `issue #N` / "
+    "`accepted-risk: <reason>` / `out-of-scope: <reason>`"
+)
+
+# A markdown table data row (`| … | … |`). The separator row (`| --- | :-: |`)
+# carries only dashes/colons/pipes/space and is filtered out before judging.
+_LEDGER_TABLE_ROW = re.compile(r"^[ \t]*\|(.+)\|[ \t]*$")
+_LEDGER_SEPARATOR = re.compile(r"^[ \t]*\|[\s:|-]+\|[ \t]*$")
+_RESIDUAL_LEDGER_HEADING = re.compile(r"(?im)^(#{2,6})[ \t]+Residual[ \t]+Ledgers?\b[^\n]*$")
+
+
+def evaluate_residual_disposition_form(value: str) -> dict:
+    """Judge one residual-ledger row disposition's form (never its substance).
+
+    Valid forms are ``applied`` / ``issue`` / ``accepted-risk`` / ``out-of-scope``
+    (and ``placeholder``, an unfilled scaffold cell). A bare ``none — <reason>``
+    is intentionally INVALID here: a named residual resolves to a concrete
+    disposition, not to "nothing". Layers on ``evaluate_disposition_form`` (the
+    single shared grammar) rather than re-deriving the form checks. Presence/enum
+    only — a vague-but-valid ``accepted-risk: x`` passes.
+    """
+    base = evaluate_disposition_form(value)
+    if base["kind"] in ("applied", "issue", "accepted-risk", "out-of-scope", "placeholder"):
+        return base
+    return {
+        "ok": False,
+        "kind": "invalid",
+        "value": base["value"],
+        "reason": (
+            f"not one of {RESIDUAL_DISPOSITION_FORM_SUMMARY} (a prose-only "
+            "`defer`/`recorded in retro`/`future work`, or a bare `none`, residual is rejected)"
+        ),
+    }
+
+
+def _split_table_row(line: str) -> list[str]:
+    """Split a `| a | b | c |` markdown table row into stripped cell values."""
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def _residual_ledger_body(text: str) -> str | None:
+    """The body of the ``## Residual Ledger`` section (heading line excluded),
+    fences masked; ``None`` when the section is absent. Mirrors the heading scan
+    in ``names_transferable_waste`` so a fenced example section stays inert."""
+    masked = _mask_fences(text)
+    head = _RESIDUAL_LEDGER_HEADING.search(masked)
+    if head is None:
+        return None
+    level = len(head.group(1))
+    body_start = masked.find("\n", head.end())
+    if body_start == -1:
+        return ""
+    nxt = re.compile(rf"(?m)^#{{1,{level}}}[ \t]+\S").search(masked, body_start + 1)
+    return masked[body_start + 1 : nxt.start() if nxt else len(masked)]
+
+
+def _judge_ledger_table(table: list[str], results: list[dict]) -> None:
+    """Judge one contiguous markdown table's residual rows, appending to ``results``.
+
+    A table is judged only when its header row names a ``Disposition`` column, found
+    by header NAME (any position). A leading non-disposition table in the same
+    section is passed over without masking a following residual table — closing the
+    multi-table under-fire bypass (a prose-only row in a second table cannot slip
+    through behind a first non-disposition table).
+    """
+    rows = [line for line in table if not _LEDGER_SEPARATOR.match(line)]
+    if not rows:
+        return
+    header = _split_table_row(rows[0])
+    disp_idx = next(
+        (i for i, name in enumerate(header) if re.search(r"disposition", name, re.IGNORECASE)),
+        None,
+    )
+    if disp_idx is None:
+        return
+    for row in rows[1:]:
+        cells = _split_table_row(row)
+        if disp_idx < len(cells):
+            value = cells[disp_idx]
+            results.append(
+                {"row": row.strip(), "value": value, "verdict": evaluate_residual_disposition_form(value)}
+            )
+
+
+def scan_residual_ledger(section_text: str) -> list[dict]:
+    """Judge each ``## Residual Ledger`` DATA row's disposition cell form.
+
+    Tables are grouped by contiguity (a non-table line breaks a group) and each is
+    judged independently by its own header, so a leading non-disposition table
+    cannot blind a following residual table. Returns ``[{"row", "value",
+    "verdict"}]`` in source order; ``[]`` when no table names a ``Disposition``
+    column (no over-fire on an empty or malformed ledger). Fences are masked so a
+    fenced example table is inert.
+    """
+    masked = _mask_fences(section_text)
+    results: list[dict] = []
+    table: list[str] = []
+    for line in masked.splitlines():
+        if _LEDGER_TABLE_ROW.match(line):
+            table.append(line)
+            continue
+        _judge_ledger_table(table, results)
+        table = []
+    _judge_ledger_table(table, results)
+    return results
+
+
+def evaluate_residual_ledger(section_text: str) -> dict:
+    """Verdict for the residual-ledger floor over a ``## Residual Ledger`` body.
+
+    Presence/form-enum only (never a content classifier). Returns
+    ``{"problem": None|"invalid", "invalid"?, "reason"?}``. There is no
+    ``"missing"`` state: an absent or empty ledger never fires — a no-residual
+    closeout is not forced to add a row (no over-fire). It fires only when a
+    present row leaves the residual as a prose-only / bare-``none`` disposition.
+    """
+    rows = scan_residual_ledger(section_text)
+    invalid = [r for r in rows if not r["verdict"]["ok"]]
+    if invalid:
+        return {
+            "problem": "invalid",
+            "invalid": [{"value": r["value"], "row": r["row"]} for r in invalid],
+            "reason": (
+                "one or more `## Residual Ledger` rows leave the residual/non-claim/proof-gap as a "
+                f"prose-only or bare-`none` disposition; each must be {RESIDUAL_DISPOSITION_FORM_SUMMARY}"
+            ),
+        }
+    return {"problem": None}
+
+
+def is_residual_ledger_enforced(observed: date | None) -> bool:
+    """Whether the residual-ledger floor fires for an artifact dated ``observed``.
+
+    Fail-CLOSED: an undatable artifact (``None``) is in-scope, mirroring
+    ``is_form_enforced`` / ``disposition_gate_applies`` so a file cannot dodge the
+    floor by dropping its date line."""
+    if observed is None:
+        return True
+    return observed >= RESIDUAL_LEDGER_RULE_DATE
+
+
+def residual_ledger_report(text: str, created: date | None) -> dict:
+    """Full residual-ledger floor verdict over a goal body (achieve rung 1f).
+
+    Bundles the grandfather-by-date gate, the ``## Residual Ledger`` section scope,
+    and the per-row form judgment so the (at-cap) achieve wiring stays a few lines.
+    Returns ``{"scope": {...}, "problem": None|"invalid", "invalid"?, "reason"?}``.
+    """
+    enforced = is_residual_ledger_enforced(created)
+    scope = {
+        "enforced": enforced,
+        "created": created.isoformat() if created else None,
+        "rule_date": RESIDUAL_LEDGER_RULE_DATE.isoformat(),
+    }
+    if not enforced:
+        return {"scope": scope, "problem": None}
+    body = _residual_ledger_body(text)
+    if body is None:
+        return {"scope": scope, "problem": None}
+    return {"scope": scope, **evaluate_residual_ledger(body)}

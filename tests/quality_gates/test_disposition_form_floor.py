@@ -581,3 +581,262 @@ def test_rung1e_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
     )
     path = _seed(tmp_path, "2026-06-09-r.md", body)
     vra.validate_retro_artifact(path)  # no raise — retro unchanged by the addition
+
+
+# --- #339: additive forms (accepted-risk: / out-of-scope:) ------------------
+
+
+def test_new_arms_valid_in_disposition_form_including_vague() -> None:
+    for value in (
+        "accepted-risk: low likelihood, monitored",
+        "accepted-risk — vague but present",
+        "accepted-risk: x",  # vague-but-valid passes (NOT a content classifier)
+    ):
+        verdict = df.evaluate_disposition_form(value)
+        assert verdict["kind"] == "accepted-risk", value
+        assert verdict["ok"] is True, value
+    for value in ("out-of-scope: tracked in #338", "out-of-scope — different theme", "out-of-scope: y"):
+        verdict = df.evaluate_disposition_form(value)
+        assert verdict["kind"] == "out-of-scope", value
+        assert verdict["ok"] is True, value
+
+
+def test_new_arms_reject_compound_words_and_bare_tokens() -> None:
+    # `\b` after the literal token rejects a glued compound; a bare token (no
+    # separator/reason) is not a valid disposition.
+    for value in ("accepted-risky thing remains", "out-of-scoped work", "accepted-risk", "out-of-scope"):
+        assert df.evaluate_disposition_form(value)["ok"] is False, value
+
+
+def test_new_arms_excluded_from_destination_form_preserving_337() -> None:
+    # Behavior-preservation: the #337 structural-follow-up destination vocabulary is
+    # the four forms only. `accepted-risk:`/`out-of-scope:` must stay INVALID as
+    # destinations even though they are valid dispositions.
+    for value in ("accepted-risk: x", "out-of-scope: y"):
+        verdict = df.evaluate_destination_form(value)
+        assert verdict["ok"] is False, value
+        assert verdict["kind"] == "invalid", value
+    # the original four destination forms are unchanged
+    assert df.evaluate_destination_form("applied: x")["ok"] is True
+    assert df.evaluate_destination_form("issue #1 (novel: a)")["ok"] is True
+    assert df.evaluate_destination_form("none — one-off, no owner")["ok"] is True
+    assert df.evaluate_destination_form("repo-local guard: skills/x/AGENTS.md")["ok"] is True
+
+
+def test_new_arms_are_valid_session_retro_dispositions(tmp_path: Path) -> None:
+    # The arms are additive on the SHARED grammar, so the session-retro validator
+    # (which calls evaluate_disposition_form) now accepts them too. Purely additive:
+    # more forms pass, none that passed before now fails.
+    for disp_value in ("accepted-risk: monitored, low impact", "out-of-scope: tracked in #338"):
+        path = _seed(tmp_path, "r.md", _retro("2026-06-10", f"- a. Disposition: {disp_value}\n"))
+        vra.validate_retro_artifact(path)  # no raise
+
+
+# --- #339: residual-disposition form (none is invalid for a residual) -------
+
+
+def test_residual_disposition_form_accepts_four_and_rejects_none_and_prose() -> None:
+    for value in ("applied: shipped the fix", "issue #340", "accepted-risk: low impact", "out-of-scope: other theme"):
+        assert df.evaluate_residual_disposition_form(value)["ok"] is True, value
+    # a residual resolves affirmatively: bare `none — <reason>` is NOT valid here
+    assert df.evaluate_residual_disposition_form("none — nothing actionable")["ok"] is False
+    # prose-only is rejected
+    for value in ("defer", "recorded in retro", "future work", "memory -> head"):
+        assert df.evaluate_residual_disposition_form(value)["ok"] is False, value
+    # unfilled scaffold cell is skipped, not failed
+    assert df.evaluate_residual_disposition_form("<reason>")["kind"] == "placeholder"
+
+
+# --- #339: residual-ledger table scan + evaluate (presence/form only) --------
+
+_LEDGER_HEADER = "| Item | Kind | Disposition |\n| --- | --- | --- |\n"
+
+
+def test_scan_residual_ledger_finds_disposition_column_and_judges_rows() -> None:
+    body = (
+        _LEDGER_HEADER
+        + "| flaky retry | residual | defer |\n"
+        + "| proof gap | proof-gap | accepted-risk: low impact |\n"
+        + "| concern | non-claim | out-of-scope: tracked in #338 |\n"
+    )
+    scanned = df.scan_residual_ledger(body)
+    assert [r["value"] for r in scanned] == ["defer", "accepted-risk: low impact", "out-of-scope: tracked in #338"]
+    assert [r["verdict"]["ok"] for r in scanned] == [False, True, True]
+
+
+def test_scan_residual_ledger_locates_disposition_by_header_not_position() -> None:
+    # The disposition column is found by header name, not a fixed index.
+    body = "| Disposition | Item |\n| --- | --- |\n| issue #340 | a flaky test |\n| defer | unfixed |\n"
+    scanned = df.scan_residual_ledger(body)
+    assert [r["value"] for r in scanned] == ["issue #340", "defer"]
+    assert [r["verdict"]["ok"] for r in scanned] == [True, False]
+
+
+def test_scan_residual_ledger_catches_prose_behind_a_leading_non_disposition_table() -> None:
+    # Fresh-eye finding: a non-disposition table FIRST must not blind a following
+    # residual table (multi-table under-fire bypass). Tables are grouped by
+    # contiguity and judged by their own header.
+    body = (
+        "| Phase | Status |\n| --- | --- |\n| build | done |\n"
+        "\n"
+        "| Item | Kind | Disposition |\n| --- | --- | --- |\n| flaky | residual | defer |\n"
+    )
+    scanned = df.scan_residual_ledger(body)
+    assert [r["value"] for r in scanned] == ["defer"]
+    assert scanned[0]["verdict"]["ok"] is False  # the prose-only row is NOT skipped
+    assert df.evaluate_residual_ledger(body)["problem"] == "invalid"
+
+
+def test_scan_residual_ledger_judges_multiple_disposition_tables_independently() -> None:
+    body = (
+        "| Item | Disposition |\n| --- | --- |\n| a | issue #340 |\n"
+        "\n"
+        "| Concern | Kind | Disposition |\n| --- | --- | --- |\n| b | non-claim | future work |\n"
+    )
+    scanned = df.scan_residual_ledger(body)
+    # second table's Disposition is at index 2, first at index 1 — each judged by
+    # its own header, not a shared fixed index.
+    assert [r["value"] for r in scanned] == ["issue #340", "future work"]
+    assert [r["verdict"]["ok"] for r in scanned] == [True, False]
+
+
+def test_residual_ledger_heading_tolerates_plural() -> None:
+    body = "## Residual Ledgers\n\n" + _LEDGER_HEADER + "| x | residual | defer |\n"
+    assert df.residual_ledger_report(body.replace("## Residual Ledgers", "# G\n\nCreated: 2026-06-15\n\n## Residual Ledgers"), date(2026, 6, 15))["problem"] == "invalid"
+
+
+def test_scan_residual_ledger_no_over_fire_without_header_or_rows() -> None:
+    assert df.scan_residual_ledger("") == []
+    assert df.scan_residual_ledger("no table here, just prose about a defer\n") == []
+    # a table whose header has no Disposition column is not judged (reviewer's call)
+    assert df.scan_residual_ledger("| Item | Note |\n| --- | --- |\n| x | defer |\n") == []
+
+
+def test_evaluate_residual_ledger_problem_states_and_fence_masking() -> None:
+    good = _LEDGER_HEADER + "| flaky | residual | issue #340 |\n"
+    assert df.evaluate_residual_ledger(good)["problem"] is None
+    bad = _LEDGER_HEADER + "| flaky | residual | future work |\n"
+    assert df.evaluate_residual_ledger(bad)["problem"] == "invalid"
+    # a fenced example table is inert
+    fenced = "```\n" + _LEDGER_HEADER + "| x | residual | defer |\n```\n"
+    assert df.evaluate_residual_ledger(fenced)["problem"] is None
+
+
+def test_residual_ledger_rule_date_and_enforcement_window() -> None:
+    assert df.RESIDUAL_LEDGER_RULE_DATE == date(2026, 6, 10)
+    assert df.is_residual_ledger_enforced(date(2026, 6, 10)) is True  # rule date inclusive
+    assert df.is_residual_ledger_enforced(date(2026, 6, 9)) is False  # landing day grandfathered
+    assert df.is_residual_ledger_enforced(None) is True  # undatable -> fail-closed (in-scope)
+
+
+def test_residual_ledger_report_scope_section_and_no_over_fire() -> None:
+    goal = "# Goal\n\nCreated: 2026-06-15\n\n## Residual Ledger\n\n" + _LEDGER_HEADER + "| x | residual | defer |\n"
+    # in-scope + prose-only row -> invalid
+    assert df.residual_ledger_report(goal, date(2026, 6, 15))["problem"] == "invalid"
+    # grandfathered -> inert
+    grand = df.residual_ledger_report(goal, date(2026, 6, 9))
+    assert grand["problem"] is None and grand["scope"]["enforced"] is False
+    # undatable -> fail-closed enforced
+    assert df.residual_ledger_report(goal, None)["problem"] == "invalid"
+    # no ledger section at all -> no fire (no over-fire)
+    assert df.residual_ledger_report("# Goal\n\nCreated: 2026-06-15\n\nno ledger\n", date(2026, 6, 15))["problem"] is None
+
+
+# --- #339: achieve wiring (rung 1f) inside apply_disposition_rungs -----------
+
+
+def _goal_with_ledger(created: str, rows: str, auto_retro: str = "Retro dispositions: applied: shipped the residual-ledger floor this run\n") -> str:
+    return (
+        f"# Achieve Goal: T\n\nStatus: active\nCreated: {created}\n"
+        f"Activation: `/goal @charness-artifacts/goals/{created}-x.md`\n\n"
+        "## Residual Ledger\n\n" + _LEDGER_HEADER + rows + "\n"
+        f"## Auto-Retro\n\n{auto_retro}\n"
+    )
+
+
+def _rungs(text: str) -> dict:
+    report = {"ok": True, "satisfied": [], "binding_failures": []}
+    disp.apply_disposition_rungs(report, text, True)
+    return report
+
+
+def test_rung1f_blocks_prose_only_residual_in_scope() -> None:
+    report = _rungs(_goal_with_ledger("2026-06-10", "| flaky retry | residual | defer |\n"))
+    assert report["ok"] is False
+    assert report["residual_ledger"]["problem"] == "invalid"
+    assert any("defer" in entry["value"] for entry in report["residual_ledger"]["invalid"])
+    assert report["residual_ledger_scope"]["enforced"] is True
+
+
+def test_rung1f_passes_dispositioned_ledger_in_scope() -> None:
+    rows = (
+        "| flaky retry | residual | issue #340 |\n"
+        "| proof gap | proof-gap | accepted-risk: low impact, monitored |\n"
+        "| concern | non-claim | out-of-scope: tracked in #338 |\n"
+    )
+    report = _rungs(_goal_with_ledger("2026-06-10", rows))
+    assert "residual_ledger" not in report
+    assert report["ok"] is True
+
+
+def test_rung1f_grandfathers_pre_rule_goal() -> None:
+    report = _rungs(_goal_with_ledger("2026-06-09", "| flaky retry | residual | defer |\n"))
+    assert "residual_ledger" not in report  # inert for grandfathered goals
+    assert report["residual_ledger_scope"]["enforced"] is False
+
+
+def test_rung1f_does_not_over_fire_without_a_ledger() -> None:
+    text = (
+        "# Achieve Goal: T\n\nCreated: 2026-06-10\n"
+        "Activation: `/goal @charness-artifacts/goals/2026-06-10-x.md`\n\n"
+        "## Auto-Retro\n\nRetro dispositions: applied: shipped it\n"
+    )
+    report = _rungs(text)
+    assert "residual_ledger" not in report
+    assert report["ok"] is True
+    assert report["residual_ledger_scope"]["enforced"] is True  # in scope, but no ledger -> inert
+
+
+def test_rung1f_fail_closed_on_undatable_goal() -> None:
+    text = (
+        "# Achieve Goal: T\n\n"  # no Created: line
+        "## Residual Ledger\n\n" + _LEDGER_HEADER + "| x | residual | future work |\n\n"
+        "## Auto-Retro\n\nRetro dispositions: applied: shipped it\n"
+    )
+    report = _rungs(text)
+    assert report["ok"] is False
+    assert report["residual_ledger"]["problem"] == "invalid"
+
+
+def test_rung1f_end_to_end_blocks_complete_flip(tmp_path: Path) -> None:
+    # Full closeout-evidence path: a prose-only residual refuses the flip; the CLI
+    # surfaces an actionable residual-ledger reason.
+    created = "2026-06-10"
+    _seed_evidence(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    goal = (
+        f"# Achieve Goal: T\n\nStatus: active\nCreated: {created}\n"
+        f"Activation: `/goal @charness-artifacts/goals/{created}-{_SLUG}.md`\n\n"
+        "## Residual Ledger\n\n" + _LEDGER_HEADER + "| flaky retry | residual | recorded in retro |\n\n"
+        "## Final Verification\n\n"
+        f"Retro: charness-artifacts/retro/{created}-{_SLUG}.md\n"
+        f"Host log probe: charness-artifacts/probe/{created}-{_SLUG}.json\n{review}\n\n"
+        "## Auto-Retro\n\nRetro dispositions: applied: shipped the residual-ledger floor this run\n"
+    )
+    report = ce.check_complete_evidence(tmp_path, goal)
+    assert report["ok"] is False
+    assert report["residual_ledger"]["problem"] == "invalid"
+
+
+def test_rung1f_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
+    # Behavior-preservation: the residual-ledger floor is achieve-only. A session
+    # retro carrying a `## Residual Ledger` with a prose-only row stays VALID under
+    # the retro validator (it never calls the residual-ledger helpers).
+    body = (
+        "# Retro — t\n\nDate: 2026-06-10\n\n## Context\n\nx\n\n## Next Improvements\n\n"
+        "- workflow: do x. Disposition: applied: shipped it\n\n"
+        "## Residual Ledger\n\n" + _LEDGER_HEADER + "| flaky | residual | defer |\n\n"
+        "## Persisted\n\nyes\n"
+    )
+    path = _seed(tmp_path, "2026-06-10-r.md", body)
+    vra.validate_retro_artifact(path)  # no raise — retro unaffected by the achieve-only floor

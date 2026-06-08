@@ -1,7 +1,8 @@
 # Achieve Goal: Portable residual/disposition ledger with adapter-owned proof semantics (#339)
 
-Status: draft
+Status: active
 Created: 2026-06-08
+Activation time: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-08-339-portable-disposition-ledger-adapter-proof-semantics.md`
 
 This file is the living goal scratchpad. It becomes active only when the user
@@ -9,10 +10,23 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (draft). Open design defaults remain in
-  `Discuss before activation:` — resolve them (a–e) before `/goal`.
-- Next action: resolve the activation-discussion defaults, then activate with
-  `/goal @charness-artifacts/goals/2026-06-08-339-portable-disposition-ledger-adapter-proof-semantics.md`.
+- Current slice: **Slice 2 (next)** — the adapter boundary. Slice 1 LANDED:
+  `accepted-risk:`/`out-of-scope:` arms + the `## Residual Ledger` presence/form
+  floor (rung 1f, enforce-from 2026-06-10); fresh-eye critique SHIP-WITH-NITS
+  (multi-table under-fire + plural-heading folded); 65+478 tests green; corpus
+  verdict-equality 0 mismatches; ergonomics/attention-state/export-safe green;
+  mirror byte-synced. Activation decisions (a)–(e) RESOLVED 2026-06-09.
+- Next action: commit Slice 1, then begin Slice 2 — declare the adapter schema
+  (proof_levels + `incomparable`; acceptance_map class→min level; verifier_refs;
+  gap_policy) alongside the existing achieve/issue/retro adapters; dogfood with a
+  SYNTHETIC adapter so no domain concept enters core; missing adapter degrades to
+  the portable floor + "no domain map → require a ledger disposition".
+- Carry from Slice 1: skill-package files must carry NO `#N` anchors (the
+  `validate_skill_ergonomics` portable_package_issue_anchor scan), and NO
+  attention-state state-words (`skipped`/`disabled`/`no_adapter`/…) in string
+  constants/docstrings of scanned `scripts/`+`skills/` files unless declared
+  (the `validate_attention_state_visibility` #332 sweep) — both surfaced via the
+  non-hermetic `run_slice_closeout` structural-sweep tests, not the unit tests.
 - Verification cadence: cheap deterministic checks at commit boundaries; the
   touched scripts' tests + fresh-eye critique at slice boundaries; the broad gate
   + #339 closeout at the bundle boundary. Carry this session's lessons: at a
@@ -91,22 +105,34 @@ full residual ledger whose *proof semantics* the adapter declares.
   proof apply; deterministic gates own closeout.
 - External side-effect scope: default no-push. Any approved publish/push/CI is
   scoped to the bundle that requested it and does not carry forward.
-- Discuss before activation: **UNRESOLVED — resolve (a)–(e) below before `/goal`.**
-  (a) **Ledger surface** — a NEW machine-checkable ledger section/artifact, or
-  EXTEND the existing #337 disposition gate (Auto-Retro + disposition review) with
-  residual/proof-gap rows. Lean: extend (one disposition system, not two), but
-  confirm the residual/non-claim rows fit the Auto-Retro surface vs need their own
-  `## Residual Ledger` block. (b) **Adapter schema shape** — exact fields (proof
-  levels + ordering/incomparability; acceptance-class→satisfying-proof-level map;
-  verifier/artifact refs; gap acceptability) and the missing-adapter fallback.
-  (c) **Scope across 3 surfaces** — one goal (achieve+retro+issue) or split into a
-  second goal if Slice 2–3 prove too large; decide the split trigger up front.
-  (d) **New forms' enforce dates** — `accepted-risk:`/`out-of-scope:` grandfather
-  dates (landing-day + 1). (e) **Proof-mismatch detection** — confirm it is
-  adapter-map lookup + presence only (Charness never judges proof *strength*),
-  matching the gate-and-intelligence doctrine. These are consequential design
-  defaults (proof-level non-claims + architectural surface); `--pursue-ready` stays
-  false until they are resolved in-transcript.
+- Discuss before activation: RESOLVED 2026-06-09 (operator, in-transcript via
+  the activation question set).
+  (a) **Ledger surface = EXTEND + dedicated block.** Reuse the #337
+  `disposition_form.py` grammar (one disposition system), but give
+  residual/non-claim/proof-gap rows their own `## Residual Ledger` block so they
+  do not overload Auto-Retro; the block is machine-checkable via the shared
+  grammar.
+  (b) **Adapter schema = minimal shape confirmed now, fields refined in Slice 2.**
+  Fields: `proof_levels` (ordered list + `incomparable` pairs),
+  `acceptance_map` (acceptance-class → minimum satisfying proof level),
+  `verifier_refs`, `gap_policy` (acceptable / out-of-scope / needs-issue), and
+  `missing_adapter` fallback = portable presence/form floor STILL fires +
+  proof-mismatch degrades to "no domain map → require a ledger disposition".
+  (c) **Scope = ONE goal (achieve+retro+issue) + split trigger.** Keep all four
+  slices here; SPLIT TRIGGER: if Slice 2–3 (adapter + proof-mismatch) exceeds one
+  cohesive slice each, OR the bundle-boundary broad gate surfaces cross-surface
+  suite debt, file a follow-up goal for the retro/issue wiring and keep
+  core+achieve here.
+  (d) **New forms' enforce date = 2026-06-10 (landing-day 2026-06-09 + 1).** The
+  established grandfather precedent (`DISPOSITION_FORM_RULE_DATE`,
+  `STRUCTURAL_FOLLOWUP_RULE_DATE`); every existing artifact stays grandfathered so
+  the broad gate stays green. The two new form arms are additive/permissive on
+  the shared grammar (accepting more forms never breaks an existing artifact); the
+  `## Residual Ledger` FLOOR is what carries this enforce-from date.
+  (e) **Proof-mismatch = adapter-map lookup + presence ONLY.** Confirmed: Charness
+  never judges proof *strength*; mismatch = the adapter's `acceptance_map` names a
+  stronger proof level than the closeout reached, recorded + required to carry a
+  disposition. Fixed gate-and-intelligence doctrine.
 
 ## User Acceptance
 
@@ -157,7 +183,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Add `accepted-risk:` / `out-of-scope:` forms to `disposition_form.py` (the shared grammar) + the residual/disposition LEDGER presence/form floor; grandfathered, behavior-preserving | the shared grammar is the one source #337/#329 built; the new enum arms land first | prose-only residual refused, dispositioned ledger accepted; existing-form verdicts unchanged (corpus equality); SHIP critique | planned |
+| 1 | Add `accepted-risk:` / `out-of-scope:` forms to `disposition_form.py` (the shared grammar) + the residual/disposition LEDGER presence/form floor; grandfathered, behavior-preserving | the shared grammar is the one source #337/#329 built; the new enum arms land first | prose-only residual refused, dispositioned ledger accepted; existing-form verdicts unchanged (corpus equality); SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; 0 corpus mismatches) |
 | 2 | The adapter boundary: schema for proof levels + acceptance-class→proof-level map + verifier refs + gap acceptability; resolution + missing-adapter degradation | Charness must ask adapters, not encode domain semantics | a synthetic adapter drives behavior; missing adapter degrades to the portable floor; NO domain concept in core; SHIP critique | planned |
 | 3 | Proof-mismatch detection (acceptance class vs proof reached, via the adapter map) wired into achieve/issue closeout | the generic mismatch check is the core of #339 | a closeout whose proof < the named acceptance class is refused without a mismatch disposition; SHIP critique | planned |
 | 4 | Wire retro + dogfood + #339 closeout: broad gate; #339 carrier; retro | the operator-requested closeout | broad gate PASS; #339 verified closed; retro + ledger dispositions | planned |
@@ -175,6 +201,7 @@ during the run:
   skill on ONE physical line). At completion, recorded implementation / debug /
   quality / issue work needs this `Routing:` evidence or a `Routing: n/a — <reason>`
   opt-out.
+- Routing: find-skills -> achieve (goal operator owns the slice slot; activation + Slice 1 grammar/floor impl coordinated inline); Slice 1 fresh-eye review -> bounded critique subagent (SHIP-WITH-NITS).
 - **Gather step** — `## Context Sources` cites #339 via `gh` and repo paths, not an
   external URL/Slack/Notion/Docs/Drive asset; likely `Gather: n/a — <reason>`.
   Confirm at completion.
@@ -189,6 +216,20 @@ during the run:
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 after the activation-discussion defaults are resolved._
+
+### Slice 1: Forms + residual-ledger floor
+
+- Objective: Extend scripts/disposition_form.py with accepted-risk:/out-of-scope: additive arms (excluded from evaluate_destination_form to byte-preserve #337) + a dedicated ## Residual Ledger presence/form floor (achieve rung 1f); grandfathered enforce-from 2026-06-10, behavior-preserving.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: py_compile+ruff+lengths (goal_artifact_disposition at-cap 352/360, under hard limit; logic pushed to the grammar); 65 disposition-floor tests + 478 related quality-gate tests green; corpus verdict-equality old-vs-new = 0 mismatches over 505 files/224 values; validate_skill_ergonomics + validate_attention_state_visibility + check_export_safe_imports green; plugin mirror byte-synced; fresh-eye critique = SHIP-WITH-NITS (folded the multi-table under-fire bypass via per-table grouping + plural-heading tolerance, +3 tests).
+- Test duplication pressure: +25 tests in test_disposition_form_floor.py; all distinct floor-behavior assertions (new arms, residual form, table scan, grandfather, wiring, multi-table) layering on the existing #329/#337 harness — low adjacent duplication, no new subprocess-of-top-level-script boundary added.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 
@@ -223,10 +264,22 @@ itself so a fresh session sees the design space, not only the closed point.
   provider / source-identity theme, different area); +release-update (release-
   contract theme, tracked in handoff). `axis: issue-theme` — bundling across
   themes is the over-anchoring to avoid.
-- **Ledger surface (DEFERRED to activation, default (a)).** Family: {new ledger
-  artifact/section; extend the existing #337 disposition gate}. Lean: **extend**
-  (one disposition system, not two drifting copies), confirm at activation whether
-  residual/non-claim rows fit Auto-Retro or need a `## Residual Ledger` block.
+- **Ledger surface (RESOLVED at activation 2026-06-09).** Family: {new ledger
+  artifact/section; extend the existing #337 disposition gate; extend grammar +
+  dedicated block}. Chosen: **extend the shared `disposition_form.py` grammar +
+  give residual rows a dedicated `## Residual Ledger` block** — one disposition
+  system (no second drifting copy), but residual/non-claim/proof-gap rows get a
+  clearly-scoped, machine-checkable section instead of overloading Auto-Retro.
+  Rejected: reuse-Auto-Retro-surface (mixes residual ledger with retro
+  dispositions); new standalone artifact (two drifting systems, the original
+  lean's rejected arm).
+- **Scope (RESOLVED at activation 2026-06-09).** Family: {one goal all-3-surfaces
+  + split trigger; split now into two goals}. Chosen: **one goal + split
+  trigger** — keep achieve+retro+issue in one warm context; pre-committed split
+  trigger (Slice 2–3 exceeding one cohesive slice each, or cross-surface suite
+  debt at the bundle gate) routes retro/issue wiring to a follow-up goal.
+  Rejected: split-now (smaller bundle but more coordination overhead before any
+  evidence that the bundle is too large).
 - **Floor design (assumed; fixed doctrine).** Family: {presence/form-enum-only +
   adapter-owned proof semantics; deterministic content/proof classifier}. Chosen:
   **presence/form-enum-only** — the #337/#329 doctrine that a prose word-list
