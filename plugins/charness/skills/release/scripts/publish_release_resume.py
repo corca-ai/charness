@@ -165,4 +165,9 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         expected_release_url=expected_release_url, remote=args.remote, branch=branch,
         has_issue_closeout=bool(args.close_issue),
     )
+    # A resumed publish is still a verified publish: auto-run the adapter-declared
+    # install-refresh here too, so the contract is not silently skipped on resume.
+    payload["install_refresh"] = cli.run_post_publish_install_refresh(
+        repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=cli.run_shell
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

@@ -26,7 +26,7 @@ load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_co
 STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
     "package_id", "packaging_manifest_path", "checked_in_plugin_root", "sync_command",
-    "quality_command",
+    "quality_command", "post_publish_install_refresh",
 )
 LIST_FIELDS = (
     "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
@@ -72,6 +72,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "checked_in_plugin_root": f"plugins/{package_id}",
         "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
         "quality_command": "./scripts/run-quality.sh",
+        "post_publish_install_refresh": "",
         "update_instructions": [],
         "real_host_required_surfaces": [],
         "real_host_required_path_globs": [],

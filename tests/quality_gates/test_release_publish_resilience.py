@@ -10,6 +10,7 @@ from .release_publish_fixtures import (
     REPO_ROOT,
     _release_env,
     _run_publish,
+    _run_publish_patch,
     _seed_publish_release_repo,
 )
 
@@ -23,6 +24,94 @@ def _load_preflight():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+_POST_CREATE_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_post_create.py"
+
+
+def _load_post_create():
+    spec = importlib.util.spec_from_file_location("publish_release_post_create_under_test", _POST_CREATE_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class _FakeShellResult:
+    def __init__(self, returncode: int, stdout: str = "", stderr: str = "") -> None:
+        self.returncode, self.stdout, self.stderr = returncode, stdout, stderr
+
+
+def test_post_publish_install_refresh_auto_runs_declared_command() -> None:
+    post_create = _load_post_create()
+    calls: list[tuple[str, bool]] = []
+
+    def fake_run_shell(command: str, *, cwd, check: bool):
+        calls.append((command, check))
+        return _FakeShellResult(0, "updated to 0.30.0")
+
+    out = post_create.run_post_publish_install_refresh(
+        Path("."), command="charness update", run_shell=fake_run_shell
+    )
+    assert out["status"] == "refreshed"
+    assert out["command"] == "charness update"
+    # Must run check=False — a failed refresh cannot abort the already-published release.
+    assert calls == [("charness update", False)]
+
+
+def test_post_publish_install_refresh_skips_when_not_declared() -> None:
+    post_create = _load_post_create()
+
+    def boom(*_a, **_k):  # must never be called when no command is declared
+        raise AssertionError("run_shell should not run when no command is declared")
+
+    out = post_create.run_post_publish_install_refresh(Path("."), command="", run_shell=boom)
+    assert out["status"] == "not_configured"
+    assert out["command"] is None
+
+
+def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -> None:
+    # Integration: a full --execute publish auto-runs the adapter-declared
+    # post_publish_install_refresh after the verified release and records it in
+    # the payload (locks the CLI wiring; the helper unit tests cover branches).
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8").replace(
+            "quality_command: ./scripts/run-quality.sh",
+            "quality_command: ./scripts/run-quality.sh\npost_publish_install_refresh: charness update",
+        ),
+        encoding="utf-8",
+    )
+    refresh_log = tmp_path / "charness-refresh.log"
+    fake_charness = bin_dir / "charness"
+    fake_charness.write_text(
+        f'#!/usr/bin/env bash\necho "ran $*" >> {refresh_log}\nexit 0\n', encoding="utf-8"
+    )
+    fake_charness.chmod(0o755)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "declare post_publish_install_refresh")
+
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["install_refresh"]["status"] == "refreshed"
+    assert payload["install_refresh"]["command"] == "charness update"
+    assert refresh_log.exists() and "ran update" in refresh_log.read_text(encoding="utf-8")
+
+
+def test_post_publish_install_refresh_records_failure_without_raising() -> None:
+    post_create = _load_post_create()
+    out = post_create.run_post_publish_install_refresh(
+        Path("."),
+        command="charness update",
+        run_shell=lambda *_a, **_k: _FakeShellResult(1, "", "boom"),
+    )
+    # Recorded as a closeout risk, never raised — the release is already published.
+    assert out["status"] == "failed"
+    assert out["returncode"] == 1
+    assert "boom" in out["stderr_tail"]
 
 
 def _git(repo: Path, *args: str) -> None:

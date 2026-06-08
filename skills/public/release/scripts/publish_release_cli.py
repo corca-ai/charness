@@ -59,6 +59,7 @@ release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
+run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
@@ -343,6 +344,11 @@ def execute_publish_plan(
         fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
         expected_release_url=expected_release_url, remote=args.remote, branch=branch,
         has_issue_closeout=bool(args.close_issue),
+    )
+    # The release is published + verified; auto-run the adapter-declared
+    # install-refresh on the authoring machine so the managed install ends == repo.
+    payload["install_refresh"] = run_post_publish_install_refresh(
+        repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=run_shell
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 

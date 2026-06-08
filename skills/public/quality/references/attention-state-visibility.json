@@ -374,6 +374,12 @@
       "evidence_terms": ["No repo-declared fresh checkout probes were configured"],
       "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
     },
+    "skills/public/release/scripts/publish_release_post_create.py": {
+      "states": ["not_configured"],
+      "visibility": ["terminal_payload", "local_noop_not_closeout"],
+      "evidence_terms": ["refreshed", "failed"],
+      "rationale": "run_post_publish_install_refresh returns status not_configured when the release adapter declares no post_publish_install_refresh command; all three states (refreshed/failed/not_configured) are surfaced in the terminal release payload under install_refresh, so a consumer-repo no-op (the authoring repo declares charness update) never silently reads as a clean closeout."
+    },
     "skills/public/release/scripts/publish_release_retro.py": {
       "states": ["skipped"],
       "visibility": ["artifact_visible", "terminal_payload"],

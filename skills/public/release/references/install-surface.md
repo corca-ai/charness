@@ -32,12 +32,20 @@ guessing product-specific commands in the helper output.
 ## Maintainer Dev-Machine Install Refresh
 
 For `charness`, refreshing the maintainer/authoring machine's own installed copy
-is a **required release-closeout step**, not optional hygiene. After publish
-verifies, run `charness update` on this dev machine so the installed plugin at
-`~/.agents/src/charness` stays `== repo`, then re-verify (`charness doctor` /
+is a **required release-closeout step**, not optional hygiene — and it is now
+**auto-run by the publish helper**, not a manual ask. The release adapter
+declares `post_publish_install_refresh: charness update`; after publish verifies,
+`publish_release.py` auto-runs that command on the authoring machine so the
+installed plugin at `~/.agents/src/charness` ends `== repo`, and records the
+result in the release payload under `install_refresh`
+(`refreshed`/`failed`/`not_configured`). It is opt-in (a repo declaring no
+command is skipped `not_configured`) and never aborts the already-published
+release. The maintainer only re-verifies (`charness doctor` /
 `python3 scripts/doctor.py --repo-root . --json` plus a cited-check == repo-gate
-spot check) and record the `charness update` output as executed proof in
-`charness-artifacts/release/latest.md`.
+spot check) and steps in manually if `install_refresh` reports `failed`. The
+refresh runs on both the normal and `--resume` publish paths; a hang is bounded
+by the shared command timeout (recorded as `failed`), so it can never block the
+already-published release.
 
 This closes the **installed-vs-repo version-skew class**. The motivating miss:
 the `debug`/`critique` scaffolds cited the *installed* plugin's

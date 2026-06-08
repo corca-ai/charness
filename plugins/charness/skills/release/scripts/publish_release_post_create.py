@@ -5,6 +5,33 @@ from pathlib import Path
 from typing import Any
 
 
+def run_post_publish_install_refresh(
+    repo_root: Path, *, command: str, run_shell
+) -> dict[str, Any]:
+    """Auto-run the adapter-declared post-publish install-refresh on the authoring
+    machine after a verified publish, so the maintainer's managed install ends
+    ``== repo`` without a manual step (closing the installed-vs-repo skew class).
+
+    Opt-in and portable: a repo that declares no ``post_publish_install_refresh``
+    skips it (``not_configured``), so a consumer repo's publish never auto-mutates a
+    host cache it did not ask for. Never raises — the release is already published
+    and verified, so a failed refresh is recorded as a closeout risk for the
+    maintainer to re-run, not a release abort.
+    """
+    command = (command or "").strip()
+    if not command:
+        return {"status": "not_configured", "command": None}
+    result = run_shell(command, cwd=repo_root, check=False)
+    ok = result.returncode == 0
+    return {
+        "status": "refreshed" if ok else "failed",
+        "command": command,
+        "returncode": result.returncode,
+        "stdout_tail": (result.stdout or "").strip()[-1500:],
+        "stderr_tail": (result.stderr or "").strip()[-1500:],
+    }
+
+
 def release_view_result(repo_root: Path, tag_name: str, backend: dict[str, Any], *, backend_command, run):
     command = backend_command(backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name)
     return run(command, cwd=repo_root, check=False)

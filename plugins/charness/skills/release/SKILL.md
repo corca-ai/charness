@@ -122,11 +122,10 @@ verified.
 8. End with update steps, then refresh the maintainer's own install.
    - how operators refresh the managed install, what hosts still need after
      update, and what still requires manual human confirmation
-   - when a managed install surface is declared, the maintainer also runs the
-     declared update path on the authoring machine after publish so the local
-     installed surface stays `== repo`, then re-verifies and records the output;
-     this closes the installed-vs-repo skew that lets a cited installed check
-     diverge from the repo gate (detail: `references/install-surface.md`)
+   - when the adapter declares `post_publish_install_refresh`, the publish helper
+     AUTO-RUNS it after a verified publish so the installed surface ends
+     `== repo` (recorded as `install_refresh`); do NOT downgrade it to a manual
+     `charness update` ask (detail: `references/install-surface.md`)
 
 ## Output Shape
 
@@ -140,7 +139,7 @@ The result should usually include:
 - `Release State`
 - `Public Release Verification`
 - `User Update Steps`
-- `Maintainer Install Refresh` when a managed install surface is declared
+- `Maintainer Install Refresh` (the auto-run `install_refresh` result) when declared
 - `Real-Host Proof` when the adapter says a human-run smoke is required
 - `Startup Proof` when startup-probe surfaces moved
 - `Open Risks`
@@ -159,10 +158,10 @@ The result should usually include:
 - Do not point public release notes at mutable source-tree records (such as
   `charness-artifacts/release/latest.md` at the target tag URL); generate
   self-contained notes or audit the file before passing `--notes-file`.
-- Do not mutate installed host caches from inside the skill; update instructions
-  belong in the closeout. When a managed install surface is declared, the
-  maintainer still runs the declared update path as a closeout step so the local
-  installed surface ends `== repo` (no cited-check vs repo-gate skew).
+- The publish helper's only installed-host mutation is the adapter-declared
+  `post_publish_install_refresh`, auto-run on the authoring machine after a
+  verified publish (opt-in, recorded, non-blocking); do not auto-mutate other
+  host caches or downgrade it to a manual ask.
 - Do not turn host-specific human proof into fake standing CI. If a support or
   install surface still depends on PATH, package managers, or host cache
   state, say so explicitly and carry a short checklist.
