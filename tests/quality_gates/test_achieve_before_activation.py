@@ -86,6 +86,31 @@ def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
     assert "check_goal_artifact.py --goal-path <artifact>" in lifecycle
 
 
+def test_drafting_does_not_consume_host_goal_slot() -> None:
+    """#336: the Before-phase is artifact-only and must not consume the host
+    active-goal slot; the slot is consumed only at `/goal` pursuit. This is the
+    symmetric Before-phase counterpart of the #268 completion-downstream rule.
+    Pin it on the skill, lifecycle, and adapter-contract surfaces so it cannot
+    silently regress back to draft-consumes-slot friction."""
+    skill = _norm(ACHIEVE / "SKILL.md")
+    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    adapter = _norm(ACHIEVE / "references" / "adapter-contract.md")
+
+    # SKILL.md core names the rule and the pursue-only consumption point.
+    assert "must not consume the host active-goal slot" in skill
+    assert "only `/goal` pursuit does" in skill
+    # The lifecycle reference carries the full contract + host-owned determination
+    # + the honest host-runtime residual boundary.
+    assert "Drafting does not consume the host goal slot" in lifecycle
+    assert "host-owned" in lifecycle
+    assert "consumed **only** at `/goal @artifact` pursuit" in lifecycle
+    assert "host-runtime" in lifecycle and "non-claim" in lifecycle
+    # The adapter contract documents the host goal-slot boundary and that no
+    # adapter knob exists (a no-op knob would fake portability).
+    assert "Host Goal-Slot Boundary" in adapter
+    assert "needs no adapter knob" in adapter
+
+
 def test_long_goal_efficiency_contract_is_explicit() -> None:
     skill = _norm(ACHIEVE / "SKILL.md")
     lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")

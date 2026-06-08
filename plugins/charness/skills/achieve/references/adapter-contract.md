@@ -76,3 +76,17 @@ complete-state evidence report. The block records the resolved publication
 default, issue-closeout carrier, draft/post-publication verification flags, and
 Auto-Retro disposition floor. Missing adapters are `valid: true`; found invalid
 adapters set `valid: false` and block completion.
+
+## Host Goal-Slot Boundary
+
+The host active-goal slot is host-owned, not an `achieve` adapter setting: the
+Claude `/goal` Stop-hook and the Codex thread-goal slot are host primitives
+`achieve` coordinates but does not reimplement. The portable draft-vs-active
+contract is uniform across every host and therefore needs no adapter knob: the
+Before-phase is artifact-only and never consumes the host slot, and
+`/goal @artifact` pursuit is the only point that does (see `lifecycle.md`
+*Drafting does not consume the host goal slot*). Deliberately, no
+`goal_slot.*` adapter field exists — a configurable knob here would only be a
+no-op that fakes portability. A host that auto-activates the slot on artifact
+creation is a host-runtime limitation to record as a non-claim, not an
+adapter-configurable behavior.

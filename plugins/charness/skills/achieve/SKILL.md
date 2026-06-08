@@ -55,7 +55,8 @@ lifecycle instead of starting a new one.
      Boundaries, verification, interview decisions, or critique findings, add a
      non-empty `Discuss before activation:` summary and resolve or explicitly ask
      before activation; `--pursue-ready` fails unless that summary is resolved
-   - save with `upsert_goal.py` at status `draft`
+   - save with `upsert_goal.py` at status `draft`; artifact-only — it must not
+     consume the host active-goal slot while drafting (only `/goal` pursuit does)
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself
 2. During — slice and record.

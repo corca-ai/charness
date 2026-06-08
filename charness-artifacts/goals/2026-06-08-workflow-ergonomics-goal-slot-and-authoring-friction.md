@@ -1,6 +1,6 @@
 # Achieve Goal: Workflow-ergonomics hardening: achieve draft must not consume the active goal slot (#336) + critique-scaffold enum validity by-construction + publish_release update_instructions pre-publish stub
 
-Status: draft
+Status: active
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.md`
 

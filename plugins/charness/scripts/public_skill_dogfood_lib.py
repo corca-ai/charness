@@ -62,6 +62,7 @@ EVIDENCE_OVERRIDES = {
     "achieve": [
         "saves a draft goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with an explicit `/goal @...` activation line",
         "tells the user the file is inert until activation and does not start executing slices itself",
+        "keeps the Before-phase artifact-only — drafting does not consume the host active-goal slot, which is consumed only at `/goal @...` pursuit",
     ],
     "create-skill": [
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",

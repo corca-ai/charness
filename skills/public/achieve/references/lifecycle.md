@@ -105,6 +105,30 @@ Save the artifact with `upsert_goal.py` at status `draft`. Tell the user the
 file is inert until they run the activation command. The skill does **not** start
 executing slices on its own — activation is the user's explicit decision.
 
+### Drafting does not consume the host goal slot
+
+The Before-phase is artifact-only. Saving a draft must never consume the host's
+active-goal slot: while shaping, do **not** call any host goal-creation or
+goal-tracking tool (`/goal`, the Codex `update_goal`/`get_goal` thread-goal
+surface, or the host equivalent). The host active-goal slot is host-owned — the
+Claude `/goal` Stop-hook, the Codex thread-goal slot — and `achieve` coordinates
+it without reimplementing it; the slot is consumed **only** at `/goal @artifact`
+pursuit, the operator's explicit pursue action.
+
+This is the symmetric counterpart of the After-phase rule that host-level goal
+completion is downstream of the artifact. A draft artifact is planning/shaping
+work, not the goal being pursued, so it must not register itself as host-active:
+otherwise the next goal creation trips a "goal still active" slot conflict until
+the operator manually clears the slot — exactly the friction this boundary
+removes.
+
+Host-runtime residual (honest boundary): the portable contract above is uniform
+across hosts and needs no adapter knob, because the rule is always "never consume
+the slot while drafting." If a host treats mere artifact creation as goal
+activation regardless of the agent's tool calls, that is a host-runtime
+limitation outside `achieve`'s control — record it as a non-claim and raise it
+with the host rather than faking a portable fix.
+
 ### Activation-closeout clarity
 
 The before-phase response must make activation impossible to miss. Close it with
