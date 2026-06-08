@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 DONE (#336 portable fix shipped, commit `cead7949`,
-  fresh-eye SHIP). Next: Slice 2 (critique-scaffold enum validity).
-- Next action: Slice 2 — surface the validator's allowed `bin`/`action`/
-  host-exposure enums at critique-author time. Then Slice 3, then Slice 4
-  bundle proof + the staged #336 closeout (carrier + resolution critique +
-  verify-closeout) + retro.
+- Current slice: Slices 1 & 2 DONE (#336 portable fix `cead7949`; critique enum
+  legend `a101e716`; both fresh-eye SHIP). Next: Slice 3 (publish_release
+  update_instructions pre-publish stub).
+- Next action: Slice 3 — emit/surface a target-version `update_instructions`
+  stub early (dry-run / `--prep` affordance) so the maintainer fills it before
+  the release critique. Then Slice 4 bundle proof + the staged #336 closeout
+  (carrier + resolution critique + verify-closeout) + retro.
 - Timebox: 4h
 - Activation time: 2026-06-08 (active run; flipped from draft at `/goal`)
 - Closeout reserve: 30m
@@ -199,6 +200,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Off-goal findings:
 - Lessons carried forward: achieve SKILL.md core is at the 4-line buffer floor — avoid further achieve-core additions this run. #336 close-keyword carrier + feature-class closeout body (jtbd/boundary/resolution_brief/implementation/prevention) + resolution_critique + verify-closeout are staged for Slice 4 (slice-plan-aligned). Persist the fresh-eye critique as the #336 resolution-critique artifact at Slice 4 (mind the strict critique enums — Slice 2's subject).
 - Metrics: 1 fix commit (cead7949); 1 fresh-eye subagent (~58k tokens); no host token/time totals claimed.
+
+### Slice 2: Slice 2 — critique-scaffold enum validity by-construction
+
+- Objective: Surface the critique validator's allowed enums (Structured Findings bin/evidence/action; Reviewer Tier Host exposure state + the applied<->host-confirmed coupling) at scaffold author time, so substituting a value picks from the valid set instead of hitting a validate->fix round-trip.
+- Why this approach: The scaffold emitted only example values; an author substituting one could silently pick an invalid enum (documented trap: a prior Slice-2 critique cost 3 round-trips). Surfacing the legend in the scaffold template auto-covers the artifact-surface preflight too (it renders the scaffold as the required shape). Chose a drift-pinning test over a runtime validator import to keep the scaffold portable to exported/consumer layouts (no validator-path coupling).
+- Commits: a101e716
+- What changed: skills/public/critique/scripts/scaffold_critique_artifact.py (ALLOWED_* constants + allowed_enums() + HTML-comment legend under both schema sections + allowed_enums in JSON payload); tests/test_critique_scaffold.py (legend assertions + new bidirectional drift test test_scaffold_surfaced_enums_match_validator_frozensets); plugin mirror byte-synced.
+- Alternatives rejected: Runtime import of the validator frozensets into the scaffold (rejected: couples the portable scaffold to a source-repo-only validator path, would break the exported-consumer scaffold test). Visible prose legend (rejected: HTML comment keeps the final record clean and is ignored by both validator parsers + markdownlint). Pinning the couplings prose to validator error strings (rejected as brittle; the enforced frozensets are what's pinned).
+- Targeted verification: tests/test_critique_scaffold.py + test_critique_skill.py 24 passed; scaffolded template still validates (Validated 1 critique artifact); preflight --path surfaces both legend lines in stub + shape-preview; ruff clean; check_python_lengths ok; structural sweep pass; pre-commit aggregate green at commit.
+- Test duplication pressure: Added 1 drift test + extended 1 existing test in tests/test_critique_scaffold.py (24 passed total in the critique scaffold+skill modules). The drift test is distinct (single-source-of-truth pin), not a duplicate of the validator's own enum-rejection tests in test_critique_skill.py which assert the validator REJECTS bad values; this asserts the scaffold SURFACES the same valid set.
+- Critique: Fresh-eye bounded subagent (general-purpose) — verdict SHIP, no blockers/should-fix. Independently confirmed via the real parsers that the HTML-comment legend can never be parsed as a Structured Finding (_structured_findings_lines) or Reviewer Tier field (_section_field_map) — both gate on the '- ' prefix the legend lacks; the drift test catches divergence in BOTH directions (simulated); the portable drift-test design is correct (a runtime import would break the exported-consumer scaffold test); the legend wording matches is_valid_followup_tail and the applied->host-confirmed coupling exactly; no markdown/MD033 issue (legend has zero backticks, MD013 off). NITs/over-worries only.
+- Off-goal findings:
+- Lessons carried forward: The artifact-surface preflight renders the owning scaffold as the required shape, so surfacing author-time guidance in the scaffold template covers the preflight surface for free. For Slice 3 (publish_release update_instructions stub): same 'emit the author-time affordance from the owning helper' shape may apply.
+- Metrics: 1 fix commit (a101e716); 1 fresh-eye subagent (~37k tokens); no host token/time totals claimed.
 
 ## Context Sources
 
