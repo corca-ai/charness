@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-06-08",
   "source_artifact_count": 161,
-  "candidate_count": 931,
+  "candidate_count": 933,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -335,6 +335,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:0df0d5078588",
+      "kind": "next_improvement",
+      "lesson": "authoring a critique artifact — the scaffold gives the required SECTIONS but `validate_critique_artifacts` also enforces strict ENUMS (Structured Findings `bin` and `action`, plus the `Host exposure state: applied` <-> `Application state: host-confirmed:` coupling); keep the scaffold's example enum tokens or check the validator's allowed set BEFORE substituting, rather than inventing values (the Slice-2 critique cost 3 validate->fix round-trips). Disposition: applied: persisted to recent-lessons this run as a critique-authoring signal (added post-disposition-review as a self-correction; same `applied` form as the other two).",
+      "normalized_key": "authoring a critique artifact the scaffold gives the required sections but validate critique artifacts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:51a90b834fd8",
       "kind": "next_improvement",
       "lesson": "before committing a slice that touches `run_slice_closeout`/structural-sweep wiring, run the broad `surface_obligations` suite first — the Slice-3→4 reversal (the validate-all trio's `commit_boundary` True→False) was caught late by the broad gate, not at the slice commit. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is workflow signal, not memory.",
@@ -349,26 +369,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7d6a26b32edb",
-      "kind": "next_improvement",
-      "lesson": "**capability:** A one-shot \"classify changed-line coverage over multiple base ranges from one coverage report\" helper would formalize what I did by hand (`--reuse-coverage` over 7f02.. then 858c..). Disposition: none — `--reuse-coverage` already makes the manual reclassify cheap; not worth a new flag yet.",
-      "normalized_key": "capability a one shot classify changed line coverage over multiple base ranges from one",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -681,6 +681,26 @@
       "kind": "next_improvement",
       "lesson": "at a release/bundle boundary where the session added mutation-pool (`scripts/**`, `skills/**`) commits, run `check_changed_line_mutation_coverage.py --write-fresh-marker` over `merge-base origin/main..HEAD` as the FIRST step, before the broad gate, because new commits invalidate the prior fingerprint and deferring it costs a warn->produce->cover round-trip. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is a workflow signal, not memory.",
       "normalized_key": "at a release bundle boundary where the session added mutation pool scripts skills commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0df0d5078588",
+      "kind": "next_improvement",
+      "lesson": "authoring a critique artifact — the scaffold gives the required SECTIONS but `validate_critique_artifacts` also enforces strict ENUMS (Structured Findings `bin` and `action`, plus the `Host exposure state: applied` <-> `Application state: host-confirmed:` coupling); keep the scaffold's example enum tokens or check the validator's allowed set BEFORE substituting, rather than inventing values (the Slice-2 critique cost 3 validate->fix round-trips). Disposition: applied: persisted to recent-lessons this run as a critique-authoring signal (added post-disposition-review as a self-correction; same `applied` form as the other two).",
+      "normalized_key": "authoring a critique artifact the scaffold gives the required sections but validate critique artifacts",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
       "latest_source_date": "2026-06-08",
@@ -1031,6 +1051,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9db196b87f29",
+      "kind": "repeat_trap",
+      "lesson": "The first critique artifact (Slice 2) cost 3 avoidable validator round-trips: I used `scaffold_critique_artifact.py` (heeding the recent-lessons trap about a missing `## Reviewer Tier Evidence` section), but then OVERWROTE the scaffold's example enum tokens with invented values (`bin: confirm-before-ship`, `action: ship`) and missed the `Host exposure state: applied` <-> `Application state: host-confirmed:` coupling — three validate->fix cycles. Self-corrected within-session (Slice-3 + release critiques validated first-try). This is a SIBLING of the documented critique-authoring trap; I initially omitted it from this retro's Waste (an under-report), added here as a self-correction.",
+      "normalized_key": "the first critique artifact slice 2 cost 3 avoidable validator round trips i used",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
           "date": "2026-06-08",
           "section": "Waste"
         }

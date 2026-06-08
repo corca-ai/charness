@@ -17,7 +17,7 @@
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md`; sources: 13)
 - additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal. (source: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`)
 - at a release/bundle boundary where the session added mutation-pool (`scripts/**`, `skills/**`) commits, run `check_changed_line_mutation_coverage.py --write-fresh-marker` over `merge-base origin/main..HEAD` as the FIRST step, before the broad gate, because new commits invalidate the prior fingerprint and deferring it costs a warn->produce->cover round-trip. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is a workflow signal, not memory. (source: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`)
-- before committing a slice that touches `run_slice_closeout`/structural-sweep wiring, run the broad `surface_obligations` suite first — the Slice-3→4 reversal (the validate-all trio's `commit_boundary` True→False) was caught late by the broad gate, not at the slice commit. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is workflow signal, not memory. (source: `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`)
+- authoring a critique artifact — the scaffold gives the required SECTIONS but `validate_critique_artifacts` also enforces strict ENUMS (Structured Findings `bin` and `action`, plus the `Host exposure state: applied` <-> `Application state: host-confirmed:` coupling); keep the scaffold's example enum tokens or check the validator's allowed set BEFORE substituting, rather than inventing values (the Slice-2 critique cost 3 validate->fix round-trips). Disposition: applied: persisted to recent-lessons this run as a critique-authoring signal (added post-disposition-review as a self-correction; same `applied` form as the other two). (source: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`)
 
 ## Selection Policy
 
@@ -38,7 +38,6 @@
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`
 - `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`
 - `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`
 - `charness-artifacts/retro/2026-06-08-v0-28-0-release-auto-retro.md`

@@ -41,6 +41,15 @@ mutation run is its authoritative verdict).
   broad gate warned; running the producer over merge-base origin/main..HEAD then
   flagged one genuinely-uncovered changed line (the preamble-not-found branch),
   which I covered. A warn->produce->cover round-trip.
+- The first critique artifact (Slice 2) cost 3 avoidable validator round-trips: I
+  used `scaffold_critique_artifact.py` (heeding the recent-lessons trap about a
+  missing `## Reviewer Tier Evidence` section), but then OVERWROTE the scaffold's
+  example enum tokens with invented values (`bin: confirm-before-ship`,
+  `action: ship`) and missed the `Host exposure state: applied` <-> `Application
+  state: host-confirmed:` coupling — three validate->fix cycles. Self-corrected
+  within-session (Slice-3 + release critiques validated first-try). This is a
+  SIBLING of the documented critique-authoring trap; I initially omitted it from
+  this retro's Waste (an under-report), added here as a self-correction.
 - NOT waste: the fresh-eye critiques caught two real defects before they shipped
   (Slice-3 owner-message enforcer misattribution; release stale
   update_instructions). That is the intended function, high value.
@@ -80,6 +89,7 @@ mutation run is its authoritative verdict).
 
 - workflow: at a release/bundle boundary where the session added mutation-pool (`scripts/**`, `skills/**`) commits, run `check_changed_line_mutation_coverage.py --write-fresh-marker` over `merge-base origin/main..HEAD` as the FIRST step, before the broad gate, because new commits invalidate the prior fingerprint and deferring it costs a warn->produce->cover round-trip. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is a workflow signal, not memory.
 - workflow: additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.
+- workflow: authoring a critique artifact — the scaffold gives the required SECTIONS but `validate_critique_artifacts` also enforces strict ENUMS (Structured Findings `bin` and `action`, plus the `Host exposure state: applied` <-> `Application state: host-confirmed:` coupling); keep the scaffold's example enum tokens or check the validator's allowed set BEFORE substituting, rather than inventing values (the Slice-2 critique cost 3 validate->fix round-trips). Disposition: applied: persisted to recent-lessons this run as a critique-authoring signal (added post-disposition-review as a self-correction; same `applied` form as the other two).
 
 ## Sibling Search
 
