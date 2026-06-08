@@ -196,14 +196,14 @@ strengthen rung 2's falsify instruction — **never** to enrich the floor.
   adds a regression test asserting retro verdicts on a fixed corpus are
   byte-identical after the shared-module addition (insurance: the function now
   lives in a file retro imports).
-- **Known open escape (named, not silent).** Scoping B to achieve `## Auto-Retro`
-  leaves a partial gap: a recurring finding could still launder through a
-  standalone retro's `## Next Improvements` `issue #N` line, which carries no
-  lineage marker. This is the correct minimal blast radius now (the achieve
-  Auto-Retro is the documented laundering site in the lineage, and the grammar
-  lives in the shared module so extension is a one-line `call`, not a fork), but it
-  is recorded as a deferred decision in the goal and surfaced as a known-open
-  escape in the success criteria — not a silent gap.
+- **Known open escape (named) — RESOLVED in Slice 6.** Scoping B to achieve
+  `## Auto-Retro` first left a partial gap: a recurring finding could launder
+  through a standalone retro's `## Next Improvements` `issue #N` line. The
+  done-early continuation (Slice 6) closed it: `validate_retro_artifact.py` now
+  calls the shared `has_recurrence_lineage` via `validate_recurrence_lineage`,
+  enforce-from 2026-06-09 (every existing retro is dated on/before the landing day,
+  so all are grandfathered and the broad gate stays green). The shared-grammar
+  design made this the one-line follow-on it was predicted to be.
 
 ### B3. Grandfather + dogfood
 

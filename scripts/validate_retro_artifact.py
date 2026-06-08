@@ -23,6 +23,12 @@ disposition_form = import_repo_module(__file__, "scripts.disposition_form")
 
 NEXT_IMPROVEMENTS_HEADING = "## Next Improvements"
 DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
+# Recurrence-lineage floor for standalone retros: the symmetric extension of the
+# achieve rung 1d to a session retro's `## Next Improvements`. Its own enforce-from
+# date lands the day after this floor so every existing retro (all dated on or
+# before the landing day) is grandfathered and the broad gate stays green; only
+# retros dated on/after it must carry a lineage marker on issue-form dispositions.
+RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
 _DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
 
 RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
@@ -162,6 +168,34 @@ def validate_disposition_forms(lines: list[str], observed_date: date | None) -> 
     )
 
 
+def validate_recurrence_lineage(lines: list[str], observed_date: date | None) -> None:
+    """Fail when an in-scope retro's ``## Next Improvements`` routes an improvement
+    to ``issue #N`` without a recurrence-lineage marker — the standalone-retro
+    extension of the achieve de-launder (rung 1d). Presence/enum only via the shared
+    ``has_recurrence_lineage``; whether a ``novel:`` claim is true stays the
+    reviewer's job, never this floor's (the content-classifier guardrail). Its own
+    enforce-from date grandfathers every retro frozen before it; fail-CLOSED on an
+    undatable retro mirrors the form floor."""
+    enforced = observed_date is None or observed_date >= RECURRENCE_LINEAGE_RULE_DATE
+    if not enforced:
+        return
+    missing = [
+        entry
+        for entry in disposition_form.scan_dispositions(_next_improvements_body(lines))
+        if entry["verdict"]["kind"] == "issue" and not disposition_form.has_recurrence_lineage(entry["value"])
+    ]
+    if not missing:
+        return
+    offenders = "; ".join(f"`{entry['marker']}: {entry['value'][:80]}`" for entry in missing)
+    raise ValidationError(
+        f"`{NEXT_IMPROVEMENTS_HEADING}` has {len(missing)} `issue` disposition(s) lacking "
+        f"{disposition_form.RECURRENCE_LINEAGE_SUMMARY} (offenders: {offenders}); each issue-routed "
+        "disposition must carry it (e.g. `issue #N (novel: <why no matching recurring class>)` or "
+        "`issue #N (recurs: <lineage>)`) so a re-file of a known recurring class cannot launder as a "
+        "fresh narrow issue. Presence-only — the reviewer judges whether a `novel:` claim is a re-file."
+    )
+
+
 def validate_retro_artifact(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     validate_sibling_followups(
@@ -169,7 +203,9 @@ def validate_retro_artifact(path: Path) -> None:
         boundary_headings=SIBLING_BOUNDARY_HEADINGS,
         source_reference=SIBLING_SOURCE_REFERENCE,
     )
-    validate_disposition_forms(lines, _retro_observed_date(path, lines))
+    observed_date = _retro_observed_date(path, lines)
+    validate_disposition_forms(lines, observed_date)
+    validate_recurrence_lineage(lines, observed_date)
 
 
 def main() -> int:

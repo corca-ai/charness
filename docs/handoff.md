@@ -13,6 +13,14 @@
 
 ## Current State
 
+- **[authoring-preflight + disposition de-launder goal](../charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder.md) COMPLETE, awaiting push.**
+  Closed the #284→#334 authoring-preflight-skip loop: a general author-time
+  artifact-shape preflight (7-surface registry + a blocking commit-boundary member
+  for critique/ideation/retro + the now-cited critique scaffold) and a
+  presence-only recurrence-lineage de-launder (rung 1d on achieve Auto-Retro AND
+  standalone-retro, plus a rung-2 falsify mandate; never a content classifier). Two
+  fresh-eye critiques; dogfood proven. Deferred (low-value): adapter-dir resolution
+  for `--path`. [Coverage report](../charness-artifacts/spec/artifact-shape-preflight-coverage.md).
 - **v0.27.0 shipped** (tag `v0.27.0`, release verified; `origin/main` even).
 - **CLOSED this cycle:** #322 (advisory-interpretation contract), #328 (preflight
   phase coverage), #331 (closeout matcher idiom), #330 (interpretation
@@ -24,25 +32,18 @@
   follow-up `applied` added function-length headroom to `--headroom`. Closeout:
   [critique](../charness-artifacts/critique/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md),
   [retro](../charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md).
-- **run_slice_closeout split done, awaiting push** (behavior-preserving): the
-  reporting/printing block moved to a new
-  [slice_closeout_reporting](../scripts/slice_closeout_reporting.py) module;
-  `run_slice_closeout.py` 474→370/480 (110 headroom). Mirror byte-synced. Proof:
-  byte-identical move + old-vs-new renderer equivalence battery + 73/0 read-only
-  gate. Closeout:
-  [goal](../charness-artifacts/goals/2026-06-08-run-slice-closeout-module-split.md),
-  [critique](../charness-artifacts/critique/2026-06-08-run-slice-closeout-reporting-extraction.md).
+- **run_slice_closeout split done, awaiting push** (behavior-preserving): reporting
+  block → [slice_closeout_reporting](../scripts/slice_closeout_reporting.py) (474→370/480);
+  [goal](../charness-artifacts/goals/2026-06-08-run-slice-closeout-module-split.md).
 - Open issues (`gh`): **#184** (product metrics); **#332** OPEN until push.
 
 ## Next Session
 
-- **Push the staged #332 closeout** (maintainer; `achieve` does not push): 5
-  commits in `origin/main..HEAD` carry `Close #332`, auto-closing it; the pre-push
-  broad gate is the attestation. Optional pre-push: run the mutation-coverage
-  producer (`--verification-lock --produce-mutation-coverage`) so the changed-line
-  gate activates on the touched mutation-pool files.
-- ~~`follow-up:run-slice-closeout-module-split`~~ — **DONE** (2026-06-08): reporting
-  block extracted to `slice_closeout_reporting.py`; file now 370/480. Awaiting push.
+- **Push the staged closeouts** (maintainer; `achieve` does not push):
+  `origin/main..HEAD` carries `Close #332` plus the authoring-preflight +
+  de-launder goal's commits; the pre-push broad gate is the attestation. Optional
+  pre-push: run the mutation-coverage producer
+  (`--verification-lock --produce-mutation-coverage`) on the touched files.
 - **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
 - **v0.27.0 human real-host smoke** (release left open; agent cannot do):
   `charness update` on a clean temp-home + the nose checklist in

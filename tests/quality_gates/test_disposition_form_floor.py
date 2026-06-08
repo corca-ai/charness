@@ -346,6 +346,40 @@ def test_retro_validator_grandfathers_pre_date_retro(tmp_path: Path) -> None:
     vra.validate_retro_artifact(path)  # grandfathered -> no raise
 
 
+# --- standalone-retro recurrence-lineage floor (de-launder extension) -------
+
+
+def test_retro_lineage_floor_blocks_bare_issue_in_scope(tmp_path: Path) -> None:
+    # a retro dated on/after the lineage rule date with an issue-form Next
+    # Improvement disposition lacking a lineage marker is blocked.
+    path = _seed(tmp_path, "r.md", _retro("2026-06-09", "- workflow: x. Disposition: issue #500\n"))
+    raised = False
+    try:
+        vra.validate_retro_artifact(path)
+    except vra.ValidationError as exc:
+        raised = True
+        assert "lineage" in str(exc).lower() or "recurs" in str(exc).lower()
+    assert raised
+
+
+def test_retro_lineage_floor_passes_with_marker_and_exempts_non_issue(tmp_path: Path) -> None:
+    for disp in (
+        "issue #500 (novel: first occurrence, searched the lineage)",
+        "issue #500 (recurs: #284 -> #334)",
+        "applied: shipped it",
+        "none — nothing else actionable this run",
+    ):
+        path = _seed(tmp_path, "r.md", _retro("2026-06-09", f"- workflow: x. Disposition: {disp}\n"))
+        vra.validate_retro_artifact(path)  # no raise
+
+
+def test_retro_lineage_floor_grandfathers_pre_date_retro(tmp_path: Path) -> None:
+    # all existing retros are dated on/before the landing day -> grandfathered, so
+    # a bare issue disposition on a 2026-06-08 retro stays valid (broad-gate-safe).
+    path = _seed(tmp_path, "r.md", _retro("2026-06-08", "- workflow: x. Disposition: issue #500\n"))
+    vra.validate_retro_artifact(path)  # grandfathered -> no raise
+
+
 def _dateless_retro(dispositions: str) -> str:
     # No `Date:` header (the convention many frozen historical retros predate).
     return f"# Retro — t\n\n## Context\n\nx\n\n## Next Improvements\n\n{dispositions}\n\n## Persisted\n\nyes\n"

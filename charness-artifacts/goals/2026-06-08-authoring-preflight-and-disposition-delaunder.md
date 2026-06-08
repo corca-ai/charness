@@ -1,6 +1,6 @@
 # Achieve Goal: Generalize author-time shape-preflight + de-launder the disposition escape (break the #308 recurrence loop)
 
-Status: active
+Status: complete
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder.md`
 
@@ -13,10 +13,10 @@ critiqued before code.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — closeout: full read-only gate; retro; rung-2 disposition review of this goal's Auto-Retro (dogfood under the new rung 1d); host-log probe; handoff sync; flip to complete. Slices 1-4 DONE (design+critique; dispatcher+commit-boundary; sibling scan 7/7 + coverage report; de-launder rung 1d + rung-2 mandate, SHIP critique).
-- Next action: run-quality --read-only; write retro (retro skill); probe_host_logs; fresh-eye disposition review of the Auto-Retro; fill Final Verification + Auto-Retro with lineage-marked dispositions; flip status complete (check_goal_artifact passes under rung 1d = dogfood); refresh handoff.
+- Current slice: COMPLETE. Status flipped to `complete` (check_goal_artifact ok:True; timebox early_close_with_evidence; all coordination floors satisfied; dogfood proven). Slices 1-6 done: design+critique; dispatcher+commit-boundary; sibling scan 7/7 + coverage report; de-launder rung 1d + rung-2 mandate (SHIP critique); closeout (retro/probe/rung-2 disposition review/early-close report); Slice 6 done-early continuation extended the lineage floor to standalone retros.
+- Next action: none for the agent — committed and closed. Remaining (human/optional): the maintainer push (achieve does not push); the one deferred enhancement (adapter-dir resolution for `--path`) is recorded as low-value in the early-close report.
 - Timebox: 4h
-- Activation time: 2026-06-08 (activated via `/goal`)
+- Activation time: 2026-06-08T09:20:00+09:00
 - Closeout reserve: 45m
 - Done-early policy: continue_next_improvement (re-point to the next recurrence-
   loop hardening, e.g. the remaining uncovered artifact-validator surfaces, not a
@@ -201,6 +201,13 @@ during the run:
   a Slice decision, recorded at completion; default `Issue closeout: n/a — context
   only` unless a slice deliberately closes one.
 
+Completion record (closeout-floor evidence):
+
+Routing: find-skills owned the route (recommended `achieve` at activation, read-only probe); the recorded impl, quality, and issue phase work was routed through find-skills rather than staying achieve-only (slices used spec/critique, impl, quality, retro; issue work is the tracked-lineage context dispositioned via the issue-closeout opt-out below).
+Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped from this session's retro and the in-repo recurrence lineage only.
+Release: n/a — harness-internal change; no version bump, install-manifest edit, or push (`achieve` does not push).
+Issue closeout: n/a — #284/#308/#325/#329/#332/#334 are tracked context (the recurrence lineage this goal structurally closes); the deliverable is the general mechanism, so #334 is folded as a proving instance, not closed by side effect by this goal.
+
 ## Slice Log
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
@@ -259,6 +266,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Fresh-eye de-launder critique (different agent context): SHIP. Confirmed: presence-only/regex correct (no-colon + empty rejected, word-boundary, fenced masked) -> G1 honored; retro isolation by construction -> G3; same-day frozen goal never auto-re-validated -> G3 in practice; no trivial defeat beyond accepted rote-novel (rung 2 polices); two-tier decision sound. Should-fix APPLIED: surface rung-1c/1d reasons into the CLI message (was JSON-only).
 - Off-goal findings: None.
 - Lessons carried forward: De-launder is presence-only (rung 1d, floor) + reviewer-judged (rung 2 falsifies novel:). Dogfood: THIS goal (Created 2026-06-08) is in scope -> Slice 5 must write lineage markers on any issue-form Auto-Retro disposition and pass the new rung. Deferred: extend lineage to standalone-retro Next Improvements; adapter-dir resolution for --path.
+- Metrics:
+
+### Slice 5: Slice 6 — Done-early continuation: extend lineage floor to standalone retro
+
+- Objective: Per the done-early policy (continue_next_improvement), close the de-launder's named open escape by extending the recurrence-lineage floor to standalone-retro ## Next Improvements.
+- Why this approach: Timebox had ample budget after the planned 5 slices finished early; the standalone-retro laundering path was the named next recurrence-loop hardening, and the shared grammar made it a one-line follow-on.
+- Commits: pending (closeout commit)
+- What changed: scripts/validate_retro_artifact.py: validate_recurrence_lineage + RECURRENCE_LINEAGE_RULE_DATE (2026-06-09) wired into validate_retro_artifact. Tests for the retro lineage floor (block/pass/grandfather). Mirror synced. Closeout artifacts: retro, host-log probe, rung-2 disposition-review critique (authored via the preflight --emit-stub dogfood, passes tier-evidence), early-close report. Coverage report + spec updated (standalone-retro escape RESOLVED).
+- Alternatives rejected: Adapter-dir resolution for --path (the other deferred item) — left deferred: low value (broad gate already enforces those surfaces) + real cost (importing 3 adapter resolvers into the dispatcher); recorded in the early-close report as the reason no high-value next slice remains. enforce-date 2026-06-08 for the retro floor (rejected: validate_retro_artifact runs in the BROAD gate over all retros, so 2026-06-09 grandfathers all existing retros and keeps the broad gate green).
+- Targeted verification: py_compile + ruff + length clean; 30 disposition-floor tests pass; ALL 157 existing retros still validate (grandfathered, broad-gate-safe); functional: 2026-06-09 bare issue Next-Improvement BLOCKED, with lineage PASSES, 2026-06-08 grandfathered PASSES. Goal flipped to complete: check_goal_artifact ok:True, timebox early_close_with_evidence, all coordination floors satisfied — the mandated dogfood (this goal's own closeout passes under rung 1d).
+- Test duplication pressure:
+- Critique: Rung-2 fresh-eye disposition review (different agent context): dispositions-sound. Caught one accuracy caveat (memory disposition over-claimed recent-lessons while the digest was stale) — FIXED at closeout via refresh_recent_lessons (digest now references this goal; index fresh). No laundering (0 issue/0 novel dispositions); the goal's own thesis dogfooded.
+- Off-goal findings: None new. Pre-existing stale retro-lesson-index (155->156, a retro added earlier without rebuild) fixed incidentally by the closeout digest refresh.
+- Lessons carried forward: De-launder now covers BOTH disposition surfaces (achieve Auto-Retro rung 1d + standalone-retro Next Improvements), proving the shared-grammar design. The loop is structurally closed: author-time shape preflight for 7/7 artifact surfaces + commit-boundary blocking for the prefix families + the de-launder on both disposition surfaces.
 - Metrics:
 
 ## Context Sources
@@ -351,9 +372,11 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md
+Host log probe: charness-artifacts/probe/2026-06-08-authoring-preflight-and-disposition-delaunder.json
+Disposition review: charness-artifacts/critique/2026-06-08-authoring-preflight-and-disposition-delaunder-disposition-review.md
+Early close rationale: full planned scope (Slices 1–5) + the done-early continuation (Slice 6) complete; the one remaining deferred item (adapter-dir resolution for `--path`) is low-value and broad-gate-covered, so no high-value next slice remains within the closeout reserve.
+Early close report: charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder-early-close-report.md
 
 ## User Verification Instructions
 
@@ -370,4 +393,18 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Cited retro: `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`.
+Each `## Next Improvements` item is dispositioned below. No improvement routes to a
+fresh narrow `issue #N` — by design: this goal's deliverable was the GENERAL
+mechanism, so its own Auto-Retro carries `applied:` (shipped fixes) and `none —`
+(deferred), with zero laundered issue dispositions. That is the de-launder thesis
+dogfooded: rung 1d has nothing to flag because nothing is being laundered.
+
+- workflow (commit-boundary artifact-shape preflight). Disposition: applied: shipped `scripts/check_artifact_surface_preflight.py` + the blocking `check-artifact-shape (staged)` structural-sweep member for the prefix families.
+- capability (uncited critique scaffold — the recent-lessons gap). Disposition: applied: cited `scaffold_critique_artifact.py` from `counterweight-triage.md` and surfaced it via the dispatcher `--type critique --emit-stub`.
+- memory (two-tier preflight model + de-launder rung-split). Disposition: applied: recorded in the retro, the spec, and recent-lessons so the next author does not relitigate them.
+- workflow (extend the recurrence-lineage floor to standalone-retro `## Next Improvements`). Disposition: applied: Slice 6 (done-early continuation) wired `validate_recurrence_lineage` into `validate_retro_artifact.py` (enforce-from 2026-06-09 so every existing retro is grandfathered and the broad gate stays green); closes the de-launder's named open escape on the retro surface.
+
+Retro dispositions: applied: the general author-time preflight + de-launder mechanism shipped this run; deferred extensions recorded as `none — deferred`, with no narrow issue laundered (the goal's own thesis dogfooded).
+
+Disposition review: see the rung-2 fresh-eye review bound in `## Final Verification`.

@@ -3,7 +3,7 @@
 ## Current Focus
 
 - `achieve` goal: split `scripts/run_slice_closeout.py` (474/480, in the length warn band) into the orchestrator plus a cohesive reporting module, behavior-preserving, with the plugin mirror byte-synced. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
-- Activated and ran the shaped achieve goal `2026-06-07-332-commit-boundary-sweep-enforcement` end to end. (source: `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`)
+- Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring "authoring-preflight skip" loop instead of filing its N-th narrow instance. (source: `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`)
 
 ## Repeat Traps
 
@@ -16,8 +16,8 @@
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`; sources: 11)
 - **capability:** The critique skill's prepare-packet path and the `scaffold_critique_artifact.py` scaffold are disconnected; the scaffold is uncited in `SKILL.md`/references. Candidate follow-up: cite the scaffold from the critique skill (or have prepare-packet emit an artifact stub with the required headings) so the validator-required shape is present by construction. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
+- extend the recurrence-lineage floor to standalone-retro `## Next Improvements`. Disposition: applied: Slice 6 (done-early continuation) wired `validate_recurrence_lineage` into the retro validator (enforce-from 2026-06-09, grandfathering all existing retros); closes the de-launder's named open escape. (source: `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`)
 - **memory:** Persisted to recent-lessons (below) so the next critique author does not relearn the reviewer-tier-evidence requirement. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
-- **workflow:** When authoring a charness critique artifact, check `validate_critique_artifacts` required sections (or run `scaffold_critique_artifact.py`) BEFORE hand-writing — `## Reviewer Tier Evidence` with 4 fields and a host-exposure-state from the fixed set is mandatory. (source: `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`)
 
 ## Selection Policy
 
@@ -37,7 +37,7 @@
 - `charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md`
 - `charness-artifacts/retro/2026-06-07-producer-rerun-waste.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md`
 - `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`

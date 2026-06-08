@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-08",
-  "source_artifact_count": 155,
-  "candidate_count": 909,
+  "source_artifact_count": 157,
+  "candidate_count": 914,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -175,6 +175,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:62532992746d",
+      "kind": "current_focus",
+      "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
+      "normalized_key": "ran the achieve goal 2026 06 08 authoring preflight and disposition delaunder end to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:49c709b83c7a",
       "kind": "next_improvement",
       "lesson": "**capability:** The critique skill's prepare-packet path and the `scaffold_critique_artifact.py` scaffold are disconnected; the scaffold is uncited in `SKILL.md`/references. Candidate follow-up: cite the scaffold from the critique skill (or have prepare-packet emit an artifact stub with the required headings) so the validator-required shape is present by construction.",
@@ -195,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6b51b911a172",
+      "kind": "next_improvement",
+      "lesson": "extend the recurrence-lineage floor to standalone-retro `## Next Improvements`. Disposition: applied: Slice 6 (done-early continuation) wired `validate_recurrence_lineage` into the retro validator (enforce-from 2026-06-09, grandfathering all existing retros); closes the de-launder's named open escape.",
+      "normalized_key": "extend the recurrence lineage floor to standalone retro next improvements disposition applied slice 6",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4d9760c7661e",
       "kind": "next_improvement",
       "lesson": "**memory:** Persisted to recent-lessons (below) so the next critique author does not relearn the reviewer-tier-evidence requirement.",
@@ -209,6 +249,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c954180ffb36",
+      "kind": "next_improvement",
+      "lesson": "persist the two-tier preflight model + the de-launder rung-split so the next author does not relitigate them. Disposition: applied: recorded in this retro, the spec, and recent-lessons.",
+      "normalized_key": "persist the two tier preflight model the de launder rung split so the next",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7f7388818c21",
+      "kind": "next_improvement",
+      "lesson": "the artifact-shape preflight now runs at the commit boundary for the prefix families, so artifact-shape failures surface pre-gate. Disposition: applied: shipped `check-artifact-shape (staged)` in the structural sweep.",
+      "normalized_key": "the artifact shape preflight now runs at the commit boundary for the prefix families",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9521fb0edd2d",
+      "kind": "next_improvement",
+      "lesson": "the critique scaffold is now cited from the documented authoring path (the uncited-scaffold root cause). Disposition: applied: cited `scaffold_critique_artifact.py` from `counterweight-triage.md` + the dispatcher `--emit-stub`.",
+      "normalized_key": "the critique scaffold is now cited from the documented authoring path the uncited scaffold",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -251,106 +351,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
           "date": "2026-06-08",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:532e5b42ff74",
-      "kind": "repeat_trap",
-      "lesson": "Otherwise low waste: the byte-preserving migration script and pre-captured baselines made the proof cheap and unambiguous on the first pass.",
-      "normalized_key": "otherwise low waste the byte preserving migration script and pre captured baselines made the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-          "date": "2026-06-08",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0dc5438faa48",
-      "kind": "current_focus",
-      "lesson": "Activated and ran the shaped achieve goal `2026-06-07-332-commit-boundary-sweep-enforcement` end to end.",
-      "normalized_key": "activated and ran the shaped achieve goal 2026 06 07 332 commit boundary sweep",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md",
-          "date": "2026-06-07",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:12f82577cde1",
-      "kind": "current_focus",
-      "lesson": "Activated the shaped achieve goal `2026-06-07-329-disposition-form-floor` and ran it end to end: built a narrow presence/enum **form** floor (#329) that rejects the named-invalid prose-only `Disposition: memory` and requires one of `applied: <change>` / `issue #N` / `none — <reason>`, form-only (never a content classifier).",
-      "normalized_key": "activated the shaped achieve goal 2026 06 07 329 disposition form floor and ran",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-329-disposition-form-floor.md",
-          "date": "2026-06-07",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a9166c6954f9",
-      "kind": "current_focus",
-      "lesson": "Activated the shaped achieve goal `2026-06-07-330-metavalidator-gate-hardening` and ran it end to end: built the #330 meta-validator (enumerate inference-layer surfaces; assert the 4-field `interpretation` declaration + paired consumer-must-answer line; fail closed on any unregistered declaration), bundled the #331-deferred surface-idiom lint, wired both as standing + slice-closeout gates, and staged `Closes #330`.",
-      "normalized_key": "activated the shaped achieve goal 2026 06 07 330 metavalidator gate hardening and ran",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-330-metavalidator-gate-hardening.md",
-          "date": "2026-06-07",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:75416fe861d8",
-      "kind": "current_focus",
-      "lesson": "Closed #331 (the fnmatch closeout-coverage gap filed during the #328 session), prompted by the operator's \"retrospect waste + design the next chunk\" request.",
-      "normalized_key": "closed 331 the fnmatch closeout coverage gap filed during the 328 session prompted by",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
-      "latest_source_date": "2026-06-07",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-issue-331-closeout-fnmatch-idiom.md",
-          "date": "2026-06-07",
-          "section": "Context"
         }
       ]
     }
@@ -517,6 +517,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:62532992746d",
+      "kind": "current_focus",
+      "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
+      "normalized_key": "ran the achieve goal 2026 06 08 authoring preflight and disposition delaunder end to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:49c709b83c7a",
       "kind": "next_improvement",
       "lesson": "**capability:** The critique skill's prepare-packet path and the `scaffold_critique_artifact.py` scaffold are disconnected; the scaffold is uncited in `SKILL.md`/references. Candidate follow-up: cite the scaffold from the critique skill (or have prepare-packet emit an artifact stub with the required headings) so the validator-required shape is present by construction.",
@@ -537,6 +557,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6b51b911a172",
+      "kind": "next_improvement",
+      "lesson": "extend the recurrence-lineage floor to standalone-retro `## Next Improvements`. Disposition: applied: Slice 6 (done-early continuation) wired `validate_recurrence_lineage` into the retro validator (enforce-from 2026-06-09, grandfathering all existing retros); closes the de-launder's named open escape.",
+      "normalized_key": "extend the recurrence lineage floor to standalone retro next improvements disposition applied slice 6",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4d9760c7661e",
       "kind": "next_improvement",
       "lesson": "**memory:** Persisted to recent-lessons (below) so the next critique author does not relearn the reviewer-tier-evidence requirement.",
@@ -551,6 +591,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c954180ffb36",
+      "kind": "next_improvement",
+      "lesson": "persist the two-tier preflight model + the de-launder rung-split so the next author does not relitigate them. Disposition: applied: recorded in this retro, the spec, and recent-lessons.",
+      "normalized_key": "persist the two tier preflight model the de launder rung split so the next",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7f7388818c21",
+      "kind": "next_improvement",
+      "lesson": "the artifact-shape preflight now runs at the commit boundary for the prefix families, so artifact-shape failures surface pre-gate. Disposition: applied: shipped `check-artifact-shape (staged)` in the structural sweep.",
+      "normalized_key": "the artifact shape preflight now runs at the commit boundary for the prefix families",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9521fb0edd2d",
+      "kind": "next_improvement",
+      "lesson": "the critique scaffold is now cited from the documented authoring path (the uncited-scaffold root cause). Disposition: applied: cited `scaffold_critique_artifact.py` from `counterweight-triage.md` + the dispatcher `--emit-stub`.",
+      "normalized_key": "the critique scaffold is now cited from the documented authoring path the uncited scaffold",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
