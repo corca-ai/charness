@@ -28,10 +28,18 @@ high-value next slice within the closeout reserve:
 
 ## What user decisions are needed
 
-- None blocking. Optionally decide whether the deferred adapter-dir resolution for
-  `--path` is worth a future slice, or should stay broad-gate-only (the current,
-  documented posture). Nothing else requires a human decision to consider this goal
-  done.
+- None blocking. Two deferred follow-ons are recorded for a future decision:
+  1. **(primary) Extend the author-time preflight to the goal-closeout /
+     coordination-floor surfaces.** This run discovered the closeout line-shapes
+     (Activation-time format, `Issue closeout:`, `Routing:` naming the routed
+     skill) by failing the complete-flip ~4× — the same recurrence class for the
+     one surface this goal did not cover. A genuine next recurrence-loop hardening;
+     candidate for a future issue with a `recurs:` lineage marker. (Surfaced in the
+     post-closeout waste retro; dispositioned `none — deferred` in the Auto-Retro.)
+  2. Adapter-dir resolution for `--path` (low value; broad gate already enforces
+     those surfaces).
+  Decide whether either is worth a future slice; neither blocks considering this
+  goal done.
 
 ## Waste and retro
 
