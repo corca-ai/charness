@@ -134,6 +134,51 @@ def test_function_headroom_json_shape(tmp_path: Path) -> None:
     assert all(r["function"] != "small" for r in rows)
 
 
+# --- #335: cover the changed-line gaps #332 left in the function-headroom code ---
+
+cpl = importlib.import_module("scripts.check_python_lengths")
+
+
+def test_function_warn_for_uses_test_band_under_tests_dir(tmp_path: Path) -> None:
+    # #335: function_warn_for's `tests/` branch (TEST_FUNCTION_WARN) was never
+    # exercised — the existing headroom tests only used non-test helper paths.
+    root = tmp_path / "repo"
+    assert cpl.function_warn_for(root / "tests" / "quality_gates" / "x.py", root) == cpl.TEST_FUNCTION_WARN
+    assert cpl.function_warn_for(root / "scripts" / "x.py", root) == cpl.FUNCTION_WARN
+
+
+def test_function_headroom_skips_unparseable_file(tmp_path: Path) -> None:
+    # #335: a syntactically-invalid gated .py must be skipped (except SyntaxError),
+    # not crash the advisory headroom report.
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True, exist_ok=True)
+    broken = helper_dir / "broken.py"
+    broken.write_text("def oops(:\n    pass\n", encoding="utf-8")
+    rows = cpl.function_headroom_for([broken], repo)
+    assert rows == []
+
+
+def test_function_headroom_skips_node_without_lineno(tmp_path: Path, monkeypatch) -> None:
+    # #335: defensive guard — a FunctionDef without lineno/end_lineno is skipped.
+    # Real ast.parse always sets both, so exercise the guard with a crafted tree.
+    repo = tmp_path / "repo"
+    helper = _skill_helper_with_function(repo, "bigfn.py", 95)
+    real_parse = ast.parse
+
+    def fake_parse(source: str, *args, **kwargs):
+        tree = real_parse(source, *args, **kwargs)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                node.lineno = None
+                node.end_lineno = None
+        return tree
+
+    monkeypatch.setattr(cpl.ast, "parse", fake_parse)
+    rows = cpl.function_headroom_for([helper], repo)
+    assert rows == []  # the only function had its lineno nulled -> guard skips it
+
+
 # --- #257 staged plugin-mirror drift (hard gate) ---------------------------
 
 mirror_gate = importlib.import_module("scripts.check_staged_mirror_drift")

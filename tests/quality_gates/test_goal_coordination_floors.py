@@ -814,3 +814,28 @@ def test_coordination_floors_missing_created_fails_closed_and_runs() -> None:
     assert "fail-closed" in report["coordination_scope"]["reason"]
     assert report["coordination_missing"][0]["floor"] == "gather"
     assert report["ok"] is False
+
+
+def test_evidence_missing_bits_surfaces_every_rung_reason() -> None:
+    # #335: _evidence_missing_bits builds the human-facing CLI reasons. The
+    # `missing`, disposition-blank, disposition-form, recurrence-lineage, and
+    # closeout-delegation arms (check_goal_artifact.py:60/76/81/83/90) were never
+    # exercised, so the changed lines shipped uncovered. Trip every arm at once.
+    report = {
+        "missing": ["Goal"],
+        "missing_evidence_files": [],
+        "invalid_skips": [],
+        "binding_failures": [],
+        "disposition_blank": True,
+        "disposition_form": {"reason": "prose-only disposition rejected"},
+        "recurrence_lineage": {"reason": "no recurs:/follow-up: lineage marker"},
+        "coordination_missing": [],
+        "closeout_delegation": {"failures": ["quality not routed before HITL"]},
+    }
+    bits = cga._evidence_missing_bits(report)
+    joined = "\n".join(bits)
+    assert "missing: Goal" in joined
+    assert "improvement-disposition gate:" in joined
+    assert "disposition form: prose-only disposition rejected" in joined
+    assert "recurrence-lineage floor: no recurs:/follow-up: lineage marker" in joined
+    assert "closeout delegation: quality not routed before HITL" in joined

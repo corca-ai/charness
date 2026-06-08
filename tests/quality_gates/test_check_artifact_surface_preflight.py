@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import runpy
 import sys
+from dataclasses import replace
+
+import pytest
 
 from scripts import check_artifact_surface_preflight as preflight
 
@@ -192,3 +196,121 @@ def test_main_errors_on_unknown_surface(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["x", "--path", "charness-artifacts/spec/x.md"])
     assert preflight.main() == 2
     assert "no registered surface" in capsys.readouterr().err
+
+
+# --- #335: cover the changed-line gaps v0.28.0 left in this dispatcher ---------
+
+
+def test_resolve_returns_raw_for_out_of_repo_path() -> None:
+    # _resolve's ValueError arm: a path that does not live under the repo root is
+    # returned verbatim (it can never map to a surface, but must not crash).
+    assert preflight._resolve(ROOT, "/nonexistent/outside/x.md") == "/nonexistent/outside/x.md"
+
+
+def test_shape_text_handles_each_missing_shape_source() -> None:
+    critique = preflight.surface_for_type("critique")
+    # scaffold render failure -> the "(could not render scaffold ...)" arm
+    bad_scaffold = replace(critique, scaffold="scripts/does_not_exist_scaffold.py")
+    assert "could not render scaffold" in preflight._shape_text(ROOT, bad_scaffold)
+    # template-section source that points at a missing template -> "(template ... not found)"
+    bad_template = replace(critique, scaffold=None, template_section="nope/missing.md|## Heading")
+    assert "not found" in preflight._shape_text(ROOT, bad_template)
+    # no shape source at all -> "(no shape source registered)"
+    no_source = replace(critique, scaffold=None, template_section=None)
+    assert preflight._shape_text(ROOT, no_source) == "(no shape source registered)"
+
+
+def test_emit_stub_scaffold_failure_returns_code_one() -> None:
+    bad = replace(preflight.surface_for_type("critique"), scaffold="scripts/does_not_exist_scaffold.py")
+    text, code = preflight.emit_stub(ROOT, bad)
+    assert code == 1
+    assert text  # surfaces the scaffold's stderr/stdout, not silence
+
+
+def test_describe_prefix_surface_includes_paths_and_failure_detail(monkeypatch) -> None:
+    # critique is paths_arg=True: describe must pass --paths AND, when the file
+    # fails its owning validator, echo the failure detail. Force the FAIL arm via
+    # a stubbed _run (independent of the critique validator's enforce-when-present
+    # rules), which exercises describe's --paths/verdict/detail lines.
+    import subprocess
+
+    def failing_run(repo_root, argv):
+        return subprocess.CompletedProcess(argv, 1, stdout="", stderr="missing reviewer-tier section")
+
+    monkeypatch.setattr(preflight, "_run", failing_run)
+    target = ROOT / "charness-artifacts" / "critique" / "_preflight_describe_selftest.md"
+    try:
+        target.write_text("# not a real critique\n", encoding="utf-8")
+        rel = target.relative_to(ROOT).as_posix()
+        out = preflight.describe(ROOT, preflight.surface_for_type("critique"), target_rel=rel)
+        assert f"--paths {rel}" in out
+        assert "current verdict on" in out and "FAIL" in out
+        assert "missing reviewer-tier section" in out
+    finally:
+        target.unlink(missing_ok=True)
+
+
+def test_format_changed_renders_ok_and_blocked_reports() -> None:
+    ok_report = {"status": "ok", "checked": [
+        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["a.md"], "returncode": 0, "stdout": "", "stderr": ""},
+    ]}
+    ok_text = preflight._format_changed(ok_report)
+    assert "artifact-shape-preflight: ok" in ok_text
+    assert "[ok]" in ok_text
+
+    blocked_report = {"status": "blocked", "checked": [
+        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "missing section X"},
+    ]}
+    blocked_text = preflight._format_changed(blocked_report)
+    assert "[BLOCK]" in blocked_text
+    assert "missing section X" in blocked_text
+    assert "owning validator failed at the commit boundary" in blocked_text
+
+
+def test_main_changed_artifacts_text_and_json(monkeypatch, capsys) -> None:
+    blocked = {"status": "blocked", "blocked": ["scripts/validate_critique_artifacts.py"], "checked": [
+        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "boom"},
+    ]}
+    monkeypatch.setattr(preflight, "changed_artifacts", lambda repo_root, paths: blocked)
+    # text mode -> _format_changed, exit 1 on blocked
+    monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md"])
+    assert preflight.main() == 1
+    assert "[BLOCK]" in capsys.readouterr().out
+    # json mode -> json.dumps arm
+    monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md", "--json"])
+    assert preflight.main() == 1
+    assert '"status": "blocked"' in capsys.readouterr().out
+
+
+def test_main_changed_artifacts_ok_returns_zero(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "docs/unrelated.md"])
+    assert preflight.main() == 0
+    assert "artifact-shape-preflight: ok" in capsys.readouterr().out
+
+
+def test_main_type_describes_surface(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["x", "--type", "goal-closeout"])
+    assert preflight.main() == 0
+    assert "## Final Verification" in capsys.readouterr().out
+
+
+def test_main_emit_stub_writes_stub(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["x", "--type", "critique", "--emit-stub"])
+    assert preflight.main() == 0
+    assert "## Reviewer Tier Evidence" in capsys.readouterr().out
+
+
+def test_main_requires_one_selector(monkeypatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["x"])
+    with pytest.raises(SystemExit) as exc:  # parser.error exits 2
+        preflight.main()
+    assert exc.value.code == 2
+
+
+def test_module_main_guard_executes(monkeypatch) -> None:
+    # cover `sys.exit(main())` (the __main__ guard) in-process via runpy, not a
+    # subprocess, so the dispatcher stays off the boundary-bypass ratchet.
+    monkeypatch.setattr(sys, "argv", ["x", "--type", "critique"])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__")
+    assert exc.value.code == 0

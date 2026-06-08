@@ -511,6 +511,25 @@ def test_block_on_structural_sweep_is_noop_in_plan_only() -> None:
     assert "structural_sweep" not in payload
 
 
+def test_block_on_structural_sweep_echoes_failing_streams_in_text_mode(capsys) -> None:
+    # #335: the as_json=False branch echoes the failing gate's captured stdout/stderr
+    # so a blocked closeout shows why it blocked; the block test above used as_json=True,
+    # leaving this print path (staged_commit_gate_plan.py:361-364) uncovered.
+    payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
+    rc = block_on_structural_sweep(
+        ROOT,
+        payload,
+        as_json=False,
+        plan_only=False,
+        run_command=_runner(1, "boundary bypass detail\n", "stderr detail"),
+        emit_payload=_sweep_sink,
+    )
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "boundary bypass detail" in captured.out
+    assert "stderr detail" in captured.err  # no trailing newline -> exercises the end="\n" arm
+
+
 def _minimal_surfaces(repo: Path) -> Path:
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
     manifest = repo / ".agents" / "surfaces.json"

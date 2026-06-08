@@ -296,7 +296,6 @@ def main() -> int:
         surface = surface_for_path(target_rel)
     else:
         parser.error("one of --path, --type, or --changed-artifacts is required")
-        return 2
     if surface is None:
         known = ", ".join(s.artifact_type for s in REGISTRY)
         print(f"artifact-surface-preflight: no registered surface for {args.artifact_type or target_rel}; known: {known}", file=sys.stderr)
