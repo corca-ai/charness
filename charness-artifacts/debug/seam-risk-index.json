@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 62,
-  "indexed_artifact_count": 50,
+  "source_artifact_count": 63,
+  "indexed_artifact_count": 51,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
-    "host-disproves-local": 1,
-    "none": 9,
+    "host-disproves-local": 3,
+    "none": 8,
     "operator-visible-recovery": 15,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
-    "factor-now": 1,
-    "monitor": 49
+    "factor-now": 3,
+    "monitor": 48
   },
   "entries": [
     {
@@ -705,18 +705,32 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-06-08-issue-335-changed-line-mutation-recurrence.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-335-changed-line-mutation-recurrence",
+      "risk_classes": [
+        "host-disproves-local"
+      ],
+      "seam": "local closeout gate (`merge-base..HEAD`, opt-in/skip-prone) → `main` →",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/mutation-changed-line-premerge-gate.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "none",
+      "interrupt_id": "issue-335-changed-line-mutation-recurrence",
       "risk_classes": [
-        "none"
+        "host-disproves-local"
       ],
-      "seam": "none — local gate-ordering change, no external/host seam",
-      "generalization_pressure": "monitor",
+      "seam": "local closeout gate (`merge-base..HEAD`, opt-in/skip-prone) → `main` →",
+      "generalization_pressure": "factor-now",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/goals/2026-06-07-332-commit-boundary-sweep-enforcement.md",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/mutation-changed-line-premerge-gate.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

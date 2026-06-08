@@ -1,6 +1,6 @@
 # Achieve Goal: Harden two recurring harness gate seams: the changed-line mutation gate (#335) + the authoring-preflight closeout-floor surface
 
-Status: draft
+Status: active
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md`
 
@@ -12,10 +12,12 @@ bug-class CI regression, so it gets a causal review before any fix.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md`.
+- Current slice: Slice 2 (cover the genuinely-uncovered changed lines).
+- Next action: cover the 85 next-run lines (3 files) + the #335 survivors (#332
+  lines in 2 files), then re-run the producer to confirm `ok: true` over
+  `858c9eab..HEAD`.
 - Timebox: 4h
-- Activation time: TBD (set at `/goal`)
+- Activation time: 2026-06-08
 - Closeout reserve: 45m
 - Done-early policy: continue_next_improvement (re-point to the next gate-seam
   hardening — e.g. the remaining `--path` adapter-dir resolution, or the next
@@ -151,7 +153,7 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | `debug` #335: falsifiable root-cause for the recurring changed-line signal (genuinely-uncovered changed lines vs selection/workload-budget drop); local repro via the producer | CI is red; bug-class needs causal review before a fix | a debug artifact with a tested hypothesis + local repro | planned |
+| 1 | `debug` #335: falsifiable root-cause for the recurring changed-line signal (genuinely-uncovered changed lines vs selection/workload-budget drop); local repro via the producer | CI is red; bug-class needs causal review before a fix | a debug artifact with a tested hypothesis + local repro | done |
 | 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | planned |
 | 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | planned |
 | 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | planned |
@@ -178,7 +180,24 @@ during the run:
 
 ## Slice Log
 
-_No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+### Slice 1 — debug #335 (done, 2026-06-08)
+
+- Root cause (falsifiable, confirmed): **genuinely-uncovered changed lines**, NOT
+  a selection/workload-budget drop (per-line `changed_and_missing` evidence; files
+  in the eligible set; fresh same-worktree probe rules out stale coverage).
+- Reproduction: one instrumented coverage run via the gate's own probe, classified
+  over two ranges. Over the ACTUAL next-run base `858c9eab..HEAD`: **85 uncovered
+  changed lines / 3 files** — `check_artifact_surface_preflight.py` (33),
+  `slice_closeout_reporting.py` (47), `check_goal_artifact.py` (5). The #335
+  survivors (#332 lines in `check_python_lengths.py` + `staged_commit_gate_plan.py`)
+  are now in the next run's BASE — so covering only them would let the next run
+  fail on the v0.28.0 lines and auto-file a fresh issue (the recurrence proven).
+- Structural root cause: the local gate runs `merge-base origin/main HEAD` (≠ the
+  scheduled `prev-run-head..HEAD`) AND skips silently when coverage was not freshly
+  produced (opt-in `--produce-mutation-coverage`). → host-disproves-local seam;
+  next step routed to `spec` (the premerge-gate spec) for the Slice-3 mechanism.
+- Artifact: `charness-artifacts/debug/2026-06-08-issue-335-changed-line-mutation-recurrence.md`
+  (validates; seam-risk-index synced).
 
 ## Context Sources
 
