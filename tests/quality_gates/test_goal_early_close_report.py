@@ -120,3 +120,30 @@ def test_supported_stop_condition_requires_early_close_report(tmp_path: Path) ->
     )
     assert report["ok"] is False
     assert "early_close_report" in report["missing"]
+
+
+# #335: the author-time stub the preflight surfaces must satisfy this floor's own
+# validator by construction, so an author starting from it cannot fail the flip on
+# shape. Round-trip: report_stub() -> validate_report_shape() == [].
+ecr = _load("goal_artifact_early_close_report")
+
+
+def test_report_stub_round_trips_validate_report_shape(tmp_path: Path) -> None:
+    report = tmp_path / "early-close.md"
+    report.write_text(ecr.report_stub("demo-goal"), encoding="utf-8")
+    assert ecr.validate_report_shape(report) == []
+    text = report.read_text(encoding="utf-8")
+    assert "# Early Close Report — demo-goal" in text
+    assert "## Why early closeout was chosen" in text
+    assert "## What user decisions are needed" in text
+    assert "## Waste and retro" in text
+
+
+def test_report_stub_cli_prints_stub(capsys, monkeypatch) -> None:
+    import sys
+
+    monkeypatch.setattr(sys, "argv", ["x", "--repo-root", ".", "--slug", "cli-goal"])
+    assert ecr.main() == 0
+    out = capsys.readouterr().out
+    assert "# Early Close Report — cli-goal" in out
+    assert "## Waste and retro" in out

@@ -108,3 +108,38 @@ def apply_report_shape(report: dict[str, Any]) -> None:
     report["invalid_early_close_reports"] = invalid_reports
     if invalid_reports:
         report["ok"] = False
+
+
+# Canonical author-time shape: the headings a fresh author should start from. Kept
+# here (next to the validator that enforces it) so the stub is single-source; the
+# round-trip test pins that report_stub() satisfies validate_report_shape().
+_CANONICAL_REPORT_SECTIONS: tuple[tuple[str, str], ...] = (
+    ("Why early closeout was chosen", "why the run stopped before completing (the stop condition / no-safe-next-slice reason)"),
+    ("What user decisions are needed", "the decisions that require the user before the next run can proceed"),
+    ("Waste and retro", "waste observed and the retro findings that should shape the next run"),
+)
+
+
+def report_stub(slug: str = "<goal-slug>") -> str:
+    """Starter early-close report whose headings satisfy ``validate_report_shape`` by
+    construction. This is the author-time shape the preflight surfaces so an author
+    does not discover the three required sections by failing the complete flip."""
+    lines = [f"# Early Close Report — {slug}", ""]
+    for heading, guidance in _CANONICAL_REPORT_SECTIONS:
+        lines += [f"## {heading}", "", f"TODO: {guidance}.", ""]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Print the author-time early-close report shape (stub).")
+    parser.add_argument("--repo-root", default=".")  # accepted for the preflight scaffold contract
+    parser.add_argument("--slug", default="<goal-slug>")
+    args = parser.parse_args()
+    print(report_stub(args.slug), end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

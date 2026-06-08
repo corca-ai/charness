@@ -96,6 +96,21 @@ REGISTRY: tuple[Surface, ...] = (
         f"{_GOAL_TEMPLATE}|## Final Verification", False,
         "Goal `## Final Verification` closeout-evidence block; seeded by the goal template (no scaffold script).",
     ),
+    # #335: the goal-closeout/coordination-floor authoring surfaces the v0.28.0
+    # generalization did not cover — discovered by failing the complete flip ~4x.
+    # Author-time-only (owned by the achieve complete flip, not a commit gate), so
+    # commit_boundary=False and validator=None (the floors run at the flip).
+    Surface(
+        "goal-coordination", None, None, None,
+        f"{_GOAL_TEMPLATE}|## Coordination Cues", False,
+        "Goal `## Coordination Cues` floor shapes (Routing:/Gather:/Release:/Issue closeout:); seeded by the goal template, enforced by the achieve coordination + issue-closeout floors at the complete flip.",
+    ),
+    Surface(
+        "goal-early-close", None, None,
+        "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
+        None, False,
+        "Early-close report shape (Why early closeout / What user decisions / Waste and retro); the scaffold prints the author-time stub, enforced by the achieve early-close-report floor at the complete flip.",
+    ),
     Surface(
         "debug", "charness-artifacts/debug/",
         "scripts/validate_debug_artifact.py",

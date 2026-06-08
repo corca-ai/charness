@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import importlib.util
 import runpy
 import sys
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -305,6 +307,46 @@ def test_main_requires_one_selector(monkeypatch) -> None:
     with pytest.raises(SystemExit) as exc:  # parser.error exits 2
         preflight.main()
     assert exc.value.code == 2
+
+
+# --- #335 Slice 4: goal-closeout / coordination-floor authoring surfaces --------
+
+
+def test_goal_coordination_surface_reads_coordination_cues() -> None:
+    surface = preflight.surface_for_type("goal-coordination")
+    assert surface is not None
+    assert surface.commit_boundary is False  # owned by the achieve complete flip
+    out = preflight.describe(ROOT, surface, target_rel=None)
+    assert "## Coordination Cues" in out
+    assert "Routing" in out and "Issue closeout" in out
+    assert "achieve closeout" in out  # validator=None -> owned at the flip
+
+
+def test_goal_early_close_surface_renders_required_sections() -> None:
+    surface = preflight.surface_for_type("goal-early-close")
+    assert surface is not None
+    assert surface.commit_boundary is False
+    out = preflight.describe(ROOT, surface, target_rel=None)
+    assert "## Why early closeout was chosen" in out
+    assert "## What user decisions are needed" in out
+    assert "## Waste and retro" in out
+
+
+def test_goal_early_close_emit_stub_round_trips_the_floor_validator(tmp_path: Path) -> None:
+    # Dogfood: the preflight's emit-stub for goal-early-close must produce a report
+    # that PASSES the achieve early-close-report floor's own validator — so an author
+    # starting from the surfaced stub cannot fail the complete flip on shape.
+    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-early-close"))
+    assert code == 0
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_early_close_report",
+        ROOT / "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
+    )
+    ecr = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ecr)
+    report = tmp_path / "early-close.md"
+    report.write_text(text, encoding="utf-8")
+    assert ecr.validate_report_shape(report) == []
 
 
 def test_module_main_guard_executes(monkeypatch) -> None:
