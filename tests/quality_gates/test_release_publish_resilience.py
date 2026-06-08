@@ -110,6 +110,27 @@ def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() ->
     assert fresh["staleness_blocker"] is None
     assert "0.1.0" in fresh["stub_update_instructions_entry"]
 
+    # A bare string is normalized to a single-element list (not split per char).
+    as_string = preflight.build_update_instructions_prep_payload(
+        package_id="demo",
+        current_version="0.0.0",
+        target_version="0.1.0",
+        previous_version=None,
+        update_instructions="Run `demo update` for the refresh.",
+    )
+    assert as_string["current_update_instructions"] == ["Run `demo update` for the refresh."]
+
+    # None / empty normalizes to an empty list; the stub is still emitted.
+    as_none = preflight.build_update_instructions_prep_payload(
+        package_id="demo",
+        current_version="0.0.0",
+        target_version="0.1.0",
+        previous_version=None,
+        update_instructions=None,
+    )
+    assert as_none["current_update_instructions"] == []
+    assert "0.1.0" in as_none["stub_update_instructions_entry"]
+
 
 def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
@@ -177,6 +198,39 @@ def test_prep_update_instructions_rejects_execute_combo(tmp_path: Path) -> None:
     result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch", "--execute")
     assert result.returncode != 0
     assert "read-only pre-publish affordance" in result.stderr
+
+
+def test_prep_update_instructions_rejects_invalid_adapter(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    # A non-integer adapter version is a validation error; prep must fail closed.
+    (repo / ".agents" / "release-adapter.yaml").write_text("version: not-an-int\nrepo: demo\n", encoding="utf-8")
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch")
+    assert result.returncode != 0
+    assert "release adapter is invalid" in result.stderr
+
+
+def test_prep_update_instructions_guards_non_string_manifest_version(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    manifest = repo / "packaging" / "demo.json"
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data["version"] = 123  # non-string -> current_release reports no manifest version
+    manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch")
+    assert result.returncode != 0
+    assert "did not report a packaging manifest version" in result.stderr
+
+
+def test_publish_dry_run_requires_clean_worktree(tmp_path: Path) -> None:
+    # The non-prep path enforces a clean worktree before building the plan; prep
+    # (above) deliberately does not. A dirty tree on the dry-run path is refused.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    (repo / "DIRTY.txt").write_text("uncommitted", encoding="utf-8")
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish(repo, env, "--part", "patch", "--critique-blocked", CRITIQUE_BLOCKED)
+    assert result.returncode != 0
+    assert "requires a clean worktree" in result.stderr
 
 
 # --- Gap 2: installed/exported plugin-cache bootstrap -------------------------
