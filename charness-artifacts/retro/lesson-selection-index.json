@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-08",
-  "source_artifact_count": 158,
-  "candidate_count": 917,
+  "source_artifact_count": 159,
+  "candidate_count": 923,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -205,6 +205,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:83e5e410c7eb",
+      "kind": "current_focus",
+      "lesson": "Ran the achieve goal `2026-06-08-gate-recurrence-mutation-and-closeout-preflight` end to end (Slices 1–5): close two recurring harness gate seams — (1) #335, the Nth instance of the changed-line mutation-coverage gate auto-filing post-merge, and (2) the goal-closeout/coordination-floor authoring surfaces the v0.28.0 preflight generalization did not cover — applying the \"close the loop, don't file the N-th instance\" discipline.",
+      "normalized_key": "ran the achieve goal 2026 06 08 gate recurrence mutation and closeout preflight end",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:862b3177a0d7",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.28.0`.",
@@ -239,6 +259,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7d6a26b32edb",
+      "kind": "next_improvement",
+      "lesson": "**capability:** A one-shot \"classify changed-line coverage over multiple base ranges from one coverage report\" helper would formalize what I did by hand (`--reuse-coverage` over 7f02.. then 858c..). Disposition: none — `--reuse-coverage` already makes the manual reclassify cheap; not worth a new flag yet.",
+      "normalized_key": "capability a one shot classify changed line coverage over multiple base ranges from one",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -319,46 +359,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c954180ffb36",
-      "kind": "next_improvement",
-      "lesson": "persist the two-tier preflight model + the de-launder rung-split so the next author does not relitigate them. Disposition: applied: recorded in this retro, the spec, and recent-lessons.",
-      "normalized_key": "persist the two tier preflight model the de launder rung split so the next",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7f7388818c21",
-      "kind": "next_improvement",
-      "lesson": "the artifact-shape preflight now runs at the commit boundary for the prefix families, so artifact-shape failures surface pre-gate. Disposition: applied: shipped `check-artifact-shape (staged)` in the structural sweep.",
-      "normalized_key": "the artifact shape preflight now runs at the commit boundary for the prefix families",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -557,6 +557,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:83e5e410c7eb",
+      "kind": "current_focus",
+      "lesson": "Ran the achieve goal `2026-06-08-gate-recurrence-mutation-and-closeout-preflight` end to end (Slices 1–5): close two recurring harness gate seams — (1) #335, the Nth instance of the changed-line mutation-coverage gate auto-filing post-merge, and (2) the goal-closeout/coordination-floor authoring surfaces the v0.28.0 preflight generalization did not cover — applying the \"close the loop, don't file the N-th instance\" discipline.",
+      "normalized_key": "ran the achieve goal 2026 06 08 gate recurrence mutation and closeout preflight end",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:862b3177a0d7",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.28.0`.",
@@ -591,6 +611,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7d6a26b32edb",
+      "kind": "next_improvement",
+      "lesson": "**capability:** A one-shot \"classify changed-line coverage over multiple base ranges from one coverage report\" helper would formalize what I did by hand (`--reuse-coverage` over 7f02.. then 858c..). Disposition: none — `--reuse-coverage` already makes the manual reclassify cheap; not worth a new flag yet.",
+      "normalized_key": "capability a one shot classify changed line coverage over multiple base ranges from one",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -677,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:eb21d9d22cf8",
+      "kind": "next_improvement",
+      "lesson": "**memory:** The \"an unverified skip must not read as a pass\" doctrine is now in `skills/public/quality/references/mutation-testing.md` (portable). Disposition: applied: committed the doctrine subsection in Slice 3 (commit `81332c72`).",
+      "normalized_key": "memory the an unverified skip must not read as a pass doctrine is now",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c954180ffb36",
       "kind": "next_improvement",
       "lesson": "persist the two-tier preflight model + the de-launder rung-split so the next author does not relitigate them. Disposition: applied: recorded in this retro, the spec, and recent-lessons.",
@@ -757,6 +817,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a206af0238a2",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When consecutive slices touch the SAME mutation-pool files, batch the full changed-line coverage proof to the bundle boundary and use the slice's targeted unit tests as the slice-boundary proxy, instead of re-probing full coverage every slice. Disposition: none — the per-slice proof caught real green state each time and the goal's cadence asked for it; recording the batching option for goals with many same-file slices rather than changing the contract now.",
+      "normalized_key": "workflow when consecutive slices touch the same mutation pool files batch the full changed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:51142757fd96",
+      "kind": "repeat_trap",
+      "lesson": "Low otherwise: coverage is range-independent, so I re-classified the same coverage report over multiple base ranges with `--reuse-coverage` (cheap) instead of re-probing — that reuse avoided ~2 extra full runs.",
+      "normalized_key": "low otherwise coverage is range independent so i re classified the same coverage report",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:ebb4ce0febc4",
       "kind": "repeat_trap",
       "lesson": "**One avoidable gate failure cost a second full read-only gate run (~45s).** I hand-wrote the critique artifact and omitted the `## Reviewer Tier Evidence` section that `validate_critique_artifacts` requires; the gate caught it, I added the section, and re-ran the whole gate. Root cause: the critique skill's documented path produces a *prepare packet* with the reviewer-tier shape but does not route final-artifact authoring through `scaffold_critique_artifact.py` (the scaffold exists but no `SKILL.md`/reference cites it), so a hand-author can miss validator-required sections. Low-severity, but repeatable.",
@@ -791,6 +891,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:31796df9747f",
+      "kind": "repeat_trap",
+      "lesson": "**The full coverage probe ran 4× (~3–4 min each, ~15 min total)** — once to reproduce (Slice 1) and once per code slice's boundary verification (Slices 2/3/4) plus the closeout. This is the slice-boundary verification cadence, not pure waste (each was a real per-slice proof and each caught nothing because the prior slice's targeted unit tests already covered the lines). But for consecutive slices that touch the SAME mutation-pool files, the full-coverage proof could batch to the bundle boundary, with the slice-boundary proxy being the targeted unit tests.",
+      "normalized_key": "the full coverage probe ran 4 3 4 min each 15 min total once",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
           "date": "2026-06-08",
           "section": "Waste"
         }

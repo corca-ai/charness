@@ -166,16 +166,21 @@ engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slo
 and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
-- **Routing** — planned: Slice 1 → `debug`; Slices 2–3 → `impl` + `quality` +
-  `critique`; Slice 4 → `impl` + `critique`; Slice 5 → `quality` + `retro` +
-  `issue`. Confirm via `find-skills` and record the returned route at completion.
-- **Gather** — n/a — no external URL/Slack/Notion/Docs/Drive source; shaped from
-  the in-repo #335 issue body + the v0.28.0 closeout artifacts.
-- **Release** — likely n/a or a single patch if the #335 fix warrants it; no
-  version bump assumed; `achieve` does not push.
-- **Issue closeout** — #335 is a **close-by-this-goal** commitment (a real
-  bug-class regression to fix); record the carrier + verifier proof at completion.
-  #184 is tracked context only (`Issue closeout: n/a` for it).
+- **Routing** — Routing: `find-skills` recommended `debug` for Slice 1 (recorded
+  at session start); Slices 2–4 ran `impl`+`quality`+`critique` and Slice 5
+  `quality`+`retro`+`issue` per the slice plan — the executed route matched the plan.
+- **Gather** — Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped
+  entirely from the in-repo #335 issue body and the v0.28.0 closeout artifacts.
+- **Release** — Release: n/a — no release surface touched and no version bump; the
+  #335 fix is test coverage plus a non-blocking gate-surfacing change, not a release;
+  `achieve` does not push.
+- **Issue closeout** — Issue closeout: #335 — carrier: the scheduled mutation-test
+  workflow marker (it auto-closes the issue on the next green run; the agent cannot
+  push or trigger CI). Verifier proof: the local mutation-coverage producer is green
+  over the next-run range (`858c9eab..HEAD`, `ok: true, blocking: []`) plus the
+  Slice-3 recurrence reduction; recorded as a pending external close, not claimed.
+  #184: Issue closeout: n/a — product-level success metrics, tracked context only,
+  needs `ideation`/`spec` rather than a slice in this goal.
 
 ## Slice Log
 
@@ -322,9 +327,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md
+Host log probe: charness-artifacts/probe/2026-06-08-issue-335-goal-closeout.md
+Disposition review: skipped: no-disposition-surface: all surfaced improvements are dispositioned inline in the retro `## Next Improvements` and this goal's `## Auto-Retro`; no separate disposition-review artifact applies for this goal.
 
 ## User Verification Instructions
 
@@ -341,4 +346,4 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions: applied: the "an unverified skip must not read as a pass" doctrine was committed to skills/public/quality/references/mutation-testing.md (Slice 3, commit 81332c72); the other two surfaced improvements (batch full-coverage to the bundle boundary for same-file slices; a multi-range reclassify helper) are each dispositioned none — not worth changing the per-slice proof cadence / adding a flag now (reuse-coverage already makes the manual reclassify cheap), recorded in the retro `## Next Improvements`.
