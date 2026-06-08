@@ -100,3 +100,30 @@ code).
   `STRUCTURAL_SWEEP_LABELS` member; gate-plan tests assert the changed-scoped
   prefix families (critique/ideation/retro) pull it and the validate-all trio +
   non-artifact md do not.
+
+## Slice 4 extension — goal-closeout / coordination-floor surfaces (#335, 2026-06-08)
+
+The original generalization left the **goal-closeout / coordination-floor**
+authoring surfaces uncovered — the v0.28.0 run discovered their line-shapes
+(`Routing:` / `Issue closeout:`, the early-close report's three sections) by
+FAILING the achieve complete flip ~4×, the same recurrence class. Two author-time
+surfaces close it (additive, behavior-preserving — `commit_boundary=False`,
+`validator=None`, owned at the achieve complete flip; no validator verdict
+changes):
+
+- `goal-coordination` → template section `goal_artifact_template.md|## Coordination
+  Cues` (the `Routing:`/`Gather:`/`Release:`/`Issue closeout:` floor shapes).
+- `goal-early-close` → the early-close floor module
+  (`goal_artifact_early_close_report.py`) is now itself the scaffold: `report_stub()`
+  + a CLI print the author-time stub for the three required sections. Single-source
+  with the floor validator, pinned by a round-trip test (`report_stub()` →
+  `validate_report_shape() == []`) and a cross-validator emit-stub dogfood test.
+
+Fresh-eye critique: `charness-artifacts/critique/2026-06-08-issue-335-closeout-floor-preflight.md` (SHIP).
+
+**Follow-up (`goal-activation-preflight-surface`, deferred).** The `Activation:`
+preamble line (`goal_artifact_template.md:5`) is NOT surfaced — it is enforced at
+activation-readiness (not the closeout-floor class this slice closes) and needs
+preamble extraction rather than the `## Heading` template-section source. A
+trivial follow-up would complete author-time coverage of the goal-artifact family;
+it is not a hole in the closed recurrence class.

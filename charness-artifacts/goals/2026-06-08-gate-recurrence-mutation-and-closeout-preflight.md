@@ -12,11 +12,9 @@ bug-class CI regression, so it gets a causal review before any fix.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 (extend the author-time preflight to goal-closeout /
-  coordination-floor surfaces).
-- Next action: extend `check_artifact_surface_preflight.py` so authoring into a
-  goal-closeout/coordination-floor surface surfaces the required shape pre-flip;
-  dogfood; fresh-eye critique; verdicts unchanged.
+- Current slice: Slice 5 (closeout: broad gate, retro, #335 issue closeout, handoff).
+- Next action: broad `run-quality.sh --read-only`; retro; #335 issue closeout
+  (carrier + verifier proof); handoff; fill Final Verification + Auto-Retro.
 - Timebox: 4h
 - Activation time: 2026-06-08
 - Closeout reserve: 45m
@@ -157,7 +155,7 @@ What the user can do to verify completion directly:
 | 1 | `debug` #335: falsifiable root-cause for the recurring changed-line signal (genuinely-uncovered changed lines vs selection/workload-budget drop); local repro via the producer | CI is red; bug-class needs causal review before a fix | a debug artifact with a tested hypothesis + local repro | done |
 | 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | done |
 | 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | done |
-| 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | planned |
+| 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | done |
 | 5 | Closeout: broad gate, retro, dogfooded disposition, #335 issue closeout, handoff | make it auditable | full gate PASS; retro + disposition; #335 closed + verified | planned |
 
 ## Coordination Cues
@@ -236,6 +234,26 @@ during the run:
 - RCA ledger: appended one converted `repeated_correction` (durable_kind=gate,
   class `changed-line-mutation-silent-skip-recurrence`, ref #335).
 
+### Slice 4 — closeout-floor preflight extension (done, 2026-06-08)
+
+- Added two author-time preflight surfaces (additive, behavior-preserving;
+  `commit_boundary=False`, owned at the achieve complete flip — no validator
+  verdict changes): `goal-coordination` (template `## Coordination Cues` →
+  Routing:/Gather:/Release:/Issue closeout:) and `goal-early-close` (the
+  early-close floor module is now itself the scaffold — `report_stub()` + CLI —
+  single-source with its validator, pinned by a round-trip + cross-validator
+  emit-stub test).
+- Dogfood: `--type goal-coordination` / `--type goal-early-close` surface the
+  required shape at author time (verified); `--emit-stub` for goal-early-close
+  passes the floor validator.
+- Fresh-eye critique: SHIP, zero blockers (reviewer verified invariants by
+  execution — drift-binding, `changed_artifacts` checked:[], byte-unchanged
+  validators). Artifact:
+  `charness-artifacts/critique/2026-06-08-issue-335-closeout-floor-preflight.md`.
+- Deferred follow-up: `goal-activation-preflight-surface` (the Activation: preamble
+  line — enforced at activation-readiness, needs preamble extraction). Recorded in
+  `charness-artifacts/spec/artifact-shape-preflight-coverage.md` + Off-Goal Findings.
+
 ## Context Sources
 
 Follow these in order to reconstruct the goal from a cold start:
@@ -290,9 +308,12 @@ mechanism boundary and the Slice-4 preflight boundary per the verification plan.
 
 ## Off-Goal Findings
 
-_None yet. File off-goal findings through `issue`; record only the reference and
-reason here — and, per the recurrence discipline, check the seam lineage before
-filing a fresh narrow issue._
+- **`goal-activation-preflight-surface` (deferred, Slice 4).** The preflight does
+  not yet surface the `Activation:` preamble line shape (it covers the
+  closeout/coordination floors). Not filed as a fresh narrow issue (recurrence
+  discipline): it is enforced at activation-readiness, needs preamble extraction
+  (not the `## Heading` template-section source), and is recorded in
+  `charness-artifacts/spec/artifact-shape-preflight-coverage.md` for a future slice.
 
 ## Final Verification
 
