@@ -29,3 +29,7 @@ plugins/*/integrations/locks/*.json
 skills/support/generated/*
 !skills/support/generated/.gitkeep
 pytest-tmp/
+
+# Python coverage data (ad-hoc local runs)
+.coverage
+.coverage.*

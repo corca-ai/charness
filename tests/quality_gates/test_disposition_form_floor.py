@@ -451,6 +451,12 @@ def test_names_transferable_waste_true_only_for_real_decision_bullets() -> None:
     assert df.names_transferable_waste(fenced) is False  # fenced section inert
 
 
+def test_names_transferable_waste_heading_at_eof_no_newline() -> None:
+    # Guard branch: `## Sibling Search` as the final line with no trailing newline
+    # (no body) -> body_start == -1 -> False (no decision bullet can exist).
+    assert df.names_transferable_waste("# Retro\n\n## Sibling Search") is False
+
+
 def test_evaluate_structural_followup_problem_states() -> None:
     assert df.evaluate_structural_followup("Retro dispositions: applied: x\n")["problem"] == "missing"
     assert df.evaluate_structural_followup("Structural follow-up: memory -> kept in head\n")["problem"] == "invalid"
@@ -537,6 +543,27 @@ def test_rung1e_does_not_over_fire_without_transferable_waste(tmp_path: Path) ->
     review = _seed_review(tmp_path, created)
     body = "Retro dispositions: applied: shipped the destination floor this run\n"
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["structural_followup_scope"]["transferable_waste_named"] is False
+    assert "structural_followup" not in report
+    assert report["ok"] is True
+
+
+def test_rung1e_tolerates_unreadable_bound_retro(tmp_path: Path) -> None:
+    # Guard branch: the read-once retro read raises OSError (bound path is a
+    # directory) -> retro_text="" -> rung 1e sees no transferable waste, inert.
+    retro_dir = tmp_path / "retro_is_a_dir"
+    retro_dir.mkdir()
+    report = {
+        "ok": True,
+        "satisfied": [{"name": "retro_artifact", "via": "evidence", "path": str(retro_dir)}],
+        "binding_failures": [],
+    }
+    text = (
+        "# Achieve Goal: T\n\nCreated: 2026-06-09\n"
+        "Activation: `/goal @charness-artifacts/goals/2026-06-09-x.md`\n\n"
+        "## Auto-Retro\n\nRetro dispositions: applied: shipped it\n"
+    )
+    disp.apply_disposition_rungs(report, text, True)
     assert report["structural_followup_scope"]["transferable_waste_named"] is False
     assert "structural_followup" not in report
     assert report["ok"] is True
