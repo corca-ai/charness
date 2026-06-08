@@ -39,12 +39,13 @@ _GOAL_TEMPLATE = "skills/public/achieve/scripts/goal_artifact_template.md"
 @dataclass(frozen=True)
 class Surface:
     artifact_type: str
-    prefix: str | None  # repo-relative path prefix; None for non-path surfaces
-    validator: str | None  # repo-relative owning validator (run with --paths)
+    prefix: str | None  # repo-relative path prefix (or exact file); None for non-path
+    validator: str | None  # repo-relative owning validator
     scaffold: str | None  # repo-relative scaffold script (shape source)
     template_section: str | None  # (template_path, "## Heading") shape source
     commit_boundary: bool  # relocate the validator's verdict to the commit gate
     note: str
+    paths_arg: bool = True  # validator accepts --paths; False => validate-all default
 
     def excludes(self, rel: str) -> bool:
         # retro validator skips its rolled-up memory + archived history.
@@ -55,11 +56,14 @@ class Surface:
 
 
 # The artifact-authoring shape family. Prefix-mapped surfaces (critique,
-# ideation, retro) accept `--paths` and so are wired into the blocking commit-
-# boundary arm. goal-closeout shape is owned at the achieve complete-flip (not a
-# commit gate), so it is shape-surfaced here but not commit-boundary-blocked.
-# Adapter-scoped siblings (debug/quality/handoff) are added in the sibling-scan
-# slice; see charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md.
+# ideation, retro) accept `--paths`; adapter-scoped siblings (debug/quality/
+# handoff) validate-all (no --paths) — matched here by their DEFAULT output dir,
+# so an adapter that relocates the dir degrades to broad-gate-only coverage for
+# that surface (documented in the coverage report). goal-closeout shape is owned
+# at the achieve complete-flip (not a commit gate), so it is shape-surfaced here
+# but not commit-boundary-blocked. See
+# charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md
+# and charness-artifacts/spec/artifact-shape-preflight-coverage.md.
 REGISTRY: tuple[Surface, ...] = (
     Surface(
         "critique", "charness-artifacts/critique/",
@@ -86,6 +90,30 @@ REGISTRY: tuple[Surface, ...] = (
         "goal-closeout", None, None, None,
         f"{_GOAL_TEMPLATE}|## Final Verification", False,
         "Goal `## Final Verification` closeout-evidence block; seeded by the goal template (no scaffold script).",
+    ),
+    Surface(
+        "debug", "charness-artifacts/debug/",
+        "scripts/validate_debug_artifact.py",
+        "skills/public/debug/scripts/scaffold_debug_artifact.py",
+        None, True,
+        "Hand-authored debug artifact; required sections + seam-risk/interrupt prefixed values + cross-file sibling marker.",
+        paths_arg=False,
+    ),
+    Surface(
+        "quality", "charness-artifacts/quality/",
+        "scripts/validate_quality_artifact.py",
+        "skills/public/quality/scripts/scaffold_quality_artifact.py",
+        None, True,
+        "Hand-authored quality artifact; required sections + runtime-signal/delegated-review shape.",
+        paths_arg=False,
+    ),
+    Surface(
+        "handoff", "docs/handoff.md",
+        "scripts/validate_handoff_artifact.py",
+        "skills/public/handoff/scripts/scaffold_handoff_artifact.py",
+        None, True,
+        "Hand-authored handoff artifact (default docs/handoff.md); required H2 sections + a References link.",
+        paths_arg=False,
     ),
 )
 
@@ -188,21 +216,28 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     """Commit-boundary arm: relocate each owning validator's verdict earlier.
 
     Groups changed artifacts by owning (commit-boundary) surface and runs each
-    validator on its changed paths. Same validator, same verdict — only earlier.
+    validator — with `--paths` for prefix surfaces, or its validate-all default
+    for adapter-scoped surfaces. Same validator, same verdict — only earlier.
     """
-    groups: dict[str, list[str]] = {}
+    groups: dict[str, tuple[Surface, list[str]]] = {}
     for raw in paths:
         rel = Path(raw).as_posix()
         surface = surface_for_path(rel)
         if surface is None or not surface.commit_boundary or surface.validator is None:
             continue
-        groups.setdefault(surface.validator, []).append(rel)
+        groups.setdefault(surface.artifact_type, (surface, []))[1].append(rel)
     results: list[dict[str, Any]] = []
-    for validator, group in sorted(groups.items()):
-        proc = _run(repo_root, ["python3", validator, "--repo-root", str(repo_root), "--paths", *sorted(group)])
+    for artifact_type in sorted(groups):
+        surface, group = groups[artifact_type]
+        argv = ["python3", surface.validator, "--repo-root", str(repo_root)]
+        if surface.paths_arg:
+            argv += ["--paths", *sorted(group)]
+        proc = _run(repo_root, argv)
         results.append({
-            "validator": validator,
+            "artifact_type": artifact_type,
+            "validator": surface.validator,
             "paths": sorted(group),
+            "validate_all": not surface.paths_arg,
             "returncode": proc.returncode,
             "stdout": proc.stdout,
             "stderr": proc.stderr,

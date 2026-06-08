@@ -13,8 +13,8 @@ critiqued before code.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — sibling scan across the artifact-authoring validator family; extend the registry to the adapter-scoped trio (debug/quality/handoff); coverage report. Slices 1 (design) + 2 (dispatcher + blocking commit-boundary wiring + critique scaffold citation, #334 caught at author time) are DONE.
-- Next action: enumerate the artifact-authoring shape family, classify covered/fixed/out-of-class, extend the dispatcher registry to the adapter-scoped surfaces with adapter resolution, write the coverage report; tests + behavior-preservation.
+- Current slice: Slice 4 — de-launder the disposition escape (presence-only recurrence-lineage rung 1d + rung-2 reviewer strengthening), dogfood on this goal, fresh-eye critique. The delicate guardrail-bound change. Slices 1-3 DONE (design+critique; dispatcher+commit-boundary; sibling scan 7/7 + coverage report).
+- Next action: add has_recurrence_lineage to shared disposition_form.py (presence/enum only); add apply_recurrence_lineage_floor rung 1d in goal_artifact_disposition.py scoped to Auto-Retro issue-form dispositions, enforce-from 2026-06-08; strengthen the rung-2 disposition-review reference; dogfood this goal's Auto-Retro; retro-isolation regression test; fresh-eye critique.
 - Timebox: 4h
 - Activation time: 2026-06-08 (activated via `/goal`)
 - Closeout reserve: 45m
@@ -231,6 +231,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Slice-1 fresh-eye findings applied in-build: blocking tier (not advisory); registry marks goal-closeout as no-scaffold; G3-precise (relocation, not new requirement) proven by behavior-preservation check.
 - Off-goal findings: None.
 - Lessons carried forward: Dispatcher registry now holds critique/ideation/retro (prefix-mapped, commit-boundary) + goal-closeout (shape-only). Slice 3 extends to adapter-scoped debug/quality/handoff + the coverage report.
+- Metrics:
+
+### Slice 3: Slice 3 — Sibling scan + adapter-scoped trio + coverage report
+
+- Objective: Enumerate the hand-authored artifact-shape validator family, extend the dispatcher registry to the adapter-scoped trio (debug/quality/handoff, validate-all mode), and produce a coverage report proving generalization across the class.
+- Why this approach: Generalization must be proven across the family, not just the #334 surfaces; the coverage report makes 'we generalized it' provable not asserted.
+- Commits: pending (this slice commit)
+- What changed: scripts/check_artifact_surface_preflight.py: Surface.paths_arg + debug/quality/handoff rows; changed_artifacts groups by surface and runs validate-all (no --paths) for adapter-scoped. NEW charness-artifacts/spec/artifact-shape-preflight-coverage.md (the report). Tests: adapter-scoped mapping + validate-all argv + gate-plan in-family triggers. Mirror synced.
+- Alternatives rejected: Adapter-dir resolution in the dispatcher (deferred: match default dir now, documented degradation for adapter-relocated dirs — keeps dispatcher export-safe/short). Coverage report under charness-artifacts/quality/ (rejected: that's the quality-REVIEW shape; report lives in spec/ with zero validator interaction, next to the design contract).
+- Targeted verification: py_compile + ruff clean; 42/42 pytest; length 255/480; doc-links + markdown clean. Behavior preservation: debug/quality/handoff validators unchanged + green. Coverage: 7/7 in-class surfaces now have author-time shape help (was 0 full / 1 partial); out-of-class infra validators enumerated with reasons.
+- Test duplication pressure: New cases target the adapter-scoped extension (validate-all argv path) + the gate-plan in-family branch; no duplication — distinct from the prefix-mapped cases.
+- Critique: Coverage report names the adapter-relocation limitation explicitly (not silent); enumerates out-of-class validators so 'in-class' is provable.
+- Off-goal findings: None.
+- Lessons carried forward: Family fully enumerated: 7 in-class (critique/goal-closeout/retro/ideation/debug/quality/handoff). quality validator gates only latest.md; handoff is docs/handoff.md default. Slice 4 (de-launder) is next — the delicate guardrail-bound change, with mandatory dogfood on this goal's own closeout.
 - Metrics:
 
 ## Context Sources

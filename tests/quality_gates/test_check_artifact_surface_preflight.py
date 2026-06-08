@@ -27,6 +27,19 @@ def test_retro_surface_excludes_rolled_up_and_history() -> None:
     assert preflight.surface_for_path("charness-artifacts/retro/2026-06-08-x.md").artifact_type == "retro"
 
 
+def test_surface_for_path_maps_adapter_scoped_trio() -> None:
+    # debug/quality default dirs + handoff's default docs/handoff.md file.
+    assert preflight.surface_for_path("charness-artifacts/debug/x.md").artifact_type == "debug"
+    assert preflight.surface_for_path("charness-artifacts/quality/x.md").artifact_type == "quality"
+    assert preflight.surface_for_path("docs/handoff.md").artifact_type == "handoff"
+    # other docs/*.md are not the handoff artifact.
+    assert preflight.surface_for_path("docs/other.md") is None
+    # adapter-scoped validators validate-all (no --paths).
+    assert preflight.surface_for_type("debug").paths_arg is False
+    assert preflight.surface_for_type("quality").paths_arg is False
+    assert preflight.surface_for_type("handoff").paths_arg is False
+
+
 def test_surface_for_type_and_goal_closeout_has_no_scaffold() -> None:
     goal = preflight.surface_for_type("goal-closeout")
     assert goal is not None
@@ -87,6 +100,30 @@ def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> No
     )
     assert report["status"] == "blocked"
     assert report["blocked"] == ["scripts/validate_critique_artifacts.py"]
+
+
+def test_changed_artifacts_validate_all_surface_omits_paths(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(repo_root, argv):
+        import subprocess
+
+        captured.append(argv)
+        return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(preflight, "_run", fake_run)
+    report = preflight.changed_artifacts(
+        ROOT,
+        ["charness-artifacts/debug/a.md", "charness-artifacts/debug/b.md", "docs/handoff.md"],
+    )
+    assert report["status"] == "ok"
+    # adapter-scoped surfaces validate-all: argv carries no --paths, one run each.
+    for argv in captured:
+        assert "--paths" not in argv
+    assert sorted(argv[1] for argv in captured) == [
+        "scripts/validate_debug_artifact.py",
+        "scripts/validate_handoff_artifact.py",
+    ]
 
 
 def test_changed_artifacts_noop_for_unrelated_paths(monkeypatch) -> None:

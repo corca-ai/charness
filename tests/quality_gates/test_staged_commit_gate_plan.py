@@ -124,10 +124,17 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
 
 
 def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
-    for paths in (["docs/x.md"], ["README.md"], ["scripts/x.py"]):
+    # docs/*.md is not an artifact surface, EXCEPT the handoff default docs/handoff.md.
+    for paths in (["docs/x.md"], ["README.md"], ["scripts/x.py"], ["charness-artifacts/spec/x.md"]):
         assert "check-artifact-shape (staged)" not in _labels(paths)
-    # spec/ is out of the hand-authored shape family (no owning shape validator).
-    assert "check-artifact-shape (staged)" in _labels(["charness-artifacts/retro/2026-06-08-x.md"])
+    # in-family surfaces (prefix + adapter-scoped) pull the blocking shape gate.
+    for paths in (
+        ["charness-artifacts/retro/2026-06-08-x.md"],
+        ["charness-artifacts/debug/2026-06-08-x.md"],
+        ["charness-artifacts/quality/2026-06-08-x.md"],
+        ["docs/handoff.md"],
+    ):
+        assert "check-artifact-shape (staged)" in _labels(paths)
 
 
 def test_gate_command_serializes_to_dict() -> None:
