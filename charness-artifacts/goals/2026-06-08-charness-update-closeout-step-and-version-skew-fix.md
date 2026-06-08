@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — scaffold cites the repo-local `scripts/` validator (skew root). Slice 1 DONE (committed).
-- Next action: locate the `debug`/`critique` (+ sibling) scaffolds that emit the *installed* validator command; prefer the repo-local `scripts/` validator when present; tests + before/after verdict-equality; fresh-eye critique at the boundary.
+- Current slice: Slice 3 — `goal-activation-preflight-surface`. Slices 1 & 2 DONE (committed; Slice 2 fresh-eye critique SHIP).
+- Next action: surface the goal `Activation:` preamble shape in `check_artifact_surface_preflight.py` (preamble extraction, not the `## Heading` template-section source); tests; verdict-equality; fresh-eye critique at the boundary. Note: the preflight builds its OWN validator command from `surface.validator` (independent of the Slice-2 scaffold citation path).
 - Timebox: 4h
 - Activation time: TBD (set at `/goal`)
 - Closeout reserve: 45m
@@ -139,7 +139,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Add `charness update` (this machine) as a required release-closeout step in the `release` contract/docs; fold in the v0.27.0 real-host smoke | the operator-requested durable fix for the version-skew class | the release contract/docs name the step; release-skill dogfood | done |
-| 2 | Fix the scaffold/repo-validator skew: `debug`/`critique` (+ siblings) scaffolds cite the repo-local `scripts/` validator when present; tests; critique | the deeper root that masks gate failures between updates | scaffold emits the repo validator; before/after verdict unchanged; SHIP critique | planned |
+| 2 | Fix the scaffold/repo-validator skew: `debug`/`critique` (+ siblings) scaffolds cite the repo-local `scripts/` validator when present; tests; critique | the deeper root that masks gate failures between updates | scaffold emits the repo validator; before/after verdict unchanged; SHIP critique | done |
 | 3 | `goal-activation-preflight-surface`: surface the goal `Activation:` preamble shape in the preflight (preamble extraction); tests; critique | the carried-over deferred follow-up; completes the goal-artifact family | `--type goal-activation` surfaces the shape; verdicts unchanged; SHIP critique | planned |
 | 4 | Bundle proof + REAL release + push + on-machine `charness update` + end-to-end verify; #335 rides along | the operator-requested end-to-end proof | broad + release gates PASS; tag + push done; `charness update` succeeds; scaffold==gate re-verified; #335 pending the next scheduled run | planned |
 
@@ -180,6 +180,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Slice-level scoped self-check; fresh-eye critique is scheduled at the Slice-2 (scaffold-skew) and Slice-3 (preflight) boundaries per the verification plan. No compatibility/visibility change here (additive contract + meaning-preserving compression).
 - Off-goal findings:
 - Lessons carried forward: release SKILL.md was at the 160 core cap; additive contract work must offset with meaning-preserving compression to satisfy the #319 commit-boundary headroom ratchet.
+- Metrics:
+
+### Slice 2: Slice 2 — scaffold cites the repo-local scripts/ validator (skew root)
+
+- Objective: Kill the installed-vs-repo version-skew at its root: the 6 artifact-authoring scaffolds (debug/critique/retro/quality/handoff/ideation) cited the *installed* plugin validator (via __file__-ancestor search) before the repo-local one, so an installed validator looser than the repo's shadowed it. Swap to repo-local-first.
+- Why this approach: Pure presence/path resolution (NOT a content classifier): if repo_root/scripts/<validator>.py exists, cite it (repo-relative == the gate); else fall back to the __file__-ancestor installed copy for consumer repos with no own validator. Identical swap across all 6 (kept self-contained per-skill for portability/export — the existing accepted clone family stays identical).
+- Commits:
+- What changed: 6 scaffolds: validator_command repo-local-first swap + explanatory comment; plugins/charness mirror byte-synced; NEW tests/test_scaffold_repo_local_validator.py (parametrized x6: exported scaffold + consumer repo owning the validator -> asserts repo-relative citation, plugin root absent).
+- Alternatives rejected:
+- Targeted verification: py_compile+ruff clean; check_python_lengths ok (7 files); new regression test 6/6 PASS; existing 15 scaffold-test assertions PASS unchanged (verdict-equality); 29 artifact-surface-preflight tests PASS; live dogfood: scaffold_critique_artifact.py emitted repo-local 'python3 scripts/validate_critique_artifacts.py' citation; critique artifact validates.
+- Test duplication pressure: One parametrized test (6 ids) instead of 6 near-identical test funcs; reuses the run_script subprocess helper idiom shared with existing scaffold tests; no new bespoke fixtures beyond a module-scoped single export. Existing per-scaffold tests retained for fallback/run coverage — no duplication of their assertions.
+- Critique: Fresh-eye bounded subagent (general-purpose a5ca10ceae751f405): VERDICT SHIP, no blockers. Artifact: charness-artifacts/critique/2026-06-08-slice-2-scaffold-cites-repo-local-validator-version-skew-fix.md. Independently confirmed verdict-equality, mirror byte-identity, regression-test precondition as a real guard, and that check_artifact_surface_preflight.py is independent of the scaffold validator_command.
+- Off-goal findings:
+- Lessons carried forward: check_artifact_surface_preflight.py builds its OWN validator command from surface.validator and only calls scaffolds for shape text — relevant to Slice 3 (preflight surface) which is independent of this scaffold citation path.
 - Metrics:
 
 ## Context Sources

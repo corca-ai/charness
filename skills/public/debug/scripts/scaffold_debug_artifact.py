@@ -119,15 +119,20 @@ def render_template(*, title: str, date_text: str) -> str:
 
 
 def validator_command(repo_root: Path) -> str:
+    # Prefer the repo-local validator when the working repo owns one so the cited
+    # check == the broad gate; fall back to the installed-plugin copy only for a
+    # consumer repo that ships no validator of its own. Repo-local-first kills the
+    # installed-vs-repo version-skew class (an installed validator looser than the
+    # repo's must not shadow it).
+    for script_name in ("validate_debug_artifact.py", "validate-debug-artifact.py"):
+        repo_local = repo_root / "scripts" / script_name
+        if repo_local.is_file():
+            return f"python3 scripts/{script_name} --repo-root ."
     for ancestor in Path(__file__).resolve().parents:
         for script_name in ("validate_debug_artifact.py", "validate-debug-artifact.py"):
             candidate = ancestor / "scripts" / script_name
             if candidate.is_file():
                 return f"python3 {candidate} --repo-root ."
-    for script_name in ("validate_debug_artifact.py", "validate-debug-artifact.py"):
-        repo_local = repo_root / "scripts" / script_name
-        if repo_local.is_file():
-            return f"python3 scripts/{script_name} --repo-root ."
     raise FileNotFoundError("validate_debug_artifact.py not found in installed Charness layout")
 
 
