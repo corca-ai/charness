@@ -44,6 +44,24 @@ When a bullet's decision is `valid follow-up outside the slice`, the same bullet
 A bare `follow-up: deferred` with no anchor is rejected: it silently re-exports
 the follow-up to the next session, which is exactly the waste the rule blocks.
 
+## Structural-Follow-Up Destination
+
+The four decisions answer *per sibling location*: does the same waste shape recur
+here, and what to do about it. The companion question — for the transferable waste
+item *as a whole*, where does the structural follow-up land? — is the
+structural-follow-up **destination**, the disposition the achieve disposition
+review records and rung 1e enforces. Its one vocabulary lives in
+`../../../shared/references/retro-issue-destination-split.md`; the decisions map
+onto it so the retro scan and the disposition review never grow two copies:
+
+- `same waste, fix now` → `applied: <change>` (the sibling fix landed this run);
+- `valid follow-up outside the slice` → `issue #N (recurs:|novel:)` or
+  `repo-local guard: <path>` (the `follow-up:` identifier names which);
+- `diagnostic-only` / `intentional boundary` → `none — <reason>`.
+
+Recording a destination is the disposition review's job, not a second floor here:
+this scan stays per-location, and the destination stays per-waste-item.
+
 ## Empty / Trivial Short-Circuit
 
 If the waste is narrowly local with no plausible siblings, record it explicitly

@@ -529,7 +529,9 @@ made by an agent and recorded for a human, never by a regex.
     `applied: <gate/hook/validator/test/contract change>` /
     `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` /
     `none — <reason>` — so "recorded in recent-lessons" can no longer be mistaken
-    for a structural fix. **Presence/form-enum only** — the floor checks a valid
+    for a structural fix. The vocabulary's single source is
+    `../../../shared/references/retro-issue-destination-split.md` (shared with the
+    retro waste-sibling-scan so the two never drift). **Presence/form-enum only** — the floor checks a valid
     destination line is present, never whether the chosen destination is the right
     one (that is rung 2's call). Inert unless transferable waste is named (no
     over-fire); same grandfather-by-`Created`-date shape as the other rungs.
