@@ -1,6 +1,6 @@
 # Achieve Goal: Portable residual/disposition ledger with adapter-owned proof semantics (#339)
 
-Status: active
+Status: complete
 Created: 2026-06-08
 Activation time: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-08-339-portable-disposition-ledger-adapter-proof-semantics.md`
@@ -213,7 +213,10 @@ during the run:
   skill on ONE physical line). At completion, recorded implementation / debug /
   quality / issue work needs this `Routing:` evidence or a `Routing: n/a — <reason>`
   opt-out.
-- Routing: find-skills -> achieve (goal operator owns the slice slot; activation + Slice 1 grammar/floor impl coordinated inline); Slice 1 fresh-eye review -> bounded critique subagent (SHIP-WITH-NITS).
+- Routing: find-skills -> achieve (goal operator) coordinating impl (the slice grammar/adapter/floor code), quality (the broad gate + changed-line coverage), issue (the #339 closeout-draft validation + carrier), critique (per-slice + final fresh-eye disposition reviews), and retro (the after-action). No inline phase->skill map baked here; find-skills owned the route.
+- Issue closeout: #339 — direct-commit close-keyword carrier prepared + `issue_tool.py validate-closeout-draft` validated; the push that flips #339 to CLOSED is held for explicit operator approval (outward side-effect). See `## Final Verification` + `## Residual Ledger`.
+- Gather: n/a — #339 is cited via `gh issue view 339 --comments` and repo paths, not an external URL/Slack/Notion/Docs/Drive asset.
+- Release: n/a — standard achieve no-push; the deliverable is the portable mechanism + the green broad gate, not a release-surface bump.
 - **Gather step** — `## Context Sources` cites #339 via `gh` and repo paths, not an
   external URL/Slack/Notion/Docs/Drive asset; likely `Gather: n/a — <reason>`.
   Confirm at completion.
