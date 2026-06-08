@@ -9,10 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.md`.
+- Current slice: Slice 1 DONE (#336 portable fix shipped, commit `cead7949`,
+  fresh-eye SHIP). Next: Slice 2 (critique-scaffold enum validity).
+- Next action: Slice 2 — surface the validator's allowed `bin`/`action`/
+  host-exposure enums at critique-author time. Then Slice 3, then Slice 4
+  bundle proof + the staged #336 closeout (carrier + resolution critique +
+  verify-closeout) + retro.
 - Timebox: 4h
-- Activation time: TBD (set at `/goal`)
+- Activation time: 2026-06-08 (active run; flipped from draft at `/goal`)
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (re-point to the next workflow/
   ergonomics or release-hardening surface — e.g. the deferred installed-vs-repo
@@ -181,6 +185,20 @@ tokens / check the allowed enums before substituting (also Slice 2's subject).
 ## Slice Log
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+
+### Slice 1: Slice 1 — #336: achieve draft must not consume the host active-goal slot
+
+- Objective: Add the missing symmetric Before-phase rule: drafting is artifact-only and must not consume the host active-goal slot; the slot is consumed only at /goal pursuit. Settle the portable-vs-host boundary early.
+- Why this approach: The lifecycle stated the host-goal-tool boundary only at completion; the Before-phase counterpart was missing — that asymmetry is the #336 root cause. The fix is portable (achieve contract), not a host reimplementation, because slot consumption is agent/operator-driven (upsert_goal.py is pure file I/O), confirmed this session (drafting left the slot empty; only /goal consumed it).
+- Commits: cead7949
+- What changed: skills/public/achieve/SKILL.md (Before-phase save bullet, +1 core line); references/lifecycle.md (new 'Drafting does not consume the host goal slot' subsection + host-runtime residual non-claim); references/adapter-contract.md (new 'Host Goal-Slot Boundary' section, no adapter knob by design); scripts/public_skill_dogfood_lib.py + docs/public-skill-dogfood.json (3rd achieve acceptance criterion + observed_evidence note, reviewed_on bumped); tests/quality_gates/test_achieve_before_activation.py (new test_drafting_does_not_consume_host_goal_slot); plugin mirror byte-synced.
+- Alternatives rejected: Adding a no-op goal_slot.* adapter knob (rejected: would fake portability for a uniform rule). Filing a host-side gap issue now (rejected: no observed host-auto-activation path; recorded as a conditional host-runtime non-claim instead). Building a deterministic content classifier (out of scope; presence/contract-pinning only).
+- Targeted verification: py_compile/ruff/check_python_lengths (touched); test_achieve_before_activation.py 9 passed; validate_public_skill_dogfood; validate_skill_ergonomics (all enforced rules incl. portable_package_issue_anchor/dated_incident — package stays anchor/date-free); validate_skills; check-markdown; check_doc_links; check-skill-core-headroom (156/160 = 4 left, ok); 126 related tests; full pre-commit aggregate green at commit.
+- Test duplication pressure: check_duplicates.py: No duplicates found at threshold 0.98. The new test is a distinct contract-pinning test (host-slot rule) in an existing module, not a duplicate of the #268 completion-downstream test.
+- Critique: Fresh-eye bounded subagent (general-purpose) — verdict SHIP, no blockers/should-fix. Independently confirmed: upsert_goal.py is pure file I/O so drafting cannot consume the slot by construction (determination honest, not a faked/partial fix); the host-runtime residual is correctly a conditional non-claim, so filing a host-side issue now would be premature; SKILL.md<->lifecycle consistent; the test reproduces all 9 assertions and would catch a regression; the dogfood 'UNCHANGED behavior' claim is defensible (documents existing behavior); 0 portability-gate findings. NIT: achieve SKILL.md core is now at the buffer floor (4 left) — next achieve-core addition will need prose moved to references (Slices 2-3 target critique/release, not achieve, so unaffected).
+- Off-goal findings:
+- Lessons carried forward: achieve SKILL.md core is at the 4-line buffer floor — avoid further achieve-core additions this run. #336 close-keyword carrier + feature-class closeout body (jtbd/boundary/resolution_brief/implementation/prevention) + resolution_critique + verify-closeout are staged for Slice 4 (slice-plan-aligned). Persist the fresh-eye critique as the #336 resolution-critique artifact at Slice 4 (mind the strict critique enums — Slice 2's subject).
+- Metrics: 1 fix commit (cead7949); 1 fresh-eye subagent (~58k tokens); no host token/time totals claimed.
 
 ## Context Sources
 
