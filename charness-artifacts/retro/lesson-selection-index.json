@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-08",
-  "source_artifact_count": 160,
-  "candidate_count": 924,
+  "source_artifact_count": 161,
+  "candidate_count": 931,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -195,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:567f041f7ba8",
+      "kind": "current_focus",
+      "lesson": "Goal: `charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`.",
+      "normalized_key": "goal charness artifacts goals 2026 06 08 charness update closeout step and version skew",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:62532992746d",
       "kind": "current_focus",
       "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
@@ -275,6 +295,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:fbe75f617c5f",
+      "kind": "next_improvement",
+      "lesson": "additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.",
+      "normalized_key": "additive contract work on an at cap skill md or a new test that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c4cbe946d333",
+      "kind": "next_improvement",
+      "lesson": "at a release/bundle boundary where the session added mutation-pool (`scripts/**`, `skills/**`) commits, run `check_changed_line_mutation_coverage.py --write-fresh-marker` over `merge-base origin/main..HEAD` as the FIRST step, before the broad gate, because new commits invalidate the prior fingerprint and deferring it costs a warn->produce->cover round-trip. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is a workflow signal, not memory.",
+      "normalized_key": "at a release bundle boundary where the session added mutation pool scripts skills commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:51a90b834fd8",
       "kind": "next_improvement",
       "lesson": "before committing a slice that touches `run_slice_closeout`/structural-sweep wiring, run the broad `surface_obligations` suite first — the Slice-3→4 reversal (the validate-all trio's `commit_boundary` True→False) was caught late by the broad gate, not at the slice commit. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is workflow signal, not memory.",
@@ -309,66 +369,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:49c709b83c7a",
-      "kind": "next_improvement",
-      "lesson": "**capability:** The critique skill's prepare-packet path and the `scaffold_critique_artifact.py` scaffold are disconnected; the scaffold is uncited in `SKILL.md`/references. Candidate follow-up: cite the scaffold from the critique skill (or have prepare-packet emit an artifact stub with the required headings) so the validator-required shape is present by construction.",
-      "normalized_key": "capability the critique skill s prepare packet path and the scaffold critique artifact py",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d10d361c8fb6",
-      "kind": "next_improvement",
-      "lesson": "extend the author-time preflight to the goal-closeout / coordination-floor surfaces — this run discovered the closeout line-shapes (Activation-time format, `Issue closeout:`, `Routing:` naming the routed skill) by FAILING the complete-flip ~4×, the same recurrence class for the one surface the goal did not cover. Disposition: none — deferred: recorded as the primary follow-on in the early-close report; same recurrence class, a candidate future issue carrying a `recurs:` lineage marker rather than a fresh narrow re-file.",
-      "normalized_key": "extend the author time preflight to the goal closeout coordination floor surfaces this run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6b51b911a172",
-      "kind": "next_improvement",
-      "lesson": "extend the recurrence-lineage floor to standalone-retro `## Next Improvements`. Disposition: applied: Slice 6 (done-early continuation) wired `validate_recurrence_lineage` into the retro validator (enforce-from 2026-06-09, grandfathering all existing retros); closes the de-launder's named open escape.",
-      "normalized_key": "extend the recurrence lineage floor to standalone retro next improvements disposition applied slice 6",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -557,6 +557,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:567f041f7ba8",
+      "kind": "current_focus",
+      "lesson": "Goal: `charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`.",
+      "normalized_key": "goal charness artifacts goals 2026 06 08 charness update closeout step and version skew",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:62532992746d",
       "kind": "current_focus",
       "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
@@ -633,6 +653,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md",
           "date": "2026-06-08",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fbe75f617c5f",
+      "kind": "next_improvement",
+      "lesson": "additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.",
+      "normalized_key": "additive contract work on an at cap skill md or a new test that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c4cbe946d333",
+      "kind": "next_improvement",
+      "lesson": "at a release/bundle boundary where the session added mutation-pool (`scripts/**`, `skills/**`) commits, run `check_changed_line_mutation_coverage.py --write-fresh-marker` over `merge-base origin/main..HEAD` as the FIRST step, before the broad gate, because new commits invalidate the prior fingerprint and deferring it costs a warn->produce->cover round-trip. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is a workflow signal, not memory.",
+      "normalized_key": "at a release bundle boundary where the session added mutation pool scripts skills commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -897,6 +957,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:9b9508e71316",
+      "kind": "repeat_trap",
+      "lesson": "New commits invalidated the prior changed-line coverage fingerprint, so the broad gate warned; running the producer over merge-base origin/main..HEAD then flagged one genuinely-uncovered changed line (the preamble-not-found branch), which I covered. A warn->produce->cover round-trip.",
+      "normalized_key": "new commits invalidated the prior changed line coverage fingerprint so the broad gate warned",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e6b10ff62dd4",
+      "kind": "repeat_trap",
+      "lesson": "NOT waste: the fresh-eye critiques caught two real defects before they shipped (Slice-3 owner-message enforcer misattribution; release stale update_instructions). That is the intended function, high value.",
+      "normalized_key": "not waste the fresh eye critiques caught two real defects before they shipped slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:ebb4ce0febc4",
       "kind": "repeat_trap",
       "lesson": "**One avoidable gate failure cost a second full read-only gate run (~45s).** I hand-wrote the critique artifact and omitted the `## Reviewer Tier Evidence` section that `validate_critique_artifacts` requires; the gate caught it, I added the section, and re-ran the whole gate. Root cause: the critique skill's documented path produces a *prepare packet* with the reviewer-tier shape but does not route final-artifact authoring through `scaffold_critique_artifact.py` (the scaffold exists but no `SKILL.md`/reference cites it), so a hand-author can miss validator-required sections. Low-severity, but repeatable.",
@@ -937,6 +1037,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:26d0d97296cb",
+      "kind": "repeat_trap",
+      "lesson": "The first Slice-2 test subprocessed `scripts/export_plugin.py`, adding a new boundary-bypass-ratchet candidate that blocked the commit; rewrote the test to use the already-synced in-repo plugin mirror as the installed-like tree. One commit-retry cycle.",
+      "normalized_key": "the first slice 2 test subprocessed scripts export plugin py adding a new boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:31796df9747f",
       "kind": "repeat_trap",
       "lesson": "**The full coverage probe ran 4× (~3–4 min each, ~15 min total)** — once to reproduce (Slice 1) and once per code slice's boundary verification (Slices 2/3/4) plus the closeout. This is the slice-boundary verification cadence, not pure waste (each was a real per-slice proof and each caught nothing because the prior slice's targeted unit tests already covered the lines). But for consecutive slices that touch the SAME mutation-pool files, the full-coverage proof could batch to the bundle boundary, with the slice-boundary proxy being the targeted unit tests.",
@@ -951,6 +1071,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5f4ea0dcdc8b",
+      "kind": "repeat_trap",
+      "lesson": "The `release` SKILL.md was at the 160 core_nonempty cap, so additive Slice-1 contract text tripped the #319 commit-boundary headroom ratchet; I compressed 9 existing bullets to land at 158 (net headroom RESTORED). One extra editing pass.",
+      "normalized_key": "the release skill md was at the 160 core nonempty cap so additive slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
           "date": "2026-06-08",
           "section": "Waste"
         }

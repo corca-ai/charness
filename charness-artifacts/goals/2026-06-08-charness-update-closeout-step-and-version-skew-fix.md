@@ -1,6 +1,6 @@
 # Achieve Goal: Add the charness-update release-closeout step + fix the scaffold/repo-validator version-skew + goal-activation preflight surface, proven end-to-end by a real push + release + on-machine update (with #335 closing alongside)
 
-Status: active
+Status: complete
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`
 
@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — bundle proof + REAL release + push + on-machine `charness update`. Slices 1-3 DONE (committed; Slices 2 & 3 fresh-eye critique SHIP, Slice 3 after a round-1 HOLD fix).
-- Next action: broad gate (`run-quality.sh --read-only`) + release gate (`--release`); then cut the real release (publish_release.py), `git push origin main`, run `charness update` on this machine, re-verify (doctor + scaffold==gate dogfood), record executed proof. #335 rides along (auto-closes on the next green scheduled mutation run).
+- Current slice: COMPLETE. All 4 slices done; v0.29.0 shipped + pushed + on-machine `charness update` verified (installed == repo).
+- Next action: none — goal complete. Carrier-pending external proof: #335 auto-closes on the next green scheduled mutation run after this push. Done-early candidate for a future session: the deferred installed-vs-repo drift detector.
 - Timebox: 4h
-- Activation time: TBD (set at `/goal`)
+- Activation time: 2026-06-08T05:12:00Z
 - Closeout reserve: 45m
 - Done-early policy: continue_next_improvement (re-point to the next release/tooling
   hardening — e.g. the deferred installed-vs-repo drift detector, or the next
@@ -141,7 +141,7 @@ What the user can do to verify completion directly:
 | 1 | Add `charness update` (this machine) as a required release-closeout step in the `release` contract/docs; fold in the v0.27.0 real-host smoke | the operator-requested durable fix for the version-skew class | the release contract/docs name the step; release-skill dogfood | done |
 | 2 | Fix the scaffold/repo-validator skew: `debug`/`critique` (+ siblings) scaffolds cite the repo-local `scripts/` validator when present; tests; critique | the deeper root that masks gate failures between updates | scaffold emits the repo validator; before/after verdict unchanged; SHIP critique | done |
 | 3 | `goal-activation-preflight-surface`: surface the goal `Activation:` preamble shape in the preflight (preamble extraction); tests; critique | the carried-over deferred follow-up; completes the goal-artifact family | `--type goal-activation` surfaces the shape; verdicts unchanged; SHIP critique | done |
-| 4 | Bundle proof + REAL release + push + on-machine `charness update` + end-to-end verify; #335 rides along | the operator-requested end-to-end proof | broad + release gates PASS; tag + push done; `charness update` succeeds; scaffold==gate re-verified; #335 pending the next scheduled run | planned |
+| 4 | Bundle proof + REAL release + push + on-machine `charness update` + end-to-end verify; #335 rides along | the operator-requested end-to-end proof | broad + release gates PASS; tag + push done; `charness update` succeeds; scaffold==gate re-verified; #335 pending the next scheduled run | done |
 
 ## Coordination Cues
 
@@ -163,6 +163,13 @@ during the run:
 - **Issue closeout** — #335 rides along (no pre-verification): carrier = the
   scheduled mutation-workflow marker (auto-close on the next green run after push);
   record the `Issue closeout:` line at completion. #184 is tracked context only.
+
+Completion record (confirmed via `find-skills` at session start):
+
+- Routing: `find-skills` task-recommendation returned `release` as the matched public skill; the goal used `achieve` (owner) coordinating `release` + `impl` (Slice 1), `impl` + `critique` (Slices 2-3), `quality` + `release` + `retro` (Slice 4). No inline phase→skill map baked here.
+- Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; shaped from this session's handoff + retro (`find-skills` returned no gather route).
+- Release: v0.29.0 cut and verified — release artifact `charness-artifacts/release/latest.md`, tag `v0.29.0` (commit 4ddd9334) pushed to `origin/main`, GitHub release verified (https://github.com/corca-ai/charness/releases/tag/v0.29.0, isDraft:false); release critique `charness-artifacts/critique/2026-06-08-v0-29-0-release-version-skew-bundle-closeout-step-scaffold-fix-preflight-surface.md` (SHIP).
+- Issue closeout: #335 rides along — NOT closed by this release; carrier is the scheduled changed-line mutation-workflow marker, which auto-closes #335 on the next green scheduled run after this push (the agent cannot trigger a `schedule` event). Pending external proof. #184 (product metrics) is tracked context only, not in scope.
 
 ## Slice Log
 
@@ -208,6 +215,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Fresh-eye bounded subagent (general-purpose a9dc870c3281165bd): round-1 HOLD (real blocker: owner message misattributed enforcement to --pursue-ready, which SKIPS the Activation check; default check_goal is the enforcer) -> fixed -> round-2 SHIP. Artifact: charness-artifacts/critique/2026-06-08-slice-3-goal-activation-preflight-surface-activation-preamble.md.
 - Off-goal findings:
 - Lessons carried forward: When a preflight surface NAMES an enforcement command, verify the command actually enforces the surfaced shape — --pursue-ready and the default check_goal_artifact.py check different things; the fresh-eye empirical run caught the misattribution that a string-only self-check would have missed.
+- Metrics:
+
+### Slice 4: Slice 4 — bundle proof + REAL release v0.29.0 + push + on-machine charness update + end-to-end verify
+
+- Objective: Prove the bundle end-to-end with a real release rather than asserting it: broad + release gates, cut v0.29.0 (push/tag/GitHub release), run charness update on THIS machine, re-verify installed == repo + scaffold==gate. #335 rides along.
+- Why this approach: Operator-authorized irreversible lane (agent runs it all), scoped to this final stage. Refreshed changed-line mutation coverage first so the push is clean (not a new #335 instance). Fresh-eye release critique (HOLD->fix->SHIP) before the irreversible publish.
+- Commits:
+- What changed: Release commits 4ddd9334 (Release charness 0.29.0: bump + manifests + latest.md) + 360d81c7 (Record release verification); retro auto-trigger charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md; release adapter update_instructions (0.29.0) + release critique committed at 59c05315.
+- Alternatives rejected:
+- Targeted verification: EXECUTED PROOF: broad read-only gate 73/0; release-mode gate 73/0 (incl. release_only lifecycle tests); changed-line mutation coverage ok over merge-base origin/main..HEAD (all 9 changed pool files covered, fresh fingerprint). Release: v0.29.0 pushed (origin/main 0/0 synced), tag v0.29.0 on remote (4ddd9334), GitHub release verified (isDraft:false, https://github.com/corca-ai/charness/releases/tag/v0.29.0), all 5 surfaces at 0.29.0 no drift. On-machine: charness update 0.28.0->0.29.0; installed managed-checkout HEAD 360d81c7 == repo HEAD; installed plugin.json 0.29.0; doctor exit 0 (16 checks, none not-ok). Scaffold==gate dogfood: installed debug scaffold cites repo-local 'python3 scripts/validate_debug_artifact.py'; installed validate_debug_artifact.py byte-identical to repo's (skew closed).
+- Test duplication pressure:
+- Critique: Fresh-eye release critique (general-purpose a371a7a57279a2dd4): round-1 HOLD (stale update_instructions) -> fixed -> round-2 SHIP. Artifact: charness-artifacts/critique/2026-06-08-v0-29-0-release-version-skew-bundle-closeout-step-scaffold-fix-preflight-surface.md.
+- Off-goal findings: Non-blocking (release reviewer): stock PyYAML chokes on unquoted backticks in adapter update_instructions; publish path uses the repo's own load_yaml and pre-existing entries already carry backticks — pre-existing property, awareness-only, not filed.
+- Lessons carried forward: New commits over a mutation-pool range invalidate the prior coverage fingerprint; refresh the producer (check_changed_line_mutation_coverage --write-fresh-marker over merge-base origin/main..HEAD) before pushing so changed lines are verified and the next scheduled run does not flag a new #335 instance.
 - Metrics:
 
 ## Context Sources
@@ -271,9 +292,26 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped Host metric window line was recorded for this goal so a goal-scoped host-log probe cannot be bound; session efficiency was reviewed inline in the retro Waste section (the coverage round-trip and the headroom/boundary-bypass ratchet rework passes)
+Disposition review: charness-artifacts/critique/2026-06-08-version-skew-bundle-goal-v0-29-0-disposition-review.md
+Early close report: charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix-early-close-report.md
+
+(The release-trigger retro `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md` was also written by the publish helper.)
+
+Early close rationale: the goal completed every planned slice plus the irreversible release and the on-machine end-to-end proof in roughly 1.5h, well before the 4h timebox; the done-early candidate (the installed-vs-repo drift detector) is an explicit Non-Goal this goal, and the operator-approved release/push/update lane does not carry forward to a new feature slice, so continuing would violate scope rather than add safe value. Closing now is the correct move, not a forced early stop.
+
+### Self-verification summary
+
+- All three proposals shipped and PROVEN end-to-end, not asserted: (1) `charness update` is a required maintainer install-refresh release-closeout step in the `release` contract/docs and RAN in this closeout (0.28.0->0.29.0); (2) the six scaffolds cite the repo-local validator — proven by the INSTALLED debug scaffold citing `python3 scripts/validate_debug_artifact.py` after update; (3) `--type goal-activation` surfaces the `Activation:` preamble shape.
+- Release v0.29.0 verified: pushed (origin/main 0/0), tag on remote, GitHub release not-draft, 5 surfaces at 0.29.0 no drift; installed surface == repo (HEAD 360d81c7, validator byte-identical); doctor 16/16.
+- Gates: broad read-only 73/0; release-mode 73/0; changed-line coverage ok (fresh fingerprint). Three fresh-eye critiques (Slice 2 SHIP; Slice 3 HOLD->SHIP; release HOLD->SHIP).
+
+### Residual risk / non-claims
+
+- NON-CLAIM: #335 is NOT verified closed by this goal — its authoritative verdict is the next green scheduled changed-line mutation run after this push (the agent cannot trigger a `schedule` event). Pending external proof; the workflow marker auto-closes it.
+- NON-CLAIM: the second-machine/clean-temp-home fresh-host smoke + the nose checklist in the release real-host checklist were NOT run this goal (single dev machine); the dev-machine install-refresh + dogfood is the executed proof, the fresh-host smoke remains the standing checklist item.
+- No drift detector was built (out of scope by operator choice); the closeout-step mechanism relies on the maintainer running it — mitigated structurally by the Slice-2 scaffold fix, which removes the skew even between updates.
 
 ## User Verification Instructions
 
@@ -290,4 +328,6 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Cited retro: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md` (it surfaced two actionable workflow improvements). Disposition review: `charness-artifacts/critique/2026-06-08-version-skew-bundle-goal-v0-29-0-disposition-review.md` (verdict `dispositions-genuine`).
+
+Retro dispositions: applied: both surfaced workflow improvements (1: run the changed-line coverage producer over `merge-base origin/main..HEAD` as the FIRST bundle-boundary step when the session added mutation-pool commits; 2: anticipate the no-increase ratchets — core-headroom and boundary-bypass — on additive contract work by compress-to-offset or reusing an in-process/in-repo-mirror path) were persisted to `charness-artifacts/retro/recent-lessons.md` this run as next-time-checklist / pre-commit-design signals (real working-tree adds, verified absent from HEAD — not prose-only memory). No `issue #N` this goal — both ratchets fired at the correct pre-merge boundary and the three fresh-eye critiques caught the two real defects pre-ship, so the gaps are workflow-anticipation, not a missing gate or recurring code-defect class; the deferred installed-vs-repo drift detector stays a named done-early/next-session candidate, not filed.
