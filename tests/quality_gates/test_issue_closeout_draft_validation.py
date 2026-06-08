@@ -132,6 +132,61 @@ def test_validate_closeout_draft_rejects_missing_ledger_before_mutation(tmp_path
     assert set(payload["missing_fields"]) >= {"root_cause", "debug_artifact", "siblings", "prevention"}
 
 
+def _write_proof_adapter(tmp_path: Path) -> None:
+    target = tmp_path / ".agents" / "proof-semantics-adapter.yaml"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        "proof_levels:\n  - smoke\n  - integration\n  - live\n"
+        "acceptance_map:\n  reliability: integration\n",
+        encoding="utf-8",
+    )
+
+
+_PROOF_LEDGER_HEAD = (
+    "\n\n## Proof Ledger\n\n"
+    "| Acceptance Class | Reached Proof | Disposition |\n| --- | --- | --- |\n"
+)
+
+
+def test_validate_closeout_draft_blocks_undispositioned_proof_gap(tmp_path: Path) -> None:
+    # The maintainer's scenario: acceptance class `reliability` requires `integration`
+    # but the reached proof is `smoke` (local simulation) and the gap is undispositioned.
+    _write_proof_adapter(tmp_path)
+    body = tmp_path / "closeout.md"
+    body.write_text(_bug_body() + _PROOF_LEDGER_HEAD + "| reliability | smoke | |\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT, "validate-closeout-draft", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42", "--classification", "bug",
+        "--body-file", str(body),
+    )
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "draft_failed"
+    assert payload["proof_mismatch"]["problem"] == "mismatch"
+    assert payload["proof_mismatch"]["undispositioned"][0]["gap_kind"] == "proof-below-acceptance"
+
+
+def test_validate_closeout_draft_accepts_dispositioned_proof_gap(tmp_path: Path) -> None:
+    _write_proof_adapter(tmp_path)
+    body = tmp_path / "closeout.md"
+    body.write_text(
+        _bug_body() + _PROOF_LEDGER_HEAD
+        + "| reliability | smoke | accepted-risk: live roundtrip a non-claim this run |\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        SCRIPT, "validate-closeout-draft", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42", "--classification", "bug",
+        "--body-file", str(body),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert "proof_mismatch" not in payload
+
+
 def test_validate_closeout_draft_accepts_manual_fallback_body(tmp_path: Path) -> None:
     body = tmp_path / "closeout.md"
     body.write_text(

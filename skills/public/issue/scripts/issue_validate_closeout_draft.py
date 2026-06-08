@@ -1,7 +1,30 @@
 from __future__ import annotations
 
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+_PROOF_MISMATCH = None
+
+
+def _load_proof_mismatch():
+    """Load the portable proof-mismatch floor (``scripts/proof_mismatch.py``) via
+    the skill-runtime repo-module loader, so its ``from scripts.`` imports resolve
+    in the issue skill context. Cached; reuses the same module the achieve
+    closeout wires."""
+    global _PROOF_MISMATCH
+    if _PROOF_MISMATCH is not None:
+        return _PROOF_MISMATCH
+    bootstrap = next(
+        (a / "skill_runtime_bootstrap.py" for a in Path(__file__).resolve().parents if (a / "skill_runtime_bootstrap.py").is_file()),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
+    _PROOF_MISMATCH = runtime.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
+    return _PROOF_MISMATCH
 
 
 def validate_closeout_draft(
@@ -41,6 +64,13 @@ def validate_closeout_draft(
         manual_fallback_reason=manual_fallback_reason,
         expect_state=None,
     )
+    # The portable proof-mismatch floor: if the closeout body declares a
+    # `## Proof Ledger`, block before publication when a proof gap is left
+    # undispositioned. Inert when no ledger is present (no over-fire), so existing
+    # issue closeouts are unchanged.
+    body_text = verification_body_file.read_text(encoding="utf-8", errors="ignore")
+    _load_proof_mismatch().apply_proof_mismatch_floor(result, repo_root, body_text)
+
     result["carrier"] = carrier
     result["body_file"] = str(body_file) if body_file is not None else None
     result["commit_message_file"] = (
