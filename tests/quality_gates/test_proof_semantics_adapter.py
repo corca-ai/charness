@@ -180,6 +180,61 @@ def test_gap_policy_double_listed_class_warns_acceptable_wins(tmp_path: Path) ->
 # --- the cardinal Non-Goal: NO domain concept enters portable core ----------
 
 
+def test_validate_adapter_data_type_errors_each_section(tmp_path: Path) -> None:
+    # Direct validate_adapter_data drive of every type-error branch (the minimal
+    # YAML loader cannot express some malformed shapes, so go through the dict API).
+    root = tmp_path
+
+    def errs(data: dict) -> str:
+        return " ".join(psa.validate_adapter_data(data, root)[1])
+
+    assert "repo must be a string" in errs({"repo": 123})
+    assert "proof_levels must be a list of strings" in errs({"proof_levels": 123})
+    assert "incomparable must be a list" in errs({"proof_levels": ["a"], "incomparable": "x"})
+    assert "must be a level pair" in errs({"proof_levels": ["a"], "incomparable": [123]})
+    assert "acceptance_map must be a mapping" in errs({"proof_levels": ["a"], "acceptance_map": "x"})
+    assert "must name a proof level" in errs({"proof_levels": ["a"], "acceptance_map": {"r": 5}})
+    assert "verifier_refs must be a mapping" in errs({"proof_levels": ["a"], "verifier_refs": "x"})
+    assert "undeclared proof level `ghost`" in errs({"proof_levels": ["a"], "verifier_refs": {"ghost": "x"}})
+    assert "gap_policy must be a mapping" in errs({"gap_policy": "x"})
+    assert "gap_policy.acceptable must be a list" in errs({"gap_policy": {"acceptable": "x"}})
+    assert "gap_policy.needs_issue must be a boolean" in errs({"gap_policy": {"needs_issue": "x"}})
+
+
+def test_validate_adapter_data_incomparable_list_form_and_change_me_warning(tmp_path: Path) -> None:
+    # The [a, b] list form of an incomparable pair (a host with a full YAML loader).
+    validated, errors, warnings = psa.validate_adapter_data(
+        {"proof_levels": ["lint", "smoke"], "incomparable": [["lint", "smoke"]]}, tmp_path
+    )
+    assert errors == []
+    assert validated["incomparable"] == [["lint", "smoke"]]
+    # CHANGE_ME repo placeholder warns.
+    _, _, warns2 = psa.validate_adapter_data({"repo": "CHANGE_ME"}, tmp_path)
+    assert any("CHANGE_ME" in w for w in warns2)
+
+
+def test_load_adapter_non_canonical_path_and_non_mapping_file(tmp_path: Path) -> None:
+    # A compatibility-fallback path (.codex/...) warns to prefer the canonical path.
+    fallback = tmp_path / ".codex" / "proof-semantics-adapter.yaml"
+    fallback.parent.mkdir(parents=True, exist_ok=True)
+    fallback.write_text("proof_levels:\n  - smoke\n", encoding="utf-8")
+    adapter = psa.load_adapter(tmp_path)
+    assert adapter["found"] is True
+    assert any("compatibility fallback" in w for w in adapter["warnings"])
+
+
+def test_load_adapter_non_mapping_yaml_uses_defaults(tmp_path: Path, monkeypatch) -> None:
+    # Defensive branch: a YAML loader that returns a non-mapping -> warn + defaults.
+    target = tmp_path / ".agents" / "proof-semantics-adapter.yaml"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("- a\n- b\n", encoding="utf-8")
+    monkeypatch.setattr(psa, "load_yaml_file", lambda path: ["not", "a", "mapping"])
+    adapter = psa.load_adapter(tmp_path)
+    assert adapter["found"] is True
+    assert any("did not contain a mapping" in w for w in adapter["warnings"])
+    assert adapter["data"]["proof_levels"] == []  # inferred defaults
+
+
 def test_core_module_is_domain_blind() -> None:
     # The adapter declares domain tokens as DATA; the core code must contain none.
     source = Path(psa.__file__).read_text(encoding="utf-8").lower()

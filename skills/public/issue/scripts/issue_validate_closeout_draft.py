@@ -8,6 +8,14 @@ from typing import Any
 _PROOF_MISMATCH = None
 
 
+def _resolve_bootstrap() -> Path | None:
+    """The nearest ``skill_runtime_bootstrap.py`` above this file, or ``None``."""
+    return next(
+        (a / "skill_runtime_bootstrap.py" for a in Path(__file__).resolve().parents if (a / "skill_runtime_bootstrap.py").is_file()),
+        None,
+    )
+
+
 def _load_proof_mismatch():
     """Load the portable proof-mismatch floor (``scripts/proof_mismatch.py``) via
     the skill-runtime repo-module loader, so its ``from scripts.`` imports resolve
@@ -16,10 +24,7 @@ def _load_proof_mismatch():
     global _PROOF_MISMATCH
     if _PROOF_MISMATCH is not None:
         return _PROOF_MISMATCH
-    bootstrap = next(
-        (a / "skill_runtime_bootstrap.py" for a in Path(__file__).resolve().parents if (a / "skill_runtime_bootstrap.py").is_file()),
-        None,
-    )
+    bootstrap = _resolve_bootstrap()
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))

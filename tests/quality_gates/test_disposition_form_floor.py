@@ -700,6 +700,13 @@ def test_scan_residual_ledger_judges_multiple_disposition_tables_independently()
     assert [r["verdict"]["ok"] for r in scanned] == [True, False]
 
 
+def test_residual_ledger_heading_at_eof_has_empty_body() -> None:
+    # `## Residual Ledger` as the final line with no trailing newline -> empty body,
+    # no rows, no fire (covers the body_start == -1 guard).
+    goal = "# G\n\nCreated: 2026-06-15\n\n## Residual Ledger"
+    assert df.residual_ledger_report(goal, date(2026, 6, 15))["problem"] is None
+
+
 def test_residual_ledger_heading_tolerates_plural() -> None:
     body = "## Residual Ledgers\n\n" + _LEDGER_HEADER + "| x | residual | defer |\n"
     assert df.residual_ledger_report(body.replace("## Residual Ledgers", "# G\n\nCreated: 2026-06-15\n\n## Residual Ledgers"), date(2026, 6, 15))["problem"] == "invalid"

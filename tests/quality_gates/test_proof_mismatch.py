@@ -14,23 +14,26 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts import proof_mismatch as pm
 
 _ROOT = Path(__file__).resolve().parents[2]
 _CLI_PATH = _ROOT / "skills" / "public" / "achieve" / "scripts" / "check_goal_artifact.py"
+_IVD_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_validate_closeout_draft.py"
 
 
-def _load_cli():
-    # In-process load of the achieve CLI (NOT a subprocess) so the proof-mismatch
-    # wiring is exercised through `main()` without adding a delivery-boundary spawn
-    # (the boundary-bypass ratchet's intended in-process form).
-    spec = importlib.util.spec_from_file_location("check_goal_artifact_under_test", _CLI_PATH)
+def _load_module(name: str, path: Path):
+    # In-process load (NOT a subprocess) so wiring is exercised without adding a
+    # delivery-boundary spawn (the boundary-bypass ratchet's intended form).
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_CLI = _load_cli()
+_CLI = _load_module("check_goal_artifact_under_test", _CLI_PATH)
+_IVD = _load_module("issue_validate_closeout_draft_under_test", _IVD_PATH)
 
 _ADAPTER = (
     "proof_levels:\n  - lint\n  - smoke\n  - integration\n  - live\n"
@@ -227,3 +230,46 @@ def test_cli_passes_dispositioned_proof_gap(tmp_path: Path) -> None:
     joined = " ".join(payload.get("issues", []))
     assert "proof-mismatch floor" not in joined
     assert "proof_mismatch" not in payload.get("closeout_evidence", {})
+
+
+# --- edge / defensive branch coverage --------------------------------------
+
+
+def test_proof_ledger_heading_at_eof_has_empty_body(tmp_path: Path) -> None:
+    # `## Proof Ledger` as the final line with no trailing newline -> empty body,
+    # no rows, no fire (covers the body_start == -1 guard).
+    rep = pm.proof_mismatch_report(_repo(tmp_path), "# G\n\n## Proof Ledger")
+    assert rep["present"] is True and rep["problem"] is None
+
+
+def test_parse_skips_ragged_row() -> None:
+    # A table row with fewer cells than the reached column index is skipped.
+    body = (
+        "| Acceptance Class | Reached Proof | Disposition |\n| --- | --- | --- |\n"
+        "| onlyonecell |\n"
+    )
+    assert pm.parse_proof_ledger(body) == []
+
+
+def test_cli_renders_residual_ledger_reason() -> None:
+    # The `_evidence_missing_bits` residual-ledger + proof-mismatch rendering branches.
+    report = {
+        "missing": [], "missing_evidence_files": [], "invalid_skips": [],
+        "residual_ledger": {"reason": "RL-REASON"},
+        "proof_mismatch": {"reason": "PM-REASON"},
+    }
+    bits = _CLI._evidence_missing_bits(report)
+    assert any("residual-ledger floor: RL-REASON" in b for b in bits)
+    assert any("proof-mismatch floor: PM-REASON" in b for b in bits)
+
+
+def test_issue_loader_caches_and_guards_missing_bootstrap(monkeypatch) -> None:
+    # First real load + cache hit (the cached-return path), then the missing-bootstrap
+    # ImportError guard, exercised via the injectable `_resolve_bootstrap` seam.
+    first = _IVD._load_proof_mismatch()
+    assert _IVD._load_proof_mismatch() is first  # cache hit
+    monkeypatch.setattr(_IVD, "_PROOF_MISMATCH", None)
+    monkeypatch.setattr(_IVD, "_resolve_bootstrap", lambda: None)
+    with pytest.raises(ImportError):
+        _IVD._load_proof_mismatch()
+    _IVD._PROOF_MISMATCH = first  # restore the cache for other tests
