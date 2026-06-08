@@ -10,29 +10,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 4 (next)** — issue-closeout wiring + retro + dogfood +
-  #339 closeout. Slices 1–3 LANDED: S1 (071bcbaa) forms + residual-ledger floor;
-  S2 (aa1a7314) the `proof_semantics_adapter_lib.py` adapter boundary; S3
-  `scripts/proof_mismatch.py` — the portable three-condition proof-mismatch floor
-  (`## Proof Ledger`: (i) no proof entry / (ii) reached < required via
-  `level_satisfies` / (iii) gap lacks a real disposition; degrade→require-disposition
-  when no map; fail-closed on invalid adapter; inert when absent), wired into the
-  achieve CLI via `load_repo_module_from_skill_script` (at-cap closeout files
-  untouched) + 16 tests incl. a CLI differential subprocess test + doc.
-- **SPLIT-TRIGGER decision (S3):** S3 is already a cohesive substantial slice
-  (portable core + achieve wiring), so per the pre-committed split trigger the
-  thin ISSUE-closeout hook moves into Slice 4 (consolidated with retro + dogfood),
-  NOT a separate goal. `apply_proof_mismatch_floor` is reusable, so issue wiring is
-  a small call at the issue closeout validator. Achieve wiring already satisfies
-  User Acceptance #1–#2 (closeout refused/accepted; synthetic adapter mismatch).
+- **GOAL COMPLETE — #339 CLOSED.** All four slices landed + proven; the goal
+  artifact is `Status: complete` and passes `check_goal_artifact.py`. S1 (071bcbaa)
+  forms + residual-ledger floor; S2 (aa1a7314) the `proof_semantics_adapter_lib.py`
+  adapter boundary; S3 (6f164513) `scripts/proof_mismatch.py` proof-mismatch floor +
+  achieve wiring; S4 (c3261b03) the proof-mismatch parity on issue `verify-closeout`
+  + the goal closeout. Final fresh-eye disposition review returned REVISE → caught
+  the draft/verify parity gap → fixed → SHIP. Broad gate 73/0; changed-line coverage
+  0 uncovered; dogfood live. #339 CLOSED via direct-commit carrier `08bbbcfa` (push
+  approved by operator 2026-06-09; `verify-closeout --expect-state CLOSED` = verified).
+- **SPLIT-TRIGGER decision (S3):** the thin ISSUE-closeout hook consolidated into S4
+  (the maintainer evidence is the issue surface), NOT a separate goal — the
+  pre-committed split was available but the issue wiring stayed small + cohesive.
 - **Folded #339 evidence-update comment (spilist, 2026-06-09)** — pinned the
   three-condition closeout-blocking contract; CONFIRMS S1–S2 and drove S3's
   condition (i). See Context Sources #6.
-- Next action: Slice 4 — wire `apply_proof_mismatch_floor` into the issue
-  closeout validator; full dogfood (prose-only refused / dispositioned accepted /
-  synthetic adapter mismatch / missing-adapter degraded / pre-rule + no-residual
-  unaffected); broad gate `run-quality.sh --read-only`; #339 close-keyword carrier
-  + `issue_tool.py verify-closeout`; retro + Auto-Retro dispositions.
+- Next action: none — goal complete, #339 closed, all commits pushed to origin/main.
 - Carry from Slice 1: skill-package files must carry NO `#N` anchors (the
   `validate_skill_ergonomics` portable_package_issue_anchor scan), and NO
   attention-state state-words (`skipped`/`disabled`/`no_adapter`/…) in string
@@ -198,7 +191,7 @@ What the user can do to verify completion directly.
 | 1 | Add `accepted-risk:` / `out-of-scope:` forms to `disposition_form.py` (the shared grammar) + the residual/disposition LEDGER presence/form floor; grandfathered, behavior-preserving | the shared grammar is the one source #337/#329 built; the new enum arms land first | prose-only residual refused, dispositioned ledger accepted; existing-form verdicts unchanged (corpus equality); SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; 0 corpus mismatches) |
 | 2 | The adapter boundary: schema for proof levels + acceptance-class→proof-level map + verifier refs + gap acceptability; resolution + missing-adapter degradation | Charness must ask adapters, not encode domain semantics | a synthetic adapter drives behavior; missing adapter degrades to the portable floor; NO domain concept in core; SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; domain-blind guard + 13 tests) |
 | 3 | Proof-mismatch detection wired into achieve/issue closeout — block on the three conditions pinned by the #339 evidence-update comment: (i) a declared acceptance class with NO evaluated proof entry; (ii) reached proof level does not satisfy the class (via the adapter map, `level_satisfies`); (iii) the gap lacks an explicit disposition (`issue`/`accepted-risk`/`out-of-scope`/`applied`) | the generic mismatch check is the core of #339; the maintainer comment pinned the exact contract | a closeout missing a proof entry OR whose proof < the named acceptance class is refused unless the gap carries a ledger disposition; SHIP critique | **DONE (achieve)** — portable `proof_mismatch.py` + achieve CLI; issue-closeout hook moved to Slice 4 per the split trigger; fresh-eye SHIP pending |
-| 4 | Wire retro + dogfood + #339 closeout: broad gate; #339 carrier; retro | the operator-requested closeout | broad gate PASS; #339 verified closed; retro + ledger dispositions | planned |
+| 4 | Wire issue-closeout (proof-mismatch on verify-closeout) + retro + dogfood + #339 closeout: broad gate; #339 carrier; retro | the operator-requested closeout | broad gate PASS; #339 verified CLOSED; retro + ledger dispositions | **DONE** (broad gate 73/0; #339 CLOSED via `08bbbcfa`; parity gap caught + fixed) |
 
 ## Coordination Cues
 
@@ -214,7 +207,7 @@ during the run:
   quality / issue work needs this `Routing:` evidence or a `Routing: n/a — <reason>`
   opt-out.
 - Routing: find-skills -> achieve (goal operator) coordinating impl (the slice grammar/adapter/floor code), quality (the broad gate + changed-line coverage), issue (the #339 closeout-draft validation + carrier), critique (per-slice + final fresh-eye disposition reviews), and retro (the after-action). No inline phase->skill map baked here; find-skills owned the route.
-- Issue closeout: #339 — direct-commit close-keyword carrier prepared + `issue_tool.py validate-closeout-draft` validated; the push that flips #339 to CLOSED is held for explicit operator approval (outward side-effect). See `## Final Verification` + `## Residual Ledger`.
+- Issue closeout: #339 — CLOSED via direct-commit carrier `08bbbcfa "Closes #339."` (`validate-closeout-draft` = draft_verified; pushed to origin/main with operator approval; `verify-closeout --expect-state CLOSED` = verified; `gh` stateReason COMPLETED). See `## Final Verification` + `## Residual Ledger`.
 - Gather: n/a — #339 is cited via `gh issue view 339 --comments` and repo paths, not an external URL/Slack/Notion/Docs/Drive asset.
 - Release: n/a — standard achieve no-push; the deliverable is the portable mechanism + the green broad gate, not a release-surface bump.
 - **Gather step** — `## Context Sources` cites #339 via `gh` and repo paths, not an
@@ -401,9 +394,10 @@ Proof summary (deterministic + dogfood; no live/release by default):
   bound probe surfaces thread-wide pressure with that caveat, not a per-goal total.
 - Release: n/a — standard achieve no-push; the deliverable is the portable
   mechanism + the green broad gate, not a release-surface bump.
-- Issue closeout: #339 — direct-commit close-keyword carrier prepared + validated
-  (`issue_tool.py validate-closeout-draft`); the push that flips #339 to CLOSED is
-  an outward action held for explicit operator approval (see `## Residual Ledger`).
+- Issue closeout: #339 — CLOSED. Direct-commit carrier `08bbbcfa "Closes #339."`
+  (`validate-closeout-draft` = draft_verified) pushed to origin/main with operator
+  approval; `verify-closeout --expect-state CLOSED` = verified (no state mismatches;
+  the embedded resolution-critique check passed); `gh` stateReason = COMPLETED.
 
 ## User Verification Instructions
 
@@ -429,7 +423,7 @@ here; the rows are authored to the form regardless.)
 | Live / release proof | proof-gap | out-of-scope: standard achieve no-push; the deliverable is the portable mechanism + the green broad gate, not a release |
 | Retro-surface proof-ledger wiring | residual | out-of-scope: retro artifacts do not declare acceptance/proof claims; `proof_mismatch.py` is reusable if one ever does |
 | At-cap achieve closeout module split | residual | accepted-risk: the hard length gate is the backstop; deferred structural debt re-persisted to recent-lessons |
-| #339 GitHub CLOSED state | residual | accepted-risk: the close-keyword carrier is prepared + validated; the push that flips #339 to CLOSED is held for explicit operator approval (outward action) |
+| #339 GitHub CLOSED state | residual | applied: operator-approved push of the direct-commit carrier `08bbbcfa "Closes #339."` to origin/main; #339 verified CLOSED (`gh` stateReason COMPLETED; `verify-closeout --expect-state CLOSED` = verified, no state mismatches) |
 
 ## Auto-Retro
 
