@@ -42,22 +42,29 @@
 - **`goal-activation-preflight-surface`** (deferred follow-up): surface the goal
   `Activation:` preamble line in the preflight (needs preamble extraction). See
   [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md).
+- **Make `charness update` on this dev machine a STANDING release-closeout step**
+  (operator-requested). Motivation (this session): the *installed-plugin*
+  `validate_debug_artifact.py` the scaffold cited was LOOSER than the repo's own, so
+  a scaffold-blessed debug artifact passed locally but failed the broad gate. A
+  release-closeout `charness update` keeps the installed surface == repo and kills
+  that scaffold/gate version-skew class. Owner: `release` contract; subsumes the
+  open v0.27.0 real-host smoke (+ nose checklist, [release latest](../charness-artifacts/release/latest.md)).
 - **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
-- **v0.27.0 human real-host smoke** (release left open; agent cannot do):
-  `charness update` on a clean temp-home + the nose checklist in
-  [release latest](../charness-artifacts/release/latest.md).
 
 ## Discuss
 
 - **No push/tag CI.** The local `--release` gate is the bundle proof. Open: add
   light push/tag CI and/or mirror the changed-line gate into a CI-PR check (spec
   "Deferred Decisions").
+- **Scaffold should cite the repo validator, not the installed plugin's.** Even with
+  the `charness update` step, `debug`/critique scaffolds emit the *installed*
+  validator command — prefer the repo-local `scripts/` validator when present so the
+  cited check == the gate. Lesson source: this session's version-skew miss.
 
 ## References
 
 - [premerge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
-  (canonical; Slice 2 delivered, freshness identity, portability follow-up),
-  [release v0.25.0 critique](../charness-artifacts/critique/2026-06-07-release-v0-25-0.md)
-- [nose-clone interpretation (#322)](../charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md)
+  (canonical; #335 Slice 3 surfacing entry),
+  [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md),
   [quality latest](../charness-artifacts/quality/latest.md)
