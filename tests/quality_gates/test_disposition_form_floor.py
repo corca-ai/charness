@@ -186,9 +186,16 @@ def test_achieve_form_floor_passes_valid_forms_in_scope(tmp_path: Path) -> None:
     created = "2026-06-08"
     _seed_evidence(tmp_path, created)
     review = _seed_review(tmp_path, created)
-    body = "- one. Disposition: applied: shipped a gate\n- two. Disposition: issue #999\nRetro dispositions: none — the rest is non-actionable this run\n"
+    # issue-form dispositions in-scope must also carry a recurrence-lineage marker
+    # (rung 1d); a bare `issue #999` would now block (see the rung-1d tests below).
+    body = (
+        "- one. Disposition: applied: shipped a gate\n"
+        "- two. Disposition: issue #999 (novel: first occurrence of this class)\n"
+        "Retro dispositions: none — the rest is non-actionable this run\n"
+    )
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
     assert "disposition_form" not in report
+    assert "recurrence_lineage" not in report
     assert report["ok"] is True
 
 
@@ -233,6 +240,76 @@ def test_achieve_form_floor_skips_untouched_placeholder(tmp_path: Path) -> None:
     )
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
     assert "disposition_form" not in report
+
+
+# --- rung 1d: recurrence-lineage floor (de-launder the issue escape) --------
+
+
+def test_recurrence_lineage_grammar_presence_only() -> None:
+    # presence/enum only: a marker + colon + non-empty content; correctness unjudged.
+    for value in (
+        "issue #335 (novel: first occurrence, searched the lineage)",
+        "issue #335 (recurs: #284 -> #308 -> #334)",
+        "issue #335 — recurrence: same class as #284",
+        "issue #335 lineage: prior #329",
+    ):
+        assert df.has_recurrence_lineage(value) is True, value
+    # a bare issue, or prose "novel" without the colon marker, is NOT lineage.
+    for value in ("issue #335", "issue #335 a novel approach to caching", "issue #335 (filed)"):
+        assert df.has_recurrence_lineage(value) is False, value
+    # vague-but-present passes — proves this is NOT a content classifier.
+    assert df.has_recurrence_lineage("issue #1 (novel: x)") is True
+
+
+def test_achieve_lineage_floor_blocks_bare_issue_in_scope(tmp_path: Path) -> None:
+    created = "2026-06-08"  # in lineage scope
+    _seed_evidence(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = "- one. Disposition: issue #335\nRetro dispositions: applied: shipped the floor\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["ok"] is False
+    assert "recurrence_lineage" in report
+    assert any("#335" in entry["value"] for entry in report["recurrence_lineage"]["missing"])
+
+
+def test_achieve_lineage_floor_passes_with_marker(tmp_path: Path) -> None:
+    created = "2026-06-08"
+    _seed_evidence(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    for marker in ("novel: distinct, searched the lineage", "recurs: #284 -> #334"):
+        body = f"- one. Disposition: issue #335 ({marker})\nRetro dispositions: applied: shipped it\n"
+        report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+        assert "recurrence_lineage" not in report, marker
+
+
+def test_achieve_lineage_floor_exempts_non_issue_forms(tmp_path: Path) -> None:
+    # applied:/none — dispositions never need a lineage marker (only issue does).
+    created = "2026-06-08"
+    _seed_evidence(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = "- one. Disposition: applied: shipped a gate\nRetro dispositions: none — nothing else actionable this run\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert "recurrence_lineage" not in report
+    assert report["ok"] is True
+
+
+def test_achieve_lineage_floor_grandfathers_pre_date_goal(tmp_path: Path) -> None:
+    created = "2026-06-07"  # day before the lineage rule date -> grandfathered
+    _seed_evidence(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = "- one. Disposition: issue #335\nRetro dispositions: applied: shipped it\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert "recurrence_lineage" not in report  # inert for grandfathered goals
+    assert report["recurrence_lineage_scope"]["enforced"] is False
+
+
+def test_lineage_floor_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
+    # Behavior-preservation: the recurrence-lineage rule is achieve-only. A session
+    # retro with a bare `issue #N` disposition (no lineage marker) stays VALID under
+    # the retro validator, because it calls only is_form_enforced/invalid_dispositions
+    # and never has_recurrence_lineage. The shared-module addition is purely additive.
+    path = _seed(tmp_path, "r.md", _retro("2026-06-08", "- a. Disposition: issue #42\n"))
+    vra.validate_retro_artifact(path)  # no raise — retro unchanged by the addition
 
 
 # --- session-retro wiring --------------------------------------------------

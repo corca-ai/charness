@@ -13,8 +13,8 @@ critiqued before code.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — de-launder the disposition escape (presence-only recurrence-lineage rung 1d + rung-2 reviewer strengthening), dogfood on this goal, fresh-eye critique. The delicate guardrail-bound change. Slices 1-3 DONE (design+critique; dispatcher+commit-boundary; sibling scan 7/7 + coverage report).
-- Next action: add has_recurrence_lineage to shared disposition_form.py (presence/enum only); add apply_recurrence_lineage_floor rung 1d in goal_artifact_disposition.py scoped to Auto-Retro issue-form dispositions, enforce-from 2026-06-08; strengthen the rung-2 disposition-review reference; dogfood this goal's Auto-Retro; retro-isolation regression test; fresh-eye critique.
+- Current slice: Slice 5 — closeout: full read-only gate; retro; rung-2 disposition review of this goal's Auto-Retro (dogfood under the new rung 1d); host-log probe; handoff sync; flip to complete. Slices 1-4 DONE (design+critique; dispatcher+commit-boundary; sibling scan 7/7 + coverage report; de-launder rung 1d + rung-2 mandate, SHIP critique).
+- Next action: run-quality --read-only; write retro (retro skill); probe_host_logs; fresh-eye disposition review of the Auto-Retro; fill Final Verification + Auto-Retro with lineage-marked dispositions; flip status complete (check_goal_artifact passes under rung 1d = dogfood); refresh handoff.
 - Timebox: 4h
 - Activation time: 2026-06-08 (activated via `/goal`)
 - Closeout reserve: 45m
@@ -245,6 +245,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Coverage report names the adapter-relocation limitation explicitly (not silent); enumerates out-of-class validators so 'in-class' is provable.
 - Off-goal findings: None.
 - Lessons carried forward: Family fully enumerated: 7 in-class (critique/goal-closeout/retro/ideation/debug/quality/handoff). quality validator gates only latest.md; handoff is docs/handoff.md default. Slice 4 (de-launder) is next — the delicate guardrail-bound change, with mandatory dogfood on this goal's own closeout.
+- Metrics:
+
+### Slice 4: Slice 4 — De-launder the disposition escape (rung 1d + rung-2 mandate)
+
+- Objective: Add a presence-only recurrence-lineage floor (rung 1d) requiring issue-form Auto-Retro dispositions to carry a recurs:/novel:/lineage: marker, + a rung-2 reviewer mandate to falsify novel: claims. Never a content classifier.
+- Why this approach: The delicate guardrail-bound change goes last with the most proof; the issue-disposition is the loop's laundering engine.
+- Commits: pending (this slice commit)
+- What changed: scripts/disposition_form.py: has_recurrence_lineage + RECURRENCE_LINEAGE_SUMMARY (shared grammar). skills/public/achieve/scripts/goal_artifact_disposition.py: RECURRENCE_LINEAGE_RULE_DATE=2026-06-08 + apply_recurrence_lineage_floor (rung 1d) wired into apply_disposition_rungs. check_goal_artifact.py: surface rung-1c/1d reasons into the CLI issues message (extracted _evidence_missing_bits for complexity). lifecycle.md: rung 1d bullet + rung-2 falsify mandate. Two-tier preflight refinement: debug/quality/handoff -> author-time-only (commit_boundary=False) so the validate-all trio does not reorder run_slice_closeout; coverage report + authoring-preflight doc updated. Tests: rung-1d grammar/gate/grandfather + retro-isolation. Mirror byte-synced.
+- Alternatives rejected: Filing-time dedup in issue (rejected as primary per Slice 1). Putting the lineage grammar only in goal_artifact_disposition (rejected: shared disposition_form is the single grammar source, called only by achieve so retro is unchanged). Keeping debug/quality/handoff in the fail-fast sweep (rejected this slice: validate-all reorders run_slice_closeout's risk-interrupt + blocks on pre-existing siblings; one surface_obligations test proved the reorder).
+- Targeted verification: py_compile + ruff (C901 fixed by extraction) + lengths clean. 535 passed across disposition/goal/preflight/surface/closeout/coordination/artifact. Functional: rung 1d blocks a bare issue #777 Auto-Retro disposition on an in-scope goal with the actionable reason in the CLI message; passes with novel:/recurs:. Retro-isolation: validate_retro_artifact never calls has_recurrence_lineage (verified + regression test). Same-day frozen goal not re-validated by any automated gate (fresh-eye Q3). Behavior preservation: existing validators unchanged. Mirror synced; export-safe; ergonomics/skills/docs clean.
+- Test duplication pressure: Rung-1d tests target the new floor + grammar + grandfather + retro-isolation; one existing form-floor test updated (issue #999 now needs a lineage marker) reflecting the intentional rule. No duplicate suites.
+- Critique: Fresh-eye de-launder critique (different agent context): SHIP. Confirmed: presence-only/regex correct (no-colon + empty rejected, word-boundary, fenced masked) -> G1 honored; retro isolation by construction -> G3; same-day frozen goal never auto-re-validated -> G3 in practice; no trivial defeat beyond accepted rote-novel (rung 2 polices); two-tier decision sound. Should-fix APPLIED: surface rung-1c/1d reasons into the CLI message (was JSON-only).
+- Off-goal findings: None.
+- Lessons carried forward: De-launder is presence-only (rung 1d, floor) + reviewer-judged (rung 2 falsifies novel:). Dogfood: THIS goal (Created 2026-06-08) is in scope -> Slice 5 must write lineage markers on any issue-form Auto-Retro disposition and pass the new rung. Deferred: extend lineage to standalone-retro Next Improvements; adapter-dir resolution for --path.
 - Metrics:
 
 ## Context Sources

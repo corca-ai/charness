@@ -76,6 +76,17 @@ _ISSUE_NUM = re.compile(r"#\d+")
 # em/en-dash or colon (not used inside compound words) needs no leading space.
 _NONE = re.compile(r"^none\b[ \t]*(?:[—–:]|[ \t]-)[ \t]*\S", re.IGNORECASE)
 
+# Recurrence-lineage marker for ``issue``-routed dispositions: one of
+# ``recurs``/``recurrence``/``lineage``/``novel`` then a colon then non-empty
+# content. Presence/enum only (like the form floor and ``Destination`` enum) —
+# it proves the author committed to a falsifiable claim *type*, never whether the
+# claim is true. ``novel:`` requires the colon, so prose like "a novel approach"
+# (no colon) does not satisfy it.
+RECURRENCE_LINEAGE_SUMMARY = (
+    "a recurrence-lineage marker (`recurs:`/`recurrence:`/`lineage:`/`novel:`) with non-empty content"
+)
+_RECURRENCE_LINEAGE = re.compile(r"(?i)\b(?:recurs|recurrence|lineage|novel)\b[ \t]*:[ \t]*\S")
+
 
 def _clean(value: str) -> str:
     """Strip leading markdown markers and surrounding emphasis from a value."""
@@ -108,6 +119,20 @@ def evaluate_disposition_form(value: str) -> dict:
         "value": cleaned,
         "reason": f"not one of {VALID_FORM_SUMMARY} (bare `memory`/prose-only is rejected)",
     }
+
+
+def has_recurrence_lineage(value: str) -> bool:
+    """Presence/enum-only: does this disposition value carry a recurrence-lineage
+    marker (``recurs``/``recurrence``/``lineage``/``novel`` + colon + non-empty)?
+
+    Never judges the marker's *correctness* — a false ``novel:`` passes this floor
+    and is the fresh-eye disposition review's (rung 2) job to falsify. Mirrors the
+    form floor's presence/enum discipline; it must never become a content
+    classifier (the achieve guardrail). Consumed only by the achieve recurrence-
+    lineage rung; the session-retro validator does not call it, so retro behavior
+    is unchanged.
+    """
+    return bool(_RECURRENCE_LINEAGE.search(value))
 
 
 def _mask_fences(text: str) -> str:

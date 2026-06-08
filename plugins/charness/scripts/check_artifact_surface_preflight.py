@@ -55,14 +55,19 @@ class Surface:
         return tail == "recent-lessons.md" or tail.startswith("history/")
 
 
-# The artifact-authoring shape family. Prefix-mapped surfaces (critique,
-# ideation, retro) accept `--paths`; adapter-scoped siblings (debug/quality/
-# handoff) validate-all (no --paths) — matched here by their DEFAULT output dir,
-# so an adapter that relocates the dir degrades to broad-gate-only coverage for
-# that surface (documented in the coverage report). goal-closeout shape is owned
-# at the achieve complete-flip (not a commit gate), so it is shape-surfaced here
-# but not commit-boundary-blocked. See
-# charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md
+# The artifact-authoring shape family. Two coverage tiers, by validator shape:
+#  - Prefix-mapped surfaces (critique, ideation, retro) accept `--paths` and run
+#    CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
+#    sweep (`commit_boundary=True`): cheap, changed-scoped, no reordering of the
+#    deeper run_slice_closeout stages.
+#  - Adapter-scoped siblings (debug, quality, handoff) validate-ALL (no --paths)
+#    and the debug surface feeds run_slice_closeout's risk-interrupt machinery, so
+#    they are NOT in the fail-fast sweep (`commit_boundary=False`); they get
+#    author-time shape help via `--type`/`--emit-stub`/`--path` and the broad gate
+#    remains their enforcement. (Putting a validate-all gate in the fail-fast sweep
+#    would reorder shape-before-risk-interrupt and block on pre-existing siblings.)
+#  - goal-closeout shape is owned at the achieve complete-flip (not a commit gate).
+# See charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md
 # and charness-artifacts/spec/artifact-shape-preflight-coverage.md.
 REGISTRY: tuple[Surface, ...] = (
     Surface(
@@ -95,7 +100,7 @@ REGISTRY: tuple[Surface, ...] = (
         "debug", "charness-artifacts/debug/",
         "scripts/validate_debug_artifact.py",
         "skills/public/debug/scripts/scaffold_debug_artifact.py",
-        None, True,
+        None, False,
         "Hand-authored debug artifact; required sections + seam-risk/interrupt prefixed values + cross-file sibling marker.",
         paths_arg=False,
     ),
@@ -103,7 +108,7 @@ REGISTRY: tuple[Surface, ...] = (
         "quality", "charness-artifacts/quality/",
         "scripts/validate_quality_artifact.py",
         "skills/public/quality/scripts/scaffold_quality_artifact.py",
-        None, True,
+        None, False,
         "Hand-authored quality artifact; required sections + runtime-signal/delegated-review shape.",
         paths_arg=False,
     ),
@@ -111,7 +116,7 @@ REGISTRY: tuple[Surface, ...] = (
         "handoff", "docs/handoff.md",
         "scripts/validate_handoff_artifact.py",
         "skills/public/handoff/scripts/scaffold_handoff_artifact.py",
-        None, True,
+        None, False,
         "Hand-authored handoff artifact (default docs/handoff.md); required H2 sections + a References link.",
         paths_arg=False,
     ),
@@ -185,14 +190,19 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
         "",
     ]
     if surface.validator:
+        # Adapter-scoped validators validate-all (no --paths); prefix validators
+        # take --paths for a changed-scoped verdict.
+        argv = ["python3", surface.validator, "--repo-root", str(repo_root)]
         cmd = f"python3 {surface.validator} --repo-root ."
-        if target_rel:
+        if surface.paths_arg and target_rel:
+            argv += ["--paths", target_rel]
             cmd += f" --paths {target_rel}"
         out.append(f"owning validator: {cmd}")
         if target_rel and (repo_root / target_rel).is_file():
-            proc = _run(repo_root, ["python3", surface.validator, "--repo-root", str(repo_root), "--paths", target_rel])
+            proc = _run(repo_root, argv)
             verdict = "PASS" if proc.returncode == 0 else "FAIL"
-            out.append(f"current verdict on {target_rel}: {verdict}")
+            scope = target_rel if surface.paths_arg else f"{surface.artifact_type} surface (validate-all)"
+            out.append(f"current verdict on {scope}: {verdict}")
             if proc.returncode != 0:
                 out.append((proc.stderr or proc.stdout).strip())
     else:
@@ -215,9 +225,12 @@ def emit_stub(repo_root: Path, surface: Surface) -> tuple[str, int]:
 def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     """Commit-boundary arm: relocate each owning validator's verdict earlier.
 
-    Groups changed artifacts by owning (commit-boundary) surface and runs each
-    validator — with `--paths` for prefix surfaces, or its validate-all default
-    for adapter-scoped surfaces. Same validator, same verdict — only earlier.
+    Groups changed artifacts by owning commit-boundary surface and runs each
+    validator on its changed paths. Same validator, same verdict — only earlier.
+    Only `commit_boundary` surfaces are processed, and those are all changed-scoped
+    (`paths_arg=True`); validate-all surfaces are author-time-only (not here),
+    because a validate-all gate in the fail-fast sweep would reorder the deeper
+    closeout stages and block on pre-existing siblings.
     """
     groups: dict[str, tuple[Surface, list[str]]] = {}
     for raw in paths:
@@ -229,15 +242,11 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     for artifact_type in sorted(groups):
         surface, group = groups[artifact_type]
-        argv = ["python3", surface.validator, "--repo-root", str(repo_root)]
-        if surface.paths_arg:
-            argv += ["--paths", *sorted(group)]
-        proc = _run(repo_root, argv)
+        proc = _run(repo_root, ["python3", surface.validator, "--repo-root", str(repo_root), "--paths", *sorted(group)])
         results.append({
             "artifact_type": artifact_type,
             "validator": surface.validator,
             "paths": sorted(group),
-            "validate_all": not surface.paths_arg,
             "returncode": proc.returncode,
             "stdout": proc.stdout,
             "stderr": proc.stderr,

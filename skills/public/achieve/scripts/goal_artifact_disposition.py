@@ -36,6 +36,12 @@ from typing import Any
 # would punish them. Clone-safe: the date is in-file content, not mtime.
 DISPOSITION_RULE_DATE = date(2026, 5, 30)
 
+# Rung 1d (the recurrence-lineage floor) lands later than rungs 1a/1b, so it has
+# its own enforce-from-date that grandfathers every goal frozen before it. Goals
+# Created on/after this date must carry a recurrence-lineage marker on each
+# ``issue``-routed ``## Auto-Retro`` disposition. Clone-safe: in-file content.
+RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 8)
+
 # The Auto-Retro opt-out: a deliberate "no improvement needs active disposition"
 # assertion, recorded visibly (the Engelbart "say why if you depart" valve, not a
 # silent skip). A min-length floor mirrors the skip discipline so it cannot be a
@@ -260,6 +266,55 @@ def apply_disposition_form_floor(report: dict[str, Any], text: str) -> None:
         report["ok"] = False
 
 
+def apply_recurrence_lineage_floor(report: dict[str, Any], text: str) -> None:
+    """Disposition rung 1d: an ``issue #N`` disposition in ``## Auto-Retro`` must
+    carry a recurrence-lineage marker, so a re-file of a known recurring class
+    cannot silently launder as a fresh narrow issue (the recurring authoring-
+    preflight-skip loop engine).
+
+    Presence/enum only (never a content classifier — the achieve guardrail): the
+    floor checks ONLY that an ``issue``-form disposition carries a
+    ``recurs:``/``recurrence:``/``lineage:``/``novel:`` marker with content. Whether
+    a ``novel:`` claim is actually a re-file is rung 2's (the fresh-eye disposition
+    review's) substantive call, never the floor's. Its own enforce-from-date
+    grandfathers goals frozen before the floor existed; fail-CLOSED on an undatable
+    goal mirrors the sibling rungs. Only ``issue``-form dispositions are checked
+    (uniformly) — deciding *which* issues "look recurring" would itself be the
+    classifier the guardrail forbids.
+    """
+    form = _load_shared_form()
+    created = goal_created_date(text)
+    enforced = created is None or created >= RECURRENCE_LINEAGE_RULE_DATE
+    report["recurrence_lineage_scope"] = {
+        "enforced": enforced,
+        "created": created.isoformat() if created else None,
+        "rule_date": RECURRENCE_LINEAGE_RULE_DATE.isoformat(),
+    }
+    if not enforced:
+        return
+    body = _section_body(_mask_fences(text), "Auto-Retro")
+    if not body:
+        return
+    missing = [
+        {"marker": entry["marker"], "value": entry["value"]}
+        for entry in form.scan_dispositions(body)
+        if entry["verdict"]["kind"] == "issue" and not form.has_recurrence_lineage(entry["value"])
+    ]
+    if missing:
+        report["recurrence_lineage"] = {
+            "missing": missing,
+            "reason": (
+                "one or more `## Auto-Retro` `issue` dispositions lack "
+                f"{form.RECURRENCE_LINEAGE_SUMMARY}; each issue-routed disposition must carry it "
+                "(e.g. `issue #N (novel: <why no matching recurring class>)` or "
+                "`issue #N (recurs: <lineage>)`) so a re-file of a known recurring class cannot "
+                "launder as a fresh narrow issue. Presence-only — the fresh-eye disposition "
+                "review judges whether a `novel:` claim is actually a re-file"
+            ),
+        }
+        report["ok"] = False
+
+
 def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -> None:
     """Attach the disposition-gate verdict to ``report`` (mutates in place).
 
@@ -273,6 +328,10 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
     # Rung 1c (the disposition-form floor) runs first and on its own
     # enforce-from-date, so it fires even when rungs 1a/1b are grandfathered.
     apply_disposition_form_floor(report, text)
+    # Rung 1d (the recurrence-lineage floor) likewise runs on its own date, so a
+    # missing lineage marker on an issue-routed disposition blocks even when rungs
+    # 1a/1b are grandfathered.
+    apply_recurrence_lineage_floor(report, text)
     created = goal_created_date(text)
     report["disposition_scope"] = {
         "in_scope": in_scope,

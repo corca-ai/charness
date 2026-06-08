@@ -86,8 +86,8 @@ python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SK
 
 The skill-surface preflight above covers `skills/**` edits. The hand-authored
 **artifact** family (`charness-artifacts/critique/*.md`, goal
-`## Final Verification` closeout-evidence, retro, ideation, and — being
-extended — debug/quality/handoff) is covered by
+`## Final Verification` closeout-evidence, retro, ideation, plus the
+adapter-scoped debug/quality/handoff) is covered by
 [check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py).
 It generalizes the same author-time idea to the recurring "authoring-preflight
 skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
@@ -108,9 +108,12 @@ This is not merely a doc: the dispatcher's `--changed-artifacts` mode is wired
 into [staged_commit_gate_plan.py](../../scripts/staged_commit_gate_plan.py) as a
 **blocking** `STRUCTURAL_SWEEP_LABELS` member (`check-artifact-shape (staged)`),
 exactly like the SKILL.md core-headroom gate. When a commit touches a
-prefix-mapped `charness-artifacts/**` artifact, its owning validator runs at the
-commit boundary — the *same* validator with the *same* verdict, only relocated
-earlier. It adds no new shape requirement and changes no validator's judgment.
+changed-scoped prefix family (critique/ideation/retro), its owning validator runs
+at the commit boundary — the *same* validator with the *same* verdict, only
+relocated earlier. It adds no new shape requirement and changes no validator's
+judgment. The adapter-scoped trio (debug/quality/handoff) validate-all and are
+author-time-only (`--type`/`--emit-stub`/`--path`); the broad gate remains their
+enforcement (see the coverage report for the tier rationale).
 
 ## Portable skill packages
 

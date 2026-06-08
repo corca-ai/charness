@@ -48,6 +48,49 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _evidence_missing_bits(evidence_report: dict) -> list[str]:
+    """Human-facing reasons the After-phase evidence gate refused the flip.
+
+    Surfaces each rung's own reason (including the disposition-form rung 1c and the
+    recurrence-lineage rung 1d) so the CLI message is actionable, not just the JSON
+    report. Extracted from ``main`` to keep its cyclomatic complexity in budget.
+    """
+    bits: list[str] = []
+    if evidence_report["missing"]:
+        bits.append("missing: " + ", ".join(evidence_report["missing"]))
+    if evidence_report["missing_evidence_files"]:
+        bits.append(
+            "missing files: "
+            + ", ".join(entry["name"] for entry in evidence_report["missing_evidence_files"])
+        )
+    if evidence_report["invalid_skips"]:
+        bits.append(
+            "invalid skips: " + ", ".join(entry["name"] for entry in evidence_report["invalid_skips"])
+        )
+    if evidence_report.get("binding_failures"):
+        bits.append(
+            "evidence not bound to this goal: "
+            + ", ".join(entry["name"] for entry in evidence_report["binding_failures"])
+        )
+    if evidence_report.get("disposition_blank"):
+        bits.append(
+            "improvement-disposition gate: cited retro lists improvements but "
+            "## Auto-Retro is blank and no opt-out is recorded"
+        )
+    if evidence_report.get("disposition_form"):
+        bits.append("disposition form: " + evidence_report["disposition_form"]["reason"])
+    if evidence_report.get("recurrence_lineage"):
+        bits.append("recurrence-lineage floor: " + evidence_report["recurrence_lineage"]["reason"])
+    if evidence_report.get("coordination_missing"):
+        bits.append(
+            "coordination floors: "
+            + "; ".join(f"{entry['floor']} step missing" for entry in evidence_report["coordination_missing"])
+        )
+    if evidence_report.get("closeout_delegation", {}).get("failures"):
+        bits.append("closeout delegation: " + "; ".join(evidence_report["closeout_delegation"]["failures"]))
+    return bits
+
+
 def main() -> int:
     args = parse_args()
     path = _resolve_goal_path(args)
@@ -88,47 +131,9 @@ def main() -> int:
             )
         if not evidence_report["ok"]:
             result["ok"] = False
-            missing_bits: list[str] = []
-            if evidence_report["missing"]:
-                missing_bits.append("missing: " + ", ".join(evidence_report["missing"]))
-            if evidence_report["missing_evidence_files"]:
-                missing_bits.append(
-                    "missing files: "
-                    + ", ".join(entry["name"] for entry in evidence_report["missing_evidence_files"])
-                )
-            if evidence_report["invalid_skips"]:
-                missing_bits.append(
-                    "invalid skips: "
-                    + ", ".join(entry["name"] for entry in evidence_report["invalid_skips"])
-                )
-            if evidence_report.get("binding_failures"):
-                missing_bits.append(
-                    "evidence not bound to this goal: "
-                    + ", ".join(
-                        entry["name"] for entry in evidence_report["binding_failures"]
-                    )
-                )
-            if evidence_report.get("disposition_blank"):
-                missing_bits.append(
-                    "improvement-disposition gate: cited retro lists "
-                    "improvements but ## Auto-Retro is blank and no opt-out is recorded"
-                )
-            if evidence_report.get("coordination_missing"):
-                missing_bits.append(
-                    "coordination floors: "
-                    + "; ".join(
-                        f"{entry['floor']} step missing"
-                        for entry in evidence_report["coordination_missing"]
-                    )
-                )
-            if evidence_report.get("closeout_delegation", {}).get("failures"):
-                missing_bits.append(
-                    "closeout delegation: "
-                    + "; ".join(evidence_report["closeout_delegation"]["failures"])
-                )
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
-                + "; ".join(missing_bits)
+                + "; ".join(_evidence_missing_bits(evidence_report))
             )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1

@@ -21,19 +21,32 @@ artifact. This is the family the goal scopes; infra validators are out of class
 
 | Surface | Owning validator | Author-time help BEFORE | Covered NOW | How | Commit-boundary blocking |
 | --- | --- | --- | --- | --- | --- |
-| critique | `scripts/validate_critique_artifacts.py` | no (scaffold existed but **uncited** — the #334 trap) | yes | scaffold cited from `counterweight-triage.md` + dispatcher `--type/--path/--emit-stub` | yes (`--paths`, prefix `charness-artifacts/critique/`) |
+| critique | `scripts/validate_critique_artifacts.py` | no (scaffold existed but **uncited** — the #334 trap) | yes | scaffold cited from `counterweight-triage.md` + dispatcher `--type/--path/--emit-stub` | **yes** (`--paths`, prefix `charness-artifacts/critique/`) |
 | goal-closeout | `check_goal_artifact.py` (closeout-evidence) | partial (template seeds `## Final Verification`, no dispatcher surface) | yes | dispatcher `--type goal-closeout` reads the template block (validator-constants/template source) | n/a — owned by the achieve complete-flip, not the commit gate |
-| retro | `scripts/validate_retro_artifact.py` | no | yes | scaffold + dispatcher | yes (`--paths`, prefix `charness-artifacts/retro/`, excludes `recent-lessons.md`/`history/`) |
-| ideation | `scripts/validate_ideation_artifact.py` | no | yes | scaffold + dispatcher | yes (`--paths`, prefix `charness-artifacts/ideation/`) |
-| debug | `scripts/validate_debug_artifact.py` | no | yes | scaffold + dispatcher | yes (validate-all, default dir `charness-artifacts/debug/`) |
-| quality | `scripts/validate_quality_artifact.py` | no | yes | scaffold + dispatcher | yes (validate-all of `latest.md`, default dir `charness-artifacts/quality/`) |
-| handoff | `scripts/validate_handoff_artifact.py` | no | yes | scaffold + dispatcher | yes (validate-all, default file `docs/handoff.md`) |
+| retro | `scripts/validate_retro_artifact.py` | no | yes | scaffold + dispatcher | **yes** (`--paths`, prefix `charness-artifacts/retro/`, excludes `recent-lessons.md`/`history/`) |
+| ideation | `scripts/validate_ideation_artifact.py` | no | yes | scaffold + dispatcher | **yes** (`--paths`, prefix `charness-artifacts/ideation/`) |
+| debug | `scripts/validate_debug_artifact.py` | no | yes (author-time) | scaffold + dispatcher `--type/--emit-stub/--path` | **no** — validate-all; author-time only (see Tier note) |
+| quality | `scripts/validate_quality_artifact.py` | no | yes (author-time) | scaffold + dispatcher `--type/--emit-stub/--path` | **no** — validate-all; author-time only |
+| handoff | `scripts/validate_handoff_artifact.py` | no | yes (author-time) | scaffold + dispatcher `--type/--emit-stub/--path` | **no** — validate-all; author-time only |
 
 Result: **7/7 in-class surfaces now have author-time shape help** (was 0 fully /
 1 partial). The two #334 proving instances (critique, goal-closeout) are
 demonstrated: a parent-delegated critique missing `## Reviewer Tier Evidence` is
 blocked at the commit boundary (was a late broad-gate failure), and the
 goal-closeout shape is surfaced via `--type goal-closeout`.
+
+### Coverage tiers (why two, not one)
+
+The commit-boundary **blocking** arm (the fail-fast `STRUCTURAL_SWEEP_LABELS`
+member) covers the changed-scoped **prefix** families only — critique, ideation,
+retro — whose validators take `--paths <changed>` and so are cheap and
+changed-scoped, the structural sweep's contract. The adapter-scoped trio
+(debug/quality/handoff) **validate-all** (no `--paths`), and the debug surface
+feeds `run_slice_closeout`'s risk-interrupt machinery; putting a validate-all gate
+in the fail-fast sweep would (a) reorder shape-before-risk-interrupt and (b) block
+on a *pre-existing* sibling artifact. So the trio get **author-time** shape help
+(`--type`/`--emit-stub`/`--path`) and the **broad gate remains their
+enforcement** — a deliberate, honest tier split, not a missed surface.
 
 Reproduce any row:
 
@@ -45,13 +58,13 @@ python3 scripts/check_artifact_surface_preflight.py --path <artifact>         # 
 
 ## Known limitation (named, not silent)
 
-The adapter-scoped surfaces (debug/quality/handoff) are matched at the commit
-boundary by their **default** output dir/file. A repo whose adapter relocates the
-output dir degrades that surface to **broad-gate-only** coverage (the relocated
-commit-boundary block won't fire on the moved path). The broad gate remains the
-backstop; the commit-boundary arm is additive relocation, never the sole gate.
-Resolving the adapter dir at preflight time is a deferred enhancement (recorded in
-the goal's deferred decisions).
+The adapter-scoped surfaces (debug/quality/handoff) are mapped by their
+**default** output dir/file (`surface_for_path` / `--path`). A repo whose adapter
+relocates the output dir means `--path <moved-artifact>` won't auto-resolve the
+surface (the author can still use `--type <surface>`), and the broad gate remains
+the enforcement for these surfaces regardless. Resolving the adapter dir at
+preflight time is a deferred enhancement (recorded in the goal's deferred
+decisions).
 
 ## Out of class (no hand-authored artifact shape — correctly NOT covered)
 
@@ -84,5 +97,6 @@ code).
 - Behavior-preserving: every owning validator is unchanged; `--all` runs stay
   green (critique 255, ideation 0, retro 156; debug/quality/handoff exit 0).
 - The blocking commit-boundary member (`check-artifact-shape (staged)`) is a
-  `STRUCTURAL_SWEEP_LABELS` member; gate-plan tests assert in-family surfaces pull
-  it and non-artifact md does not.
+  `STRUCTURAL_SWEEP_LABELS` member; gate-plan tests assert the changed-scoped
+  prefix families (critique/ideation/retro) pull it and the validate-all trio +
+  non-artifact md do not.

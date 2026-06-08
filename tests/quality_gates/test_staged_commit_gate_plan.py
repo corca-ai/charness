@@ -124,15 +124,24 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
 
 
 def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
-    # docs/*.md is not an artifact surface, EXCEPT the handoff default docs/handoff.md.
-    for paths in (["docs/x.md"], ["README.md"], ["scripts/x.py"], ["charness-artifacts/spec/x.md"]):
-        assert "check-artifact-shape (staged)" not in _labels(paths)
-    # in-family surfaces (prefix + adapter-scoped) pull the blocking shape gate.
+    # Only the changed-scoped prefix families (critique/ideation/retro) pull the
+    # blocking shape gate. The validate-all trio (debug/quality/handoff) are
+    # author-time-only, so they do NOT pull the fail-fast sweep; nor do non-artifact
+    # md or out-of-family dirs.
     for paths in (
-        ["charness-artifacts/retro/2026-06-08-x.md"],
+        ["docs/x.md"],
+        ["README.md"],
+        ["scripts/x.py"],
+        ["charness-artifacts/spec/x.md"],
         ["charness-artifacts/debug/2026-06-08-x.md"],
         ["charness-artifacts/quality/2026-06-08-x.md"],
         ["docs/handoff.md"],
+    ):
+        assert "check-artifact-shape (staged)" not in _labels(paths)
+    for paths in (
+        ["charness-artifacts/critique/2026-06-08-x.md"],
+        ["charness-artifacts/ideation/2026-06-08-x.md"],
+        ["charness-artifacts/retro/2026-06-08-x.md"],
     ):
         assert "check-artifact-shape (staged)" in _labels(paths)
 

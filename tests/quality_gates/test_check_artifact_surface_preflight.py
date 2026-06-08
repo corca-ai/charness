@@ -34,10 +34,12 @@ def test_surface_for_path_maps_adapter_scoped_trio() -> None:
     assert preflight.surface_for_path("docs/handoff.md").artifact_type == "handoff"
     # other docs/*.md are not the handoff artifact.
     assert preflight.surface_for_path("docs/other.md") is None
-    # adapter-scoped validators validate-all (no --paths).
-    assert preflight.surface_for_type("debug").paths_arg is False
-    assert preflight.surface_for_type("quality").paths_arg is False
-    assert preflight.surface_for_type("handoff").paths_arg is False
+    # adapter-scoped validators validate-all (no --paths) and are author-time-only
+    # (NOT in the fail-fast commit-boundary sweep — a validate-all gate there would
+    # reorder the deeper closeout stages).
+    for t in ("debug", "quality", "handoff"):
+        assert preflight.surface_for_type(t).paths_arg is False
+        assert preflight.surface_for_type(t).commit_boundary is False
 
 
 def test_surface_for_type_and_goal_closeout_has_no_scaffold() -> None:
@@ -102,7 +104,10 @@ def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> No
     assert report["blocked"] == ["scripts/validate_critique_artifacts.py"]
 
 
-def test_changed_artifacts_validate_all_surface_omits_paths(monkeypatch) -> None:
+def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
+    # debug/quality/handoff are author-time-only (commit_boundary=False), so the
+    # commit-boundary arm must NOT run them even when their paths change — the broad
+    # gate is their enforcement, and the fail-fast sweep stays changed-scoped.
     captured: list[list[str]] = []
 
     def fake_run(repo_root, argv):
@@ -114,16 +119,11 @@ def test_changed_artifacts_validate_all_surface_omits_paths(monkeypatch) -> None
     monkeypatch.setattr(preflight, "_run", fake_run)
     report = preflight.changed_artifacts(
         ROOT,
-        ["charness-artifacts/debug/a.md", "charness-artifacts/debug/b.md", "docs/handoff.md"],
+        ["charness-artifacts/debug/a.md", "charness-artifacts/quality/b.md", "docs/handoff.md"],
     )
     assert report["status"] == "ok"
-    # adapter-scoped surfaces validate-all: argv carries no --paths, one run each.
-    for argv in captured:
-        assert "--paths" not in argv
-    assert sorted(argv[1] for argv in captured) == [
-        "scripts/validate_debug_artifact.py",
-        "scripts/validate_handoff_artifact.py",
-    ]
+    assert report["checked"] == []  # none of the trio run at the commit boundary
+    assert captured == []
 
 
 def test_changed_artifacts_noop_for_unrelated_paths(monkeypatch) -> None:
@@ -155,6 +155,16 @@ def test_emit_stub_critique_carries_required_sections() -> None:
     # the scaffold stub must carry the validator-required sections by construction
     assert "## Reviewer Tier Evidence" in text
     assert "## Structured Findings" in text
+
+
+def test_describe_adapter_scoped_runs_validate_all_without_paths() -> None:
+    # an adapter-scoped surface (paths_arg=False) must NOT get --paths in describe
+    # (its validator has no such flag); it reports a surface-level validate-all
+    # verdict. charness-artifacts/debug/latest.md is a real valid debug artifact.
+    out = preflight.describe(ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md")
+    assert "owning validator: python3 scripts/validate_debug_artifact.py --repo-root ." in out
+    assert "--paths" not in out
+    assert "validate-all" in out
 
 
 def test_emit_stub_goal_closeout_has_no_scaffold_message() -> None:

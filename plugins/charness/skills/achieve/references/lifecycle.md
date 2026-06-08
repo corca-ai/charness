@@ -490,6 +490,15 @@ made by an agent and recorded for a human, never by a regex.
     *ran* and binds to this goal; it never inspects the review's content. A
     future maintainer must not tighten it into a content classifier — that
     re-imports the prose word-list trap one level up.
+  - *recurrence-lineage*: an `issue #N` disposition in `## Auto-Retro` must carry
+    a recurrence-lineage marker (`recurs:`/`recurrence:`/`lineage:`/`novel:` +
+    non-empty), so a re-file of a known recurring class cannot silently launder as
+    a fresh narrow issue. **Presence/enum only** — the floor checks the marker is
+    present, never whether a `novel:` claim is *true* (that is rung 2's call). It is
+    required uniformly on every issue-routed disposition (deciding *which* issues
+    "look recurring" would itself be the classifier the guardrail forbids); some
+    rote `novel:` is the accepted cost. Same grandfather-by-`Created`-date shape as
+    the other rungs.
 - **Rung 2 — the fresh-eye disposition review** (the intelligence). The
   After-phase already mandates a bounded fresh-eye closeout review; this gives
   that reviewer an added mandate: read the cited retro's `## Next Improvements`
@@ -500,6 +509,14 @@ made by an agent and recorded for a human, never by a regex.
   "not filed", narration-vs-action). It is **non-deterministic by nature** — made
   visible and auditable for a human, not a hidden pass — and near-zero marginal
   cost because it scopes an already-required review rather than adding an agent.
+  **Falsify `novel:` claims (the de-launder's substantive half).** Rung 1d's floor
+  only proves a recurrence-lineage marker is *present*. The reviewer must judge
+  whether it is *true*: for each `issue #N` disposition asserting `novel:`, search
+  the recurrence lineage (prior issues/retros of the same class) and decide whether
+  this is actually a re-file of a known recurring class being laundered as a fresh
+  narrow issue — if so, reject it (the general fix, not the N-th point-fix, is the
+  real disposition). A `recurs:` lineage that names real prior instances is the
+  honest form.
 
 **Honest limit.** The deterministic floor proves the *process* ran (a review
 exists and binds) and catches the unambiguous *blank*; it never scores whether a
