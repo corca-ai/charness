@@ -377,9 +377,30 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md
+Host log probe: charness-artifacts/probe/2026-06-09-339-portable-disposition-ledger.json
+Disposition review: charness-artifacts/critique/2026-06-09-339-disposition-review.md
+
+Proof summary (deterministic + dogfood; no live/release by default):
+
+- Broad gate `run-quality.sh --read-only`: PASS — 73 passed, 0 failed (2026-06-09,
+  clean tree at the bundle HEAD), incl. `check-changed-line-mutation-coverage`.
+- Changed-line mutation coverage over `merge-base origin/main..HEAD`: 0 uncovered
+  changed lines (producer re-run as a confirmation; fresh marker written).
+- Dogfood (live, this run): prose-only `defer` residual REFUSED / `issue #N`
+  accepted; a synthetic adapter drives proof-mismatch (reached `smoke` < acceptance
+  `integration` REFUSED, accepted once `accepted-risk:`); missing adapter degrades
+  to require-disposition; the issue closeout-draft validator REFUSES the maintainer's
+  Slack scenario and accepts it dispositioned; the core carries NO domain token.
+- Per-slice fresh-eye critiques: Slice 1 SHIP-WITH-NITS, Slice 2 SHIP-WITH-NITS,
+  Slice 3 SHIP (all folded); final bundle disposition review bound above.
+- Host metrics: goal metric window ABSENT (no per-goal ISO window recorded); the
+  bound probe surfaces thread-wide pressure with that caveat, not a per-goal total.
+- Release: n/a — standard achieve no-push; the deliverable is the portable
+  mechanism + the green broad gate, not a release-surface bump.
+- Issue closeout: #339 — direct-commit close-keyword carrier prepared + validated
+  (`issue_tool.py validate-closeout-draft`); the push that flips #339 to CLOSED is
+  an outward action held for explicit operator approval (see `## Residual Ledger`).
 
 ## User Verification Instructions
 
@@ -394,7 +415,35 @@ After the run reports complete, the user can independently verify:
 4. A pre-rule artifact and a no-residual closeout both complete unchanged.
 5. #339 is CLOSED on GitHub via the close-keyword carrier.
 
+## Residual Ledger
+
+Dogfoods the new block on this goal's own closeout. (This goal is Created
+2026-06-08, so the residual-ledger floor is grandfathered and does not enforce
+here; the rows are authored to the form regardless.)
+
+| Item | Kind | Disposition |
+| --- | --- | --- |
+| Live / release proof | proof-gap | out-of-scope: standard achieve no-push; the deliverable is the portable mechanism + the green broad gate, not a release |
+| Retro-surface proof-ledger wiring | residual | out-of-scope: retro artifacts do not declare acceptance/proof claims; `proof_mismatch.py` is reusable if one ever does |
+| At-cap achieve closeout module split | residual | accepted-risk: the hard length gate is the backstop; deferred structural debt re-persisted to recent-lessons |
+| #339 GitHub CLOSED state | residual | accepted-risk: the close-keyword carrier is prepared + validated; the push that flips #339 to CLOSED is held for explicit operator approval (outward action) |
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro: charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md
+
+- workflow: an edit-time `#N`-in-skill-package guard (the trap recurred 3× this run).
+  Disposition: accepted-risk: the package-level `validate_skill_ergonomics` sweep is
+  the commit-time backstop and caught all three, so nothing escaped; re-persisted to
+  recent-lessons as a pre-write checklist item, not a new gate this run.
+- workflow: cover new normalization/guard/validation branches IN the introducing slice.
+  Disposition: applied: covered all 32 bundle-boundary flagged changed lines in the
+  coverage commit (3d3cd561); the in-slice-coverage guardrail re-persisted to recent-lessons.
+- structural: split the at-cap achieve closeout module family.
+  Disposition: accepted-risk: the hard length gate blocks further growth (it forced this
+  run's clean factoring through the shared grammar + CLI wiring); a cohesive split is
+  deferred debt, re-persisted to recent-lessons so the next at-cap addition starts from it.
+
+Retro dispositions: applied: all three surfaced improvements are dispositioned above (accepted-risk ×2, applied ×1); no issue-routed disposition this run, so no recurrence-lineage marker is required.
+
+(No `Structural follow-up:` line: the retro's `## Sibling Search` is `n/a — no plausible siblings` — the waste items are session-local process friction, not transferable code-pattern siblings.)

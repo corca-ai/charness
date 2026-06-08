@@ -20,7 +20,7 @@ from scripts import proof_mismatch as pm
 
 _ROOT = Path(__file__).resolve().parents[2]
 _CLI_PATH = _ROOT / "skills" / "public" / "achieve" / "scripts" / "check_goal_artifact.py"
-_IVD_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_validate_closeout_draft.py"
+_IVC_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
 
 
 def _load_module(name: str, path: Path):
@@ -33,7 +33,7 @@ def _load_module(name: str, path: Path):
 
 
 _CLI = _load_module("check_goal_artifact_under_test", _CLI_PATH)
-_IVD = _load_module("issue_validate_closeout_draft_under_test", _IVD_PATH)
+_IVC = _load_module("issue_verify_closeout_under_test", _IVC_PATH)
 
 _ADAPTER = (
     "proof_levels:\n  - lint\n  - smoke\n  - integration\n  - live\n"
@@ -263,13 +263,31 @@ def test_cli_renders_residual_ledger_reason() -> None:
     assert any("proof-mismatch floor: PM-REASON" in b for b in bits)
 
 
-def test_issue_loader_caches_and_guards_missing_bootstrap(monkeypatch) -> None:
+def test_issue_verify_loader_caches_and_guards_missing_bootstrap(monkeypatch) -> None:
     # First real load + cache hit (the cached-return path), then the missing-bootstrap
     # ImportError guard, exercised via the injectable `_resolve_bootstrap` seam.
-    first = _IVD._load_proof_mismatch()
-    assert _IVD._load_proof_mismatch() is first  # cache hit
-    monkeypatch.setattr(_IVD, "_PROOF_MISMATCH", None)
-    monkeypatch.setattr(_IVD, "_resolve_bootstrap", lambda: None)
+    first = _IVC._load_proof_mismatch()
+    assert _IVC._load_proof_mismatch() is first  # cache hit
+    monkeypatch.setattr(_IVC, "_PROOF_MISMATCH", None)
+    monkeypatch.setattr(_IVC, "_resolve_bootstrap", lambda: None)
     with pytest.raises(ImportError):
-        _IVD._load_proof_mismatch()
-    _IVD._PROOF_MISMATCH = first  # restore the cache for other tests
+        _IVC._load_proof_mismatch()
+    _IVC._PROOF_MISMATCH = first  # restore the cache for other tests
+
+
+def test_issue_verify_fold_proof_mismatch_flips_status() -> None:
+    # `_fold_proof_mismatch` flips a clean result to failed when a proof gap is left
+    # undispositioned (the real repo has no proof adapter -> degraded -> any row
+    # needs a disposition), and is inert when the body declares no proof ledger.
+    gap = (
+        "Closes #1\n\n## Proof Ledger\n\n| Acceptance Class | Reached Proof | Disposition |\n"
+        "| --- | --- | --- |\n| reliability | smoke | |\n"
+    )
+    result = {"ok": True, "status": "carrier_verified"}
+    _IVC._fold_proof_mismatch(result, Path("."), gap)
+    assert result["ok"] is False and result["status"] == "failed"
+    assert result["proof_mismatch"]["problem"] == "mismatch"
+    clean = {"ok": True, "status": "carrier_verified"}
+    _IVC._fold_proof_mismatch(clean, Path("."), "Closes #1\n\nno ledger here\n")
+    assert clean["ok"] is True and clean["status"] == "carrier_verified"
+    assert "proof_mismatch" not in clean

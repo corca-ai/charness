@@ -2,9 +2,47 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import runpy
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+_PROOF_MISMATCH = None
+
+
+def _resolve_bootstrap() -> Path | None:
+    """The nearest ``skill_runtime_bootstrap.py`` above this file, or ``None``."""
+    return next(
+        (a / "skill_runtime_bootstrap.py" for a in Path(__file__).resolve().parents if (a / "skill_runtime_bootstrap.py").is_file()),
+        None,
+    )
+
+
+def _load_proof_mismatch():
+    """Load the portable proof-mismatch floor (``scripts/proof_mismatch.py``) via
+    the skill-runtime repo-module loader, so its ``from scripts.`` imports resolve
+    in the issue skill context. Cached; reuses the same module the achieve closeout
+    wires."""
+    global _PROOF_MISMATCH
+    if _PROOF_MISMATCH is None:
+        bootstrap = _resolve_bootstrap()
+        if bootstrap is None:
+            raise ImportError("skill_runtime_bootstrap.py not found")
+        runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
+        _PROOF_MISMATCH = runtime.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
+    return _PROOF_MISMATCH
+
+
+def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> None:
+    """Fold the portable proof-mismatch floor into a verify_closeout result: a
+    ``## Proof Ledger`` gap left undispositioned flips ``ok`` False and ``status``
+    to ``failed``. Inert when the body declares no proof ledger (no over-fire), so
+    both validate-closeout-draft (which reuses this) and post-publication
+    verify-closeout enforce it identically."""
+    _load_proof_mismatch().apply_proof_mismatch_floor(result, repo_root, body)
+    if result.get("proof_mismatch"):
+        result["status"] = "failed"
 
 
 def _load_local(module_name: str, alias: str | None = None):
@@ -233,7 +271,7 @@ def verify_closeout(
         and not source_preservation["missing"]
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
-    return {
+    result = {
         "ok": ok,
         "status": status,
         "repo": repo,
@@ -252,3 +290,5 @@ def verify_closeout(
         "source_preservation": source_preservation,
         "verified_state": verified_state,
     }
+    _fold_proof_mismatch(result, repo_root, body)
+    return result
