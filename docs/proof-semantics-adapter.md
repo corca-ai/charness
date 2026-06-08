@@ -117,3 +117,38 @@ presence/form floor and the generic comparison.
 > disposition* in the ledger. Slice 3 must not conflate them: a `gap_policy`
 > classification answers "does this gap need a disposition?", while the ledger
 > form is one of the dispositions a human can write.
+
+## Closeout proof ledger
+
+A closeout (a goal artifact or an issue closeout body) declares which acceptance
+classes it is claiming and the proof level it reached, in a `## Proof Ledger`
+table. The closeout AUTHOR owns the rows — Charness never infers a domain
+acceptance class:
+
+```markdown
+## Proof Ledger
+
+| Acceptance Class | Reached Proof | Disposition |
+| --- | --- | --- |
+| reliability      | integration   |                              |
+| safety           | smoke         | accepted-risk: low traffic   |
+```
+
+[`scripts/proof_mismatch.py`](../scripts/proof_mismatch.py) checks each row
+against the adapter and BLOCKS the closeout when a row has a proof gap left
+undispositioned:
+
+- the row's reached proof satisfies the adapter's minimum for the class →
+  no gap, the `Disposition` cell may be empty;
+- a gap (condition (i) empty `Reached`, (ii) reached below the class's required
+  level, an unmapped class, or a missing/empty adapter map) →
+  the `Disposition` cell **must** carry a real disposition
+  (`applied:` / `issue #N` / `accepted-risk:` / `out-of-scope:`) — a placeholder,
+  empty cell, or prose like `defer` is rejected.
+
+The floor fires only when a `## Proof Ledger` is present (no over-fire; no existing
+artifact carries one, so no date grandfathering is needed). A found-but-invalid
+adapter blocks (fails closed). The columns are located by header name
+(`Acceptance`/`Class`, `Reached`/`Proof`, `Disposition`), so column order is free —
+name them `Acceptance Class`, `Reached Proof`, and `Disposition` exactly (the
+first header containing each needle wins, so avoid a second `Proof`/`Class` column).

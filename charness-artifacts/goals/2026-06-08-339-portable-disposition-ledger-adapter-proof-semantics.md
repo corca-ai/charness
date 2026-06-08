@@ -10,24 +10,29 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 3 (next)** — proof-mismatch detection. Slices 1–2 LANDED:
-  Slice 1 (071bcbaa) forms + residual-ledger floor; Slice 2 the
-  `scripts/proof_semantics_adapter_lib.py` boundary (proof_levels + `incomparable`
-  partial order; acceptance_map; verifier_refs; gap_policy; missing-adapter
-  degradation; generic `level_satisfies`/`acceptance_classes`/`min_level_for_acceptance`
-  /`gap_disposition_for`/`acceptance_map_available`) + 13 synthetic-adapter tests
-  (domain-blind guard) + `docs/proof-semantics-adapter.md`; fresh-eye SHIP-WITH-NITS
-  folded (acceptance_classes accessor, gap double-list warning, doc note). Ready to
-  commit Slice 2.
-- **Folded #339 evidence-update comment (spilist, 2026-06-09)** — pinned the exact
-  closeout-blocking contract (three conditions: missing proof entry / reached <
-  required / gap lacks disposition). CONFIRMS Slices 1–2; REFINES Slice 3 (see the
-  Slice Plan row + Context Sources #6). No re-activation: confirms scope, adds
-  precision. Condition (i) "declared acceptance class with no proof entry" is the
-  new Slice-3 sub-case.
-- Next action: finish Slice 2 (doc + critique + commit), then Slice 3 — wire the
-  three-condition proof-mismatch check into achieve/issue closeout, degrading to
-  require-disposition when no adapter map is available.
+- Current slice: **Slice 4 (next)** — issue-closeout wiring + retro + dogfood +
+  #339 closeout. Slices 1–3 LANDED: S1 (071bcbaa) forms + residual-ledger floor;
+  S2 (aa1a7314) the `proof_semantics_adapter_lib.py` adapter boundary; S3
+  `scripts/proof_mismatch.py` — the portable three-condition proof-mismatch floor
+  (`## Proof Ledger`: (i) no proof entry / (ii) reached < required via
+  `level_satisfies` / (iii) gap lacks a real disposition; degrade→require-disposition
+  when no map; fail-closed on invalid adapter; inert when absent), wired into the
+  achieve CLI via `load_repo_module_from_skill_script` (at-cap closeout files
+  untouched) + 16 tests incl. a CLI differential subprocess test + doc.
+- **SPLIT-TRIGGER decision (S3):** S3 is already a cohesive substantial slice
+  (portable core + achieve wiring), so per the pre-committed split trigger the
+  thin ISSUE-closeout hook moves into Slice 4 (consolidated with retro + dogfood),
+  NOT a separate goal. `apply_proof_mismatch_floor` is reusable, so issue wiring is
+  a small call at the issue closeout validator. Achieve wiring already satisfies
+  User Acceptance #1–#2 (closeout refused/accepted; synthetic adapter mismatch).
+- **Folded #339 evidence-update comment (spilist, 2026-06-09)** — pinned the
+  three-condition closeout-blocking contract; CONFIRMS S1–S2 and drove S3's
+  condition (i). See Context Sources #6.
+- Next action: Slice 4 — wire `apply_proof_mismatch_floor` into the issue
+  closeout validator; full dogfood (prose-only refused / dispositioned accepted /
+  synthetic adapter mismatch / missing-adapter degraded / pre-rule + no-residual
+  unaffected); broad gate `run-quality.sh --read-only`; #339 close-keyword carrier
+  + `issue_tool.py verify-closeout`; retro + Auto-Retro dispositions.
 - Carry from Slice 1: skill-package files must carry NO `#N` anchors (the
   `validate_skill_ergonomics` portable_package_issue_anchor scan), and NO
   attention-state state-words (`skipped`/`disabled`/`no_adapter`/…) in string
@@ -192,7 +197,7 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 | 1 | Add `accepted-risk:` / `out-of-scope:` forms to `disposition_form.py` (the shared grammar) + the residual/disposition LEDGER presence/form floor; grandfathered, behavior-preserving | the shared grammar is the one source #337/#329 built; the new enum arms land first | prose-only residual refused, dispositioned ledger accepted; existing-form verdicts unchanged (corpus equality); SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; 0 corpus mismatches) |
 | 2 | The adapter boundary: schema for proof levels + acceptance-class→proof-level map + verifier refs + gap acceptability; resolution + missing-adapter degradation | Charness must ask adapters, not encode domain semantics | a synthetic adapter drives behavior; missing adapter degrades to the portable floor; NO domain concept in core; SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; domain-blind guard + 13 tests) |
-| 3 | Proof-mismatch detection wired into achieve/issue closeout — block on the three conditions pinned by the #339 evidence-update comment: (i) a declared acceptance class with NO evaluated proof entry; (ii) reached proof level does not satisfy the class (via the adapter map, `level_satisfies`); (iii) the gap lacks an explicit disposition (`issue`/`accepted-risk`/`out-of-scope`/`applied`) | the generic mismatch check is the core of #339; the maintainer comment pinned the exact contract | a closeout missing a proof entry OR whose proof < the named acceptance class is refused unless the gap carries a ledger disposition; SHIP critique | planned |
+| 3 | Proof-mismatch detection wired into achieve/issue closeout — block on the three conditions pinned by the #339 evidence-update comment: (i) a declared acceptance class with NO evaluated proof entry; (ii) reached proof level does not satisfy the class (via the adapter map, `level_satisfies`); (iii) the gap lacks an explicit disposition (`issue`/`accepted-risk`/`out-of-scope`/`applied`) | the generic mismatch check is the core of #339; the maintainer comment pinned the exact contract | a closeout missing a proof entry OR whose proof < the named acceptance class is refused unless the gap carries a ledger disposition; SHIP critique | **DONE (achieve)** — portable `proof_mismatch.py` + achieve CLI; issue-closeout hook moved to Slice 4 per the split trigger; fresh-eye SHIP pending |
 | 4 | Wire retro + dogfood + #339 closeout: broad gate; #339 carrier; retro | the operator-requested closeout | broad gate PASS; #339 verified closed; retro + ledger dispositions | planned |
 
 ## Coordination Cues
@@ -247,6 +252,20 @@ after the activation-discussion defaults are resolved._
 - Alternatives rejected:
 - Targeted verification: compile+ruff+lengths (293/480); 13 synthetic-adapter tests incl. a domain-blindness guard, partial-order math (incomparable both directions, undeclared->None), 9 fail-closed malformed shapes, YAML round-trip of the delimited incomparable form; 573 related quality-gate tests green; export-safe + byte-synced mirror + doc-links + markdown green; folded #339 maintainer evidence-update comment (3 blocking conditions) into Context Sources + Slice 3 plan. Fresh-eye critique = SHIP-WITH-NITS (folded acceptance_classes accessor for condition (i), gap_policy double-list warning, out-of-scope vocabulary doc note).
 - Test duplication pressure: +13 tests in a NEW test_proof_semantics_adapter.py module (no overlap with the disposition floor module); synthetic-adapter fixtures, distinct from existing adapter-lib tests; loads via the scripts. package pythonpath, no new subprocess-of-top-level-script boundary.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 3: Proof-mismatch detection (achieve)
+
+- Objective: Add scripts/proof_mismatch.py (portable, reusable by issue): parse a closeout ## Proof Ledger table and BLOCK on the three #339 conditions via the adapter — (i) no evaluated proof entry, (ii) reached proof does not satisfy the class (level_satisfies), (iii) gap lacks a real disposition; degrade to require-disposition when no adapter map; fail closed on an invalid adapter; inert when no ledger present. Wire apply_proof_mismatch_floor into the achieve CLI check_goal_artifact.py via load_repo_module_from_skill_script (so from scripts. imports resolve in the skill context) without touching the at-cap closeout files.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: compile+ruff+lengths (proof_mismatch 212/480; CLI 134/360); 16 proof-mismatch tests incl. parse/columns/multi-table/fence, the 3 conditions, degraded, invalid-adapter, and a CLI differential subprocess test (gap blocks, dispositioned passes); 612 related quality-gate tests green; ergonomics + attention-state + export-safe + byte-sync + doc-links + markdown green.
+- Test duplication pressure: +16 tests in a NEW test_proof_mismatch.py; 2 subprocess the CLI (check_goal_artifact.py) which is a top-level boundary already covered, not a fresh scripts/<x> subprocess; rest are in-process lib calls. Distinct from the adapter + disposition modules.
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:

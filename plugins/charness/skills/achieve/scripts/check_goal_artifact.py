@@ -19,6 +19,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
 head_freshness = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_head_freshness")
+# The proof-mismatch floor is a portable top-level module (reused by issue
+# closeout); loaded via the repo-module path so its `from scripts.` imports resolve.
+proof_mismatch = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
 
 
 def _resolve_goal_path(args) -> Path:
@@ -83,6 +86,8 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
         bits.append("recurrence-lineage floor: " + evidence_report["recurrence_lineage"]["reason"])
     if evidence_report.get("residual_ledger", {}).get("reason"):
         bits.append("residual-ledger floor: " + evidence_report["residual_ledger"]["reason"])
+    if evidence_report.get("proof_mismatch", {}).get("reason"):
+        bits.append("proof-mismatch floor: " + evidence_report["proof_mismatch"]["reason"])
     if evidence_report.get("coordination_missing"):
         bits.append(
             "coordination floors: "
@@ -121,7 +126,9 @@ def main() -> int:
             + "; use `HEAD` in the live command or mark the SHA as historical/proof-targeted"
         )
     if result.get("status") == "complete":
-        evidence_report = goal_lib.check_complete_evidence(args.repo_root.expanduser().resolve(), text)
+        repo_root = args.repo_root.expanduser().resolve()
+        evidence_report = goal_lib.check_complete_evidence(repo_root, text)
+        proof_mismatch.apply_proof_mismatch_floor(evidence_report, repo_root, text)
         timebox_report = goal_lib.check_timebox_closeout(text)
         result["closeout_evidence"] = evidence_report
         result["timebox_closeout"] = timebox_report
