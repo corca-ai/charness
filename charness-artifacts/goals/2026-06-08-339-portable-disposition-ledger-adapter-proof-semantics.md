@@ -10,17 +10,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 2 (next)** — the adapter boundary. Slice 1 LANDED:
-  `accepted-risk:`/`out-of-scope:` arms + the `## Residual Ledger` presence/form
-  floor (rung 1f, enforce-from 2026-06-10); fresh-eye critique SHIP-WITH-NITS
-  (multi-table under-fire + plural-heading folded); 65+478 tests green; corpus
-  verdict-equality 0 mismatches; ergonomics/attention-state/export-safe green;
-  mirror byte-synced. Activation decisions (a)–(e) RESOLVED 2026-06-09.
-- Next action: commit Slice 1, then begin Slice 2 — declare the adapter schema
-  (proof_levels + `incomparable`; acceptance_map class→min level; verifier_refs;
-  gap_policy) alongside the existing achieve/issue/retro adapters; dogfood with a
-  SYNTHETIC adapter so no domain concept enters core; missing adapter degrades to
-  the portable floor + "no domain map → require a ledger disposition".
+- Current slice: **Slice 3 (next)** — proof-mismatch detection. Slices 1–2 LANDED:
+  Slice 1 (071bcbaa) forms + residual-ledger floor; Slice 2 the
+  `scripts/proof_semantics_adapter_lib.py` boundary (proof_levels + `incomparable`
+  partial order; acceptance_map; verifier_refs; gap_policy; missing-adapter
+  degradation; generic `level_satisfies`/`acceptance_classes`/`min_level_for_acceptance`
+  /`gap_disposition_for`/`acceptance_map_available`) + 13 synthetic-adapter tests
+  (domain-blind guard) + `docs/proof-semantics-adapter.md`; fresh-eye SHIP-WITH-NITS
+  folded (acceptance_classes accessor, gap double-list warning, doc note). Ready to
+  commit Slice 2.
+- **Folded #339 evidence-update comment (spilist, 2026-06-09)** — pinned the exact
+  closeout-blocking contract (three conditions: missing proof entry / reached <
+  required / gap lacks disposition). CONFIRMS Slices 1–2; REFINES Slice 3 (see the
+  Slice Plan row + Context Sources #6). No re-activation: confirms scope, adds
+  precision. Condition (i) "declared acceptance class with no proof entry" is the
+  new Slice-3 sub-case.
+- Next action: finish Slice 2 (doc + critique + commit), then Slice 3 — wire the
+  three-condition proof-mismatch check into achieve/issue closeout, degrading to
+  require-disposition when no adapter map is available.
 - Carry from Slice 1: skill-package files must carry NO `#N` anchors (the
   `validate_skill_ergonomics` portable_package_issue_anchor scan), and NO
   attention-state state-words (`skipped`/`disabled`/`no_adapter`/…) in string
@@ -184,8 +191,8 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Add `accepted-risk:` / `out-of-scope:` forms to `disposition_form.py` (the shared grammar) + the residual/disposition LEDGER presence/form floor; grandfathered, behavior-preserving | the shared grammar is the one source #337/#329 built; the new enum arms land first | prose-only residual refused, dispositioned ledger accepted; existing-form verdicts unchanged (corpus equality); SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; 0 corpus mismatches) |
-| 2 | The adapter boundary: schema for proof levels + acceptance-class→proof-level map + verifier refs + gap acceptability; resolution + missing-adapter degradation | Charness must ask adapters, not encode domain semantics | a synthetic adapter drives behavior; missing adapter degrades to the portable floor; NO domain concept in core; SHIP critique | planned |
-| 3 | Proof-mismatch detection (acceptance class vs proof reached, via the adapter map) wired into achieve/issue closeout | the generic mismatch check is the core of #339 | a closeout whose proof < the named acceptance class is refused without a mismatch disposition; SHIP critique | planned |
+| 2 | The adapter boundary: schema for proof levels + acceptance-class→proof-level map + verifier refs + gap acceptability; resolution + missing-adapter degradation | Charness must ask adapters, not encode domain semantics | a synthetic adapter drives behavior; missing adapter degrades to the portable floor; NO domain concept in core; SHIP critique | **DONE** (fresh-eye SHIP-WITH-NITS folded; domain-blind guard + 13 tests) |
+| 3 | Proof-mismatch detection wired into achieve/issue closeout — block on the three conditions pinned by the #339 evidence-update comment: (i) a declared acceptance class with NO evaluated proof entry; (ii) reached proof level does not satisfy the class (via the adapter map, `level_satisfies`); (iii) the gap lacks an explicit disposition (`issue`/`accepted-risk`/`out-of-scope`/`applied`) | the generic mismatch check is the core of #339; the maintainer comment pinned the exact contract | a closeout missing a proof entry OR whose proof < the named acceptance class is refused unless the gap carries a ledger disposition; SHIP critique | planned |
 | 4 | Wire retro + dogfood + #339 closeout: broad gate; #339 carrier; retro | the operator-requested closeout | broad gate PASS; #339 verified closed; retro + ledger dispositions | planned |
 
 ## Coordination Cues
@@ -231,6 +238,20 @@ after the activation-discussion defaults are resolved._
 - Lessons carried forward:
 - Metrics:
 
+### Slice 2: Proof-semantics adapter boundary
+
+- Objective: Add scripts/proof_semantics_adapter_lib.py (cross-surface, top-level like disposition_form): proof_levels + incomparable partial order; acceptance_map class->min level; verifier_refs; gap_policy; resolution via the established *_adapter_lib candidate path; missing-adapter degradation (found=False/valid=True + portable floor still fires + proof-mismatch degrades to require-disposition) and found-but-invalid fail-closed. Generic domain-blind queries: level_satisfies / proof_level_rank / levels_incomparable / min_level_for_acceptance / acceptance_classes / gap_disposition_for / acceptance_map_available. Doc docs/proof-semantics-adapter.md.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: compile+ruff+lengths (293/480); 13 synthetic-adapter tests incl. a domain-blindness guard, partial-order math (incomparable both directions, undeclared->None), 9 fail-closed malformed shapes, YAML round-trip of the delimited incomparable form; 573 related quality-gate tests green; export-safe + byte-synced mirror + doc-links + markdown green; folded #339 maintainer evidence-update comment (3 blocking conditions) into Context Sources + Slice 3 plan. Fresh-eye critique = SHIP-WITH-NITS (folded acceptance_classes accessor for condition (i), gap_policy double-list warning, out-of-scope vocabulary doc note).
+- Test duplication pressure: +13 tests in a NEW test_proof_semantics_adapter.py module (no overlap with the disposition floor module); synthetic-adapter fixtures, distinct from existing adapter-lib tests; loads via the scripts. package pythonpath, no new subprocess-of-top-level-script boundary.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -250,6 +271,25 @@ the originating context by following them in order.
 4. **The adapter-resolution path:** `scripts/resolve_adapter.py` and the existing
    achieve/issue/retro adapters under `.agents/*.yaml` (the boundary #339 extends).
 5. **Recent-lessons:** `charness-artifacts/retro/recent-lessons.md`.
+6. **#339 evidence-update comment (spilist, member, fetched `gh issue view 339
+   --comments` 2026-06-09).** Confirms the design and pins the exact closeout-
+   blocking contract: "Charness does not need Slack semantics. It should require
+   the adapter to supply the acceptance class and proof satisfaction mapping, then
+   block closeout when (i) an acceptance class has NO evaluated proof entry; (ii)
+   the reached proof level does not satisfy the acceptance class; and (iii) the gap
+   lacks an explicit disposition such as `issue` / `accepted-risk` / `out-of-scope`
+   / `applied`." Evidence: two Ceal closeout misses — `corca-ai/ceal#279` (Slack
+   multi-image: acceptance class = attachment delivery, reached proof = local
+   deterministic adapter simulation, live roundtrip a non-claim) and a Slack
+   long-body closeout that recorded provider-observed write/read but only
+   `normalized_matched` (not exact body / blank-line preservation) yet still
+   closed. Ceal added a Ceal-specific guard (`scripts/agent-runtime/
+   check-slack-closeout-proof.mjs`, a `ceal.proof_readiness_closeout.v1` block);
+   the portable Charness gap is conditions (i)–(iii). This CONFIRMS Slice 1's four
+   residual forms and Slice 2's adapter boundary, and REFINES Slice 3 to the three
+   blocking conditions (condition (i) — a declared acceptance class with no proof
+   entry — is the new sub-case to model). Cross-repo `corca-ai/ceal` debug/spec
+   paths are context only, not charness files.
 
 ## Interview Decisions
 
