@@ -9,13 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1 & 2 DONE (#336 portable fix `cead7949`; critique enum
-  legend `a101e716`; both fresh-eye SHIP). Next: Slice 3 (publish_release
-  update_instructions pre-publish stub).
-- Next action: Slice 3 — emit/surface a target-version `update_instructions`
-  stub early (dry-run / `--prep` affordance) so the maintainer fills it before
-  the release critique. Then Slice 4 bundle proof + the staged #336 closeout
-  (carrier + resolution critique + verify-closeout) + retro.
+- Current slice: Slices 1, 2 & 3 DONE (#336 portable fix `cead7949`; critique
+  enum legend `a101e716`; release `--prep-update-instructions` `138366c1`; all
+  three fresh-eye SHIP). Next: Slice 4 (bundle proof + closeout).
+- Next action: Slice 4 — broad gate (`run-quality.sh --read-only`); changed-line
+  mutation coverage producer FIRST (mutation-pool commits added); the staged
+  #336 closeout (feature-class closeout body + resolution critique + direct-commit
+  carrier + verify-closeout); retro + dispositions; flip to complete.
 - Timebox: 4h
 - Activation time: 2026-06-08 (active run; flipped from draft at `/goal`)
 - Closeout reserve: 30m
@@ -214,6 +214,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Off-goal findings:
 - Lessons carried forward: The artifact-surface preflight renders the owning scaffold as the required shape, so surfacing author-time guidance in the scaffold template covers the preflight surface for free. For Slice 3 (publish_release update_instructions stub): same 'emit the author-time affordance from the owning helper' shape may apply.
 - Metrics: 1 fix commit (a101e716); 1 fresh-eye subagent (~37k tokens); no host token/time totals claimed.
+
+### Slice 3: Slice 3 — publish_release update_instructions pre-publish stub
+
+- Objective: Add a read-only, pre-publish, pre-critique --prep-update-instructions affordance to publish_release.py that emits a target-version update_instructions stub + staleness report, so the maintainer refreshes the adapter BEFORE the release critique and pre-empts the staleness-guard round-1 HOLD.
+- Why this approach: The staleness guard runs inside build_publish_plan, after the clean-worktree requirement and the critique gate, so the HOLD often surfaces only after the critique is spent. The prep affordance short-circuits before both gates, reports staleness as DATA (exit 0) rather than SystemExit, and emits a stub that embeds the target version verbatim (pasting it is what makes the guard pass).
+- Commits: 138366c1
+- What changed: publish_release_preflight.py (new pure build_update_instructions_prep_payload next to the staleness guard it reuses); publish_release_cli.py (--prep-update-instructions flag + run_prep_update_instructions + behavior-preserving extraction of the execute tail into execute_publish_plan so main() drops 100->~25 fn lines + dispatch rewrite); tests/quality_gates/test_release_publish_resilience.py (5 new tests: pure stub/staleness, dirty-tree+no-critique prep, staleness-as-data-vs-dry-run-HOLD, --execute rejection, version-selector coverage); references/closeout-critique-gate.md (Prep section); plugin mirror byte-synced.
+- Alternatives rejected: Overloading the regular dry-run to emit the stub (rejected: dry-run requires clean worktree + runs the critique gate + SystemExits on staleness — the prep must run earlier and not fail). A new module for the prep builder (rejected: it belongs next to update_instructions_version_blocker it reuses; the file is in the advisory warn band but cohesive and under the hard limit). A --fail-on-stale exit code (deferred: a NIT follow-up, not needed for the affordance).
+- Targeted verification: 13 resilience tests (incl. 5 new) + 36 release-publish tests pass (refactor behavior-preserving); ruff clean; py_compile ok; check_python_lengths exit 0 (both files in advisory file-length warn band, under hard limit; main() 100->~25 fn lines); validate_skills; check-markdown; check_doc_links; ergonomics all rules; structural sweep pass; pre-commit aggregate green at commit.
+- Test duplication pressure: Added 5 tests to test_release_publish_resilience.py (13 passed). Distinct from the existing staleness-blocker tests: those assert the dry-run HOLDs; the new ones assert prep reports staleness as DATA and emits a target-version stub — a different surface (the prep affordance), not a duplicate. No duplicate-pressure flag.
+- Critique: Fresh-eye bounded subagent (general-purpose) — verdict SHIP, no blockers/should-fix. Independently proved the main()->execute_publish_plan extraction is behavior-preserving (EMPTY byte-level diff of the moved execution body; no dropped/reordered step; dry-run return + not-release-verified branch preserved); prep is genuinely read-only and pre-gate (traced load_adapter/build_release_payload/release_previous_version — only read-only git tag/remote queries the real plan also runs); prep's target/previous computation matches build_publish_plan line-for-line so the staleness verdict cannot diverge; the stub embeds the target version verbatim; 48 release tests green. NITs: exit-0-on-stale docs (optional --fail-on-stale later); +1 selector test (added this slice, locking --set-version/--publish-current). File-length warn band judged honest cohesive units, no split.
+- Off-goal findings:
+- Lessons carried forward: Release CLI + preflight are now in the advisory file-length warn band (cli 338/360, preflight 334/360) — a future release-CLI addition should extract a module rather than append. The extract-the-tail pattern (to free a 100-line main) is behavior-preserving when the moved body uses only locals derived from a single passed dict (plan).
+- Metrics: 1 fix commit (138366c1); 1 fresh-eye subagent (~53k tokens) + 1 NIT lock-in test; no host token/time totals claimed.
 
 ## Context Sources
 
