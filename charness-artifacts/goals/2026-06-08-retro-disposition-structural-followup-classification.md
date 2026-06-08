@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md`.
+- Current slice: Slice 1 DONE (rung 1e floor + rung 2 mandate landed, all gates green, committing). Next: Slice 2.
+- Next action: Slice 2 — align the `retro` waste-sibling-scan four-decision taxonomy + the shared `retro-issue-destination-split.md` reference with the structural-follow-up destination shape (one destination vocabulary, not two drifting copies). Then Slice 3 (broad gate + #337 closeout + dogfood retro).
 - Verification cadence: cheap deterministic checks at commit boundaries; the
   touched scripts' tests + fresh-eye critique at slice boundaries; the broad gate
   + #337 closeout at the bundle/closeout boundary. Carry this session's lessons:
@@ -167,6 +167,20 @@ during the run:
 ## Slice Log
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+
+### Slice 1: Structural-follow-up destination floor (rung 1e) + reviewer mandate
+
+- Objective: Add #337 per-transferable-waste destination classification: presence/form-enum-only deterministic floor (rung 1e) + fresh-eye reviewer mandate; four forms incl. repo-local guard
+- Why this approach: grammar+judgment in the shared `disposition_form.py` (342 lines headroom) keeps the gate-and-intelligence split; the rung-1e wrapper in `goal_artifact_disposition.py` stays thin (needs its file-local `goal_created_date`/`_section_body`). Rule date 2026-06-09 (landing-day+1) follows the rung-1c/1d precedent so every existing goal is grandfathered and the broad gate stays green; this goal dogfoods the vocabulary voluntarily (grandfathered, not floor-forced).
+- Commits: (this commit)
+- What changed: `disposition_form.py` (+mirror) — `evaluate_destination_form`/`scan_destinations`/`names_transferable_waste`/`evaluate_structural_followup` + `STRUCTURAL_FOLLOWUP_RULE_DATE`/`_REPO_LOCAL_GUARD`/`_DESTINATION_MARKER`/sibling-scan regexes; `goal_artifact_disposition.py` (+mirror) — `apply_structural_followup_floor` (rung 1e) + read-bound-retro-once restructure; `lifecycle.md` (+mirror) — rung 1e floor bullet + rung 2 destination mandate; `SKILL.md` (+mirror) — net-zero gate-bullet edit; `goal_artifact_template.md` (+mirror) — `Structural follow-up:` affordance; `prescribed-skill-closeout-contract.md` — rung 1e doc bullet; `test_disposition_form_floor.py` — +11 #337 tests.
+- Alternatives rejected: (a) reuse the existing `Retro dispositions:` marker — adds no teeth (`applied: persisted to recent-lessons` still passes); a distinct `Structural follow-up:` marker forces the explicit destination call. (b) make the floor distinguish memory from real teeth — forbidden content classifier (Non-Goals). (c) rule date 2026-06-08 (this goal in floor scope) — would risk retroactively flagging same-day completes; +1-day precedent is broad-gate-safe.
+- Targeted verification: py_compile+ruff+length(347/360 warn-band, hard gate PASS exit0); 194 tests green (test_disposition_form_floor +11 new #337 tests, test_goal_disposition_gate, coordination, artifact_lib); validate_skills/skill_ergonomics/export-safe/doc-links/check-markdown all PASS; mirror byte-synced; live-corpus probe: 2026-06-08 complete goal enforced=false (grandfathered), transferable_waste_named=true (trigger works on a real artifact).
+- Test duplication pressure: +11 tests added to test_disposition_form_floor.py (existing #329/#337 grammar file); cohesive with sibling form-floor tests, no broad duplicate-gate pressure expected.
+- Critique: fresh-eye Explore reviewer (read-only, shared worktree) — verdict SHIP-WITH-FIXES, all 5 invariants + questions A–E/G sound, no nits. Its one "blocker" (F: file length 412 vs 360) was a MEASUREMENT ERROR — it used `wc -l` (412 raw) not the gate's tokei code-line metric (347/360, hard gate PASS exit0); disposition: OVER-WORRY (file is a cohesive disposition-rung unit, grammar already factored out; a split is a different theme per Non-Goals). Carry the warn-band signal: do not add more to `goal_artifact_disposition.py` without a split. SEPARATELY, my own cheap structural sweep (not the reviewer) caught a real regression the reviewer missed: a `(#337)` anchor I added to the in-package `goal_artifact_disposition.py` tripped `portable_package_issue_anchor` (achieve-package scripts are anchor-free at HEAD; traceability anchors belong in top-level `scripts/`, not skill packages) — fixed by dropping the anchor (traceability preserved in `scripts/disposition_form.py`).
+- Off-goal findings: none.
+- Lessons carried forward: (1) `validate_skill_ergonomics` scans the WHOLE skill package (keyed by SKILL.md path), so an issue anchor / host-surface ref in ANY in-package file (references/*.md, scripts/*.py) trips it — keep charness-internal `#N` anchors in top-level `scripts/`, not skill-package files. (2) A piped `cmd | head; echo $?` reports the PIPE tail's exit, not the validator's — gate exit codes must be read with `cmd && ok || fail`, not through a pipe. (3) Run the cheap structural sweep yourself; a fresh-eye reviewer optimizing one angle (length) can miss a different real gate regression (ergonomics).
+- Metrics: host log probe deferred to bundle boundary (Slice 3).
 
 ## Context Sources
 

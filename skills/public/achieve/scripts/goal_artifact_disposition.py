@@ -315,6 +315,41 @@ def apply_recurrence_lineage_floor(report: dict[str, Any], text: str) -> None:
         report["ok"] = False
 
 
+def apply_structural_followup_floor(report: dict[str, Any], text: str, retro_text: str) -> None:
+    """Disposition rung 1e: when the cited retro names a transferable waste item
+    (a ``## Sibling Search`` trigger), the goal's ``## Auto-Retro`` must carry a
+    structural-follow-up **destination** line, so "recorded in recent-lessons"
+    can no longer be mistaken for a structural fix.
+
+    Presence/form-enum only (never a content classifier — the achieve guardrail):
+    the floor checks ONLY that a ``Structural follow-up:`` line is present and
+    uses one of the four destination forms. Whether the chosen destination is
+    substantively right (e.g. a memory note dressed up as ``applied:``) is rung
+    2's — the fresh-eye disposition review's — call, never the floor's. Its own
+    enforce-from-date grandfathers goals frozen before the floor existed;
+    fail-CLOSED on an undatable goal mirrors the sibling rungs. Inert unless the
+    retro actually names transferable waste, so a no-transferable-waste goal is
+    never forced to add a destination line (no over-fire).
+    """
+    form = _load_shared_form()
+    created = goal_created_date(text)
+    enforced = created is None or created >= form.STRUCTURAL_FOLLOWUP_RULE_DATE
+    transferable = form.names_transferable_waste(retro_text)
+    report["structural_followup_scope"] = {
+        "enforced": enforced,
+        "transferable_waste_named": transferable,
+        "created": created.isoformat() if created else None,
+        "rule_date": form.STRUCTURAL_FOLLOWUP_RULE_DATE.isoformat(),
+    }
+    if not enforced or not transferable:
+        return
+    body = _section_body(_mask_fences(text), "Auto-Retro") or ""
+    verdict = form.evaluate_structural_followup(body)
+    if verdict["problem"]:
+        report["structural_followup"] = verdict
+        report["ok"] = False
+
+
 def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -> None:
     """Attach the disposition-gate verdict to ``report`` (mutates in place).
 
@@ -332,6 +367,19 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
     # missing lineage marker on an issue-routed disposition blocks even when rungs
     # 1a/1b are grandfathered.
     apply_recurrence_lineage_floor(report, text)
+    # Read the bound retro once: rung 1e needs it to detect the transferable-waste
+    # trigger, and rung 1a (below) reuses it for the improvement-list check.
+    retro_path = _bound_retro_path(report)
+    retro_text = ""
+    if retro_path is not None:
+        try:
+            retro_text = Path(retro_path).read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            retro_text = ""
+    # Rung 1e (the structural-follow-up destination floor) runs on its own date,
+    # so a missing destination on a transferable-waste retro blocks even when
+    # rungs 1a/1b are grandfathered.
+    apply_structural_followup_floor(report, text, retro_text)
     created = goal_created_date(text)
     report["disposition_scope"] = {
         "in_scope": in_scope,
@@ -348,14 +396,7 @@ def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -
         report["disposition_optout"] = {"reason": optout}
     if not in_scope:
         return
-    retro_path = _bound_retro_path(report)
-    has_improvements = False
-    if retro_path is not None:
-        try:
-            retro_text = Path(retro_path).read_text(encoding="utf-8", errors="ignore")
-        except OSError:
-            retro_text = ""
-        has_improvements = retro_lists_improvements(retro_text)
+    has_improvements = retro_lists_improvements(retro_text) if retro_path is not None else False
     blank = auto_retro_is_blank(text)
     report["retro_improvements_present"] = has_improvements
     report["auto_retro_blank"] = blank

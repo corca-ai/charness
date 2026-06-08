@@ -400,3 +400,157 @@ def test_retro_validator_enforces_dateless_in_scope_filename(tmp_path: Path) -> 
     except vra.ValidationError:
         raised = True
     assert raised  # dateless body but in-scope filename -> enforced (no dodge)
+
+
+# --- #337: structural-follow-up destination floor (rung 1e) -----------------
+# Grammar: the four destination forms, including `repo-local guard: <path>`.
+
+
+def test_destination_form_accepts_the_four_forms_including_repo_local_guard() -> None:
+    assert df.evaluate_destination_form("applied: shipped a validator")["kind"] == "applied"
+    assert df.evaluate_destination_form("issue #337 (novel: first occurrence)")["kind"] == "issue"
+    assert df.evaluate_destination_form("none — no structural follow-up; lesson is one-off")["kind"] == "none"
+    for value in ("repo-local guard: skills/x/AGENTS.md", "repo-local guard - .agents/issue-adapter.yaml"):
+        verdict = df.evaluate_destination_form(value)
+        assert verdict["kind"] == "repo-local-guard", value
+        assert verdict["ok"] is True
+    # vague-but-valid passes — proves this is NOT a content classifier
+    assert df.evaluate_destination_form("applied: tweak")["ok"] is True
+
+
+def test_destination_form_rejects_memory_and_skips_placeholder() -> None:
+    for value in ("memory -> recent-lessons digest refreshed", "recorded in recent-lessons", "repo-local guard"):
+        assert df.evaluate_destination_form(value)["ok"] is False, value
+    assert df.evaluate_destination_form("TODO — classify the destination")["kind"] == "placeholder"
+    assert df.evaluate_destination_form("   ")["ok"] is False
+
+
+def test_scan_destinations_finds_marker_variants_and_masks_fences() -> None:
+    body = (
+        "Structural follow-up: applied: shipped the floor this run\n"
+        "Structural followup: issue #337 (recurs: #329 -> #330)\n"
+        "```\nStructural follow-up: memory -> fenced example, not real\n```\n"
+    )
+    scanned = df.scan_destinations(body)
+    assert [e["verdict"]["kind"] for e in scanned] == ["applied", "issue"]  # fenced line inert
+
+
+# Trigger detection: a transferable-waste `## Sibling Search` vs the n/a short-circuit.
+
+
+def test_names_transferable_waste_true_only_for_real_decision_bullets() -> None:
+    transferable = (
+        "# Retro\n\n## Sibling Search\n\n"
+        "- same layer: scripts/x.py | decision: same waste, fix now | proof: grep\n"
+    )
+    assert df.names_transferable_waste(transferable) is True
+    short_circuit = "# Retro\n\n## Sibling Search\n\n- n/a — trivial fix; no plausible siblings\n"
+    assert df.names_transferable_waste(short_circuit) is False
+    assert df.names_transferable_waste("# Retro\n\n## Next Improvements\n\n- do x\n") is False  # absent
+    fenced = "# Retro\n\n```\n## Sibling Search\n\n- a | decision: x\n```\n"
+    assert df.names_transferable_waste(fenced) is False  # fenced section inert
+
+
+def test_evaluate_structural_followup_problem_states() -> None:
+    assert df.evaluate_structural_followup("Retro dispositions: applied: x\n")["problem"] == "missing"
+    assert df.evaluate_structural_followup("Structural follow-up: memory -> kept in head\n")["problem"] == "invalid"
+    assert df.evaluate_structural_followup("Structural follow-up: none — one-off, no owner\n")["problem"] is None
+
+
+def test_structural_followup_rule_date_grandfathers_landing_day() -> None:
+    assert df.STRUCTURAL_FOLLOWUP_RULE_DATE == date(2026, 6, 9)
+
+
+# --- achieve wiring: rung 1e inside check_complete_evidence -----------------
+
+
+def _seed_transferable(tmp_path: Path, created: str) -> None:
+    # A retro that names a transferable waste item (real `## Sibling Search` bullet).
+    _seed(
+        tmp_path,
+        f"charness-artifacts/retro/{created}-{_SLUG}.md",
+        "# Retro\n\n## Next Improvements\n\n- workflow: do x\n\n## Sibling Search\n\n"
+        "- same layer: skills/y.py | decision: valid follow-up outside the slice "
+        "| proof: grep\n  follow-up: deferred docs/handoff.md\n",
+    )
+    _seed(tmp_path, f"charness-artifacts/probe/{created}-{_SLUG}.json", '{"host":"claude-code"}\n')
+
+
+def test_rung1e_blocks_transferable_waste_without_destination(tmp_path: Path) -> None:
+    created = "2026-06-09"  # in structural-follow-up scope
+    _seed_transferable(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = "Retro dispositions: applied: shipped the destination floor this run\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["structural_followup_scope"]["transferable_waste_named"] is True
+    assert report["structural_followup"]["problem"] == "missing"
+    assert report["ok"] is False
+
+
+def test_rung1e_blocks_invalid_destination_form(tmp_path: Path) -> None:
+    created = "2026-06-09"
+    _seed_transferable(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = (
+        "Retro dispositions: applied: shipped the destination floor this run\n"
+        "Structural follow-up: memory -> recorded in recent-lessons\n"
+    )
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["structural_followup"]["problem"] == "invalid"
+    assert report["ok"] is False
+
+
+def test_rung1e_passes_with_valid_destination(tmp_path: Path) -> None:
+    created = "2026-06-09"
+    _seed_transferable(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    for destination in (
+        "applied: shipped the destination floor this run",
+        "issue #337 (recurs: #329 -> #330)",
+        "repo-local guard: skills/x/AGENTS.md",
+        "none — one-off waste this run, no structural owner",
+    ):
+        body = (
+            "Retro dispositions: applied: shipped the destination floor this run\n"
+            f"Structural follow-up: {destination}\n"
+        )
+        report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+        assert "structural_followup" not in report, destination
+        assert report["ok"] is True, destination
+
+
+def test_rung1e_grandfathers_pre_rule_goal(tmp_path: Path) -> None:
+    created = "2026-06-08"  # day before the rule date -> grandfathered
+    _seed_transferable(tmp_path, created)
+    review = _seed_review(tmp_path, created)
+    body = "Retro dispositions: applied: shipped it; the transferable waste has no destination line\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["structural_followup_scope"]["enforced"] is False
+    assert "structural_followup" not in report  # inert for grandfathered goals
+
+
+def test_rung1e_does_not_over_fire_without_transferable_waste(tmp_path: Path) -> None:
+    # In scope, but the retro names no transferable waste (no `## Sibling Search`):
+    # the floor must NOT force a destination line.
+    created = "2026-06-09"
+    _seed_evidence(tmp_path, created)  # retro has Next Improvements but no Sibling Search
+    review = _seed_review(tmp_path, created)
+    body = "Retro dispositions: applied: shipped the destination floor this run\n"
+    report = ce.check_complete_evidence(tmp_path, _build_goal(created, body, review))
+    assert report["structural_followup_scope"]["transferable_waste_named"] is False
+    assert "structural_followup" not in report
+    assert report["ok"] is True
+
+
+def test_rung1e_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
+    # Behavior-preservation: the destination floor is achieve-only. A session retro
+    # that names transferable waste but records no `Structural follow-up:` line stays
+    # VALID under the retro validator (it never calls the new destination helpers).
+    body = (
+        "# Retro — t\n\nDate: 2026-06-09\n\n## Context\n\nx\n\n## Next Improvements\n\n"
+        "- workflow: do x. Disposition: applied: shipped it\n\n## Sibling Search\n\n"
+        "- same layer: skills/y.py | decision: valid follow-up outside the slice | proof: grep\n"
+        "  follow-up: deferred docs/handoff.md\n\n## Persisted\n\nyes\n"
+    )
+    path = _seed(tmp_path, "2026-06-09-r.md", body)
+    vra.validate_retro_artifact(path)  # no raise — retro unchanged by the addition

@@ -87,6 +87,40 @@ RECURRENCE_LINEAGE_SUMMARY = (
 )
 _RECURRENCE_LINEAGE = re.compile(r"(?i)\b(?:recurs|recurrence|lineage|novel)\b[ \t]*:[ \t]*\S")
 
+# Structural-follow-up **destination** floor (#337). When a waste-retro names a
+# *transferable* waste item (a `## Sibling Search` trigger), each item's
+# disposition must resolve to one explicit structural-follow-up destination, so
+# "recorded in recent-lessons" can no longer be mistaken for a structural fix.
+# Its own enforce-from date lands the day after the floor (mirrors rung 1c/1d):
+# every artifact dated on/before the landing day is grandfathered. Clone-safe:
+# an in-file constant, not mtime.
+STRUCTURAL_FOLLOWUP_RULE_DATE = date(2026, 6, 9)
+
+# The four destination forms, a superset of the disposition forms above plus
+# `repo-local guard: <path>` (a consuming-repo guard). Presence/enum only — the
+# fresh-eye disposition review (rung 2) judges whether the chosen destination is
+# substantively right, exactly as it falsifies a `novel:` claim.
+DESTINATION_FORM_SUMMARY = (
+    "`applied: <gate/hook/validator/test/contract change>` / "
+    "`issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`"
+)
+# `repo-local guard: <path>` then a colon/dash separator then a non-empty path.
+# Mirrors `_NONE`'s separator handling so a compound word is not split.
+_REPO_LOCAL_GUARD = re.compile(
+    r"^repo-local[ \t]+guard\b[ \t]*(?:[—–:]|[ \t]-)[ \t]*\S", re.IGNORECASE
+)
+# The destination-line marker. `follow[ \t-]?ups?` matches `follow-up`/`followup`/
+# `follow up`/`follow-ups`; the trailing colon is required so prose like "a
+# structural follow-up was filed" (no colon) is never read as a marker.
+_DESTINATION_MARKER = re.compile(
+    r"(?i)\bstructural[ \t]+follow[ \t-]?ups?[ \t]*:[ \t]*(?P<value>[^\n]*)"
+)
+# A `## Sibling Search` section names transferable waste when it carries a real
+# decision bullet (`- … | decision: …`); the `n/a — trivial fix; no plausible
+# siblings` short-circuit has no `decision:` and is correctly excluded.
+_SIBLING_HEADING = re.compile(r"(?im)^(#{2,6})[ \t]+Sibling[ \t]+Search\b[^\n]*$")
+_DECISION_BULLET = re.compile(r"(?im)^[ \t]*(?:[-*+]|\d+[.)])[ \t].*\bdecision[ \t]*:")
+
 
 def _clean(value: str) -> str:
     """Strip leading markdown markers and surrounding emphasis from a value."""
@@ -118,6 +152,34 @@ def evaluate_disposition_form(value: str) -> dict:
         "kind": "invalid",
         "value": cleaned,
         "reason": f"not one of {VALID_FORM_SUMMARY} (bare `memory`/prose-only is rejected)",
+    }
+
+
+def evaluate_destination_form(value: str) -> dict:
+    """Judge one structural-follow-up **destination** value's form (#337).
+
+    The four valid forms are the three disposition forms (``applied:`` /
+    ``issue #N`` / ``none — <reason>``) plus ``repo-local guard: <path>``. Like
+    ``evaluate_disposition_form`` it is presence/enum only — a present-but-vague
+    ``applied: tweak`` passes; the substance is the disposition review's call.
+    Returns the same ``{"ok", "kind", "value", "reason"}`` shape; ``kind`` adds
+    ``repo-local-guard`` to the form vocabulary.
+    """
+    cleaned = _clean(value)
+    if not cleaned:
+        return {"ok": False, "kind": "invalid", "value": value.strip(), "reason": "empty destination value"}
+    if _PLACEHOLDER.match(cleaned):
+        return {"ok": True, "kind": "placeholder", "value": cleaned, "reason": "unfilled scaffold placeholder; not judged"}
+    if _REPO_LOCAL_GUARD.match(cleaned):
+        return {"ok": True, "kind": "repo-local-guard", "value": cleaned, "reason": ""}
+    base = evaluate_disposition_form(value)
+    if base["ok"]:
+        return base
+    return {
+        "ok": False,
+        "kind": "invalid",
+        "value": cleaned,
+        "reason": f"not one of {DESTINATION_FORM_SUMMARY} (a bare memory/prose-only destination is rejected)",
     }
 
 
@@ -187,3 +249,80 @@ def is_form_enforced(observed: date | None) -> bool:
     if observed is None:
         return True
     return observed >= DISPOSITION_FORM_RULE_DATE
+
+
+def names_transferable_waste(retro_text: str) -> bool:
+    """True when the cited retro names a *transferable* waste item — a
+    ``## Sibling Search`` section carrying ≥1 real decision bullet (#337).
+
+    Structure/presence only: the section is the waste-sibling-scan marker the
+    retro contract adds *only* when a transferable waste pattern is named, so its
+    presence-with-a-decision-bullet is the trigger. The ``n/a — trivial fix; no
+    plausible siblings`` short-circuit carries no ``decision:`` and is excluded,
+    so narrowly-local waste does not over-fire the destination floor. Fences are
+    masked so a fenced example section is inert.
+    """
+    masked = _mask_fences(retro_text)
+    head = _SIBLING_HEADING.search(masked)
+    if head is None:
+        return False
+    level = len(head.group(1))
+    body_start = masked.find("\n", head.end())
+    if body_start == -1:
+        return False
+    nxt = re.compile(rf"(?m)^#{{1,{level}}}[ \t]+\S").search(masked, body_start + 1)
+    body = masked[body_start + 1 : nxt.start() if nxt else len(masked)]
+    return bool(_DECISION_BULLET.search(body))
+
+
+def scan_destinations(section_text: str) -> list[dict]:
+    """Find every ``Structural follow-up:`` destination line and judge its form.
+
+    ``section_text`` is the already-section-scoped body (the caller owns section
+    selection, mirroring ``scan_dispositions``). Returns
+    ``[{"marker", "value", "verdict"}]`` in source order; fences are masked.
+    """
+    masked = _mask_fences(section_text)
+    results: list[dict] = []
+    for match in _DESTINATION_MARKER.finditer(masked):
+        value = match.group("value").strip()
+        results.append(
+            {"marker": "Structural follow-up", "value": value, "verdict": evaluate_destination_form(value)}
+        )
+    return results
+
+
+def evaluate_structural_followup(section_text: str) -> dict:
+    """Verdict for the structural-follow-up destination floor over an Auto-Retro
+    body. Presence/form-enum only (never a content classifier — the #337
+    guardrail). Returns ``{"problem": None|"invalid"|"missing", "reason"?, ...}``:
+
+    - ``"invalid"`` — at least one ``Structural follow-up:`` line uses a form that
+      is not one of the four destinations.
+    - ``"missing"`` — no valid ``Structural follow-up:`` destination line is
+      present (the caller fires this only when transferable waste is named).
+    - ``None`` — at least one valid destination line and no invalid form.
+    """
+    destinations = scan_destinations(section_text)
+    invalid = [d for d in destinations if not d["verdict"]["ok"]]
+    valid = [d for d in destinations if d["verdict"]["ok"] and d["verdict"]["kind"] != "placeholder"]
+    if invalid:
+        return {
+            "problem": "invalid",
+            "invalid": [{"value": d["value"]} for d in invalid],
+            "reason": (
+                "one or more `Structural follow-up:` destination lines use an invalid form; each must be "
+                f"{DESTINATION_FORM_SUMMARY}"
+            ),
+        }
+    if not valid:
+        return {
+            "problem": "missing",
+            "reason": (
+                "the cited retro names a transferable waste item (a `## Sibling Search` trigger) but "
+                "`## Auto-Retro` records no `Structural follow-up:` destination; classify each transferable "
+                f"waste item's structural follow-up as {DESTINATION_FORM_SUMMARY} so a bare "
+                "'recorded in recent-lessons' cannot be mistaken for a structural disposition"
+            ),
+        }
+    return {"problem": None}

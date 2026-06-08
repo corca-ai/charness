@@ -523,6 +523,16 @@ made by an agent and recorded for a human, never by a regex.
     "look recurring" would itself be the classifier the guardrail forbids); some
     rote `novel:` is the accepted cost. Same grandfather-by-`Created`-date shape as
     the other rungs.
+  - *structural-follow-up destination*: when the cited retro names a *transferable*
+    waste item (a `## Sibling Search` trigger), `## Auto-Retro` must carry a
+    `Structural follow-up:` line whose value is one of four destinations —
+    `applied: <gate/hook/validator/test/contract change>` /
+    `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` /
+    `none — <reason>` — so "recorded in recent-lessons" can no longer be mistaken
+    for a structural fix. **Presence/form-enum only** — the floor checks a valid
+    destination line is present, never whether the chosen destination is the right
+    one (that is rung 2's call). Inert unless transferable waste is named (no
+    over-fire); same grandfather-by-`Created`-date shape as the other rungs.
 - **Rung 2 — the fresh-eye disposition review** (the intelligence). The
   After-phase already mandates a bounded fresh-eye closeout review; this gives
   that reviewer an added mandate: read the cited retro's `## Next Improvements`
@@ -541,6 +551,16 @@ made by an agent and recorded for a human, never by a regex.
   narrow issue — if so, reject it (the general fix, not the N-th point-fix, is the
   real disposition). A `recurs:` lineage that names real prior instances is the
   honest form.
+  **Classify a structural-follow-up destination per transferable waste item.**
+  Rung 1e's floor only proves a `Structural follow-up:` line is *present* with a
+  valid form. The reviewer must judge whether the chosen *destination* is right:
+  for each transferable waste item the retro's `## Sibling Search` names, decide
+  whether the structural fix belongs in an `applied:` change landed this run, an
+  `issue #N`, a consuming-repo `repo-local guard: <path>`, or genuinely
+  `none — <reason>`. **Reject "recorded in recent-lessons" as a destination**
+  unless it is paired with one of those — a memory note is capture, not a
+  structural disposition. Rejecting that over-claim is the whole point of the
+  destination mandate.
 
 **Honest limit.** The deterministic floor proves the *process* ran (a review
 exists and binds) and catches the unambiguous *blank*; it never scores whether a

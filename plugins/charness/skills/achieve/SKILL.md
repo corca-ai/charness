@@ -110,9 +110,9 @@ lifecycle instead of starting a new one.
      `Structural pattern:`+`Triggering instance(s):` and a resolved `Destination:`
      per `../../shared/references/retro-issue-destination-split.md`.
    - **disposition gate, for goals created after the rule landed:** block blank
-     Auto-Retro when cited retro lists improvements, and require a bound
-     `Disposition review:` line (or `host-blocked-subagent` skip). Presence/
-     binding-only, never a content classifier; pre-rule goals grandfathered.
+     Auto-Retro; require a bound `Disposition review:` line; and when a retro
+     names transferable waste, require a `Structural follow-up:` destination.
+     Presence/binding-only, never a content classifier; pre-rule grandfathered.
    - **coordination floors:** for in-scope goals, recorded phase work needs
      `Routing:`; external sources need `Gather:`; release surfaces need
      `Release:`; tracked issue closeout needs `Issue closeout:`.

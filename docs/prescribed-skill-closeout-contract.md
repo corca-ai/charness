@@ -133,6 +133,13 @@ and wired through the achieve After-phase evidence gate:
     binds to this goal; it never inspects the review's content. Tightening it
     into a content classifier re-imports the prose word-list trap one level up
     and is disallowed.
+  - *structural-follow-up destination* (#337) — when the cited retro names a
+    transferable waste item (a `## Sibling Search` trigger), `## Auto-Retro` must
+    carry a `Structural follow-up:` line whose value is one of four destinations
+    (`applied:` / `issue #N` / `repo-local guard: <path>` / `none — <reason>`), so
+    "recorded in recent-lessons" cannot pass as a structural disposition.
+    Presence/form-enum only; inert unless transferable waste is named; same
+    grandfather-by-`Created`-date shape (≥ `2026-06-09`).
 - **Rung 2 — fresh-eye disposition review** (the intelligence): the bounded
   closeout reviewer reads the retro's `## Next Improvements` + the goal's
   `## Auto-Retro` and records a **per-improvement verdict** (dispositioned vs
