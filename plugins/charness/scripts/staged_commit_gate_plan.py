@@ -14,6 +14,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
+_artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
 
 # Single source of truth (#314) for the fast structural checkers that must run
 # in BOTH the per-slice aggregate (run_slice_closeout) and the literal git
@@ -142,6 +143,39 @@ def _skill_core_headroom_gates(repo_root: Path, paths: list[str]) -> list[GateCo
     ]
 
 
+def _artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    """Relocate the artifact-shape validators' verdicts to the commit boundary.
+
+    Generalizes the skill-surface preflight to the hand-authored artifact family
+    (#284 -> #334): when a commit touches a prefix-mapped `charness-artifacts/**`
+    artifact (critique/ideation/retro), run its owning validator early so an
+    author learns the required shape here, not by a late broad-gate failure. The
+    dispatcher's registry owns surface->validator mapping; same validator, same
+    verdict, only earlier (no new shape requirement).
+    """
+    matched = [
+        path
+        for path in paths
+        if (surface := _artifact_preflight.surface_for_path(Path(path).as_posix())) is not None
+        and surface.commit_boundary
+    ]
+    if not matched:
+        return []
+    return [
+        GateCommand(
+            "check-artifact-shape (staged)",
+            (
+                "python3",
+                "scripts/check_artifact_surface_preflight.py",
+                "--repo-root",
+                str(repo_root),
+                "--changed-artifacts",
+                *matched,
+            ),
+        )
+    ]
+
+
 def staged_commit_gate_plan(
     repo_root: Path,
     staged_paths: list[str] | None = None,
@@ -217,6 +251,7 @@ def staged_commit_gate_plan(
         plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
 
     plan.extend(_skill_core_headroom_gates(repo_root, paths))
+    plan.extend(_artifact_shape_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
     # agrees with the per-slice aggregate on the cheap structural subset.
@@ -239,6 +274,7 @@ STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
         "validate-attention-state-visibility",
         "validate-skill-ergonomics",
         "check-skill-core-headroom (staged)",
+        "check-artifact-shape (staged)",
     }
 )
 

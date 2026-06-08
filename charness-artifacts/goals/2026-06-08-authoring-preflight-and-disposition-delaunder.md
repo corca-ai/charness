@@ -13,8 +13,8 @@ critiqued before code.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — build the general artifact-surface preflight dispatcher + family registry; wire the blocking commit-boundary structural-sweep member; connect the critique scaffold (the #334 proving instances). Slice 1 (design + SHIP-WITH-CHANGES critique) is DONE.
-- Next action: implement `scripts/check_artifact_surface_preflight.py` with the registry, add a blocking `STRUCTURAL_SWEEP_LABELS` member in `staged_commit_gate_plan.py`, cite the critique scaffold from the critique skill; tests + behavior-preservation check; mirror-sync.
+- Current slice: Slice 3 — sibling scan across the artifact-authoring validator family; extend the registry to the adapter-scoped trio (debug/quality/handoff); coverage report. Slices 1 (design) + 2 (dispatcher + blocking commit-boundary wiring + critique scaffold citation, #334 caught at author time) are DONE.
+- Next action: enumerate the artifact-authoring shape family, classify covered/fixed/out-of-class, extend the dispatcher registry to the adapter-scoped surfaces with adapter resolution, write the coverage report; tests + behavior-preservation.
 - Timebox: 4h
 - Activation time: 2026-06-08 (activated via `/goal`)
 - Closeout reserve: 45m
@@ -217,6 +217,20 @@ _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1
 - Critique: Fresh-eye SHIP-WITH-CHANGES. Real findings folded: A3 tier was doc-equivalent (now blocking structural-sweep + scaffold-by-construction); goal-closeout has no scaffold (registry now marks it validator-constants+template); G3 restated as verdict-relocation; lineage floor value honestly attributed to rung-2 (floor is presence-only forcing function). Verified-safe: critique scaffold round-trips, retro isolation holds by construction, validators not at commit boundary today (relocation is genuine new value).
 - Off-goal findings: None.
 - Lessons carried forward: Design axes locked: (A) general dispatcher + family registry reading shape from scaffolds/validator-constants, wired as a BLOCKING commit-boundary structural-sweep member + scaffold-by-construction; (B) de-launder = presence-only recurrence-lineage marker (rung 1d in goal_artifact_disposition, grammar in shared disposition_form) on issue-form Auto-Retro dispositions + rung-2 reviewer falsifies novel:. Enforce-from-date 2026-06-08 so THIS goal dogfoods. Standalone-retro extension deferred (named open escape).
+- Metrics:
+
+### Slice 2: Slice 2 — General artifact-surface preflight + blocking commit-boundary wiring (#334 proving instance)
+
+- Objective: Build the general dispatcher + family registry; wire it as a BLOCKING commit-boundary structural-sweep member; connect the critique scaffold (Arm 2). Prove on the critique-artifact + goal-closeout surfaces.
+- Why this approach: The #334 surfaces are the proving instances; the blocking arm (not an advisory) is what makes the fix non-discretionary per the Slice-1 critique.
+- Commits: pending (this slice commit)
+- What changed: NEW scripts/check_artifact_surface_preflight.py (registry + describe/--emit-stub/--changed-artifacts). scripts/staged_commit_gate_plan.py: _artifact_shape_gates + check-artifact-shape (staged) in STRUCTURAL_SWEEP_LABELS. skills/public/critique/references/counterweight-triage.md: cite the scaffold (Arm 2). docs/conventions/authoring-preflight.md: artifact-shape preflight section. tests/quality_gates/test_check_artifact_surface_preflight.py (NEW) + 2 cases in test_staged_commit_gate_plan.py. Plugin mirror synced.
+- Alternatives rejected: Exit-0 advisory tier (rejected per Slice-1 critique SC-1: doc-equivalent = G2 trap). Re-declaring shape in the dispatcher (rejected: drift; it reads scaffold/template/validator-constants instead). Importing the heavy goal-closeout module for constants (rejected: read the goal template's Final Verification block instead — lighter, single source).
+- Targeted verification: py_compile + ruff clean; 39/39 pytest (dispatcher unit + grouping/blocking logic + gate-plan wiring + scaffold round-trip). Proving test: a parent-delegated critique missing Reviewer Tier Evidence is BLOCKED at the commit boundary (the #334 catch), a scaffold round-trip PASSES. Behavior preservation: validate_critique_artifacts/ideation/retro --all still green (255/0/156); validators untouched. Mirror byte-synced (no staged drift); export-safe imports (444 files); doc-links + markdown clean.
+- Test duplication pressure: New tests target a new module (check_artifact_surface_preflight) + new gate-plan branch; no duplication of existing suites — they exercise the registry/grouping and the structural-sweep wiring not covered elsewhere.
+- Critique: Slice-1 fresh-eye findings applied in-build: blocking tier (not advisory); registry marks goal-closeout as no-scaffold; G3-precise (relocation, not new requirement) proven by behavior-preservation check.
+- Off-goal findings: None.
+- Lessons carried forward: Dispatcher registry now holds critique/ideation/retro (prefix-mapped, commit-boundary) + goal-closeout (shape-only). Slice 3 extends to adapter-scoped debug/quality/handoff + the coverage report.
 - Metrics:
 
 ## Context Sources

@@ -104,6 +104,32 @@ def test_staged_commit_plan_skips_core_headroom_without_changed_skill_md() -> No
         assert "check-skill-core-headroom (staged)" not in _labels(paths)
 
 
+def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
+    # the hand-authored artifact family pulls the blocking commit-boundary shape
+    # gate, scoped to the changed charness-artifacts/** paths.
+    plan = staged_commit_gate_plan(ROOT, ["charness-artifacts/critique/x.md"], ruff_path="")
+    gate = next((c for c in plan if c.label == "check-artifact-shape (staged)"), None)
+    assert gate is not None
+    assert gate.argv == (
+        "python3",
+        "scripts/check_artifact_surface_preflight.py",
+        "--repo-root",
+        str(ROOT),
+        "--changed-artifacts",
+        "charness-artifacts/critique/x.md",
+    )
+    # and it is a blocking structural-sweep member (relocated, not advisory).
+    assert "check-artifact-shape (staged)" in STRUCTURAL_SWEEP_LABELS
+    assert "check-artifact-shape (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["charness-artifacts/critique/x.md"])}
+
+
+def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
+    for paths in (["docs/x.md"], ["README.md"], ["scripts/x.py"]):
+        assert "check-artifact-shape (staged)" not in _labels(paths)
+    # spec/ is out of the hand-authored shape family (no owning shape validator).
+    assert "check-artifact-shape (staged)" in _labels(["charness-artifacts/retro/2026-06-08-x.md"])
+
+
 def test_gate_command_serializes_to_dict() -> None:
     assert GateCommand("demo", ("python3", "demo.py")).as_dict() == {
         "label": "demo",

@@ -101,3 +101,25 @@ the caller can rely on the schema instead of re-parsing prose.
 Do not treat the bullet schema as a substitute for the counterweight pass.
 The bins still come from the counterweight reviewer's judgment; structured
 emission is the persistence layer, not the analysis.
+
+## Author From The Scaffold (required shape by construction)
+
+When persisting the critique record, do not hand-author the file blind: start
+from the scaffold so the validator-required shape — `## Structured Findings` and,
+for a parent-delegated review, `## Reviewer Tier Evidence` (with its required
+fields and host-exposure-state enum) — is present by construction. Hand-authoring
+without it is how the reviewer-tier section gets silently omitted and only the
+gate (late) catches it.
+
+```bash
+# emit the starter stub (rendered template) for a new critique record
+python3 scripts/check_artifact_surface_preflight.py --type critique --emit-stub
+# or the scaffold directly:
+python3 skills/public/critique/scripts/scaffold_critique_artifact.py --repo-root .
+# inspect required shape for an existing file + its current verdict:
+python3 scripts/check_artifact_surface_preflight.py --path <critique-artifact>
+```
+
+The same `check_artifact_surface_preflight.py` runs the owning validator at the
+commit boundary, so a missing required section is surfaced at author time rather
+than as a late broad-gate failure.

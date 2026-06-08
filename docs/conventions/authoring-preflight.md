@@ -82,6 +82,36 @@ helper `scripts/` file rather than trimming to the hard limit:
 python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md
 ```
 
+## Artifact-shape preflight (charness-artifacts/**)
+
+The skill-surface preflight above covers `skills/**` edits. The hand-authored
+**artifact** family (`charness-artifacts/critique/*.md`, goal
+`## Final Verification` closeout-evidence, retro, ideation, and — being
+extended — debug/quality/handoff) is covered by
+[check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py).
+It generalizes the same author-time idea to the recurring "authoring-preflight
+skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
+artifact's required shape at author time, not by failing the broad gate (the 334
+instance: a hand-authored critique missing `## Reviewer Tier Evidence` cost a
+second full gate run).
+
+Before authoring an artifact, surface its required shape (the dispatcher reads it
+from the owning scaffold/template/validator — it never re-declares it):
+
+```bash
+python3 scripts/check_artifact_surface_preflight.py --type critique          # required shape
+python3 scripts/check_artifact_surface_preflight.py --type critique --emit-stub  # starter stub
+python3 scripts/check_artifact_surface_preflight.py --path <artifact>         # shape + current verdict
+```
+
+This is not merely a doc: the dispatcher's `--changed-artifacts` mode is wired
+into [staged_commit_gate_plan.py](../../scripts/staged_commit_gate_plan.py) as a
+**blocking** `STRUCTURAL_SWEEP_LABELS` member (`check-artifact-shape (staged)`),
+exactly like the SKILL.md core-headroom gate. When a commit touches a
+prefix-mapped `charness-artifacts/**` artifact, its owning validator runs at the
+commit boundary — the *same* validator with the *same* verdict, only relocated
+earlier. It adds no new shape requirement and changes no validator's judgment.
+
 ## Portable skill packages
 
 A file under `skills/public/**` or `skills/support/**` ships as a *portable*
