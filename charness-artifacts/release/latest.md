@@ -3,12 +3,12 @@ Date: 2026-06-08
 
 ## Scope
 
-Advanced `charness` toward release `0.29.0` (tag `v0.29.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.30.0` (tag `v0.30.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.28.0`
-- target version: `0.29.0`
+- previous version: `0.29.0`
+- target version: `0.30.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,33 +17,30 @@ Advanced `charness` toward release `0.29.0` (tag `v0.29.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.29.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.30.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.28.0`
+- Previous release ref: `refs/tags/v0.29.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
-  - `real_host_checklist`
   - `update_instructions`
 - Focused preflight commands:
   - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
-  - `pytest tests/quality_gates/test_release_real_host.py -q`
   - `pytest tests/quality_gates/test_release_narrative_audit.py -q`
 
 ## Retro Trigger Evaluation
@@ -53,37 +50,37 @@ Advanced `charness` toward release `0.29.0` (tag `v0.29.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-08-v0-30-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 3.
-  - `docs/host-packaging.md`
-  - `skills/public/release/SKILL.md`
-  - `skills/public/release/references/install-surface.md`
-- Evaluated changed paths: 58.
+  - `skills/public/release/references/closeout-critique-gate.md`
+  - `skills/public/release/scripts/publish_release_cli.py`
+  - `skills/public/release/scripts/publish_release_preflight.py`
+- Evaluated changed paths: 41.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-08-gate-recurrence-mutation-and-closeout-preflight-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-08-issue-335-changed-line-recurrence-surfacing.md`
-  - `charness-artifacts/critique/2026-06-08-issue-335-closeout-floor-preflight.md`
-  - `charness-artifacts/critique/2026-06-08-slice-2-scaffold-cites-repo-local-validator-version-skew-fix.md`
-  - `charness-artifacts/critique/2026-06-08-slice-3-goal-activation-preflight-surface-activation-preamble.md`
-  - `charness-artifacts/critique/2026-06-08-v0-29-0-release-version-skew-bundle-closeout-step-scaffold-fix-preflight-surface.md`
-  - `charness-artifacts/debug/2026-06-08-issue-335-changed-line-mutation-recurrence.md`
-  - `charness-artifacts/debug/latest.md`
-  - `charness-artifacts/debug/seam-risk-index.json`
+  - `charness-artifacts/critique/2026-06-08-issue-336-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-08-issue-336-host-goal-slot-resolution-critique.md`
+  - `charness-artifacts/critique/2026-06-08-v0.30.0-release-critique.md`
+  - `charness-artifacts/critique/2026-06-08-version-skew-bundle-goal-v0-29-0-disposition-review.md`
+  - `charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix-early-close-report.md`
   - `charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`
-  - `charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md`
-  - `charness-artifacts/metrics/rca-ledger.jsonl`
-  - `charness-artifacts/probe/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md`
+  - `charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md`
+  - `charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction-early-close-report.md`
+  - `charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.md`
+  - `charness-artifacts/issue/2026-06-08-issue-336-closeout-commit-message.md`
+  - `charness-artifacts/probe/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.json`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`
+  - `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`
+  - `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
-  - `charness-artifacts/spec/artifact-shape-preflight-coverage.md`
-  - ... 38 more
+  - `docs/public-skill-dogfood.json`
+  - `packaging/charness.json`
+  - ... 21 more
 
 ## Real-Host Verification
 
@@ -103,11 +100,7 @@ Advanced `charness` toward release `0.29.0` (tag `v0.29.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-08-v0-29-0-release-version-skew-bundle-closeout-step-scaffold-fix-preflight-surface.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.29.0`.
+- Review proof: `charness-artifacts/critique/2026-06-08-v0.30.0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -118,10 +111,11 @@ Advanced `charness` toward release `0.29.0` (tag `v0.29.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.30.0 (minor release). Three additive, mostly inert-by-default workflow-ergonomics changes that stop the achieve/release workflow from tripping the operator/agent. (1) ACHIEVE DRAFT DOES NOT CONSUME THE HOST GOAL SLOT (#336) - the `achieve` Before-phase is now explicitly artifact-only and must NOT consume the host active-goal slot; the slot is consumed only at `/goal @artifact` pursuit. SKILL.md states the rule, `references/lifecycle.md` carries the full "Drafting does not consume the host goal slot" contract + the host-owned determination + an honest host-runtime residual non-claim, and `references/adapter-contract.md` documents the host goal-slot boundary (no adapter knob by design). The determination: the host slot is host-owned (Claude `/goal` Stop-hook; the Codex thread-goal slot) but consumption is agent/operator-driven, so the portable contract is the real fix. Behavior-preserving - drafting already left the slot empty on Claude; the new acceptance criterion documents existing behavior. (2) CRITIQUE SCAFFOLD SURFACES THE VALIDATOR ENUMS AT AUTHOR TIME - `scaffold_critique_artifact.py` (and via it the artifact-surface preflight) now emits an inline legend of the validator's allowed Structured Findings `bin`/`evidence`/`action` and Reviewer Tier `Host exposure state` enums (plus the `applied` <-> `Application state: host-confirmed:` coupling), pinned to the validator frozensets by a bidirectional drift test, so an author substituting a value picks from the valid set instead of paying a validate->fix round-trip. (3) PUBLISH_RELEASE PRE-PUBLISH STUB AFFORDANCE - `publish_release.py --prep-update-instructions` is a read-only, pre-critique mode that emits a target-version `update_instructions` stub + a staleness report (as data, not a HOLD) so the maintainer refreshes the adapter BEFORE the release critique, pre-empting the staleness-guard round-1 HOLD (this very note was prepped with that affordance). OPERATOR NOTE - all three are additive; routing, draft creation, activation, inert-until-activation, and existing validator verdicts are unchanged, and installed-plugin consumers inherit no new blocking behavior.
 - Run `charness update` to pull 0.29.0 (minor release). Three additive, mostly inert-by-default changes that harden the release/version-skew seam. (1) MAINTAINER INSTALL-REFRESH RELEASE-CLOSEOUT STEP - the `release` skill now makes refreshing the maintainer/authoring machine's own managed install (`charness update`) a REQUIRED release-closeout step so the installed surface stays `== repo`, closing the installed-vs-repo version-skew class (a scaffold or check citing the installed plugin could otherwise diverge from the repo gate). Portable contract in the `release` SKILL.md (rule via the adapter-declared update path; no host-specific command in the portable core) + charness-specific `references/install-surface.md` + the release-adapter real_host_checklist. (2) SCAFFOLDS CITE THE REPO-LOCAL VALIDATOR - the six artifact-authoring scaffolds (debug/critique/retro/quality/handoff/ideation) now cite the repo-local `scripts/<validator>.py` when the working repo owns one (repo-local-first), falling back to the installed-plugin copy only for a consumer repo that ships no validator of its own; this kills the skew even between updates. Behavior-preserving for consumer repos without their own validators - no validator verdict changes on existing artifacts. (3) GOAL-ACTIVATION PREFLIGHT SURFACE - `check_artifact_surface_preflight.py --type goal-activation` now surfaces the goal `Activation:` preamble shape (the `/goal @<rel>` line) at author time via a preamble extractor, completing author-time coverage of the goal-artifact family; additive and author-time-only (no new blocking gate). OPERATOR NOTE - all three are additive; installed-plugin consumers who do not own their own validators inherit no new blocking behavior, and existing artifacts/validator verdicts are unchanged.
 - Run `charness update` to pull 0.28.0 (minor release). Closes the recurring "authoring-preflight skip" loop (#284->#308->#325->#329->#332->#334, resolving #334) with two additive, mostly inert-by-default capabilities. (1) AUTHOR-TIME ARTIFACT-SHAPE PREFLIGHT - new `scripts/check_artifact_surface_preflight.py` surfaces a hand-authored artifact's required shape at author time (`--type <surface>` / `--emit-stub` / `--path`) across the 7-surface family (critique/goal-closeout/retro/ideation/debug/quality/handoff); for the changed-scoped prefix families (critique/ideation/retro) it relocates the owning validator's verdict to the commit boundary as a blocking `check-artifact-shape (staged)` structural-sweep member (same validator, same verdict, only earlier - no new shape requirement). The critique scaffold is now cited from the documented authoring path. (2) DISPOSITION DE-LAUNDER - an `issue #N` disposition must carry a presence-only recurrence-lineage marker (`recurs:`/`recurrence:`/`lineage:`/`novel:`) so a re-file of a known recurring class cannot launder as a fresh narrow issue; checked on achieve `## Auto-Retro` (enforce-from 2026-06-08) and standalone-retro `## Next Improvements` (enforce-from 2026-06-09), with a rung-2 reviewer mandate to falsify `novel:`. Presence/enum only - never a content classifier. OPERATOR NOTE - existing artifacts are grandfathered by `Created:`/`Date:`; NEW goals/retros authored after those dates with an issue-form disposition must carry the lineage marker, and both floors fail CLOSED on an undatable artifact (a stripped/corrupt date line triggers enforcement). The charness-repo-local commit-boundary wiring means installed-plugin consumers inherit no new blocking behavior on existing artifacts.
 - Carried-forward (0.27.0, minor) - Bundles three additive, opt-in / inert-by-default quality capabilities; installed-plugin consumers who do not opt in inherit no new blocking behavior. (1) ADVISORY-INTERPRETATION CONTRACT ROLLOUT (#322) - six inference-layer surfaces (ergonomics heuristics, test-economics trend, lint-suppression pressure, the `check_python_lengths` warn-band / `--headroom` advisory, recommendation rankings in `find-skills` plus the `quality` `Recommended Next Gates` ordering, and runtime hot-spots) now emit a 4-field `interpretation` self-declaration (measures / proxy-for / blind-spots / interpretation-question) with a paired consumer-must-answer requirement. Verified facts (green gates, exact counts, AST results, the hard length limit and function-length check) stay trusted and never carry the declaration. Output-only - no gate changes its pass/fail. (2) PROVENANCE-PLACEMENT POLICY + portable standing-doc check (#325) - inert by default (`standing_docs: []`); the scan is now gitignore-aware. (3) CHANGED-LINE COVERAGE GATE as a portable `quality` capability (handoff-3) - inert by default (`eligible_globs: []`). No new manual migration beyond the normal `charness update` flow.
