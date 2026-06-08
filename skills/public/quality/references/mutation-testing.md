@@ -235,6 +235,22 @@ includes the worktree. The capability **warns** (non-blocking) when the analyzed
 head resolves to `HEAD` while eligible files have uncommitted changes, so the
 trap surfaces instead of reading as a clean pass.
 
+### The unverified-skip trap (an absent gate must not read as a pass)
+
+A cheap consumer that **skips non-blocking** when coverage is absent or stale is
+safe against false positives, but it creates a subtler failure: a skip that
+happens *while eligible files changed* is indistinguishable from a clean pass. The
+author's pre-merge attestation goes green, the uncovered changed lines land, and
+the scheduled run — whose base accumulates everything since its last run — flags
+them post-merge and auto-files. This is the recurrence engine behind the seam.
+
+The fix is **surfacing, not a new hard gate**: when the gate skips while eligible
+pool files changed in the range, emit a loud, non-blocking obligation that names
+the unverified files and the producer command to run. The verdict stays unchanged
+(still exit 0, still cheap), but `skipped` no longer looks like `verified`. Keep
+the structured signal (`coverage_not_verified`) in the report too, so a wrapper or
+CI summary can distinguish "nothing to check" from "did not check".
+
 ## Fixing a changed-line-coverage regression
 
 When a run FAILs on the **blocking** "changed files with uncovered changed

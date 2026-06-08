@@ -390,3 +390,40 @@ minimum that lets other repos benefit.
 **Explicitly out of all slices** (named follow-ups): the subprocess-only
 false-positive escalation engine (Deferred Decisions) and the selection-budget
 follow-up.
+
+### Slice 3 — recurrence reduction: surface the silent skip (#335, 2026-06-08)
+
+**Root cause of the recurrence (debug
+`2026-06-08-issue-335-changed-line-mutation-recurrence.md`).** The seam recurs
+because the gate's protection is *silently absent* exactly when it matters. The
+cheap consumer (`run-quality.sh` pre-push, `--skip-if-no-coverage
+--require-fresh-coverage`) **skips non-blocking (exit 0)** when coverage was not
+freshly produced — and that skip path is only reached when eligible mutation-pool
+files actually changed in the range (the empty case returns earlier). So an
+unverified skip reads *identically* to a clean pass: the author's pre-push
+attestation goes green, uncovered changed lines land on `main`, and only the
+scheduled cron (base = the previous run's head, so it accumulates everything since)
+flags them post-merge and auto-files. #335 was the #332 lines; the same run also
+had 85 uncovered v0.28.0 lines queued behind it — the class, not the instance.
+
+**The mechanism (smallest, additive, behavior-preserving).** Convert the silent
+skip into a LOUD author-time obligation. `check_changed_line_mutation_coverage.py`
+now, whenever it skips with changed eligible files present, writes a non-blocking
+stderr `WARNING (changed-line mutation gate): … N eligible mutation-pool file(s)
+changed but their changed lines were NOT verified for coverage … Run
+run_slice_closeout.py --produce-mutation-coverage --verification-lock …` and
+records `coverage_not_verified: true` + `changed_eligible_files` in the JSON. The
+verdict (exit 0) is unchanged — no gate's verdict changes on existing code — so
+this mirrors the v0.28.0 author-time *surfacing* posture, not a new hard gate.
+It directly removes the false-confidence (`skipped` indistinguishable from
+`passed`) that let the debt accumulate, parallel to the existing
+`false_green_warning` tripwire on the same script.
+
+**Why not a new hard gate / auto-produce.** Blocking the cheap pre-push tier when
+coverage is absent would change its verdict (every script-touching push without a
+slow coverage run would fail) and is the "new hard gate" the goal forbids;
+auto-producing coverage in every closeout is a larger cost/scope change. Both are
+**deferred follow-ups** — the surfacing is the minimum that makes the recurrence
+driver visible. Doctrine carried to
+`skills/public/quality/references/mutation-testing.md` so adopting repos inherit
+the "an unverified skip must not read as a pass" rule.

@@ -12,10 +12,9 @@ bug-class CI regression, so it gets a causal review before any fix.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 (cover the genuinely-uncovered changed lines).
-- Next action: cover the 85 next-run lines (3 files) + the #335 survivors (#332
-  lines in 2 files), then re-run the producer to confirm `ok: true` over
-  `858c9eab..HEAD`.
+- Current slice: Slice 3 (structurally reduce the recurrence + fresh-eye critique).
+- Next action: convert the changed-line gate's silent skip into a surfaced
+  author-time obligation (the recurrence driver), add tests, spec it, critique.
 - Timebox: 4h
 - Activation time: 2026-06-08
 - Closeout reserve: 45m
@@ -154,7 +153,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | `debug` #335: falsifiable root-cause for the recurring changed-line signal (genuinely-uncovered changed lines vs selection/workload-budget drop); local repro via the producer | CI is red; bug-class needs causal review before a fix | a debug artifact with a tested hypothesis + local repro | done |
-| 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | planned |
+| 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | done |
 | 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | planned |
 | 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | planned |
 | 5 | Closeout: broad gate, retro, dogfooded disposition, #335 issue closeout, handoff | make it auditable | full gate PASS; retro + disposition; #335 closed + verified | planned |
@@ -198,6 +197,23 @@ during the run:
   next step routed to `spec` (the premerge-gate spec) for the Slice-3 mechanism.
 - Artifact: `charness-artifacts/debug/2026-06-08-issue-335-changed-line-mutation-recurrence.md`
   (validates; seam-risk-index synced).
+
+### Slice 2 — restore the gate green (done, 2026-06-08)
+
+- Covered the genuinely-uncovered changed lines across all 5 files with focused
+  tests (no threshold/pool/signal change): `check_python_lengths.py` (function
+  warn/headroom guards), `staged_commit_gate_plan.py` (failing-stream echo),
+  `check_goal_artifact.py` (`_evidence_missing_bits`),
+  `check_artifact_surface_preflight.py` (resolve/shape/emit/describe failure arms,
+  `_format_changed`, full `main` dispatch + `__main__` via runpy; removed one
+  unreachable post-`parser.error` `return 2`), `slice_closeout_reporting.py`
+  (`print_text` → every `_print_*` helper). Plugin mirror synced.
+- Proof: re-produced coverage (gate's own probe, with the new tests) → the
+  changed-line gate is GREEN over BOTH `858c9eab..HEAD` (the actual next-run
+  range) and `7f0231e3..HEAD` (inclusive): `ok: True, blocking: []`. 129 touched
+  tests pass; ruff/length/export-safe/mirror-drift clean.
+- Note: the CI re-run is the authoritative #335 verdict (agent cannot run it) —
+  the local producer over the next-run range is the recorded proxy.
 
 ## Context Sources
 

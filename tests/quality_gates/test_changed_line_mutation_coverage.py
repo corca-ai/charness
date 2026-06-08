@@ -200,6 +200,27 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "no coverage source" in payload["reason"]
+    # #335 recurrence reduction: an unverified skip while eligible files changed is
+    # surfaced loudly (non-blocking) instead of reading as a clean pass.
+    assert payload["coverage_not_verified"] is True
+    assert "scripts/foo.py" in payload["changed_eligible_files"]
+    assert "WARNING (changed-line mutation gate)" in result.stderr
+    assert "NOT verified for coverage" in result.stderr
+    assert "--produce-mutation-coverage" in result.stderr
+
+
+def test_coverage_not_verified_warning_names_files_and_fix() -> None:
+    # #335: the obligation tripwire names the unverified files, the recurrence, and
+    # the exact producer command to run before the change lands.
+    teeth = _load_teeth()
+    msg = teeth.coverage_not_verified_warning(
+        ["scripts/foo.py", "scripts/bar.py"], "no coverage source at reports/mutation/x.json"
+    )
+    assert "2 eligible mutation-pool file(s) changed" in msg
+    assert "NOT verified for coverage" in msg
+    assert "#335 recurrence" in msg
+    assert "--produce-mutation-coverage" in msg
+    assert "scripts/foo.py" in msg and "scripts/bar.py" in msg
 
 
 def test_skip_if_no_coverage_still_blocks_when_present(tmp_path: Path) -> None:

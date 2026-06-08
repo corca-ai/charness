@@ -214,6 +214,45 @@ def false_green_warning(repo_root: Path, head_sha: str, eligible: set[str]) -> s
     )
 
 
+def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> str:
+    """Recurrence tripwire (#335): the gate is SKIPPING the changed-line check while
+    eligible mutation-pool files actually changed in this range.
+
+    The #219 -> #251 -> #260 -> #320 -> #321 -> #335 seam recurs because a silent
+    skip (no/stale coverage) reads IDENTICALLY to a clean pass: the author's
+    pre-push attestation goes green, the uncovered changed lines reach ``main``, and
+    only the scheduled cron — which accumulates everything since its last run — flags
+    them post-merge and auto-files. Making the unverified skip LOUD at author time is
+    the structural reduction: the obligation becomes visible before the change lands.
+    Non-blocking by design (it names the fix; it does not change the verdict).
+    """
+    files = ", ".join(changed_eligible)
+    return (
+        f"{len(changed_eligible)} eligible mutation-pool file(s) changed but their "
+        f"changed lines were NOT verified for coverage ({reason.rstrip('.')}). An "
+        "unverified skip reads as a clean pass, so uncovered changed lines reach main "
+        "and the next scheduled mutation run flags them (the #335 recurrence). Run "
+        "`python3 scripts/run_slice_closeout.py --produce-mutation-coverage "
+        "--verification-lock` to verify the changed lines before they land. "
+        f"Files: {files}"
+    )
+
+
+def _emit_skip_with_surfacing(skip: dict, changed_before_coverage: list[str], fg_warning: str | None) -> int:
+    """Emit a non-blocking skip, but surface the #335 recurrence obligation loudly.
+
+    The skip path is only reached with a non-empty ``changed_before_coverage`` (the
+    empty case returns earlier), so a skip ALWAYS means "eligible files changed but
+    went unverified" — the recurrence driver. Write the obligation to stderr and
+    record it structurally, then exit 0 (verdict unchanged)."""
+    not_verified = coverage_not_verified_warning(changed_before_coverage, str(skip.get("reason", "coverage unavailable")))
+    sys.stderr.write(f"WARNING (changed-line mutation gate): {not_verified}\n")
+    skip["coverage_not_verified"] = True
+    skip["changed_eligible_files"] = changed_before_coverage
+    _emit(_attach_warning(skip, fg_warning))
+    return 0
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -246,8 +285,7 @@ def main() -> int:
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
     if skip is not None:
-        _emit(_attach_warning(skip, fg_warning))
-        return 0
+        return _emit_skip_with_surfacing(skip, changed_before_coverage, fg_warning)
     _ensure_coverage(args, repo_root, coverage_json, base_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
 
