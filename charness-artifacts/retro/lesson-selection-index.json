@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-08",
-  "source_artifact_count": 164,
-  "candidate_count": 941,
+  "source_artifact_count": 165,
+  "candidate_count": 949,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -235,6 +235,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c16d220e36e0",
+      "kind": "current_focus",
+      "lesson": "Goal `charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md` (#337): make the waste-retro disposition gate classify a structural-follow-up *destination* per transferable waste item — a presence/form-enum-only floor (rung 1e) plus a fresh-eye reviewer mandate — so \"recorded in recent-lessons\" can no longer be mistaken for a structural fix.",
+      "normalized_key": "goal charness artifacts goals 2026 06 08 retro disposition structural followup classification md 337",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:62532992746d",
       "kind": "current_focus",
       "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
@@ -371,26 +391,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
           "date": "2026-06-08",
           "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:fbe75f617c5f",
-      "kind": "next_improvement",
-      "lesson": "additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.",
-      "normalized_key": "additive contract work on an at cap skill md or a new test that",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
         }
       ]
     }
@@ -611,6 +611,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c16d220e36e0",
+      "kind": "current_focus",
+      "lesson": "Goal `charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md` (#337): make the waste-retro disposition gate classify a structural-follow-up *destination* per transferable waste item — a presence/form-enum-only floor (rung 1e) plus a fresh-eye reviewer mandate — so \"recorded in recent-lessons\" can no longer be mistaken for a structural fix.",
+      "normalized_key": "goal charness artifacts goals 2026 06 08 retro disposition structural followup classification md 337",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
           "date": "2026-06-08",
           "section": "Context"
         }
@@ -917,6 +937,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:55d32ef93579",
+      "kind": "next_improvement",
+      "lesson": "for skill-PACKAGE edits, run `validate_skill_ergonomics` at the commit boundary — it is a package-level scan, so an issue anchor / dated incident / host-surface ref in ANY in-package file (`references/*.md`, `scripts/*.py`), not just SKILL.md, trips it; keep charness-internal `#N` traceability anchors in top-level `scripts/` (outside any skill package). Disposition: none — the pre-commit `validate_skill_ergonomics` gate already owns this repo-wide; this is a Next-Time authoring signal, not a missing gate.",
+      "normalized_key": "for skill package edits run validate skill ergonomics at the commit boundary it is",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4d9760c7661e",
       "kind": "next_improvement",
       "lesson": "**memory:** Persisted to recent-lessons (below) so the next critique author does not relearn the reviewer-tier-evidence requirement.",
@@ -991,6 +1031,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3e21c080bc23",
+      "kind": "next_improvement",
+      "lesson": "read a gate's exit code with `cmd && echo ok || echo fail`, never `cmd | head; echo $?` (the pipe reports the tail's exit and masks the gate's). Disposition: none — a shell-usage discipline; not cleanly gateable as a deterministic check.",
+      "normalized_key": "read a gate s exit code with cmd echo ok echo fail never cmd",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2833d002097d",
+      "kind": "next_improvement",
+      "lesson": "stop `git add -A` from staging generated coverage data. Disposition: applied: added `.coverage` / `.coverage.*` to `.gitignore` this run.",
+      "normalized_key": "stop git add a from staging generated coverage data disposition applied added coverage coverage",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -1117,6 +1197,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:4bbc6268fe2d",
+      "kind": "repeat_trap",
+      "lesson": "**`git add -A` staged a generated `.coverage` file** (not gitignored) into the test commit; caught on my own `git show --stat` read and amended out.",
+      "normalized_key": "git add a staged a generated coverage file not gitignored into the test commit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:05691aa5acbf",
       "kind": "repeat_trap",
       "lesson": "**Invalid-adapter test first miss (trivial).** The first invalid-adapter test wrote an adapter that was valid-with-defaults (hit the version guard instead); one fix to a non-integer version. Trivial.",
@@ -1151,6 +1251,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:444af7df27ae",
+      "kind": "repeat_trap",
+      "lesson": "**Minor:** ran `run_slice_closeout.py --verification-lock` expecting it to validate the committed bundle, but it diffs the working tree → noop; switched to the changed-line producer over `merge-base origin/main..HEAD`.",
+      "normalized_key": "minor ran run slice closeout py verification lock expecting it to validate the committed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
           "date": "2026-06-08",
           "section": "Waste"
         }
@@ -1237,6 +1357,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:97cc449cd4b9",
+      "kind": "repeat_trap",
+      "lesson": "**Piped exit-code misread.** I checked a validator's exit with `cmd 2>&1 | head; echo $?`, which reports the pipe tail's (`head`) exit, not the validator's — so a real exit-1 ergonomics failure read as exit 0, costing a confused \"is this pre-existing?\" detour before I re-checked with `&&`/`||`.",
+      "normalized_key": "piped exit code misread i checked a validator s exit with cmd 2 1",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:dc738c931442",
       "kind": "repeat_trap",
       "lesson": "**SKILL.md core buffer block (minor, anticipated).** Slice 1's first edit added +2 achieve core lines and tripped the core-headroom buffer (4-line floor); one re-tighten to +1 line + re-sync. The carried \"anticipate the no-increase ratchets / compress-to-offset\" lesson applied; the cost was one edit cycle.",
@@ -1311,6 +1451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5e0058e29dba",
+      "kind": "repeat_trap",
+      "lesson": "**The in-package issue-anchor regression (the sharp one).** Slice 1 added a `(#337)` traceability anchor to the in-package script `goal_artifact_disposition.py`. `validate_skill_ergonomics` scans the WHOLE skill package (keyed by SKILL.md), so the anchor tripped `portable_package_issue_anchor` — even though SKILL.md itself had no anchor. Caught by running the cheap structural sweep myself before commit (the pre-commit hook also owns it); cost one re-edit + re-sync. The fresh-eye Slice-1 reviewer missed it (it optimized the length angle, which was a non-issue).",
+      "normalized_key": "the in package issue anchor regression the sharp one slice 1 added a 337",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
           "date": "2026-06-08",
           "section": "Waste"
         }

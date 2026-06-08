@@ -1,6 +1,6 @@
 # Achieve Goal: Waste-retro disposition reviews must classify a structural-follow-up destination per transferable waste item (#337)
 
-Status: draft
+Status: complete
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md`
 
@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1+2 DONE (rung 1e floor + rung 2 mandate + one shared destination vocabulary; all gates green, both committed/committing). Next: Slice 3 (bundle proof + #337 closeout).
-- Next action: Slice 3 — bundle boundary: run changed-line mutation-coverage producer FIRST (mutation-pool Python touched in Slice 1), then the broad gate (`run-quality.sh --read-only`); stage #337 closeout via a direct-commit `Close #337` carrier; write the dogfood retro + disposition review + Auto-Retro destinations; flip the goal to complete.
+- Current slice: COMPLETE. All 3 slices done (rung 1e floor + rung 2 mandate; one shared destination vocabulary; bundle proof + #337 closeout). Status flipped to `complete`; closeout carrier (`Close #337`) staged.
+- Next action: none (goal complete). Maintainer push auto-closes #337; verify with `gh issue view 337`.
 - Verification cadence: cheap deterministic checks at commit boundaries; the
   touched scripts' tests + fresh-eye critique at slice boundaries; the broad gate
   + #337 closeout at the bundle/closeout boundary. Carry this session's lessons:
@@ -67,6 +67,12 @@ structural-follow-up scope:
   all different themes; keep this goal focused on #337 (the prior-goal focus
   lesson).
 - Do NOT cut a real release/push by default — standard `achieve` no-push.
+- Of #337's three candidate fixes (retro guidance / achieve guidance with teeth /
+  an adapter option to require destination labels), land the first two (the
+  portable floor + mandate); the **adapter option is deliberately skipped** — the
+  portable rung-1e floor + rung-2 mandate cover every installing repo uniformly,
+  so a per-repo adapter knob would add surface without need. Non-foreclosing: a
+  repo that later wants a stricter local label policy can still add one.
 
 ## Boundaries
 
@@ -163,6 +169,18 @@ during the run:
   landing via a direct-commit close-keyword carrier; record the `Issue closeout:`
   line (numbers + carrier + `issue_tool.py verify-closeout` proof) at completion.
   #338, #335, #184 are tracked context only.
+
+Resolved at completion:
+
+- Routing: find-skills → achieve owns the goal slot (the `--recommend-for-task` probe returned achieve); routed skills — impl + critique on Slices 1-2, quality (broad gate) + issue (#337 closeout) + retro on Slice 3.
+- Gather: n/a — #337 was read via `gh issue view 337`; its body cites a ceal
+  repo-path retro, not an external URL / Slack / Notion / Docs / Drive asset.
+- Release: n/a — no version bump or release cut; `sync_root_plugin_manifests.py`
+  regenerates the install manifests with the version unchanged (mirror sync, not a
+  release-surface change).
+- Issue closeout: #337 — closed via a direct-commit `Close #337` carrier (the
+  Slice-3 closeout commit); verified with `gh issue view 337` +
+  `issue_tool.py verify-closeout`.
 
 ## Slice Log
 
@@ -265,14 +283,31 @@ reason here — and check the seam lineage before filing a fresh narrow issue._
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+**Self-verification against the goal.** The waste-retro disposition gate now
+classifies a structural-follow-up destination per transferable waste item, by
+construction: rung 1e (a presence/form-enum-only floor over the goal `## Auto-Retro`
+`Structural follow-up:` line, fired only when the cited retro names a transferable
+waste item via `## Sibling Search`, grandfathered by `Created` ≥ 2026-06-09) plus
+the rung-2 reviewer mandate ("reject 'recorded in recent-lessons' as a destination
+unless paired with `applied:` / `issue #N` / `repo-local guard:` / `none —`"). The
+vocabulary is one shared source (`retro-issue-destination-split.md`), referenced by
+the retro waste-sibling-scan and the achieve disposition gate so the two cannot
+drift. Behavior-preserving: rungs 1a–1d and the retro/issue validators are
+unchanged (proven by 41 validator tests + the live-corpus probe showing every
+existing goal grandfathered).
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+**Proof reached.** Closeout-state: `carrier` (the #337 close carrier is committed;
+push/CLOSED state is the maintainer's). Local deterministic + broad proof:
+changed-line mutation-coverage producer over `merge-base origin/main..HEAD`
+(`ok: true, blocking: []`, fingerprint stamped) + broad pytest 2584 passed;
+`run-quality.sh --read-only` 73 phases passed / 0 failed (incl. pytest,
+check-changed-line-mutation-coverage); per-commit pre-commit gates green.
+Non-claims: NOT pushed, NOT CLOSED-verified on GitHub (carrier-staged only), no
+release cut, no live/provider proof (none applicable).
+
+Retro: charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md
+Host log probe: charness-artifacts/probe/2026-06-08-issue-337-structural-followup.json
+Disposition review: charness-artifacts/critique/2026-06-08-issue-337-disposition-review.md
 
 ## User Verification Instructions
 
@@ -289,4 +324,21 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro dispositions: applied: `.coverage`/`.coverage.*` was added to `.gitignore`
+this run (improvement 3); the other two surfaced improvements are each
+dispositioned none — the ergonomics package-scan authoring signal (improvement 1)
+is already owned repo-wide by the pre-commit `validate_skill_ergonomics` gate (a
+Next-Time signal, not a missing gate), and the read-exit-codes-with-`&&`/`||`
+discipline (improvement 2) is a shell-usage habit, not cleanly gateable. All three
+are recorded in the retro `## Next Improvements`.
+
+Structural-follow-up destinations (dogfooding rung 1e — this goal is grandfathered,
+`Created` 2026-06-08 < the 2026-06-09 rule date, so the floor is voluntary here; the
+floor's enforcement is proven by the synthetic `test_rung1e_*` tests):
+
+Structural follow-up: none — the transferable in-package issue-anchor trap (anchors
+in any skill-package file trip the package-level `validate_skill_ergonomics` scan)
+is already owned by that pre-commit gate repo-wide; no missing structural fix (a
+falsifiable claim the disposition review can contradict).
+Structural follow-up: applied: added `.coverage`/`.coverage.*` to `.gitignore` so
+`git add -A` can no longer stage generated coverage data (teeth landed this run).

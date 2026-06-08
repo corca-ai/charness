@@ -9,8 +9,8 @@
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-08-v0-30-1-release-auto-retro.md`; sources: 15)
 - **Changed-line coverage round-trip (anticipated, partly avoidable).** The Slice-3 prep affordance added input-normalization branches (list/string/None) and three defensive `SystemExit` guards, plus a refactor that relocated the clean-worktree check. Slice-3 tests covered the happy path but not those branches, so the bundle-boundary producer flagged 6 uncovered changed lines, costing a cover-then-re-run-producer cycle (each producer run is multi-minute mutation coverage). Running the producer FIRST (per the carried guardrail) worked — it surfaced the gap at the boundary, not post-merge — but covering the branches IN Slice 3 would have made the producer a confirmation, not a discovery. (source: `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`)
+- **`git add -A` staged a generated `.coverage` file** (not gitignored) into the test commit; caught on my own `git show --stat` read and amended out. (source: `charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md`)
 - **Invalid-adapter test first miss (trivial).** The first invalid-adapter test wrote an adapter that was valid-with-defaults (hit the version guard instead); one fix to a non-integer version. Trivial. (source: `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`)
-- Low otherwise: coverage is range-independent, so I re-classified the same coverage report over multiple base ranges with `--reuse-coverage` (cheap) instead of re-probing — that reuse avoided ~2 extra full runs. (source: `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`)
 
 ## Next-Time Checklist
 
@@ -38,7 +38,7 @@
 - `charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`
+- `charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md`
 - `charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md`
 - `charness-artifacts/retro/2026-06-08-v0-28-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md`
