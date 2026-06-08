@@ -217,6 +217,9 @@ def test_shape_text_handles_each_missing_shape_source() -> None:
     # template-section source that points at a missing template -> "(template ... not found)"
     bad_template = replace(critique, scaffold=None, template_section="nope/missing.md|## Heading")
     assert "not found" in preflight._shape_text(ROOT, bad_template)
+    # template-PREAMBLE source that points at a missing template -> "(template ... not found)"
+    bad_preamble = replace(critique, scaffold=None, template_section=None, template_preamble="nope/missing.md")
+    assert "not found" in preflight._shape_text(ROOT, bad_preamble)
     # no shape source at all -> "(no shape source registered)"
     no_source = replace(critique, scaffold=None, template_section=None)
     assert preflight._shape_text(ROOT, no_source) == "(no shape source registered)"
