@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-08",
-  "source_artifact_count": 161,
-  "candidate_count": 933,
+  "source_artifact_count": 162,
+  "candidate_count": 939,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -295,6 +295,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:e6379861926c",
+      "kind": "current_focus",
+      "lesson": "The `achieve` workflow-ergonomics bundle goal: three small structural fixes to surfaces where the achieve/release workflow trips the operator/agent — (1) #336 achieve draft must not consume the host active-goal slot, (2) critique-scaffold enum validity by-construction, (3) publish_release `--prep-update-instructions` pre-publish stub.",
+      "normalized_key": "the achieve workflow ergonomics bundle goal three small structural fixes to surfaces where the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:fbe75f617c5f",
       "kind": "next_improvement",
       "lesson": "additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.",
@@ -349,26 +369,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
-          "date": "2026-06-08",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:51a90b834fd8",
-      "kind": "next_improvement",
-      "lesson": "before committing a slice that touches `run_slice_closeout`/structural-sweep wiring, run the broad `surface_obligations` suite first — the Slice-3→4 reversal (the validate-all trio's `commit_boundary` True→False) was caught late by the broad gate, not at the slice commit. Disposition: applied: persisted to recent-lessons this run (the next-time checklist) so the precondition is workflow signal, not memory.",
-      "normalized_key": "before committing a slice that touches run slice closeout structural sweep wiring run the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
         }
@@ -657,6 +657,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:e6379861926c",
+      "kind": "current_focus",
+      "lesson": "The `achieve` workflow-ergonomics bundle goal: three small structural fixes to surfaces where the achieve/release workflow trips the operator/agent — (1) #336 achieve draft must not consume the host active-goal slot, (2) critique-scaffold enum validity by-construction, (3) publish_release `--prep-update-instructions` pre-publish stub.",
+      "normalized_key": "the achieve workflow ergonomics bundle goal three small structural fixes to surfaces where the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:fbe75f617c5f",
       "kind": "next_improvement",
       "lesson": "additive contract work on an at-cap SKILL.md, or a new test that subprocesses a top-level `scripts/<x>.py`, trips a no-increase ratchet (core-headroom / boundary-bypass); anticipate by compressing-to-offset or reusing an in-process / in-repo-mirror path from the start. Disposition: applied: persisted to recent-lessons this run as a pre-commit-design signal.",
@@ -837,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:111c3530ba1f",
+      "kind": "next_improvement",
+      "lesson": "**memory (positive, keep):** The producer-first guardrail and the critique enum legend both worked as designed this session (producer surfaced the gap early; the legend gave a first-try critique). No change needed; recorded so the next session keeps both habits. Disposition: applied — persisted to recent-lessons.",
+      "normalized_key": "memory positive keep the producer first guardrail and the critique enum legend both worked",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:eb21d9d22cf8",
       "kind": "next_improvement",
       "lesson": "**memory:** The \"an unverified skip must not read as a pass\" doctrine is now in `skills/public/quality/references/mutation-testing.md` (portable). Disposition: applied: committed the doctrine subsection in Slice 3 (commit `81332c72`).",
@@ -917,6 +957,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9a5946235d8f",
+      "kind": "next_improvement",
+      "lesson": "**workflow/memory:** When a slice adds a helper with input-normalization branches (list/str/None/empty) or defensive `SystemExit`/raise guards, cover each branch IN that slice — the changed-line mutation gate will flag them at the bundle boundary regardless. Treat \"new normalization branch or new guard line\" as a same-slice test obligation, not a happy-path-only one. Disposition: applied — persisted to recent-lessons this run as a pre-bundle-boundary signal.",
+      "normalized_key": "workflow memory when a slice adds a helper with input normalization branches list str",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:29dc4f0ecd32",
       "kind": "next_improvement",
       "lesson": "**workflow:** When authoring a charness critique artifact, check `validate_critique_artifacts` required sections (or run `scaffold_critique_artifact.py`) BEFORE hand-writing — `## Reviewer Tier Evidence` with 4 fields and a host-exposure-state from the fixed set is mandatory.",
@@ -953,6 +1013,46 @@
           "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
           "date": "2026-06-08",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e0b9b7af2d36",
+      "kind": "repeat_trap",
+      "lesson": "**Changed-line coverage round-trip (anticipated, partly avoidable).** The Slice-3 prep affordance added input-normalization branches (list/string/None) and three defensive `SystemExit` guards, plus a refactor that relocated the clean-worktree check. Slice-3 tests covered the happy path but not those branches, so the bundle-boundary producer flagged 6 uncovered changed lines, costing a cover-then-re-run-producer cycle (each producer run is multi-minute mutation coverage). Running the producer FIRST (per the carried guardrail) worked — it surfaced the gap at the boundary, not post-merge — but covering the branches IN Slice 3 would have made the producer a confirmation, not a discovery.",
+      "normalized_key": "changed line coverage round trip anticipated partly avoidable the slice 3 prep affordance added",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:05691aa5acbf",
+      "kind": "repeat_trap",
+      "lesson": "**Invalid-adapter test first miss (trivial).** The first invalid-adapter test wrote an adapter that was valid-with-defaults (hit the version guard instead); one fix to a non-integer version. Trivial.",
+      "normalized_key": "invalid adapter test first miss trivial the first invalid adapter test wrote an adapter",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+          "date": "2026-06-08",
+          "section": "Waste"
         }
       ]
     },
@@ -1051,6 +1151,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
+          "date": "2026-06-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dc738c931442",
+      "kind": "repeat_trap",
+      "lesson": "**SKILL.md core buffer block (minor, anticipated).** Slice 1's first edit added +2 achieve core lines and tripped the core-headroom buffer (4-line floor); one re-tighten to +1 line + re-sync. The carried \"anticipate the no-increase ratchets / compress-to-offset\" lesson applied; the cost was one edit cycle.",
+      "normalized_key": "skill md core buffer block minor anticipated slice 1 s first edit added 2",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
+      "latest_source_date": "2026-06-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md",
           "date": "2026-06-08",
           "section": "Waste"
         }

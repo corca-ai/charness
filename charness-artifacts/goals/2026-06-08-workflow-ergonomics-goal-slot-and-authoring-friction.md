@@ -1,6 +1,6 @@
 # Achieve Goal: Workflow-ergonomics hardening: achieve draft must not consume the active goal slot (#336) + critique-scaffold enum validity by-construction + publish_release update_instructions pre-publish stub
 
-Status: active
+Status: complete
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.md`
 
@@ -9,15 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1, 2 & 3 DONE (#336 portable fix `cead7949`; critique
-  enum legend `a101e716`; release `--prep-update-instructions` `138366c1`; all
-  three fresh-eye SHIP). Next: Slice 4 (bundle proof + closeout).
-- Next action: Slice 4 — broad gate (`run-quality.sh --read-only`); changed-line
-  mutation coverage producer FIRST (mutation-pool commits added); the staged
-  #336 closeout (feature-class closeout body + resolution critique + direct-commit
-  carrier + verify-closeout); retro + dispositions; flip to complete.
+- Current slice: ALL slices DONE. Slices 1-3 shipped (`cead7949`, `a101e716`,
+  `138366c1`; coverage backfill `297d52ab`); Slice 4 closeout complete: broad
+  gate PASS (73/73), producer ok:true (0 uncovered), retro persisted, fresh-eye
+  disposition review SHIP-WITH-FIXES (the 2 honesty-of-record fixes applied).
+- Next action: COMPLETE. Goal flipped to `Status: complete` (early close at ~92m
+  of the 240m timebox, `no_safe_next_slice` + early-close report). Remaining
+  operator-side: the #336 direct-commit carrier is staged (`Close #336`); push is
+  the maintainer's call (default no-push) and GitHub auto-closes #336 on push.
 - Timebox: 4h
-- Activation time: 2026-06-08 (active run; flipped from draft at `/goal`)
+- Activation time: 2026-06-08T07:19:58+00:00
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (re-point to the next workflow/
   ergonomics or release-hardening surface — e.g. the deferred installed-vs-repo
@@ -147,10 +148,10 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | #336: achieve draft != active goal slot — Before-phase is artifact-only, `/goal` starts pursuit; settle the portable-vs-host-runtime boundary early | the newly-opened operations issue, in the exact workflow used to shape THIS goal | drafting leaves the slot empty; `/goal` activates; error messages distinguish draft-exists vs slot-occupied; #336 closed; SHIP critique | planned |
-| 2 | critique-scaffold enum validity by-construction: surface allowed `bin`/`action`/host-exposure enums at author time | this session's Slice-2 3-round-trip waste; the documented critique-authoring trap's sibling | scaffold/preflight surfaces the allowed enums; an invalid substitution is caught at author time; verdicts unchanged; SHIP critique | planned |
-| 3 | publish_release update_instructions pre-publish stub emitter (dry-run / `--prep-update-instructions`) | this session's release critique round-1 HOLD (Gawande lens) | publish dry-run / prep emits the target-version stub before the critique gate; verdicts unchanged; SHIP critique | planned |
-| 4 | bundle proof + closeout: broad gate; #336 closeout; retro | the operator-requested next-to-do closeout | broad gate PASS; #336 verified closed; retro + dispositions | planned |
+| 1 | #336: achieve draft != active goal slot — Before-phase is artifact-only, `/goal` starts pursuit; settle the portable-vs-host-runtime boundary early | the newly-opened operations issue, in the exact workflow used to shape THIS goal | drafting leaves the slot empty; `/goal` activates; error messages distinguish draft-exists vs slot-occupied; #336 closed; SHIP critique | done |
+| 2 | critique-scaffold enum validity by-construction: surface allowed `bin`/`action`/host-exposure enums at author time | this session's Slice-2 3-round-trip waste; the documented critique-authoring trap's sibling | scaffold/preflight surfaces the allowed enums; an invalid substitution is caught at author time; verdicts unchanged; SHIP critique | done |
+| 3 | publish_release update_instructions pre-publish stub emitter (dry-run / `--prep-update-instructions`) | this session's release critique round-1 HOLD (Gawande lens) | publish dry-run / prep emits the target-version stub before the critique gate; verdicts unchanged; SHIP critique | done |
+| 4 | bundle proof + closeout: broad gate; #336 closeout; retro | the operator-requested next-to-do closeout | broad gate PASS; #336 verified closed; retro + dispositions | done |
 
 ## Coordination Cues
 
@@ -175,6 +176,23 @@ during the run:
   landing via a direct-commit close-keyword carrier; record the `Issue closeout:`
   line (numbers + carrier + `issue_tool.py verify-closeout` proof) at completion.
   #335 (cron-closing) and #184 (product) are tracked context only.
+
+Completion record (closeout floors):
+
+- Routing: `find-skills` recommended `achieve` at session start; per-slice the `impl` boundary went to `impl`+`critique` (Slices 1-3), the `debug` boundary was an inline causal review only (the #336 root-cause asymmetry — no bug-class debug artifact needed), `quality` owned the broad gate, and `issue` owned the #336 direct-commit closeout. `find-skills` owns the recommendation; `achieve` coordinated the owner-skill boundaries.
+- Gather: n/a — no external `http(s)://`/Slack/Notion/Docs/Drive source in
+  `## Context Sources`; #336 was read via `gh issue view`, a GitHub-tracked
+  issue, not an external knowledge asset.
+- Release: n/a — no real release cut (default no-push); the Slice-3
+  `publish_release.py` change is an additive read-only `--prep-update-instructions`
+  affordance with no version bump, no `marketplace.json`/install-manifest edit,
+  and no new release surface.
+- Issue closeout: #336 staged via a direct-commit close-keyword carrier
+  (`charness-artifacts/issue/2026-06-08-issue-336-closeout-commit-message.md`
+  carries `Close #336`); rehearsed with `issue_tool.py validate-closeout-draft
+  --carrier direct-commit` and verified with `issue_tool.py verify-closeout`
+  (OPEN pending the maintainer's push — default no-push; GitHub auto-closes on
+  push). #335 (cron-closing) and #184 (product) are tracked context only.
 
 Operating guardrails carried from this session's retro
 (`charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`):
@@ -295,9 +313,67 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md
+Host log probe: charness-artifacts/probe/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction.json
+Disposition review: charness-artifacts/critique/2026-06-08-issue-336-disposition-review.md
+
+No safe next slice: the operator-approved 3-fix bundle is complete and proven
+(broad gate 73/73), at ~92m of the 240m timebox. The `Done-early policy`'s only
+named continuation candidate (the installed-vs-repo drift detector) is an
+explicit Non-Goal in this same artifact, and any unnamed next ergonomics surface
+is unscoped discovery / new-goal work that the focus lesson exists to prevent —
+so no SAFE in-scope next slice remains; closing at the approved macro target with
+the #336 closeout is the honest stop. (A fresh reviewer can falsify this by
+naming a safe, in-scope, already-shaped continuation slice within the bundle.)
+Early close report: charness-artifacts/goals/2026-06-08-workflow-ergonomics-goal-slot-and-authoring-friction-early-close-report.md
+
+Note on the host log probe: it is the efficiency/metrics-availability probe
+(token/tool-call/turn derivability + proxy signals), NOT a live "drafting left
+the host slot empty" observation. The slot-empty claim rests on the
+`upsert_goal.py`-is-pure-file-I/O argument plus the in-session observation that
+`/achieve` drafting left the slot empty and only `/goal` consumed it; the
+host-auto-activation residual is a conditional non-claim (see lifecycle.md).
+
+### Self-verification against the original goal
+
+All three bundle fixes shipped by construction (not prose ritual), each
+behavior-preserving, each with a SHIP fresh-eye slice critique:
+
+1. **#336** — `achieve` Before-phase is artifact-only and must not consume the
+   host active-goal slot (SKILL.md + lifecycle.md `Drafting does not consume the
+   host goal slot` + adapter-contract `Host Goal-Slot Boundary`); pinned by
+   `test_drafting_does_not_consume_host_goal_slot` + a 3rd dogfood acceptance
+   criterion. Commit `cead7949`.
+2. **critique-enum** — the scaffold + artifact-surface preflight surface the
+   validator's allowed `bin`/`evidence`/`action`/host-exposure enums at author
+   time, pinned to the validator frozensets by a bidirectional drift test.
+   Commit `a101e716`. Dogfooded this run: the #336 resolution critique validated
+   on the first try (zero validate->fix round-trips).
+3. **update_instructions** — `publish_release.py --prep-update-instructions` emits
+   a target-version stub + staleness report before the critique gate, read-only,
+   pre-gate. Commit `138366c1`; changed-line coverage backfilled in `297d52ab`.
+
+### Closeout-state taxonomy
+
+Reached level: `carrier` (impl-local + the direct-commit closeout carrier is
+validated and staged). `pushed-ci` / `issue-closed` are NOT reached — default
+no-push; #336 stays OPEN until the maintainer pushes, when `Close #336`
+auto-closes it. Non-claims: no provider/live proof, no real release, no push.
+
+### Proof
+
+- Broad gate `./scripts/run-quality.sh --read-only`: 73 phases passed, 0 failed
+  (full pytest suite + check-changed-line-mutation-coverage with a fresh marker
+  over merge-base origin/main..HEAD + validate_skills + ergonomics + markdown).
+- Changed-line mutation coverage producer: `ok: true`, 0 uncovered changed lines
+  (after backfilling 6 lines in `297d52ab`).
+- HEAD freshness: `current HEAD` claims use no immutable SHA; per-slice commit
+  SHAs are recorded historically in the Slice Log.
+- Release: n/a — no real release cut (default no-push).
+- Issue closeout: #336 staged via direct-commit carrier
+  (`charness-artifacts/issue/2026-06-08-issue-336-closeout-commit-message.md`,
+  `Close #336`); `verify-closeout` proof recorded at the closeout commit (OPEN
+  pending push).
 
 ## User Verification Instructions
 
@@ -314,4 +390,33 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Retro: `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`.
+
+Per-improvement dispositions (the retro's `## Next Improvements`):
+
+- **Cover normalization/guard branches in the introducing slice** (a new helper's
+  list/str/None/empty branches and defensive `SystemExit`/raise lines ship
+  uncovered and surface only at the bundle-boundary mutation gate; cover them
+  in-slice). Disposition: **applied** — durably recorded in the checked-in retro's
+  `## Next Improvements` and ingested as a recent-lessons candidate
+  (`lesson-selection-index.json`); this refresh of the auto-selected
+  `recent-lessons.md` digest surfaced it as a backward `## Repeat Traps` waste
+  record, not yet a forward `## Next-Time Checklist` line (the digest is
+  recency/recurrence-selected, so the forward-obligation framing lives in the
+  retro artifact until the trigger recurs and the selector promotes it). Honest
+  correction from the rung-2 disposition review: this is NOT a fold into the
+  existing core-headroom/boundary-bypass ratchet line (a different subject, left
+  unedited).
+- **Keep the producer-first guardrail and the critique enum legend** (both worked
+  as designed this run — the producer surfaced the coverage gap early; the legend
+  gave a first-try critique). Disposition: **applied** — these two habits are
+  already carried as `## Next-Time Checklist` lines in `recent-lessons.md` (from
+  the prior retro); this run confirms them effective, no change needed (the
+  positive lesson is the already-persisted memory).
+
+Sibling search: `n/a — habit lesson, no code sibling to fix this run` (the
+durable fix is the recent-lessons signal, not a code-site change). Recorded in
+the retro's `## Sibling Search`.
+
+Disposition review: `charness-artifacts/critique/2026-06-08-issue-336-disposition-review.md`
+(fresh-eye rung-2 review of the retro's Next Improvements vs these dispositions).

@@ -8,9 +8,9 @@
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md`; sources: 13)
+- **Changed-line coverage round-trip (anticipated, partly avoidable).** The Slice-3 prep affordance added input-normalization branches (list/string/None) and three defensive `SystemExit` guards, plus a refactor that relocated the clean-worktree check. Slice-3 tests covered the happy path but not those branches, so the bundle-boundary producer flagged 6 uncovered changed lines, costing a cover-then-re-run-producer cycle (each producer run is multi-minute mutation coverage). Running the producer FIRST (per the carried guardrail) worked — it surfaced the gap at the boundary, not post-merge — but covering the branches IN Slice 3 would have made the producer a confirmation, not a discovery. (source: `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`)
+- **Invalid-adapter test first miss (trivial).** The first invalid-adapter test wrote an adapter that was valid-with-defaults (hit the version guard instead); one fix to a non-integer version. Trivial. (source: `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`)
 - Low otherwise: coverage is range-independent, so I re-classified the same coverage report over multiple base ranges with `--reuse-coverage` (cheap) instead of re-probing — that reuse avoided ~2 extra full runs. (source: `charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md`)
-- New commits invalidated the prior changed-line coverage fingerprint, so the broad gate warned; running the producer over merge-base origin/main..HEAD then flagged one genuinely-uncovered changed line (the preamble-not-found branch), which I covered. A warn->produce->cover round-trip. (source: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`)
-- NOT waste: the fresh-eye critiques caught two real defects before they shipped (Slice-3 owner-message enforcer misattribution; release stale update_instructions). That is the intended function, high value. (source: `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`)
 
 ## Next-Time Checklist
 
@@ -43,3 +43,4 @@
 - `charness-artifacts/retro/2026-06-08-v0-28-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md`
+- `charness-artifacts/retro/2026-06-08-workflow-ergonomics-bundle-336-goal-slot.md`
