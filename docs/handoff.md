@@ -13,37 +13,35 @@
 
 ## Current State
 
-- **[authoring-preflight + disposition de-launder goal](../charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder.md) COMPLETE, awaiting push.**
-  Closed the #284→#334 authoring-preflight-skip loop: a general author-time
-  artifact-shape preflight (7-surface registry + a blocking commit-boundary member
-  for critique/ideation/retro + the now-cited critique scaffold) and a
-  presence-only recurrence-lineage de-launder (rung 1d on achieve Auto-Retro AND
-  standalone-retro, plus a rung-2 falsify mandate; never a content classifier). Two
-  fresh-eye critiques; dogfood proven. Deferred (low-value): adapter-dir resolution
-  for `--path`. [Coverage report](../charness-artifacts/spec/artifact-shape-preflight-coverage.md).
-- **v0.27.0 shipped** (tag `v0.27.0`, release verified; `origin/main` even).
-- **CLOSED this cycle:** #322 (advisory-interpretation contract), #328 (preflight
-  phase coverage), #331 (closeout matcher idiom), #330 (interpretation
-  meta-validator), #329 (retro disposition-form floor) — detail in their
-  critiques/retros under `charness-artifacts/`.
-- **#332 done, awaiting push** (commit-boundary sweep non-discretionary): the full
-  closeout now runs the cheap structural sweep FIRST (before
-  surface-match/cautilus/broad pytest); `Close #332` staged on `9f2b9005`; a
-  follow-up `applied` added function-length headroom to `--headroom`. Closeout:
-  [critique](../charness-artifacts/critique/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md),
-  [retro](../charness-artifacts/retro/2026-06-07-issue-332-commit-boundary-sweep-enforcement.md).
-- **run_slice_closeout split done, awaiting push** (behavior-preserving): reporting
-  block → [slice_closeout_reporting](../scripts/slice_closeout_reporting.py) (474→370/480);
-  [goal](../charness-artifacts/goals/2026-06-08-run-slice-closeout-module-split.md).
-- Open issues (`gh`): **#184** (product metrics); **#332** OPEN until push.
+- **[gate-recurrence (#335) + closeout-floor preflight goal](../charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md) COMPLETE, awaiting push.**
+  Closed two recurring seams. **#335** (Nth changed-line mutation instance):
+  root-caused as genuinely-uncovered changed lines (debug artifact); the next run's
+  range (`base=858c9eab`) had **85 uncovered v0.28.0 lines** beyond #335's 8
+  survivors — covered all; local producer green over `858c9eab..HEAD` + the
+  merge-base range (`ok: true`). Recurrence reduced: the changed-line gate's
+  **silent skip now surfaces a loud non-blocking obligation** (Slice 3; no new hard
+  gate). **Closeout-floor preflight** extended to `goal-coordination` +
+  `goal-early-close` (Slice 4). Two fresh-eye critiques (SHIP); RCA conversion logged.
+- **Prior unpushed goals (also COMPLETE, awaiting push):** authoring-preflight +
+  disposition de-launder (#284→#334 loop; 7-surface preflight + recurrence-lineage
+  rung 1d), run_slice_closeout module split, #332 commit-boundary sweep. v0.27.0
+  shipped; #322/#328/#329/#330/#331 closed earlier this cycle.
+- Open issues (`gh`): **#184** (product metrics); **#335** (mutation regression —
+  fixed locally, auto-closes on the next green scheduled run after push).
 
 ## Next Session
 
 - **Push the staged closeouts** (maintainer; `achieve` does not push):
-  `origin/main..HEAD` carries `Close #332` plus the authoring-preflight +
-  de-launder goal's commits; the pre-push broad gate is the attestation. Optional
-  pre-push: run the mutation-coverage producer
-  (`--verification-lock --produce-mutation-coverage`) on the touched files.
+  `origin/main..HEAD` carries the #335 gate-recurrence + closeout-floor goal's
+  commits (plus prior unpushed work); the pre-push broad gate is the attestation.
+  The #335 changed-line coverage is freshly produced + fingerprint-stamped this
+  session, so the pre-push changed-line consumer trusts it.
+- **#335** auto-closes on the **next green scheduled mutation run** after push (the
+  mutation-workflow marker owns it) — do NOT manually close. The local producer is
+  green over the next-run range; the CI run is the authoritative verdict.
+- **`goal-activation-preflight-surface`** (deferred follow-up): surface the goal
+  `Activation:` preamble line in the preflight (needs preamble extraction). See
+  [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md).
 - **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
 - **v0.27.0 human real-host smoke** (release left open; agent cannot do):
   `charness update` on a clean temp-home + the nose checklist in

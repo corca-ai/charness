@@ -125,6 +125,11 @@ a covered line still reported uncovered ⇒ a measurement/selection bug, not a g
 - adjacent-clean: `disposition_form.py`, `validate_retro_artifact.py`,
   `run_slice_closeout.py`, `goal_artifact_disposition.py` changed but covered |
   no action | proof: not in `blocking`.
+- cross-file: `scripts/check_artifact_surface_preflight.py`,
+  `scripts/slice_closeout_reporting.py`,
+  `skills/public/achieve/scripts/check_goal_artifact.py` — same-class uncovered
+  changed lines OUTSIDE the subject changed-line-gate file (the v0.28.0 debt),
+  covered in Slice 2.
 - follow-up: none outside this goal's slices.
 
 ## Seam Risk
