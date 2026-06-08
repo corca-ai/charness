@@ -12,9 +12,11 @@ bug-class CI regression, so it gets a causal review before any fix.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 (structurally reduce the recurrence + fresh-eye critique).
-- Next action: convert the changed-line gate's silent skip into a surfaced
-  author-time obligation (the recurrence driver), add tests, spec it, critique.
+- Current slice: Slice 4 (extend the author-time preflight to goal-closeout /
+  coordination-floor surfaces).
+- Next action: extend `check_artifact_surface_preflight.py` so authoring into a
+  goal-closeout/coordination-floor surface surfaces the required shape pre-flip;
+  dogfood; fresh-eye critique; verdicts unchanged.
 - Timebox: 4h
 - Activation time: 2026-06-08
 - Closeout reserve: 45m
@@ -154,7 +156,7 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | 1 | `debug` #335: falsifiable root-cause for the recurring changed-line signal (genuinely-uncovered changed lines vs selection/workload-budget drop); local repro via the producer | CI is red; bug-class needs causal review before a fix | a debug artifact with a tested hypothesis + local repro | done |
 | 2 | Fix #335: cover the changed lines / fix the selection-drop, restore the gate green WITHOUT weakening thresholds | restore the gate; close the concrete instance | producer green on the changed-line gate; survivors addressed at root | done |
-| 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | planned |
+| 3 | Structurally reduce the recurrence: the smallest mechanism that stops THIS class re-filing; fresh-eye critique | the loop's thesis — close the seam, not the instance | a recurrence-reduction mechanism + SHIP critique | done |
 | 4 | Extend the author-time preflight to the goal-closeout/coordination-floor surfaces; dogfood; critique | the one uncovered authoring surface from v0.28.0 | authoring surfaces required shape pre-flip; verdicts unchanged | planned |
 | 5 | Closeout: broad gate, retro, dogfooded disposition, #335 issue closeout, handoff | make it auditable | full gate PASS; retro + disposition; #335 closed + verified | planned |
 
@@ -214,6 +216,25 @@ during the run:
   tests pass; ruff/length/export-safe/mirror-drift clean.
 - Note: the CI re-run is the authoritative #335 verdict (agent cannot run it) —
   the local producer over the next-run range is the recorded proxy.
+
+### Slice 3 — structural recurrence reduction (done, 2026-06-08)
+
+- Mechanism: the changed-line gate's SILENT skip (the recurrence driver — an
+  unverified skip reads identically to a clean pass) now emits a loud non-blocking
+  stderr WARNING + `coverage_not_verified`/`changed_eligible_files` in the JSON
+  whenever it skips with changed eligible files present. Additive,
+  behavior-preserving (exit 0 unchanged) — the v0.28.0 surfacing posture, NOT a
+  new hard gate (hard-gate/auto-produce deferred by design, no Goodhart).
+- Surfaces: `check_changed_line_mutation_coverage.py` (+ mirror); spec Slice 3
+  entry; `quality/mutation-testing.md` "unverified-skip trap" doctrine (portable);
+  helper unit test + skip-test surfacing asserts.
+- Fresh-eye critique: SHIP, zero blockers — and the reviewer independently traced
+  the WARNING through `run-quality.sh:296` attention-output to confirm it reaches
+  the operator at the green pre-push moment (efficacy, not just code). One nit
+  folded (stale-skip tests now assert surfacing). Artifact:
+  `charness-artifacts/critique/2026-06-08-issue-335-changed-line-recurrence-surfacing.md`.
+- RCA ledger: appended one converted `repeated_correction` (durable_kind=gate,
+  class `changed-line-mutation-silent-skip-recurrence`, ref #335).
 
 ## Context Sources
 

@@ -269,6 +269,9 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "stale" in payload["reason"]
+    # #335: the stale-skip path also surfaces the unverified obligation loudly.
+    assert payload["coverage_not_verified"] is True
+    assert "WARNING (changed-line mutation gate)" in result.stderr
 
 
 def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> None:
@@ -282,7 +285,9 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "stale" in json.loads(result.stdout)["reason"]
+    payload = json.loads(result.stdout)
+    assert "stale" in payload["reason"]
+    assert payload["coverage_not_verified"] is True  # #335: stale skip surfaces too
 
 
 def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: Path) -> None:
