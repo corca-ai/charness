@@ -53,6 +53,7 @@ preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
+build_update_instructions_prep_payload = _preflight.build_update_instructions_prep_payload
 safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
@@ -60,6 +61,8 @@ fail_after_post_create_verification = _post_create.fail_after_post_create_verifi
 verify_release_visible = _post_create.verify_release_visible
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
+release_plan_target_version = _release_plan.target_version
+release_previous_version = _helpers.release_previous_version
 resume_publish = _resume.resume_publish
 
 
@@ -74,6 +77,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
     parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
+    parser.add_argument("--prep-update-instructions", action="store_true", help="Emit a target-version update_instructions stub + staleness report, then exit. Run this BEFORE the release critique so the staleness guard does not HOLD the publish; does not require a clean worktree or the critique gate.")
     parser.add_argument("--resume", action="store_true", help="Resume a partial publish: detect the existing local release commit+tag, re-validate, then push/release/verify (requires --publish-current)")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
@@ -225,20 +229,39 @@ def _load_adapter_and_gate(args: argparse.Namespace, repo_root: Path) -> tuple[d
     return adapter["data"], critique_artifact
 
 
-def main() -> None:
-    args = parse_args()
-    repo_root = args.repo_root.resolve()
-    if args.resume and not args.publish_current:
-        raise SystemExit("--resume requires --publish-current (the manifest is already at the target version)")
-    adapter_data, critique_artifact = _load_adapter_and_gate(args, repo_root)
-    status = git_status(repo_root)
-    if status:
-        raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
+def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> None:
+    """Pre-publish, pre-critique affordance: emit a target-version
+    `update_instructions` stub + staleness report so the maintainer refreshes the
+    adapter before the release critique, pre-empting the staleness HOLD. Read-only:
+    it loads the adapter, computes the target/previous versions the real publish
+    would use, and prints the prep payload without requiring a clean worktree or the
+    critique gate.
+    """
+    adapter = load_adapter(repo_root)
+    if not adapter["valid"]:
+        raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
+    adapter_data = adapter["data"]
+    current_payload = build_release_payload(repo_root)
+    current_version = current_payload["surface_versions"]["packaging_manifest"]
+    if not isinstance(current_version, str):
+        raise SystemExit("current_release did not report a packaging manifest version")
+    next_version = release_plan_target_version(args, current_version)
+    previous_version = release_previous_version(
+        repo_root, args.publish_current, current_version, next_version, args.remote
+    )
+    prep = build_update_instructions_prep_payload(
+        package_id=adapter_data["package_id"],
+        current_version=current_version,
+        target_version=next_version,
+        previous_version=previous_version,
+        update_instructions=adapter_data.get("update_instructions"),
+    )
+    print(json.dumps(prep, ensure_ascii=False, indent=2))
 
-    plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
-    if args.resume:
-        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=sys.modules[__name__])
-        return
+
+def execute_publish_plan(
+    args: argparse.Namespace, repo_root: Path, plan: dict[str, Any], adapter_data: dict[str, Any]
+) -> None:
     payload = plan["payload"]
     next_version = plan["next_version"]
     branch = plan["branch"]
@@ -248,9 +271,6 @@ def main() -> None:
     release_content_paths = plan["release_content_paths"]
     adapter_preflight_payload = plan["adapter_preflight_payload"]
     issue_repo = plan["issue_repo"]
-    if not args.execute:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-        return
 
     notes_file = args.notes_file.resolve() if args.notes_file else None
     run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file)
@@ -325,3 +345,31 @@ def main() -> None:
         has_issue_closeout=bool(args.close_issue),
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def main() -> None:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    if args.prep_update_instructions:
+        if args.execute or args.resume:
+            raise SystemExit(
+                "--prep-update-instructions is a read-only pre-publish affordance; "
+                "do not combine it with --execute or --resume"
+            )
+        run_prep_update_instructions(args, repo_root)
+        return
+    if args.resume and not args.publish_current:
+        raise SystemExit("--resume requires --publish-current (the manifest is already at the target version)")
+    adapter_data, critique_artifact = _load_adapter_and_gate(args, repo_root)
+    status = git_status(repo_root)
+    if status:
+        raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
+
+    plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
+    if args.resume:
+        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=sys.modules[__name__])
+        return
+    if not args.execute:
+        print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
+        return
+    execute_publish_plan(args, repo_root, plan, adapter_data)

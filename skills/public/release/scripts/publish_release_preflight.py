@@ -94,6 +94,56 @@ def update_instructions_version_blocker(
     )
 
 
+def build_update_instructions_prep_payload(
+    *,
+    package_id: str,
+    current_version: str,
+    target_version: str,
+    previous_version: str | None,
+    update_instructions: Any,
+) -> dict[str, Any]:
+    """Pre-publish affordance: surface a target-version `update_instructions` stub
+    BEFORE the release critique so the maintainer can refresh the adapter early and
+    the staleness guard (`update_instructions_version_blocker`) does not HOLD the
+    publish at the critique gate.
+
+    Reports staleness as *data* and never raises — the whole point is to run before
+    the clean-worktree / critique gate so the maintainer acts on it first. The stub
+    embeds the target version verbatim, so pasting it into the adapter is exactly
+    what makes the staleness guard pass.
+    """
+    if isinstance(update_instructions, (list, tuple)):
+        current_list = [str(item) for item in update_instructions]
+    elif update_instructions:
+        current_list = [str(update_instructions)]
+    else:
+        current_list = []
+    blocker = update_instructions_version_blocker(
+        update_instructions, target_version=target_version, previous_version=previous_version
+    )
+    stub = (
+        f"After updating {package_id} to v{target_version}, "
+        f"<describe the operator-facing refresh step for {target_version}>."
+    )
+    return {
+        "mode": "prep-update-instructions",
+        "package_id": package_id,
+        "current_version": current_version,
+        "target_version": target_version,
+        "previous_version": previous_version,
+        "current_update_instructions": current_list,
+        "update_instructions_stale": blocker is not None,
+        "staleness_blocker": blocker,
+        "stub_update_instructions_entry": stub,
+        "next_step": (
+            "Refresh the release adapter `update_instructions` so they describe the "
+            f"target version `{target_version}` (paste/fill the stub above), then run "
+            "the release critique and publish. Doing this now pre-empts the "
+            "update_instructions staleness HOLD at the critique gate."
+        ),
+    }
+
+
 def enforce_release_critique_gate(
     repo_root: Path,
     *,

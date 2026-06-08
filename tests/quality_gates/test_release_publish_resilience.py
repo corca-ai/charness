@@ -78,6 +78,107 @@ def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> No
     assert "0.0.1" in result.stderr
 
 
+# --- update_instructions pre-publish stub (prep affordance) -------------------
+
+
+def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() -> None:
+    preflight = _load_preflight()
+
+    # Stale: previous version is described, target is not -> reported as data.
+    stale = preflight.build_update_instructions_prep_payload(
+        package_id="demo",
+        current_version="0.0.0",
+        target_version="0.0.1",
+        previous_version="0.0.0",
+        update_instructions=["Run update to pull 0.0.0."],
+    )
+    assert stale["mode"] == "prep-update-instructions"
+    assert stale["update_instructions_stale"] is True
+    assert stale["staleness_blocker"]
+    # The stub embeds the target version verbatim, so pasting it satisfies the guard.
+    assert "0.0.1" in stale["stub_update_instructions_entry"]
+
+    # Fresh / version-agnostic: not stale, stub still emitted.
+    fresh = preflight.build_update_instructions_prep_payload(
+        package_id="demo",
+        current_version="0.0.0",
+        target_version="0.1.0",
+        previous_version="0.0.0",
+        update_instructions=["Run `demo update`."],
+    )
+    assert fresh["update_instructions_stale"] is False
+    assert fresh["staleness_blocker"] is None
+    assert "0.1.0" in fresh["stub_update_instructions_entry"]
+
+
+def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    # Dirty the worktree: the prep affordance must NOT require a clean tree, and it
+    # passes no critique flag, proving it runs before both gates.
+    (repo / "WIP.txt").write_text("mid-prep edit", encoding="utf-8")
+
+    result = _run_publish(repo, env, "--prep-update-instructions", "--part", "minor")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["mode"] == "prep-update-instructions"
+    assert payload["target_version"] == "0.1.0"  # current 0.0.0 -> minor
+    assert "0.1.0" in payload["stub_update_instructions_entry"]
+    # The seed instructions are version-agnostic -> not stale.
+    assert payload["update_instructions_stale"] is False
+
+
+def test_prep_reports_staleness_as_data_where_dry_run_would_hold(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    text = adapter.read_text(encoding="utf-8")
+    text = text.replace(
+        "update_instructions:\n- Run `demo update`.\n- Restart the host if the previous version is still visible.",
+        "update_instructions:\n- Run `demo update` to pull 0.0.0.\n- Restart the host if the previous version is still visible.",
+    )
+    adapter.write_text(text, encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "seed stale update_instructions")
+
+    env = _release_env(tmp_path, bin_dir)
+    # The regular dry-run SystemExits on this stale state (see
+    # test_publish_blocks_when_update_instructions_are_stale). The prep affordance
+    # instead reports it as data and exits 0, so the maintainer can fix it first.
+    result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["update_instructions_stale"] is True
+    assert payload["staleness_blocker"]
+    assert "0.0.1" in payload["stub_update_instructions_entry"]
+
+
+def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> None:
+    # Lock in the non-`--part` branches of the shared target-version helper:
+    # --set-version takes the explicit string; --publish-current targets the
+    # current manifest version (no bump), so the stub still embeds it.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+
+    explicit = _run_publish(repo, env, "--prep-update-instructions", "--set-version", "9.9.9")
+    assert explicit.returncode == 0, explicit.stderr
+    explicit_payload = json.loads(explicit.stdout)
+    assert explicit_payload["target_version"] == "9.9.9"
+    assert "9.9.9" in explicit_payload["stub_update_instructions_entry"]
+
+    current = _run_publish(repo, env, "--prep-update-instructions", "--publish-current")
+    assert current.returncode == 0, current.stderr
+    current_payload = json.loads(current.stdout)
+    assert current_payload["target_version"] == current_payload["current_version"]
+
+
+def test_prep_update_instructions_rejects_execute_combo(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch", "--execute")
+    assert result.returncode != 0
+    assert "read-only pre-publish affordance" in result.stderr
+
+
 # --- Gap 2: installed/exported plugin-cache bootstrap -------------------------
 
 

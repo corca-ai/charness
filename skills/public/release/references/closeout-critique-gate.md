@@ -59,6 +59,33 @@ The blocked path is the honest substitute, not a convenience. If the
 canonical bounded-review path is available and was simply not run, use
 the artifact path instead.
 
+## Prep `update_instructions` Before The Critique
+
+The `update_instructions` staleness guard
+(`update_instructions_version_blocker`) HOLDs a publish whose adapter
+`update_instructions` still describe the previous version but not the
+target. Because the staleness check runs inside the publish plan — before
+the dry-run payload prints — a maintainer who only discovers it at publish
+time has to stop, refresh the adapter, and re-run, often after the critique
+has already been spent (a round-1 HOLD).
+
+Run the pre-publish, pre-critique affordance first so the refresh happens
+up front:
+
+```bash
+python3 skills/public/release/scripts/publish_release.py \
+  --repo-root . --part patch --prep-update-instructions
+```
+
+It loads the adapter and computes the same target/previous versions the
+real publish would, then prints a `prep-update-instructions` payload with
+the current `update_instructions`, an `update_instructions_stale` flag, the
+`staleness_blocker` (if any), and a `stub_update_instructions_entry` that
+embeds the target version verbatim. Paste/fill the stub into the adapter's
+`update_instructions`, then run the critique and publish — the guard no
+longer HOLDs. It is read-only: it requires neither a clean worktree nor the
+critique gate, and rejects `--execute`/`--resume`.
+
 ## See Also
 
 - `../../../shared/references/fresh-eye-subagent-review.md` —
