@@ -1,6 +1,6 @@
 # Achieve Goal: Generalize author-time shape-preflight + de-launder the disposition escape (break the #308 recurrence loop)
 
-Status: draft
+Status: active
 Created: 2026-06-08
 Activation: `/goal @charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder.md`
 
@@ -13,10 +13,10 @@ critiqued before code.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-08-authoring-preflight-and-disposition-delaunder.md`.
+- Current slice: Slice 2 — build the general artifact-surface preflight dispatcher + family registry; wire the blocking commit-boundary structural-sweep member; connect the critique scaffold (the #334 proving instances). Slice 1 (design + SHIP-WITH-CHANGES critique) is DONE.
+- Next action: implement `scripts/check_artifact_surface_preflight.py` with the registry, add a blocking `STRUCTURAL_SWEEP_LABELS` member in `staged_commit_gate_plan.py`, cite the critique scaffold from the critique skill; tests + behavior-preservation check; mirror-sync.
 - Timebox: 4h
-- Activation time: TBD (set at `/goal`)
+- Activation time: 2026-06-08 (activated via `/goal`)
 - Closeout reserve: 45m
 - Done-early policy: continue_next_improvement (re-point to the next recurrence-
   loop hardening, e.g. the remaining uncovered artifact-validator surfaces, not a
@@ -204,6 +204,20 @@ during the run:
 ## Slice Log
 
 _No slices yet. Activation (`/goal`) flips status to `active` and begins Slice 1._
+
+### Slice 1: Slice 1 — Design spec + fresh-eye critique
+
+- Objective: Spec the de-launder mechanism + the preflight-generalization shape; decide the design axes; resolve the content-classifier + non-discretionary guardrails before any code.
+- Why this approach: The de-launder has a hard guardrail (no content classifier in the deterministic floor); design + fresh-eye critique lowest-regret first.
+- Commits:
+- What changed: charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md (new design contract).
+- Alternatives rejected: De-launder via filing-time dedup in issue (rejected as primary: heavier, needs a recurrence index, and 'matches a recurring class' at filing time is a substance call better left to rung-2). A3 exit-0 advisory tier (rejected after critique: doc-equivalent = the G2 trap; replaced with a blocking structural-sweep member + scaffold-by-construction).
+- Targeted verification: check-markdown (0 errors), check_doc_links (clean). Fresh-eye design critique (different agent context, read-only): SHIP-WITH-CHANGES; all must-fix findings folded into the spec.
+- Test duplication pressure:
+- Critique: Fresh-eye SHIP-WITH-CHANGES. Real findings folded: A3 tier was doc-equivalent (now blocking structural-sweep + scaffold-by-construction); goal-closeout has no scaffold (registry now marks it validator-constants+template); G3 restated as verdict-relocation; lineage floor value honestly attributed to rung-2 (floor is presence-only forcing function). Verified-safe: critique scaffold round-trips, retro isolation holds by construction, validators not at commit boundary today (relocation is genuine new value).
+- Off-goal findings: None.
+- Lessons carried forward: Design axes locked: (A) general dispatcher + family registry reading shape from scaffolds/validator-constants, wired as a BLOCKING commit-boundary structural-sweep member + scaffold-by-construction; (B) de-launder = presence-only recurrence-lineage marker (rung 1d in goal_artifact_disposition, grammar in shared disposition_form) on issue-form Auto-Retro dispositions + rung-2 reviewer falsifies novel:. Enforce-from-date 2026-06-08 so THIS goal dogfoods. Standalone-retro extension deferred (named open escape).
+- Metrics:
 
 ## Context Sources
 
