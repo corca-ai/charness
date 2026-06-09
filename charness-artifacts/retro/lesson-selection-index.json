@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-09",
-  "source_artifact_count": 173,
-  "candidate_count": 970,
+  "source_artifact_count": 174,
+  "candidate_count": 978,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -255,6 +255,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d0480a2c9a16",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal cleared the operator-selected next queue in three independent, per-slice-closed-out slices: (1) **#N-anchor edit-time guard** (`scripts/skill_issue_anchor_scan.py` + `check_skill_surface_preflight.py --scan-issue-anchors`), (2) **#338** gather X/Twitter exact-source (`twitter_exact_source.py` identity-keyed route + `source_identity` answer-path verdict, `Closes #338`), (3) **charness-update release-closeout** — verification that the standing step already shipped (v0.29.0 to v0.30.1) + stale-handoff fix.",
+      "normalized_key": "one achieve goal cleared the operator selected next queue in three independent per slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b61c9f292ad9",
       "kind": "current_focus",
       "lesson": "One `achieve` goal cleared three independent tracked deferred items in three per-slice-closed-out slices: #341 (mutation regression on main), #340 (find-skills not surfacing specdown's shipped support skill), and the activation-preflight surface.",
@@ -395,12 +415,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:60e0176b63ef",
+      "candidate_id": "next_improvement:6ccd432f9951",
       "kind": "next_improvement",
-      "lesson": "cover new normalization/guard/validation branches IN the introducing slice so the bundle-boundary mutation producer confirms rather than discovers. Disposition: applied: covered all 32 flagged changed lines in the bundle coverage commit (3d3cd561) and re-persisted the in-slice-coverage guardrail to recent-lessons.",
-      "normalized_key": "cover new normalization guard validation branches in the introducing slice so the bundle boundary",
+      "lesson": "**capability (recommend to operator, not auto-filed):** an author-time issue-closeout-draft preflight (the required resolution_critique + `tool signal:` + carrier-body source + classification ledger fields), the sibling of `check_artifact_surface_preflight` for the GitHub-issue closeout surface. Same authoring-preflight class as #284 to #334.",
+      "normalized_key": "capability recommend to operator not auto filed an author time issue closeout draft preflight",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
       "latest_source_date": "2026-06-09",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -408,27 +428,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-          "date": "2026-06-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b4fadf40578d",
-      "kind": "next_improvement",
-      "lesson": "**memory:** Before implementing a deferred follow-up named only in `docs/handoff.md`, cross-check the OWNING spec's status — the spec was authoritative over the stale handoff and saved a redundant re-implementation. (persisted to recent-lessons)",
-      "normalized_key": "memory before implementing a deferred follow up named only in docs handoff md cross",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -677,6 +677,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d0480a2c9a16",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal cleared the operator-selected next queue in three independent, per-slice-closed-out slices: (1) **#N-anchor edit-time guard** (`scripts/skill_issue_anchor_scan.py` + `check_skill_surface_preflight.py --scan-issue-anchors`), (2) **#338** gather X/Twitter exact-source (`twitter_exact_source.py` identity-keyed route + `source_identity` answer-path verdict, `Closes #338`), (3) **charness-update release-closeout** — verification that the standing step already shipped (v0.29.0 to v0.30.1) + stale-handoff fix.",
+      "normalized_key": "one achieve goal cleared the operator selected next queue in three independent per slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b61c9f292ad9",
       "kind": "current_focus",
       "lesson": "One `achieve` goal cleared three independent tracked deferred items in three per-slice-closed-out slices: #341 (mutation regression on main), #340 (find-skills not surfacing specdown's shipped support skill), and the activation-preflight surface.",
@@ -817,6 +837,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6ccd432f9951",
+      "kind": "next_improvement",
+      "lesson": "**capability (recommend to operator, not auto-filed):** an author-time issue-closeout-draft preflight (the required resolution_critique + `tool signal:` + carrier-body source + classification ledger fields), the sibling of `check_artifact_surface_preflight` for the GitHub-issue closeout surface. Same authoring-preflight class as #284 to #334.",
+      "normalized_key": "capability recommend to operator not auto filed an author time issue closeout draft preflight",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:60e0176b63ef",
       "kind": "next_improvement",
       "lesson": "cover new normalization/guard/validation branches IN the introducing slice so the bundle-boundary mutation producer confirms rather than discovers. Disposition: applied: covered all 32 flagged changed lines in the bundle coverage commit (3d3cd561) and re-persisted the in-slice-coverage guardrail to recent-lessons.",
@@ -871,6 +911,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:54310e02b0d3",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the #N-anchor recurring trap now has the edit-time surface its prior accepted-risk disposition recommended; upgrade the recent-lessons entry from accepted-risk to applied.",
+      "normalized_key": "memory the n anchor recurring trap now has the edit time surface its prior",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -937,6 +997,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:31cc9d3b8121",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** before acting on a handoff Next-Session to-do, reconcile it against the actual repo/adapter/release state; a carried-forward to-do can be already shipped.",
+      "normalized_key": "workflow before acting on a handoff next session to do reconcile it against the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:08656a3a51d5",
       "kind": "next_improvement",
       "lesson": "**workflow:** For a verbatim-MOVE-into-new-file refactor, treat every pre-existing uncovered branch in the moved code as a newly-gated changed line — cover those branches IN the introducing slice (not just the new glue like `_load_local_module`). This refines the #339 \"cover new lines in-slice\" lesson to explicitly include moved-but-previously-uncovered branches.",
@@ -953,6 +1033,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:499a7fa68b0b",
+      "kind": "repeat_trap",
+      "lesson": "**#338 closeout-draft contract discovery (4 round-trips).** The `validate-closeout-draft` contract was learned incrementally: missing resolution_critique, then a critique artifact missing a `tool signal:`, then a wrong carrier-body source (for direct-commit the body is the COMMIT MESSAGE, not --body-file), then missing feature ledger fields. An author-time preflight listing the required closeout-draft shape would have collapsed these to one pass.",
+      "normalized_key": "338 closeout draft contract discovery 4 round trips the validate closeout draft contract was",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Waste"
         }
       ]
     },
@@ -997,6 +1097,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:e83e1d37961f",
+      "kind": "repeat_trap",
+      "lesson": "**Handoff conciseness floor.** A verbose slice-3 handoff edit pushed the file past its 70-line floor, failing the broad gate (one fix round-trip).",
+      "normalized_key": "handoff conciseness floor a verbose slice 3 handoff edit pushed the file past its",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:59cfcb2f593f",
       "kind": "repeat_trap",
       "lesson": "**Length-limit fight (slice 2):** adding a cohesive ~55-line recommendation function pushed `list_capabilities_lib.py` over the 360 hard limit and `main()` over 100; several trim iterations to fit. The find-skills lib genuinely sits at its cohesion limit (the advisory had been flagging it). Mild, partly structural.",
@@ -1031,6 +1151,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5df10a2a7e72",
+      "kind": "repeat_trap",
+      "lesson": "**Slice-2 commit gate round-trips.** Two aborted commits: attention-state vocabulary (`disabled`/`skipped` literals in a new module) and the boundary-bypass ratchet (a new gather-subprocess test). Both are the authoring-preflight class, surfaced late at the commit boundary.",
+      "normalized_key": "slice 2 commit gate round trips two aborted commits attention state vocabulary disabled skipped",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e8db926d76b9",
+      "kind": "repeat_trap",
+      "lesson": "**Slice-3 stale-handoff investigation.** The goal was shaped around a handoff to-do (make charness update a standing release-closeout step) that had ALREADY shipped (v0.29.0 to v0.30.1). Time went to confirming it was done rather than building it; the to-do had been carried across sessions without reconciling against the implementation.",
+      "normalized_key": "slice 3 stale handoff investigation the goal was shaped around a handoff to do",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md",
           "date": "2026-06-09",
           "section": "Waste"
         }

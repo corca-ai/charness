@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — #N-anchor edit-time guard, #338 gather X/Twitter exact-source, charness-update release-closeout
 
-Status: draft
+Status: complete
 Created: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-09-nanchor-guard-338-gather-release-update.md`
 
@@ -180,18 +180,16 @@ during the run:
 
 ### Recorded routes
 
-- Routing (run bootstrap): `find-skills` task-recommendation → `achieve`
-  (`public_skill_recommendations` top match, matched trigger `achieve`) — goal operator.
-- Routing (Slice 1 impl): authoring-preflight surface owner — extended
-  `check_skill_surface_preflight.py` / `quality` skill-package gate family
-  (`find-skills` capability map: quality owns `validate_skill_ergonomics` +
-  the skill-surface preflight). 
-- Routing (Slice 1 critique): `critique` — fresh-eye bounded reviewer (SHIP).
-- Routing (Slice 2 impl): `gather`/`web-fetch` provider surface — implemented the
-  twitter-syndication exact-source stage (find-skills capability map: gather owns
-  provider routing, support/web-fetch owns the acquisition engine).
-- Routing (Slice 2 critique + #338 resolution): `critique` / `issue` — fresh-eye
-  bounded reviewer (SHIP); closeout via `issue_tool.py validate-closeout-draft`.
+- Routing: impl — find-skills task-recommendation routed implementation work to the
+  matched durable work skill (impl); achieve operates the goal while find-skills owns
+  which skill answers each boundary. Slice 1 extended the quality skill-surface
+  preflight; slice 2 the gather/web-fetch provider surface; each slice critique routed
+  to critique (three fresh-eye SHIP verdicts).
+- Routing: quality — find-skills capability map routed validation and closeout to
+  quality (validate_skill_ergonomics, the skill-surface preflight, run_slice_closeout,
+  and the changed-line mutation producer).
+- Routing: issue — find-skills routed the #338 resolution and closeout to issue
+  (issue_tool.py validate-closeout-draft, direct-commit carrier).
 - Gather: n/a — #338 is the gather provider being BUILT, not an external source to
   acquire into a knowledge asset; X/Twitter acquisition is mocked (no live fetch).
 - Release: n/a (no release cut this run — non-goal) — the standing `charness update`
@@ -322,6 +320,20 @@ plan critique is part of activation.)
 
 Issues or deferred findings discovered during the run.
 
+- **Stale handoff to-do (resolved this run).** Slice 3's goal — "make `charness
+  update` a standing release-closeout step" — had ALREADY shipped (v0.29.0 manual
+  → v0.30.1 auto-run): adapter `post_publish_install_refresh` + `publish_release.py`
+  auto-run + `install-surface.md`. The handoff "Next Session" to-do was carried
+  across sessions without reconciling against that implementation. Corrected in
+  `docs/handoff.md` this run (slice 3).
+- **Transferable sibling (recommend to operator, not auto-filed).** The GitHub-issue
+  closeout-draft (`issue_tool.py validate-closeout-draft`) has no author-time shape
+  preflight, unlike the 7 artifact surfaces `check_artifact_surface_preflight`
+  covers — the same authoring-preflight class as #284→#334. It cost 4 discovery
+  round-trips this run (resolution_critique, `tool signal:`, carrier-body source,
+  feature ledger fields). Recorded in the retro `## Sibling Search` + recent-lessons
+  + handoff for an operator decision; out of this goal's non-goal scope to file.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -329,13 +341,36 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md
+Host log probe: skipped: host-log-not-exposed: the goal set no Host metric window line, so no scoped host-log audit applies; efficiency was reviewed via proxy gate round-trips in the retro instead of measured token/time.
+Disposition review: charness-artifacts/critique/2026-06-09-nanchor-guard-338-gather-release-disposition-review.md
 
 ## User Verification Instructions
 
+- **#N-anchor:** edit a `skills/public/**` or `skills/support/**` file to add a
+  disallowed anchor and scan it:
+  `python3 scripts/check_skill_surface_preflight.py --scan-issue-anchors <file>` —
+  a `#NNN`/`owner/repo#N`/`issues/N` anchor exits 1 (BLOCK) with file:line; an
+  allowed context (version field, placeholder issue URL) exits 0. The commit-time
+  `validate_skill_ergonomics` sweep is unchanged (still green).
+- **#338:** seed a captcha direct fetch + an exact-source response and acquire an
+  `x.com` status URL:
+  `python3 skills/support/web-fetch/scripts/acquire_public_url.py --url
+  https://x.com/<h>/status/<id> --direct-response-file <captcha> --domain-route-response-file <seed>`
+  — `source_identity` reads `exact-fetched` on an id match, `exact-blocked` on a
+  block/mismatch, `exact-unavailable` with no seed; a mismatched id is `invalid-proof`
+  and never substituted. `gather_public_url.py` surfaces `source_identity` in the
+  record. `gh issue view 338` shows the `Closes #338` carrier (closes on push).
+- **charness-update:** `python3 -m pytest tests/quality_gates/test_release_publish_resilience.py`
+  (20 green); `install-surface.md` "Maintainer Dev-Machine Install Refresh"
+  documents the auto-run step; installed plugin `0.33.0` == released `v0.33.0`.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the three surfaced improvements are each shipped this run (the #N-anchor edit-time surface, in-slice branch coverage confirmed by the bundle producer, and the stale-handoff correction); no improvement is laundered to a narrow issue. Per-improvement:
+
+- applied: `scripts/skill_issue_anchor_scan.py` + `check_skill_surface_preflight.py --scan-issue-anchors` (slice 1, commit 7204940d) — the #N-anchor recurring authoring trap now has the edit-time surface its prior `none — accepted-risk` disposition recommended; recent-lessons upgraded accepted-risk to applied.
+- applied: in-slice branch coverage on every new function (slices 1-2) — the bundle-boundary changed-line mutation producer CONFIRMED rather than discovered (`ok:True`, 0 uncovered changed lines, `blocking:[]` over `81f2e1ab..HEAD`).
+- applied: `docs/handoff.md` corrected (slice 3, commit 5c20547f) — the stale `charness update` standing-step to-do no longer misdirects the next session.
+
+Structural follow-up: none — the transferable sibling (author-time issue-closeout-draft preflight, the #284 to #334 class) is an outward-facing capability recommendation; recorded in the retro `## Sibling Search` + recent-lessons + handoff for an operator decision, not auto-filed per this goal's non-goal (do not take on other tracked issues this run).

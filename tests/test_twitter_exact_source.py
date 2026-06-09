@@ -22,6 +22,21 @@ STATUS_URL = f"https://x.com/acme/status/{SID}"
 SYND_URL = f"https://cdn.syndication.twimg.com/tweet-result?id={SID}&lang=en"
 
 
+def test_module_bootstrap_inserts_script_dir_when_absent(monkeypatch) -> None:
+    # Covers the guarded sys.path bootstrap: when the web-fetch scripts dir is NOT
+    # already on sys.path, a fresh load inserts it (the branch the normal import
+    # path never hits, since a sibling has already inserted the dir).
+    import importlib.util
+
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(WEBFETCH)])
+    assert str(WEBFETCH) not in sys.path
+    spec = importlib.util.spec_from_file_location("tes_fresh_bootstrap", WEBFETCH / "twitter_exact_source.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert str(WEBFETCH) in sys.path  # the guarded insert executed
+    assert module.parse_status_url(STATUS_URL) == {"handle": "acme", "status_id": SID}
+
+
 def _fetcher(by_kind: dict) -> "tes.Fetcher":
     def fetch(endpoint):
         entry = by_kind.get(endpoint["kind"], {})
