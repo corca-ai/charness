@@ -50,6 +50,7 @@ class Surface:
     paths_arg: bool = True  # validator accepts --paths; False => validate-all default
     template_preamble: str | None = None  # template_path; preamble (pre-first-`## `) shape source
     owner: str | None = None  # override for the validator=None owner line (default: achieve complete-flip)
+    shape_command: tuple[str, ...] | None = None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
 
     def excludes(self, rel: str) -> bool:
         # retro validator skips its rolled-up memory + archived history.
@@ -98,7 +99,30 @@ REGISTRY: tuple[Surface, ...] = (
     Surface(
         "goal-closeout", None, None, None,
         f"{_GOAL_TEMPLATE}|## Final Verification", False,
-        "Goal `## Final Verification` closeout-evidence block; seeded by the goal template (no scaffold script).",
+        "Goal `## Final Verification` closeout-evidence block; the template seeds the "
+        "lines and `describe_goal_closeout_shape.py` surfaces the enforced FORMS "
+        "(allowed skip-reason enum, goal-slug binding, disposition + Routing forms) "
+        "read live from `check_goal_artifact.py`'s constants.",
+        shape_command=("skills/public/achieve/scripts/describe_goal_closeout_shape.py",),
+    ),
+    # closeout-draft: the GitHub-issue closeout surface the authoring-preflight class
+    # (#284 -> #334) did not cover — discovered by failing `validate-closeout-draft`
+    # ~4x this cycle. Author-time-only (validator=None: a verdict needs the full
+    # `--repo/--number/--classification/--carrier` command, not just a path); the
+    # shape is rendered live from the verifier's constants, never re-declared.
+    Surface(
+        "closeout-draft", None, None, None, None, False,
+        "GitHub-issue closeout-draft body shape (resolution_critique + `tool signal:`, "
+        "carrier-body source = commit message for direct-commit, per-classification "
+        "ledger fields, close keyword); rendered live from `validate-closeout-draft`'s "
+        "verifier constants.",
+        shape_command=("skills/public/issue/scripts/describe_closeout_draft_shape.py",),
+        owner=(
+            "issue closeout-draft validation — `python3 skills/public/issue/scripts/issue_tool.py "
+            "validate-closeout-draft --repo <owner/repo> --number <N> --classification <c> "
+            "--carrier <c> ...` (the verdict needs the full command, not just a path; this "
+            "surface is author-time shape only)."
+        ),
     ),
     # #335: the goal-closeout/coordination-floor authoring surfaces the v0.28.0
     # generalization did not cover — discovered by failing the complete flip ~4x.
@@ -180,24 +204,53 @@ def _run(repo_root: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(argv, cwd=repo_root, check=False, capture_output=True, text=True)
 
 
+def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tuple[str, int]:
+    """Run a surface's ``shape_command`` (a skill script that prints the required
+    shape from the owning validator's live constants). ``--stub`` asks it for a
+    starter. Returns ``(text, returncode)``."""
+    argv = ["python3", *surface.shape_command, "--repo-root", str(repo_root)]
+    if stub:
+        argv.append("--stub")
+    proc = _run(repo_root, argv)
+    if proc.returncode == 0 and proc.stdout.strip():
+        return proc.stdout, 0
+    return (
+        f"(could not render shape source {surface.shape_command[0]}: "
+        f"{proc.stderr.strip() or 'no output'})",
+        1,
+    )
+
+
 def _shape_text(repo_root: Path, surface: Surface) -> str:
     if surface.scaffold:
         proc = _run(repo_root, ["python3", surface.scaffold, "--repo-root", str(repo_root)])
         if proc.returncode == 0 and proc.stdout.strip():
             return proc.stdout
         return f"(could not render scaffold {surface.scaffold}: {proc.stderr.strip() or 'no output'})"
+    # Non-scaffold sources accumulate: a surface may pair a template block (the
+    # lines to author into) with a shape_command (the enforced FORMS read live
+    # from the owning validator). Each present source contributes one part.
+    parts: list[str] = []
     if surface.template_section:
         tpl_rel, _, heading = surface.template_section.partition("|")
         tpl = repo_root / tpl_rel
-        if tpl.is_file():
-            return _extract_section(tpl.read_text(encoding="utf-8"), heading)
-        return f"(template {tpl_rel} not found)"
+        parts.append(
+            _extract_section(tpl.read_text(encoding="utf-8"), heading)
+            if tpl.is_file()
+            else f"(template {tpl_rel} not found)"
+        )
     if surface.template_preamble:
         tpl = repo_root / surface.template_preamble
-        if tpl.is_file():
-            return _extract_preamble(tpl.read_text(encoding="utf-8"))
-        return f"(template {surface.template_preamble} not found)"
-    return "(no shape source registered)"
+        parts.append(
+            _extract_preamble(tpl.read_text(encoding="utf-8"))
+            if tpl.is_file()
+            else f"(template {surface.template_preamble} not found)"
+        )
+    if surface.shape_command:
+        parts.append(_run_shape_command(repo_root, surface, stub=False)[0])
+    if not parts:
+        return "(no shape source registered)"
+    return "\n\n".join(part.rstrip() for part in parts)
 
 
 def _extract_section(text: str, heading: str) -> str:
@@ -233,7 +286,7 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
         f"artifact-surface-preflight: {surface.artifact_type}",
         f"note: {surface.note}",
         "",
-        "required shape (from the owning scaffold/template — the single source):",
+        "required shape (from the owning scaffold/template/validator — the single source):",
         _shape_text(repo_root, surface).rstrip(),
         "",
     ]
@@ -265,15 +318,25 @@ def emit_stub(repo_root: Path, surface: Surface) -> tuple[str, int]:
         if proc.returncode == 0:
             return proc.stdout, 0
         return (proc.stderr or proc.stdout), 1
-    source = (
-        surface.template_section.split("|")[0]
-        if surface.template_section
-        else surface.template_preamble or "(no template source)"
-    )
-    return (
-        f"{surface.artifact_type} has no scaffold script; its shape is seeded by "
-        f"{source} — author into that block directly.\n"
-    ), 0
+    parts: list[str] = []
+    code = 0
+    if surface.template_section or surface.template_preamble:
+        source = (
+            surface.template_section.split("|")[0]
+            if surface.template_section
+            else surface.template_preamble
+        )
+        parts.append(
+            f"{surface.artifact_type} has no scaffold script; its shape is seeded by "
+            f"{source} — author into that block directly."
+        )
+    if surface.shape_command:
+        text, rc = _run_shape_command(repo_root, surface, stub=True)
+        parts.append(text)
+        code = code or rc
+    if not parts:
+        parts.append(f"{surface.artifact_type}: no stub source registered.")
+    return "\n\n".join(part.rstrip() for part in parts) + "\n", code
 
 
 def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:

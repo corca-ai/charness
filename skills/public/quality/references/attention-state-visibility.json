@@ -458,6 +458,12 @@
       "evidence_terms": ["Discuss before activation", "discussion_summary_present"],
       "rationale": "Before-phase discussion readiness treats n/a/none summaries as absent when consequential activation decisions are present; a real summary must be visible in the goal artifact before pursue-ready passes."
     },
+    "skills/public/achieve/scripts/describe_goal_closeout_shape.py": {
+      "states": ["skipped"],
+      "visibility": ["stdout_attention"],
+      "evidence_terms": ["skipped: <reason>: <detail>", "skipped: <allowed-reason>"],
+      "rationale": "Author-time shape SOURCE for the goal-closeout preflight: it prints the enforced `skipped: <enum>: <detail>` author syntax (the exact form `check_goal_artifact.py` accepts) to stdout so an author learns it before the flip. The `skipped` token is documentation of the author syntax surfaced verbatim to the operator, never a runtime exit-zero status of this script."
+    },
     "skills/public/issue/scripts/issue_create.py": {
       "states": ["disabled", "skipped"],
       "visibility": ["terminal_payload"],

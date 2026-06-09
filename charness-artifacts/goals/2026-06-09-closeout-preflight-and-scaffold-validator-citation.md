@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — author-time closeout-draft/goal-closeout preflight + scaffold repo-validator citation verify
 
-Status: draft
+Status: active
 Created: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
 
@@ -9,8 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`.
+- Current slice: **Slice 2 — verify-first scaffold repo-validator citation audit.**
+  Slice 1 (author-time closeout preflight) is **DONE** — see `## Slice Log`;
+  fresh-eye critique REVISE fully folded; all deterministic gates green; pending
+  the slice-1 commit. Slice-1 home decision (kept for the record): extended
+  `check_artifact_surface_preflight` via a new `shape_command` source + two
+  describe-shape sibling scripts rendering live from the owning validators'
+  constants (rejected a standalone script / editing the NEAR-LIMIT `issue_tool.py`
+  / the load-order-sensitive `goal_artifact_closeout_evidence.py`).
+- Next action: commit slice 1; then slice 2 — read-only audit of which scaffolds
+  (`debug`/`critique`/`retro`/`quality`/`handoff`/`ideation`) emit a validator
+  command and whether it cites the installed-plugin vs the repo-local
+  `scripts/<validator>.py`; reconcile against the v0.29.0 "scaffolds cite the
+  repo-local validator" claim; close only a genuine residual gap.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -170,7 +181,32 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Recorded route for this run:
+
+- Routing: find-skills recommended `achieve` for this goal lifecycle, and (per its
+  contract) `achieve` owns the impl/quality/critique boundaries this goal touches.
+- Gather: n/a — no external (URL/Slack/Notion/Docs/Drive) source; all context is
+  in-repo (validators, scaffolds, retro/handoff artifacts).
+- Release: n/a — no release surface touched (no version bump, no install-manifest
+  edit; only generated plugin-mirror sync of the changed sources).
+- Issue closeout: n/a — this goal closes no tracked GitHub issue (#184 and #338
+  are context/out-of-scope per Non-Goals).
+
 ## Slice Log
+
+### Slice 1: Slice 1 — author-time closeout preflight (closeout-draft + goal-closeout)
+
+- Objective: Surface, at author time, the enforced shape of the GitHub-issue closeout-draft (validate-closeout-draft) and the goal-closeout complete gate (check_goal_artifact), so an author no longer discovers fields by failing the validator N times. Verdict-preserving.
+- Why this approach: Extend the existing check_artifact_surface_preflight dispatcher (the named sibling that already owns the artifact-authoring family) via a new shape_command source: a NEW closeout-draft surface + ENRICH the existing goal-closeout surface. Shape rendered LIVE from the owning validators' constants by two describe-shape sibling scripts, never re-declared. Rejected: a standalone closeout-preflight script (fragments the family); adding to issue_tool.py (NEAR-LIMIT) or goal_artifact_closeout_evidence.py (load-order-sensitive).
+- Commits:
+- What changed: scripts/check_artifact_surface_preflight.py (+shape_command field, _run_shape_command, accumulate in _shape_text/emit_stub, closeout-draft surface, enriched goal-closeout); NEW skills/public/issue/scripts/describe_closeout_draft_shape.py + skills/public/achieve/scripts/describe_goal_closeout_shape.py; skills/public/quality/references/attention-state-visibility.json (declared the achieve script's surfaced 'skipped:' author-syntax token); docs/conventions/authoring-preflight.md; tests/quality_gates/test_check_artifact_surface_preflight.py; plugins/charness/** byte-identical mirror.
+- Alternatives rejected:
+- Targeted verification: py_compile, ruff, check_python_lengths, validate_attention_state_visibility, validate_skill_ergonomics, check_doc_links, check_prose_pin, check_skill_surface_preflight --scan-issue-anchors all green; 50 dispatcher tests + 232 issue/achieve verdict-preservation tests pass; 100% line coverage on the 3 new/changed source files; round-trip: a closeout body built from the SURFACED headers satisfies the validator's own _missing_ledger_fields/_missing_close_keywords for every classification; drift tests pin the surfaced shape == live enforced constants (classifications/carriers/ledger fields/manual-fallback enum; skip-reason enum + VALID_FORM_SUMMARY + DESTINATION_FORM_SUMMARY + min-length floors).
+- Test duplication pressure: New tests cover genuinely new surfaces (closeout-draft surface, enriched goal-closeout shape_command, _run_shape_command, accumulate arms, loader fail-closed) — no duplication of existing dispatcher tests; the loader fail-closed + spec-None pattern mirrors the established repo convention rather than re-asserting it.
+- Critique: Fresh-eye subagent (bounded slice packet): REVISE -> all folded. B1: goal-closeout disposition form conflated Retro-dispositions (VALID_FORM_SUMMARY) with Structural-follow-up destination (DESTINATION_FORM_SUMMARY) -> would mis-direct an author into a REJECTED 'repo-local guard:' Retro-dispositions line; FIXED by rendering both forms live from disposition_form.py. B2: drift hole (forms were prose, unpinned) -> FIXED with a drift test pinning both summaries. N1: direct-commit draft body source is --commit-message-file (git show is post-close verify) -> reworded. N2: 'tool signal:' is enforced by validate_critique_artifacts, not the closeout path -> reattributed. N3: Routing form over-specified -> marked example + stated the real requirement.
+- Off-goal findings:
+- Lessons carried forward: Carried forward to slice 2: VERIFY-FIRST against the live validator constants, and a fresh-eye reviewer catches form/gate-attribution conflations that self-review misses (the disposition-form-vs-destination-form distinction).
+- Metrics:
 
 ## Context Sources
 

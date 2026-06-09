@@ -406,3 +406,188 @@ def test_module_main_guard_executes(monkeypatch) -> None:
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__")
     assert exc.value.code == 0
+
+
+# --- closeout-draft + enriched goal-closeout author-time surfaces ---------------
+# The authoring-preflight class extended to the GitHub-issue closeout-draft and the
+# goal-closeout complete gate: the dispatcher surfaces each shape rendered LIVE from
+# the owning validator's constants (the new `shape_command` source), never re-declared.
+
+
+def _load_describe(rel: str, name: str):
+    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_closeout_draft_surface_is_author_time_shape_only() -> None:
+    s = preflight.surface_for_type("closeout-draft")
+    assert s is not None
+    assert s.validator is None  # a verdict needs the full validate-closeout-draft command
+    assert s.scaffold is None
+    assert s.commit_boundary is False  # author-time shape only; the validator stays enforcement
+    assert s.shape_command == ("skills/public/issue/scripts/describe_closeout_draft_shape.py",)
+    out = preflight.describe(ROOT, s, target_rel=None)
+    # the owner line names the real validator command, not the complete-flip default
+    assert "validate-closeout-draft" in out
+    assert "achieve closeout (check_goal_artifact.py at the complete flip)" not in out
+
+
+def test_closeout_draft_describe_emits_the_named_required_fields() -> None:
+    out = preflight.describe(ROOT, preflight.surface_for_type("closeout-draft"), target_rel=None)
+    # the four fields the goal names + the carrier-body-source trap
+    assert "resolution_critique" in out and "tool signal:" in out
+    assert "COMMIT MESSAGE" in out and "direct-commit" in out
+    assert "Closes #N" in out  # close keyword
+    assert "Classification ledger fields" in out
+
+
+def test_closeout_draft_shape_pins_live_verifier_constants() -> None:
+    # drift guard: every enforced enum/field the verifier checks appears in the
+    # surfaced shape, rendered from the live constants (never a stale hand copy).
+    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs")
+    shape = desc.required_shape()
+    for value in (*desc._VERIFY.CLASSIFICATIONS, *desc._VERIFY.CARRIERS,
+                  *desc._VERIFY.MANUAL_FALLBACK_REASONS, *desc._CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS):
+        assert value in shape, value
+    for classification in desc._VERIFY.CLASSIFICATIONS:
+        for field_id, _aliases in desc._BODY._classification_requirements(classification):
+            assert field_id in shape or f"{field_id.title()}:" in shape, field_id
+
+
+def test_closeout_draft_stub_body_satisfies_the_real_validator_helpers() -> None:
+    # round-trip drift guard: a body built from the SURFACED headers passes the
+    # validator's own ledger/keyword helpers for every classification, proving the
+    # surfaced fields ARE the enforced ones (not a drifted copy).
+    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs2")
+    body = desc._BODY
+    for classification in desc._VERIFY.CLASSIFICATIONS:
+        lines = ["Closes #5"]
+        for field_id, aliases in body._classification_requirements(classification):
+            value = "a decision and proof" if field_id == "siblings" else "x"
+            lines.append(f"{aliases[0].title()}: {value}")
+        text = "\n".join(lines)
+        assert body._missing_ledger_fields(text, classification) == [], classification
+        assert body._missing_close_keywords(text, [5], "o/r") == [], classification
+
+
+def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
+    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("closeout-draft"))
+    assert code == 0
+    assert "Closes #N" in text
+    assert "Critique #N:" in text
+
+
+def test_goal_closeout_describe_now_surfaces_the_enforced_forms() -> None:
+    # enriched: keeps the template block AND adds the enforced forms read live from
+    # check_goal_artifact's constants (the four the goal names).
+    out = preflight.describe(ROOT, preflight.surface_for_type("goal-closeout"), target_rel=None)
+    assert "## Final Verification" in out  # template block still present (backward compat)
+    assert all(r in out for r in ("host-blocked-subagent", "host-log-not-exposed", "evaluator-unavailable"))
+    assert "goal slug" in out  # bare-path + goal-slug binding
+    assert "Routing:" in out and "find-skills" in out  # Routing form
+    assert "applied:" in out  # disposition form
+
+
+def test_goal_closeout_shape_pins_live_skip_enum_and_optout_floors() -> None:
+    desc = _load_describe("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "dgcs")
+    shape = desc.required_shape()
+    for reason in desc._PRESCRIBED.ALLOWED_SKIP_REASONS:
+        assert reason in shape, reason
+    assert str(desc._PRESCRIBED.MIN_SKIP_LENGTH) in shape
+    assert str(desc._DISPOSITION.MIN_OPTOUT_REASON) in shape
+    # drift guard: the disposition-line forms are the LIVE summaries (not prose), so
+    # the surfaced `Retro dispositions:` / `Structural follow-up:` forms cannot drift
+    # from disposition_form.py's enforced sets. This pins that `Retro dispositions:`
+    # uses VALID_FORM_SUMMARY (NOT the `repo-local guard:` destination form, which is
+    # only valid on `Structural follow-up:`) — the form that would otherwise misdirect.
+    assert desc._DISPOSITION_FORM.VALID_FORM_SUMMARY in shape
+    assert desc._DISPOSITION_FORM.DESTINATION_FORM_SUMMARY in shape
+    assert "repo-local guard" not in desc._DISPOSITION_FORM.VALID_FORM_SUMMARY  # the B1 invariant
+
+
+def test_goal_closeout_emit_stub_combines_template_message_and_enforced_stub() -> None:
+    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-closeout"))
+    assert code == 0
+    assert "no scaffold script" in text  # template-seeded message (backward compat)
+    assert "## Final Verification" in text and "Retro:" in text  # enforced-form starter
+
+
+def test_run_shape_command_reports_render_failure() -> None:
+    bad = replace(
+        preflight.surface_for_type("closeout-draft"),
+        shape_command=("scripts/does_not_exist_shape.py",),
+    )
+    text, code = preflight._run_shape_command(ROOT, bad, stub=False)
+    assert code == 1
+    assert "could not render shape source" in text
+
+
+def test_emit_stub_no_source_arm() -> None:
+    # a (hypothetical) surface with no scaffold/template/shape_command reports the
+    # no-stub-source arm rather than crashing — cover the defensive branch.
+    bare = replace(
+        preflight.surface_for_type("closeout-draft"),
+        scaffold=None, template_section=None, template_preamble=None, shape_command=None,
+    )
+    text, code = preflight.emit_stub(ROOT, bare)
+    assert code == 0
+    assert "no stub source registered" in text
+
+
+@pytest.mark.parametrize(
+    "rel",
+    [
+        "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+        "skills/public/achieve/scripts/describe_goal_closeout_shape.py",
+    ],
+)
+def test_describe_script_main_renders_shape_and_stub(rel: str, capsys) -> None:
+    desc = _load_describe(rel, f"main_{Path(rel).stem}")
+    assert desc.main([]) == 0
+    shape_out = capsys.readouterr().out
+    assert desc.main(["--stub"]) == 0
+    stub_out = capsys.readouterr().out
+    assert shape_out.strip() and stub_out.strip()
+    assert shape_out != stub_out  # shape and stub are distinct surfaces
+
+
+@pytest.mark.parametrize(
+    "rel",
+    [
+        "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+        "skills/public/achieve/scripts/describe_goal_closeout_shape.py",
+    ],
+)
+def test_describe_script_main_guard_executes(rel: str, monkeypatch) -> None:
+    # cover `raise SystemExit(main())` (the __main__ guard) in-process via runpy.
+    monkeypatch.setattr(sys, "argv", ["x"])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(str(ROOT / rel), run_name="__main__")
+    assert exc.value.code == 0
+
+
+@pytest.mark.parametrize(
+    "rel,loader,sibling",
+    [
+        ("skills/public/issue/scripts/describe_closeout_draft_shape.py", "_load_local", "issue_verify_closeout_body"),
+        ("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "_load_sibling", "goal_artifact_disposition_grammar"),
+    ],
+)
+def test_describe_sibling_loader_fails_closed_when_spec_missing(rel, loader, sibling, monkeypatch) -> None:
+    # fail-closed: the sibling loader raises ImportError when the spec cannot be
+    # built (mirrors the repo's established loader-coverage pattern).
+    desc = _load_describe(rel, f"loaderfail_{Path(rel).stem}")
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    with pytest.raises(ImportError):
+        getattr(desc, loader)(sibling)
+
+
+def test_goal_closeout_prescribed_lib_loader_fails_closed(monkeypatch) -> None:
+    # covers BOTH the in-loop spec-None `continue` and the final not-found raise of
+    # the ancestor-walk loader for check_prescribed_skill_executed_lib.
+    desc = _load_describe("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "prescribedfail")
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    with pytest.raises(ImportError, match="check_prescribed_skill_executed_lib"):
+        desc._load_repo_script("check_prescribed_skill_executed_lib")

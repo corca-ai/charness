@@ -115,6 +115,32 @@ judgment. The adapter-scoped trio (debug/quality/handoff) validate-all and are
 author-time-only (`--type`/`--emit-stub`/`--path`); the broad gate remains their
 enforcement (see the coverage report for the tier rationale).
 
+### Closeout surfaces (closeout-draft + goal-closeout)
+
+The same author-time idea covers the two closeout surfaces whose required shape
+an author otherwise discovers by failing the validator several times:
+
+```bash
+python3 scripts/check_artifact_surface_preflight.py --type closeout-draft   # issue closeout body shape
+python3 scripts/check_artifact_surface_preflight.py --type goal-closeout     # goal complete-gate forms
+```
+
+- `closeout-draft` surfaces what `issue_tool.py validate-closeout-draft` (which
+  reuses `verify_closeout`) enforces: the carrier-body source (for `direct-commit`
+  pass `--commit-message-file`, not `--body-file`), the close keyword, the
+  `resolution_critique` evidence (the cited critique must itself pass
+  `validate_critique_artifacts`), and the per-classification ledger fields.
+- `goal-closeout` pairs the goal template's `## Final Verification` block with the
+  enforced FORMS `check_goal_artifact.py` applies at the complete flip: the allowed
+  skip-reason enum, the bare-path + goal-slug binding, the disposition form, and the
+  `Routing:` form.
+
+Both are author-time-only (the validators stay the enforcement): a `closeout-draft`
+verdict needs the full `validate-closeout-draft` command, and `goal-closeout` is
+owned at the achieve complete flip. Each shape is rendered live from the owning
+validator's constants by a `describe_*_shape.py` sibling, so it cannot drift from
+the gate.
+
 ## Portable skill packages
 
 A file under `skills/public/**` or `skills/support/**` ships as a *portable*
