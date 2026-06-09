@@ -1,0 +1,255 @@
+# Achieve Goal: Next queue — author-time closeout-draft/goal-closeout preflight + scaffold repo-validator citation verify
+
+Status: draft
+Created: 2026-06-09
+Activation: `/goal @charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: before activation.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Close the recurring **authoring-preflight-skip** class (#284→#334) for the two
+surfaces it still does not cover, in two independent per-slice-closed-out slices:
+(1) **author-time closeout preflight** — surface, BEFORE the validator fails, the
+required shape of the GitHub-issue **closeout-draft** (`issue_tool.py
+validate-closeout-draft`: the `resolution_critique` evidence + its critique
+artifact's `tool signal:`, the carrier-body source = commit message for
+`direct-commit`, the classification ledger fields, the close keyword) AND the
+**goal-closeout** complete gate (`check_goal_artifact`: the `Routing:` line form
+naming `find-skills` + the routed skill, the `host_log_probe` allowed skip-reason
+enum, the disposition form, the evidence-line bare-path + goal-slug binding), the
+sibling of `check_artifact_surface_preflight` for these two surfaces; (2)
+**scaffold repo-validator citation verify** — confirm whether `debug`/`critique`/
+etc. scaffolds emit the *installed* plugin validator command versus the repo-local
+`scripts/<validator>.py` (the handoff Discuss item), VERIFY-FIRST against the
+v0.29.0 "scaffolds cite the repo-local validator" claim before changing anything,
+and close only a genuine residual gap. Slice 1 is ADDITIVE author-time surfacing
+of the same validator verdicts; skill-script changes mirror byte-synced; each
+slice closes out independently.
+
+## Non-Goals
+
+- Do NOT take on **#184** (product success metrics — product-level, needs
+  `ideation`/`spec`, operator left it out this round) or **push/tag CI** (the
+  handoff Discuss "No push/tag CI" item — operator deferred it this round).
+- Do NOT weaken or change any closeout/complete validator's verdict — slice 1 is
+  ADDITIVE author-time surfacing of the EXISTING shape (the dispatcher reads the
+  required shape from the owning validator/scaffold, never re-declares it), exactly
+  like the existing 7-surface `check_artifact_surface_preflight`.
+- Do NOT re-implement already-shipped scaffold work — slice 2 is VERIFY-FIRST; the
+  v0.29.0 release claimed "scaffolds cite the repo-local validator", so the first
+  step is a read-only check that reconciles the handoff Discuss item against the
+  shipped state (the slice-3 stale-handoff trap from the prior goal, avoided).
+- Do NOT auto-file new GitHub issues or cut a real release/push by default; a
+  release is cut only when the operator explicitly authorizes it.
+
+## Boundaries
+
+- **Closeout preflight (slice 1).** Classify the home (extend
+  `check_artifact_surface_preflight` with new `--type` surfaces vs a dedicated
+  closeout preflight) BEFORE wiring. The preflight emits the required shape read
+  from the owning validator/scaffold (never re-declared), `--emit-stub` for a
+  starter, `--path` for a current-verdict; a test covers an author surfacing the
+  closeout-draft + goal-closeout required fields; behavior-preserving for
+  `validate-closeout-draft` and `check_goal_artifact` (same verdicts). Mirror
+  byte-sync if a skill script changes; apply slice-1-of-the-prior-goal's
+  `--scan-issue-anchors` edit-time scan to this goal's skill-package edits.
+- **Scaffold citation verify (slice 2).** Read-only verify FIRST: which scaffolds
+  (`debug`/`critique`/`retro`/`quality`/`handoff`/`ideation`) emit a validator
+  command, and whether it points at the installed plugin copy or the repo-local
+  `scripts/<validator>.py` when the working repo owns one. Reconcile against the
+  v0.29.0 claim. If already shipped → record honestly + done (no make-work). If a
+  genuine gap remains → repo-local-first citation, behavior-preserving for consumer
+  repos that ship no validator of their own.
+- **Public-skill + generated-surface scope.** Any skill-script change mirror-synced
+  (`plugins/charness/...`), deterministic gates own closeout, **no `#N` anchors in
+  skill-package files** (dogfood the prior goal's edit-time guard on this goal's
+  edits).
+- Discuss before activation: RESOLVED — the activation-discussion triggers
+  (`production_or_live_proof`, `broad_bundle_scope`) fire on keyword matches in the
+  verification-cadence prose, not on real consequential decisions. The resolved
+  decisions: (a) NO live/prod proof and NO release is cut by default — both slices
+  are local deterministic author-time surfaces and a release stays an
+  operator-authorized lane; (b) the broad gate + changed-line producer named in the
+  plan are the STANDARD bundle-boundary verification cadence (cover-new-branches-in-
+  the-introducing-slice), not a broad-scope behavior change or a new hard gate; (c)
+  NO tracked issue is closed by this goal (#184 and #338 are context/out-of-scope).
+  Safe to activate; re-open if a reviewer disagrees.
+- External side-effect scope: name which phase or bundle any approved
+  publish / push / remote-CI / apply applies to. That approval is phase-scoped
+  and does not carry forward — after an approved publish/CI/apply lane
+  completes, done-early test-only quality continuation is local by default
+  (batch remote proof, run CI once over the final bundled state). Per-slice
+  remote publication is assumed only when the operator explicitly asks or a
+  runtime-affecting slice requires earlier publication.
+
+## User Acceptance
+
+What the user can do to verify completion directly.
+
+- **Closeout preflight:** before committing a closeout, an author runs the
+  preflight for the closeout-draft / goal-closeout surface and learns the required
+  fields up front (e.g. `check_artifact_surface_preflight.py --type closeout-draft`
+  / `--type goal-closeout`), instead of discovering them by failing
+  `validate-closeout-draft` / `check_goal_artifact` N times; the underlying
+  validator verdicts are unchanged.
+- **Scaffold citation:** a read-only check shows whether each scaffold cites the
+  installed-plugin or the repo-local validator; if a gap existed it is closed
+  (repo-local-first), and if v0.29.0 already shipped it the goal records that
+  honestly rather than re-implementing.
+- Each slice: the touched test surface passes, mirror byte-synced, and the
+  per-slice fresh-eye critique attests correctness.
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- `py_compile`, `ruff`, `check_python_lengths --headroom` on every touched file;
+  the prior goal's `check_skill_surface_preflight.py --scan-issue-anchors` on any
+  edited skill-package file.
+- The touched test modules; mirror byte-sync + `validate_skill_ergonomics` for any
+  skill-script change; a round-trip-reproduction test that the new preflight emits
+  the same required fields the validators enforce (drift guard).
+
+### High-Confidence Checks
+
+- The full quality / issue / achieve test surface green; broad gate
+  (`run-quality.sh --read-only`) + changed-line mutation producer at the bundle
+  boundary (cover new branches in the introducing slice). Fresh-eye `critique` at
+  each slice boundary.
+
+### External Or Live Proof
+
+- None required — both slices are local deterministic author-time surfaces. No
+  live/prod/release proof; a release is an operator-authorized lane only.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| 1 | Author-time closeout preflight for the closeout-draft + goal-closeout surfaces (extend `check_artifact_surface_preflight` or a sibling); shape read from the owning validator, verdict-preserving | this session paid 4 (closeout-draft) + ~5 (goal-closeout) discovery round-trips — the #284→#334 authoring-preflight class on the two surfaces it does not yet cover | new `--type` surface(s) emit required shape + `--emit-stub`; drift test pins shape == validator; test; mirror synced; validators' verdicts unchanged | planned |
+| 2 | Scaffold repo-validator citation: VERIFY-FIRST whether scaffolds cite installed vs repo-local validator; close only a genuine residual gap | handoff Discuss open item + this session's version-skew lesson; guards the slice-3 stale-handoff trap (verify before building) | read-only citation audit reconciled against v0.29.0; honest record if shipped, or a repo-local-first fix + test if a gap remains | planned |
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, deferred to `find-skills` (its
+`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
+engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
+and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
+during the run:
+
+- **Routing** — ask `find-skills` to recommend the skill for the current phase or
+  boundary, and record the route it returns. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
+- **Gather step** — when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a — <reason>` when no external context
+  applies.
+- **Release step** — when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
+
+## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+1. **Closeout-preflight waste (this session's retro + disposition review):**
+   `charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md`
+   (`## Waste`: the closeout-draft 4-round-trip + goal-closeout ~5-round-trip
+   discovery) and `charness-artifacts/critique/2026-06-09-nanchor-guard-338-gather-release-disposition-review.md`.
+2. **Recent-lessons (the recommendation):** `charness-artifacts/retro/recent-lessons.md`
+   "Next-Time Checklist" — the author-time issue-closeout-draft preflight, sibling of
+   `check_artifact_surface_preflight`, same #284→#334 class.
+3. **Scaffold citation:** `docs/handoff.md` "Discuss" ("Scaffold should cite the repo
+   validator, not the installed plugin's") + the v0.29.0 release-note claim
+   ("SCAFFOLDS CITE THE REPO-LOCAL VALIDATOR") in `.agents/release-adapter.yaml` to
+   reconcile against. Owning surface: the artifact-authoring scaffolds + the
+   `check_artifact_surface_preflight` dispatcher.
+4. **Surface to extend:** `scripts/check_artifact_surface_preflight.py` (the existing
+   7-surface author-time preflight) and `docs/conventions/authoring-preflight.md`.
+5. **Tracked-but-out-of-scope (NOT this goal):** #184 (product metrics — needs
+   `ideation`/`spec`); push/tag CI (handoff Discuss — operator deferred this round).
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+- **Which next work (operator-selected).** Family offered: {closeout-draft/goal-
+  closeout preflight; push/tag CI; #184 product metrics; scaffold repo-validator
+  citation verify}. Chosen: **closeout preflight + scaffold-validator-verify**
+  (operator picked 1+4). Rejected: #184 (product-level, needs `ideation`/`spec`),
+  push/tag CI (deferred). `axis: theme` — each tracked independently.
+- **Slice 1 home (probe, not fixed).** Family: {extend
+  `check_artifact_surface_preflight` with new `--type` surfaces; a dedicated
+  closeout preflight script}. Deferred to slice 1 — classify before wiring; the
+  validators' verdicts stay the source of truth regardless.
+- **Slice 2 shape (verify-first, not fixed).** Family: {it already shipped in
+  v0.29.0 → record honestly; a genuine residual gap remains → repo-local-first
+  fix}. Resolved DURING slice 2 by a read-only audit — deliberately structured to
+  avoid the prior goal's slice-3 stale-handoff trap (building already-done work).
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
+
+- **Slice 2 may re-implement already-shipped scaffold work (the exact slice-3 trap
+  this session hit).** Folded: slice 2 is VERIFY-FIRST — a read-only citation audit
+  reconciled against the v0.29.0 claim is the first step; record honestly if shipped.
+- **Slice 1 preflight could drift from the validators it mirrors.** Folded: the
+  dispatcher reads the required shape from the owning validator/scaffold and never
+  re-declares it (the existing 7-surface contract), plus a drift test pinning
+  shape == validator; behavior-preserving boundary.
+- **Over-worry (raised, not folded):** that an author-time closeout preflight just
+  duplicates the validators with no new value — counter: the recurrence cost is the
+  validate→fix round-trips this session paid 9×, which an author-time shape surface
+  removes; the validators stay the enforcement.
+
+## Off-Goal Findings
+
+Issues or deferred findings discovered during the run.
+
+## Final Verification
+
+Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
+retro / host-log probe / disposition-review artifact) or an explicit
+`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
+`TODO` / `<path>` / `TBD` until you do.
+
+Retro: TODO — create or explicitly skip with an allowed reason before complete
+Host log probe: TODO — create or explicitly skip with an allowed reason before complete
+Disposition review: TODO — create or explicitly skip only when policy allows before complete
+
+## User Verification Instructions
+
+## Auto-Retro
+
+Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
