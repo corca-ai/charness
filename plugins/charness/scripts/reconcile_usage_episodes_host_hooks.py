@@ -70,14 +70,17 @@ def main(argv: list[str] | None = None) -> int:
     elif args.mode == "status":
         status = lib.session_capture_status(repo_root, adapter=adapter, home=home)
         find_skills_status = lib.find_skills_routing_status(repo_root, adapter=adapter, home=home)
+        anchor_guard_status = lib.skill_anchor_guard_status(repo_root, adapter=adapter, home=home)
         payload = {
             "mode": "status",
             **status,
             "find_skills_routing": find_skills_status,
+            "skill_anchor_edit_guard": anchor_guard_status,
         }
-        if not find_skills_status["in_sync"]:
+        extra_drift = [*find_skills_status["drift"], *anchor_guard_status["drift"]]
+        if extra_drift:
             payload["in_sync"] = False
-            payload["drift"] = [*status["drift"], *find_skills_status["drift"]]
+            payload["drift"] = [*status["drift"], *extra_drift]
         exit_code = 0 if payload["in_sync"] else 1
     elif args.mode == "install":
         hosts = [args.host] if args.host else ["claude", "codex"]

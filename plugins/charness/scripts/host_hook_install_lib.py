@@ -222,9 +222,10 @@ def _install_json_event(
     *,
     command: str,
     matcher: str = "",
+    event: str = SESSION_START_EVENT,
 ) -> dict[str, Any]:
     settings = _read_json_settings(settings_path)
-    entries = _ensure_event_array(settings, SESSION_START_EVENT)
+    entries = _ensure_event_array(settings, event)
     already = any(_entries_match_command(entry, command) for entry in entries)
     if not already:
         entries.append(_event_entry(command, matcher))
@@ -240,6 +241,7 @@ def _uninstall_json_event(
     settings_path: Path,
     *,
     command: str,
+    event: str = SESSION_START_EVENT,
 ) -> dict[str, Any]:
     if not settings_path.is_file():
         return {"settings_path": str(settings_path), "action": "absent"}
@@ -247,16 +249,16 @@ def _uninstall_json_event(
     hooks = settings.get("hooks")
     if not isinstance(hooks, dict):
         return {"settings_path": str(settings_path), "action": "absent"}
-    entries = hooks.get(SESSION_START_EVENT)
+    entries = hooks.get(event)
     if not isinstance(entries, list):
         return {"settings_path": str(settings_path), "action": "absent"}
     remaining = [entry for entry in entries if not _entries_match_command(entry, command)]
     if len(remaining) == len(entries):
         return {"settings_path": str(settings_path), "action": "not_installed"}
     if remaining:
-        hooks[SESSION_START_EVENT] = remaining
+        hooks[event] = remaining
     else:
-        hooks.pop(SESSION_START_EVENT, None)
+        hooks.pop(event, None)
         if not hooks:
             settings.pop("hooks", None)
     _write_json_atomic(settings_path, settings)
@@ -378,6 +380,17 @@ def reconcile_host_hooks(
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from host_hook_find_skills import reconcile_find_skills_hooks  # type: ignore[no-redef]
     actions["find_skills_routing"] = reconcile_find_skills_hooks(repo_root, adapter=adapter, home=home)
+    # skill #N-anchor edit-time guard: opt-in third hook, reconciled in parallel.
+    try:
+        from host_hook_skill_anchor_guard import reconcile_skill_anchor_guard_hooks
+    except ImportError:  # pragma: no cover - module-from-elsewhere fallback
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from host_hook_skill_anchor_guard import (
+            reconcile_skill_anchor_guard_hooks,  # type: ignore[no-redef]
+        )
+    actions["skill_anchor_edit_guard"] = reconcile_skill_anchor_guard_hooks(repo_root, adapter=adapter, home=home)
     return actions
 
 
@@ -389,6 +402,7 @@ def detect_host_hook_actual(
     state_key: str | None = None,
     script_relative: Path = HOOK_SCRIPT_RELATIVE,
     toml_marker: str = CHARNESS_MARKER,
+    event: str = SESSION_START_EVENT,
 ) -> dict[str, Any]:
     state = read_state(repo_root)
     key = state_key or host
@@ -414,7 +428,7 @@ def detect_host_hook_actual(
         if isinstance(data, dict):
             hooks = data.get("hooks")
             if isinstance(hooks, dict):
-                entries = hooks.get(SESSION_START_EVENT)
+                entries = hooks.get(event)
                 if isinstance(entries, list):
                     present = any(_entries_match_command(entry, expected_command) for entry in entries)
     elif kind == "codex-toml" and settings_path.is_file():
@@ -462,3 +476,9 @@ def find_skills_routing_status(repo_root: Path, *, adapter: dict[str, Any] | Non
     from host_hook_find_skills import find_skills_routing_status as _find_skills_routing_status
 
     return _find_skills_routing_status(repo_root, adapter=adapter, home=home)
+
+
+def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
+    from host_hook_skill_anchor_guard import skill_anchor_guard_status as _skill_anchor_guard_status
+
+    return _skill_anchor_guard_status(repo_root, adapter=adapter, home=home)

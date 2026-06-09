@@ -185,6 +185,18 @@ placeholder issue URLs) pass. Accepts any skill-package text file — including
 helper `scripts/` — not just `SKILL.md`. It is additive: the commit-time sweep
 stays the backstop.
 
+On Claude hosts the scan also fires automatically after each edit: the
+`skill_anchor_edit_guard` intent in
+[.agents/usage-episodes-adapter.yaml](../../.agents/usage-episodes-adapter.yaml)
+installs a `PostToolUse(Edit|Write|MultiEdit)` hook (via `charness init` /
+`charness update`, the same machinery as the SessionStart hooks) that runs
+[scripts/post_edit_skill_anchor_guard.py](../../scripts/post_edit_skill_anchor_guard.py)
+on the file just edited. The guard is
+fail-open and scoped to `skills/public|support` files in this repo — a repo or
+machine without the adapter intent inherits nothing. The firing stays
+host-specific and adapter-declared; the scan stays the single repo-owned rule
+source, and the commit sweep stays the backstop.
+
 ### One-shot portable-package preflight
 
 Authoring into a skill package otherwise pays for the portable-package gates as

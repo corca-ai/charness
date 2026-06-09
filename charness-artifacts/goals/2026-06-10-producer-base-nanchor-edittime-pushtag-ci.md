@@ -9,11 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — #N-anchor edit-time guard (portable adapter-declared
-  auto-firing for the existing `skill_issue_anchor_scan.py` scan).
-- Next action: verify-first — map where the scan runs today (manual /
-  commit sweep), then classify the portable firing mechanism (adapter/preset)
-  before wiring; slice 1 is done (see `## Slice Log` Slice 1).
+- Current slice: 3 — light push/tag CI + CI-PR changed-line mirror
+  (repo-local, consumer-inert; remote run stays the operator lane).
+- Next action: classify the slice-3 shape (push/tag workflow vs CI-PR check vs
+  both) against the existing local gates (`run-quality.sh --read-only`,
+  pre-push changed-line consumer), then author + YAML-validate the workflow;
+  slices 1–2 are done (see `## Slice Log`).
 - Timebox: ~one focused session per slice (4 slices); Activation time:
   2026-06-10 (session start); Closeout reserve: ~15% for the After-phase proof + retro;
   Done-early policy: continue_next_improvement (if a slice closes early, continue
@@ -182,6 +183,11 @@ during the run:
   repo-local Python impl under `docs/conventions/implementation-discipline.md`,
   fresh-eye bounded subagent critique at the slice boundary per the repo
   contract.
+- Routing (slice 2): same impl-discipline route; the firing-mechanism
+  classification reused the repo-established `host_hook_find_skills`
+  parallel-hook pattern (adapter-declared, state-tracked) rather than a new
+  capability surface; fresh-eye bounded subagent critique at the slice
+  boundary.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -210,6 +216,20 @@ during the run:
 - Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied N1 (SurfaceError on --predict-commit --base + test), N3 (fingerprint-anchor note in --base help), N4 (raise ... from exc). N2 (empty --paths beats --base) left: consistent with pre-existing empty-paths semantics. Reviewer independently verified broad-pytest proof-cache safety under --base (HEAD sha in fingerprint).
 - Off-goal findings: none
 - Lessons carried forward: The fingerprint/gate range alignment was already in place; the friction was purely payload path collection — verify-first reading avoided a needless producer re-anchor.
+- Metrics:
+
+### Slice 2: Slice 2 — #N-anchor edit-time guard auto-firing
+
+- Objective: Make the existing repo-owned skill_issue_anchor_scan fire automatically at edit time via the portable adapter-declared host-hook machinery: a skill_anchor_edit_guard intent in .agents/usage-episodes-adapter.yaml installs a Claude PostToolUse(Edit|Write|MultiEdit) hook running scripts/post_edit_skill_anchor_guard.py on the file just edited; commit sweep stays the backstop.
+- Why this approach: Mechanism classification (deferred probe resolved): adapter-declared hook via the EXISTING host_hook_install_lib pattern (the find_skills_routing parallel-hook move) — chosen over a checked-in .claude/settings.json preset (fires for every contributor with no opt-out/state tracking) and over a plugin-shipped hook (would reach consumers, violating consumer-inertness). Codex honestly unsupported (no edit-time hook surface); guard is fail-open and self-scopes to skills/public|support under its own checkout.
+- Commits:
+- What changed: scripts/host_hook_install_lib.py (event param + anchor-guard reconcile/status wiring); scripts/host_hook_skill_anchor_guard.py (new); scripts/post_edit_skill_anchor_guard.py (new); scripts/reconcile_usage_episodes_host_hooks.py (status folds new section); .agents/usage-episodes-adapter.yaml (claude: enabled); docs/conventions/authoring-preflight.md (auto-firing paragraph); tests/test_skill_anchor_guard_hook.py (9 tests, new); plugins mirrors byte-synced.
+- Alternatives rejected: Checked-in project .claude/settings.json preset (no opt-out, no codex story, off the established pattern); plugin-shipped hooks.json (consumer-reaching, violates Non-Goals); raising on codex-enabled intent (would abort the whole reconcile chain — error-string matches sibling reconcilers).
+- Targeted verification: 9/9 new tests; 52 passed across the three host-hook test modules; ruff/py_compile/lengths green; mirrors diff-clean; LIVE: reconcile installed the hook into ~/.claude/settings.json (action=installed, event=PostToolUse), status in_sync=true, installed command piped a clean-skill-file payload => exit 0; exit-2 path proven in-process (stderr carries scan report + path:line). Non-claim: no live proof the host invokes the hook on a real Edit (installed mid-session; verifiable next session).
+- Test duplication pressure: New module mirrors test_find_skills_host_hook_reconcile fixtures (fake_repo/fake_home) without copying its codex-toml cases; guard-script tests are in-process (no new subprocess boundary; ratchet untouched).
+- Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied: doc/adapter matcher drift (Edit|Write|MultiEdit). Recorded, not applied: two-checkout coverage gap (~/.agents/src/charness edits get no edit-time guard — basename dedupe allows one logical hook per machine; falls to commit sweep, pattern-consistent); dangling-checkout exit-2 noise hazard (pre-existing class, doctor/status candidate); host_hook_install_lib reconcile fan-out should become a registry at the NEXT hook addition.
+- Off-goal findings: Dangling-checkout hook noise (deleted checkout => python3 exit 2 on every Edit) is a pre-existing hazard class for all three hooks — candidate for a charness doctor/status check; reconcile fan-out registry refactor deferred to the next hook addition.
+- Lessons carried forward: The parallel-hook pattern made the portable mechanism nearly free; the expensive part was classifying the firing mechanism honestly (adapter vs preset vs plugin-shipped) before wiring.
 - Metrics:
 
 ## Context Sources

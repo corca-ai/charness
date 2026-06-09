@@ -28,3 +28,11 @@ host_hooks:
 find_skills_routing:
   claude: enabled
   codex: enabled
+# skill_anchor_edit_guard installs a Claude PostToolUse(Edit|Write|MultiEdit)
+# hook that runs the repo-owned #N-anchor scan on the skill-package file just
+# edited
+# (additive author-time surfacing; the commit-time validate_skill_ergonomics
+# sweep stays the backstop). Codex has no edit-time hook surface in this
+# machinery, so the intent is claude-only.
+skill_anchor_edit_guard:
+  claude: enabled

@@ -146,6 +146,12 @@
       "evidence_terms": ["intent", "disabled"],
       "rationale": "Host-hook install/uninstall library exposes per-host intent (enabled/disabled) in reconcile and status payloads so adapter-driven no-op runs cannot read as silent install."
     },
+    "scripts/host_hook_skill_anchor_guard.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["intent", "disabled"],
+      "rationale": "Skill #N-anchor edit-time guard hook library exposes the per-host skill_anchor_edit_guard intent (enabled/disabled) in the reconcile payload under actions['skill_anchor_edit_guard']; a disabled (opt-in default) intent uninstalls/no-ops and the codex noop carries an explicit unsupported reason, so neither can read as a silent install."
+    },
     "scripts/install_machine_local.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary"],
