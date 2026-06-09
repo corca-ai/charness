@@ -3,12 +3,12 @@ Date: 2026-06-09
 
 ## Scope
 
-Advanced `charness` toward release `0.32.1` (tag `v0.32.1`) through the repo-owned release helper.
+Advanced `charness` toward release `0.33.0` (tag `v0.33.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.32.0`
-- target version: `0.32.1`
+- previous version: `0.32.1`
+- target version: `0.33.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.32.1` (tag `v0.32.1`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.32.1`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.33.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.32.0`
+- Previous release ref: `refs/tags/v0.32.1`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,49 +50,57 @@ Advanced `charness` toward release `0.32.1` (tag `v0.32.1`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-09-v0-32-1-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-09-v0-33-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 1.
+- Surface hits: 2.
   - `checked-in-plugin-export`
-- Path hits: 0.
-- Evaluated changed paths: 23.
+  - `integrations-and-control-plane`
+- Path hits: 3.
+  - `skills/public/find-skills/scripts/capability_sources.py`
+  - `skills/public/find-skills/scripts/list_capabilities.py`
+  - `skills/public/find-skills/scripts/list_capabilities_lib.py`
+- Evaluated changed paths: 33.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-09-achieve-closeout-module-split-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-09-v0.32.1-release-critique.md`
-  - `charness-artifacts/goals/2026-06-09-achieve-closeout-module-split.md`
+  - `.gitignore`
+  - `charness-artifacts/critique/2026-06-09-v0.33.0-release-critique.md`
+  - `charness-artifacts/find-skills/latest.json`
+  - `charness-artifacts/find-skills/latest.md`
   - `charness-artifacts/goals/2026-06-09-deferred-queue-341-340-activation-preflight.md`
+  - `charness-artifacts/goals/2026-06-09-nanchor-guard-338-gather-release-update.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-09-achieve-closeout-module-split-host-probe.md`
-  - `charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md`
+  - `charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
+  - `charness-artifacts/spec/mutation-changed-line-premerge-gate.md`
+  - `docs/handoff.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_closeout_evidence.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_closeout_loaders.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_disposition.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_disposition_grammar.py`
-  - `skills/public/achieve/scripts/goal_artifact_closeout_evidence.py`
-  - `skills/public/achieve/scripts/goal_artifact_closeout_loaders.py`
-  - ... 3 more
+  - `plugins/charness/scripts/mutation_manifest_lib.py`
+  - `plugins/charness/scripts/mutation_sample_manifest_score_lib.py`
+  - `plugins/charness/skills/find-skills/scripts/capability_sources.py`
+  - ... 13 more
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
+- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
+- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-09-v0.32.1-release-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.32.1`.
+- Review proof: `charness-artifacts/critique/2026-06-09-v0.33.0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -104,10 +111,11 @@ Advanced `charness` toward release `0.32.1` (tag `v0.32.1`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.33.0 (minor release). Two fixes from the deferred-queue goal, plus an inert next-queue draft. (1) FIND-SKILLS SUPPORT ROUTING (#340) - `find-skills --recommend-for-task` now surfaces a tool's SHIPPED charness-support skill (specdown, cautilus, agent-browser) via `support_skill_recommendations`, not only as a binary `tool_recommendation`, EVEN when that support skill is not materialized locally (a consumer repo before `charness update`/support sync); the recommendation carries the integration `summary` and points the agent at the shipped authoring guidance instead of reverse-engineering the binary. Additive - the inventory arrays and every other recommendation are behavior-preserved. (2) MUTATION-GATE PER-FILE-BUDGET RECLASSIFICATION (#341, maintainer-facing) - a changed mutation-pool file dropped SOLELY because its own covered-mutable-line count exceeds the per-file mutation budget is reclassified from the blocking `selection_excluded_changed_files` signal to a NON-blocking advisory `changed_files_excluded_by_per_file_budget` bucket; the changed-line coverage arm still blocks any uncovered changed line and the per-file budget is unchanged. This unblocks the scheduled mutation gate when a module split produces an oversized-but-well-covered changed file (#341 auto-closes on the next green scheduled run). OPERATOR NOTE - minor; #340 is additive new behavior on the find-skills recommendation surface (no migration), #341 is internal to the maintainer mutation gate, and installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (#N-anchor edit-time guard, #338 gather X/Twitter exact-source, charness-update release-closeout); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.32.1 (patch release). BEHAVIOR-PRESERVING INTERNAL REFACTOR - the two at-cap `achieve` closeout modules were split into cohesive leaf sub-modules to restore single-file line-gate headroom: `goal_artifact_disposition.py` (352->250 code lines) extracts its markdown-grammar/scope primitives into a new `goal_artifact_disposition_grammar.py` leaf, and `goal_artifact_closeout_evidence.py` (348->261) extracts its sibling/shared-module loaders into a new `goal_artifact_closeout_loaders.py` leaf. Proven behavior-preserving - the closeout gate (`check_goal_artifact.py`) produces BYTE-IDENTICAL verdicts over the full live goal corpus pre/post split, the public + monkeypatch import surfaces keep their names, and the plugin mirror is byte-synced. This release also ships an inert DRAFT goal artifact for the next deferred-queue work (#341 mutation regression on main, #340 find-skills specdown support routing, the goal activation-preflight surface); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`. OPERATOR NOTE - patch, purely structural; existing goal/closeout verdicts are unchanged and installed-plugin consumers inherit no new blocking behavior beyond the normal `charness update` flow.
 - Run `charness update` to pull 0.32.0 (minor release). PORTABLE RESIDUAL/DISPOSITION LEDGER + ADAPTER-OWNED PROOF SEMANTICS (#339 - the adapter-boundary successor to #337). Three additive, grandfathered/on-presence capabilities. (1) NEW DISPOSITION FORMS - `accepted-risk: <reason>` and `out-of-scope: <reason>` are additive arms on the shared disposition grammar (valid in Auto-Retro/retro dispositions and a new `## Residual Ledger` block); the existing `applied:`/`issue #N`/`none —` forms and the #337 structural-follow-up destination vocabulary are behavior-preserved (0 verdict changes on the live corpus; the new arms are EXCLUDED from destinations). The `## Residual Ledger` floor (enforce-from 2026-06-10, grandfathered by `Created` date) refuses a residual/non-claim/proof-gap left as a prose-only `defer`/`recorded in retro`/`future work`. (2) PROOF-SEMANTICS ADAPTER (`scripts/proof_semantics_adapter_lib.py`, optional + domain-blind) - declares proof levels (+ an `incomparable` partial order), the acceptance-class->minimum-proof-level map, verifier refs, and gap policy; Charness does only generic rank/incomparability lookups and learns NO domain concept. A missing adapter DEGRADES (the portable ledger floor still fires); a found-but-invalid adapter FAILS CLOSED. (3) PROOF-MISMATCH FLOOR (`scripts/proof_mismatch.py`) - a closeout that declares a `## Proof Ledger` is BLOCKED when (i) a declared acceptance class has no evaluated proof entry, (ii) the reached proof level does not satisfy the class (via the adapter map), or (iii) the gap lacks an explicit disposition; wired into BOTH achieve closeout and issue `verify-closeout` so the pre-publication draft and post-publication verify enforce it identically. OPERATOR NOTE - additive; the residual-ledger floor is grandfathered by `Created`/date (every pre-2026-06-10 artifact is unaffected) and the proof-mismatch floor is INERT unless a closeout declares a `## Proof Ledger` (no over-fire), so installed-plugin consumers inherit no new blocking behavior on existing artifacts or on closeouts that declare no proof ledger. Full contract: `docs/proof-semantics-adapter.md`. This release also ships an inert DRAFT goal artifact for the next work (the at-cap achieve closeout module split); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it. NOTE for charness maintainers: charness ships NO proof-semantics adapter of its own, so a `## Proof Ledger` added to a charness closeout runs the proof-mismatch floor in DEGRADED mode (no domain map -> every row needs an explicit disposition); the residual ledger (not a proof ledger) is unaffected.
 - Run `charness update` to pull 0.31.0 (minor release). NEW DISPOSITION FLOOR (achieve/retro, #337) - a goal `Created` on/after 2026-06-09 whose cited retro names a *transferable* waste item (a `## Sibling Search` trigger) now needs a `Structural follow-up:` destination line in `## Auto-Retro` at `complete` - one of `applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>` - so a prose-only "recorded in recent-lessons" can no longer pass as a structural disposition. The fresh-eye disposition review gains a matching mandate (reject "recorded in recent-lessons" unless paired with one of the four forms). Presence/form-enum-only (never a content classifier), inert unless transferable waste is named (no over-fire), and grandfathered by `Created` date so EVERY existing goal is unaffected. The retro waste-sibling-scan and the achieve disposition review now share ONE destination vocabulary (`skills/shared/references/retro-issue-destination-split.md`). OPERATOR NOTE - additive + grandfathered; existing goal/retro/issue verdicts are unchanged and installed-plugin consumers inherit no new blocking behavior on any pre-2026-06-09 goal. This release also ships an inert draft goal artifact for #339 (the adapter-boundary successor); it is artifact-only and changes no behavior.
