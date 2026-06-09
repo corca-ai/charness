@@ -9,13 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 2** — split `goal_artifact_closeout_evidence.py` (348/360).
-  Slice 1 (disposition grammar leaf) SHIPPED: verdict parity byte-identical over
-  68 goals, headroom 352->250, fresh-eye SHIP. Active.
-- Next action: extract the sibling-loader + evidence-binding boilerplate from
-  `goal_artifact_closeout_evidence.py` into one cohesive module; keep
-  `check_complete_evidence` + the parse/token public surface stable; verdict parity
-  against the frozen golden baseline (`/tmp/GOLDEN_baseline.json`, sha 28e3f24a).
+- Current slice: **Slice 3** — bundle closeout. Slices 1 & 2 SHIPPED:
+  disposition.py 352->250 (grammar leaf), closeout_evidence.py 348->261 (loaders
+  leaf), both pristine byte-identical verdict parity over 68 goals, fresh-eye SHIP.
+- Next action: broad gate (`run-quality.sh --read-only`); changed-line mutation
+  coverage producer FIRST over the new/relocated lines; demonstrate a fresh rung
+  adds to a new module without hitting the cap; retro + Auto-Retro dispositions;
+  flip status to complete via `check_goal_artifact.py`.
 - **Why this goal (chosen from the session signals):** the #339 work had to route
   logic through the shared grammar + wire new floors from the CLI THREE times to
   avoid the at-cap closeout files; recent-lessons flags this as deferred structural
@@ -176,6 +176,20 @@ during the run:
 - Critique: full — fresh-eye general-purpose bounded reviewer in shared worktree: AST-level body comparison of every moved symbol = byte-identical vs HEAD; all importers reachable; grammar cohesive; loader does not register into sys.modules and resolves __file__-relative in the export. VERDICT SHIP.
 - Off-goal findings:
 - Lessons carried forward: _load_local_module deliberately does NOT insert into sys.modules (avoids global shadowing); __file__-relative spec resolves the sibling in the SAME export dir, so the leaf loads identically in tree and plugin export.
+- Metrics:
+
+### Slice 2: Slice 2 — extract closeout sibling-loader leaf
+
+- Objective: Split goal_artifact_closeout_evidence.py (348/360) by extracting the 8 near-identical sibling/shared-module loaders into a cohesive leaf goal_artifact_closeout_loaders.py; keep check_complete_evidence + the parse/token public surface + the ce._load_* test/monkeypatch surface stable.
+- Why this approach: The 8 loader functions (_load_shared_helper + 7 _load_sibling_*) are textbook boilerplate — one cohesive concern: filesystem-spec resolution of the closeout gate's sibling/shared modules. Pure leaf (importlib.util + Path only, no sibling import, no sys.modules registration). Moving the bodies out + re-binding them as ce attributes preserves the monkeypatch surface (check_complete_evidence still calls the module-global _load_shared_helper) and the fail-closed ImportError messages.
+- Commits:
+- What changed: NEW skills/public/achieve/scripts/goal_artifact_closeout_loaders.py (140/360). goal_artifact_closeout_evidence.py 348->261/360: removed the 8 loader bodies, added _load_local_module + an 8-line re-bind block; parse layer, wiring block, evidence-binding helpers, check_complete_evidence unchanged. Mirror byte-synced.
+- Alternatives rejected: Also extracting the evidence-binding helpers (_apply_evidence_binding etc.) into the same module (rejected: they call the parse funcs derive_goal_tokens/narration_sections_present -> circular dep or signature changes; the loader extraction alone restored headroom to 261, so no pressure to take the riskier move). Deduping the 7 _load_sibling_* into one parametrized loader (rejected: tests pin the named functions; verbatim move is the stronger behavior proof).
+- Targeted verification: PRISTINE verdict parity: HEAD inline-loaders (348) vs split (261) over all 68 goals, same HEAD + same goal text -> BYTE-IDENTICAL (sha 93e4d04d). Headroom 261 + 140. 264 disposition/closeout tests pass incl. the loader monkeypatch + 2 ImportError fail-closed tests. check_export_safe_imports (448) + check_plugin_import_smoke green. Mirror byte-synced.
+- Test duplication pressure: none — pure behavior-preserving move; no new logic. Existing coordination/disposition tests already pin the loaders' ImportError + monkeypatch behavior (test_load_sibling_coordination_floors_raises_when_spec_missing, test_sibling_loaders_fail_closed_when_spec_loader_is_missing, test_check_complete_evidence_surfaces_retro_narration_sections).
+- Critique: full — fresh-eye general-purpose bounded reviewer in shared worktree: AST-identity on all 8 loaders + all non-loader symbols vs HEAD (zero diffs); monkeypatch global-resolution traced empirically (check_complete_evidence.__globals__ is ce.__dict__, co_names has _load_shared_helper not _loaders); ImportError messages byte-identical (kept the 'beside goal_artifact_closeout_evidence.py' wording matching the test regexes); shared importlib.util patch still reaches the moved loaders across the file boundary; cohesive; no export hazard. VERDICT SHIP.
+- Off-goal findings:
+- Lessons carried forward: Re-binding moved loaders as module attributes (not calling them via _loaders.X) is what preserves a monkeypatch-on-ce surface: check_complete_evidence resolves _load_shared_helper from ce.__dict__ at call time, so monkeypatch.setattr(ce, ...) takes effect. Keeping ImportError messages verbatim (old filename) preserves substring-matching tests across a file move.
 - Metrics:
 
 ## Context Sources

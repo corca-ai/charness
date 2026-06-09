@@ -3,6 +3,11 @@
 Split out of ``goal_artifact_lib.py`` so the artifact module stays under the
 single-file line gate; the closeout-evidence contract (Retro + Host log probe
 binding to the shared closeout helper) is also a separable concept.
+
+The near-identical sibling/shared-module loader boilerplate lives in the cohesive
+leaf ``goal_artifact_closeout_loaders.py`` (loaded + re-bound below) so this
+wrapper stays focused on parsing and the gate logic and both files keep real
+headroom under the single-file line gate.
 """
 from __future__ import annotations
 
@@ -12,25 +17,35 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_shared_helper():
-    """Load the repo-owned shared closeout-evidence helper.
+def _load_local_module(module_name: str):
+    """Load a sibling achieve-script module by name via filesystem spec.
 
-    Resolution walks parent directories until ``scripts/`` is found, so the
-    helper stays portable across the working tree and any installed export.
+    Self-contained (no ``from scripts.`` import, no ``sys.modules`` registration)
+    so it resolves both in the working tree and the installed plugin export.
     """
-    here = Path(__file__).resolve()
-    for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location(
-                "check_prescribed_skill_executed_lib", candidate
-            )
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
+    spec = importlib.util.spec_from_file_location(
+        module_name, Path(__file__).resolve().parent / f"{module_name}.py"
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"{module_name}.py not found beside goal_artifact_closeout_evidence.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# The sibling/shared-module loaders live in a cohesive leaf. Re-bound here so the
+# established ``ce._load_shared_helper`` / ``ce._load_sibling_*`` surface — including
+# the monkeypatch (``check_complete_evidence`` calls the module-global
+# ``_load_shared_helper``) and the fail-closed ImportError tests — is unchanged.
+_loaders = _load_local_module("goal_artifact_closeout_loaders")
+_load_shared_helper = _loaders._load_shared_helper
+_load_sibling_disposition = _loaders._load_sibling_disposition
+_load_sibling_early_close_report = _loaders._load_sibling_early_close_report
+_load_sibling_metric_window = _loaders._load_sibling_metric_window
+_load_sibling_coordination_floors = _loaders._load_sibling_coordination_floors
+_load_sibling_phase_routing = _loaders._load_sibling_phase_routing
+_load_sibling_closeout_delegation = _loaders._load_sibling_closeout_delegation
+_load_sibling_adapter_policy = _loaders._load_sibling_adapter_policy
 
 
 # After-phase evidence names. The achieve closeout requires a checked-in retro
@@ -208,116 +223,6 @@ def parse_closeout_evidence(text: str) -> dict[str, dict[str, str]]:
         else:
             parsed[name] = {"kind": "evidence", "value": raw_value}
     return parsed
-
-
-def _load_sibling_disposition():
-    """Load the sibling improvement-disposition gate module.
-
-    Kept in its own file (a separable concept, like this module was split from
-    ``goal_artifact_lib.py``) so neither file approaches the single-file line
-    gate. This module depends on it; the dependency is one-directional (the
-    disposition module is a leaf), so there is no circular import.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_disposition",
-        Path(__file__).resolve().parent / "goal_artifact_disposition.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_disposition.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_early_close_report():
-    """Load the sibling early-close report floor module."""
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_early_close_report",
-        Path(__file__).resolve().parent / "goal_artifact_early_close_report.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_early_close_report.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_metric_window():
-    """Load the sibling goal-metric-window module for the non-blocking
-    closeout attention signal. A leaf module (no sibling imports), so the
-    dependency stays one-directional.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_metric_window_lib",
-        Path(__file__).resolve().parent / "goal_metric_window_lib.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_metric_window_lib.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_coordination_floors():
-    """Load the sibling gather/release coordination-floor module.
-
-    A leaf like the disposition module (no sibling imports), kept separate so
-    this wrapper stays under the single-file line gate. One-directional: this
-    module depends on it, never the reverse.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_coordination_floors",
-        Path(__file__).resolve().parent / "goal_artifact_coordination_floors.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_coordination_floors.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_phase_routing():
-    """Load the sibling phase-routing floor module."""
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_phase_routing",
-        Path(__file__).resolve().parent / "goal_artifact_phase_routing.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_phase_routing.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_closeout_delegation():
-    """Load the sibling orchestrator/sub-goal closeout-delegation gate.
-
-    A leaf like the disposition/coordination modules (no sibling imports), kept
-    separate so this wrapper stays under the single-file line gate. One-directional:
-    this module depends on it, never the reverse.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_closeout_delegation",
-        Path(__file__).resolve().parent / "goal_artifact_closeout_delegation.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_closeout_delegation.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_adapter_policy():
-    """Load the optional achieve adapter policy leaf module."""
-    spec = importlib.util.spec_from_file_location(
-        "achieve_adapter_policy",
-        Path(__file__).resolve().parent / "achieve_adapter_policy.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("achieve_adapter_policy.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 _disposition = _load_sibling_disposition()
