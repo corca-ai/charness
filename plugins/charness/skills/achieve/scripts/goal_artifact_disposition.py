@@ -18,23 +18,19 @@ human audits. Determinism categorically cannot make that call, so this module
 never tries; a deterministic false-positive trains token-theater and is worse
 than a false-negative, so the teeth stay narrow and ungameable.
 
-Kept a leaf module (no sibling imports) so it stays self-contained and neither it
-nor ``goal_artifact_closeout_evidence.py`` approaches the single-file line gate.
+This module owns the rung **verdicts** (the ``apply_*_floor`` builders + the
+``apply_disposition_rungs`` orchestrator). The markdown grammar and
+disposition-scope primitives the verdicts parse live in the cohesive leaf
+sibling ``goal_artifact_disposition_grammar.py`` (loaded below), so neither file
+approaches the single-file line gate. The grammar import is the module's only
+sibling dependency and is one-directional (the grammar leaf never imports back).
 """
 from __future__ import annotations
 
 import importlib.util
-import re
 from datetime import date
 from pathlib import Path
 from typing import Any
-
-# Both rungs fire only for goals Created on or after the disposition rule's
-# landing date (commit 73d2d34, 2026-05-30, inclusive). A goal shaped before the
-# rule existed had no chance to plan its Auto-Retro/review around it, so
-# Created-keying grandfathers exactly those in-flight goals; completion-keying
-# would punish them. Clone-safe: the date is in-file content, not mtime.
-DISPOSITION_RULE_DATE = date(2026, 5, 30)
 
 # Rung 1d (the recurrence-lineage floor) lands later than rungs 1a/1b, so it has
 # its own enforce-from-date that grandfathers every goal frozen before it. Goals
@@ -42,165 +38,40 @@ DISPOSITION_RULE_DATE = date(2026, 5, 30)
 # ``issue``-routed ``## Auto-Retro`` disposition. Clone-safe: in-file content.
 RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 8)
 
-# The Auto-Retro opt-out: a deliberate "no improvement needs active disposition"
-# assertion, recorded visibly (the Engelbart "say why if you depart" valve, not a
-# silent skip). A min-length floor mirrors the skip discipline so it cannot be a
-# one-word bypass; rung 2 can falsify a false "none".
-MIN_OPTOUT_REASON = 30
 
-_CREATED_LINE = re.compile(
-    r"^[\s>*-]*Created\s*:\s*(\d{4}-\d{2}-\d{2})\b",
-    re.MULTILINE | re.IGNORECASE,
-)
-_DISPOSITION_OPTOUT = re.compile(
-    r"^[\s>*-]*Retro dispositions\s*:\s*none\b[ \t]*[—–:-]+[ \t]*(\S.*?)[ \t]*$",
-    re.MULTILINE | re.IGNORECASE,
-)
-_LIST_ITEM = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\S")
+def _load_local_module(module_name: str):
+    """Load a sibling achieve-script module by name via filesystem spec.
 
-# The goal-artifact template seeds a visible ``Retro dispositions: TODO — …``
-# placeholder under ``## Auto-Retro`` so an active run sees the disposition
-# obligation from the start. An *untouched* placeholder line must still read as
-# blank-equivalent, else seeding it would silently disable rung 1a
-# (block-the-blank) for any goal that fills the disposition-review line but never
-# replaces the TODO. The line is treated as content only once the ``TODO`` is
-# replaced by a real disposition (``Retro dispositions: none — …`` opt-out or an
-# ``applied:``/``issue …`` per-improvement record).
-_DISPOSITION_PLACEHOLDER = re.compile(
-    r"^[\s>*-]*Retro dispositions\s*:\s*(?:TODO|TBD|<[^>]*>|FIXME)\b[^\n]*$",
-    re.MULTILINE | re.IGNORECASE,
-)
-
-
-def _mask_fences(text: str) -> str:
-    """Blank fenced code-block regions to spaces (length/newlines preserved).
-
-    A self-contained mirror of ``goal_artifact_lib._mask_fences`` so this module
-    keeps no sibling import; fenced ``##`` / ``Created:`` / opt-out lines must not
-    be read as real artifact content.
+    Mirrors the self-contained sibling-loading the closeout-evidence wrapper uses
+    so a moved/relocated module resolves both in the working tree and in the
+    installed plugin export without a ``from scripts.`` import.
     """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        return text
-    return "".join(masked)
+    spec = importlib.util.spec_from_file_location(
+        module_name, Path(__file__).resolve().parent / f"{module_name}.py"
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"{module_name}.py not found beside goal_artifact_disposition.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def goal_created_date(text: str) -> date | None:
-    """Parse the goal's ``Created:`` date; ``None`` when absent or malformed.
-
-    Scoped to the masked body so a fenced example line cannot be read as the
-    real ``Created:``. The caller fails closed (treats ``None`` as in-scope).
-    """
-    match = _CREATED_LINE.search(_mask_fences(text))
-    if not match:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
-
-
-def disposition_gate_applies(text: str) -> bool:
-    """Whether the disposition rungs fire for this goal (grandfather-by-
-    ``Created``-date). Fail-CLOSED: a missing/malformed ``Created:`` is treated
-    as in-scope, so a goal cannot dodge both rungs by corrupting one line."""
-    created = goal_created_date(text)
-    if created is None:
-        return True
-    return created >= DISPOSITION_RULE_DATE
-
-
-def _section_body(masked: str, heading: str) -> str | None:
-    """Return the body of the named section (heading line excluded), from the
-    heading to the next heading of the same-or-higher level, or EOF.
-
-    ``masked`` must already be fence-masked. Returns ``None`` when the section is
-    absent (vs ``""`` when present-but-empty).
-    """
-    start = re.compile(
-        rf"^(#{{1,6}})[ \t]+{re.escape(heading)}\b[^\n]*$",
-        re.MULTILINE | re.IGNORECASE,
-    ).search(masked)
-    if start is None:
-        return None
-    level = len(start.group(1))
-    body_start = masked.find("\n", start.end())
-    if body_start == -1:
-        return ""
-    body_start += 1
-    nxt = re.compile(rf"^#{{1,{level}}}[ \t]+\S", re.MULTILINE).search(masked, body_start)
-    return masked[body_start : nxt.start() if nxt else len(masked)]
-
-
-def auto_retro_is_blank(text: str) -> bool:
-    """True when the goal's ``## Auto-Retro`` section is absent, whitespace-only,
-    or carries only the untouched ``Retro dispositions: TODO — …`` scaffold
-    placeholder (scanned over the Auto-Retro span only, fences masked). This is
-    the only content judgment the deterministic rung makes — emptiness, never
-    substance. Treating the seeded placeholder as blank-equivalent keeps rung 1a
-    (block-the-blank) live: seeding a visible TODO must not silently disable it.
-    """
-    body = _section_body(_mask_fences(text), "Auto-Retro")
-    if body is None or not body.strip():
-        return True
-    residual = _DISPOSITION_PLACEHOLDER.sub("", body)
-    return not residual.strip()
-
-
-def retro_lists_improvements(retro_text: str) -> bool:
-    """True when the retro's ``## Next Improvements`` section carries ≥1 list item.
-
-    Presence/structure only — never classifies the prose (the round-2 word-list
-    trap). An absent or renamed section is inert (returns False), so block-the-
-    blank cannot fire without a structurally-identifiable improvement to dispose.
-    """
-    body = _section_body(_mask_fences(retro_text), "Next Improvements")
-    if body is None:
-        return False
-    return any(_LIST_ITEM.match(line) for line in body.splitlines())
-
-
-def find_disposition_optout(text: str) -> str | None:
-    """Return the opt-out reason when a valid ``Retro dispositions: none — <reason>``
-    line (≥ ``MIN_OPTOUT_REASON`` chars) sits in the Auto-Retro span, else ``None``.
-
-    Auto-Retro-scoped on purpose: a full-text scan is poisoned — real goal bodies
-    describe the marker while specifying it (round-2 B-2), which would falsely
-    exempt them.
-    """
-    body = _section_body(_mask_fences(text), "Auto-Retro")
-    if not body:
-        return None
-    match = _DISPOSITION_OPTOUT.search(body)
-    if match is None:
-        return None
-    reason = match.group(1).strip()
-    return reason if len(reason) >= MIN_OPTOUT_REASON else None
-
-
-def _bound_retro_path(report: dict[str, Any]):
-    """The path of the satisfied + bound ``retro_artifact`` evidence file, if any.
-
-    A retro whose F1 binding failed is excluded (it is already an ok=False
-    binding failure; block-the-blank must not read an unbound retro's body).
-    """
-    blocked = {entry["name"] for entry in report.get("binding_failures", [])}
-    found = None
-    for entry in report["satisfied"]:
-        if (
-            entry["name"] == "retro_artifact"
-            and entry.get("via") == "evidence"
-            and entry["name"] not in blocked
-        ):
-            found = entry["path"]
-    return found
+# The goal-artifact markdown grammar + disposition-scope primitives live in a
+# cohesive leaf sibling so this module stays the "rung verdicts" concern and both
+# files keep real headroom under the single-file line gate. Re-bound here so the
+# established public surface (``disposition_gate_applies``, ``auto_retro_is_blank``,
+# ``find_disposition_optout``, ``retro_lists_improvements``, ``_mask_fences``)
+# stays on ``goal_artifact_disposition`` for existing importers.
+_grammar = _load_local_module("goal_artifact_disposition_grammar")
+DISPOSITION_RULE_DATE = _grammar.DISPOSITION_RULE_DATE
+_mask_fences = _grammar._mask_fences
+goal_created_date = _grammar.goal_created_date
+disposition_gate_applies = _grammar.disposition_gate_applies
+_section_body = _grammar._section_body
+auto_retro_is_blank = _grammar.auto_retro_is_blank
+retro_lists_improvements = _grammar.retro_lists_improvements
+find_disposition_optout = _grammar.find_disposition_optout
+_bound_retro_path = _grammar._bound_retro_path
 
 
 _FORM_MODULE = None

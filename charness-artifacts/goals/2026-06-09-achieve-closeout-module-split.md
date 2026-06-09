@@ -9,10 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (draft). Pure behavior-preserving refactor —
-  no consequential activation defaults, so no `Discuss before activation:` summary
-  is required; `/goal` can activate directly.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-09-achieve-closeout-module-split.md`.
+- Current slice: **Slice 2** — split `goal_artifact_closeout_evidence.py` (348/360).
+  Slice 1 (disposition grammar leaf) SHIPPED: verdict parity byte-identical over
+  68 goals, headroom 352->250, fresh-eye SHIP. Active.
+- Next action: extract the sibling-loader + evidence-binding boilerplate from
+  `goal_artifact_closeout_evidence.py` into one cohesive module; keep
+  `check_complete_evidence` + the parse/token public surface stable; verdict parity
+  against the frozen golden baseline (`/tmp/GOLDEN_baseline.json`, sha 28e3f24a).
 - **Why this goal (chosen from the session signals):** the #339 work had to route
   logic through the shared grammar + wire new floors from the CLI THREE times to
   avoid the at-cap closeout files; recent-lessons flags this as deferred structural
@@ -160,6 +163,20 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — extract disposition grammar leaf
+
+- Objective: Split goal_artifact_disposition.py (352/360) into a cohesive leaf goal_artifact_disposition_grammar.py holding the markdown grammar + disposition-scope primitives; keep the rung verdicts + public surface stable.
+- Why this approach: The grammar/scope primitives (fence-mask, section-body, Created-date parse, scope predicate, Auto-Retro content probes, bound-retro resolver) are one cohesive parse substrate the rungs build verdicts on — the cleanest seam between 'what the rungs parse' and 'what the rungs decide'. Pure leaf (no sibling import, mutates no report).
+- Commits:
+- What changed: NEW skills/public/achieve/scripts/goal_artifact_disposition_grammar.py (152/360). goal_artifact_disposition.py 352->250/360, keeps the rung-verdict logic + _load_shared_form + RECURRENCE_LINEAGE_RULE_DATE, adds _load_local_module loader + a re-bind block keeping disposition_gate_applies/auto_retro_is_blank/find_disposition_optout/retro_lists_improvements/_mask_fences as module attributes. Mirror byte-synced to plugins/charness/skills/achieve/scripts/.
+- Alternatives rejected: Extracting the three rung floor functions instead (rejected: leaves rungs 1a/1f with the orchestrator — a split-rungs seam, less cohesive than grammar-vs-verdicts). Splitting only one file (rejected by goal scope — both at-cap).
+- Targeted verification: Verdict parity over all 68 live goals byte-identical except wall-clock remaining_minutes (untouched timebox module). Headroom 250 + 152 (110/208 left). 264 disposition/closeout tests pass. check_export_safe_imports (447) + check_plugin_import_smoke green. Mirror byte-synced.
+- Test duplication pressure: none — pure behavior-preserving move; no new logic to test. Existing disposition/form/coordination tests already pin the moved functions' behavior; the verdict-parity corpus is the move proof.
+- Critique: full — fresh-eye general-purpose bounded reviewer in shared worktree: AST-level body comparison of every moved symbol = byte-identical vs HEAD; all importers reachable; grammar cohesive; loader does not register into sys.modules and resolves __file__-relative in the export. VERDICT SHIP.
+- Off-goal findings:
+- Lessons carried forward: _load_local_module deliberately does NOT insert into sys.modules (avoids global shadowing); __file__-relative spec resolves the sibling in the SAME export dir, so the leaf loads identically in tree and plugin export.
+- Metrics:
 
 ## Context Sources
 
