@@ -53,10 +53,8 @@
 - **No push/tag CI.** The local `--release` gate is the bundle proof. Open: add
   light push/tag CI and/or mirror the changed-line gate into a CI-PR check (spec
   "Deferred Decisions").
-- **Scaffold should cite the repo validator, not the installed plugin's.** Even with
-  the `charness update` step, `debug`/critique scaffolds emit the *installed*
-  validator command — prefer the repo-local `scripts/` validator when present so the
-  cited check == the gate. Lesson source: this session's version-skew miss.
+- (Resolved 2026-06-09) "Scaffold should cite the repo validator" was already
+  shipped in v0.29.0 — verified read-only; all six scaffolds are repo-local-first.
 
 ## References
 

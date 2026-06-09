@@ -9,19 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 2 — verify-first scaffold repo-validator citation audit.**
-  Slice 1 (author-time closeout preflight) is **DONE** — see `## Slice Log`;
-  fresh-eye critique REVISE fully folded; all deterministic gates green; pending
-  the slice-1 commit. Slice-1 home decision (kept for the record): extended
-  `check_artifact_surface_preflight` via a new `shape_command` source + two
-  describe-shape sibling scripts rendering live from the owning validators'
-  constants (rejected a standalone script / editing the NEAR-LIMIT `issue_tool.py`
-  / the load-order-sensitive `goal_artifact_closeout_evidence.py`).
-- Next action: commit slice 1; then slice 2 — read-only audit of which scaffolds
-  (`debug`/`critique`/`retro`/`quality`/`handoff`/`ideation`) emit a validator
-  command and whether it cites the installed-plugin vs the repo-local
-  `scripts/<validator>.py`; reconcile against the v0.29.0 "scaffolds cite the
-  repo-local validator" claim; close only a genuine residual gap.
+- Current slice: **CLOSEOUT — both slices DONE.** Slice 1 (author-time closeout
+  preflight: new `closeout-draft` surface + enriched `goal-closeout` via a
+  `shape_command` source, committed `bebdaa2d`) and Slice 2 (verify-first scaffold
+  citation audit: CONFIRMED already-shipped in v0.29.0, no residual gap, stale
+  handoff Discuss item resolved) are both complete with fresh-eye critiques
+  attesting correctness — see `## Slice Log`.
+- Next action: After-phase closeout — bundle-boundary broad gate
+  (`run-quality.sh --read-only`) + changed-line producer over the bundle range,
+  retro, fill `## Final Verification`, flip `Status: complete`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -206,6 +202,29 @@ Recorded route for this run:
 - Critique: Fresh-eye subagent (bounded slice packet): REVISE -> all folded. B1: goal-closeout disposition form conflated Retro-dispositions (VALID_FORM_SUMMARY) with Structural-follow-up destination (DESTINATION_FORM_SUMMARY) -> would mis-direct an author into a REJECTED 'repo-local guard:' Retro-dispositions line; FIXED by rendering both forms live from disposition_form.py. B2: drift hole (forms were prose, unpinned) -> FIXED with a drift test pinning both summaries. N1: direct-commit draft body source is --commit-message-file (git show is post-close verify) -> reworded. N2: 'tool signal:' is enforced by validate_critique_artifacts, not the closeout path -> reattributed. N3: Routing form over-specified -> marked example + stated the real requirement.
 - Off-goal findings:
 - Lessons carried forward: Carried forward to slice 2: VERIFY-FIRST against the live validator constants, and a fresh-eye reviewer catches form/gate-attribution conflations that self-review misses (the disposition-form-vs-destination-form distinction).
+- Metrics:
+
+### Slice 2: Slice 2 — verify-first scaffold repo-validator citation audit
+
+- Objective: Read-only verify FIRST whether the debug/critique/retro/quality/handoff/ideation scaffolds cite the installed-plugin validator or the repo-local scripts/<validator>.py, reconciled against the v0.29.0 'scaffolds cite the repo-local validator' claim; close only a genuine residual gap.
+- Why this approach: VERIFY-FIRST by design to avoid the prior goal's slice-3 stale-handoff trap (building already-shipped work). No code change is the correct outcome when the audit shows it already shipped.
+- Commits:
+- What changed: docs/handoff.md only — resolved the now-stale Discuss item ('Scaffold should cite the repo validator') with the verified-shipped finding + the covering test reference. No scaffold/validator code change (already shipped).
+- Alternatives rejected:
+- Targeted verification: FINDING: already shipped in v0.29.0, NO residual gap. (1) All six scaffolds implement an identical repo-local-first validator_command (prefer repo-root scripts/<validator>.py when present; installed-plugin absolute-path fallback only for consumer repos). (2) v0.29.0 release note (.agents/release-adapter.yaml) explicitly claims it; git provenance commit 2b30d7e4 'fix(scaffolds): cite the repo-local scripts/ validator (Slice 2)'. (3) Behavioral: all six emit 'python3 scripts/validate_*.py' (repo-local) in this repo; a temp repo-root with no scripts/ falls back to the installed absolute path (behavior-preserving for consumers). (4) Both branches test-covered by tests/test_scaffold_inprocess_coverage.py::test_scaffold_validator_command_repo_local_fallback (parametrized, incl. the FileNotFoundError raise). validate_handoff_artifact + check_doc_links green after the stale-handoff fix.
+- Test duplication pressure:
+- Critique: Fresh-eye subagent (bounded verify-audit packet): **CONFIRMED-NO-GAP**.
+  Independently re-read all six scaffold `validator_command` functions (cited
+  file:line), ran them behaviorally (repo-local in this repo; absolute-path
+  fallback in a temp repo), confirmed v0.29.0 provenance (commit 2b30d7e4 lands
+  before release commit 4ddd9334) + behavior/verdict-preserving, and ran a broad
+  missed-surface hunt (debug SKILL.md, achieve/issue closeout, install-surface
+  narrative, grep for installed-plugin command patterns) → no other validator-
+  citation surface. Informational nit folded: also cite the dedicated regression
+  `tests/test_scaffold_repo_local_validator.py` in the handoff (more on-point than
+  the in-process cover). No code change correct.
+- Off-goal findings:
+- Lessons carried forward: The goal's verify-first slice structure worked: it caught a stale handoff Discuss item (already-shipped v0.29.0 work) before any make-work, exactly as designed against the prior goal's slice-3 trap.
 - Metrics:
 
 ## Context Sources
