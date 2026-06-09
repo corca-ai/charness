@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — coverage-producer ergonomics + #N-anchor edit-time guard + push/tag CI + source-guard timing audit
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`
 
@@ -9,10 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`.
-- Timebox: ~one focused session per slice (4 slices); Activation time: set at
-  `/goal` activation; Closeout reserve: ~15% for the After-phase proof + retro;
+- Current slice: 2 — #N-anchor edit-time guard (portable adapter-declared
+  auto-firing for the existing `skill_issue_anchor_scan.py` scan).
+- Next action: verify-first — map where the scan runs today (manual /
+  commit sweep), then classify the portable firing mechanism (adapter/preset)
+  before wiring; slice 1 is done (see `## Slice Log` Slice 1).
+- Timebox: ~one focused session per slice (4 slices); Activation time:
+  2026-06-10 (session start); Closeout reserve: ~15% for the After-phase proof + retro;
   Done-early policy: continue_next_improvement (if a slice closes early, continue
   to the next surfaced improvement rather than stopping).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -174,6 +177,11 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+- Routing (slice 1): `find-skills --recommend-for-task` (producer --base range
+  ergonomics) returned no specific tool/support/workflow route; proceeded as
+  repo-local Python impl under `docs/conventions/implementation-discipline.md`,
+  fresh-eye bounded subagent critique at the slice boundary per the repo
+  contract.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -189,6 +197,20 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — producer --base range ergonomics
+
+- Objective: Add --base [<ref>] to run_slice_closeout.py so a post-commit closeout covers the committed merge-base(<ref>,HEAD)..HEAD range plus the working tree without a manual --paths list; bare --base auto-detects origin/main (the changed-line gate's range anchor); working-tree default and --paths unchanged.
+- Why this approach: The producer fingerprint base (default_mutation_base_sha = merge-base origin/main HEAD) already matches the gate, so only changed-path collection needed the range option — resolve_base_sha/collect_changed_paths_since_base live in surfaces_lib (single git seam), and run_slice_closeout gains a thin _resolve_changed_paths dispatch; the producer's fingerprint anchor is deliberately untouched so producer==gate holds by construction.
+- Commits:
+- What changed: scripts/surfaces_lib.py (+BASE_AUTO, resolve_base_sha, collect_changed_paths_since_base); scripts/run_slice_closeout.py (--base flag, _resolve_changed_paths, predict-commit guard); plugins/charness/scripts mirrors byte-synced; tests/quality_gates/test_slice_closeout_base_range.py (8 tests, new).
+- Alternatives rejected: Making --base also re-anchor the produced coverage fingerprint to the explicit ref — rejected: the pre-push consumer recomputes against merge-base(origin/main,HEAD), so a non-origin anchor would always read stale; documented in the --base help text instead.
+- Targeted verification: 8/8 new tests; 118 passed across related modules (slice_closeout_broad_gate, mutation_coverage_producer, staged_commit_gate_plan, surface_obligations, critique_prepare_packet); ruff+py_compile+check_python_lengths green; mirrors diff-clean; live read-only dogfood: run_slice_closeout.py --base --plan-only --json => status=planned, 6 paths (committed range + worktree).
+- Test duplication pressure: New module reuses one _seed_repo tmp-git fixture; no duplication with existing closeout tests (they are subprocess CLI-shaped, the new ones are unit-shaped); no existing test copied.
+- Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied N1 (SurfaceError on --predict-commit --base + test), N3 (fingerprint-anchor note in --base help), N4 (raise ... from exc). N2 (empty --paths beats --base) left: consistent with pre-existing empty-paths semantics. Reviewer independently verified broad-pytest proof-cache safety under --base (HEAD sha in fingerprint).
+- Off-goal findings: none
+- Lessons carried forward: The fingerprint/gate range alignment was already in place; the friction was purely payload path collection — verify-first reading avoided a needless producer re-anchor.
+- Metrics:
 
 ## Context Sources
 

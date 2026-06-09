@@ -285,3 +285,33 @@ def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     return dedupe_preserve_order(
         _run_git(repo_root, "diff-tree", "--root", "-m", "--no-commit-id", "--name-only", "-r", ref)
     )
+
+
+BASE_AUTO = "auto"
+
+
+def resolve_base_sha(repo_root: Path, base: str) -> str:
+    """Merge-base of the base ref and HEAD. ``auto`` maps to ``origin/main`` —
+    the same range anchor the changed-line mutation gate uses (merge-base
+    origin/main HEAD), so a closeout over the auto-detected range and the gate
+    agree on what the committed range is."""
+    ref = base.strip() or BASE_AUTO
+    if ref == BASE_AUTO:
+        ref = "origin/main"
+    try:
+        lines = _run_git(repo_root, "merge-base", ref, "HEAD")
+    except SurfaceError as exc:
+        raise SurfaceError(f"cannot resolve merge-base of {ref!r} and HEAD for --base: {exc}") from exc
+    if not lines:
+        raise SurfaceError(f"merge-base of {ref!r} and HEAD resolved empty; pass an explicit --base ref")
+    return lines[0]
+
+
+def collect_changed_paths_since_base(repo_root: Path, base: str) -> list[str]:
+    """Changed paths of the committed merge-base(base, HEAD)..HEAD range plus the
+    current working-tree diff, so a post-commit closeout covers the committed
+    bundle without a manual --paths list."""
+    base_sha = resolve_base_sha(repo_root, base)
+    return dedupe_preserve_order(
+        collect_changed_paths_for_ref(repo_root, f"{base_sha}..HEAD") + collect_changed_paths(repo_root)
+    )

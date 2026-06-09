@@ -19,6 +19,7 @@ _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_li
 SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
+collect_changed_paths_since_base = _scripts_surfaces_lib_module.collect_changed_paths_since_base
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
@@ -253,6 +254,21 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--surfaces-path", type=Path, default=SURFACES_PATH)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
+    parser.add_argument(
+        "--base",
+        nargs="?",
+        const="auto",
+        default=None,
+        help=(
+            "Collect changed paths from the committed merge-base(<ref>, HEAD)..HEAD range "
+            "in addition to the working-tree diff, so a post-commit closeout covers the "
+            "bundle without a manual --paths list. Bare --base auto-detects origin/main — "
+            "the same range anchor the changed-line mutation gate uses. Mutually exclusive "
+            "with --paths; without --base the working-tree default is unchanged. Note: "
+            "--produce-mutation-coverage always stamps its freshness fingerprint over the "
+            "gate's origin/main anchor, even when an explicit non-origin/main ref is passed."
+        ),
+    )
     parser.add_argument("--plan-only", action="store_true", help="Print obligations without executing commands.")
     parser.add_argument("--skip-sync", action="store_true")
     parser.add_argument("--skip-verify", action="store_true")
@@ -293,6 +309,20 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+def _resolve_changed_paths(repo_root: Path, args) -> list[str]:
+    """--paths stays the explicit override; --base adds the committed
+    merge-base(<ref>, HEAD)..HEAD range to the working-tree diff so a
+    post-commit closeout does not no-op; the bare working-tree default is
+    unchanged."""
+    if args.base is not None and args.paths:
+        raise SurfaceError("--base and --paths are mutually exclusive; --base derives the committed range itself")
+    if args.paths:
+        return args.paths
+    if args.base is not None:
+        return collect_changed_paths_since_base(repo_root, args.base)
+    return collect_changed_paths(repo_root)
+
+
 def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
@@ -329,6 +359,8 @@ def main() -> int:
     args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
     if args.predict_commit:
+        if args.base is not None:
+            raise SurfaceError("--base is not supported with --predict-commit; it scopes the closeout payload only")
         return run_predict_commit(
             repo_root,
             paths=args.paths,
@@ -342,7 +374,7 @@ def main() -> int:
     _advise_staged_reversion(repo_root)
     manifest = load_surfaces(repo_root, surfaces_path=args.surfaces_path)
     assert manifest is not None
-    changed_paths = args.paths if args.paths else collect_changed_paths(repo_root)
+    changed_paths = _resolve_changed_paths(repo_root, args)
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
