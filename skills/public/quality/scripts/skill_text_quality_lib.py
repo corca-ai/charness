@@ -105,6 +105,39 @@ def issue_anchor_package_findings(repo_root: Path, skill_dir: Path) -> list[dict
     )
 
 
+def issue_anchor_findings_for_file(repo_root: Path, path: Path) -> list[dict[str, object]]:
+    """Disallowed issue-anchor findings for ONE already-resolved package file.
+
+    Same per-line verdict as ``issue_anchor_package_findings`` — the canonical
+    ``ISSUE_ANCHOR_RE`` match with the ``is_allowed_issue_anchor_context`` skip —
+    but scoped to a single file so an author/preflight surface can flag the file
+    just edited before the package-wide commit sweep pays for it. A non-package
+    or unreadable file yields no findings (the package sweep ignores it too)."""
+    if not _is_package_text_file(path):
+        return []
+    if "__pycache__" in path.parts or ".pytest_cache" in path.parts:
+        return []  # exact parity with `_iter_package_text_files`
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return []
+    findings: list[dict[str, object]] = []
+    for index, line in enumerate(lines, start=1):
+        if not ISSUE_ANCHOR_RE.search(line):
+            continue
+        if is_allowed_issue_anchor_context(line):
+            continue
+        findings.append(
+            {
+                "heuristic": "portable_package_issue_anchor",
+                "path": str(path.relative_to(repo_root)),
+                "line": index,
+                "excerpt": _excerpt(line),
+            }
+        )
+    return findings
+
+
 def dated_incident_package_findings(repo_root: Path, skill_dir: Path) -> list[dict[str, object]]:
     return _line_findings_for_pattern(
         repo_root,

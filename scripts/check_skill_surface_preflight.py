@@ -9,9 +9,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+_issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
 MAX_SKILL_MD_LINES = 200
 MAX_CORE_NONEMPTY_LINES = 160
 # A changed SKILL.md must keep at least this many core_nonempty lines of headroom
@@ -416,6 +417,11 @@ def main() -> int:
         nargs="*",
         help="Changed SKILL.md paths to gate with the commit-boundary core-headroom ratchet",
     )
+    parser.add_argument(
+        "--scan-issue-anchors",
+        nargs="*",
+        help="Skill-package file paths to scan for disallowed issue anchors at edit time",
+    )
     parser.add_argument("--preview-delta", type=int, default=0, help="Planned added lines for this target")
     parser.add_argument("--run-checks", action="store_true", help="Run targeted read-only validators now")
     parser.add_argument("--json", action="store_true")
@@ -429,6 +435,18 @@ def main() -> int:
             print(json.dumps(report, indent=2, sort_keys=True))
         else:
             print(format_changed_human(report))
+        return 1 if report["status"] == "blocked" else 0
+
+    if args.scan_issue_anchors is not None:
+        try:
+            report = _issue_anchor_scan.scan_issue_anchors(repo_root, args.scan_issue_anchors)
+        except _issue_anchor_scan.IssueAnchorScanError as exc:
+            print(f"skill-issue-anchor-scan: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(_issue_anchor_scan.format_human(report))
         return 1 if report["status"] == "blocked" else 0
 
     if not args.path:

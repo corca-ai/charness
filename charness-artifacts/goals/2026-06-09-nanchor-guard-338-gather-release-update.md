@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-09-nanchor-guard-338-gather-release-update.md`.
+- Current slice: Slice 1 COMPLETE (fresh-eye SHIP), awaiting its own commit; then Slice 2 (#338 gather).
+- Next action: commit Slice 1 (per-slice closeout), then start Slice 2 — gather X/Twitter exact-source-or-honest-stop (mocked).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -178,7 +178,35 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+### Recorded routes
+
+- Routing (run bootstrap): `find-skills` task-recommendation → `achieve`
+  (`public_skill_recommendations` top match, matched trigger `achieve`) — goal operator.
+- Routing (Slice 1 impl): authoring-preflight surface owner — extended
+  `check_skill_surface_preflight.py` / `quality` skill-package gate family
+  (`find-skills` capability map: quality owns `validate_skill_ergonomics` +
+  the skill-surface preflight). 
+- Routing (Slice 1 critique): `critique` — fresh-eye bounded reviewer (SHIP).
+- Gather: pending — Slice 2 (#338) X/Twitter source acquisition (mocked, no live fetch).
+- Release: pending — Slice 3 (`charness update` standing release-closeout step).
+- Issue closeout: pending — #338 close-intended in Slice 2 (carrier: direct-commit;
+  proof: `issue_tool.py validate-closeout-draft`).
+
 ## Slice Log
+
+### Slice 1: Slice 1 — #N-anchor edit-time guard
+
+- Objective: Additive fast edit-time scan flagging disallowed #NNN/issue anchors in a skill-package file BEFORE the commit-time validate_skill_ergonomics sweep; commit sweep stays the backstop.
+- Why this approach: Recurring authoring trap (3x last session + 1x this) is the edit->closeout->blocked->fix round-trip. A sub-second per-file scan the author runs right after editing removes it. Home: extend the canonical authoring preflight (check_skill_surface_preflight.py), delegating to a new cohesive module to keep the preflight under its length limit (it was at 391/480; inline would have hit 471/480 NEAR-LIMIT, so extracted per the start-a-new-module-near-limit contract).
+- Commits:
+- What changed: skill_text_quality_lib.py +issue_anchor_findings_for_file (reuses ISSUE_ANCHOR_RE + is_allowed_issue_anchor_context, with __pycache__ parity); NEW scripts/skill_issue_anchor_scan.py (self-contained per-file scan); check_skill_surface_preflight.py +--scan-issue-anchors CLI delegating to it; docs/conventions/authoring-preflight.md +Edit-time issue-anchor scan subsection; NEW tests/quality_gates/test_skill_issue_anchor_scan.py (16 tests). Mirror byte-synced (plugins/charness/...).
+- Alternatives rejected: (a) .githooks pre-commit staged check — rejected: the sweep already blocks at pre-commit/closeout, so the marginal value is edit-time, not commit-time. (b) inline in the preflight — rejected: pushed it to 471/480 NEAR-LIMIT. (c) enhance the closeout advisory — rejected: redundant (gated behind the already-blocking sweep).
+- Targeted verification: 16 new tests pass; existing preflight (47) + ergonomics/text-quality (78) green; py_compile/ruff/lengths clean (preflight 408/480, new module 79/480, lib 187/360); validate_skill_ergonomics green (behavior-preserving); mirror drift none; CLI dogfood: clean->ok/exit0, anchor->BLOCK/exit1, bad path->exit2.
+- Test duplication pressure: Low. New module reuses a generic _write tmp-file helper; distinct concern (anchor scan) from the existing preflight test's headroom focus; no assertion/fixture duplication that should be shared.
+- Critique: Fresh-eye bounded reviewer (general-purpose, read-only): SHIP. Verified all 5 invariants incl. a 452/452 real-file differential (per-file verdict == commit-sweep verdict, zero mismatch). One non-blocking nit (pycache parity) applied as a 1-line hardening + test.
+- Off-goal findings:
+- Lessons carried forward: Covered every new branch (incl. the pycache exclusion and outside-repo error) in this slice so the bundle-boundary mutation producer confirms rather than discovers.
+- Metrics:
 
 ## Context Sources
 

@@ -141,6 +141,24 @@ catches these before the broad gate:
 python3 scripts/validate_skill_ergonomics.py --repo-root .
 ```
 
+### Edit-time issue-anchor scan
+
+The package sweep above runs over the whole skill surface at the commit boundary
+(`run_slice_closeout` / pre-commit). To catch a `#NNN` anchor on the *one file*
+you just edited — before the closeout machinery round-trips — scan that file
+directly:
+
+```bash
+python3 scripts/check_skill_surface_preflight.py --scan-issue-anchors skills/public/<skill>/scripts/<file>.py
+```
+
+It reuses the exact `validate_skill_ergonomics` rule (`ISSUE_ANCHOR_RE` plus the
+`is_allowed_issue_anchor_context` allow-list), so its verdict matches the commit
+sweep per file: a disallowed anchor exits 1; allowed contexts (version fields,
+placeholder issue URLs) pass. Accepts any skill-package text file — including
+helper `scripts/` — not just `SKILL.md`. It is additive: the commit-time sweep
+stays the backstop.
+
 ### One-shot portable-package preflight
 
 Authoring into a skill package otherwise pays for the portable-package gates as
