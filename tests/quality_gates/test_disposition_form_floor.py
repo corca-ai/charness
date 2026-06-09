@@ -847,3 +847,18 @@ def test_rung1f_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
     )
     path = _seed(tmp_path, "2026-06-10-r.md", body)
     vra.validate_retro_artifact(path)  # no raise — retro unaffected by the achieve-only floor
+
+
+def test_goal_template_structural_followup_form_matches_live_constant() -> None:
+    # Drift guard (the disposition-form-conflation lesson applied to its own origin
+    # site): the goal template's seeded `Structural follow-up:` guidance quotes the
+    # destination form an author chooses from. It must render the LIVE
+    # disposition_form.DESTINATION_FORM_SUMMARY verbatim, never a hand-copied
+    # paraphrase that drifts from the enforced set.
+    template = (_ACHIEVE / "goal_artifact_template.md").read_text(encoding="utf-8")
+    followup = [ln for ln in template.splitlines() if ln.startswith("Structural follow-up:")]
+    assert followup, "goal template must seed a `Structural follow-up:` guidance line"
+    assert df.DESTINATION_FORM_SUMMARY in followup[0], (
+        "goal template `Structural follow-up:` form drifted from the live "
+        "disposition_form.DESTINATION_FORM_SUMMARY"
+    )

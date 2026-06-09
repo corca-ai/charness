@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — author-time closeout-draft/goal-closeout preflight + scaffold repo-validator citation verify
 
-Status: active
+Status: complete
 Created: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
 
@@ -179,8 +179,7 @@ during the run:
 
 Recorded route for this run:
 
-- Routing: find-skills recommended `achieve` for this goal lifecycle, and (per its
-  contract) `achieve` owns the impl/quality/critique boundaries this goal touches.
+- Routing: find-skills routed this run to `impl` for the impl-phase work, `quality` for the verification-phase work, and `critique` for the per-slice fresh-eye boundaries; `achieve` owns the goal lifecycle.
 - Gather: n/a — no external (URL/Slack/Notion/Docs/Drive) source; all context is
   in-repo (validators, scaffolds, retro/handoff artifacts).
 - Release: n/a — no release surface touched (no version bump, no install-manifest
@@ -291,6 +290,16 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- **Cautilus scenario-registry decision (closeout machinery).** Slice 1 touched the
+  `achieve` + `issue` public-skill packages (the two new `describe_*_shape.py` author-time
+  scripts). `plan_cautilus_proof.py --json` reports `run_mode: ask`, `next_action: none`,
+  `scenario_registry_review_required: false` → per the eval-only ask-before-run contract
+  (CLAUDE.md), NO `cautilus evaluate` is invoked. Decision: the changes are ADDITIVE
+  author-time shape-source scripts (new files), not behavioral/consumer-contract changes
+  to either skill's invocation surface or its validators' verdicts — so neither
+  `evals/cautilus/scenarios.json` nor `docs/public-skill-dogfood.json` needs a change.
+  Acknowledged via `run_slice_closeout.py --ack-cautilus-skill-review`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -298,13 +307,18 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md
+Host log probe: charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-09-closeout-preflight-and-scaffold-validator-citation-disposition-review.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: each of the retro's three surfaced improvements is dispositioned below; the capability one is an outward-facing operator recommendation (out-of-scope this run per the Non-Goal against auto-filing), not laundered to a narrow issue. Per-improvement:
+
+- applied: render every ENUMERABLE enforced form from the owning validator's live constant + drift-test each (the disposition-form-conflation lesson) — shipped as the drift tests pinning the two form summaries in commit `bebdaa2d`.
+- out-of-scope: the changed-line coverage producer's `--base`/origin-detect ergonomics (it no-ops post-commit, forcing `--paths` for the committed range) — an outward-facing operator capability recommendation, deferred this run per the Non-Goal against auto-filing new issues; recorded in the retro `## Next Improvements`.
+- applied: persisted the per-improvement-disposition-floor vs structural-follow-up-destination-floor distinction (two distinct gates / valid-form summaries) to the retro + the recent-lessons summary refresh.
+
+Structural follow-up: repo-local guard: tests/quality_gates/test_disposition_form_floor.py::test_goal_template_structural_followup_form_matches_live_constant — the fresh-eye disposition review falsified an earlier "none" here: the B1 waste class (an enforced form hand-copied as prose instead of rendered from the owning validator's live constant) had a LIVE sibling at the ORIGIN site B1 copied from — `goal_artifact_template.md`'s `Structural follow-up:` seed line, already drifted from `disposition_form.DESTINATION_FORM_SUMMARY`. Folded: fixed the template to quote the live form verbatim + added this drift-pin guard so the seed cannot drift again. The wider author-facing quoters (`retro-issue-destination-split.md` owner taxonomy, `lifecycle.md` already matching, `waste-sibling-scan.md`, `prescribed-skill-closeout-contract.md`) are context-specific prose definitions, not verbatim seeds — recorded, not force-pinned (a repo-wide verbatim pin would flatten intentional prose).

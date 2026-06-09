@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-09",
-  "source_artifact_count": 175,
-  "candidate_count": 979,
+  "source_artifact_count": 177,
+  "candidate_count": 985,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -305,6 +305,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:fc8d65b7e0a4",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal closed the recurring authoring-preflight-skip class on its two remaining surfaces, in two independently-committed slices: (1) author-time closeout preflight — a new `closeout-draft` surface + an enriched `goal-closeout` surface in `check_artifact_surface_preflight`, each rendering its required shape LIVE from the owning validators' constants via two new `describe_*_shape.py` sibling scripts (commit `bebdaa2d`); (2) verify-first scaffold repo-validator citation audit — CONFIRMED already shipped in v0.29.0, no residual gap, stale handoff Discuss item resolved (commit `c2efa288`).",
+      "normalized_key": "one achieve goal closed the recurring authoring preflight skip class on its two remaining",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c60d63092594",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.32.0`.",
@@ -419,26 +439,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-          "date": "2026-06-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9e9d82a8b98f",
-      "kind": "next_improvement",
-      "lesson": "**capability (re-affirm accepted-risk):** The #N-anchor-in-skill-package trap recurred again (`(#340)` in two find-skills docstrings), caught by the commit-time `validate_skill_ergonomics` sweep — nothing escaped, as the recent-lessons accepted-risk disposition predicted. The persistence across goals strengthens the case for an edit/preflight-time guard; recommended to the operator as the next structural step (not filed autonomously — outward-facing). Disposition stands: accepted-risk, commit-sweep backstop.",
-      "normalized_key": "capability re affirm accepted risk the n anchor in skill package trap recurred again",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -737,6 +737,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:fc8d65b7e0a4",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal closed the recurring authoring-preflight-skip class on its two remaining surfaces, in two independently-committed slices: (1) author-time closeout preflight — a new `closeout-draft` surface + an enriched `goal-closeout` surface in `check_artifact_surface_preflight`, each rendering its required shape LIVE from the owning validators' constants via two new `describe_*_shape.py` sibling scripts (commit `bebdaa2d`); (2) verify-first scaffold repo-validator citation audit — CONFIRMED already shipped in v0.29.0, no residual gap, stale handoff Discuss item resolved (commit `c2efa288`).",
+      "normalized_key": "one achieve goal closed the recurring authoring preflight skip class on its two remaining",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c60d63092594",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.32.0`.",
@@ -851,6 +871,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:45a942c4d8bf",
+      "kind": "next_improvement",
+      "lesson": "applied — this retro records that the per-improvement disposition floor and the structural-follow-up destination floor are two distinct gates with two distinct valid-form summaries (VALID_FORM_SUMMARY vs DESTINATION_FORM_SUMMARY); the summary refresh surfaces it to recent-lessons.",
+      "normalized_key": "applied this retro records that the per improvement disposition floor and the structural follow",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ebb737958bc2",
+      "kind": "next_improvement",
+      "lesson": "applied — when surfacing an enforced form/shape, render EVERY enumerable piece from the OWNING validator's live constant and drift-test each; never hand-copy a form from a nearby template (it may be a different floor's form). Encoded as the drift tests pinning VALID_FORM_SUMMARY / DESTINATION_FORM_SUMMARY in commit `bebdaa2d`.",
+      "normalized_key": "applied when surfacing an enforced form shape render every enumerable piece from the owning",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -991,6 +1051,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1d8bcfd4fd10",
+      "kind": "next_improvement",
+      "lesson": "recommend to operator (not auto-filed; outward-facing) — the changed-line coverage producer (`run_slice_closeout.py --produce-mutation-coverage`) defaults to the working-tree diff and no-ops post-commit; a `--base <ref>` / origin/main..HEAD auto-detect would remove the \"pass --paths for the committed range\" friction at the bundle boundary.",
+      "normalized_key": "recommend to operator not auto filed outward facing the changed line coverage producer run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -1177,6 +1257,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:32c3b3824f04",
+      "kind": "repeat_trap",
+      "lesson": "**Minor friction, each caught at its gate:** the describe scripts tripped the attention-state `skipped` ban (reworded the issue script; declared the achieve script's literal `skipped:` author-syntax token); the handoff RESOLVED note grew past the 70-line floor (trimmed to a one-liner); the coverage producer defaults to the working-tree diff and reported \"Changed paths: none\" post-commit (had to pass `--paths` for the committed range).",
+      "normalized_key": "minor friction each caught at its gate the describe scripts tripped the attention state",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:dcb2e9d79039",
       "kind": "repeat_trap",
       "lesson": "**#N issue anchor in skill-package files recurred** (`(#340)` in two find-skills docstrings) — the slice-2 commit was blocked by `validate_skill_ergonomics` (`portable_package_issue_anchor`). Caught at commit time, fixed in ~1 min. This is the trap recent-lessons recorded recurring 3× last run (accepted-risk); it recurred again here.",
@@ -1191,6 +1291,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:693729a14502",
+      "kind": "repeat_trap",
+      "lesson": "**Slice-1 disposition-form conflation (the main rework).** The goal-closeout describe script first rendered the `Retro dispositions:` form from the goal template's `## Auto-Retro` *Structural follow-up* prose (`repo-local guard:` etc.), which is a DIFFERENT floor (`DESTINATION_FORM_SUMMARY`) than the one that judges `Retro dispositions:` (`VALID_FORM_SUMMARY`). The surfaced shape would have mis-directed an author into a REJECTED line — the exact failure class the slice closes, reintroduced. Caught by the fresh-eye reviewer (B1), not my own tests, because the form was hand-prose with no drift pin (B2). Cost: one fold cycle + the realization that \"read from the validator\" must cover EVERY enumerable form, not just the easy enum.",
+      "normalized_key": "slice 1 disposition form conflation the main rework the goal closeout describe script first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md",
           "date": "2026-06-09",
           "section": "Waste"
         }

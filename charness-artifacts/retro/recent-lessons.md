@@ -16,8 +16,8 @@
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-09-v0-34-0-release-auto-retro.md`; sources: 20)
 - an authoring-time guard would flag a `#N` issue anchor in a `skills/public/**` script at edit/preflight time, not only at the commit sweep — the trap recurred 3× this run despite the frame note. Disposition: accepted-risk: the package-level `validate_skill_ergonomics` sweep is the commit-time backstop and caught all three, so nothing escaped; the residual is edit-time friction, re-persisted to recent-lessons as a pre-write checklist item, not a new gate. (source: `charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md`)
-- **capability (re-affirm accepted-risk):** The #N-anchor-in-skill-package trap recurred again (`(#340)` in two find-skills docstrings), caught by the commit-time `validate_skill_ergonomics` sweep — nothing escaped, as the recent-lessons accepted-risk disposition predicted. The persistence across goals strengthens the case for an edit/preflight-time guard; recommended to the operator as the next structural step (not filed autonomously — outward-facing). Disposition stands: accepted-risk, commit-sweep backstop. (source: `charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md`)
-- **capability (recommend to operator, not auto-filed):** an author-time issue-closeout-draft preflight (the required resolution_critique + `tool signal:` + carrier-body source + classification ledger fields), the sibling of `check_artifact_surface_preflight` for the GitHub-issue closeout surface. Same authoring-preflight class as #284 to #334. (source: `charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md`)
+- applied — this retro records that the per-improvement disposition floor and the structural-follow-up destination floor are two distinct gates with two distinct valid-form summaries (VALID_FORM_SUMMARY vs DESTINATION_FORM_SUMMARY); the summary refresh surfaces it to recent-lessons. (source: `charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`)
+- applied — when surfacing an enforced form/shape, render EVERY enumerable piece from the OWNING validator's live constant and drift-test each; never hand-copy a form from a nearby template (it may be a different floor's form). Encoded as the drift tests pinning VALID_FORM_SUMMARY / DESTINATION_FORM_SUMMARY in commit `bebdaa2d`. (source: `charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`)
 
 ## Selection Policy
 
@@ -45,6 +45,7 @@
 - `charness-artifacts/retro/2026-06-08-v0-31-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md`
 - `charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md`
+- `charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
 - `charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md`
 - `charness-artifacts/retro/2026-06-09-nanchor-guard-338-gather-release-closeout.md`
 - `charness-artifacts/retro/2026-06-09-v0-32-0-release-auto-retro.md`
