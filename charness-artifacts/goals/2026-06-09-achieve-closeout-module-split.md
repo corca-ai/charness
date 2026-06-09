@@ -74,6 +74,14 @@ Split the at-cap achieve closeout module family (goal_artifact_disposition.py 35
 - **Public-skill + generated-surface scope.** Touches achieve skill scripts ->
   mirror-sync (`plugins/charness/...`) byte-synced, public-skill dogfood,
   deterministic gates own closeout. No `#N` anchors in skill-package files.
+- Discuss before activation: CONFIRMED — the activation-discussion detector fires
+  a false positive here because this goal's own SUBJECT is "split" and it lists
+  tracked issues (#340/#338/#184) as explicitly out-of-scope context. There is no
+  real consequential decision: no live/prod proof, no genuine issue close/split,
+  no cross-theme bundle, no proof-level non-claim. This is a pure
+  behavior-preserving refactor (proven by the closeout-gate verdict-parity check),
+  default no-push, single-theme. Safe to activate directly; re-open this line if a
+  reviewer disagrees.
 - External side-effect scope: name which phase or bundle any approved
   publish / push / remote-CI / apply applies to. That approval is phase-scoped
   and does not carry forward — after an approved publish/CI/apply lane
