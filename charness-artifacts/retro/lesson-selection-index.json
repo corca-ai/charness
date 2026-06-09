@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-09",
-  "source_artifact_count": 171,
-  "candidate_count": 961,
+  "source_artifact_count": 172,
+  "candidate_count": 969,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -245,6 +245,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b61c9f292ad9",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal cleared three independent tracked deferred items in three per-slice-closed-out slices: #341 (mutation regression on main), #340 (find-skills not surfacing specdown's shipped support skill), and the activation-preflight surface.",
+      "normalized_key": "one achieve goal cleared three independent tracked deferred items in three per slice closed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c60d63092594",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.32.0`.",
@@ -325,6 +345,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9e9d82a8b98f",
+      "kind": "next_improvement",
+      "lesson": "**capability (re-affirm accepted-risk):** The #N-anchor-in-skill-package trap recurred again (`(#340)` in two find-skills docstrings), caught by the commit-time `validate_skill_ergonomics` sweep — nothing escaped, as the recent-lessons accepted-risk disposition predicted. The persistence across goals strengthens the case for an edit/preflight-time guard; recommended to the operator as the next structural step (not filed autonomously — outward-facing). Disposition stands: accepted-risk, commit-sweep backstop.",
+      "normalized_key": "capability re affirm accepted risk the n anchor in skill package trap recurred again",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:60e0176b63ef",
       "kind": "next_improvement",
       "lesson": "cover new normalization/guard/validation branches IN the introducing slice so the bundle-boundary mutation producer confirms rather than discovers. Disposition: applied: covered all 32 flagged changed lines in the bundle coverage commit (3d3cd561) and re-persisted the in-slice-coverage guardrail to recent-lessons.",
@@ -339,6 +379,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b4fadf40578d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Before implementing a deferred follow-up named only in `docs/handoff.md`, cross-check the OWNING spec's status — the spec was authoritative over the stale handoff and saved a redundant re-implementation. (persisted to recent-lessons)",
+      "normalized_key": "memory before implementing a deferred follow up named only in docs handoff md cross",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -361,66 +421,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:68118057dca2",
-      "kind": "next_improvement",
-      "lesson": "structural: the achieve closeout module family (`goal_artifact_disposition.py` 352/360, `goal_artifact_closeout_evidence.py` 348/360) is at the length cap and forced this run to route logic through the shared grammar and wire new floors from the CLI. Disposition: accepted-risk: the hard length gate blocks further growth (it is the backstop that forced the clean factoring this run); a cohesive split is deferred structural debt, re-persisted to recent-lessons so the next at-cap addition to this family starts from a split rather than another workaround.",
-      "normalized_key": "structural the achieve closeout module family goal artifact disposition py 352 360 goal artifact",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-          "date": "2026-06-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:08656a3a51d5",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** For a verbatim-MOVE-into-new-file refactor, treat every pre-existing uncovered branch in the moved code as a newly-gated changed line — cover those branches IN the introducing slice (not just the new glue like `_load_local_module`). This refines the #339 \"cover new lines in-slice\" lesson to explicitly include moved-but-previously-uncovered branches.",
-      "normalized_key": "workflow for a verbatim move into new file refactor treat every pre existing uncovered",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
-          "date": "2026-06-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d64430f09cab",
-      "kind": "repeat_trap",
-      "lesson": "**Coverage-producer round-trip on pre-existing uncovered branches (the main waste, partly avoidable).** I carried the #339 lesson \"cover any NEW module's lines IN the introducing slice so the bundle producer confirms, not discovers\" into the operating frame — but still ran the bundle producer and had it *discover* 7 uncovered changed lines (the `_mask_fences` unbalanced-fence branch, `_section_body` heading-at-EOF branch, and 5 loader `raise ImportError` branches). Root cause: I reasoned \"verbatim move ⇒ already covered\" and missed that moving code into a NEW file makes every line a *changed* line, so pre-existing uncovered branches in the moved source become newly-gated. The branches were never covered even pre-split; the move surfaced them. Cost: a second ~6.5-min producer run after adding the coverage. The producer ran FIRST (per the guardrail), so the gap surfaced at the boundary, not post-merge — but it discovered rather than confirmed.",
-      "normalized_key": "coverage producer round trip on pre existing uncovered branches the main waste partly avoidable",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
-          "date": "2026-06-09",
-          "section": "Waste"
         }
       ]
     }
@@ -657,6 +657,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b61c9f292ad9",
+      "kind": "current_focus",
+      "lesson": "One `achieve` goal cleared three independent tracked deferred items in three per-slice-closed-out slices: #341 (mutation regression on main), #340 (find-skills not surfacing specdown's shipped support skill), and the activation-preflight surface.",
+      "normalized_key": "one achieve goal cleared three independent tracked deferred items in three per slice closed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c60d63092594",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.32.0`.",
@@ -737,6 +757,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9e9d82a8b98f",
+      "kind": "next_improvement",
+      "lesson": "**capability (re-affirm accepted-risk):** The #N-anchor-in-skill-package trap recurred again (`(#340)` in two find-skills docstrings), caught by the commit-time `validate_skill_ergonomics` sweep — nothing escaped, as the recent-lessons accepted-risk disposition predicted. The persistence across goals strengthens the case for an edit/preflight-time guard; recommended to the operator as the next structural step (not filed autonomously — outward-facing). Disposition stands: accepted-risk, commit-sweep backstop.",
+      "normalized_key": "capability re affirm accepted risk the n anchor in skill package trap recurred again",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:60e0176b63ef",
       "kind": "next_improvement",
       "lesson": "cover new normalization/guard/validation branches IN the introducing slice so the bundle-boundary mutation producer confirms rather than discovers. Disposition: applied: covered all 32 flagged changed lines in the bundle coverage commit (3d3cd561) and re-persisted the in-slice-coverage guardrail to recent-lessons.",
@@ -751,6 +791,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b4fadf40578d",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Before implementing a deferred follow-up named only in `docs/handoff.md`, cross-check the OWNING spec's status — the spec was authoritative over the stale handoff and saved a redundant re-implementation. (persisted to recent-lessons)",
+      "normalized_key": "memory before implementing a deferred follow up named only in docs handoff md cross",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -777,6 +837,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ed6da47d3cd8",
+      "kind": "next_improvement",
+      "lesson": "**memory:** When adding a function with multiple early-returns, enumerate EVERY branch — especially empty-result early returns — in the introducing slice's unit test, so the bundle-boundary changed-line producer confirms rather than discovers.",
+      "normalized_key": "memory when adding a function with multiple early returns enumerate every branch especially empty",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:68118057dca2",
       "kind": "next_improvement",
       "lesson": "structural: the achieve closeout module family (`goal_artifact_disposition.py` 352/360, `goal_artifact_closeout_evidence.py` 348/360) is at the length cap and forced this run to route logic through the shared grammar and wire new floors from the CLI. Disposition: accepted-risk: the hard length gate blocks further growth (it is the backstop that forced the clean factoring this run); a cohesive split is deferred structural debt, re-persisted to recent-lessons so the next at-cap addition to this family starts from a split rather than another workaround.",
@@ -791,6 +871,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3d3a0c660fd2",
+      "kind": "next_improvement",
+      "lesson": "**workflow (applied):** Corrected the stale `goal-activation-preflight-surface` item in `docs/handoff.md` so the next session does not re-discover it.",
+      "normalized_key": "workflow applied corrected the stale goal activation preflight surface item in docs handoff md",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
         }
@@ -817,6 +917,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ea87166be819",
+      "kind": "repeat_trap",
+      "lesson": "**Coverage-producer DISCOVERED (not confirmed) an uncovered changed line** (`mutation_manifest_lib.py:124`, the `if not per_file_budget_excluded: return` early-return). The carried lesson said cover new branches IN the introducing slice so the bundle producer confirms; I covered 2 of the 3 branches in slice 1 and missed the empty-result early return. Cost: a fixup commit + a ~7-min producer re-run. Same recurring class as the recent-lessons \"coverage-producer round-trip.\"",
+      "normalized_key": "coverage producer discovered not confirmed an uncovered changed line mutation manifest lib py 124",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:d64430f09cab",
       "kind": "repeat_trap",
       "lesson": "**Coverage-producer round-trip on pre-existing uncovered branches (the main waste, partly avoidable).** I carried the #339 lesson \"cover any NEW module's lines IN the introducing slice so the bundle producer confirms, not discovers\" into the operating frame — but still ran the bundle producer and had it *discover* 7 uncovered changed lines (the `_mask_fences` unbalanced-fence branch, `_section_body` heading-at-EOF branch, and 5 loader `raise ImportError` branches). Root cause: I reasoned \"verbatim move ⇒ already covered\" and missed that moving code into a NEW file makes every line a *changed* line, so pre-existing uncovered branches in the moved source become newly-gated. The branches were never covered even pre-split; the move surfaced them. Cost: a second ~6.5-min producer run after adding the coverage. The producer ran FIRST (per the guardrail), so the gap surfaced at the boundary, not post-merge — but it discovered rather than confirmed.",
@@ -831,6 +951,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:59cfcb2f593f",
+      "kind": "repeat_trap",
+      "lesson": "**Length-limit fight (slice 2):** adding a cohesive ~55-line recommendation function pushed `list_capabilities_lib.py` over the 360 hard limit and `main()` over 100; several trim iterations to fit. The find-skills lib genuinely sits at its cohesion limit (the advisory had been flagging it). Mild, partly structural.",
+      "normalized_key": "length limit fight slice 2 adding a cohesive 55 line recommendation function pushed list",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dcb2e9d79039",
+      "kind": "repeat_trap",
+      "lesson": "**#N issue anchor in skill-package files recurred** (`(#340)` in two find-skills docstrings) — the slice-2 commit was blocked by `validate_skill_ergonomics` (`portable_package_issue_anchor`). Caught at commit time, fixed in ~1 min. This is the trap recent-lessons recorded recurring 3× last run (accepted-risk); it recurred again here.",
+      "normalized_key": "n issue anchor in skill package files recurred 340 in two find skills docstrings",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md",
           "date": "2026-06-09",
           "section": "Waste"
         }

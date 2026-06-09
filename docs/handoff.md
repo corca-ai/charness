@@ -39,9 +39,6 @@
 - **#335** auto-closes on the **next green scheduled mutation run** after push (the
   mutation-workflow marker owns it) — do NOT manually close. The local producer is
   green over the next-run range; the CI run is the authoritative verdict.
-- **`goal-activation-preflight-surface`** (deferred follow-up): surface the goal
-  `Activation:` preamble line in the preflight (needs preamble extraction). See
-  [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md).
 - **Make `charness update` on this dev machine a STANDING release-closeout step**
   (operator-requested). Motivation (this session): the *installed-plugin*
   `validate_debug_artifact.py` the scaffold cited was LOOSER than the repo's own, so

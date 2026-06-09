@@ -1,6 +1,6 @@
 # Achieve Goal: Clear the tracked deferred queue — #341 mutation regression, #340 specdown routing, activation-preflight surface
 
-Status: draft
+Status: complete
 Created: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-09-deferred-queue-341-340-activation-preflight.md`
 
@@ -205,6 +205,13 @@ during the run:
   `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. #341 is the
   auto-closing mutation-marker case — record the CI-run dependency, do not manual-close.
 
+Filled floor lines (completion):
+
+- Routing: session-start `find-skills` bootstrap routed to `achieve`, which owned the goal lifecycle and deferred slice impl/debug/quality/issue-closeout boundaries to their own skills per its coordination contract; fresh-eye slice critiques delegated to separate agent contexts. find-skills owns the route — no hard-coded phase→skill map.
+- Gather: n/a — every `## Context Sources` entry is an in-repo file or a local `gh issue view`; no external URL / Slack / Notion / Docs / Drive source was consumed.
+- Release: n/a — no release surface touched (no version bump or install-manifest edit); the plugin mirror byte-sync is the only generated-surface change and is not a release.
+- Issue closeout: #341 carrier = the CI scheduled mutation run (auto-closing mutation-marker; do NOT manual-close) — slice 1 made the next run green; #340 classification `bug`, carrier `direct-commit` (slice-2 commit `Closes #340`), `issue_tool.py validate-closeout-draft --number 340` → `draft_verified, ok: true`. Both close on push.
+
 ## Slice Log
 
 ### Slice 1: Slice 1 — #341 mutation regression: per-file-budget reclassification + kill 5 main() mutants
@@ -325,9 +332,14 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md
+Host log probe: skipped: host-log-not-exposed: this runtime exposes no host
+session-timing log and the goal was not `Host metric window:`-instrumented, so
+token/turn/tool-call counts cannot be measured without fabrication; the retro's
+Waste section names the qualitative waste (coverage round-trip, #N-anchor
+recurrence, length-limit trims) instead.
+Disposition review: charness-artifacts/retro/2026-06-09-deferred-queue-341-340-activation-preflight.md
+(the retro's `## Sibling Search` + `## Next Improvements` are the disposition review).
 
 ## User Verification Instructions
 
@@ -343,5 +355,10 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: corrected the stale `goal-activation-preflight-surface` item in `docs/handoff.md` (slice 3 nearly re-implemented already-done work) + covered the `split_per_file_budget_exclusions` contention-only early-return branch (`mutation_manifest_lib.py:124`) in the introducing test (commit `6e751831`, producer re-run now `ok: true`) + persisted the "cross-check the owning spec before implementing a handoff-named deferred item" and "enumerate every branch incl. empty-result early returns in the introducing slice" lessons to recent-lessons. Per-improvement:
+
+- applied: corrected the stale handoff `goal-activation-preflight-surface` item.
+- applied: covered the `mutation_manifest_lib.py:124` contention-only branch (`6e751831`).
+- accepted-risk: the #N-anchor-in-skill-package-docstrings recurrence was caught by the commit-time `validate_skill_ergonomics` sweep — nothing escaped, already dispositioned accepted-risk in recent-lessons; the commit-sweep is the backstop.
+
+Structural follow-up: applied: coverage-producer empty-result-branch round-trip covered in `6e751831` + the in-slice-coverage guardrail re-persisted to recent-lessons (a refinement of the recurring #339 lesson, not a novel class per the `## Sibling Search` decision); the #N-anchor edit-time guard stays `none — accepted-risk` (recommended to the operator, not filed autonomously — outward-facing; the commit-sweep backstop catches it across recurrences).
