@@ -13,29 +13,30 @@
 
 ## Current State
 
-- **[gate-recurrence (#335) + closeout-floor preflight goal](../charness-artifacts/goals/2026-06-08-gate-recurrence-mutation-and-closeout-preflight.md) COMPLETE, awaiting push.**
-  Closed two recurring seams. **#335** (Nth changed-line mutation instance):
-  root-caused as genuinely-uncovered changed lines (debug artifact); the next run's
-  range (`base=858c9eab`) had **85 uncovered v0.28.0 lines** beyond #335's 8
-  survivors — covered all; local producer green over `858c9eab..HEAD` + the
-  merge-base range (`ok: true`). Recurrence reduced: the changed-line gate's
-  **silent skip now surfaces a loud non-blocking obligation** (Slice 3; no new hard
-  gate). **Closeout-floor preflight** extended to `goal-coordination` +
-  `goal-early-close` (Slice 4). Two fresh-eye critiques (SHIP); RCA conversion logged.
-- **Prior unpushed goals (also COMPLETE, awaiting push):** authoring-preflight +
-  disposition de-launder (#284→#334 loop; 7-surface preflight + recurrence-lineage
-  rung 1d), run_slice_closeout module split, #332 commit-boundary sweep. v0.27.0
-  shipped; #322/#328/#329/#330/#331 closed earlier this cycle.
+- **[closeout-preflight + scaffold-citation goal](../charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md) COMPLETE, awaiting push.**
+  Slice 1: author-time closeout preflight for the GitHub-issue **closeout-draft** +
+  **goal-closeout** surfaces (new `--type` surfaces in
+  `check_artifact_surface_preflight`, shape rendered LIVE from the owning
+  validators' constants via two `describe_*_shape.py` siblings, verdict-preserving).
+  Slice 2 (VERIFY-FIRST): scaffold repo-validator citation already shipped in
+  v0.29.0 — no gap (stale Discuss item resolved). Closeout disposition review
+  caught + fixed a template form-drift sibling (`goal_artifact_template.md` re-quoted
+  the live `DESTINATION_FORM_SUMMARY` + a drift-pin guard). Broad gate 73/0; three
+  fresh-eye critiques.
+- **Prior unpushed goals (also COMPLETE, awaiting push):** gate-recurrence (#335)
+  plus closeout-floor preflight (`goal-coordination`/`goal-early-close`); the
+  authoring-preflight/disposition de-launder (#284→#334; 7-surface preflight);
+  run_slice_closeout module split; #332 commit-boundary sweep. v0.27.0 shipped.
 - Open issues (`gh`): **#184** (product metrics); **#335** (mutation regression —
   fixed locally, auto-closes on the next green scheduled run after push).
 
 ## Next Session
 
 - **Push the staged closeouts** (maintainer; `achieve` does not push):
-  `origin/main..HEAD` carries the #335 gate-recurrence + closeout-floor goal's
-  commits (plus prior unpushed work); the pre-push broad gate is the attestation.
-  The #335 changed-line coverage is freshly produced + fingerprint-stamped this
-  session, so the pre-push changed-line consumer trusts it.
+  `origin/main..HEAD` carries this session's closeout-preflight goal (3 commits)
+  plus the prior unpushed work; the pre-push broad gate is the attestation
+  (last local run 73/0). The changed-line coverage is freshly produced +
+  fingerprint-stamped this session, so the pre-push changed-line consumer trusts it.
 - **#335** auto-closes on the **next green scheduled mutation run** after push (the
   mutation-workflow marker owns it) — do NOT manually close. The local producer is
   green over the next-run range; the CI run is the authoritative verdict.
