@@ -1,4 +1,4 @@
-# Achieve Goal: Next queue — coverage-producer range ergonomics + #N-anchor edit-time guard + push/tag CI
+# Achieve Goal: Next queue — coverage-producer ergonomics + #N-anchor edit-time guard + push/tag CI + source-guard timing audit
 
 Status: draft
 Created: 2026-06-10
@@ -11,7 +11,7 @@ runs the activation command.
 
 - Current slice: before activation.
 - Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`.
-- Timebox: ~one focused session per slice (3 slices); Activation time: set at
+- Timebox: ~one focused session per slice (4 slices); Activation time: set at
   `/goal` activation; Closeout reserve: ~15% for the After-phase proof + retro;
   Done-early policy: continue_next_improvement (if a slice closes early, continue
   to the next surfaced improvement rather than stopping).
@@ -26,7 +26,7 @@ runs the activation command.
 
 ## Goal
 
-Clear the operator-selected next queue in three independent per-slice-closed-out slices, synthesized from this session's retro, the handoff Discuss items, recent-lessons, and the open-issue context: (1) COVERAGE-PRODUCER RANGE ERGONOMICS — `run_slice_closeout.py --produce-mutation-coverage` defaults to the working-tree diff and no-ops post-commit, forcing a manual `--paths` for the committed range at the bundle boundary (this session's deferred capability); add a `--base <ref>` / origin-default auto-detect so the committed range is covered without manual paths, behavior-preserving for the existing working-tree default. (2) #N-ANCHOR EDIT-TIME GUARD AUTO-FIRING — the skill-package `#NNN` anchor trap recurred 3x+ this cycle, caught only by the commit-time `validate_skill_ergonomics` sweep; the `skill_issue_anchor_scan.py` scan already exists but is manual, so make it fire automatically at edit/preflight time via a PORTABLE adapter-declared mechanism (host-specific firing stays in adapters/presets, the scan stays repo-owned). (3) LIGHT PUSH/TAG CI + CI-PR CHANGED-LINE MIRROR — the handoff Discuss item; the local `--release`/pre-push gate is currently the only bundle proof, so add a light push/tag CI workflow and/or mirror the changed-line gate into a CI-PR check, keeping consumer-inherited behavior unchanged. Each slice closes out independently; skill-script changes mirror byte-synced; deterministic gates own closeout; no `#N` anchors in skill-package files (dogfood).
+Clear the operator-selected next queue in four independent per-slice-closed-out slices, synthesized from this session's retro, the handoff Discuss items, recent-lessons, the open-issue context, and this session's validator-timing discussion: (1) COVERAGE-PRODUCER RANGE ERGONOMICS — `run_slice_closeout.py --produce-mutation-coverage` defaults to the working-tree diff and no-ops post-commit, forcing a manual `--paths` for the committed range at the bundle boundary (this session's deferred capability); add a `--base <ref>` / origin-default auto-detect so the committed range is covered without manual paths, behavior-preserving for the existing working-tree default. (2) #N-ANCHOR EDIT-TIME GUARD AUTO-FIRING — the skill-package `#NNN` anchor trap recurred 3x+ this cycle, caught only by the commit-time `validate_skill_ergonomics` sweep; the `skill_issue_anchor_scan.py` scan already exists but is manual, so make it fire automatically at edit/preflight time via a PORTABLE adapter-declared mechanism (host-specific firing stays in adapters/presets, the scan stays repo-owned). (3) LIGHT PUSH/TAG CI + CI-PR CHANGED-LINE MIRROR — the handoff Discuss item; the local `--release`/pre-push gate is currently the only bundle proof, so add a light push/tag CI workflow and/or mirror the changed-line gate into a CI-PR check, keeping consumer-inherited behavior unchanged. (4) SOURCE-GUARD TIMING AUDIT — generalize slice 2's move: enumerate the source-guard validators that today run ONLY in the broad gate (not at edit/commit time), classify each by timing-eligibility (cheap + changed-scoped + deterministic + NOT validate-all → favorable to pull earlier; validate-all / expensive → stay at the boundary), and pull EARLIER-timing invocation through the existing dispatcher for ONLY the favorable subset — the validator stays the single portable source of truth (the earlier timing is an extra invocation, never a forked copy), behavior-preserving (earlier feedback, no new enforcement). Produce the classification table as a `docs/conventions` "validator timing-layer" doctrine line. Each slice closes out independently; skill-script changes mirror byte-synced; deterministic gates own closeout; no `#N` anchors in skill-package files (dogfood).
 
 ## Non-Goals
 
@@ -43,6 +43,12 @@ Clear the operator-selected next queue in three independent per-slice-closed-out
   slice 2 is ADDITIVE edit-time surfacing; the commit sweep stays the backstop.
 - Do NOT change the producer's existing working-tree-diff default — slice 1 adds a
   range option; the default behavior is preserved.
+- Do NOT, in slice 4, re-do the #N-anchor guard (that IS slice 2 — its concrete
+  proof-of-pattern); pull only the OTHER favorable source-guards. Do NOT pull a
+  validate-all guard (debug/quality/handoff-class) or an expensive one
+  (mutation/coverage/full-suite) to pre-commit, and do NOT grow the pre-commit
+  budget enough to push people to `--no-verify`. Earlier timing is a faster
+  feedback LAYER, not a replacement for the broad gate / CI enforcement floor.
 
 ## Boundaries
 
@@ -64,6 +70,21 @@ Clear the operator-selected next queue in three independent per-slice-closed-out
   CI workflow (and/or a CI-PR changed-line check) as repo-local CI config; cutting
   a real CI run is post-push (operator lane), not in-slice. Mirror the changed-line
   gate semantics, not a new hard local gate. Behavior-preserving for consumers.
+- **Slice 4 — source-guard timing audit.** VERIFY-FIRST: enumerate the
+  source-guard validators and where each runs TODAY (author-time preflight /
+  edit-time scan / commit-time sweep / broad-gate-only), so the audit does not
+  re-pull what is already pulled. Classify each broad-gate-only guard:
+  cheap + changed-scoped + deterministic + NOT validate-all => favorable to pull
+  earlier; validate-all (debug/quality/handoff-class) or expensive
+  (mutation/coverage/full-suite) => stays at the boundary, recorded with the
+  reason. Wire the favorable subset's earlier-timing invocation through the
+  EXISTING dispatcher (`staged_commit_gate_plan.py` / `check_skill_surface_preflight`),
+  never a forked rule copy and never hardcoded into a host hook (portable,
+  consumer-inert). Single-source preserved + a test per pulled guard; the broad
+  gate stays the enforcement floor. Deliverable: the classification table as a
+  `docs/conventions` "validator timing-layer" doctrine (the decision frame —
+  one portable validator, invoked at as many cheap timings as fit). Bound the
+  pre-commit budget so the pulled checks do not erode the hook.
 - **Public-skill + generated-surface scope.** Any skill-script change
   mirror-synced (`plugins/charness/...`); deterministic gates own closeout; no
   `#N` anchors in skill-package files.
@@ -100,6 +121,12 @@ What the user can do to verify completion directly.
   new blocking behavior.
 - **Push/tag CI:** a push/tag triggers a light CI run (and/or a PR carries a
   changed-line check) mirroring the local gate; consumer repos inherit nothing new.
+- **Source-guard timing audit:** the goal ships a classification table (each
+  source-guard -> where it runs now -> favorable-to-pull-earlier / stays-at-boundary
+  + reason) and a `docs/conventions` timing-layer doctrine; the favorable subset
+  now fires at edit/commit time via the existing dispatcher (verifiable by editing
+  a violating file and seeing it flagged earlier than the broad gate), with the
+  validator unchanged as the single source and the broad gate still the floor.
 - Each slice: the touched test surface passes, mirror byte-synced, and the
   per-slice fresh-eye critique attests correctness.
 
@@ -133,6 +160,7 @@ What the user can do to verify completion directly.
 | 1 | Producer range ergonomics: add `--base`/origin-default auto-detect to `run_slice_closeout.py --produce-mutation-coverage` so the committed range is covered without manual `--paths`; working-tree default preserved | this session paid the `Changed paths: none` friction (producer no-ops post-commit, forced `--paths`); the recurring coverage-producer round-trip class | new range option + test; fingerprint over the auto-detected range == changed-line gate range; default unchanged; broad gate green | planned |
 | 2 | #N-anchor edit-time guard: make the existing scan fire automatically at edit/preflight time via a PORTABLE adapter-declared mechanism | recent-lessons repeat trap (3x+), accepted-risk to-date; the commit sweep catches it but edit-time friction recurs | edit-time auto-firing wired portably (adapter/preset, not a skill core); commit sweep stays the backstop; consumer-inert; test | planned |
 | 3 | Light push/tag CI + CI-PR changed-line mirror, repo-local + consumer-inert | handoff Discuss open item; the local `--release`/pre-push gate is currently the only bundle proof | CI workflow authored + YAML-validated locally; mirrors the changed-line gate; remote run is the operator-lane deferred proof | planned |
+| 4 | Source-guard timing audit: enumerate broad-gate-only source-guards, classify timing-eligibility, pull only the favorable (cheap+changed-scoped) subset earlier via the existing dispatcher; single-source preserved | this session's validator-timing discussion — generalizes slice 2; many validators are source guards and the recent single-source templatization makes multi-timing invocation drift-free | classification table + a `docs/conventions` timing-layer doctrine; favorable subset wired earlier (not validate-all/expensive); test per pulled guard; pre-commit budget bounded; broad gate green | planned |
 
 ## Coordination Cues
 
@@ -183,7 +211,19 @@ the originating context by following them in order.
    `scripts/skill_issue_anchor_scan.py` + `scripts/check_skill_surface_preflight.py`
    + an adapter/preset (slice 2); a CI workflow surface +
    `scripts/run-quality.sh` / `.githooks` (slice 3).
-5. **Tracked-but-out-of-scope (NOT this goal):** #184 (product metrics — needs
+5. **Validator-timing discussion (slice 4 origin):** this session's exchange —
+   many validators are effectively source guards; the recent "templatization"
+   (the `check_artifact_surface_preflight` describe-shape work) established the
+   single-source needed to invoke one validator at multiple timings; the operator
+   asked to extract the broad-gate-only source-guards and pull only the favorable
+   (cheap + changed-scoped) ones earlier. The decision frame: one portable
+   validator, invoked at as many cheap timings as fit (author -> edit -> commit ->
+   bundle -> CI), scaled by cost; pre-commit is a fast LAYER, not the enforcement
+   floor (bypassable via `--no-verify`; `check_boundary_bypass_ratchet` guards
+   erosion). Existing multi-timing dispatchers: `check_artifact_surface_preflight`
+   (registry + `--type`/`--changed-artifacts`/`--emit-stub`) and
+   `staged_commit_gate_plan.py` (the pre-commit dispatcher).
+6. **Tracked-but-out-of-scope (NOT this goal):** #184 (product metrics — needs
    `ideation`/`spec`).
 
 ## Interview Decisions
@@ -197,6 +237,14 @@ itself so a fresh session sees the design space, not only the closed point.
   Chosen: **producer ergonomics + #N-anchor guard + push/tag CI** (operator picked
   1+2+3). Rejected: #184 (product-level, needs `ideation`/`spec`). `axis: theme` —
   each tracked independently, per-slice closed out.
+- **Slice 4 added mid-discussion (operator-directed).** Family considered: {leave
+  it a one-off opinion; durable `ideation`/`spec` decision artifact only; a WORK
+  slice that audits + applies the favorable subset}. Chosen: **a work slice**
+  (audit broad-gate-only source-guards, classify, pull only the favorable ones)
+  with the classification table doubling as the durable timing-layer doctrine, so
+  the principle lands as applied change + doctrine in one slice. Rejected: opinion-
+  only (no durable change); doctrine-only (the operator asked for the apply work).
+  Scoped to NOT re-do #N-anchor (slice 2) and NOT pull validate-all/expensive guards.
 - **Slice 2 firing mechanism (probe, not fixed).** Family: {adapter-declared hook;
   a preset; a hardcoded host-specific hook}. Deferred to slice 2 — must stay
   PORTABLE (host-specifics in adapters/presets per the portability rule); classify
