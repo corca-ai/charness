@@ -18,6 +18,8 @@ from scripts.mutation_changed_files_lib import (
     classify_changed_file_exclusions,
     classify_changed_line_scope_gap,
 )
+from scripts.mutation_manifest_lib import split_per_file_budget_exclusions
+from scripts.mutation_sample_manifest_score_lib import sample_manifest_scope_gap_details
 from scripts.mutation_sampling_lib import (
     coverage_run_command,
     filter_eligible_by_coverage,
@@ -518,6 +520,73 @@ def test_budgeted_sample_requires_each_file_to_have_pytest_nodeids(tmp_path: Pat
     assert workload == 2
 
 
+def test_split_per_file_budget_exclusions_reclassifies_oversized_changed_files() -> None:
+    """#341: a changed file dropped because its own covered-mutable-line workload
+    exceeds the per-file budget is routed to the non-blocking advisory bucket, while a
+    changed file dropped for a genuine selection reason stays in the blocking selection
+    bucket. The per-file budget itself is unchanged."""
+    mutation_line_coverage = {
+        # oversized.py's 100 covered mutable lines exceed the per-file cap (80): a
+        # capacity drop. contended.py (5 mutable, <= cap) was dropped for some other
+        # selection reason and stays blocking.
+        "scripts/oversized.py": {"covered": 100, "mutable": 100, "uncovered": 0},
+        "scripts/contended.py": {"covered": 5, "mutable": 5, "uncovered": 0},
+    }
+    selection_excluded, per_file_budget_excluded = split_per_file_budget_exclusions(
+        ["scripts/oversized.py", "scripts/contended.py"],
+        mutation_line_coverage=mutation_line_coverage,
+        coverage_enabled=True,
+        max_executable_mutants_per_file=80,
+    )
+    assert per_file_budget_excluded == ["scripts/oversized.py"]
+    assert selection_excluded == ["scripts/contended.py"]
+
+    # Disabling coverage (no workload data) leaves every selection drop blocking.
+    unchanged, none_capped = split_per_file_budget_exclusions(
+        ["scripts/oversized.py"],
+        mutation_line_coverage=mutation_line_coverage,
+        coverage_enabled=False,
+        max_executable_mutants_per_file=80,
+    )
+    assert none_capped == []
+    assert unchanged == ["scripts/oversized.py"]
+
+
+def _scope_gap_manifest(tmp_path: Path, **overrides: object) -> Path:
+    manifest = {
+        "base_sha": "base",
+        "changed_line_uncovered_changed_files": [],
+        "selection_excluded_changed_files": [],
+        "workload_excluded_changed_files": [],
+        "changed_files_excluded_by_per_file_budget": [],
+    }
+    manifest.update(overrides)
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    path = tmp_path / "sample.json"
+    path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    return path
+
+
+def test_per_file_budget_exclusions_are_advisory_not_blocking(tmp_path: Path) -> None:
+    """#341: the per-file-budget advisory bucket never enters the blocking set, while a
+    genuine selection exclusion still blocks. This is the signal that decides whether the
+    scheduled mutation run fails, so the reclassification is what makes the run recover."""
+    advisory = _scope_gap_manifest(
+        tmp_path / "a",
+        changed_files_excluded_by_per_file_budget=["skills/public/x/scripts/big.py"],
+    )
+    blocking_paths, _details, issue = sample_manifest_scope_gap_details(advisory)
+    assert blocking_paths == []
+    assert issue == ""
+
+    contended = _scope_gap_manifest(
+        tmp_path / "b",
+        selection_excluded_changed_files=["scripts/contended.py"],
+    )
+    blocking_contended, _d2, _i2 = sample_manifest_scope_gap_details(contended)
+    assert blocking_contended == ["scripts/contended.py"]
+
+
 def test_mutation_line_probe_paths_stay_under_reports(tmp_path: Path) -> None:
     probe_config, probe_session = mutation_probe_paths(tmp_path)
 
@@ -620,6 +689,7 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
         "changed_files_excluded_by_mutation_line_coverage": ["scripts/mutation_line.py"],
         "uncovered_changed_files": ["scripts/b.py"],
         "selection_excluded_changed_files": ["scripts/c.py"],
+        "changed_files_excluded_by_per_file_budget": ["scripts/oversized.py"],
         "changed_sample": ["scripts/a.py"],
         "fill_sample": [],
         "sample": ["scripts/a.py"],
@@ -647,10 +717,13 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
     assert "- Changed files excluded by file coverage floor: 1" in text
     assert "- Changed files excluded by mutation-line coverage: 1" in text
     assert "- Changed files excluded by selection budgets: 1" in text
+    assert "- Changed files excluded by per-file mutation budget (advisory): 1" in text
     assert "## Changed files excluded by file coverage" in text
     assert "- `scripts/file_floor.py`" in text
     assert "## Changed files excluded by mutation-line coverage" in text
     assert "- `scripts/mutation_line.py`" in text
+    assert "## Changed files excluded by per-file mutation budget (advisory, non-blocking)" in text
+    assert "- `scripts/oversized.py`" in text
     assert "- File coverage floor: 1.0" in text
     assert "- Eligible files after mutation-line filter: 1" in text
     assert "- Mutation pools: core-python 1/1 selected (2 pool)" in text

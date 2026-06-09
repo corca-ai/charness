@@ -22,6 +22,11 @@ SCOPE_GAP_BLOCKING_SECTIONS = (
 SCOPE_GAP_ADVISORY_KEYS = (
     "changed_files_excluded_by_file_coverage",
     "changed_files_excluded_by_mutation_line_coverage",
+    # A changed file dropped purely because its own covered-mutable-line workload
+    # exceeds the per-file mutation budget is a capacity limit, not a coverage gap
+    # (its changed lines' coverage is verified by the changed-line arm). It is
+    # surfaced for triage but never blocks recovery (#341).
+    "changed_files_excluded_by_per_file_budget",
     "uncovered_changed_files",
 )
 CHANGED_LINE_TARGETS_KEY = "changed_line_uncovered_changed_line_targets"

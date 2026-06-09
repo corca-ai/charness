@@ -9,9 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (draft, shaped). Three independent tracked
-  items sequenced as slices; the operator chose this set (1+2+4).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-09-deferred-queue-341-340-activation-preflight.md`.
+- Current slice: **Slice 1 (#341) COMPLETE — fresh-eye SHIP, committing.** Next:
+  Slice 2 (#340 specdown support routing).
+- Next action: implement Slice 2 — surface specdown via `find-skills`
+  support-skill routing. Design (validated read-only): feed synthetic
+  shipped-support entries (integrations with `support_state != "integration-only"`:
+  specdown, cautilus, agent-browser) to `support_recommendations_for_task` only,
+  deduped against materialized synced-support, so the inventory arrays are
+  unchanged (no inventory regression).
+- Slice-1 outcome: root-cause was the BLOCKING selection arm (per-file-cap
+  structural collision with module-split file sizes), not the survived mutants
+  (red herring — score was PASS). Operator chose Option A (reclassify per-file-cap
+  drops as advisory). Proven GREEN end-to-end over `3a42d2e0..HEAD`. #341 auto-closes
+  on the next green scheduled run — re-derive over the FINAL pushed range at the
+  bundle boundary (slices 2+3 add changed pool files).
 - **Why this goal (chosen from the session signals):** the operator selected the
   three highest-signal deferred items — #341 (the live mutation regression on
   main, the dominant recurring class in handoff + recent-lessons), #340 (the #1
@@ -141,7 +152,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | #341: root-cause + kill the 5 survived `main` mutants and cover the changed-line blocking-signal gap on the authoritative range; make the next scheduled mutation run green | live regression on main; the dominant recurring class (handoff + recent-lessons); this session's coverage-discipline lesson applies directly | local producer `ok: true` over the post-push range; survived mutants killed (targeted-mutant proof); broad gate green; #341 auto-closes on the green CI run | planned |
+| 1 | #341: root-cause + kill the 5 survived `main` mutants and cover the changed-line blocking-signal gap on the authoritative range; make the next scheduled mutation run green | live regression on main; the dominant recurring class (handoff + recent-lessons); this session's coverage-discipline lesson applies directly | local producer `ok: true` over the post-push range; survived mutants killed (targeted-mutant proof); per-file-cap blocking arm reclassified advisory → end-to-end GREEN over `3a42d2e0..HEAD`; fresh-eye SHIP; #341 auto-closes on the green CI run | **done** |
 | 2 | #340: surface specdown via `find-skills` support-skill routing (not only integration tool); classify its correct layer first | the #1 deferred item from the module-split goal; clear repro + cost recorded in #340 | a test pins specdown in `support_skill_recommendations`/synced-support for a specdown query; inventory refreshed; mirror synced; issue closeout draft validates | planned |
 | 3 | activation-preflight-surface: extend the artifact-shape preflight to cover the goal `Activation:` preamble line (preamble extraction) | deferred follow-up named in handoff; small, bounded | preflight flags a missing/malformed Activation preamble; test; spec updated; mirror synced | planned |
 
@@ -157,6 +168,17 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+  - `Routing:` session-start `find-skills` bootstrap → `achieve` (goal owner) for
+    the lifecycle; Slice 1 was debug-root-cause + impl + mutation-quality work
+    owned by `achieve` per its coordination contract (the goal artifact is the
+    slice memory surface); fresh-eye slice critique delegated to a separate agent
+    context. Slice 2 routing recorded when it runs.
+- **Issue closeout (running)** — #341: carrier = the **CI scheduled mutation
+  run** (auto-closing mutation-marker, `mutation-tests.yml` "Close recovered
+  mutation issue"); do NOT manual-close. Slice 1 made the next run green
+  (per-file-cap blocking arm reclassified advisory; proven over `3a42d2e0..HEAD`).
+  Dependency: the fix must be **pushed** before the next scheduled run; re-derive
+  the authoritative range post-push. #340 closeout recorded in Slice 2.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -171,6 +193,20 @@ during the run:
   auto-closing mutation-marker case — record the CI-run dependency, do not manual-close.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — #341 mutation regression: per-file-budget reclassification + kill 5 main() mutants
+
+- Objective: Make the next scheduled mutation run green so #341 auto-closes: root-cause the FAIL, kill the 5 survived main() mutants, and clear the blocking signal.
+- Why this approach: Root-cause (refined): the FAIL was the BLOCKING selection arm, not the survived mutants (score was PASS 95% — red herring). The two module-split files closeout_loaders.py (134 covered-mutable-lines) and disposition_grammar.py (153) each exceed the per-file mutation budget (80) and are dropped by select_budgeted_sample's per-file cap (FIRST check) — seed-independent, permanent. Operator chose Option A: reclassify a covered changed file dropped solely by the per-file workload cap from blocking selection_excluded_changed_files to the non-blocking advisory changed_files_excluded_by_per_file_budget bucket. Coverage arm (uncovered changed lines) stays blocking; per-file budget unchanged (no relaxation).
+- Commits:
+- What changed: scripts/mutation_manifest_lib.py (new split_per_file_budget_exclusions + wire into build_manifest + MD surfacing); scripts/mutation_sample_manifest_score_lib.py (advisory key); tests/test_resolve_adapter_main_inprocess.py NEW (in-process kill of the 5 main() mutants); tests/quality_gates/test_quality_mutation_sampling.py (split unit test + scope-gap blocking/non-blocking test + MD assertions); charness-artifacts/spec/mutation-changed-line-premerge-gate.md (Deferred Decisions #341 partial-resolution note); plugins/charness/scripts mirror byte-synced.
+- Alternatives rejected: Deeper line-subset mutation of oversized files (largest, deferred follow-up). Defer-only (file the selection-budget follow-up, leave #341 open) — rejected: under-delivers the goal's 'next run green' intent. Raise per-file budget — forbidden (no budget relaxation).
+- Targeted verification: Targeted-mutant proof: each of the 5 mutants mutated at exact path:line, new test fails, reverted (file clean). End-to-end over the real range 3a42d2e0..HEAD with fresh coverage: selection_excluded_changed_files=[] -> scope-gap blocking=[] -> GREEN; 2 oversized files moved to advisory bucket. Producer ok:true (0 uncovered changed lines). 85 mutation/producer tests + full tests/quality_gates suite (1783 passed) green; ruff/py_compile/length/export-safe/plugin-smoke green; mirror byte-synced. NON-CLAIM: next CI scheduled run not run (authoritative verdict; #341 auto-closes on it).
+- Test duplication pressure: New tests target distinct seams: split_per_file_budget_exclusions (no prior unit), the resolve_adapter main() in-process kill (no prior test ran that main directly), and scope-gap blocking/non-blocking classification. No duplicate of existing select_budgeted_sample tests (those exercise the sampler, not the manifest split). Low duplication.
+- Critique: Fresh-eye reviewer (separate agent context), read-only: VERDICT SHIP. Verified invariants independently (uncovered-changed-line arm untouched -> no escape; partition predicate exactly matches select_budgeted_sample's first per-file check incl. workload==cap boundary; in-process test attributes lines 45/48 to its dynamic context so the cron selects it; ensure_ascii assertion locale-robust). One non-blocking cosmetic note: the selection_excluded blocking heading wording still says 'Selection budget or nodeid' though per-file-cap is now advisory — documented in the new comment + MD section.
+- Off-goal findings:
+- Lessons carried forward: The dominant recurring mutation class had a NON-coverage driver this time: per-file-cap structural collision with module-split file sizes. Producer-green (coverage arm) is necessary but NOT sufficient for the scheduled run to pass; the selection arm must also be checked. Re-derive over the FINAL pushed range at the bundle boundary (slices 2+3 add changed pool files).
+- Metrics:
 
 ## Context Sources
 

@@ -141,7 +141,19 @@ mutation-pool file fails locally — with an actionable `path:line` target —
 - **Selection/workload-budget drops** (`setup_agent_docs_fresh_eye_lib.py`,
   `setup_commit_discipline_lib.py`): a *distinct* non-coverage signal
   (`follow-up:mutation-selection-budget-setup-libs`). Out of scope — this spec is
-  changed-line *coverage*, not selection budget.
+  changed-line *coverage*, not selection budget. **Partial resolution (#341,
+  2026-06-09):** the *per-file-workload-cap* sub-case — a changed file dropped
+  solely because its own covered-mutable-line count exceeds
+  `max_executable_mutants_per_file` (a permanent capacity limit, e.g. the
+  module-split `goal_artifact_closeout_loaders.py`/`goal_artifact_disposition_grammar.py`
+  at 134/153 mutable lines vs the 80 budget) — is now reclassified from the
+  blocking `selection_excluded_changed_files` bucket to the non-blocking advisory
+  `changed_files_excluded_by_per_file_budget` bucket
+  (`mutation_manifest_lib.split_per_file_budget_exclusions`). Its changed lines are
+  still coverage-verified by the changed-line arm, which keeps blocking any
+  uncovered changed line; the per-file budget is unchanged. Genuine
+  selection-CONTENTION drops (cumulative budget / nodeid budget / no covering test)
+  stay blocking and remain the deferred follow-up.
 - **CI-PR enforcement**: charness runs no push/tag CI (only
   `workflow_dispatch`/path-scoped PR/cron). A future light push/tag CI mirror of
   this gate is a separate decision (handoff `Discuss`).

@@ -43,6 +43,7 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         f"- Changed files excluded by file coverage floor: {len(manifest.get('changed_files_excluded_by_file_coverage', []))}",
         f"- Changed files excluded by mutation-line coverage: {len(manifest.get('changed_files_excluded_by_mutation_line_coverage', []))}",
         f"- Changed files excluded by selection budgets: {len(manifest.get('selection_excluded_changed_files', []))}",
+        f"- Changed files excluded by per-file mutation budget (advisory): {len(manifest.get('changed_files_excluded_by_per_file_budget', []))}",
         f"- Selected: {len(manifest['sample'])}/{manifest['max_files']}",
         f"- Test command: `{manifest.get('test_command') or '(not recorded)'}`",
         "",
@@ -74,6 +75,13 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
             or ["(none)"]
         ),
         "",
+        "## Changed files excluded by per-file mutation budget (advisory, non-blocking)",
+        "",
+        *(
+            [f"- `{path}`" for path in manifest.get("changed_files_excluded_by_per_file_budget", [])]
+            or ["(none)"]
+        ),
+        "",
         "## Changed sample",
         "",
         *([f"- `{path}`" for path in manifest["changed_sample"]] or ["(none)"]),
@@ -87,11 +95,51 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
     manifest_md.write_text("\n".join(md_lines), encoding="utf-8")
 
 
+def split_per_file_budget_exclusions(
+    selection_excluded_changed_files: list[str],
+    *,
+    mutation_line_coverage: dict[str, dict[str, int]],
+    coverage_enabled: bool,
+    max_executable_mutants_per_file: int,
+) -> tuple[list[str], list[str]]:
+    """Separate per-file-workload-cap drops from genuine selection-contention drops.
+
+    A changed file whose own covered-mutable-line workload exceeds the per-file
+    budget can never be selected as a mutation target (``select_budgeted_sample``
+    checks the per-file cap first). That drop is a workload-CAPACITY limit, not a
+    coverage/proof gap: the changed lines' coverage is verified independently by the
+    changed-line arm, which still blocks any uncovered changed line. Reclassifying it
+    out of the blocking ``selection_excluded_changed_files`` bucket into a non-blocking
+    advisory bucket stops a module split that produced an oversized (but well-covered)
+    changed file from blocking the gate forever (#341). The per-file budget is unchanged.
+    """
+    if not (coverage_enabled and max_executable_mutants_per_file):
+        return selection_excluded_changed_files, []
+    per_file_budget_excluded = [
+        path
+        for path in selection_excluded_changed_files
+        if mutation_workload(path, mutation_line_coverage) > max_executable_mutants_per_file
+    ]
+    if not per_file_budget_excluded:
+        return selection_excluded_changed_files, []
+    capped = set(per_file_budget_excluded)
+    remaining = [path for path in selection_excluded_changed_files if path not in capped]
+    return remaining, per_file_budget_excluded
+
+
 def build_manifest_from_state(state: dict) -> dict:
     max_total, max_per_file, max_nodeids = state["workload_limits"]
     coverage_enabled = state["coverage_enabled"]
     mutation_line_coverage = state["mutation_line_coverage"]
     eligible = state["eligible"]
+    selection_excluded_changed_files, changed_files_excluded_by_per_file_budget = (
+        split_per_file_budget_exclusions(
+            state["selection_excluded_changed_files"],
+            mutation_line_coverage=mutation_line_coverage,
+            coverage_enabled=coverage_enabled,
+            max_executable_mutants_per_file=max_per_file,
+        )
+    )
     return {
         "seed": state["seed"],
         "base_sha": state["base_sha"],
@@ -136,7 +184,8 @@ def build_manifest_from_state(state: dict) -> dict:
         "changed_line_uncovered_changed_line_targets": state.get(
             "changed_line_uncovered_changed_line_targets", {}
         ),
-        "selection_excluded_changed_files": state["selection_excluded_changed_files"],
+        "selection_excluded_changed_files": selection_excluded_changed_files,
+        "changed_files_excluded_by_per_file_budget": changed_files_excluded_by_per_file_budget,
         "selection_excluded_fill_files": state["selection_excluded_fill_files"],
         "changed_files": state["changed"],
         "changed_sample": state["changed_sample"],
