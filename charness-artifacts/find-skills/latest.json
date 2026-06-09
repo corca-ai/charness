@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-04T12:20:28Z",
-  "repo": "charness-duplicate-detection",
+  "generated_at": "2026-06-09T05:54:56Z",
+  "repo": "charness",
   "inventory": {
     "adapter": {
       "found": false,
@@ -39,7 +39,7 @@
           "skills/public/achieve/references/goal-artifact.md",
           "skills/shared/references/retro-issue-destination-split.md",
           "skills/public/achieve/references/coordination.md",
-          "skills/public/achieve/references/adapter-contract.md"
+          "skills/public/achieve/references/index.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -404,10 +404,10 @@
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/issue/references/closeout-discipline.md",
+          "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/resolution-brief.md",
           "skills/shared/references/rca-ledger-append.md",
-          "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolve-flow.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/active-goal-coordination.md",
@@ -514,6 +514,7 @@
           "skills/public/quality/references/security-npm.md",
           "skills/public/quality/references/security-pnpm.md",
           "skills/public/quality/references/security-uv.md",
+          "skills/public/quality/references/standing-doc-provenance.md",
           "skills/public/quality/references/standing-gate-verbosity.md",
           "skills/public/quality/references/startup-probes.md",
           "skills/public/quality/references/validate_spec_pytest_references.py",
@@ -539,11 +540,11 @@
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
-          "skills/shared/references/closeout-discipline.md",
+          "skills/public/release/references/install-surface.md",
           "skills/public/release/references/adapter-contract.md",
           "skills/public/release/references/version-policy.md",
-          "skills/public/release/references/install-surface.md",
-          "skills/public/release/references/closeout-critique-gate.md"
+          "skills/public/release/references/closeout-critique-gate.md",
+          "skills/shared/references/closeout-discipline.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -753,72 +754,6 @@
           "skills/support/web-fetch/scripts/acquire_public_url.py"
         ],
         "source": "local-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "agent-browser",
-        "name": "agent-browser",
-        "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "summary": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/agent-browser/SKILL.md",
-        "trigger_phrases": [
-          "agent-browser",
-          "agent-browser skill",
-          "agent-browser 스킬",
-          "charness:agent-browser",
-          "support/agent-browser",
-          "agent-browser support",
-          "agent-browser support skill",
-          "agent-browser helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus-agent",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus-agent",
-          "cautilus-agent skill",
-          "cautilus-agent 스킬",
-          "charness:cautilus-agent",
-          "support/cautilus-agent",
-          "cautilus-agent support",
-          "cautilus-agent support skill",
-          "cautilus-agent helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "specdown",
-        "name": "specdown",
-        "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.17.0/support/specdown/SKILL.md",
-        "trigger_phrases": [
-          "specdown",
-          "specdown skill",
-          "specdown 스킬",
-          "charness:specdown",
-          "support/specdown",
-          "specdown support",
-          "specdown support skill",
-          "specdown helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
         "layer": "support skill"
       }
     ],
@@ -1072,6 +1007,7 @@
       {
         "id": "agent-browser",
         "kind": "external_binary_with_skill",
+        "summary": "Browser automation CLI for JS-rendered pages, DOM inspection, interactive browser debugging, and browser-mediated `gather` fallback when private SaaS acquisition cannot stay on an official API/export path.",
         "access_modes": [
           "binary",
           "human-only",
@@ -1125,6 +1061,7 @@
       {
         "id": "cautilus",
         "kind": "external_binary_with_skill",
+        "summary": "Standalone evaluation engine and bundled skill for bounded behavior review beyond repo-local deterministic gates.",
         "access_modes": [
           "binary",
           "human-only",
@@ -1163,6 +1100,7 @@
       {
         "id": "defuddle",
         "kind": "external_binary",
+        "summary": "Article and documentation page cleaner used by gather/web-fetch to turn cluttered public HTML into readable markdown before falling back to browser-mediated acquisition.",
         "access_modes": [
           "binary",
           "degraded"
@@ -1195,6 +1133,7 @@
       {
         "id": "github-worker",
         "kind": "external capability",
+        "summary": "Authenticated GitHub CLI provider for repository, pull request, issue, and discussion gather flows.",
         "access_modes": [
           "binary",
           "public",
@@ -1238,6 +1177,7 @@
       {
         "id": "gitleaks",
         "kind": "external_binary",
+        "summary": "Fast Go-based secret scanner. Preferred over the secretlint fallback by `scripts/check-secrets.sh`; sub-second on the charness tree vs ~5s for the npm secretlint path.",
         "access_modes": [
           "binary",
           "degraded"
@@ -1268,6 +1208,7 @@
       {
         "id": "glow",
         "kind": "external_binary",
+        "summary": "Terminal markdown renderer used by doc-facing seams such as `narrative` and `quality` for width-specific rendered review artifacts.",
         "access_modes": [
           "binary",
           "degraded"
@@ -1299,6 +1240,7 @@
       {
         "id": "google-workspace-worker",
         "kind": "external capability",
+        "summary": "Authenticated Google Workspace CLI provider for Docs, Drive, Sheets, Slides, Gmail, Calendar, and adjacent Workspace gather flows.",
         "access_modes": [
           "binary",
           "human-only",
@@ -1357,6 +1299,7 @@
       {
         "id": "nose",
         "kind": "external_binary",
+        "summary": "Advisory code clone-family scanner used by `quality` to surface refactoring candidates beyond exact document near-copy checks.",
         "access_modes": [
           "binary",
           "degraded"
@@ -1391,6 +1334,7 @@
       {
         "id": "ruff",
         "kind": "external_binary",
+        "summary": "Fast Python linter used by `scripts/run-quality.sh` as the standing Python lint gate, including mccabe complexity checks.",
         "access_modes": [
           "binary"
         ],
@@ -1420,6 +1364,7 @@
       {
         "id": "specdown",
         "kind": "external_binary",
+        "summary": "Executable specification runner that turns Markdown specs into runnable tests and reports.",
         "access_modes": [
           "binary",
           "human-only",
@@ -1470,6 +1415,7 @@
       {
         "id": "tokei",
         "kind": "external_binary",
+        "summary": "Fast multi-language source-lines-of-code counter. Use when `quality` needs an honest SLOC inventory that separates code, comments, and blanks instead of treating raw `splitlines()` totals as code size.",
         "access_modes": [
           "binary",
           "degraded"
@@ -1501,6 +1447,7 @@
       {
         "id": "vulture",
         "kind": "external_binary",
+        "summary": "Python dead-code and dead-file advisory scanner. Use after the Ruff baseline when whole-repo reachability or stale modules are the quality question.",
         "access_modes": [
           "binary",
           "degraded"

@@ -98,6 +98,7 @@ def test_list_capabilities_cross_links_materialized_support_and_discovery_stub(t
         {
             "id": "demo-tool",
             "kind": "external_binary_with_skill",
+            "summary": "Demo integration with synced support.",
             "access_modes": ["binary", "degraded"],
             "support_state": "upstream-consumed",
             "support_skill_path": "skills/support/generated/demo-tool/SKILL.md",

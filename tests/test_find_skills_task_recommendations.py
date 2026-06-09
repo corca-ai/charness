@@ -175,6 +175,93 @@ def test_list_capabilities_does_not_recommend_specdown_from_weak_task_text(tmp_p
     assert payload["support_skill_recommendations"] == []
 
 
+def _write_shipped_specdown_integration(root: Path) -> None:
+    """specdown integration that SHIPS a charness-support skill (support_skill_source)
+    but is NOT materialized locally — the #340 consumer-repo scenario, where
+    `skills/support/specdown/` does not exist yet."""
+    (root / "integrations" / "tools").mkdir(parents=True)
+    (root / "integrations" / "tools" / "specdown.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "specdown",
+                "kind": "external_binary",
+                "display_name": "specdown",
+                "summary": "Executable specification runner.",
+                "upstream_repo": "corca-ai/specdown",
+                "homepage": "https://github.com/corca-ai/specdown",
+                "lifecycle": {
+                    "install": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/specdown",
+                        "notes": ["Install specdown."],
+                    },
+                    "update": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/specdown/releases",
+                        "notes": ["Update specdown."],
+                    },
+                },
+                "checks": {
+                    "detect": {"commands": ["specdown version"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["specdown run -help"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary", "degraded"],
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "cmd/specdown/skills/specdown",
+                    "ref": "main",
+                },
+                "intent_triggers": ["docs/specs", ".spec.md", "run:shell", "check:jq", "executable spec"],
+                "strong_intent_triggers": ["docs/specs", ".spec.md", "run:shell", "check:jq", "specdown", "executable spec"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _write_find_skills_adapter(root)
+
+
+def test_shipped_support_skill_surfaces_via_support_routing_when_not_materialized(tmp_path: Path) -> None:
+    """#340: a tool that ships a charness-support skill must reach support routing even
+    when the skill is not materialized locally, instead of stopping at the binary
+    tool_recommendation (which sent the agent reverse-engineering the binary)."""
+    _write_shipped_specdown_integration(tmp_path)
+
+    task = "How do I configure specdown.json and write an executable spec with run:shell variable capture?"
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task)
+
+    support_ids = [entry["id"] for entry in payload["support_skill_recommendations"]]
+    assert support_ids == ["specdown"]
+    rec = payload["support_skill_recommendations"][0]
+    assert rec["layer"] == "synced support skill"
+    assert rec["support_state"] == "upstream-consumed"
+    assert rec["summary"] == "Executable specification runner."
+    assert {"executable spec", "run:shell"} & set(rec["matched_triggers"])
+    assert "materializes under `support/specdown/`" in rec["next_step"]
+    # Still ALSO a binary tool recommendation (surfaced through both routes).
+    assert "specdown" in [tool["tool_id"] for tool in payload["tool_recommendations"]]
+    # Behavior-preserving: no materialized support skill entered the inventory.
+    assert payload["support_skills"] == []
+
+
+def test_shipped_support_skill_not_surfaced_for_weak_task_text(tmp_path: Path) -> None:
+    """Only a STRONG trigger surfaces the shipped support skill; a weak/incidental
+    match (here `report.json` is not a strong trigger) must not."""
+    _write_shipped_specdown_integration(tmp_path)
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommend-for-task",
+        "Inspect the generic report.json export emitted by the data export job.",
+    )
+
+    assert payload["support_skill_recommendations"] == []
+
+
 def _write_browserlike_surface(root: Path, *, populate_intent_triggers: bool) -> None:
     support = root / "skills" / "support" / "browserlike"
     support.mkdir(parents=True)

@@ -274,6 +274,45 @@ def support_recommendations_for_task(
     return recommendations
 
 
+def shipped_support_recommendations_for_task(
+    task_text: str,
+    *,
+    integrations: list[dict[str, Any]],
+    materialized_support_ids: set[str],
+) -> list[dict[str, Any]]:
+    """Surface a SHIPPED charness-support skill (``support_skill_source``) through support
+    routing even when not materialized locally — ``support_recommendations_for_task`` misses
+    it, so the agent treats the binary as opaque. Skips materialized + binary-only."""
+    recommendations: list[dict[str, Any]] = []
+    for integration in integrations:
+        tool_id = integration.get("id")
+        if not tool_id or tool_id in materialized_support_ids:
+            continue
+        if integration.get("support_state") in (None, "integration-only"):
+            continue
+        triggers = _dedupe(_strings(integration.get("intent_triggers", [])))
+        matched = [trigger for trigger in triggers if _task_text_matches(task_text, trigger)]
+        if not matched or not _enough_task_signal(str(tool_id), matched, integrations):
+            continue
+        path = integration.get("support_skill_path")
+        next_step = (
+            f"Read `{path}` — the shipped support skill for `{tool_id}`." if path
+            else f"`{tool_id}` ships a charness-support skill that materializes under "
+            f"`support/{tool_id}/` on `charness update`; read it through support routing "
+            "instead of reverse-engineering the binary."
+        )
+        recommendations.append({
+            "id": tool_id,
+            "layer": "synced support skill",
+            "path": path or integration.get("path"),
+            "summary": integration.get("summary", ""),
+            "matched_triggers": matched,
+            "support_state": integration.get("support_state"),
+            "next_step": next_step,
+        })
+    return recommendations
+
+
 def workflow_recommendations_for_task(task_text: str) -> list[dict[str, Any]]:
     recommendations: list[dict[str, Any]] = []
     cleanup_intent = _cleanup_worktree_intent(task_text)

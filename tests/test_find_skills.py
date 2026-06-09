@@ -275,6 +275,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
         {
             "id": "example",
             "kind": "external_binary",
+            "summary": "",
             "access_modes": ["grant", "binary", "degraded"],
             "support_state": "integration-only",
             "support_skill_path": None,

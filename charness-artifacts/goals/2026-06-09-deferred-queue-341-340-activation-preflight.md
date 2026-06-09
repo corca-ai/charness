@@ -9,20 +9,23 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 1 (#341) COMPLETE — fresh-eye SHIP, committing.** Next:
-  Slice 2 (#340 specdown support routing).
-- Next action: implement Slice 2 — surface specdown via `find-skills`
-  support-skill routing. Design (validated read-only): feed synthetic
-  shipped-support entries (integrations with `support_state != "integration-only"`:
-  specdown, cautilus, agent-browser) to `support_recommendations_for_task` only,
-  deduped against materialized synced-support, so the inventory arrays are
-  unchanged (no inventory regression).
+- Current slice: **Slice 1 (#341) + Slice 2 (#340) COMPLETE — both fresh-eye SHIP,
+  committed.** Next: Slice 3 (activation-preflight-surface).
+- Next action: implement Slice 3 — extend the artifact-shape preflight to cover the
+  goal `Activation:` preamble line (needs preamble extraction) per
+  `charness-artifacts/spec/artifact-shape-preflight-coverage.md`; add a test for a
+  missing/malformed Activation preamble; behavior-preserving for existing checks.
 - Slice-1 outcome: root-cause was the BLOCKING selection arm (per-file-cap
   structural collision with module-split file sizes), not the survived mutants
-  (red herring — score was PASS). Operator chose Option A (reclassify per-file-cap
-  drops as advisory). Proven GREEN end-to-end over `3a42d2e0..HEAD`. #341 auto-closes
-  on the next green scheduled run — re-derive over the FINAL pushed range at the
-  bundle boundary (slices 2+3 add changed pool files).
+  (red herring — score was PASS). Reclassified per-file-cap drops as advisory.
+  Proven GREEN end-to-end over `3a42d2e0..HEAD`. #341 auto-closes on the next green
+  scheduled run — re-derive over the FINAL pushed range at the bundle boundary.
+- Slice-2 outcome: shipped_support_recommendations_for_task surfaces specdown (and
+  any tool shipping a support skill) via support routing even when not materialized;
+  inventory unchanged; #340 closes via the slice-2 commit (Closes #340) on push.
+- Bundle boundary (after slice 3, before push): re-derive the authoritative
+  `3a42d2e0..HEAD` range (slices 2+3 added changed pool files), run the changed-line
+  producer FIRST, then the broad gate.
 - **Why this goal (chosen from the session signals):** the operator selected the
   three highest-signal deferred items — #341 (the live mutation regression on
   main, the dominant recurring class in handoff + recent-lessons), #340 (the #1
@@ -153,7 +156,7 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | #341: root-cause + kill the 5 survived `main` mutants and cover the changed-line blocking-signal gap on the authoritative range; make the next scheduled mutation run green | live regression on main; the dominant recurring class (handoff + recent-lessons); this session's coverage-discipline lesson applies directly | local producer `ok: true` over the post-push range; survived mutants killed (targeted-mutant proof); per-file-cap blocking arm reclassified advisory → end-to-end GREEN over `3a42d2e0..HEAD`; fresh-eye SHIP; #341 auto-closes on the green CI run | **done** |
-| 2 | #340: surface specdown via `find-skills` support-skill routing (not only integration tool); classify its correct layer first | the #1 deferred item from the module-split goal; clear repro + cost recorded in #340 | a test pins specdown in `support_skill_recommendations`/synced-support for a specdown query; inventory refreshed; mirror synced; issue closeout draft validates | planned |
+| 2 | #340: surface specdown via `find-skills` support-skill routing (not only integration tool); classify its correct layer first | the #1 deferred item from the module-split goal; clear repro + cost recorded in #340 | tests pin specdown in `support_skill_recommendations` (non-materialized shipped path) + weak-text guard; inventory refreshed; mirror synced; fresh-eye SHIP; closeout draft validates | **done** |
 | 3 | activation-preflight-surface: extend the artifact-shape preflight to cover the goal `Activation:` preamble line (preamble extraction) | deferred follow-up named in handoff; small, bounded | preflight flags a missing/malformed Activation preamble; test; spec updated; mirror synced | planned |
 
 ## Coordination Cues
@@ -173,12 +176,17 @@ during the run:
     owned by `achieve` per its coordination contract (the goal artifact is the
     slice memory surface); fresh-eye slice critique delegated to a separate agent
     context. Slice 2 routing recorded when it runs.
-- **Issue closeout (running)** — #341: carrier = the **CI scheduled mutation
-  run** (auto-closing mutation-marker, `mutation-tests.yml` "Close recovered
-  mutation issue"); do NOT manual-close. Slice 1 made the next run green
-  (per-file-cap blocking arm reclassified advisory; proven over `3a42d2e0..HEAD`).
-  Dependency: the fix must be **pushed** before the next scheduled run; re-derive
-  the authoritative range post-push. #340 closeout recorded in Slice 2.
+- **Issue closeout** —
+  - **#341:** carrier = the **CI scheduled mutation run** (auto-closing
+    mutation-marker, `mutation-tests.yml` "Close recovered mutation issue"); do NOT
+    manual-close. Slice 1 made the next run green (per-file-cap blocking arm
+    reclassified advisory; proven over `3a42d2e0..HEAD`). Dependency: the fix must be
+    **pushed** before the next scheduled run; re-derive the authoritative range post-push.
+  - **#340:** classification `bug`, carrier `direct-commit` (slice-2 commit `Closes
+    #340`). `issue_tool.py validate-closeout-draft --number 340 --classification bug
+    --carrier direct-commit` → `status: draft_verified, ok: true` (jtbd / root-cause /
+    debug-artifact / siblings(decision+proof) / prevention / resolution-critique all
+    satisfied). Closes on push to main.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -206,6 +214,20 @@ during the run:
 - Critique: Fresh-eye reviewer (separate agent context), read-only: VERDICT SHIP. Verified invariants independently (uncovered-changed-line arm untouched -> no escape; partition predicate exactly matches select_budgeted_sample's first per-file check incl. workload==cap boundary; in-process test attributes lines 45/48 to its dynamic context so the cron selects it; ensure_ascii assertion locale-robust). One non-blocking cosmetic note: the selection_excluded blocking heading wording still says 'Selection budget or nodeid' though per-file-cap is now advisory — documented in the new comment + MD section.
 - Off-goal findings:
 - Lessons carried forward: The dominant recurring mutation class had a NON-coverage driver this time: per-file-cap structural collision with module-split file sizes. Producer-green (coverage arm) is necessary but NOT sufficient for the scheduled run to pass; the selection arm must also be checked. Re-derive over the FINAL pushed range at the bundle boundary (slices 2+3 add changed pool files).
+- Metrics:
+
+### Slice 2: Slice 2 — #340: surface specdown via find-skills support-skill routing
+
+- Objective: Make find-skills surface specdown (and any tool shipping a charness-support skill) via support_skill_recommendations, not only as a binary tool_recommendation, so the canonical discovery path returns the shipped authoring guidance instead of sending the agent to reverse-engineer the binary.
+- Why this approach: Classified specdown's layer first: it is an EXTERNAL INTEGRATION that ALSO ships a charness-support skill (support_skill_source), materialized under support/specdown/ only on charness update. support_recommendations_for_task iterates only local support_entries, so in a repo where the skill is not materialized there is no entry and the support route misses it. Fix: shipped_support_recommendations_for_task surfaces integrations whose support_state != integration-only (specdown, cautilus, agent-browser), gated by the SAME strong-trigger logic, deduped against materialized support skills, merged into support_skill_recommendations. Fed to the recommendation path only — inventory arrays unchanged (no inventory regression).
+- Commits:
+- What changed: skills/public/find-skills/scripts/list_capabilities_lib.py (new shipped_support_recommendations_for_task); list_capabilities.py (new _task_support_recommendations helper merges materialized+shipped, deduped); capability_sources.py (surface integration summary in the entry so the recommendation carries it); tests/test_find_skills_task_recommendations.py (+2 tests: surfaces-when-not-materialized, weak-text guard); tests/test_find_skills.py + tests/test_find_skills_synced_support.py (integration entry now carries summary); charness-artifacts/find-skills/latest.{md,json} refreshed (corrected stale cross-worktree state); plugins/charness mirror byte-synced.
+- Alternatives rejected: Add specdown to the support_skills INVENTORY array — rejected: changes the inventory for a non-materialized skill (inventory regression). Materialize specdown locally — rejected: machine-state, not a code fix. Promote-only to support (drop tool_recommendation) — rejected: issue asks for BOTH routes.
+- Targeted verification: Live #340 acceptance on the real repo: specdown appears in support_skill_recommendations (layer 'synced support skill', support_state 'upstream-consumed', summary populated) AND tool_recommendations for a specdown query. 44 find-skills tests pass (incl. new + shape-updated). ruff/length/export-safe/plugin-smoke green; mirror byte-synced. Behavior-preserving: test cautilus (integration-only) stays out of support routing; browserlike (materialized) not duplicated.
+- Test duplication pressure: New tests cover the previously-untested non-materialized shipped-support path and the strong-trigger guard. Existing materialized/dedup cases (specdown materialized, browserlike) already covered — no duplication; the 2 shape updates are additive (summary field).
+- Critique: Fresh-eye reviewer (separate agent context), read-only: VERDICT SHIP for #340. Verified dedup correctness (no double-surface; materialized browserlike single-entry), the support_state filter matches support_state_for_manifest, the inventory-refresh staleness claim TRUE (HEAD artifact from a different worktree with the 3 skills materialized; CI regenerates the refreshed values), and ran the acceptance. Actionable polish folded THIS slice: shipped recs had empty summary -> surfaced the integration summary in capability_sources. Over-worry (not folded): aliased-integration dedup divergence is unreachable today (the 2 aliased manifests are integration-only).
+- Off-goal findings:
+- Lessons carried forward: An integration can ship a support skill that materializes only on install; find-skills support routing must reason from support_skill_source, not just locally-materialized support_entries, or consumer repos lose the canonical discovery path. Resolves #340.
 - Metrics:
 
 ## Context Sources

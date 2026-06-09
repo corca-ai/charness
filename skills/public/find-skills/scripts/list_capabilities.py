@@ -30,6 +30,7 @@ recommendations_for_task = _tool_rec.recommendations_for_task
 _list_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
 build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payload, _list_lib.referenced_skill_paths
 resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
+shipped_support_recommendations_for_task = _list_lib.shipped_support_recommendations_for_task
 workflow_integrations = _list_lib.workflow_integrations
 workflow_recommendations_for_task = _list_lib.workflow_recommendations_for_task
 _public_rec = SKILL_RUNTIME.load_local_skill_module(__file__, "public_skill_recommendations")
@@ -243,6 +244,30 @@ def _summary_payload(payload: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _task_support_recommendations(
+    task_text: str,
+    *,
+    support_entries: list[dict[str, str]],
+    support_capability_entries: list[dict[str, object]],
+    integration_entries: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Materialized support skills plus the shipped-but-unmaterialized support skills an
+    integration ships (specdown, cautilus, agent-browser) — both reachable via support
+    routing, not only as binary tool_recommendations, deduped by id."""
+    recommendations = support_recommendations_for_task(
+        task_text,
+        support_entries=support_entries,
+        support_capabilities=support_capability_entries,
+        integrations=integration_entries,
+    )
+    recommendations += shipped_support_recommendations_for_task(
+        task_text,
+        integrations=integration_entries,
+        materialized_support_ids={str(entry["id"]) for entry in support_entries},
+    )
+    return recommendations
+
+
 def main() -> None:
     args = _parse_args()
     root = args.repo_root.resolve()
@@ -285,11 +310,11 @@ def main() -> None:
     public_skill_recommendations = []
     public_recommendation_query = None
     if args.recommend_for_task:
-        support_skill_recommendations = support_recommendations_for_task(
+        support_skill_recommendations = _task_support_recommendations(
             args.recommend_for_task,
             support_entries=support_entries,
-            support_capabilities=support_capability_entries,
-            integrations=integration_entries,
+            support_capability_entries=support_capability_entries,
+            integration_entries=integration_entries,
         )
         workflow_recommendations = workflow_recommendations_for_task(args.recommend_for_task)
         public_skill_recommendations = public_skill_recommendations_for_task(

@@ -103,6 +103,7 @@ def integrations(root: Path) -> list[dict[str, object]]:
         entry = {
             "id": tool_id,
             "kind": "external capability" if data["tool_id"] in PROVIDER_ID_ALIASES else data.get("kind", "unknown"),
+            "summary": data.get("summary", ""),
             "access_modes": data.get("access_modes", []),
             "support_state": support_state_for_manifest(data),
             "support_skill_path": _materialized_support_skill_path(root, data),
