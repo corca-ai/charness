@@ -551,6 +551,17 @@ def test_split_per_file_budget_exclusions_reclassifies_oversized_changed_files()
     assert none_capped == []
     assert unchanged == ["scripts/oversized.py"]
 
+    # Selection drops that ALL fit the per-file cap (genuine contention, none oversized)
+    # are returned unchanged with an empty advisory bucket — they stay blocking.
+    contention_only, no_cap = split_per_file_budget_exclusions(
+        ["scripts/contended.py"],
+        mutation_line_coverage=mutation_line_coverage,
+        coverage_enabled=True,
+        max_executable_mutants_per_file=80,
+    )
+    assert no_cap == []
+    assert contention_only == ["scripts/contended.py"]
+
 
 def _scope_gap_manifest(tmp_path: Path, **overrides: object) -> Path:
     manifest = {
