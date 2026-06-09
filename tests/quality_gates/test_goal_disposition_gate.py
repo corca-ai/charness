@@ -11,6 +11,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
 
@@ -453,3 +455,73 @@ def test_live_corpus_pre_rule_goals_are_never_rung1a_refused() -> None:
     pre_rule = [r for r in rows if r["status"] == "complete" and r["in_scope"] is False]
     assert pre_rule, "expected at least one pre-rule completed goal in the corpus"
     assert all(r["rung1a_block_the_blank"] is False for r in pre_rule)
+
+
+# --- sibling-leaf loader fail-closed (the module-split glue) ----------------
+#
+# Slices 1 & 2 introduced a `_load_local_module` helper in each wrapper that
+# loads its cohesive leaf (the disposition grammar / the closeout loaders) via
+# filesystem spec. The happy path runs at import (covered by every test that
+# loads the module); these pin the fail-CLOSED branch — both `spec is None` and
+# `spec.loader is None` must raise ImportError naming the missing module beside
+# the right wrapper — so a moved/missing leaf surfaces loudly, never silently.
+
+
+def test_disposition_load_local_module_fails_closed(monkeypatch) -> None:
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    with pytest.raises(ImportError, match="goal_artifact_disposition_grammar.py not found beside goal_artifact_disposition.py"):
+        disp._load_local_module("goal_artifact_disposition_grammar")
+
+    class _SpecNoLoader:
+        loader = None
+
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: _SpecNoLoader())
+    with pytest.raises(ImportError, match="anything.py not found beside goal_artifact_disposition.py"):
+        disp._load_local_module("anything")
+
+
+def test_closeout_evidence_load_local_module_fails_closed(monkeypatch) -> None:
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    with pytest.raises(ImportError, match="goal_artifact_closeout_loaders.py not found beside goal_artifact_closeout_evidence.py"):
+        ce._load_local_module("goal_artifact_closeout_loaders")
+
+    class _SpecNoLoader:
+        loader = None
+
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: _SpecNoLoader())
+    with pytest.raises(ImportError, match="anything.py not found beside goal_artifact_closeout_evidence.py"):
+        ce._load_local_module("anything")
+
+
+def test_closeout_loaders_fail_closed_for_each_sibling(monkeypatch) -> None:
+    # The 8 sibling/shared loaders moved verbatim into goal_artifact_closeout_loaders.py.
+    # `_load_shared_helper`/`_load_sibling_disposition`/`_load_sibling_coordination_floors`
+    # are already pinned in test_goal_coordination_floors.py; these cover the
+    # remaining 5 fail-CLOSED raise branches so a moved/missing sibling surfaces
+    # loudly with the right name. The shared importlib.util patch reaches the leaf
+    # across the re-bind because the loaders reference `importlib.util.spec_from_file_location`.
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    for loader, missing in (
+        (ce._load_sibling_early_close_report, "goal_artifact_early_close_report.py not found"),
+        (ce._load_sibling_metric_window, "goal_metric_window_lib.py not found"),
+        (ce._load_sibling_phase_routing, "goal_artifact_phase_routing.py not found"),
+        (ce._load_sibling_closeout_delegation, "goal_artifact_closeout_delegation.py not found"),
+        (ce._load_sibling_adapter_policy, "achieve_adapter_policy.py not found"),
+    ):
+        with pytest.raises(ImportError, match=missing):
+            loader()
+
+
+def test_grammar_mask_fences_returns_text_on_unbalanced_fence() -> None:
+    # An odd number of fence markers leaves `in_fence` True at EOF; `_mask_fences`
+    # then returns the original text unchanged (it cannot safely blank an unclosed
+    # fence). Pins goal_artifact_disposition_grammar.py `_mask_fences` `return text`.
+    unbalanced = "```\nx = 1\n"  # opening fence, never closed
+    assert disp._mask_fences(unbalanced) == unbalanced
+
+
+def test_grammar_section_body_empty_when_heading_is_last_char() -> None:
+    # When the heading is the final line with no trailing newline,
+    # `masked.find("\n", start.end())` is -1, so `_section_body` returns "".
+    # Pins goal_artifact_disposition_grammar.py `_section_body` `return ""`.
+    assert disp._section_body("## Auto-Retro", "Auto-Retro") == ""

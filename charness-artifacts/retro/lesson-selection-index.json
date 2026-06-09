@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-09",
-  "source_artifact_count": 168,
-  "candidate_count": 955,
+  "source_artifact_count": 170,
+  "candidate_count": 960,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -255,6 +255,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f218fd26150a",
+      "kind": "current_focus",
+      "lesson": "Split the two at-cap achieve closeout modules — `goal_artifact_disposition.py` (352/360) and `goal_artifact_closeout_evidence.py` (348/360) — into cohesive leaf sub-modules, behavior-preserving, mirror byte-synced, restoring real headroom so the next floor/rung addition starts from a clean split rather than another shared-grammar/CLI workaround (the #339 deferred structural debt).",
+      "normalized_key": "split the two at cap achieve closeout modules goal artifact disposition py 352 360",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d392ff30d8c6",
       "kind": "next_improvement",
       "lesson": "an authoring-time guard would flag a `#N` issue anchor in a `skills/public/**` script at edit/preflight time, not only at the commit sweep — the trap recurred 3× this run despite the frame note. Disposition: accepted-risk: the package-level `validate_skill_ergonomics` sweep is the commit-time backstop and caught all three, so nothing escaped; the residual is edit-time friction, re-persisted to recent-lessons as a pre-write checklist item, not a new gate.",
@@ -295,6 +315,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e905cfaac5f1",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Persist the refinement above to recent-lessons so the next module-split goal starts from it (this retro's persistence refreshes the digest).",
+      "normalized_key": "memory persist the refinement above to recent lessons so the next module split goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:68118057dca2",
       "kind": "next_improvement",
       "lesson": "structural: the achieve closeout module family (`goal_artifact_disposition.py` 352/360, `goal_artifact_closeout_evidence.py` 348/360) is at the length cap and forced this run to route logic through the shared grammar and wire new floors from the CLI. Disposition: accepted-risk: the hard length gate blocks further growth (it is the backstop that forced the clean factoring this run); a cohesive split is deferred structural debt, re-persisted to recent-lessons so the next at-cap addition to this family starts from a split rather than another workaround.",
@@ -315,102 +355,62 @@
       ]
     },
     {
-      "candidate_id": "current_focus:96d2d61ed761",
-      "kind": "current_focus",
-      "lesson": "`achieve` goal: split `scripts/run_slice_closeout.py` (474/480, in the length warn band) into the orchestrator plus a cohesive reporting module, behavior-preserving, with the plugin mirror byte-synced.",
-      "normalized_key": "achieve goal split scripts run slice closeout py 474 480 in the length warn",
+      "candidate_id": "next_improvement:08656a3a51d5",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** For a verbatim-MOVE-into-new-file refactor, treat every pre-existing uncovered branch in the moved code as a newly-gated changed line — cover those branches IN the introducing slice (not just the new glue like `_load_local_module`). This refines the #339 \"cover new lines in-slice\" lesson to explicitly include moved-but-previously-uncovered branches.",
+      "normalized_key": "workflow for a verbatim move into new file refactor treat every pre existing uncovered",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-run-slice-closeout-module-split.md",
-          "date": "2026-06-08",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:567f041f7ba8",
-      "kind": "current_focus",
-      "lesson": "Goal: `charness-artifacts/goals/2026-06-08-charness-update-closeout-step-and-version-skew-fix.md`.",
-      "normalized_key": "goal charness artifacts goals 2026 06 08 charness update closeout step and version skew",
+      "candidate_id": "repeat_trap:d64430f09cab",
+      "kind": "repeat_trap",
+      "lesson": "**Coverage-producer round-trip on pre-existing uncovered branches (the main waste, partly avoidable).** I carried the #339 lesson \"cover any NEW module's lines IN the introducing slice so the bundle producer confirms, not discovers\" into the operating frame — but still ran the bundle producer and had it *discover* 7 uncovered changed lines (the `_mask_fences` unbalanced-fence branch, `_section_body` heading-at-EOF branch, and 5 loader `raise ImportError` branches). Root cause: I reasoned \"verbatim move ⇒ already covered\" and missed that moving code into a NEW file makes every line a *changed* line, so pre-existing uncovered branches in the moved source become newly-gated. The branches were never covered even pre-split; the move surfaced them. Cost: a second ~6.5-min producer run after adding the coverage. The producer ran FIRST (per the guardrail), so the gap surfaced at the boundary, not post-merge — but it discovered rather than confirmed.",
+      "normalized_key": "coverage producer round trip on pre existing uncovered branches the main waste partly avoidable",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-version-skew-bundle-goal-v0-29-0.md",
-          "date": "2026-06-08",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:c16d220e36e0",
-      "kind": "current_focus",
-      "lesson": "Goal `charness-artifacts/goals/2026-06-08-retro-disposition-structural-followup-classification.md` (#337): make the waste-retro disposition gate classify a structural-follow-up *destination* per transferable waste item — a presence/form-enum-only floor (rung 1e) plus a fresh-eye reviewer mandate — so \"recorded in recent-lessons\" can no longer be mistaken for a structural fix.",
-      "normalized_key": "goal charness artifacts goals 2026 06 08 retro disposition structural followup classification md 337",
+      "candidate_id": "repeat_trap:9b7bd683ae2f",
+      "kind": "repeat_trap",
+      "lesson": "**Verdict-parity harness confound iteration (minor, well-handled).** The first parity diff flagged `remaining_minutes` (wall-clock) then `head_sha` (HEAD advanced on commit) — two benign confounds owned by untouched modules. Resolved cleanly by normalizing wall-clock in the harness and finally doing a pristine temp-revert (same HEAD, same goal text) so only the slice logic varied. The temp-revert is the gold-standard form; reaching for it first would have skipped the two normalization iterations.",
+      "normalized_key": "verdict parity harness confound iteration minor well handled the first parity diff flagged remaining",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-337-structural-followup-destination-floor.md",
-          "date": "2026-06-08",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:62532992746d",
-      "kind": "current_focus",
-      "lesson": "Ran the achieve goal `2026-06-08-authoring-preflight-and-disposition-delaunder` end to end: generalize the author-time shape preflight across the artifact- authoring validator family, and de-launder the disposition escape — to structurally close the recurring \"authoring-preflight skip\" loop instead of filing its N-th narrow instance.",
-      "normalized_key": "ran the achieve goal 2026 06 08 authoring preflight and disposition delaunder end to",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-authoring-preflight-and-disposition-delaunder.md",
-          "date": "2026-06-08",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:83e5e410c7eb",
-      "kind": "current_focus",
-      "lesson": "Ran the achieve goal `2026-06-08-gate-recurrence-mutation-and-closeout-preflight` end to end (Slices 1–5): close two recurring harness gate seams — (1) #335, the Nth instance of the changed-line mutation-coverage gate auto-filing post-merge, and (2) the goal-closeout/coordination-floor authoring surfaces the v0.28.0 preflight generalization did not cover — applying the \"close the loop, don't file the N-th instance\" discipline.",
-      "normalized_key": "ran the achieve goal 2026 06 08 gate recurrence mutation and closeout preflight end",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
-      "latest_source_date": "2026-06-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-issue-335-gate-recurrence-and-closeout-preflight.md",
-          "date": "2026-06-08",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Waste"
         }
       ]
     }
@@ -657,6 +657,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f218fd26150a",
+      "kind": "current_focus",
+      "lesson": "Split the two at-cap achieve closeout modules — `goal_artifact_disposition.py` (352/360) and `goal_artifact_closeout_evidence.py` (348/360) — into cohesive leaf sub-modules, behavior-preserving, mirror byte-synced, restoring real headroom so the next floor/rung addition starts from a clean split rather than another shared-grammar/CLI workaround (the #339 deferred structural debt).",
+      "normalized_key": "split the two at cap achieve closeout modules goal artifact disposition py 352 360",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d392ff30d8c6",
       "kind": "next_improvement",
       "lesson": "an authoring-time guard would flag a `#N` issue anchor in a `skills/public/**` script at edit/preflight time, not only at the commit sweep — the trap recurred 3× this run despite the frame note. Disposition: accepted-risk: the package-level `validate_skill_ergonomics` sweep is the commit-time backstop and caught all three, so nothing escaped; the residual is edit-time friction, re-persisted to recent-lessons as a pre-write checklist item, not a new gate.",
@@ -697,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e905cfaac5f1",
+      "kind": "next_improvement",
+      "lesson": "**memory:** Persist the refinement above to recent-lessons so the next module-split goal starts from it (this retro's persistence refreshes the digest).",
+      "normalized_key": "memory persist the refinement above to recent lessons so the next module split goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:68118057dca2",
       "kind": "next_improvement",
       "lesson": "structural: the achieve closeout module family (`goal_artifact_disposition.py` 352/360, `goal_artifact_closeout_evidence.py` 348/360) is at the length cap and forced this run to route logic through the shared grammar and wire new floors from the CLI. Disposition: accepted-risk: the hard length gate blocks further growth (it is the backstop that forced the clean factoring this run); a cohesive split is deferred structural debt, re-persisted to recent-lessons so the next at-cap addition to this family starts from a split rather than another workaround.",
@@ -713,6 +753,66 @@
           "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
           "date": "2026-06-09",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:08656a3a51d5",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** For a verbatim-MOVE-into-new-file refactor, treat every pre-existing uncovered branch in the moved code as a newly-gated changed line — cover those branches IN the introducing slice (not just the new glue like `_load_local_module`). This refines the #339 \"cover new lines in-slice\" lesson to explicitly include moved-but-previously-uncovered branches.",
+      "normalized_key": "workflow for a verbatim move into new file refactor treat every pre existing uncovered",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d64430f09cab",
+      "kind": "repeat_trap",
+      "lesson": "**Coverage-producer round-trip on pre-existing uncovered branches (the main waste, partly avoidable).** I carried the #339 lesson \"cover any NEW module's lines IN the introducing slice so the bundle producer confirms, not discovers\" into the operating frame — but still ran the bundle producer and had it *discover* 7 uncovered changed lines (the `_mask_fences` unbalanced-fence branch, `_section_body` heading-at-EOF branch, and 5 loader `raise ImportError` branches). Root cause: I reasoned \"verbatim move ⇒ already covered\" and missed that moving code into a NEW file makes every line a *changed* line, so pre-existing uncovered branches in the moved source become newly-gated. The branches were never covered even pre-split; the move surfaced them. Cost: a second ~6.5-min producer run after adding the coverage. The producer ran FIRST (per the guardrail), so the gap surfaced at the boundary, not post-merge — but it discovered rather than confirmed.",
+      "normalized_key": "coverage producer round trip on pre existing uncovered branches the main waste partly avoidable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9b7bd683ae2f",
+      "kind": "repeat_trap",
+      "lesson": "**Verdict-parity harness confound iteration (minor, well-handled).** The first parity diff flagged `remaining_minutes` (wall-clock) then `head_sha` (HEAD advanced on commit) — two benign confounds owned by untouched modules. Resolved cleanly by normalizing wall-clock in the harness and finally doing a pristine temp-revert (same HEAD, same goal text) so only the slice logic varied. The temp-revert is the gold-standard form; reaching for it first would have skipped the two normalization iterations.",
+      "normalized_key": "verdict parity harness confound iteration minor well handled the first parity diff flagged remaining",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+      "latest_source_date": "2026-06-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md",
+          "date": "2026-06-09",
+          "section": "Waste"
         }
       ]
     },

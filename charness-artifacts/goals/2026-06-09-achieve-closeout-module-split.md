@@ -1,6 +1,6 @@
 # Achieve Goal: Split the at-cap achieve closeout module family
 
-Status: draft
+Status: complete
 Created: 2026-06-09
 Activation: `/goal @charness-artifacts/goals/2026-06-09-achieve-closeout-module-split.md`
 
@@ -9,13 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 3** — bundle closeout. Slices 1 & 2 SHIPPED:
-  disposition.py 352->250 (grammar leaf), closeout_evidence.py 348->261 (loaders
-  leaf), both pristine byte-identical verdict parity over 68 goals, fresh-eye SHIP.
-- Next action: broad gate (`run-quality.sh --read-only`); changed-line mutation
-  coverage producer FIRST over the new/relocated lines; demonstrate a fresh rung
-  adds to a new module without hitting the cap; retro + Auto-Retro dispositions;
-  flip status to complete via `check_goal_artifact.py`.
+- Status: **COMPLETE.** All three slices shipped behavior-preserving. disposition.py
+  352->250 (+ grammar leaf 152), closeout_evidence.py 348->261 (+ loaders leaf 140);
+  both formerly-at-cap files now well under the 330 warn band with real headroom.
+- Proof: pristine byte-identical closeout-gate verdict parity over 68 live goals
+  (slice 1 sha 28e3f24a; slice 2 temp-revert sha 93e4d04d); broad verification-lock
+  gate PASS; changed-line coverage 0 uncovered across all 4 files; export-safe-imports
+  (448) + plugin-import-smoke green; mirror byte-synced; 2 fresh-eye slice critiques
+  SHIP + 1 disposition review PASS. Fresh-rung demo: 250+30=275 (<330) vs 352+30=382
+  (>360 cap) — debt retired, not relocated.
 - **Why this goal (chosen from the session signals):** the #339 work had to route
   logic through the shared grammar + wire new floors from the CLI THREE times to
   avoid the at-cap closeout files; recent-lessons flags this as deferred structural
@@ -162,6 +164,19 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Recorded for this run:
+
+- Routing: find-skills --recommend-for-task at session start routed to achieve, which owned the lifecycle and deferred the impl (slice implementation) and quality (verification/coverage) phase boundaries to their own skills per the contract — find-skills owns the route, no hard-coded phase→skill map.
+- Gather: n/a — every `## Context Sources` entry is an in-repo file
+  (retros / scripts / goal artifacts); no external URL / Slack / Notion / Docs /
+  Drive source applied.
+- Release: n/a — behavior-preserving refactor; the plugin mirror byte-sync is
+  not a release, and no version bump or install-manifest edit was made
+  (standard `achieve` no-push).
+- Issue closeout: n/a — resolves no tracked GitHub issue. #339 (the motivating
+  debt) is already closed; #340 / #338 / #184 appear in `## Context Sources` as
+  explicitly out-of-scope context only.
+
 ## Slice Log
 
 ### Slice 1: Slice 1 — extract disposition grammar leaf
@@ -190,6 +205,20 @@ during the run:
 - Critique: full — fresh-eye general-purpose bounded reviewer in shared worktree: AST-identity on all 8 loaders + all non-loader symbols vs HEAD (zero diffs); monkeypatch global-resolution traced empirically (check_complete_evidence.__globals__ is ce.__dict__, co_names has _load_shared_helper not _loaders); ImportError messages byte-identical (kept the 'beside goal_artifact_closeout_evidence.py' wording matching the test regexes); shared importlib.util patch still reaches the moved loaders across the file boundary; cohesive; no export hazard. VERDICT SHIP.
 - Off-goal findings:
 - Lessons carried forward: Re-binding moved loaders as module attributes (not calling them via _loaders.X) is what preserves a monkeypatch-on-ce surface: check_complete_evidence resolves _load_shared_helper from ce.__dict__ at call time, so monkeypatch.setattr(ce, ...) takes effect. Keeping ImportError messages verbatim (old filename) preserves substring-matching tests across a file move.
+- Metrics:
+
+### Slice 3: Slice 3 — bundle closeout
+
+- Objective: Prove the debt is retired (not relocated): broad gate, changed-line coverage = 0 uncovered, fresh-rung demo, retro + dispositions, flip to complete.
+- Why this approach: Bundle-boundary verification: a verbatim-move refactor must prove behavior preservation across the whole corpus + that the headroom is real (a fresh rung fits) + that every changed line is covered.
+- Commits:
+- What changed: Added 6 targeted coverage tests in tests/quality_gates/test_goal_disposition_gate.py (the 2 _load_local_module fail-closed branches + the 5 remaining loader raise arms + grammar _mask_fences unbalanced-fence + _section_body heading-at-EOF). Persisted retro + host-probe + disposition-review artifacts; filled Coordination Cues + Final Verification + Auto-Retro.
+- Alternatives rejected:
+- Targeted verification: Broad verification-lock gate PASS (broad pytest 396s, ruff, lengths, attention-state, repo-copy, boundary-ratchet, browser-guard). Changed-line mutation coverage gate ok=True, 0 uncovered across all 4 changed pool files. Fresh-rung demo: disposition.py 250+30=275 (<330 warn) vs pre-split 352+30=382 (>360 hard cap -> would FAIL). Disposition review (rung 1b) VERDICT PASS.
+- Test duplication pressure: the 6 new tests are branch-coverage for moved-but-previously-uncovered lines (no logic duplication); each pins a distinct raise/return branch surfaced as a changed line by the move.
+- Critique: Disposition review (fresh-eye rung 2) PASS — every applied: claim verified against real source + passing tests, no token-theater (charness-artifacts/critique/2026-06-09-achieve-closeout-module-split-disposition-review.md).
+- Off-goal findings:
+- Lessons carried forward: A verbatim MOVE into a new file re-gates every moved line as changed, so pre-existing uncovered branches in the moved code become newly-blocking at the bundle boundary — cover them in the introducing slice (refinement persisted to recent-lessons).
 - Metrics:
 
 ## Context Sources
@@ -265,9 +294,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-09-achieve-closeout-module-split.md
+Host log probe: charness-artifacts/retro/2026-06-09-achieve-closeout-module-split-host-probe.md
+Disposition review: charness-artifacts/critique/2026-06-09-achieve-closeout-module-split-disposition-review.md
 
 ## User Verification Instructions
 
@@ -283,5 +312,8 @@ After the run reports complete, the user can independently verify:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <change>` / `issue #N (recurs:|novel:)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: covered the 7 moved-but-previously-uncovered branches the bundle producer flagged (grammar `_mask_fences` unbalanced-fence + `_section_body` heading-at-EOF; 5 loader `raise ImportError` arms) plus the two `_load_local_module` fail-closed branches, with targeted tests in `tests/quality_gates/test_goal_disposition_gate.py` — so the changed-line coverage gate is green (0 uncovered).
+
+Disposition: applied: extended the in-slice-coverage guardrail in `charness-artifacts/retro/recent-lessons.md` (auto-refreshed from this retro) to cover the moved-but-previously-uncovered-branch case — the structural home for both the workflow and memory `## Next Improvements` of the retro.
+
+Structural follow-up: applied: extended the existing in-slice-coverage guardrail wording in `charness-artifacts/retro/recent-lessons.md` to include the moved-into-new-file branch case (a refinement of the recurring #339 lesson, not a novel class per the `## Sibling Search` decision); no new gate is needed — the changed-line producer already catches it at the bundle boundary, so the fix is authoring discipline captured in memory.
