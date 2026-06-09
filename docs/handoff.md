@@ -39,13 +39,22 @@
 - **#335** auto-closes on the **next green scheduled mutation run** after push (the
   mutation-workflow marker owns it) — do NOT manually close. The local producer is
   green over the next-run range; the CI run is the authoritative verdict.
-- **Make `charness update` on this dev machine a STANDING release-closeout step**
-  (operator-requested). Motivation (this session): the *installed-plugin*
-  `validate_debug_artifact.py` the scaffold cited was LOOSER than the repo's own, so
-  a scaffold-blessed debug artifact passed locally but failed the broad gate. A
-  release-closeout `charness update` keeps the installed surface == repo and kills
-  that scaffold/gate version-skew class. Owner: `release` contract; subsumes the
-  open v0.27.0 real-host smoke (+ nose checklist, [release latest](../charness-artifacts/release/latest.md)).
+- **`charness update` standing release-closeout step — SHIPPED (v0.29.0 manual →
+  v0.30.1 auto-run), not a to-do.** The release adapter declares
+  `post_publish_install_refresh: charness update` and `publish_release.py` auto-runs
+  it after a verified publish (recording the
+  `install_refresh` result — refreshed/failed/not_configured — as a closeout risk),
+  keeping the installed surface == repo and
+  killing the scaffold/gate version-skew class; the deeper root (scaffolds citing
+  the repo-local validator) shipped alongside. Contract:
+  [install-surface.md](../skills/public/release/references/install-surface.md)
+  "Maintainer Dev-Machine Install Refresh" + the release-adapter `real_host_checklist`.
+  The v0.27.0/v0.28.0 real-host smoke is folded into the **standing** real-host
+  checklist (re-run each release), not a perpetually-open one-off. Verified
+  2026-06-09: installed plugin `0.33.0` == released `v0.33.0`; read-only checklist
+  parts pass (nose doctor `managed_checkout: true` + upstream installer route). The
+  actual `charness update` + `nose` install on a maintainer machine stays the
+  operator/host lane.
 - **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
 
 ## Discuss

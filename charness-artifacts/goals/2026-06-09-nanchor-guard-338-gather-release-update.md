@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 committed (7204940d); Slice 2 COMPLETE (fresh-eye SHIP; #338 closeout draft_verified), awaiting its own commit; then Slice 3 (charness-update release-closeout).
-- Next action: commit Slice 2 (carrier direct-commit, Closes #338), then start Slice 3 — make `charness update` a standing release-closeout step.
+- Current slice: Slice 1 committed (7204940d); Slice 2 committed (40e492ed, Closes #338); Slice 3 COMPLETE (verification — the standing `charness update` step already shipped v0.29.0→v0.30.1; stale handoff corrected), awaiting its own commit + light fresh-eye verify.
+- Next action: commit Slice 3, then final goal closeout (broad gate over the bundle, retro, handoff, complete).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -194,7 +194,13 @@ during the run:
   bounded reviewer (SHIP); closeout via `issue_tool.py validate-closeout-draft`.
 - Gather: n/a — #338 is the gather provider being BUILT, not an external source to
   acquire into a knowledge asset; X/Twitter acquisition is mocked (no live fetch).
-- Release: pending — Slice 3 (`charness update` standing release-closeout step).
+- Release: n/a (no release cut this run — non-goal) — the standing `charness update`
+  release-closeout step ALREADY shipped (v0.29.0 manual → v0.30.1 auto-run): adapter
+  `post_publish_install_refresh: charness update` + `publish_release.py` auto-run +
+  `install-surface.md`. External lane (operator/host): the actual `charness update` +
+  `nose` install at the next release. Verified read-only this run: installed plugin
+  `0.33.0` == released `v0.33.0`; `test_release_publish_resilience.py` green (20);
+  nose doctor `managed_checkout: true` + upstream installer route.
 - Issue closeout: #338 — carrier `direct-commit` (`Closes #338` in the slice-2
   commit; closes on the operator's push to main). Proof: `issue_tool.py
   validate-closeout-draft` → `draft_verified` (ok: true); resolution critique
@@ -228,6 +234,20 @@ during the run:
 - Critique: Fresh-eye bounded reviewer (general-purpose, read-only): SHIP, all 6 invariants verified live (mismatch->invalid-proof->non-success; non-twitter omits source_identity; no network primitives). One bundle-anyway finding (oEmbed URL-echo proves requested-id match not existence) folded this slice: require a rendered body + covering test. Recorded: charness-artifacts/critique/2026-06-09-issue-338-gather-exact-source.md.
 - Off-goal findings:
 - Lessons carried forward: Reused the existing acquisition-trace machinery (AcquisitionAttempt/classify/disposition) rather than a parallel trace; kept acquire wiring thin and the X logic in a new module to respect length limits.
+- Metrics:
+
+### Slice 3: Slice 3 — charness-update release-closeout step
+
+- Objective: Make charness update a standing release-closeout step (installed surface == repo), subsuming the v0.27.0 real-host smoke + nose checklist; the actual run is the operator/host lane.
+- Why this approach: Investigation finding: the in-repo deliverable ALREADY SHIPPED (v0.29.0 manual closeout step -> v0.30.1 auto-run). The release adapter declares post_publish_install_refresh: charness update; publish_release.py auto-runs it after a verified publish and records install_refresh (refreshed/failed/not_configured) as a closeout risk; install-surface.md documents the step + the version-skew motivation + that it subsumes the v0.27.0/v0.28.0 smoke; real_host_checklist carries the nose smoke. A NEW deterministic 'installed == repo packaging version' check would be WRONG (the repo is normally ahead of the last released/installed version between releases -> noisy); the correct invariant is installed == latest RELEASED, which the auto-refresh ensures. So slice 3 is verification + stale-handoff correction, not new code.
+- Commits: (staged this slice)
+- What changed: docs/handoff.md — corrected the stale 'Make charness update a standing release-closeout step' Next-Session to-do to reflect it SHIPPED (v0.29.0->v0.30.1), with the verified state. No code change: the release-contract deliverable pre-existed and a new installed-vs-repo check would be noisy/wrong.
+- Alternatives rejected: (a) add a deterministic installed==repo check — rejected: repo HEAD is normally ahead of the last release between releases, so it would noisily report 'skew' on normal state; the right check is installed==latest-released, already ensured by the auto-refresh. (b) automate the real-host smoke — rejected: install-surface.md intentionally keeps it as release-time HUMAN proof, not standing CI. (c) cut a release to exercise the auto-refresh — rejected: non-goal (no release by default).
+- Targeted verification: tests/quality_gates/test_release_publish_resilience.py green (20); adapter post_publish_install_refresh + publish_release auto-run wiring confirmed; install-surface.md contract + version-skew motivation present; read-only standing real-host checklist parts pass on this machine (installed plugin 0.33.0 == released v0.33.0; nose doctor managed_checkout=true + upstream nose-cli-installer.sh route; nose install --dry-run points at the upstream release path).
+- Test duplication pressure:
+- Critique: Fresh-eye bounded reviewer (general-purpose, read-only): SHIP. Independently verified all 4 claims against the repo (adapter+helper auto-run wiring; install-surface.md contract; the "installed==repo would be redundant not a missed gap" reasoning; handoff edit accuracy + version triple-check). Specifically hunted for a missed non-noisy check (an `install_refresh != failed` closeout gate) and ruled it out — blocking on it would contradict the deliberate non-blocking design. No code warranted.
+- Off-goal findings: The handoff 'Next Session' charness-update item was STALE — it requested building a step that already shipped (v0.29.0->v0.30.1), predating this goal. Corrected in docs/handoff.md this slice. Root: the handoff to-do was carried forward across sessions without reconciling against the v0.29.0/v0.30.1 implementation.
+- Lessons carried forward: Before building a handoff-sourced 'next step', verify it isn't already shipped — reconcile the handoff to-do against the actual repo/release state first.
 - Metrics:
 
 ## Context Sources
