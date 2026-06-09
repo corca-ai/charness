@@ -6,7 +6,15 @@ reduced to tactics `charness` is willing to carry locally.
 ## Domain Families
 
 - `x.com`, `twitter.com`
-  - prefer search for discovery plus Syndication API or oEmbed for retrieval
+  - for a status URL, the `domain-specific-route` stage fetches the EXACT post
+    through identity-keyed endpoints — the Syndication CDN keyed on the status
+    id, then oEmbed — and accepts a result only when the returned status id
+    matches the requested one (`identity_proof.matched`)
+  - a mismatch is recorded as `invalid-proof` and never substituted; an
+    all-blocked outcome stops honestly so a merely-similar public source is not
+    passed off as the original
+  - live fetching is injected, so the default is non-live: tests and host grants
+    seed responses; an operator opts into live fetch explicitly
 - `reddit.com`
   - prefer `.json` endpoints with a mobile user agent
 - `news.ycombinator.com`

@@ -110,6 +110,25 @@ When a consumer wants provider-backed gather:
   - preserve attempted, skipped, unavailable, terminal, and selected fallback
     stages in the durable acquisition trace instead of relying on handoff notes
     or chat context for proof of degraded acquisition
+- X/Twitter status posts (exact-source identity):
+  - the `twitter-syndication` route's `domain-specific-route` stage fetches the
+    EXACT post through identity-keyed endpoints (Syndication CDN by status id,
+    then oEmbed) and treats a result as the original ONLY when the returned
+    status id matches the requested one — the proof lives in the trace as
+    `identity_proof.matched`
+  - never substitute a merely-similar public source as if it were the original:
+    a mismatch is `invalid-proof`, an all-blocked outcome is honest. The
+    acquisition exposes `source_identity` ∈ `exact-fetched` / `exact-blocked` /
+    `exact-unavailable` / `not-applicable` so the answer path can distinguish a
+    fetched exact post from a blocked one; `gather` never emits `similar-source`
+  - live X fetching is operator-authorized, not autonomous: the exact-source
+    stage runs against seeded/granted responses by default, and live network
+    fetch is an explicit opt-in (`--live-domain-route`)
+  - the Syndication endpoint is keyed on the post-body status id (genuine
+    existence proof) and is tried first; oEmbed echoes the requested URL, so it
+    proves *requested-id match* only and is accepted as the original solely when
+    it also returns a rendered body (`html`/`author_name`) — a bare URL echo for
+    a deleted/nonexistent post is rejected rather than treated as existence
 
 ## Modeling Rule Going Forward
 

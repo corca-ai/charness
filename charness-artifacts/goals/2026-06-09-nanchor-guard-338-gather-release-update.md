@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 COMPLETE (fresh-eye SHIP), awaiting its own commit; then Slice 2 (#338 gather).
-- Next action: commit Slice 1 (per-slice closeout), then start Slice 2 — gather X/Twitter exact-source-or-honest-stop (mocked).
+- Current slice: Slice 1 committed (7204940d); Slice 2 COMPLETE (fresh-eye SHIP; #338 closeout draft_verified), awaiting its own commit; then Slice 3 (charness-update release-closeout).
+- Next action: commit Slice 2 (carrier direct-commit, Closes #338), then start Slice 3 — make `charness update` a standing release-closeout step.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -187,10 +187,18 @@ during the run:
   (`find-skills` capability map: quality owns `validate_skill_ergonomics` +
   the skill-surface preflight). 
 - Routing (Slice 1 critique): `critique` — fresh-eye bounded reviewer (SHIP).
-- Gather: pending — Slice 2 (#338) X/Twitter source acquisition (mocked, no live fetch).
+- Routing (Slice 2 impl): `gather`/`web-fetch` provider surface — implemented the
+  twitter-syndication exact-source stage (find-skills capability map: gather owns
+  provider routing, support/web-fetch owns the acquisition engine).
+- Routing (Slice 2 critique + #338 resolution): `critique` / `issue` — fresh-eye
+  bounded reviewer (SHIP); closeout via `issue_tool.py validate-closeout-draft`.
+- Gather: n/a — #338 is the gather provider being BUILT, not an external source to
+  acquire into a knowledge asset; X/Twitter acquisition is mocked (no live fetch).
 - Release: pending — Slice 3 (`charness update` standing release-closeout step).
-- Issue closeout: pending — #338 close-intended in Slice 2 (carrier: direct-commit;
-  proof: `issue_tool.py validate-closeout-draft`).
+- Issue closeout: #338 — carrier `direct-commit` (`Closes #338` in the slice-2
+  commit; closes on the operator's push to main). Proof: `issue_tool.py
+  validate-closeout-draft` → `draft_verified` (ok: true); resolution critique
+  `charness-artifacts/critique/2026-06-09-issue-338-gather-exact-source.md`.
 
 ## Slice Log
 
@@ -206,6 +214,20 @@ during the run:
 - Critique: Fresh-eye bounded reviewer (general-purpose, read-only): SHIP. Verified all 5 invariants incl. a 452/452 real-file differential (per-file verdict == commit-sweep verdict, zero mismatch). One non-blocking nit (pycache parity) applied as a 1-line hardening + test.
 - Off-goal findings:
 - Lessons carried forward: Covered every new branch (incl. the pycache exclusion and outside-repo error) in this slice so the bundle-boundary mutation producer confirms rather than discovers.
+- Metrics:
+
+### Slice 2: Slice 2 — #338 gather X/Twitter exact-source
+
+- Objective: Acquire the EXACT X/Twitter post via identity-keyed fallback OR stop honestly with 'exact source unavailable' — never substitute a similar source. Source-identity proof, visible failed-attempt trace, answer-path distinction.
+- Why this approach: The web-fetch twitter-syndication route already classified x.com/twitter.com but its domain-specific-route stage was a literal not-implemented skip (the exact gap #338 names). Implemented that stage: parse status URL, identity-keyed endpoints (syndication CDN by status id, then oEmbed), verify returned id == requested id before accepting as original. Probe resolved to a REAL exact-source route (criterion #2 option 1) with honest-stop fallback when blocked. Live fetch injected/operator-gated (no autonomous live X).
+- Commits: (staged this slice; carrier direct-commit, Closes #338)
+- What changed: NEW skills/support/web-fetch/scripts/twitter_exact_source.py (parse/endpoints/identity-verify/classify_source_identity/make_fetcher); acquire_public_url.py runs the stage for twitter-syndication + emits source_identity + --domain-route-response-file/--live-domain-route; gather_public_url.py surfaces source_identity + passthrough (extracted _build_acquire_cmd); routing-table.md + gather-provider-ownership.md contract; NEW tests/test_twitter_exact_source.py (19). Mirror byte-synced.
+- Alternatives rejected: (a) full X scraper / vendor fivetaku/insane-search — rejected (non-goal, over-build). (b) honest 'unsupported' stop only — viable per #338 option 2, but the syndication/oEmbed identity-keyed route is reliable and adds real value, so implemented it WITH honest-stop as the fallback. (c) autonomous live fetch default — rejected: live X is operator-gated per goal.
+- Targeted verification: 19 new tests (unit + subprocess integration, all mocked/seeded — no live X); 56 existing web-fetch/gather tests green; ruff/py_compile/lengths clean; validate_skill_ergonomics green; slice-1 anchor scan green on the edited skill-package files (dogfood); doc links + markdown green; #338 closeout draft draft_verified (ok:True).
+- Test duplication pressure: Low-moderate. New test module is self-contained; the _fetcher mock + seeded subprocess helpers are local to the X concern; no shared-fixture duplication that should be hoisted.
+- Critique: Fresh-eye bounded reviewer (general-purpose, read-only): SHIP, all 6 invariants verified live (mismatch->invalid-proof->non-success; non-twitter omits source_identity; no network primitives). One bundle-anyway finding (oEmbed URL-echo proves requested-id match not existence) folded this slice: require a rendered body + covering test. Recorded: charness-artifacts/critique/2026-06-09-issue-338-gather-exact-source.md.
+- Off-goal findings:
+- Lessons carried forward: Reused the existing acquisition-trace machinery (AcquisitionAttempt/classify/disposition) rather than a parallel trace; kept acquire wiring thin and the X logic in a new module to respect length limits.
 - Metrics:
 
 ## Context Sources

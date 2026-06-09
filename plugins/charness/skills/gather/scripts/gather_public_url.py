@@ -158,6 +158,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
             f"- Disposition: `{acquisition.get('disposition', 'unknown')}`",
             f"- Final Status: `{acquisition.get('final_status', 'unknown')}`",
             f"- Final Confidence: `{acquisition.get('final_confidence', 'none')}`",
+            f"- Source Identity: `{acquisition.get('source_identity', 'not-applicable')}`",
             "",
             "## Selected Attempt",
             "",
@@ -185,24 +186,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
     )
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
-    parser.add_argument("--url", required=True, help="Public URL to gather")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root where the gathered URL record should be written")
-    parser.add_argument("--slug", default=None, help="Slug for the dated record (auto-derived from URL when omitted)")
-    parser.add_argument("--date", default=None, help="Record date in YYYY-MM-DD (defaults to today UTC)")
-    parser.add_argument("--intent", choices=("single", "collect"), default="single", help="single = one durable record; collect = bulk crawl session")
-    parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto", help="When to use a browser fallback")
-    parser.add_argument("--timeout", type=int, default=20, help="Per-stage timeout in seconds")
-    parser.add_argument("--direct-response-file", type=Path, help="Pre-captured direct response file to seed the acquisition")
-    parser.add_argument("--expect-text", action="append", default=[], help="Required substring in the response (repeatable)")
-    parser.add_argument("--expect-regex", action="append", default=[], help="Required regex pattern in the response (repeatable)")
-    parser.add_argument("--expect-json-field", action="append", default=[], help="Required JSON field path in the response (repeatable)")
-    parser.add_argument("--persist-extracted-content", action="store_true", help="Persist extracted page content in the record")
-    parser.add_argument("--max-extracted-content-chars", type=_positive_int, default=200_000, help="Maximum chars of extracted content to persist")
-    parser.add_argument("--execute", action="store_true", help="Write the record (otherwise dry-run)")
-    args = parser.parse_args()
-
+def _build_acquire_cmd(args: argparse.Namespace) -> list[str]:
     acquire_cmd = [
         sys.executable,
         str(SUPPORT_ACQUIRE),
@@ -219,6 +203,10 @@ def main() -> int:
     ]
     if args.direct_response_file is not None:
         acquire_cmd.extend(["--direct-response-file", str(args.direct_response_file)])
+    if args.domain_route_response_file is not None:
+        acquire_cmd.extend(["--domain-route-response-file", str(args.domain_route_response_file)])
+    if args.live_domain_route:
+        acquire_cmd.append("--live-domain-route")
     for expected in args.expect_text:
         acquire_cmd.extend(["--expect-text", expected])
     for pattern in args.expect_regex:
@@ -228,8 +216,30 @@ def main() -> int:
     if args.persist_extracted_content:
         acquire_cmd.append("--include-selected-content")
         acquire_cmd.extend(["--selected-content-max-chars", str(args.max_extracted_content_chars)])
+    return acquire_cmd
 
-    acquisition = _run_json(acquire_cmd)
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
+    parser.add_argument("--url", required=True, help="Public URL to gather")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root where the gathered URL record should be written")
+    parser.add_argument("--slug", default=None, help="Slug for the dated record (auto-derived from URL when omitted)")
+    parser.add_argument("--date", default=None, help="Record date in YYYY-MM-DD (defaults to today UTC)")
+    parser.add_argument("--intent", choices=("single", "collect"), default="single", help="single = one durable record; collect = bulk crawl session")
+    parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto", help="When to use a browser fallback")
+    parser.add_argument("--timeout", type=int, default=20, help="Per-stage timeout in seconds")
+    parser.add_argument("--direct-response-file", type=Path, help="Pre-captured direct response file to seed the acquisition")
+    parser.add_argument("--domain-route-response-file", type=Path, help="JSON map seeding the exact-source domain route (e.g. X/Twitter syndication) without a live fetch")
+    parser.add_argument("--live-domain-route", action="store_true", help="Allow live fetch of exact-source domain endpoints (operator-authorized; off by default)")
+    parser.add_argument("--expect-text", action="append", default=[], help="Required substring in the response (repeatable)")
+    parser.add_argument("--expect-regex", action="append", default=[], help="Required regex pattern in the response (repeatable)")
+    parser.add_argument("--expect-json-field", action="append", default=[], help="Required JSON field path in the response (repeatable)")
+    parser.add_argument("--persist-extracted-content", action="store_true", help="Persist extracted page content in the record")
+    parser.add_argument("--max-extracted-content-chars", type=_positive_int, default=200_000, help="Maximum chars of extracted content to persist")
+    parser.add_argument("--execute", action="store_true", help="Write the record (otherwise dry-run)")
+    args = parser.parse_args()
+
+    acquisition = _run_json(_build_acquire_cmd(args))
     acquisition_disposition = str(acquisition.get("disposition", "unknown"))
     final_status = str(acquisition.get("final_status", "unknown"))
     final_confidence = str(acquisition.get("final_confidence", "none"))
@@ -242,6 +252,7 @@ def main() -> int:
             "acquisition_disposition": acquisition_disposition,
             "final_status": final_status,
             "final_confidence": final_confidence,
+            "source_identity": acquisition.get("source_identity", "not-applicable"),
             "content_persistence": "none",
             "acquisition": acquisition,
             "write_record": None,
@@ -270,6 +281,7 @@ def main() -> int:
         "acquisition_disposition": acquisition_disposition,
         "final_status": final_status,
         "final_confidence": final_confidence,
+        "source_identity": acquisition.get("source_identity", "not-applicable"),
         "content_persistence": content_persistence,
         "acquisition": _trace_payload(acquisition),
         "write_record": write_payload,

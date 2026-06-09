@@ -17,6 +17,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import twitter_exact_source  # noqa: E402
 from acquisition_trace_lib import (  # noqa: E402
     AcquisitionAttempt,
     disposition_for_attempts,
@@ -77,6 +78,16 @@ def _positive_int(raw: str) -> int:
     if value < 1:
         raise argparse.ArgumentTypeError("must be a positive integer")
     return value
+
+
+def _domain_route_fetcher(args: argparse.Namespace):
+    seed_path = getattr(args, "domain_route_response_file", None)
+    seed_map = json.loads(seed_path.read_text(encoding="utf-8")) if seed_path is not None else None
+    return twitter_exact_source.make_fetcher(
+        seed_map,
+        live=bool(getattr(args, "live_domain_route", False)),
+        live_fetch=lambda endpoint_url: _read_direct(endpoint_url, timeout=args.timeout, direct_response_file=None),
+    )
 
 
 def _attempt_from_text(
@@ -185,7 +196,7 @@ def _payload_for(
     attempts: list[AcquisitionAttempt],
     disposition: str,
 ) -> dict[str, object]:
-    return payload(
+    result = payload(
         args.url,
         route,
         attempts,
@@ -194,6 +205,9 @@ def _payload_for(
         include_selected_content=args.include_selected_content,
         selected_content_max_chars=args.selected_content_max_chars,
     )
+    if route.get("route_id") == "twitter-syndication":
+        result["source_identity"] = twitter_exact_source.classify_source_identity(result)
+    return result
 
 
 def _browser_stage(
@@ -290,10 +304,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
     )
     direct_attempt = attempts[-1]
     if has_stage(route, "domain-specific-route"):
-        attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
+        if route["route_id"] == "twitter-syndication":
+            attempts.extend(twitter_exact_source.run_exact_source_stage(args.url, fetcher=_domain_route_fetcher(args)))
+        else:
+            attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
     if direct_attempt.status == "invalid-proof":
         return _payload_for(args, route, attempts, "error")
     if should_stop(direct_attempt, proof_required=proof_required):
+        return _payload_for(args, route, attempts, "success")
+    if has_success(attempts, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
     if try_defuddle:
@@ -337,6 +356,8 @@ def main() -> int:
     parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto")
     parser.add_argument("--timeout", type=int, default=20)
     parser.add_argument("--direct-response-file", type=Path)
+    parser.add_argument("--domain-route-response-file", type=Path, help="JSON map {endpoint_url: {text, error}} seeding the domain-specific exact-source stage (no live fetch)")
+    parser.add_argument("--live-domain-route", action="store_true", help="Allow live network fetch of domain-specific exact-source endpoints (operator-authorized; off by default)")
     parser.add_argument("--expect-text", action="append", default=[])
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])
