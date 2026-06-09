@@ -9,12 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **Slice 1 (#341) + Slice 2 (#340) COMPLETE — both fresh-eye SHIP,
-  committed.** Next: Slice 3 (activation-preflight-surface).
-- Next action: implement Slice 3 — extend the artifact-shape preflight to cover the
-  goal `Activation:` preamble line (needs preamble extraction) per
-  `charness-artifacts/spec/artifact-shape-preflight-coverage.md`; add a test for a
-  missing/malformed Activation preamble; behavior-preserving for existing checks.
+- Current slice: **All 3 slices COMPLETE.** Slice 1 (#341) + Slice 2 (#340) fresh-eye
+  SHIP + committed; Slice 3 (activation-preflight) already landed in 01021a14 —
+  added the enforcement-test gap closer. Next: **bundle boundary** then completion.
+- Next action: bundle boundary — re-derive the authoritative `3a42d2e0..HEAD` range
+  (slices 2+3 added changed pool files: find-skills scripts + the test), run the
+  changed-line producer FIRST, then the broad `run-quality.sh --read-only` gate;
+  then final verification + retro + complete flip. (achieve does not push.)
+- Slice-3 finding: the goal-activation preflight surface was ALREADY DONE+committed
+  (01021a14, 2026-06-08); the spec recorded it DONE, the handoff "Next Session" was
+  STALE. Verified live; closed the implicit-enforcement-test gap. Stale handoff item
+  recorded as an off-goal finding (correct at next handoff refresh).
 - Slice-1 outcome: root-cause was the BLOCKING selection arm (per-file-cap
   structural collision with module-split file sizes), not the survived mutants
   (red herring — score was PASS). Reclassified per-file-cap drops as advisory.
@@ -157,7 +162,7 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 | 1 | #341: root-cause + kill the 5 survived `main` mutants and cover the changed-line blocking-signal gap on the authoritative range; make the next scheduled mutation run green | live regression on main; the dominant recurring class (handoff + recent-lessons); this session's coverage-discipline lesson applies directly | local producer `ok: true` over the post-push range; survived mutants killed (targeted-mutant proof); per-file-cap blocking arm reclassified advisory → end-to-end GREEN over `3a42d2e0..HEAD`; fresh-eye SHIP; #341 auto-closes on the green CI run | **done** |
 | 2 | #340: surface specdown via `find-skills` support-skill routing (not only integration tool); classify its correct layer first | the #1 deferred item from the module-split goal; clear repro + cost recorded in #340 | tests pin specdown in `support_skill_recommendations` (non-materialized shipped path) + weak-text guard; inventory refreshed; mirror synced; fresh-eye SHIP; closeout draft validates | **done** |
-| 3 | activation-preflight-surface: extend the artifact-shape preflight to cover the goal `Activation:` preamble line (preamble extraction) | deferred follow-up named in handoff; small, bounded | preflight flags a missing/malformed Activation preamble; test; spec updated; mirror synced | planned |
+| 3 | activation-preflight-surface: extend the artifact-shape preflight to cover the goal `Activation:` preamble line (preamble extraction) | deferred follow-up named in handoff; small, bounded | **ALREADY DONE in 01021a14** (goal-activation surface + `_extract_preamble`; spec recorded DONE, handoff was stale); verified live; closed the implicit missing-Activation enforcement-test gap | **done** |
 
 ## Coordination Cues
 
@@ -228,6 +233,20 @@ during the run:
 - Critique: Fresh-eye reviewer (separate agent context), read-only: VERDICT SHIP for #340. Verified dedup correctness (no double-surface; materialized browserlike single-entry), the support_state filter matches support_state_for_manifest, the inventory-refresh staleness claim TRUE (HEAD artifact from a different worktree with the 3 skills materialized; CI regenerates the refreshed values), and ran the acceptance. Actionable polish folded THIS slice: shipped recs had empty summary -> surfaced the integration summary in capability_sources. Over-worry (not folded): aliased-integration dedup divergence is unreachable today (the 2 aliased manifests are integration-only).
 - Off-goal findings:
 - Lessons carried forward: An integration can ship a support skill that materializes only on install; find-skills support routing must reason from support_skill_source, not just locally-materialized support_entries, or consumer repos lose the canonical discovery path. Resolves #340.
+- Metrics:
+
+### Slice 3: Slice 3 — activation-preflight-surface (already landed; closed the enforcement-test gap)
+
+- Objective: Extend the artifact-shape preflight to cover the goal Activation preamble line (preamble extraction), and ensure a missing/malformed Activation preamble is flagged.
+- Why this approach: FINDING: the goal-activation preflight surface was ALREADY implemented and committed in 01021a14 (2026-06-08, 'goal-activation preflight surface — Activation preamble (Slice 3)') — check_artifact_surface_preflight.py has the goal-activation surface with template_preamble=_GOAL_TEMPLATE + _extract_preamble, author-time-only (validator=None, commit_boundary=False), with the enforcement owner named (check_goal_artifact.py / goal_artifact_lib.check_goal's Activation:-line requirement). The spec (artifact-shape-preflight-coverage.md:124-136) correctly records it DONE; the docs/handoff.md 'Next Session' deferred item was STALE. Verified live: --type goal-activation surfaces the Activation shape; check_goal flags a missing Activation line (exit 1). The only genuine gap: the boundary's 'a test covers a missing/malformed Activation preamble' was only IMPLICITLY exercised (the existing bad-case test omits Activation but does not assert that issue). Closed it with an explicit enforcement test.
+- Commits:
+- What changed: tests/quality_gates/test_goal_artifact_lib.py — new test_check_goal_flags_missing_activation_preamble_line pinning the enforcement the preflight surface points at (missing Activation flagged; well-formed Activation raises no issue). No skill-package or code change (feature already shipped) → no mirror sync.
+- Alternatives rejected: Re-implement the preflight surface — rejected: already done (01021a14), would be redundant. Extend check_goal to flag MALFORMED (present-but-wrong) Activation — rejected: out of the spec's designed scope (author-time surface + presence enforcement) and risks flagging pre-existing goals (behavior change). Edit the stale handoff now — deferred to the handoff/retro step (do not make handoff the running scratchpad mid-goal); recorded as a finding.
+- Targeted verification: 93 tests pass (test_goal_artifact_lib + test_check_artifact_surface_preflight, incl. the 4 existing goal-activation/preamble tests + the new enforcement test). Live: preflight --type goal-activation surfaces the shape; check_goal flags missing Activation (exit 1). ruff clean. Behavior-preserving (additive test only).
+- Test duplication pressure: New test pins the missing-Activation enforcement explicitly (previously only implicit in the bad-status test). No duplication with the preflight preamble-extraction tests (those cover _extract_preamble; this covers check_goal's verdict).
+- Critique: Fresh-eye slice critique pending (spawned at slice boundary).
+- Off-goal findings: docs/handoff.md 'Next Session' lists goal-activation-preflight-surface as a deferred follow-up, but it was completed in 01021a14. Stale handoff pointer — recorded; correct at the next handoff refresh. Not filed as an issue (handoff staleness, not a code defect).
+- Lessons carried forward: Before implementing a deferred follow-up named only in the handoff, cross-check the OWNING spec's status — the spec (DONE) was authoritative over the stale handoff. Saved a redundant re-implementation.
 - Metrics:
 
 ## Context Sources

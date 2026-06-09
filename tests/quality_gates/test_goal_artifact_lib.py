@@ -47,6 +47,22 @@ def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     assert any("bogus" in issue for issue in bad["issues"])
 
 
+def test_check_goal_flags_missing_activation_preamble_line() -> None:
+    """The goal `Activation:` preamble line is the author-time-surfaced shape
+    (`check_artifact_surface_preflight.py --type goal-activation`); its enforcement is
+    this `check_goal` requirement. A goal artifact without the `Activation:` preamble
+    line is flagged. (Pins the enforcement the goal-activation preflight surface points at.)"""
+    with_activation = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n## Goal\nbody\n"
+    )
+    without_activation = "# Achieve Goal: T\n\nStatus: draft\n\n## Goal\nbody\n"
+
+    assert any("Activation" in issue for issue in gal.check_goal(without_activation)["issues"])
+    assert gal.check_goal(without_activation)["ok"] is False
+    # Behavior-preserving: a well-formed Activation preamble line raises no Activation issue.
+    assert not any("Activation" in issue for issue in gal.check_goal(with_activation)["issues"])
+
+
 def test_append_slice_numbers_and_spacing(tmp_path: Path) -> None:
     gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
     path = gal.goal_path(tmp_path, "2026-05-27", "g")
