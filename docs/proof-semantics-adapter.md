@@ -51,6 +51,12 @@ proof-semantics-adapter.yaml
   disposition* (no domain map available) rather than silently passing.
 - **Found but invalid** → fails closed, so a repo cannot ship a broken proof map.
 
+> **charness itself ships no proof-semantics adapter.** So a `## Proof Ledger` added
+> to a charness closeout runs the proof-mismatch floor in DEGRADED mode — every row
+> needs an explicit disposition because there is no domain map to verify reached
+> proof against. charness closeouts that declare no proof ledger (the norm) are
+> unaffected, and the residual ledger is a separate surface that needs no adapter.
+
 ## Schema
 
 ```yaml
