@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — push/release-lane verification + #346 Claude-host metric scoping + #348 portable hotl skill
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md`
 
@@ -9,12 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md`.
+- Current slice: 1 — push/release-lane verification (read/verify-first).
+- Next action: activation plan critique (fresh-eye), then `gh run list/view`
+  for the post-push quality-core run + live installed-surface probe.
 - Timebox: 4h
-- Activation time: set at `/goal` activation (REPLACE with an ISO timestamp at
-  activation — the complete gate parses `Activation time:` as ISO; three prior
-  goals carried this exact reminder for a reason).
+- Activation time: 2026-06-10T08:50:14Z
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (if a slice closes early,
   continue to the next surfaced improvement rather than stopping).
@@ -237,6 +236,20 @@ during the run:
   the asset here, else record `Gather: n/a — local checkout + permalink`.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — push/release-lane verification (read-only)
+
+- Objective: Verify the operator-executed second 2026-06-10 push + v0.38.0 release lane read-only: post-push quality-core green, release installed-surface verified via live local probe, scheduled mutation-tests over the pushed state.
+- Why this approach: Read/verify-first consumption of an already-executed lane (third iteration of the deferred-proof pattern); no remote mutation authorized.
+- Commits: none (read-only slice; goal-artifact activation+log committed with this entry)
+- What changed: Goal artifact only: activation stamp + this slice log entry.
+- Alternatives rejected: Idle-waiting for the next mutation cron slot rejected — pre-resolved record-latest + named-deferred fallback from two prior goals applies.
+- Targeted verification: quality-core push run 27264481707 on new HEAD fd3c2c6c: SUCCESS (gh run list; a concurrency-cancelled duplicate 27264465628 on ce5f77b8 was superseded by green 27264466664 on the same SHA). Release live probe: installed checkout ~/.agents/src/charness at SHA fd3c2c6c == pushed HEAD; installed plugins/charness/.claude-plugin/plugin.json version 0.38.0 == released tag v0.38.0; release record charness-artifacts/release/latest.md consistent (publish verified, fresh-checkout probes passed). Scheduled mutation-tests run 27261418055 (2026-06-10T07:48:11Z, schedule) over 39ff5432: SUCCESS — retires the prior goal's carried deferred proof (a scheduled run now covers 39ff5432). PENDING within this goal: next scheduled run over fd3c2c6c (~10:48Z cron slot) — re-probe before closeout; fallback = record latest green + named deferred line.
+- Test duplication pressure:
+- Critique: Read-only verification slice (no mutation) — fresh-eye slice critique not triggered; activation plan critique running separately.
+- Off-goal findings: none
+- Lessons carried forward: The release artifact's live-probe requirement (no install_refresh line) was satisfiable in two commands; keep the live probe as the canonical installed-surface proof.
+- Metrics:
 
 ## Context Sources
 
