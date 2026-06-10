@@ -230,9 +230,30 @@ enforced by code review, not by the helper. A future maintainer who
 abuses the marker to silence inconvenient parity issues is caught by
 review, not by tool fence.
 
-Today the known policy keyword is `scheduled-deeper-check`. The library
-emits a stderr warning when it sees the marker prefix followed by an
-unknown keyword so typos fail loud rather than silently dropping back to
-standard parity enforcement. Adding a new policy category requires both
-a library change (extending `KNOWN_GATE_POLICIES`) and a doc update in
-this section.
+Today the known policy keywords are `scheduled-deeper-check` and
+`local-gate-subset-mirror` (below). The library emits a stderr warning when
+it sees the marker prefix followed by an unknown keyword so typos fail loud
+rather than silently dropping back to standard parity enforcement. Adding a
+new policy category requires both a library change (extending
+`KNOWN_GATE_POLICIES`) and a doc update in this section.
+
+## Local-gate-subset mirror workflows
+
+A second narrow exemption category: a per-push/PR workflow whose every
+quality `run:` step invokes, verbatim, a repo-owned validator that the
+canonical local gate graph already enforces. Such a workflow is a redundancy
+layer — it exists to catch a push that bypassed the local hooks and to give a
+remote authoritative verdict — and by construction it cannot be the first
+place a required quality failure appears, which is the hazard the job-level
+canonical-anchor requirement guards. Declare it with:
+
+```yaml
+# charness:gate-policy local-gate-subset-mirror
+```
+
+The guardrails mirror the scheduled marker's: the helper does not verify
+that each step really is a local-gate subset — that is enforced by code
+review. The moment a step is added whose command is NOT part of the local
+gate graph, the workflow no longer qualifies; remove the marker and anchor
+the job on the canonical gate instead. Do not use this marker to launder a
+CI-only quality step past the parity contract.

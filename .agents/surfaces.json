@@ -406,6 +406,22 @@
       ]
     },
     {
+      "surface_id": "quality-core-workflow",
+      "description": "Repo-local light push/tag CI plus the CI-PR changed-line mutation mirror (consumer-inert; every step invokes a repo-owned validator).",
+      "source_paths": [
+        ".github/workflows/quality-core.yml"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/check_github_actions.py --repo-root ."
+      ],
+      "notes": [
+        "Each CI step invokes a repo-owned validator so rules stay single-source; see docs/conventions/validator-timing-layers.md.",
+        "The PR mirror job keeps the plain coverage probe (--write-fresh-marker), never the dynamic-context export."
+      ]
+    },
+    {
       "surface_id": "critique-artifacts",
       "description": "Checked-in critique records and prepare packets for task-completing repo work.",
       "source_paths": [

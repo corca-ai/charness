@@ -20,7 +20,8 @@ DEFAULT_CANONICAL_GATE_PATTERNS = (
 DEFAULT_CI_ONLY_MARKER = "CI-only"
 GATE_POLICY_MARKER_PREFIX = "# charness:gate-policy "
 SCHEDULED_DEEPER_CHECK_POLICY = "scheduled-deeper-check"
-KNOWN_GATE_POLICIES = frozenset({SCHEDULED_DEEPER_CHECK_POLICY})
+LOCAL_GATE_SUBSET_MIRROR_POLICY = "local-gate-subset-mirror"
+KNOWN_GATE_POLICIES = frozenset({SCHEDULED_DEEPER_CHECK_POLICY, LOCAL_GATE_SUBSET_MIRROR_POLICY})
 SETUP_SHAPES = tuple(
     re.compile(p)
     for p in (
@@ -211,7 +212,13 @@ def evaluate_workflow(
 ) -> dict[str, Any]:
     raw_text = workflow["text"]
     gate_policy = read_gate_policy(raw_text, workflow_label=str(path))
-    if gate_policy == SCHEDULED_DEEPER_CHECK_POLICY:
+    # Every KNOWN policy keyword names an exempt category: scheduled
+    # deeper-checks (periodic analyses, not per-commit gates) and
+    # local-gate-subset mirrors (every quality step verbatim re-runs a
+    # validator the canonical local gate already enforces, so CI cannot be
+    # the first place a required failure appears). Unknown keywords already
+    # warned in read_gate_policy and fall through to standard enforcement.
+    if gate_policy in KNOWN_GATE_POLICIES:
         return {
             "workflow": str(path),
             "gate_policy": gate_policy,

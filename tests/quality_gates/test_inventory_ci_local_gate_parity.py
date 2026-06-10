@@ -197,6 +197,31 @@ jobs:
     assert payload["exempt_workflows"][0]["gate_policy"] == "scheduled-deeper-check"
 
 
+def test_local_gate_subset_mirror_marker_exempts_workflow(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy local-gate-subset-mirror
+name: Quality Core
+on:
+  push:
+    branches: [main]
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: ruff check scripts
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["parity_issues"] == []
+    assert payload["jobs_without_canonical_gate"] == []
+    assert len(payload["exempt_workflows"]) == 1
+    assert payload["exempt_workflows"][0]["gate_policy"] == "local-gate-subset-mirror"
+
+
 def test_gate_policy_marker_must_be_known_keyword(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,

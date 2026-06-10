@@ -240,12 +240,12 @@ true` for this seam. The lines below are the machine-checked interrupt
 carry-forward (exact prefixes parsed by
 `risk_interrupt_lib.parse_spec_interrupt_resolution`):
 
-- Interrupt Source: issue-320-mutation-changed-line-coverage
-- Seam Summary: the scheduled mutation gate keeps failing post-merge because a newly
+- Interrupt Source: issue-335-changed-line-mutation-recurrence
+- Seam Summary: local closeout gate (`merge-base..HEAD`, opt-in/skip-prone) → `main` →
 - Chosen Next Step: impl
 - Impl Status: allowed
-- Impl Status Reason: the build is wiring an existing faithful reproducer plus AC-WIRE/AC-CLEAN over the existing pre-push push-range; no new detection engine, so ordinary impl can proceed once this spec is committed.
-- What Disproving Observation Is Resolved: a 6th post-merge "Mutation test regression on main" of the changed-line class; AC-WIRE (a known #320/#321-class uncovered changed line fails the wired pre-push gate with a path:line target before reaching main) is the falsifiable resolution — until AC-WIRE passes, the seam is not closed.
+- Impl Status Reason: the seam's surfaced-skip prevention (#335 loud-skip warning) and the changed-line teeth are already wired; the 2026-06-10 follow-ons stay on the same single-source gate — the closeout producer gained a `--base` committed-range option and the gate is mirrored into a CI-PR check (`quality-core.yml`), no new detection engine — so ordinary impl continues against this spec.
+- What Disproving Observation Is Resolved: another post-merge "Mutation test regression on main" of the changed-line class after a closeout whose local gate skipped silently; the loud unverified-skip warning plus the producer/fingerprint freshness contract (now reachable post-commit via `--base`) and the CI-PR mirror are the falsifiable resolution — a green local attestation can no longer coexist with an unverified changed-line skip.
 
 ### Bounded critique (fresh-eye reviewer run — findings folded)
 

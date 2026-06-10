@@ -365,6 +365,28 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- Public-skill validation review (bundle closeout, recorded before
+  `--ack-cautilus-skill-review`): the only `quality`-package change in this
+  bundle is a mechanical registry declaration — the
+  `scripts/host_hook_skill_anchor_guard.py` entry added to
+  `skills/public/quality/references/attention-state-visibility.json` (slice 2's
+  attention-state gate requirement). No `quality` SKILL.md, workflow, script
+  behavior, or consumer contract changed, so no dogfood case or scenario
+  refresh is owed; the existing hitl-recommended posture is unchanged.
+  Decision: ack and proceed; revisit only if a real `quality` semantic change
+  lands.
+- Bundle-boundary addendum to the same review: the broad gate's CI/local
+  parity watchdog fired on `quality-core.yml` (jobs without a canonical-gate
+  anchor), and the resolution used the doctrine's own extension path — a new
+  `local-gate-subset-mirror` policy keyword in
+  `ci_local_gate_parity_lib.py` + the matching
+  `maintainer-local-enforcement.md` section + an exemption test. This IS an
+  additive `quality`-package semantic change: consumers inherit no behavior
+  change unless a workflow declares the new marker (an unknown keyword
+  previously warned and fell back to standard enforcement). Dogfood posture
+  unchanged (hitl-recommended); the checked-in scenario surface was not
+  semantically narrowed. Ack covers this addendum.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

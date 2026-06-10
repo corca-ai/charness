@@ -1,4 +1,8 @@
-# charness:gate-policy push-tag-light-ci
+# charness:gate-policy local-gate-subset-mirror
+# Every quality step below verbatim re-runs a repo-owned validator the
+# canonical local gate already enforces (see maintainer-local-enforcement.md
+# §Local-gate-subset mirror workflows) — adding a step that is NOT in the
+# local gate graph disqualifies the marker.
 # Authored by the 2026-06-10 next-queue goal (slice 3). The local
 # run-quality --release / pre-push gate is the maintainer-machine bundle
 # proof; this workflow adds a remote authoritative LIGHT layer that catches a
