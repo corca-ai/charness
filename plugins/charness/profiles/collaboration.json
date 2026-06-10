@@ -2,11 +2,12 @@
   "schema_version": "1",
   "profile_id": "collaboration",
   "display_name": "Collaboration",
-  "purpose": "Portable collaboration bundle for announcement drafting and human-in-the-loop review.",
+  "purpose": "Portable collaboration bundle for announcement drafting, human-in-the-loop review, and human-on-the-loop closure of applied behavior.",
   "bundles": {
     "public_skills": [
       "announcement",
-      "hitl"
+      "hitl",
+      "hotl"
     ]
   },
   "activation": {

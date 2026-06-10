@@ -24,6 +24,7 @@ REPO_SHAPE_HINTS = {
     "gather": "repo that already keeps gathered artifacts and a source identity that may need refresh-in-place behavior",
     "handoff": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
     "hitl": "repo with a bounded review target and a decision that must stay explicitly human-owned",
+    "hotl": "repo that applies behavior to live, externally visible surfaces and needs evidence-based closeout instead of assertion",
     "ideation": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
     "impl": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
     "setup": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
@@ -45,6 +46,7 @@ PROMPT_HINTS = {
     "find-skills": "Which skill should handle this named capability, and what existing support surface already covers it?",
     "gather": "Fetch this external source into a durable local artifact instead of giving me a one-turn summary.",
     "handoff": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
+    "hotl": "We shipped the scheduled digest to the live channel yesterday — close the loop on it with actual evidence, and tell me what cannot be proven yet.",
     "hitl": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
     "ideation": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
     "impl": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
@@ -59,6 +61,11 @@ PROMPT_HINTS = {
 }
 
 EVIDENCE_OVERRIDES = {
+    "hotl": [
+        "writes a proof packet (success criteria, pre-roundtrip failure checks, feasibility, human intervention, non-claims) before any live execution",
+        "ends every loop entry `verified` (with `verified_against` refs) or explicitly dispositioned from the seven-status vocabulary, never silently closed",
+        "routes provider execution through adapter-declared repo-owned commands and records an undeclared-capability need as `blocked-needs-capability` instead of improvising",
+    ],
     "achieve": [
         "saves a draft goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with an explicit `/goal @...` activation line",
         "tells the user the file is inert until activation and does not start executing slices itself",

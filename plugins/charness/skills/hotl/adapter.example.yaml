@@ -1,0 +1,30 @@
+version: 1
+repo: charness
+language: en
+output_dir: charness-artifacts/hotl
+preset_id: portable-defaults
+customized_from: portable-defaults
+# Live surface classes this repo applies behavior to.
+surfaces:
+  - chat
+  - scheduled-workflow
+  - local-guard
+# Repo-owned commands the skill may use for proof. ids are cited by proof
+# packets; `live` commands default to requiring a boundary reason.
+proof_commands:
+  - id: readiness-plan
+    command: "<repo-owned readiness command> --json"
+    kind: readiness
+    boundary_reason_required: false
+  - id: provider-readback
+    command: "<repo-owned readback command> --json"
+    kind: readback
+    boundary_reason_required: false
+  - id: live-roundtrip
+    command: "<repo-owned live probe command> --json"
+    kind: live
+    boundary_reason_required: true
+# Ledger facts, when the repo maintains machine-readable ledger tooling.
+ledger_path: charness-artifacts/hotl/proof-ledger.json
+ledger_schema: config/hotl-proof-ledger.schema.json
+completion_audit_command: "<repo-owned completion audit command> --json"

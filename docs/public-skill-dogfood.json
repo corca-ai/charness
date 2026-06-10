@@ -5,20 +5,21 @@
     "announcement",
     "create-cli",
     "create-skill",
+    "critique",
     "debug",
     "find-skills",
     "gather",
     "handoff",
     "hitl",
+    "hotl",
     "ideation",
     "impl",
-    "setup",
     "issue",
     "narrative",
-    "critique",
     "quality",
     "release",
     "retro",
+    "setup",
     "spec"
   ],
   "cases": [
@@ -144,6 +145,38 @@
       ]
     },
     {
+      "skill_id": "critique",
+      "prompt": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
+      "repo_shape": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
+      "expected_skill": "critique",
+      "expected_artifact": "charness-artifacts/critique",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `critique` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/critique` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "includes a customer-of-this-capability angle when first-use failure is the main risk"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-05-31",
+      "observed_evidence": [
+        "The checked-in public core now says task-completing repo work always records critique before closeout, scaling the pass rather than leaving applicability optional.",
+        "The standalone `critique` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
+        "The angle-selection reference now names `customer-of-this-capability` so capability changes can test the user's or downstream agent's first real use instead of only producer-side breakage.",
+        "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
+        "That keeps `critique-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent critique in both checked-in wording and validator-backed contract pins.",
+        "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran.",
+        "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked critique.",
+        "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`.",
+        "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161).",
+        "The committed-diff critique dogfood on `50dd2b7` found that a clean working tree can erase packet changed-surface context; `prepare_packet.py --changed-ref HEAD^..HEAD` now preserves the reviewed commit/range for script packet sections without requiring a maintained Cautilus scenario.",
+        "`prepare_packet.py --commit <sha>` and `--range <base>..<head>` now alias the explicit changed-ref path, store `changed_ref`, and make changed-surface packet output name the reviewed ref/range instead of implying a working-tree critique.",
+        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
+        "Issue #297 (2026-06-04): critique prepare packets now record adapter-resolved reviewer-tier evidence (`requested_tier`, `requested_spawn_fields`, pending host state, and no application claim), and durable critique artifacts that are `parent-delegated` or consume a packet must record reviewer-tier evidence with honest host exposure state such as `requested_fields_sent`, `metadata-hidden`, `host-defaulted`, or `unsupported`; `applied` is accepted only with `host-confirmed:` evidence. This keeps the maintained `critique` dogfood case unchanged because routing and critique applicability did not change; deterministic coverage lives in `tests/test_critique_prepare_packet.py`, `tests/quality_gates/test_critique_skill.py`, `scripts/critique_packet_lib.py`, and `scripts/validate_critique_artifacts.py`."
+      ]
+    },
+    {
       "skill_id": "debug",
       "prompt": "Investigate this regression and leave a durable record of what actually failed before changing code.",
       "repo_shape": "active repo slice with a reproducible failure, existing logs or tests, and enough local state to preserve a durable debug artifact",
@@ -235,30 +268,139 @@
       ]
     },
     {
-      "skill_id": "setup",
-      "prompt": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
-      "repo_shape": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
-      "expected_skill": "setup",
-      "expected_artifact": "charness-artifacts/setup/latest.md",
+      "skill_id": "handoff",
+      "prompt": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
+      "repo_shape": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
+      "expected_skill": "handoff",
+      "expected_artifact": "docs/handoff.md",
       "validation_tier": "evaluator-required",
       "adapter_requirement": "required",
       "acceptance_evidence": [
-        "routes the prompt to `setup` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/setup/latest.md` when the skill persists durable state",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+        "routes the prompt to `handoff` instead of an adjacent public skill",
+        "names or refreshes `docs/handoff.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
       ],
       "review_status": "reviewed",
       "reviewed_on": "2026-06-02",
       "observed_evidence": [
-        "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
-        "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
-        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
-        "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
-        "The generated compact Skill Routing block now tells agents to run `find-skills --recommend-for-task \"<task>\"` when a request names workflow or capability nouns such as worktree, browser automation, specdown, or validation before ad hoc shell/tool use.",
-        "Issue #252 (2026-06-01): setup normalization now accepts compact AGENTS contracts that preserve the host-read-time safety invariant without copying the full expanded handbook text. `inspect_repo.py` accepts a compact Subagent Delegation standing-request form with canonical scopes, host-block reporting, and no same-agent substitute, and accepts one- or two-line discovery-first Skill Routing blocks when installed `find-skills` capability owns the detailed catalog. Guarded by tests/quality_gates/test_setup_inspect_policy.py.",
-        "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration.",
-        "Issue #277 (2026-06-02): the generated compact Skill Routing block now mirrors the root `AGENTS.md` distinction between recommendation-shaped read-only `find-skills` probes and canonical inventory refreshes. This updates generated setup prose only; setup routing/normalization behavior and maintained evaluator scenarios remain unchanged, with deterministic coverage in `tests/quality_gates/test_setup_render_skill_routing.py`.",
-        "Issue #300 (2026-06-05): setup now exposes a narrow host-docs-only path through `normalize_host_docs.py`. The helper dry-runs by default, writes only with `--execute`, preserves the deterministic `AGENTS.md` plus `CLAUDE.md -> AGENTS.md` policy, and blocks on real `CLAUDE.md` content that needs a merge decision. The maintained setup scenarios already cover adapter bootstrap, inspect states, and compact skill-routing discoverability; this helper is a deterministic command-path addition covered by `tests/quality_gates/test_setup_normalize_host_docs.py`, so no scenario registry mutation is needed."
+        "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
+        "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, `state-selection.md` and `spill-targets.md` push stable metrics and proof detail back to their owning artifacts, and always-loaded host instruction surfaces are now non-default in `References`.",
+        "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior.",
+        "The handoff skill now treats standing invariants and recurring workflow rules as spill/promote candidates: handoff may leave a short pickup pointer, but the durable rule belongs in the owning skill reference, support-runtime contract, spec, validator, or operator document.",
+        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
+        "Long-goal efficiency (2026-06-01): the handoff chunked-routing auto-draft goal renderer now emits the same `## Active Operating Frame` scaffold as achieve-generated goals, with `/achieve @...` as the next shaping action before `/goal` activation. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior are unchanged; this is a generated artifact shape compatibility update. Guarded by tests/test_handoff_chunker_auto_draft.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py.",
+        "Issue #277 (2026-06-02): chunked handoff routing now treats activation-looking entries that point at `Status: active` goal artifacts as inert, just like completed goals, while preserving draft-goal activation and ordinary issue candidates. The maintained handoff scenario remains unchanged; deterministic coverage proves active goal activation filtering and live handoff backlog parsing.",
+        "Issue #286/#285 (2026-06-04): chunked handoff routing now has a deterministic source packet plus validated agentic work-package proposal stage before ranking, so pickup can present coherent packages instead of a ranked issue list while rejecting unknown, duplicate, missing, over-large, and broad-label-only source groups unless adapter policy allows them. The existing `handoff-adapter-bootstrap` Cautilus scenario remains unchanged because it validates routing/bootstrap, not package synthesis; deterministic coverage now lives in tests/test_handoff_chunker_agentic_packages.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py.",
+        "Issue #298 (2026-06-04): agentic handoff package validation now returns `merge_policy_facts` and packet-level `merge_decision_contract` evidence only: `broad_only_overlap: false` means the policy emitted no broad-only warning, not safe-to-merge clearance, and unknown boundary tokens mean policy has no opinion. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior did not change; deterministic coverage lives in `tests/test_handoff_chunker_agentic_packages.py`, `tests/test_handoff_chunker_cli_contract.py`, and `tests/test_handoff_chunker_end_to_end.py`."
+      ]
+    },
+    {
+      "skill_id": "hitl",
+      "prompt": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
+      "repo_shape": "repo with a bounded review target and a decision that must stay explicitly human-owned",
+      "expected_skill": "hitl",
+      "expected_artifact": "charness-artifacts/hitl/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `hitl` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/hitl/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-05-09",
+      "observed_evidence": [
+        "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
+        "The workflow now requires a Full Target Review after accepted edits are applied or staged: the updated target is presented with an Agent Assessment and Recommended Disposition per `skills/shared/references/agent-assessment-invariant.md`, then `full_target_review` records whole-target acceptance or the need for another pass before the target is closed as accepted.",
+        "The workflow now defines an explicit Apply Phase: target file edits happen only after accepted chunks and closing summary, and `require_explicit_apply: true` requires a user apply instruction before touching the target.",
+        "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
+        "`bootstrap_review.py` now surfaces `require_explicit_apply`, `apply_mode`, and pending `full_target_review` completion metadata in JSON, queue, scratchpad, and state so the apply policy and final whole-target gate are visible at session start.",
+        "After a reviewer-requested rewrite is applied to HITL working text or session state, the workflow now requires showing the rewritten chunk excerpt before cursor advancement, asking for accept-or-revise judgment, and recording `applied_rewrite_review_status`.",
+        "`bootstrap_review.py` now seeds `applied_rewrite_review_status`, pending rewrite chunk/source fields, queue policy, and scratchpad slots for the applied excerpt, verification, and review result, keeping the applied-rewrite loop resumable without a full runtime engine.",
+        "Accepted rules now feed a visible pre-edit constraint gate: before editing or rewriting a chunk, HITL must select active rules, verify target/cursor/queue/bounds alignment, and keep stale or violating chunks active until repaired.",
+        "`bootstrap_review.py` now seeds `accepted_rules`, `active_rules_applied`, `target_cursor_checked`, and pre-edit scratchpad slots so a future runtime can record which rules and cursor checks governed each chunk edit.",
+        "Before HITL closeout or handoff, `sync_review_artifact.py` now projects hidden runtime state into `charness-artifacts/hitl/latest.md` and `--check` fails when runtime is newer than the durable artifact or target/cursor/queue metadata differs.",
+        "The durable HITL checkpoint now includes the runtime session, target, cursor, accepted rules, queue state, next chunk to present, approval boundaries, and links back to hidden runtime files without committing `.charness/hitl/runtime`.",
+        "Repo-owned helper scripts make the review loop concrete: `bootstrap_review.py` creates scratchpad, state, queue, rules, and event-log files for a new session, which is current evidence that resumable HITL state is a maintained seam rather than prose-only guidance.",
+        "`render_report.py` now turns generated report packets into decision-first HTML cards and structured decisions JSON, with tests proving suggested decisions stay display-only and untouched `unreviewed` cards are dropped.",
+        "`render_report.py` now treats adaptive queue metadata as a deterministic decision-ordering contract: explicit stable IDs are required, priority and dependency metadata can reorder source items, and structured review-input effects can reprioritize only the remaining unreviewed queue.",
+        "Accepted human answers can now surface a display-only restart recommendation when the remaining queue is stale; superseded items stay explicitly unreviewed rather than becoming approvals.",
+        "`report-mode.md` and the public skill core elevate the human-comfort rule: dense tables or generated matrices get plain-language interpretation first, while raw tables stay available as inspectable evidence."
+      ]
+    },
+    {
+      "skill_id": "hotl",
+      "prompt": "We shipped the scheduled digest to the live channel yesterday — close the loop on it with actual evidence, and tell me what cannot be proven yet.",
+      "repo_shape": "repo that applies behavior to live, externally visible surfaces and needs evidence-based closeout instead of assertion",
+      "expected_skill": "hotl",
+      "expected_artifact": "charness-artifacts/hotl/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `hotl` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/hotl/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "writes a proof packet (success criteria, pre-roundtrip failure checks, feasibility, human intervention, non-claims) before any live execution",
+        "ends every loop entry `verified` (with `verified_against` refs) or explicitly dispositioned from the seven-status vocabulary, never silently closed",
+        "routes provider execution through adapter-declared repo-owned commands and records an undeclared-capability need as `blocked-needs-capability` instead of improvising"
+      ],
+      "observed_evidence": [
+        "The checked-in public core states the hitl/hotl boundary explicitly (pre-apply bounded review vs supervising applied behavior) and guards against running the loop for pre-apply review.",
+        "The workflow requires a proof packet before execution and readiness checks before live roundtrip budget, with non-claims written before execution so proof cannot quietly expand.",
+        "`references/ledger-and-dispositions.md` carries the seven-status vocabulary with `verified_against` staleness semantics (source commit, proof artifact, proving-surface refs) and blocking completion audits.",
+        "`references/proof-rules.md` preserves the proof-class rules: normalized match is not rendering proof, direct post is not scheduled-workflow proof, bot smoke is not human-ingress proof, mutation proof needs before/after readback, and local tests prove local-only acceptance classes.",
+        "The adapter contract keeps repo specifics (surfaces, proof commands with readiness/readback/live/audit kinds and boundary-reason flags, ledger path/schema, completion-audit command) out of the skill text; the resolver validates the shipped example adapter with zero errors and warns visibly when proof_commands is empty.",
+        "Missing-adapter posture is `visible`: cold-start resolution from a repo without an adapter returns inferred defaults with explicit warnings instead of inventing proof commands."
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-06-10"
+    },
+    {
+      "skill_id": "ideation",
+      "prompt": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
+      "repo_shape": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
+      "expected_skill": "ideation",
+      "expected_artifact": null,
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `ideation` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `ideation` upstream of `spec` and `impl`, forcing a living concept model, dependency-ordered questions, and explicit demand/wedge/feedback checks before downstream contract work starts.",
+        "The current validation policy already classifies `ideation` as `hitl-recommended` and `adapter-free`, which matches the repo's present stance that concept-shaping quality is better judged through review than through adapter or artifact enforcement.",
+        "Deferred decision D10 deliberately preserves a lightweight ideation core with detailed world-model and effectuation playbooks in references, which is the strongest current local evidence that the public trigger stays concise without losing its reasoning boundary."
+      ]
+    },
+    {
+      "skill_id": "impl",
+      "prompt": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
+      "repo_shape": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
+      "expected_skill": "impl",
+      "expected_artifact": "charness-artifacts/impl",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `impl` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/impl` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-05-31",
+      "observed_evidence": [
+        "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
+        "The impl stop gate now requires every task-completing repo slice to record critique before closeout, using `Critique: short <scope>` for small local-risk work, `Critique: full <artifact-or-subagent-status>` for broader decisions, and `Critique: not-applicable <reason>` only for inspect/status/routing-only requests.",
+        "The impl verification ladder now treats skill self-tests and scheduled or delegated workflows as prescribed-path proof: a passing smoke must start from checked `SKILL.md` commands and selector signals, not an author's free-form external probe.",
+        "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
+        "The impl bootstrap now points at `scripts/plan_risk_interrupt.py`, and the checked-in core tells the agent not to continue plain implementation past a forced debug interrupt until the named spec handoff says that is honest.",
+        "The impl core now handles user-corrected agent behavior before mutation by separating stable contracts from better case readings, preserving `no repo change yet` as a valid outcome for judgment-quality corrections, and limiting proof claims to source, wiring, or guidance coverage unless targeted behavior replay or evaluator comparison actually ran.",
+        "Scenario review inspected `evals/cautilus/scenarios.json`: `impl` remains mapped to `impl-adapter-bootstrap`, which covers adapter/bootstrap behavior. No registry edit was made because Charness #177 intentionally closes on source and guidance coverage rather than a maintained semantic-quality replay.",
+        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills."
       ]
     },
     {
@@ -320,38 +462,6 @@
         "The checked-in public core keeps durable truth alignment separate from audience adaptation and explicitly hands delivery-only work to `announcement`.",
         "The adapter resolves the durable artifact to `charness-artifacts/narrative/latest.md`, which matches the reviewed expectation for the aligned truth-surface output.",
         "Repo-owned tests and docs already exercise the narrative adapter, source-map path, and narrative versus announcement boundary, which is enough local evidence to treat first-touch story alignment as a real maintained seam."
-      ]
-    },
-    {
-      "skill_id": "critique",
-      "prompt": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
-      "repo_shape": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
-      "expected_skill": "critique",
-      "expected_artifact": "charness-artifacts/critique",
-      "validation_tier": "hitl-recommended",
-      "adapter_requirement": "required",
-      "acceptance_evidence": [
-        "routes the prompt to `critique` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/critique` when the skill persists durable state",
-        "produces an output that a maintainer could review directly without re-deriving the whole request",
-        "includes a customer-of-this-capability angle when first-use failure is the main risk"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
-      "observed_evidence": [
-        "The checked-in public core now says task-completing repo work always records critique before closeout, scaling the pass rather than leaving applicability optional.",
-        "The standalone `critique` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
-        "The angle-selection reference now names `customer-of-this-capability` so capability changes can test the user's or downstream agent's first real use instead of only producer-side breakage.",
-        "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
-        "That keeps `critique-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent critique in both checked-in wording and validator-backed contract pins.",
-        "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran.",
-        "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked critique.",
-        "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`.",
-        "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161).",
-        "The committed-diff critique dogfood on `50dd2b7` found that a clean working tree can erase packet changed-surface context; `prepare_packet.py --changed-ref HEAD^..HEAD` now preserves the reviewed commit/range for script packet sections without requiring a maintained Cautilus scenario.",
-        "`prepare_packet.py --commit <sha>` and `--range <base>..<head>` now alias the explicit changed-ref path, store `changed_ref`, and make changed-surface packet output name the reviewed ref/range instead of implying a working-tree critique.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
-        "Issue #297 (2026-06-04): critique prepare packets now record adapter-resolved reviewer-tier evidence (`requested_tier`, `requested_spawn_fields`, pending host state, and no application claim), and durable critique artifacts that are `parent-delegated` or consume a packet must record reviewer-tier evidence with honest host exposure state such as `requested_fields_sent`, `metadata-hidden`, `host-defaulted`, or `unsupported`; `applied` is accepted only with `host-confirmed:` evidence. This keeps the maintained `critique` dogfood case unchanged because routing and critique applicability did not change; deterministic coverage lives in `tests/test_critique_prepare_packet.py`, `tests/quality_gates/test_critique_skill.py`, `scripts/critique_packet_lib.py`, and `scripts/validate_critique_artifacts.py`."
       ]
     },
     {
@@ -468,137 +578,6 @@
       ]
     },
     {
-      "skill_id": "handoff",
-      "prompt": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
-      "repo_shape": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
-      "expected_skill": "handoff",
-      "expected_artifact": "docs/handoff.md",
-      "validation_tier": "evaluator-required",
-      "adapter_requirement": "required",
-      "acceptance_evidence": [
-        "routes the prompt to `handoff` instead of an adjacent public skill",
-        "names or refreshes `docs/handoff.md` when the skill persists durable state",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
-        "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-06-02",
-      "observed_evidence": [
-        "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
-        "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, `state-selection.md` and `spill-targets.md` push stable metrics and proof detail back to their owning artifacts, and always-loaded host instruction surfaces are now non-default in `References`.",
-        "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior.",
-        "The handoff skill now treats standing invariants and recurring workflow rules as spill/promote candidates: handoff may leave a short pickup pointer, but the durable rule belongs in the owning skill reference, support-runtime contract, spec, validator, or operator document.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
-        "Long-goal efficiency (2026-06-01): the handoff chunked-routing auto-draft goal renderer now emits the same `## Active Operating Frame` scaffold as achieve-generated goals, with `/achieve @...` as the next shaping action before `/goal` activation. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior are unchanged; this is a generated artifact shape compatibility update. Guarded by tests/test_handoff_chunker_auto_draft.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py.",
-        "Issue #277 (2026-06-02): chunked handoff routing now treats activation-looking entries that point at `Status: active` goal artifacts as inert, just like completed goals, while preserving draft-goal activation and ordinary issue candidates. The maintained handoff scenario remains unchanged; deterministic coverage proves active goal activation filtering and live handoff backlog parsing.",
-        "Issue #286/#285 (2026-06-04): chunked handoff routing now has a deterministic source packet plus validated agentic work-package proposal stage before ranking, so pickup can present coherent packages instead of a ranked issue list while rejecting unknown, duplicate, missing, over-large, and broad-label-only source groups unless adapter policy allows them. The existing `handoff-adapter-bootstrap` Cautilus scenario remains unchanged because it validates routing/bootstrap, not package synthesis; deterministic coverage now lives in tests/test_handoff_chunker_agentic_packages.py, tests/test_handoff_chunker_cli_contract.py, and tests/test_handoff_chunker_end_to_end.py.",
-        "Issue #298 (2026-06-04): agentic handoff package validation now returns `merge_policy_facts` and packet-level `merge_decision_contract` evidence only: `broad_only_overlap: false` means the policy emitted no broad-only warning, not safe-to-merge clearance, and unknown boundary tokens mean policy has no opinion. The maintained `handoff-adapter-bootstrap` scenario remains unchanged because routing and adapter bootstrap behavior did not change; deterministic coverage lives in `tests/test_handoff_chunker_agentic_packages.py`, `tests/test_handoff_chunker_cli_contract.py`, and `tests/test_handoff_chunker_end_to_end.py`."
-      ]
-    },
-    {
-      "skill_id": "hitl",
-      "prompt": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
-      "repo_shape": "repo with a bounded review target and a decision that must stay explicitly human-owned",
-      "expected_skill": "hitl",
-      "expected_artifact": "charness-artifacts/hitl/latest.md",
-      "validation_tier": "hitl-recommended",
-      "adapter_requirement": "required",
-      "acceptance_evidence": [
-        "routes the prompt to `hitl` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/hitl/latest.md` when the skill persists durable state",
-        "produces an output that a maintainer could review directly without re-deriving the whole request"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-05-09",
-      "observed_evidence": [
-        "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
-        "The workflow now requires a Full Target Review after accepted edits are applied or staged: the updated target is presented with an Agent Assessment and Recommended Disposition per `skills/shared/references/agent-assessment-invariant.md`, then `full_target_review` records whole-target acceptance or the need for another pass before the target is closed as accepted.",
-        "The workflow now defines an explicit Apply Phase: target file edits happen only after accepted chunks and closing summary, and `require_explicit_apply: true` requires a user apply instruction before touching the target.",
-        "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
-        "`bootstrap_review.py` now surfaces `require_explicit_apply`, `apply_mode`, and pending `full_target_review` completion metadata in JSON, queue, scratchpad, and state so the apply policy and final whole-target gate are visible at session start.",
-        "After a reviewer-requested rewrite is applied to HITL working text or session state, the workflow now requires showing the rewritten chunk excerpt before cursor advancement, asking for accept-or-revise judgment, and recording `applied_rewrite_review_status`.",
-        "`bootstrap_review.py` now seeds `applied_rewrite_review_status`, pending rewrite chunk/source fields, queue policy, and scratchpad slots for the applied excerpt, verification, and review result, keeping the applied-rewrite loop resumable without a full runtime engine.",
-        "Accepted rules now feed a visible pre-edit constraint gate: before editing or rewriting a chunk, HITL must select active rules, verify target/cursor/queue/bounds alignment, and keep stale or violating chunks active until repaired.",
-        "`bootstrap_review.py` now seeds `accepted_rules`, `active_rules_applied`, `target_cursor_checked`, and pre-edit scratchpad slots so a future runtime can record which rules and cursor checks governed each chunk edit.",
-        "Before HITL closeout or handoff, `sync_review_artifact.py` now projects hidden runtime state into `charness-artifacts/hitl/latest.md` and `--check` fails when runtime is newer than the durable artifact or target/cursor/queue metadata differs.",
-        "The durable HITL checkpoint now includes the runtime session, target, cursor, accepted rules, queue state, next chunk to present, approval boundaries, and links back to hidden runtime files without committing `.charness/hitl/runtime`.",
-        "Repo-owned helper scripts make the review loop concrete: `bootstrap_review.py` creates scratchpad, state, queue, rules, and event-log files for a new session, which is current evidence that resumable HITL state is a maintained seam rather than prose-only guidance.",
-        "`render_report.py` now turns generated report packets into decision-first HTML cards and structured decisions JSON, with tests proving suggested decisions stay display-only and untouched `unreviewed` cards are dropped.",
-        "`render_report.py` now treats adaptive queue metadata as a deterministic decision-ordering contract: explicit stable IDs are required, priority and dependency metadata can reorder source items, and structured review-input effects can reprioritize only the remaining unreviewed queue.",
-        "Accepted human answers can now surface a display-only restart recommendation when the remaining queue is stale; superseded items stay explicitly unreviewed rather than becoming approvals.",
-        "`report-mode.md` and the public skill core elevate the human-comfort rule: dense tables or generated matrices get plain-language interpretation first, while raw tables stay available as inspectable evidence."
-      ]
-    },
-    {
-      "skill_id": "ideation",
-      "prompt": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
-      "repo_shape": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
-      "expected_skill": "ideation",
-      "expected_artifact": null,
-      "validation_tier": "hitl-recommended",
-      "adapter_requirement": "adapter-free",
-      "acceptance_evidence": [
-        "routes the prompt to `ideation` instead of an adjacent public skill",
-        "does not invent host-specific adapter state when repo inspection alone should be enough",
-        "produces an output that a maintainer could review directly without re-deriving the whole request"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
-      "observed_evidence": [
-        "The checked-in public core keeps `ideation` upstream of `spec` and `impl`, forcing a living concept model, dependency-ordered questions, and explicit demand/wedge/feedback checks before downstream contract work starts.",
-        "The current validation policy already classifies `ideation` as `hitl-recommended` and `adapter-free`, which matches the repo's present stance that concept-shaping quality is better judged through review than through adapter or artifact enforcement.",
-        "Deferred decision D10 deliberately preserves a lightweight ideation core with detailed world-model and effectuation playbooks in references, which is the strongest current local evidence that the public trigger stays concise without losing its reasoning boundary."
-      ]
-    },
-    {
-      "skill_id": "impl",
-      "prompt": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
-      "repo_shape": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
-      "expected_skill": "impl",
-      "expected_artifact": "charness-artifacts/impl",
-      "validation_tier": "evaluator-required",
-      "adapter_requirement": "required",
-      "acceptance_evidence": [
-        "routes the prompt to `impl` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/impl` when the skill persists durable state",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-05-31",
-      "observed_evidence": [
-        "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
-        "The impl stop gate now requires every task-completing repo slice to record critique before closeout, using `Critique: short <scope>` for small local-risk work, `Critique: full <artifact-or-subagent-status>` for broader decisions, and `Critique: not-applicable <reason>` only for inspect/status/routing-only requests.",
-        "The impl verification ladder now treats skill self-tests and scheduled or delegated workflows as prescribed-path proof: a passing smoke must start from checked `SKILL.md` commands and selector signals, not an author's free-form external probe.",
-        "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
-        "The impl bootstrap now points at `scripts/plan_risk_interrupt.py`, and the checked-in core tells the agent not to continue plain implementation past a forced debug interrupt until the named spec handoff says that is honest.",
-        "The impl core now handles user-corrected agent behavior before mutation by separating stable contracts from better case readings, preserving `no repo change yet` as a valid outcome for judgment-quality corrections, and limiting proof claims to source, wiring, or guidance coverage unless targeted behavior replay or evaluator comparison actually ran.",
-        "Scenario review inspected `evals/cautilus/scenarios.json`: `impl` remains mapped to `impl-adapter-bootstrap`, which covers adapter/bootstrap behavior. No registry edit was made because Charness #177 intentionally closes on source and guidance coverage rather than a maintained semantic-quality replay.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills."
-      ]
-    },
-    {
-      "skill_id": "spec",
-      "prompt": "Turn this vague request into a living implementation contract before code changes spread.",
-      "repo_shape": "repo with an under-specified change request and enough current docs or code to refine a build contract",
-      "expected_skill": "spec",
-      "expected_artifact": null,
-      "validation_tier": "evaluator-required",
-      "adapter_requirement": "adapter-free",
-      "acceptance_evidence": [
-        "routes the prompt to `spec` instead of an adjacent public skill",
-        "does not invent host-specific adapter state when repo inspection alone should be enough",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-04-27",
-      "observed_evidence": [
-        "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
-        "The spec guardrail now forbids skipping bounded critique before finalizing a task-completing contract, removing the earlier narrow risky/cross-surface qualifier.",
-        "Representative contract pins in `scripts/check_skill_contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Critique` instead of clearing it with generic doc churn.",
-        "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
-      ]
-    },
-    {
       "skill_id": "retro",
       "prompt": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
       "repo_shape": "repo that just completed a meaningful slice or exposed a missed issue that should feed repeat-trap memory",
@@ -624,6 +603,55 @@
         "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
         "Issue #282 (2026-06-03): `probe_host_logs.py` gained a `--format markdown` mode rendering the standardized provider-safe goal-closeout metrics block (window status surfaced verbatim so an absent window cannot masquerade as a per-goal total; measured counts separated from activity proxies; only counts, family labels, and result attestations — never a provider CLI verification command string), with the renderer in `scripts/goal_metrics_render_lib.py`. Retro closeout uses it instead of hand-assembling metric narration; routing and the `recent-lessons.md` persistence consumer contract are unchanged. Reviewed by a fresh-eye resolution critique; guarded by tests/quality_gates/test_goal_metrics_render.py.",
         "Issue #298 (2026-06-04): phase-aware efficiency retro guidance now asks whether a docs-only push was an issue-resolution carrier or only a later lifecycle/audit artifact after the carrier had already been verified. This keeps retro's persistence/routing consumer contract unchanged while preventing publication-phase retros from treating every post-carrier artifact update as another issue-closeout push; deterministic coverage lives in `tests/quality_gates/test_retro_skill.py`."
+      ]
+    },
+    {
+      "skill_id": "setup",
+      "prompt": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
+      "repo_shape": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
+      "expected_skill": "setup",
+      "expected_artifact": "charness-artifacts/setup/latest.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `setup` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/setup/latest.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-06-02",
+      "observed_evidence": [
+        "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
+        "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
+        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
+        "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
+        "The generated compact Skill Routing block now tells agents to run `find-skills --recommend-for-task \"<task>\"` when a request names workflow or capability nouns such as worktree, browser automation, specdown, or validation before ad hoc shell/tool use.",
+        "Issue #252 (2026-06-01): setup normalization now accepts compact AGENTS contracts that preserve the host-read-time safety invariant without copying the full expanded handbook text. `inspect_repo.py` accepts a compact Subagent Delegation standing-request form with canonical scopes, host-block reporting, and no same-agent substitute, and accepts one- or two-line discovery-first Skill Routing blocks when installed `find-skills` capability owns the detailed catalog. Guarded by tests/quality_gates/test_setup_inspect_policy.py.",
+        "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration.",
+        "Issue #277 (2026-06-02): the generated compact Skill Routing block now mirrors the root `AGENTS.md` distinction between recommendation-shaped read-only `find-skills` probes and canonical inventory refreshes. This updates generated setup prose only; setup routing/normalization behavior and maintained evaluator scenarios remain unchanged, with deterministic coverage in `tests/quality_gates/test_setup_render_skill_routing.py`.",
+        "Issue #300 (2026-06-05): setup now exposes a narrow host-docs-only path through `normalize_host_docs.py`. The helper dry-runs by default, writes only with `--execute`, preserves the deterministic `AGENTS.md` plus `CLAUDE.md -> AGENTS.md` policy, and blocks on real `CLAUDE.md` content that needs a merge decision. The maintained setup scenarios already cover adapter bootstrap, inspect states, and compact skill-routing discoverability; this helper is a deterministic command-path addition covered by `tests/quality_gates/test_setup_normalize_host_docs.py`, so no scenario registry mutation is needed."
+      ]
+    },
+    {
+      "skill_id": "spec",
+      "prompt": "Turn this vague request into a living implementation contract before code changes spread.",
+      "repo_shape": "repo with an under-specified change request and enough current docs or code to refine a build contract",
+      "expected_skill": "spec",
+      "expected_artifact": null,
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `spec` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-27",
+      "observed_evidence": [
+        "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
+        "The spec guardrail now forbids skipping bounded critique before finalizing a task-completing contract, removing the earlier narrow risky/cross-surface qualifier.",
+        "Representative contract pins in `scripts/check_skill_contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Critique` instead of clearing it with generic doc churn.",
+        "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
       ]
     }
   ]

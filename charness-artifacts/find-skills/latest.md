@@ -1,9 +1,9 @@
 # Find Skills Inventory
-Date: 2026-06-09
-Updated: 2026-06-09T05:54:56Z
+Date: 2026-06-10
+Updated: 2026-06-10T09:50:45Z
 
 ## Summary
-- public skills: 19
+- public skills: 20
 - support skills: 4
 - synced support skills: 0
 - support capabilities: 4
@@ -22,6 +22,7 @@ Updated: 2026-06-09T05:54:56Z
 - `gather`: Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user’s actual request.
 - `handoff`: Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.
 - `hitl`: Use when automated review is not enough and deliberate human judgment needs to be inserted into a bounded review loop. Keeps review state resumable, chunked, and adapter-driven without hardcoding one host runtime.
+- `hotl`: Use when applied live behavior needs human-on-the-loop closure: inventory what needs proof, write a proof packet before execution, run or record roundtrip/readback evidence through repo-owned commands, and keep every loop entry verified or explicitly dispositioned so unproven behavior is never closed as working.
 - `ideation`: Use when the user is still shaping a product, system, or workflow concept and needs discovery before `spec` or implementation. Build the concept through conversation because the user may not know the full shape yet: maintain a living world model, separate verified facts from assumptions, test demand/status quo/wedge/moat early, think about feedback and expansion from the start, and treat agents, APIs, CLI, and interface choices as first-class design constraints.
 - `impl`: Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it.
 - `issue`: Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.

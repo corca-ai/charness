@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-09T05:54:56Z",
+  "generated_at": "2026-06-10T09:50:45Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -317,6 +317,32 @@
           "skills/public/hitl/scripts/check_review_state.py",
           "skills/public/hitl/scripts/render_report.py",
           "skills/public/hitl/scripts/sync_review_artifact.py"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "hotl",
+        "name": "hotl",
+        "description": "Use when applied live behavior needs human-on-the-loop closure: inventory what needs proof, write a proof packet before execution, run or record roundtrip/readback evidence through repo-owned commands, and keep every loop entry verified or explicitly dispositioned so unproven behavior is never closed as working.",
+        "summary": "Use when applied live behavior needs human-on-the-loop closure: inventory what needs proof, write a proof packet before execution, run or record roundtrip/readback evidence through repo-owned commands, and keep every loop entry verified or explicitly dispositioned so unproven behavior is never closed as working.",
+        "path": "skills/public/hotl/SKILL.md",
+        "skill_dir": "skills/public/hotl",
+        "canonical_path": "skills/public/hotl/SKILL.md",
+        "trigger_phrases": [
+          "hotl",
+          "hotl skill",
+          "hotl 스킬",
+          "charness:hotl"
+        ],
+        "referenced_paths": [
+          "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/hotl/references/ledger-and-dispositions.md",
+          "skills/public/hotl/references/proof-rules.md",
+          "skills/public/hotl/references/adapter-contract.md",
+          "skills/shared/references/external-capability-proof-ladder.md",
+          "skills/public/hotl/scripts/resolve_adapter.py",
+          "skills/public/hotl/scripts/init_adapter.py"
         ],
         "source": "local-public",
         "layer": "public skill"

@@ -292,6 +292,20 @@ during the run:
 - Lessons carried forward: Synthetic render fixtures masked a dropped payload field; probe-to-render integration tests with both hosts populated are the cheap pin for cross-host selection logic.
 - Metrics:
 
+### Slice 3: Slice 3 — #348 portable hotl public skill (smallest honest v1)
+
+- Objective: Ship the portable human-on-the-loop closure skill from the local close-loop reference: SKILL.md + adapter contract + references carrying the preserved workflow/statuses/proof rules, repo specifics adapter-owned, all skill-package and registry gates green.
+- Why this approach: Routed through create-skill (classification: public skill, adapter-required, hitl-recommended tier, fallback visible); reference read from the local ../ceal checkout (read-only), GitHub permalink in the issue stays the durable citation.
+- Commits: carrier commit with staged Closes #348 (direct-commit, draft_verified)
+- What changed: NEW skills/public/hotl/{SKILL.md, adapter.example.yaml, references/{adapter-contract,ledger-and-dispositions,proof-rules}.md, scripts/{resolve_adapter,init_adapter}.py}; NEW tests/quality_gates/test_hotl_adapter.py (9 in-process tests); registries: public-skill-validation .json/.md, public-skill-dogfood .json + lib hints/overrides (reviewed case), profiles/collaboration.json + profile.schema.json enum; find-skills inventory refresh; plugins mirrors byte-synced.
+- Alternatives rejected: Support-skill classification rejected (user-facing workflow concept, not tool-usage guidance); shipping charness-owned ledger tooling rejected for v1 (adapter-owned, recorded residual); copying reference host facts rejected per the authoring contract (verified zero leaks).
+- Targeted verification: All package gates green (ergonomics, anchors, attention-state, lengths core 105/160, ownership overlap, doc links, markdown); registries validated (dogfood 20/20, validation partitions, profiles 4); boundary-bypass ratchet flat (in-process tests); cold-start resolve from bare repo returns visible defaults; example adapter round-trips zero errors with a visible placeholder warning; locked run_slice_closeout --verification-lock --produce-mutation-coverage completed (broad pytest green); consumer confirm post-commit.
+- Test duplication pressure: New test module only targets the new helper scripts; no overlap with existing suites; registry validators reused, not duplicated.
+- Critique: Fresh-eye bounded reviewer: SHIP-WITH-NITS (zero blockers; line-by-line port comparison confirmed no lost load-bearing concept and zero host-fact leaks). N2 placeholder warning folded in-slice; N1 reciprocal hitl boundary line attempted, hit hitl's 200-line total ceiling, deliberately reverted and routed as an off-goal issue; N3 default-live-target recorded as adapter-coverable residual. charness-artifacts/critique/2026-06-10-348-hotl-skill-critique.md
+- Off-goal findings: hitl/hotl routing boundary is one-directional (hotl side only); hitl core sits at its 200-line total ceiling so the reciprocal line needs a deliberate trim of reviewed prose — to be filed as an issue after the slice commit
+- Lessons carried forward: When an adjacent skill is at its line ceiling, a cross-propagation nit becomes a deliberate edit with a compensating trim — route it as a follow-up instead of eroding a frozen contract mid-slice.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

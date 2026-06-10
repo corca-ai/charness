@@ -170,6 +170,7 @@ Current assignment:
 - `announcement`
 - `create-cli`
 - `hitl`
+- `hotl`
 - `ideation`
 - `narrative`
 - `critique`
@@ -204,6 +205,9 @@ Current assignment:
 - `hitl` already exists to insert human judgment into a bounded loop, so its
   own quality bar should emphasize operator review rather than pretending the
   whole workflow can be scored automatically.
+- `hotl` supervises applied live behavior whose proof quality (packet rigor,
+  honest dispositions, staleness handling) is operator judgment; sample it by
+  review rather than a standing evaluator suite.
 - `critique` now has a stronger canonical subagent contract, but that still
   makes it a poor standing evaluator target. Keep repo-owned seam checks for
   the contract and use on-demand proof or reviewed dogfood for the real
@@ -231,6 +235,7 @@ Current assignment:
 - `gather`
 - `handoff`
 - `hitl`
+- `hotl`
 - `impl`
 - `setup`
 - `issue`
@@ -301,8 +306,8 @@ Current assignment:
 - `hitl`, `narrative`, and `release` mutate high-leverage review, truth, or
   publication surfaces. Silent fallback here creates convincing but
   ungrounded repo behavior, so the safe default is to stop.
-- `announcement`, `create-skill`, `find-skills`, `handoff`, `setup`, `quality`, and
-  `spec` still benefit from adapters, but they can continue honestly when the
+- `announcement`, `create-skill`, `find-skills`, `handoff`, `hotl`, `setup`,
+  `quality`, and `spec` still benefit from adapters, but they can continue honestly when the
   skill names the inferred-default boundary instead of pretending the repo
   already declared it.
 - the remaining skills are either low-risk enough, narrow enough, or already

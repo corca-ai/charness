@@ -6,10 +6,11 @@
       "achieve",
       "announcement",
       "create-cli",
+      "critique",
       "hitl",
+      "hotl",
       "ideation",
       "narrative",
-      "critique",
       "quality",
       "release",
       "retro"
@@ -37,13 +38,14 @@
       "gather",
       "handoff",
       "hitl",
+      "hotl",
       "impl",
-      "setup",
       "issue",
       "narrative",
       "quality",
       "release",
-      "retro"
+      "retro",
+      "setup"
     ],
     "adapter-free": [
       "create-cli",
@@ -68,8 +70,9 @@
       "create-skill",
       "find-skills",
       "handoff",
-      "setup",
+      "hotl",
       "quality",
+      "setup",
       "spec"
     ],
     "block": [
