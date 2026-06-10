@@ -59,7 +59,9 @@ def advise_new_pool_module(repo_root: Path, changed_paths: list[str]) -> None:
     degrades) are uncovered; the first signal otherwise arrives at the bundle
     boundary, where repair costs a full instrumented producer re-run. Surface
     the documented early self-check (implementation-discipline.md) while the
-    branch list is still cheap to walk."""
+    branch list is still cheap to walk. The unmocked glue (real git anchor +
+    real eligibility glob) is pinned end-to-end by the seeded-repo positive in
+    tests/quality_gates/test_slice_closeout_new_pool_advisory.py."""
     changed_py = [path for path in changed_paths if path.endswith(".py")]
     if not changed_py:
         return

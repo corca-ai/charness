@@ -68,6 +68,34 @@ def test_advisory_silent_for_new_non_pool_python(monkeypatch: pytest.MonkeyPatch
     assert capsys.readouterr().err == ""
 
 
+def test_advisory_end_to_end_fires_in_seeded_repo(tmp_path: Path, capsys) -> None:
+    # F4 from the advisory's introduction critique: the unmocked glue — a real
+    # git anchor (the seeded local `origin/main` branch, the base-range
+    # `_seed_repo` pattern) and the real eligibility glob over the tmp repo —
+    # fires for a pool module added on HEAD but absent from the anchor.
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init", "-b", "main")
+    git("config", "user.email", "test@example.com")
+    git("config", "user.name", "Test User")
+    (tmp_path / "base.txt").write_text("base\n", encoding="utf-8")
+    git("add", "base.txt")
+    git("commit", "-m", "base")
+    git("branch", "origin/main")
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "fresh_pool_module.py").write_text("VALUE = 1\n", encoding="utf-8")
+    git("add", "scripts/fresh_pool_module.py")
+    git("commit", "-m", "add pool module")
+
+    advise_new_pool_module(tmp_path, ["scripts/fresh_pool_module.py", "base.txt"])
+
+    err = capsys.readouterr().err
+    assert "scripts/fresh_pool_module.py" in err
+    assert "CONFIRMS instead of discovering" in err
+    assert "implementation-discipline.md" in err
+
+
 def test_run_slice_closeout_wires_the_advisory_call_site() -> None:
     # A deleted call site would pass the function-level tests; pin both the
     # rebinding and the invocation beside the sibling advisories.
