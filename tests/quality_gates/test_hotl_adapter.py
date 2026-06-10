@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import yaml
@@ -128,3 +129,36 @@ def test_init_adapter_scaffolds_empty_proof_surface(tmp_path: Path, monkeypatch,
     assert adapter["output_dir"] == "charness-artifacts/hotl"
     assert adapter["surfaces"] == []
     assert adapter["proof_commands"] == []
+
+
+def test_bootstrap_loader_raises_when_runtime_bootstrap_missing(monkeypatch) -> None:
+    import pytest
+
+    init_adapter = _load_hotl_module("init_adapter")
+    # simulate a package copy stranded outside any checkout that carries the
+    # runtime bootstrap: no ancestor offers skill_runtime_bootstrap.py
+    monkeypatch.setattr(Path, "is_file", lambda self: False)
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap"):
+        resolve_adapter._load_skill_runtime_bootstrap()
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap"):
+        init_adapter._load_skill_runtime_bootstrap()
+
+
+def test_validate_adapter_accepts_configured_artifact_class(tmp_path: Path) -> None:
+    validated, errors, _warnings = resolve_adapter.validate_adapter_data({"artifact_class": "history"}, tmp_path)
+
+    assert errors == []
+    assert validated["artifact_class"] == "history"
+
+
+def test_scripts_run_as_main_in_process(tmp_path: Path, monkeypatch, capsys) -> None:
+    import runpy
+
+    monkeypatch.setattr("sys.argv", ["resolve_adapter.py", "--repo-root", str(tmp_path)])
+    runpy.run_path(str(ROOT / "skills" / "public" / "hotl" / "scripts" / "resolve_adapter.py"), run_name="__main__")
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["valid"] is True
+
+    monkeypatch.setattr("sys.argv", ["init_adapter.py", "--repo-root", str(tmp_path)])
+    runpy.run_path(str(ROOT / "skills" / "public" / "hotl" / "scripts" / "init_adapter.py"), run_name="__main__")
+    assert (tmp_path / ".agents" / "hotl-adapter.yaml").is_file()
