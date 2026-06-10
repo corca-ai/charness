@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-10",
-  "source_artifact_count": 183,
-  "candidate_count": 1001,
+  "source_artifact_count": 185,
+  "candidate_count": 1007,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -335,6 +335,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0e774659061f",
+      "kind": "current_focus",
+      "lesson": "The activated goal `charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror.md` ran start-to-finish in one session: slice 1 consumed the 2026-06-10 push/release lane's deferred proofs read-only (#342/#343/#344 verified CLOSED, post-push and post-merge quality-core green, installed 0.37.0 == released tag), slice 2 shipped the deleted-checkout settings scan (committed 011a931f post-rebase), and slice 3 landed the F4 seeded-repo e2e test through PR 345 — the quality-core PR-mirror job's first real execution (run 27258023056, job 80496728903, success, full eligible-file path).",
+      "normalized_key": "the activated goal charness artifacts goals 2026 06 10 postpush verification deleted checkout scan",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c80a2315140d",
       "kind": "current_focus",
       "lesson": "The operator-selected next queue, four independent per-slice-closed-out slices: (1) `run_slice_closeout.py --base` committed-range ergonomics; (2) the #N-anchor edit-time guard auto-firing via the adapter-declared host-hook machinery; (3) light push/tag CI + the CI-PR changed-line mutation mirror; (4) the source-guard timing audit with the favorable subset pulled to commit time and the `docs/conventions/validator-timing-layers.md` doctrine.",
@@ -351,6 +371,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
           "date": "2026-06-10",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0870be817323",
+      "kind": "next_improvement",
+      "lesson": "capability (filed): per-goal metric scoping for `probe_host_logs.py` on Claude hosts — select the current/named session file instead of the project-dir aggregate, and extend the metric-window recorder beyond `--codex-session-file`. Structural pattern: goal-closeout metrics on Claude hosts cannot be scoped to the goal, so every closeout either hand-writes caveats or risks misattributing thread-wide numbers. Triggering instances: this goal's probe artifact and the prior goal's (`2026-06-10-342-343-goal-host-log-probe.md`), both carrying the same caveat. Destination: issue (recurs).",
+      "normalized_key": "capability filed per goal metric scoping for probe host logs py on claude hosts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -431,46 +471,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
           "date": "2026-06-10",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:759cce33c4e2",
-      "kind": "next_improvement",
-      "lesson": "I4 — parity watchdog timing (W2): applied — workflow edits now run `inventory-ci-local-gate-parity --require-canonical-gate-match` at commit time via `_timing_layer_gates` (+ dispatcher test + doctrine table row).",
-      "normalized_key": "i4 parity watchdog timing w2 applied workflow edits now run inventory ci local gate",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-          "date": "2026-06-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:3940568d6947",
-      "kind": "repeat_trap",
-      "lesson": "**W1 — producer DISCOVERED 3 uncovered changed lines at the bundle boundary (~6.7 min extra instrumented broad-pytest run, per the producer proof record).** The `_import_module` ImportError fallback in the NEW `scripts/host_hook_registry.py`. The carried lesson (cover degrade branches in the introducing slice) WAS applied inside slice 1 (`validate_adapters` ImportError/YAMLError branches covered up front) but missed in slice 2's new module, because the lazy-import fallback only fires when `scripts/` is off `sys.path` — a branch the default in-process test pattern never executes. Trend improving (3 lines vs 4 prior vs 7 before) but still discovery, not confirmation.",
-      "normalized_key": "w1 producer discovered 3 uncovered changed lines at the bundle boundary 6 7 min",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste"
         }
       ]
     }
@@ -797,6 +797,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0e774659061f",
+      "kind": "current_focus",
+      "lesson": "The activated goal `charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror.md` ran start-to-finish in one session: slice 1 consumed the 2026-06-10 push/release lane's deferred proofs read-only (#342/#343/#344 verified CLOSED, post-push and post-merge quality-core green, installed 0.37.0 == released tag), slice 2 shipped the deleted-checkout settings scan (committed 011a931f post-rebase), and slice 3 landed the F4 seeded-repo e2e test through PR 345 — the quality-core PR-mirror job's first real execution (run 27258023056, job 80496728903, success, full eligible-file path).",
+      "normalized_key": "the activated goal charness artifacts goals 2026 06 10 postpush verification deleted checkout scan",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c80a2315140d",
       "kind": "current_focus",
       "lesson": "The operator-selected next queue, four independent per-slice-closed-out slices: (1) `run_slice_closeout.py --base` committed-range ergonomics; (2) the #N-anchor edit-time guard auto-firing via the adapter-declared host-hook machinery; (3) light push/tag CI + the CI-PR changed-line mutation mirror; (4) the source-guard timing audit with the favorable subset pulled to commit time and the `docs/conventions/validator-timing-layers.md` doctrine.",
@@ -813,6 +833,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
           "date": "2026-06-10",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0870be817323",
+      "kind": "next_improvement",
+      "lesson": "capability (filed): per-goal metric scoping for `probe_host_logs.py` on Claude hosts — select the current/named session file instead of the project-dir aggregate, and extend the metric-window recorder beyond `--codex-session-file`. Structural pattern: goal-closeout metrics on Claude hosts cannot be scoped to the goal, so every closeout either hand-writes caveats or risks misattributing thread-wide numbers. Triggering instances: this goal's probe artifact and the prior goal's (`2026-06-10-342-343-goal-host-log-probe.md`), both carrying the same caveat. Destination: issue (recurs).",
+      "normalized_key": "capability filed per goal metric scoping for probe host logs py on claude hosts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -913,6 +953,86 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
           "date": "2026-06-10",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f9a42c0ad3bd",
+      "kind": "next_improvement",
+      "lesson": "workflow (memory): encode \"read the CI workflow + gate source at shaping time when a slice depends on CI runtime behavior\" as a lesson; the activation plan critique remains the backstop.",
+      "normalized_key": "workflow memory encode read the ci workflow gate source at shaping time when a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:717929a3f369",
+      "kind": "repeat_trap",
+      "lesson": "Minor: the goal text's slice-1 command sketch omitted required `verify-closeout` args and used a wrong script path; the activation plan critique caught it and the executed calls were already correct, so cost was ~zero.",
+      "normalized_key": "minor the goal text s slice 1 command sketch omitted required verify closeout args",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5607459ce1fd",
+      "kind": "repeat_trap",
+      "lesson": "Observed fact: `probe_host_logs.py`'s measured block on this Claude host aggregates the whole project directory (3270 records / 429 calls — byte-identical to the PRIOR goal's probe), while this goal's own session log held 494 records. Per-goal attribution required manual cross-checking, and the metric-window recorder is Codex-only. Second consecutive goal closeout hitting this (the prior probe artifact carries the same thread-wide caveat) — transferable, filed below.",
+      "normalized_key": "observed fact probe host logs py s measured block on this claude host aggregates",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:baaa34e6320d",
+      "kind": "repeat_trap",
+      "lesson": "Small and bounded this run. The locked producer run confirmed 0 uncovered changed lines on the FIRST attempt (the W1 repeat trap — producer DISCOVERING uncovered degrade branches at the bundle boundary — did not fire; the trend line 7→4→3→0 closes).",
+      "normalized_key": "small and bounded this run the locked producer run confirmed 0 uncovered changed lines",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
         }
       ]
     },

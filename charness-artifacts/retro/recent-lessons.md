@@ -8,16 +8,16 @@
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md`; sources: 23)
-- **W1 — producer DISCOVERED 3 uncovered changed lines at the bundle boundary (~6.7 min extra instrumented broad-pytest run, per the producer proof record).** The `_import_module` ImportError fallback in the NEW `scripts/host_hook_registry.py`. The carried lesson (cover degrade branches in the introducing slice) WAS applied inside slice 1 (`validate_adapters` ImportError/YAMLError branches covered up front) but missed in slice 2's new module, because the lazy-import fallback only fires when `scripts/` is off `sys.path` — a branch the default in-process test pattern never executes. Trend improving (3 lines vs 4 prior vs 7 before) but still discovery, not confirmation. (source: `charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md`)
-- **W1 — slice-2 escape paid two slices later (~25 min).** The `skill_anchor_edit_guard` adapter section passed commit-time `validate-adapters` but violated the usage-episodes integration's `additionalProperties: false` jsonschema; the usage-episode emitter failed with `invalid_adapter`, surfaced only by slice 4's wider test run and fixed forward in `72f74b7f` plus a wasted full producer run that died at the surface-match block. Root cause: an adapter file has two validation owners and only the weaker one runs at the commit boundary. Filed as #342 with a timing-pull destination. (source: `charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`)
-- **W2 — first cut of slice 1 parsed adapters with the minimal `adapter_lib` parser instead of the runtime owner's `yaml.safe_load`** (~3 min, caught by the slice's own test before commit). Ironic-but-cheap: the slice existed to close a two-owner drift and nearly introduced a two-parser drift; the fidelity rule is now in the slice log and the commit message. (source: `charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md`)
+- Minor: the goal text's slice-1 command sketch omitted required `verify-closeout` args and used a wrong script path; the activation plan critique caught it and the executed calls were already correct, so cost was ~zero. (source: `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`)
+- Observed fact: `probe_host_logs.py`'s measured block on this Claude host aggregates the whole project directory (3270 records / 429 calls — byte-identical to the PRIOR goal's probe), while this goal's own session log held 494 records. Per-goal attribution required manual cross-checking, and the metric-window recorder is Codex-only. Second consecutive goal closeout hitting this (the prior probe artifact carries the same thread-wide caveat) — transferable, filed below. (source: `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`)
+- Small and bounded this run. The locked producer run confirmed 0 uncovered changed lines on the FIRST attempt (the W1 repeat trap — producer DISCOVERING uncovered degrade branches at the bundle boundary — did not fire; the trend line 7→4→3→0 closes). (source: `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md`; sources: 23)
+- capability (filed): per-goal metric scoping for `probe_host_logs.py` on Claude hosts — select the current/named session file instead of the project-dir aggregate, and extend the metric-window recorder beyond `--codex-session-file`. Structural pattern: goal-closeout metrics on Claude hosts cannot be scoped to the goal, so every closeout either hand-writes caveats or risks misattributing thread-wide numbers. Triggering instances: this goal's probe artifact and the prior goal's (`2026-06-10-342-343-goal-host-log-probe.md`), both carrying the same caveat. Destination: issue (recurs). (source: `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`)
 - I1 — adapter-vs-integration-schema commit-time validation gap: `issue #342`. (source: `charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`)
 - **I1 (workflow/capability): issue #344** — deterministic closeout nudge when a slice adds a new eligible mutation-pool file, naming the early producer self-check, so confirm-not-discover stops depending on recall. (source: `charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md`)
-- I2 — host-hook lifecycle robustness (dangling-checkout noise, one-logical- hook-per-machine coverage gap, reconcile fan-out registry refactor before a fourth hook): `issue #343`. (source: `charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`)
 
 ## Selection Policy
 
@@ -49,6 +49,7 @@
 - `charness-artifacts/retro/2026-06-09-v0-34-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-09-v0-35-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md`
+- `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`
 - `charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`
 - `charness-artifacts/retro/2026-06-10-v0-36-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md`

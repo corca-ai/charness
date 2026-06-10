@@ -1,6 +1,6 @@
 # Achieve Goal: Post-push queue — push/release-lane verification + deleted-checkout settings scan + PR-mirror first execution
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror.md`
 
@@ -9,15 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — PR-mirror first execution + F4 (PR #345 open from
-  branch pr-mirror-f4-seeded-e2e cut at origin/main; carries the F4 e2e test
-  + the recorded minimal pool-file docstring touch; quality-core PR run in
-  progress).
-- Next action: consume the PR-mirror job verdict (run id + conclusion),
-  merge when green, then goal closeout (bundle gates + retro + recheck of
-  the scheduled mutation run).
-- Slices 1 and 2: complete (proofs and critique verdicts in Slice Log;
-  slice 2 committed as 868181ef).
+- All three slices complete; goal in closeout. Slice 2's commit is
+  011a931f after the post-merge rebase onto origin/main (originally
+  authored as 868181ef — historical SHA, rewritten by the rebase).
+- Bundle proof: locked producer closeout PASS (broad pytest green,
+  coverage produced), consumer ok=true / 0 uncovered over the three slice
+  2 pool files, `run-quality.sh --read-only` 73 passed / 0 failed.
+- Remaining deferred proof: the next scheduled `mutation-tests.yml` run
+  over merged main 39ff5432 (cron 17 */3; recheck recorded below).
+- No safe next slice: all three slices are complete with bundle proof;
+  the only open item is the scheduled mutation run, which cannot progress
+  before the 10:17Z cron slot (outside the timebox), and the next
+  surfaced improvement (#346, a retro/achieve skill-script capability
+  change touching exported plugin surfaces) is its own lane, not a safe
+  tail slice inside this goal's closeout reserve.
 - Timebox: 3h
 - Activation time: 2026-06-10T15:14:07+09:00
 - Closeout reserve: 30m
@@ -205,6 +210,16 @@ during the run:
 - **Release step** — when this run touches a release surface (a version bump or
   install-manifest edit), add a `Release:` line here pointing at the release
   proof, or write `Release: n/a — <reason>`.
+Filled at completion:
+
+Routing: find-skills (session bootstrap + task-text recommendation probe, no skill-specific route returned) -> achieve (goal lifecycle), impl (slice 2/3 mutation work under achieve's coordination, implementation-discipline contract consulted before mutation), quality (deterministic gate cadence: rehearsal + locked producer closeout + consumer + run-quality broad gate), critique (three bounded fresh-eye reviews: activation plan, slice 2, slice 3 post-hoc), issue (slice 1 verify-closeout proofs + #346 filing via issue_tool), retro (session retro + persistence).
+
+Gather: n/a — every context source is repo-internal (goal/critique/retro artifacts, docs, scripts); remote state was consumed via `gh` reads, not external documents.
+
+Release: n/a — no version bump or install-manifest edit; slice 1 verified the PRE-EXISTING v0.37.0 release lane read-only (installed 0.37.0 == released tag), and the plugin-mirror byte-sync is generated-surface sync, not a release surface.
+
+Issue closeout: n/a — no issue close-intended: #342/#343/#344 verify-only (CLOSED via their carriers; `verify-closeout --expect-state CLOSED` proofs in the Slice Log); #184 context-only (fourth deliberate exclusion); #346 newly FILED (not closed) from the retro's sibling search; #347 closed only as an accidental duplicate of #346 created by the same filing action.
+
 - **Issue closeout step** — no issue is close-intended by this goal: #342/#343/#344
   closes are verify-only (their carriers own them; record the
   `verify-closeout --expect-state CLOSED` proof in slice 1) and #184 is
@@ -231,7 +246,7 @@ during the run:
 
 - Objective: Close the #343-documented blind spot: flag host-settings hook entries left behind by a DELETED checkout (invisible to state-driven hook_liveness) via a direct settings-file scan in the existing status surface.
 - Why this approach: Extend host_hook_registry in place (no new pool module, plenty of length headroom): known-basename set derived from the owning modules' script constants via a new script_relative_attr registry-row field (activation-critique adjustment 5); per-format readers reuse the existing JSON helpers and the TOML lib's line parser (made public: toml_command_value); settings_scan joins the pre-existing exit-1-on-drift status contract.
-- Commits:
+- Commits: 011a931f (post-rebase rewrite of the originally-authored 868181ef; rebased onto origin/main 39ff5432 after the slice 3 merge)
 - What changed: scripts/host_hook_registry.py (script_relative_attr field, known_hook_script_basenames, _json_settings_commands, _toml_settings_commands, settings_file_scan, docstring no longer defers the scan); scripts/host_hook_codex_toml_lib.py (toml_command_value made public); scripts/reconcile_usage_episodes_host_hooks.py (settings_scan payload section + drift join); tests/test_host_hook_registry.py (+10 tests); docs/conventions/authoring-preflight.md (blind-spot paragraph now claims exactly the shipped behavior); plugins/charness/scripts/ mirrors byte-synced.
 - Alternatives rejected: Forked literal basename list (pre-rejected non-goal); marker-block TOML identification (shipped basename filter is strictly broader and safe — recorded as critique F3); module-attribute introspection for derivation (critique preferred the explicit registry-row field).
 - Targeted verification: 21/21 module tests, 64/64 host-hook family; ruff + py_compile + length headroom green (registry 216/480); registry line coverage 96% with every slice-changed line executed in-process (degrade branches walked deliberately: malformed JSON shapes, PermissionError, unparseable command — the W1 confirm-not-discover lesson applied); live scratch-HOME acceptance: leftover entry flagged with NO state file knowing it, exit 1; e2e subprocess test pins the same case.
@@ -383,13 +398,79 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+No safe next slice: all three slices complete with bundle proof; the only open item (the scheduled mutation run over 39ff5432) cannot progress before the 10:17Z cron slot, outside the timebox, and the next surfaced improvement (#346, a skill-script capability change on exported plugin surfaces) is its own lane, not a tail slice inside the closeout reserve.
+
+Retro: charness-artifacts/retro/2026-06-10-postpush-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-10-postpush-goal-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-10-postpush-goal-disposition-review.md
+Early-close report: charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror-early-close-report.md
+
+Self-verification (executed):
+
+- Slice gates: per-slice cheap checks green (py_compile/ruff/lengths,
+  module + family tests); fresh-eye bounded reviews at every mutating
+  boundary — activation plan critique PROCEED-WITH-ADJUSTMENTS (all five
+  adjustments folded), slice 2 SHIP-WITH-NITS (nits folded/documented,
+  charness-artifacts/critique/2026-06-10-settings-scan-slice-critique.md),
+  slice 3 post-hoc SHIP-CONFIRMED (no defects).
+- Bundle gates: `run_slice_closeout.py --base --verification-lock
+  --produce-mutation-coverage` PASS (broad pytest green, instrumented);
+  consumer `check_changed_line_mutation_coverage --base-sha origin/main
+  --reuse-coverage` ok=true, blocking=[], over the three slice 2 pool
+  files (confirm-not-discover achieved); `run-quality.sh --read-only`
+  73 passed / 0 failed.
+- Live/remote proof consumed: #342/#343/#344 `verify-closeout
+  --expect-state CLOSED` status=verified; quality-core push runs green on
+  3310b28b (27254637832) and post-merge 39ff5432 (27258478736); PR-mirror
+  job 80496728903 (run 27258023056) EXECUTED on PR 345 with conclusion
+  success in 9m51s, gate payload ok=true with
+  changed_pool_files=[scripts/slice_closeout_advisories.py]; installed
+  plugin 0.37.0 == released tag v0.37.0 (live local probe).
+
+Residual risks and non-claims:
+
+- The PR-mirror's blocking arm classified an EMPTY changed-mutable-line
+  set (docstring-only pool change); blocking-on-real-uncovered-lines
+  remains proven by unit tests and the scheduled mutation suite, not by
+  PR 345.
+- Slice 1/2 work exists only on LOCAL main (rebased onto 39ff5432); it
+  reaches remote CI on the next operator push — the next operator lane,
+  not this goal's.
+- The scheduled `mutation-tests.yml` run over merged main 39ff5432 had
+  not fired by closeout: the 07:17Z cron slot was actively awaited until
+  07:48Z (31 min past the slot; GitHub cron delay/skip) and the next slot
+  (10:17Z) falls outside the timebox. Latest green: 27253892006 over
+  pre-push 58cc749a, 04:47Z. Named deferred proof per the
+  activation-timing decision; verify with the next `gh run list
+  --workflow mutation-tests.yml` showing a green schedule run on
+  39ff5432 or later.
+- The settings scan covers the three default host settings paths only;
+  a hand-written interpreter-less entry with a known basename reports
+  loudly even when live (inherited liveness posture); the scan reports,
+  never removes.
+- Per-goal token/time metrics are NOT claimed: the host probe's
+  project-dir aggregate is unattributable to this goal (recorded honestly
+  in the host log probe artifact; capability gap filed as issue 346).
 
 ## User Verification Instructions
 
+- `gh issue view 342 343 344 --repo corca-ai/charness` — each CLOSED,
+  closed-by the carrier commits (76909cc8 / 7f835610 / cd2618d1).
+- `gh pr view 345 --repo corca-ai/charness` — MERGED as 39ff5432; its
+  checks page shows `Changed-line mutation coverage (PR mirror)` EXECUTED
+  with conclusion success (run 27258023056, job 80496728903).
+- Deleted-checkout scan demo: on a scratch HOME, write a claude
+  `settings.json` hook entry whose command names
+  `usage_episode_session_start.py` at a nonexistent absolute path, then
+  `python3 scripts/reconcile_usage_episodes_host_hooks.py --repo-root .
+  --home <scratch> --mode status` — the `settings_scan` section flags it
+  and the command exits 1; an empty scratch HOME reports silence.
+- `docs/conventions/authoring-preflight.md` multi-checkout paragraph no
+  longer names the deleted-checkout blind spot as open.
+- `pytest tests/quality_gates/test_slice_closeout_new_pool_advisory.py
+  tests/test_host_hook_registry.py -q` — green (F4 e2e + scan tests).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #346 (recurs: second consecutive Claude-host goal closeout hand-wrote the same attribution caveat — see the prior goal's probe artifact) — per-goal metric scoping for the host-log probe on Claude hosts (probe aggregates the project dir; metric-window recorder is Codex-only); accepted-risk: shaping-time reading of CI workflow + gate source for CI-behavior-dependent slices stays a judgment habit — the activation fresh-eye plan critique is the standing gate that caught it at zero rework cost this run, and a hard shaping rule would duplicate that gate.
+Structural follow-up: issue #346 (recurs: the prior goal's host-log probe artifact carries the identical thread-wide attribution caveat; the fix is a capability change in the retro/achieve helper scripts, not a repo-local guard)
