@@ -58,10 +58,9 @@
 
 ## Discuss
 
-- (Resolved 2026-06-10) **#346 issue-body mechanism** — the activation
-  critique falsified the "Claude project-dir aggregate" diagnosis; the
-  carrier commit records the corrected root cause (stale Codex rollout in
-  the render path). The closeout draft was validated with that correction.
+- (Resolved 2026-06-10) **#346 issue-body mechanism** — falsified by the
+  activation critique; the carrier records the corrected root cause
+  (stale Codex rollout in the render path).
 
 ## References
 
