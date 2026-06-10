@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — #342 adapter-schema commit-time pull + #343 host-hook lifecycle + deferred-proof verification
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md`
 
@@ -9,13 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 2 — #343 host-hook lifecycle robustness.
-- Next action: dangling-checkout liveness in the existing status surface,
-  multi-checkout posture decision documented, reconcile fan-out registry
-  refactor (52-test suite floor, per-host error isolation preserved).
-- Slice 1 DONE: commit 76909cc8, #342 carrier verified
-  (`verify-closeout` → `carrier_verified`; GitHub close lands on the next
-  operator push).
+- Current slice: COMPLETE — all three slices closed; closeout evidence in
+  `## Final Verification`, dispositions in `## Auto-Retro`.
+- Slice 1 DONE: commit 76909cc8, #342 carrier verified.
+- Slice 2 DONE: commit 7f835610 (+ f084c875 coverage repair), #343 carrier
+  verified. (GitHub closes land on the next operator push.)
+- Slice 3 DONE: all three deferred proofs consumed read-only (quality-core
+  GREEN, edit-time guard observed firing, #335 bot-closed).
 - Timebox: 4h
 - Activation time: 2026-06-10T11:41:15+09:00
 - Closeout reserve: 35m
@@ -223,6 +223,11 @@ during the run:
   slice; #335 is verify-only (auto-close owner is the mutation workflow) and
   #184 is context-only (`Issue closeout: n/a` for those two).
 
+Routing: find-skills (session bootstrap + task recommendation) -> achieve (goal lifecycle), impl (slices 1-2), issue (#342/#343 closeout + #344 filing), quality (broad gate + producer cadence), critique (3 bounded fresh-eye reviews), retro (closeout).
+Gather: n/a — all `## Context Sources` are repo-local artifacts and `gh`-read issues/runs; no external URL/Slack/Notion/Docs source entered this goal.
+Release: n/a — no version bump or install-manifest edit; the v0.36 release lane pre-dates this goal and was consumed read-only.
+Issue closeout: #342 carrier=direct-commit 76909cc8 (validate-closeout-draft `draft_verified` pre-commit; verify-closeout `carrier_verified`); #343 carrier=direct-commit 7f835610 (`draft_verified` pre-commit; `carrier_verified`); GitHub closes land on the next operator push. #335 verify-only: closed by github-actions[bot] 2026-06-08T17:23:42Z (workflow marker owned it). #184 context-only: n/a.
+
 ## Slice Log
 
 ### Slice 1 — seam decision (recorded before wiring)
@@ -279,6 +284,34 @@ during the run:
 - Critique: Fresh-eye bounded subagent (agentId a41e2d3ff6b13b606): SHIP-WITH-NITS, no blockers; folded the deleted-checkout doc overclaim + the command-shape contract comment; artifact charness-artifacts/critique/2026-06-10-343-host-hook-lifecycle-critique.md
 - Off-goal findings:
 - Lessons carried forward: Status-tracked liveness cannot see a DELETED checkout (the state dies with it) — write the claim at the strength the mechanism supports; the reviewer caught the prose claiming more than the design delivers.
+- Metrics:
+
+### Slice 3: Slice 3 — deferred-proof verification (read-only)
+
+- Objective: Consume the three deferred proofs named by the 2026-06-10 goal + release lane: quality-core first remote run verdict, edit-time #N-anchor guard firing in a fresh session, #335 auto-close state.
+- Why this approach: READ/VERIFY-FIRST: gh consumption of already-executed remote runs only; the one live action (a scratch anchor edit) was reverted immediately and touched no committed state.
+- Commits:
+- What changed: No repo mutations; evidence recorded in this log and Final Verification.
+- Alternatives rejected: Triggering a fresh CI run to observe (rejected: the goal's external side-effect scope is read-only consumption); manually closing #335 (pre-rejected: the workflow marker owns it).
+- Targeted verification: PROOF 1 quality-core.yml first remote execution GREEN: run 27249353164 (event=push, main@58cc749a) conclusion=success, job 'Core deterministic gates' success, 'Changed-line mutation coverage (PR mirror)' correctly skipped on push; tag-lane run 27249343462 (v0.36.0@1c8e50b1) success; run 27249343475 cancelled (concurrency-superseded by the later main push) — no first-run friction, no repair commits needed. PROOF 2 edit-time guard OBSERVED FIRING in this fresh host session: a scratch '(#999)' line edited into skills/public/quality/references/cautilus-on-demand.md triggered the PostToolUse:Edit hook (post_edit_skill_anchor_guard.py --host claude) which BLOCKED with the exact file:line and the keep-provenance-out-of-packages remediation; the edit was reverted and git status confirms a clean tree. PROOF 3 #335 CLOSED by github-actions[bot] at 2026-06-08T17:23:42Z — the mutation-workflow marker owned the close (issue events API shows actor github-actions[bot]; no manual close); the five most recent scheduled mutation runs (through 2026-06-10T01:21Z) are all green. Note: the close predates the 2026-06-10 push — an earlier green scheduled run already cleared it, so the handoff's 'closes after push' prediction was late, not wrong about ownership.
+- Test duplication pressure:
+- Critique: n/a — read-only verification slice with no design decision or mutation; the goal-closeout disposition review (fresh-eye) covers the evidence claims.
+- Off-goal findings:
+- Lessons carried forward: The edit-time guard proof was free in this session because the goal session itself was fresh — proving host-hook behavior is easiest at session start, before any need to simulate freshness.
+- Metrics:
+
+### Slice 4: Slice 4 (continuation) — #344 new-pool-module closeout advisory
+
+- Objective: Done-early policy continuation: apply the retro's only surfaced improvement — a deterministic run_slice_closeout advisory when a slice adds a new eligible mutation-pool module, naming the documented early changed-line self-check; close #344.
+- Why this approach: Advisory-only stderr nudge in scripts/slice_closeout_advisories.py beside the existing prose-pin and skill-surface advisories: changed .py paths ∩ list_eligible pool ∩ added-vs-origin/main; degrades to silence when the anchor ref does not resolve (tmp/consumer repos); no forked pool definition (reuses sample_mutation_files.list_eligible).
+- Commits:
+- What changed: scripts/slice_closeout_advisories.py (+_added_vs_base, +advise_new_pool_module), scripts/run_slice_closeout.py (one call), tests/quality_gates/test_slice_closeout_new_pool_advisory.py (new, 7 tests incl. call-site pin), plugins mirrors byte-synced
+- Alternatives rejected: Blocking gate (rejected: timing-layer doctrine — the broad producer stays the floor; an advisory cannot train --no-verify); merge-base anchor (deferred: base:<path> direct check accepted with a recorded spurious-fire comment); batched ls-tree (deferred until cost matters)
+- Targeted verification: 7/7 new tests; live demo: the advisory fires for scripts/host_hook_registry.py (the exact W1 instance from this goal); dogfood: the early producer+consumer self-check ran pre-commit and the consumer's false-green warning correctly demanded a post-commit re-run; mirrors byte-synced; ruff/lengths green
+- Test duplication pressure: 7 tests in a new module; the sibling advisories had zero direct tests, so this exceeds the local pattern without duplicating any existing suite
+- Critique: Fresh-eye bounded subagent (agentId a2f5a8981f7405ab3): SHIP-WITH-NITS, no blockers; folded the vacuous-test replacement (call-site pin), the doc-pointer assertion, and the anchor-choice comment; artifact charness-artifacts/critique/2026-06-10-344-new-pool-module-advisory-critique.md
+- Off-goal findings:
+- Lessons carried forward: The advisory caught its own introduction scenario live (host_hook_registry.py) — the fastest possible validation of a workflow-signal change is pointing it at the waste instance that motivated it.
 - Metrics:
 
 ## Context Sources
@@ -375,6 +408,12 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- **Issue #344** (filed at closeout from the retro's W1/Sibling Search): a
+  slice that ADDS a new mutation-pool module gets no commit-time coverage
+  signal for its environment-dependent branches; destination is a
+  `run_slice_closeout` advisory. Reference only — resolution belongs to a
+  future slice.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -382,13 +421,72 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Self-verification (executed this run): three commits on origin/main..HEAD —
+76909cc8 (slice 1, Closes #342), 7f835610 (slice 2, Closes #343), f084c875
+(coverage-confirm repair). Broad gate `run-quality.sh --read-only` = **73
+passed / 0 failed**, re-run on the FINAL tree at 2026-06-10T12:41:35+09:00
+(after the f084c875 repair and all artifact edits — the disposition review
+flagged that the earlier visible 73/0 log predated the commits, so the gate
+was re-run rather than argued). Changed-line mutation producer
+(`run_slice_closeout.py --base --verification-lock
+--produce-mutation-coverage`) over origin/main..HEAD: consumer `ok: true`, 0
+uncovered after one repair (3 lines discovered first — see Auto-Retro W1 →
+issue #344). Host-hook family 64 passed (54-test floor preserved);
+validate-adapters families 112 passed. Per-slice fresh-eye critiques:
+slice 1 SHIP-WITH-NITS (folded), slice 2 SHIP-WITH-NITS (folded), goal
+disposition review ACCEPT-WITH-NOTES (folded).
+
+Live/external proof consumed (read-only): quality-core.yml first remote
+execution = run 27249353164 (event=push, main@58cc749a) **success** (core
+job success, PR-mirror correctly skipped); tag-lane run 27249343462 success;
+run 27249343475 cancelled (concurrency-superseded). Edit-time #N-anchor
+guard observed BLOCKING a live scratch `(#999)` edit to
+skills/public/quality/references/cautilus-on-demand.md via
+`PostToolUse:Edit` in this fresh session (flag named file:line + remediation;
+edit reverted, tree clean). #335 closed by github-actions[bot]
+2026-06-08T17:23:42Z; five most recent scheduled mutation runs green.
+
+Non-claims: #342/#343 remain OPEN on GitHub until the next operator push
+lane delivers the closing carriers (verify-closeout = `carrier_verified`
+locally for both); no release was cut; the #343 liveness check cannot see a
+DELETED checkout's leftover settings entries (named in the docs); the
+quality-core PR-mirror job has not yet executed on a real PR (no PR has
+existed since it shipped) — its first PR-event run remains a deferred proof
+for the next PR.
+
+Retro: charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-10-342-343-goal-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-10-342-343-next-queue-goal-disposition-review.md
 
 ## User Verification Instructions
 
+- **#342 (one minute):** append a junk key to the live adapter and watch the
+  gate name it — `printf '\nnot_in_schema_342: true\n' >>
+  .agents/usage-episodes-adapter.yaml && python3 scripts/validate_adapters.py
+  --repo-root . ; git checkout -- .agents/usage-episodes-adapter.yaml` —
+  expect exit 1 with "Additional properties are not allowed
+  ('not_in_schema_342' was unexpected)". Staging the same edit blocks at
+  `git commit` (the dispatcher runs validate-adapters for `.agents/` paths).
+- **#343 liveness:** `python3 scripts/reconcile_usage_episodes_host_hooks.py
+  --repo-root . --mode status` — the `hook_liveness` section lists each
+  state-tracked hook with `script_exists`; point a state entry's command at
+  a deleted path (edit `.charness/usage-episodes/host-hooks-state.json`) to
+  see it flagged in `dangling` + `drift` with exit 1, then restore.
+- **#343 registry:** `tests/test_host_hook_registry.py::test_fourth_intent_is_a_table_row`
+  pins that a fourth hook intent is one `SiblingHookIntent` row; the posture
+  decision is in docs/conventions/authoring-preflight.md ("Multi-checkout
+  posture").
+- **Deferred proofs:** `gh run view 27249353164` (quality-core first run,
+  success); `gh issue view 335` (closed 2026-06-08 by github-actions[bot]);
+  the edit-time guard fires for you on any `#NNN` edit under
+  `skills/public/**` in a Claude session on this machine.
+- **After the next operator push:** #342 and #343 close automatically via
+  the `Closes #N` carriers already on origin/main..HEAD.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #344 (recurs: the confirm-not-discover trap — 7/85 → 4 → 3 uncovered lines across three consecutive goals, each on a different new surface) — I1, the deterministic closeout nudge when a slice adds a new mutation-pool module, so the documented early producer self-check fires as workflow signal instead of memory.
+- none — W2 (parser-fidelity near-miss) was caught pre-commit by the slice's own test; the verification design worked, and the fidelity rule is recorded in the slice 1 log and carrier commit 76909cc8.
+- none — W3 (mixed consumer output) was this session's own 2>&1 capture, corrected in the retro artifact; the consumer's stdout is already pure JSON (disposition review verified), nothing to fix.
+Disposition review: charness-artifacts/critique/2026-06-10-342-343-next-queue-goal-disposition-review.md (ACCEPT-WITH-NOTES; all four notes folded: final-tree gate re-run, W1 cost corrected to ~6.7 min, W3 attribution corrected, closeout bindings completed)
+Structural follow-up: issue #344 (recurs: the confirm-not-discover trap fired three goals running — 7/85 → 4 → 3 uncovered lines — each time on a different new surface; destination is a run_slice_closeout advisory beside the existing near-limit surfacing)

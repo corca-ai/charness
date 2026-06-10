@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-10",
-  "source_artifact_count": 180,
-  "candidate_count": 995,
+  "source_artifact_count": 182,
+  "candidate_count": 1000,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -285,6 +285,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:18632d876540",
+      "kind": "current_focus",
+      "lesson": "The activated goal `charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md` ran start-to-finish in one session: slice 1 closed #342 (integration-schema validation pulled into `validate_adapters.py`, commit 76909cc8), slice 2 closed #343 (liveness + posture + registry, commit 7f835610, repair f084c875), slice 3 consumed the three deferred proofs read-only (quality-core first remote run GREEN at run 27249353164; the edit-time anchor guard observed BLOCKING a live scratch `PostToolUse` edit; #335 confirmed closed by the github-actions bot marker).",
+      "normalized_key": "the activated goal charness artifacts goals 2026 06 10 342 343 adapter schema hook",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c80a2315140d",
       "kind": "current_focus",
       "lesson": "The operator-selected next queue, four independent per-slice-closed-out slices: (1) `run_slice_closeout.py --base` committed-range ergonomics; (2) the #N-anchor edit-time guard auto-firing via the adapter-declared host-hook machinery; (3) light push/tag CI + the CI-PR changed-line mutation mirror; (4) the source-guard timing audit with the favorable subset pulled to commit time and the `docs/conventions/validator-timing-layers.md` doctrine.",
@@ -319,6 +339,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fe27d9b42fde",
+      "kind": "next_improvement",
+      "lesson": "**I1 (workflow/capability): issue #344** — deterministic closeout nudge when a slice adds a new eligible mutation-pool file, naming the early producer self-check, so confirm-not-discover stops depending on recall.",
+      "normalized_key": "i1 workflow capability issue 344 deterministic closeout nudge when a slice adds a new",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
           "date": "2026-06-10",
           "section": "Next Improvements"
         }
@@ -385,6 +425,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:3940568d6947",
+      "kind": "repeat_trap",
+      "lesson": "**W1 — producer DISCOVERED 3 uncovered changed lines at the bundle boundary (~6.7 min extra instrumented broad-pytest run, per the producer proof record).** The `_import_module` ImportError fallback in the NEW `scripts/host_hook_registry.py`. The carried lesson (cover degrade branches in the introducing slice) WAS applied inside slice 1 (`validate_adapters` ImportError/YAMLError branches covered up front) but missed in slice 2's new module, because the lazy-import fallback only fires when `scripts/` is off `sys.path` — a branch the default in-process test pattern never executes. Trend improving (3 lines vs 4 prior vs 7 before) but still discovery, not confirmation.",
+      "normalized_key": "w1 producer discovered 3 uncovered changed lines at the bundle boundary 6 7 min",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f6fcdb388e73",
       "kind": "repeat_trap",
       "lesson": "**W1 — slice-2 escape paid two slices later (~25 min).** The `skill_anchor_edit_guard` adapter section passed commit-time `validate-adapters` but violated the usage-episodes integration's `additionalProperties: false` jsonschema; the usage-episode emitter failed with `invalid_adapter`, surfaced only by slice 4's wider test run and fixed forward in `72f74b7f` plus a wasted full producer run that died at the surface-match block. Root cause: an adapter file has two validation owners and only the weaker one runs at the commit boundary. Filed as #342 with a timing-pull destination.",
@@ -401,66 +461,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
           "date": "2026-06-10",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:57b2a588476a",
-      "kind": "repeat_trap",
-      "lesson": "**W2 — parity watchdog fired at the bundle, two slices after the workflow was authored (~12 min producer re-run).** `quality-core.yml` was authored in slice 3; the CI/local-gate parity watchdog (`test_real_repo_workflows_or_zero_parity_issues`) only fired inside the bundle's instrumented broad pytest. Resolution used the doctrine's own extension path (`local-gate-subset-mirror` policy). The structural fix is a slice-4-class timing pull: workflow edits now run the parity inventory with `--require-canonical-gate-match` at commit time (applied this session).",
-      "normalized_key": "w2 parity watchdog fired at the bundle two slices after the workflow was authored",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-          "date": "2026-06-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d4e30b71aba7",
-      "kind": "repeat_trap",
-      "lesson": "**W3 — producer DISCOVERED four uncovered changed lines at the boundary (~10 min re-run), the standing recent-lessons repeat trap.** Slices 1–2 added branch tests per the carried lesson, but the reconcile `HostHookError` branch, the non-dict-payload fail-open return, and the guard's `__main__` process entry were missed; the consumer flagged them and one more producer run was paid. Partial improvement over prior sessions (4 lines vs 7/85), still discovery rather than confirmation.",
-      "normalized_key": "w3 producer discovered four uncovered changed lines at the boundary 10 min re run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-          "date": "2026-06-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f0dd589cd5bf",
-      "kind": "current_focus",
-      "lesson": "Built #339 across four slices as one `achieve` goal: (1) `accepted-risk:` / `out-of-scope:` additive disposition arms + the `## Residual Ledger` presence/form floor (rung 1f) in the shared grammar; (2) `scripts/proof_semantics_adapter_lib.py` — the optional, domain-blind proof-semantics adapter boundary (proof_levels + `incomparable` partial order, acceptance_map, verifier_refs, gap_policy, missing-adapter degradation); (3) `scripts/proof_mismatch.py` — the portable three-condition proof-mismatch floor (no proof entry / reached < required / gap lacks disposition) wired into the achieve CLI; (4) the same floor wired into issue closeout-draft validation, plus the dogfood, broad gate, and changed-line coverage.",
-      "normalized_key": "built 339 across four slices as one achieve goal 1 accepted risk out of",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-      "latest_source_date": "2026-06-09",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-339-portable-disposition-ledger.md",
-          "date": "2026-06-09",
-          "section": "Context"
         }
       ]
     }
@@ -737,6 +737,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:18632d876540",
+      "kind": "current_focus",
+      "lesson": "The activated goal `charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md` ran start-to-finish in one session: slice 1 closed #342 (integration-schema validation pulled into `validate_adapters.py`, commit 76909cc8), slice 2 closed #343 (liveness + posture + registry, commit 7f835610, repair f084c875), slice 3 consumed the three deferred proofs read-only (quality-core first remote run GREEN at run 27249353164; the edit-time anchor guard observed BLOCKING a live scratch `PostToolUse` edit; #335 confirmed closed by the github-actions bot marker).",
+      "normalized_key": "the activated goal charness artifacts goals 2026 06 10 342 343 adapter schema hook",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c80a2315140d",
       "kind": "current_focus",
       "lesson": "The operator-selected next queue, four independent per-slice-closed-out slices: (1) `run_slice_closeout.py --base` committed-range ergonomics; (2) the #N-anchor edit-time guard auto-firing via the adapter-declared host-hook machinery; (3) light push/tag CI + the CI-PR changed-line mutation mirror; (4) the source-guard timing audit with the favorable subset pulled to commit time and the `docs/conventions/validator-timing-layers.md` doctrine.",
@@ -771,6 +791,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fe27d9b42fde",
+      "kind": "next_improvement",
+      "lesson": "**I1 (workflow/capability): issue #344** — deterministic closeout nudge when a slice adds a new eligible mutation-pool file, naming the early producer self-check, so confirm-not-discover stops depending on recall.",
+      "normalized_key": "i1 workflow capability issue 344 deterministic closeout nudge when a slice adds a new",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
           "date": "2026-06-10",
           "section": "Next Improvements"
         }
@@ -837,6 +877,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:3940568d6947",
+      "kind": "repeat_trap",
+      "lesson": "**W1 — producer DISCOVERED 3 uncovered changed lines at the bundle boundary (~6.7 min extra instrumented broad-pytest run, per the producer proof record).** The `_import_module` ImportError fallback in the NEW `scripts/host_hook_registry.py`. The carried lesson (cover degrade branches in the introducing slice) WAS applied inside slice 1 (`validate_adapters` ImportError/YAMLError branches covered up front) but missed in slice 2's new module, because the lazy-import fallback only fires when `scripts/` is off `sys.path` — a branch the default in-process test pattern never executes. Trend improving (3 lines vs 4 prior vs 7 before) but still discovery, not confirmation.",
+      "normalized_key": "w1 producer discovered 3 uncovered changed lines at the bundle boundary 6 7 min",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f6fcdb388e73",
       "kind": "repeat_trap",
       "lesson": "**W1 — slice-2 escape paid two slices later (~25 min).** The `skill_anchor_edit_guard` adapter section passed commit-time `validate-adapters` but violated the usage-episodes integration's `additionalProperties: false` jsonschema; the usage-episode emitter failed with `invalid_adapter`, surfaced only by slice 4's wider test run and fixed forward in `72f74b7f` plus a wasted full producer run that died at the surface-match block. Root cause: an adapter file has two validation owners and only the weaker one runs at the commit boundary. Filed as #342 with a timing-pull destination.",
@@ -851,6 +911,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c4ff15cfa671",
+      "kind": "repeat_trap",
+      "lesson": "**W2 — first cut of slice 1 parsed adapters with the minimal `adapter_lib` parser instead of the runtime owner's `yaml.safe_load`** (~3 min, caught by the slice's own test before commit). Ironic-but-cheap: the slice existed to close a two-owner drift and nearly introduced a two-parser drift; the fidelity rule is now in the slice log and the commit message.",
+      "normalized_key": "w2 first cut of slice 1 parsed adapters with the minimal adapter lib parser",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
           "date": "2026-06-10",
           "section": "Waste"
         }
@@ -891,6 +971,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8ca98753e56b",
+      "kind": "repeat_trap",
+      "lesson": "**W3 — two parse attempts lost in closeout scripting against the changed-line consumer's output** — caused by this session capturing `2>&1` into one stream; the consumer's stdout is already pure JSON (disposition review verified the single `_emit` print), so there is nothing to fix in the script. Session-local; not an improvement.",
+      "normalized_key": "w3 two parse attempts lost in closeout scripting against the changed line consumer s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
           "date": "2026-06-10",
           "section": "Waste"
         }
