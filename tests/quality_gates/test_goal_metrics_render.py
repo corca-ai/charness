@@ -181,3 +181,42 @@ def test_render_block_keeps_codex_audit_when_codex_is_fresher_or_tied() -> None:
     assert "function calls: 429" in block
     # codex-sourced output carries no claude provenance line
     assert "- session:" not in block
+
+
+def test_render_block_uses_claude_session_when_codex_has_no_audit() -> None:
+    payload = {
+        "goal_metric_window": {"status": "not_requested"},
+        "hosts": {"codex": {}, "claude": {"session_audit": _claude_audit()}},
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    assert "### Measured (thread-wide, claude session scope)" in block
+    assert "function calls: 21" in block
+
+
+def test_render_block_old_codex_payload_without_last_event_at_loses_to_dated_claude() -> None:
+    payload = {
+        "goal_metric_window": {"status": "not_requested"},
+        "hosts": {
+            "codex": {"session_audit": _codex_audit(last_event_at=None)},
+            "claude": {"session_audit": _claude_audit(last_event_at="2026-06-10T09:00:00Z")},
+        },
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    assert "### Measured (thread-wide, claude session scope)" in block
+
+
+def test_render_block_malformed_last_event_at_is_treated_as_undated() -> None:
+    payload = {
+        "goal_metric_window": {"status": "not_requested"},
+        "hosts": {
+            "codex": {"session_audit": _codex_audit(last_event_at="2026-06-10T09:00:00Z")},
+            "claude": {"session_audit": _claude_audit(last_event_at="not-a-timestamp")},
+        },
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    # an unparseable timestamp loses to a dated one
+    assert "### Measured (thread-wide scope)" in block
+    assert "function calls: 429" in block
