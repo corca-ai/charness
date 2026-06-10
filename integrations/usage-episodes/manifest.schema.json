@@ -123,6 +123,23 @@
         }
       },
       "description": "Per-host install intent for the find-skills SessionStart routing hook. Reconciled by charness init/update and surfaced by `charness session-capture status`."
+    },
+    "skill_anchor_edit_guard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claude": {
+          "type": "string",
+          "enum": ["enabled", "disabled"],
+          "description": "Whether charness installs the skill #N-anchor edit-time guard as a PostToolUse(Edit|Write|MultiEdit) hook entry into the resolved Claude settings.json. Default disabled."
+        },
+        "codex": {
+          "type": "string",
+          "enum": ["enabled", "disabled"],
+          "description": "Unsupported: codex exposes no PostToolUse-equivalent edit-time hook surface in this machinery; an enabled intent is reported as an error by the reconciler instead of installing anything. Default disabled."
+        }
+      },
+      "description": "Per-host install intent for the skill #N-anchor edit-time guard hook (claude-only support). Reconciled by charness init/update and surfaced by `charness session-capture status`."
     }
   }
 }

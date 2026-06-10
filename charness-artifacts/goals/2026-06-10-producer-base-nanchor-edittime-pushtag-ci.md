@@ -9,13 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 — source-guard timing audit (verify-first enumeration,
-  classification table, pull only the favorable subset earlier via the
-  existing dispatcher).
-- Next action: enumerate the broad-gate-only source-guard validators and where
-  each runs today (preflight / edit scan / commit sweep / broad gate only),
-  classify timing-eligibility, then wire the favorable subset through
-  `staged_commit_gate_plan.py`; slices 1–3 are done (see `## Slice Log`).
+- Current slice: After-phase — all 4 slices done (see `## Slice Log`).
+- Next action: commit slice 4, then the bundle boundary: broad gate
+  (`run-quality.sh --read-only`) + changed-line producer via the NEW `--base`
+  (dogfooding slice 1), Final Verification bindings, retro + dispositions,
+  flip status to complete.
 - Timebox: ~one focused session per slice (4 slices); Activation time:
   2026-06-10 (session start); Closeout reserve: ~15% for the After-phase proof + retro;
   Done-early policy: continue_next_improvement (if a slice closes early, continue
@@ -193,6 +191,17 @@ during the run:
   repo-owned validators); quality posture honored by mirroring — not forking —
   the changed-line gate; fresh-eye bounded subagent critique at the slice
   boundary.
+- Routing (slice 4): impl-discipline + the `quality` posture frame (validation
+  timing design routed through the repo's own gate-design doctrine rather than
+  a new capability surface); fresh-eye bounded subagent critique at the slice
+  boundary.
+- Gather: n/a — no external sources; all context sources are repo-local
+  artifacts named in `## Context Sources`.
+- Release: n/a — no version bump or install-manifest edit in this goal (the
+  integration manifest schema edit is a validation-schema fix, not a release
+  surface).
+- Issue closeout: n/a — no tracked issue is closed by this goal (#184
+  out-of-scope per Non-Goals).
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -249,6 +258,20 @@ during the run:
 - Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied pre-push fixes: (1) --write-fresh-marker so the mirror uses the plain probe instead of the documented multi-GB dynamic-context export; (2) core job setup-node + npm ci so markdownlint-cli2 resolves lockfile-pinned instead of unpinned-latest; (3) ruff pinned 0.15.10; plus single-source cross-ref comment on the ruff path list. Recorded only: stale pull_request.base.sha can over-include other PRs' merged changes (over-checking, self-clears on re-sync; HEAD^1 is the fallback anchor); spec/handoff resolved-marking verified as honestly scoped.
 - Off-goal findings: none
 - Lessons carried forward: A fresh-eye reviewer reading the gate script's own docstrings caught the dynamic-context blow-up an author-side YAML review would have missed — the slice packet pointing at the CLI contract paid for itself.
+- Metrics:
+
+### Slice 4: Slice 4 — source-guard timing audit + favorable pull-earlier
+
+- Objective: Audit where every broad-gate validator runs today, classify timing-eligibility, pull only the favorable subset to commit time via the existing dispatcher, and land the decision frame as docs/conventions/validator-timing-layers.md.
+- Why this approach: Verify-first enumeration showed the dispatcher already pulls ~17 check classes; the genuinely favorable remainder was five guards (check-python-filenames, check-skill-contracts, check-skill-bootstrap-vars, validate-surfaces, check-title-slug-drift) at ~0.46s combined, wired as exact broad-gate commands through staged_commit_gate_plan with an existence-guard helper so tmp/consumer repos inherit nothing. check-python-runtime-inheritance (0.75s) and check-export-safe-imports stay at the boundary with recorded reasons; validate-all and expensive classes stay per the Non-Goals.
+- Commits:
+- What changed: scripts/staged_commit_gate_plan.py (_timing_pull_gate + five pulls); docs/conventions/validator-timing-layers.md (new doctrine + classification table); tests/quality_gates/test_staged_commit_gate_plan.py (4 trigger tests + CLI label list); tests/quality_gates/test_slice_closeout_base_range.py (slice-1 empty-merge-base branch test, confirm-not-discover lesson); integrations/usage-episodes/manifest.schema.json (fix-forward of the slice-2 escape: skill_anchor_edit_guard section missing from the additionalProperties:false schema broke the usage-episode emitter with invalid_adapter); plugins mirrors byte-synced.
+- Alternatives rejected: Wiring via FAST_SURFACE_VERIFY_COMMANDS (requires the commands in surfaces.json verify_commands, which these are not; path-conditioned dispatcher entries are the established sibling shape); pulling runtime-inheritance too (would alone double the added budget); amending the slice-2 commit instead of fixing forward (already-published history).
+- Targeted verification: 123 tests passed across the five touched/adjacent modules; adapter revalidates against the fixed schema; combined pull cost measured ~0.46s (reviewer independently re-measured); ruff/doc-links/markdown green; mirrors diff-clean; STRUCTURAL_SWEEP_LABELS unchanged; live predict-commit --plan-only clean.
+- Test duplication pressure: Four trigger tests reuse the existing _labels helper (no new fixtures, no subprocess boundary); the CLI expected-label update is the only touched existing assertion.
+- Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Must-fix applied: wrapped inline code span in the new doctrine doc (the slice's own pulled check-markdown gate would have blocked the commit — the timing-layer machinery catching its own doc). Verified: single-source byte-match of all five commands vs run-quality.sh, budget re-measured, sweep labels unchanged, fix-forward scoping and codex schema-legality confirmed as the slice-2 honesty design. Recorded: title-slug 'broad only' row imprecision (also ran in docs-only pre-push subset) judged defensible.
+- Off-goal findings: Slice-2 escape class: an adapter-section addition is not covered by any commit-time gate that validates the usage-episodes adapter against its integration schema (validate-adapters passed while the emitter schema rejected) — the schema fix-forward landed here; consider a timing pull or pre-commit trigger for integration-schema validation when .agents/*-adapter.yaml changes (recorded for retro disposition).
+- Lessons carried forward: Verify-first paid off: most of the obvious pull candidates were already pulled; measuring actual costs (3.3s command-docs vs 0.05s contracts) made the favorable line objective instead of vibes.
 - Metrics:
 
 ## Context Sources

@@ -37,6 +37,47 @@ class GateCommand:
         return {"label": self.label, "argv": list(self.argv)}
 
 
+def _timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
+    """A timing-layer pulled guard (docs/conventions/validator-timing-layers.md),
+    degrading to no gate when the repo does not own the validator script — a
+    seeded tmp repo or a consumer repo sharing this plan inherits nothing new;
+    the broad gate stays the enforcement floor where the validator exists."""
+    if not (repo_root / script).is_file():
+        return []
+    return [GateCommand(label, ("python3", script, *args))]
+
+
+def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    """The favorable pulled subset from the 2026-06-10 timing audit — each is
+    cheap (<0.3s), deterministic, changed-scoped (only its trigger class can
+    flip the verdict), and runs the EXACT broad-gate command (single source).
+    ~0.46s combined worst case; see docs/conventions/validator-timing-layers.md
+    for the classification table and the ~1s budget line."""
+    gates: list[GateCommand] = []
+    if any(path.endswith(".py") for path in paths):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "check-python-filenames", "scripts/check_python_filenames.py",
+                "--repo-root", str(repo_root), "--require-git-file-listing",
+            )
+        )
+    if _any_starts(paths, "skills/"):
+        gates.extend(_timing_pull_gate(repo_root, "check-skill-contracts", "scripts/check_skill_contracts.py", "--repo-root", str(repo_root)))
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "check-skill-bootstrap-vars", "scripts/check_skill_bootstrap_vars.py",
+                "--repo-root", str(repo_root), "--require-git-file-listing",
+            )
+        )
+    if any(path == ".agents/surfaces.json" for path in paths):
+        # A broken surfaces manifest degrades every surface-driven gate, so it
+        # fails earliest.
+        gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
+    if any(path.endswith(".md") for path in paths):
+        gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py", "--strict"))
+    return gates
+
+
 def collect_staged_paths(repo_root: Path) -> list[str]:
     result = subprocess.run(
         ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
@@ -252,6 +293,7 @@ def staged_commit_gate_plan(
 
     plan.extend(_skill_core_headroom_gates(repo_root, paths))
     plan.extend(_artifact_shape_gates(repo_root, paths))
+    plan.extend(_timing_layer_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
     # agrees with the per-slice aggregate on the cheap structural subset.

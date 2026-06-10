@@ -73,6 +73,16 @@ def test_resolve_base_sha_unresolvable_ref_raises_surface_error(tmp_path: Path) 
         resolve_base_sha(repo, "no-such-ref")
 
 
+def test_resolve_base_sha_empty_merge_base_output_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # git exiting 0 with no output should not silently yield an empty base.
+    from scripts import surfaces_lib
+
+    repo = _seed_repo(tmp_path)
+    monkeypatch.setattr(surfaces_lib, "_run_git", lambda *a, **k: [])
+    with pytest.raises(SurfaceError, match="resolved empty"):
+        resolve_base_sha(repo, "auto")
+
+
 def test_resolve_changed_paths_default_stays_working_tree_only(tmp_path: Path) -> None:
     # Behavior preservation: without --base the post-commit clean tree still
     # collects nothing (noop), while --base picks up the committed range.

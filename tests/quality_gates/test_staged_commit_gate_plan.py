@@ -191,6 +191,34 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
     assert "check-markdown" in labels
 
 
+# Timing-layer pulls (docs/conventions/validator-timing-layers.md): one test per
+# pulled guard — the favorable (cheap + changed-scoped + deterministic) subset
+# fires at commit time via this dispatcher, and not for unrelated change classes.
+
+
+def test_timing_pull_python_filenames_fires_for_staged_python_only() -> None:
+    assert "check-python-filenames" in _labels(["scripts/new_helper.py"])
+    assert "check-python-filenames" not in _labels(["docs/usage.md"])
+
+
+def test_timing_pull_skill_contract_guards_fire_for_skills_paths_only() -> None:
+    labels = _labels(["skills/public/demo/references/note.md"])
+    assert "check-skill-contracts" in labels
+    assert "check-skill-bootstrap-vars" in labels
+    for label in ("check-skill-contracts", "check-skill-bootstrap-vars"):
+        assert label not in _labels(["scripts/new_helper.py"])
+
+
+def test_timing_pull_validate_surfaces_fires_for_manifest_edit_only() -> None:
+    assert "validate-surfaces" in _labels([".agents/surfaces.json"])
+    assert "validate-surfaces" not in _labels([".agents/quality-adapter.yaml"])
+
+
+def test_timing_pull_title_slug_drift_fires_for_markdown_only() -> None:
+    assert "check-title-slug-drift" in _labels(["docs/usage.md"])
+    assert "check-title-slug-drift" not in _labels(["scripts/new_helper.py"])
+
+
 def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     result = run_script(
         "scripts/run_slice_closeout.py",
@@ -224,6 +252,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "staged-plugin-mirror-drift",
         "check-doc-links",
         "check-markdown",
+        "check-title-slug-drift",
     ]
 
     text_result = run_script(
