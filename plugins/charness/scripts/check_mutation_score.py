@@ -284,7 +284,7 @@ def main() -> int:
         sample_manifest_issue=sample_manifest_issue,
     )
     lines = build_summary_lines(records, repo_root, metrics)
-    if changed_scope_gap_files:
+    if changed_scope_gap_files or changed_scope_gap_details:
         try:
             insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
         except ValueError:

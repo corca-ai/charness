@@ -466,9 +466,10 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert "- Status: **FAIL**" in summary
     assert "- Mutation score: **PASS** (100.0% reachable score vs 50% threshold)" in summary
-    assert "- Blocking signals: **FAIL** (changed-line coverage/selection)" in summary
+    assert "- Blocking signals: **FAIL** (changed-line coverage)" in summary
     assert (
-        "Blocking signal: changed lines were left test-uncovered, or eligible changed files were dropped by selection/workload budgets, before mutation."
+        "Blocking signal: changed lines were left test-uncovered before mutation "
+        "(budget/capacity drops of covered changed files are advisory, not blocking)."
         in summary
     )
     assert "## Changed Files Excluded Before Mutation" in summary
@@ -533,7 +534,12 @@ def test_check_mutation_score_fails_changed_line_blocker_without_exact_targets(
     assert "Blocking signal: mutation sample manifest changed-line blockers missing exact proof targets" in summary
 
 
-def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(tmp_path: Path) -> None:
+def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(tmp_path: Path) -> None:
+    # Capacity-class drops (cumulative selection/workload budgets) are advisory:
+    # the dropped files' changed lines already passed the blocking uncovered
+    # arm, which scans ALL eligible changed files independent of sampling.
+    # Before this, any push changing more files than `max_files` guaranteed a
+    # red scheduled run (run 27279937136: score PASS, red purely on 10-vs-5).
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
         _ADAPTER_HEADER
@@ -550,7 +556,14 @@ def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(t
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
-        json.dumps({"selection_excluded_changed_files": ["scripts/expensive.py"]}) + "\n",
+        json.dumps(
+            {
+                "base_sha": "base",
+                "selection_excluded_changed_files": ["scripts/expensive.py"],
+                "workload_excluded_changed_files": ["scripts/heavy.py"],
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     dump = tmp_path / "dump.jsonl"
@@ -575,10 +588,14 @@ def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(t
         text=True,
     )
 
-    assert result.returncode == 1
+    assert result.returncode == 0, result.stdout + result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert "## Changed Files Excluded Before Mutation" in summary
     assert "`scripts/expensive.py`" in summary
+    assert "`scripts/heavy.py`" in summary
+    assert "Selection budget or nodeid (advisory: capacity, not coverage)" in summary
+    assert "Workload budget (advisory: capacity, not coverage)" in summary
+    assert "- Blocking signals: **PASS** (none)" in summary
 
 
 def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_changed_files(

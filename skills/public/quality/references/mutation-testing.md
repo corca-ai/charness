@@ -73,9 +73,12 @@ When `commands.sample` is empty, the workflow runs the full mutation set.
 Consumers that make scope gaps fatal should make the sampling contract at
 least as strict as the summary contract. If the summary fails on uncovered
 mutants, the sample step should prefer targets whose mutable lines are covered
-by the selected test command, and should surface changed files filtered out by
-coverage, mutation-line, or selection-budget filters as a blocking signal rather
-than silently replacing them with fill samples.
+by the selected test command. Uncovered CHANGED LINES are the blocking signal
+(computed over all eligible changed files in range, before selection); changed
+files dropped by coverage, mutation-line, selection-budget, or workload-budget
+filters surface as named advisory sections rather than blocking — a capacity
+drop of a covered file is not a coverage gap, and blocking on it makes every
+larger-than-budget push a guaranteed red run.
 
 When a sampler is configured with a base/head range for changed-file priority,
 failure to compute that changed-file list is a blocking signal, not an empty
@@ -260,7 +263,7 @@ fails), two traps waste time and produce false proof:
 - **Read the summary as two results, not one overloaded status.** The top-level
   status is the overall gate result. The `Mutation score:` row reports only the
   reachable killed/survived threshold result, and the `Blocking signals:` row
-  reports non-score blockers such as changed-line coverage/selection. A run can
+  reports non-score blockers such as changed-line coverage. A run can
   therefore show `Status: FAIL`, `Mutation score: PASS`, and
   `Blocking signals: FAIL` without any survived Python mutants.
 
@@ -274,9 +277,9 @@ fails), two traps waste time and produce false proof:
 - **`workflow_dispatch` cannot prove a changed-line fix.** Only `schedule`
   events compute `base_sha` (see `mutation-tests.yml`); a dispatch run has zero
   changed files, so the changed-line classifier is inert. A green dispatch
-  proves only the **score/survivor** path. The blocking-trio fix is confirmed
-  by the **next scheduled run**, or locally by the sampler with explicit
-  `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
+  proves only the **score/survivor** path. A changed-line-blocker fix is
+  confirmed by the **next scheduled run**, or locally by the sampler with
+  explicit `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
 
 The signal is per-run `base..head`, so it can recur on any newly-changed file
 whose changed lines lack coverage; the durable fix is test coverage of those

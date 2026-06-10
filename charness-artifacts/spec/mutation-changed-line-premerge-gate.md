@@ -151,9 +151,27 @@ mutation-pool file fails locally — with an actionable `path:line` target —
   `changed_files_excluded_by_per_file_budget` bucket
   (`mutation_manifest_lib.split_per_file_budget_exclusions`). Its changed lines are
   still coverage-verified by the changed-line arm, which keeps blocking any
-  uncovered changed line; the per-file budget is unchanged. Genuine
-  selection-CONTENTION drops (cumulative budget / nodeid budget / no covering test)
-  stay blocking and remain the deferred follow-up.
+  uncovered changed line; the per-file budget is unchanged. **Resolved
+  (2026-06-11 overnight goal, slice 5):** the remaining selection-CONTENTION
+  sub-case (cumulative selection/nodeid budget, workload budget, AND the
+  no-covering-test-nodeid drop that shares the same bucket) is now also
+  advisory (`SCOPE_GAP_CAPACITY_ADVISORY_SECTIONS` in
+  `mutation_sample_manifest_score_lib.py`), on the same #341 rationale made
+  provable: the blocking uncovered arm (`classify_changed_line_scope_gap`)
+  scans ALL eligible changed files in range BEFORE selection, so a
+  budget-dropped file with an uncovered changed line still fails the run via
+  `changed_line_uncovered_changed_files`; a dropped file whose lines are
+  covered is a capacity limit. Evidence for the noise this closed: scheduled
+  run 27279937136 (768ded84) went red purely on a 10-files-vs-5-cap drop
+  with score PASS (88.2% vs 80%), auto-filed #351, and a later empty-diff
+  same-SHA run auto-closed it without re-proof; 47 such auto-issue
+  lifecycles existed. Dropped files stay summary-visible under advisory
+  headings. The pre-push consumer is untouched (blocks only on the
+  uncovered arm). Honesty note (slice reviewer): the no-covering-test
+  sub-case is a testability gap, not pure capacity — its changed lines
+  still pass the statement-coverage uncovered arm (same definition the
+  pre-push gate uses), but a producer-side bucket split naming it
+  separately is the named follow-up if the class recurs.
 - **CI-PR enforcement**: RESOLVED (2026-06-10 next-queue goal, slice 3).
   `.github/workflows/quality-core.yml` now carries a light push/tag core job
   plus a PR-only `changed-line-mutation-mirror` job that runs

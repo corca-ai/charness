@@ -578,10 +578,12 @@ def _scope_gap_manifest(tmp_path: Path, **overrides: object) -> Path:
     return path
 
 
-def test_per_file_budget_exclusions_are_advisory_not_blocking(tmp_path: Path) -> None:
-    """#341: the per-file-budget advisory bucket never enters the blocking set, while a
-    genuine selection exclusion still blocks. This is the signal that decides whether the
-    scheduled mutation run fails, so the reclassification is what makes the run recover."""
+def test_budget_exclusions_are_advisory_not_blocking(tmp_path: Path) -> None:
+    """#341 made the per-file-budget bucket advisory; the premerge-gate spec's
+    deferred follow-up extends that to ALL capacity-class drops (cumulative
+    selection/workload budgets): dropped files' changed lines already passed
+    the uncovered arm, which scans the full changed set independent of
+    sampling. Only a genuine changed-line coverage gap still blocks."""
     advisory = _scope_gap_manifest(
         tmp_path / "a",
         changed_files_excluded_by_per_file_budget=["skills/public/x/scripts/big.py"],
@@ -593,9 +595,12 @@ def test_per_file_budget_exclusions_are_advisory_not_blocking(tmp_path: Path) ->
     contended = _scope_gap_manifest(
         tmp_path / "b",
         selection_excluded_changed_files=["scripts/contended.py"],
+        workload_excluded_changed_files=["scripts/heavy.py"],
     )
-    blocking_contended, _d2, _i2 = sample_manifest_scope_gap_details(contended)
-    assert blocking_contended == ["scripts/contended.py"]
+    blocking_contended, details_contended, _i2 = sample_manifest_scope_gap_details(contended)
+    assert blocking_contended == []
+    assert details_contended["selection_excluded_changed_files"] == ["scripts/contended.py"]
+    assert details_contended["workload_excluded_changed_files"] == ["scripts/heavy.py"]
 
 
 def test_mutation_line_probe_paths_stay_under_reports(tmp_path: Path) -> None:

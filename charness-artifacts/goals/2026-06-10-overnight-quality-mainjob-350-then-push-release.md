@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 5 — C3 scheduled mutation lane base/auto-close semantics.
-- Next action: diagnose-first in the workflow JS + summary script; bound
-  to unit-testable logic; honor craken-agents#127 / #341 constraints.
+- Current slice: final — push + post-push CI + verify-closeout + release.
+- Next action: bundle gates (broad + locked producer/consumer over
+  origin/main..HEAD — mutation-pool files changed), then push.
 - Timebox: 6h
 - Activation time: 2026-06-11T06:31:18+09:00
 - Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
@@ -311,6 +311,25 @@ skill answers a boundary. Fill during the run:
   stale ~0.46s docstring number refreshed in both copies). Mutation run
   27308933212 still in progress at this boundary (~2h — unusual; recheck).
   Routing: quality -> impl-shaped slice.
+- **Slice 5 DONE (C3, 2026-06-11 ~10:2x+09:00).** Diagnose-first verdict:
+  the noise engine was capacity-class blocking — any push changing more
+  eligible files than `max_files` GUARANTEED a red scheduled run (run
+  27279937136: score PASS 88.2%, red purely on 10-vs-5 drop), whose
+  auto-issue a later empty-diff run closed without re-proof (47 lifecycle
+  history). Fix completes the premerge spec's deliberately deferred
+  follow-up (`follow-up:mutation-selection-budget-setup-libs`), extending
+  #341's capacity-vs-coverage principle: only
+  `changed_line_uncovered_changed_files` blocks (computed over ALL eligible
+  changed files BEFORE selection — reviewer traced no escape path);
+  selection/workload drops are advisory but stay summary-visible. No
+  workflow JS edits (craken-agents#127 rotation + auto-close untouched —
+  greens are now meaningful). Pre-push consumer untouched. Suites 50/50,
+  broad gate 73/0, mirrors synced, spec updated honestly (incl. the
+  no-covering-test sub-case note). Fresh-eye critique: **SHIP-WITH-NITS**,
+  both folded pre-commit (mutation-testing.md reference de-staled in both
+  copies; spec enumeration corrected). Routing: quality -> impl-shaped
+  slice. NEXT-RUN PROOF: the first scheduled mutation run on the pushed
+  HEAD proves the reclassification live (named deferred proof, next goal).
 
 ## Context Sources
 

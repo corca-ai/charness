@@ -6,12 +6,24 @@ import json
 from pathlib import Path
 
 # Sections that make the mutation signal untrustworthy for the change and so
-# block recovery: the change's own lines were left uncovered, or eligible
-# changed files were dropped by selection/workload budgets before mutation.
+# block recovery: the change's own lines were left test-uncovered. This arm is
+# computed over ALL eligible changed files in range, independent of sampling,
+# so it keeps blocking real coverage gaps even for files the budgets dropped.
 SCOPE_GAP_BLOCKING_SECTIONS = (
     ("changed_line_uncovered_changed_files", "Uncovered changed lines"),
-    ("selection_excluded_changed_files", "Selection budget or nodeid"),
-    ("workload_excluded_changed_files", "Workload budget"),
+)
+
+# Capacity-class drops of changed files (cumulative selection/nodeid budgets,
+# workload budgets). Advisory, not blocking: a dropped file's changed lines
+# already passed the blocking uncovered arm above, so the drop is a sampling
+# capacity limit, not a coverage gap — the same class #341 made advisory for
+# the per-file cap. Completes the premerge-gate spec's deferred follow-up
+# (`follow-up:mutation-selection-budget-setup-libs`): before this, any push
+# changing more eligible files than `max_files` guaranteed a red scheduled
+# run whose auto-issue a later empty-diff run closed without re-proof.
+SCOPE_GAP_CAPACITY_ADVISORY_SECTIONS = (
+    ("selection_excluded_changed_files", "Selection budget or nodeid (advisory: capacity, not coverage)"),
+    ("workload_excluded_changed_files", "Workload budget (advisory: capacity, not coverage)"),
 )
 
 # Whole-file selection diagnostics. A touched file failing the whole-file
@@ -62,16 +74,8 @@ def sample_manifest_scope_gap_details(
             return None
         return sorted(set(value))
 
-    blocking_paths: set[str] = set()
     details: dict[str, list[str]] = {}
-    changed_line_paths: list[str] = []
-    for key, _heading in SCOPE_GAP_BLOCKING_SECTIONS:
-        paths = read_section(key)
-        if paths:
-            details[key] = paths
-            blocking_paths.update(paths)
-            if key == "changed_line_uncovered_changed_files":
-                changed_line_paths = paths
+    blocking_paths, changed_line_paths = _collect_scope_gap_sections(read_section, details)
     if target_lines := read_changed_line_target_section(payload, issues):
         details[CHANGED_LINE_TARGETS_KEY] = target_lines
     target_paths = {line.split(":", 1)[0] for line in details.get(CHANGED_LINE_TARGETS_KEY, [])}
@@ -86,6 +90,27 @@ def sample_manifest_scope_gap_details(
     for key in SCOPE_GAP_ADVISORY_KEYS:
         read_section(key)
     return sorted(blocking_paths), details, "; ".join(issues)
+
+
+def _collect_scope_gap_sections(read_section, details: dict[str, list[str]]) -> tuple[set[str], list[str]]:
+    """Fill ``details`` from the blocking and capacity-advisory sections.
+
+    Capacity-class sections stay out of the blocking set but keep their
+    detail lists so the summary still names the dropped files for triage."""
+    blocking_paths: set[str] = set()
+    changed_line_paths: list[str] = []
+    for key, _heading in SCOPE_GAP_BLOCKING_SECTIONS:
+        paths = read_section(key)
+        if paths:
+            details[key] = paths
+            blocking_paths.update(paths)
+            if key == "changed_line_uncovered_changed_files":
+                changed_line_paths = paths
+    for key, _heading in SCOPE_GAP_CAPACITY_ADVISORY_SECTIONS:
+        paths = read_section(key)
+        if paths:
+            details[key] = paths
+    return blocking_paths, changed_line_paths
 
 
 def read_changed_line_target_section(payload: dict, issues: list[str]) -> list[str]:
@@ -130,8 +155,10 @@ def _target_lines_for_path(path: str, entries: list[object], issues: list[str]) 
 
 
 def changed_scope_gap_section_lines(paths: list[str], details: dict[str, list[str]]) -> list[str]:
-    lines = ["", "## Changed Files Excluded Before Mutation", "", *[f"- `{path}`" for path in paths[:10]], ""]
-    for key, heading in SCOPE_GAP_BLOCKING_SECTIONS:
+    lines = ["", "## Changed Files Excluded Before Mutation", ""]
+    if paths:
+        lines.extend([*[f"- `{path}`" for path in paths[:10]], ""])
+    for key, heading in (*SCOPE_GAP_BLOCKING_SECTIONS, *SCOPE_GAP_CAPACITY_ADVISORY_SECTIONS):
         if detail_paths := details.get(key):
             lines.extend([f"### {heading}", "", *[f"- `{path}`" for path in detail_paths[:10]], ""])
     if target_lines := details.get(CHANGED_LINE_TARGETS_KEY):
