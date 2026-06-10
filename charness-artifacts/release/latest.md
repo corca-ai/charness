@@ -3,12 +3,12 @@ Date: 2026-06-10
 
 ## Scope
 
-Advanced `charness` toward release `0.39.0` (tag `v0.39.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.40.0` (tag `v0.40.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.38.0`
-- target version: `0.39.0`
+- previous version: `0.39.0`
+- target version: `0.40.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.39.0` (tag `v0.39.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.39.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.40.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.38.0`
+- Previous release ref: `refs/tags/v0.39.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,34 +50,34 @@ Advanced `charness` toward release `0.39.0` (tag `v0.39.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 70.
+- Evaluated changed paths: 45.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-10-346-claude-metric-scoping-critique.md`
-  - `charness-artifacts/critique/2026-06-10-348-hotl-skill-critique.md`
-  - `charness-artifacts/critique/2026-06-10-next-queue-goal-activation-plan-critique.md`
-  - `charness-artifacts/critique/2026-06-10-next-queue-goal-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-10-v0-39-0-release-critique.md`
-  - `charness-artifacts/find-skills/latest.json`
-  - `charness-artifacts/find-skills/latest.md`
+  - `charness-artifacts/critique/2026-06-10-issue-349-resolution-critique.md`
+  - `charness-artifacts/critique/2026-06-10-postpush-349-goal-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-11-issue-350-resolution-critique.md`
+  - `charness-artifacts/critique/2026-06-11-release-v0.40.0-critique.md`
+  - `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md`
+  - `charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary-early-close-report.md`
   - `charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md`
-  - `charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl-early-close-report.md`
-  - `charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md`
+  - `charness-artifacts/quality/history/2026-06-06-quality-review.md`
+  - `charness-artifacts/quality/latest.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-10-next-queue-goal-host-log-probe.md`
-  - `charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md`
+  - `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`
+  - `charness-artifacts/retro/2026-06-10-postpush-349-goal-host-log-probe.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/conventions/implementation-discipline.md`
+  - `charness-artifacts/spec/mutation-changed-line-premerge-gate.md`
+  - `docs/conventions/validator-timing-layers.md`
   - `docs/handoff.md`
-  - `docs/public-skill-dogfood.json`
-  - ... 50 more
+  - `packaging/charness.json`
+  - ... 25 more
 
 ## Real-Host Verification
 
@@ -98,11 +97,7 @@ Advanced `charness` toward release `0.39.0` (tag `v0.39.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-10-v0-39-0-release-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.39.0`.
+- Review proof: `charness-artifacts/critique/2026-06-11-release-v0.40.0-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -113,10 +108,11 @@ Advanced `charness` toward release `0.39.0` (tag `v0.39.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.40.0 (minor release). Four quality-gate improvements from the 2026-06-11 overnight quality goal (#349 and #350 both closed by their carriers). (1) SCHEDULED MUTATION LANE - CAPACITY DROPS ARE NOW ADVISORY (maintainer-facing; completes the premerge-gate spec's deferred follow-up on the #341 principle) - a changed mutation-pool file dropped by the CUMULATIVE selection/nodeid or workload budgets no longer fails the scheduled run; only `changed_line_uncovered_changed_files` blocks, and that arm is computed over ALL eligible changed files BEFORE selection, so a budget-dropped file with an uncovered changed line still fails. Why - any push changing more eligible files than `max_files` previously GUARANTEED a red scheduled run (run 27279937136 was red purely on a 10-files-vs-5-cap drop with score PASS 88.2%), whose auto-issue a later empty-diff run closed without re-proof - 47 such auto-issue lifecycles existed. OPERATOR-VISIBLE - scheduled-run red rates drop; a red now means a real thing (score break, uncovered changed lines, partial run, manifest issue). Dropped files stay summary-visible under `(advisory - capacity, not coverage)` headings; the local pre-push changed-line gate and the workflow rotation/auto-close (craken-agents#127) are untouched. (2) NEAR-CAP SKILL-SURFACE WARNING + AT-CAP PROPAGATION CHECKLIST (#350) - `check_skill_surface_preflight.py --path` now WARNS (non-blocking, exit codes unchanged) when a SKILL.md sits at >=195/200 total lines, and the `create-skill` Guardrails gain one line naming the at-cap adjacent-skill outcome (trim deliberately or file an issue - never silently drop the reciprocal line), closing the recurrence class #349 exposed (five public skills sit at exactly 200/200). (3) COMMIT-TIME HANDOFF VALIDATION - a staged `docs/handoff.md` edit now runs `validate-handoff-artifact` at the pre-commit timing layer (~0.1s, exact broad-gate command, degrades by absence in repos without the validator), closing the commit->push window where a closeout commit emptied a required handoff section AFTER the session's final broad run. (4) QUALITY BOOTSTRAP UNKNOWN-FIELD ROUND-TRIP FIX - `bootstrap_adapter.py` previously REWROTE `.agents/quality-adapter.yaml` and silently DROPPED unknown top-level blocks (observed live - `standing_doc_provenance` and `changed_line_mutation_gate`, both with active gate consumers) plus all comments; unknown fields now round-trip verbatim (field_statuses `preserved`) and an unchanged adapter is never rewritten (restoring the no-op path, so comments survive). Also ships the hitl reciprocal `hotl` boundary line (#349 carrier) and a refreshed quality posture artifact. OPERATOR NOTE - all additive or fix-class; no migration, no renamed surfaces, and installed-plugin consumers inherit no new blocking behavior (the commit-time handoff pull exists only where the validator script exists).
 - Run `charness update` to pull 0.39.0 (minor release). Two additive capabilities from the 2026-06-10 next-queue goal (#346 and #348 both closed by their carriers), plus an inert next-queue draft. (1) CLAUDE-HOST PER-GOAL METRIC SCOPING (#346, corrected root cause) - the goal-closeout metrics block previously misattributed a STALE Codex rollout (newest-by-mtime under the Codex sessions dir) as a Claude-host run's measured block, because no Claude-format session auditor existed and the renderer only knew the Codex audit (the issue body's "project-dir aggregate" diagnosis was falsified by the activation critique). Now: a new `scripts/claude_session_jsonl_audit.py` audits ONE Claude project session JSONL (measured counts with an mcp custom-tool split, Edit/Write-class tool_use as patch applications, Task/Agent as subagent spawns, timestamp window filter, last_event_at); the `Host metric window:` line accepts exactly one of `codex_session_file`/`claude_session_file` (dual-host lines are rejected as ambiguous; existing codex-keyed windows round-trip unchanged); `record_metric_window.py` gains `--claude-session-file` (mutually exclusive, exactly-one enforced); `probe_host_logs.py` gains `--claude-session-file` and emits a Claude `session_audit`/`goal_window_audit`; and the renderer selects the measured block goal-window-first from either host, then the freshest session by last_event_at (ties keep Codex, so a Codex host WITH a session audit renders byte-identically; the no-audit unavailable wording now names both hosts), with an explicit session-path provenance line on Claude-sourced blocks. Degrade contract - missing project JSONL, a named-but-missing session file, or an ambiguous dual-host window yield the honest unavailable/invalid posture (never a crash, never substitution), so installed-plugin consumers inherit no new blocking behavior. Internal rename - five module-private codex-audit helpers are now public for the cross-host reuse (iter_records, filter_records_for_window, repeated_broad_gates, repeated_vcs_commands, malformed_warnings) and the audit payload gains last_event_at; all consumers in-repo. Dogfood - the shipping goal's own closeout recorded a claude-keyed window and rendered a goal-scoped measured block (776 of 1027 session records). (2) NEW PUBLIC SKILL `hotl` (#348) - human-on-the-loop closure of applied live behavior, ported from a consuming repo's proven close-loop playbook with repo specifics adapter-owned: the skill ships the 5-step discipline (loop inventory, proof packet before execution, implement missing proof methods, execute or record, ledger + closeout), the 7-status proof-ledger vocabulary (verified / blocked-needs-operator / blocked-needs-capability / deferred-by-operator / issue / accepted-risk / out-of-scope) with `verified_against` staleness semantics and blocking completion audits, and the proof-class rules (normalized match is not rendering proof; direct post is not scheduled-workflow proof; bot smoke is not human-ingress proof; mutation proof needs before/after readback; local tests prove local-only acceptance classes). Repo facts (proof commands with readiness/readback/live/audit kinds and boundary-reason flags, surfaces vocabulary, ledger path/schema, completion-audit command) live in `.agents/hotl-adapter.yaml`; missing-adapter posture is `visible` (inventory/packets/dispositions continue with named inferred defaults; live proof is never improvised - an undeclared capability becomes `blocked-needs-capability`). The skill registers as hitl-recommended / adapter-required / fallback-visible and joins the collaboration profile; v1 ships NO charness-owned ledger tooling (adapter-owned, recorded residual). OPERATOR NOTE - both changes are additive; no migration beyond the normal `charness update` flow, and a follow-up issue (#349) tracks making the hitl->hotl routing boundary reciprocal. This release also ships an inert DRAFT goal artifact for the next queue (post-push verification incl. #346/#348 CLOSED-state checks + the #349 hitl/hotl reciprocal boundary slice); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.38.0 (minor release). Two additive capabilities from the 2026-06-10 post-push goal. (1) DELETED-CHECKOUT SETTINGS SCAN - `charness session-capture status` gains a `settings_scan` section that reads the host settings files themselves (Claude `settings.json`, Codex `hooks.json`, Codex `config.toml`) and flags any hook entry whose command carries a KNOWN charness hook-script basename (derived live from the hook-intent registry rows plus the usage-episodes install lib via the new `script_relative_attr` field - never a forked literal list) but whose embedded script path no longer exists, joining those findings to the documented exit-1 drift list. OPERATOR-VISIBLE - this closes the gap v0.37.0 documented as deferred (a DELETED checkout's leftover settings entries were invisible to state-side `hook_liveness`); a machine carrying such a leftover newly sees `status` exit 1 with a remedy line (remove the entry or reinstall from a live checkout). Degrade contract - status-mode only (`charness init`/`update` use reconcile mode and are unaffected; no commit/push gate runs status), foreign hooks without a charness basename are never flagged, a live checkout's entries are never flagged (script exists), and missing/unreadable settings degrade to silence, so installed-plugin consumers inherit no new blocking behavior. Internal rename - the codex TOML helper `_toml_command_value` is now public `toml_command_value` (was module-private; all consumers in-repo). (2) NEW-POOL-MODULE ADVISORY E2E PROOF - a seeded-repo e2e positive for the confirm-not-discover closeout advisory landed via the quality-core PR-mirror job's first real execution on a real pull request (verdict green; test-only plus a docstring touch, no behavior change). The rest of the delta is artifact-only (goal/retro/critique records, handoff and lesson-index refresh, the v0.37.0 post-publish verification record). This release also ships an inert DRAFT goal artifact for the next queue (push/release-lane verification + Claude-host per-goal metric scoping + a portable hotl skill); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.37.0 (minor release). Three additive capabilities from the 2026-06-10 next-queue goal (#342, #343, #344 all closed by their carriers), plus an inert next-queue draft. (1) STRICTER COMMIT-TIME ADAPTER VALIDATION (#342) - `scripts/validate_adapters.py` now jsonschema-validates `.agents/<name>-adapter.yaml` against the owning integration's `manifest.schema.json` (usage-episodes, t-events, worktree) at every validate-adapters timing (the pre-commit dispatcher and the broad gate share the command), parsing with `yaml.safe_load` like the runtime owner, so a schema-rejected adapter edit fails at commit naming the offending key instead of surfacing slices later as `invalid_adapter` at the emitter. OPERATOR-VISIBLE - a repo that vendored an integration schema AND carries out-of-schema adapter keys starts failing commits after update (loudly, key named); degrade contract = no vendored schema or no `jsonschema`/`yaml` dep -> no new gate, consumer repos inherit nothing. Known asymmetry - for t-events the gate is stricter than its tolerant runtime loader (enforcing the published `additionalProperties: false` contract is deliberate; vendoring the schema is the opt-in). (2) HOST-HOOK LIFECYCLE ROBUSTNESS (#343) - `charness session-capture status` gains a `hook_liveness` section flagging state-tracked hooks whose embedded script path no longer exists (moved checkout / deleted script), joining the drift list with a remedy. OPERATOR-VISIBLE - status now exits 1 on a dangling state-tracked hook (the documented exit-1-on-drift contract gaining a cause; `charness init`/`update` use reconcile mode and are unaffected). The multi-checkout posture is documented (one logical hook per machine, basename-deduped, commit-sweep backstop; a DELETED checkout's leftover settings entries stay undetectable from a surviving checkout's state - uninstall/reinstall is the remedy, a settings-file scan is deferred), and the reconcile fan-out is registry-driven (`scripts/host_hook_registry.py` - a fourth hook intent is a table row, not a copied import block). (3) CONFIRM-NOT-DISCOVER CLOSEOUT ADVISORY (#344) - `run_slice_closeout.py` prints a stderr-only advisory when a slice ADDS a new mutation-pool module, naming the early changed-line producer self-check, so the recurring discover-at-the-bundle-boundary trap (three goals running) becomes workflow signal instead of memory; never blocks, degrades to silence without an origin/main anchor. OPERATOR NOTE - additive; the only stricter behavior is (1) on repos that explicitly vendored an integration schema, and installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (push/release-lane verification + deleted-checkout settings scan + quality-core PR-mirror first execution); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
