@@ -48,11 +48,12 @@ def _timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> l
 
 
 def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
-    """The favorable pulled subset from the 2026-06-10 timing audit — each is
-    cheap (<0.3s), deterministic, changed-scoped (only its trigger class can
-    flip the verdict), and runs the EXACT broad-gate command (single source).
-    ~0.46s combined worst case; see docs/conventions/validator-timing-layers.md
-    for the classification table and the ~1s budget line."""
+    """The favorable pulled subset from the 2026-06-10 timing audit plus later
+    pulls recorded in the same table — each is cheap (<0.3s), deterministic,
+    changed-scoped (only its trigger class can flip the verdict), and runs the
+    EXACT broad-gate command (single source). ~0.6s combined worst case; see
+    docs/conventions/validator-timing-layers.md for the classification table
+    and the ~1s budget line."""
     gates: list[GateCommand] = []
     if any(path.endswith(".py") for path in paths):
         gates.extend(
@@ -75,6 +76,17 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
     if any(path.endswith(".md") for path in paths):
         gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py", "--strict"))
+    if any(path == "docs/handoff.md" for path in paths):
+        # ~0.1s, validates exactly the staged file. A goal-closeout commit once
+        # emptied a required handoff section AFTER the session's final broad
+        # run and sat unpushed in the commit->push window; pre-push was the
+        # first gate that could have caught it.
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "validate-handoff-artifact", "scripts/validate_handoff_artifact.py",
+                "--repo-root", str(repo_root),
+            )
+        )
     if _any_starts(paths, ".github/workflows/"):
         # <0.1s; only a workflow edit can flip the parity verdict. Carries
         # --require-canonical-gate-match so the commit boundary enforces the

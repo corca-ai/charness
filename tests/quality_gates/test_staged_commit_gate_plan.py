@@ -227,6 +227,24 @@ def test_timing_pull_ci_parity_fires_for_workflow_edits_only() -> None:
     assert "inventory-ci-local-gate-parity" not in _labels(["docs/usage.md"])
 
 
+def test_timing_pull_handoff_validator_fires_for_handoff_edit_only() -> None:
+    # bc70d76a emptied a required handoff section in a closeout commit made
+    # after the final broad run; the staged-handoff pull closes that window.
+    assert "validate-handoff-artifact" in _labels(["docs/handoff.md"])
+    assert "validate-handoff-artifact" not in _labels(["docs/usage.md"])
+    assert "validate-handoff-artifact" not in _labels(["scripts/new_helper.py"])
+
+
+def test_handoff_trigger_path_matches_validator_resolved_target() -> None:
+    # The trigger is the literal `docs/handoff.md`; the validator resolves its
+    # target from the handoff adapter. If the adapter moves the artifact, the
+    # commit-time pull would silently disarm — this pins the coupling.
+    from scripts import validate_handoff_artifact as vha
+
+    adapter = vha.load_adapter(ROOT)
+    assert Path(adapter["artifact_path"]).as_posix() == "docs/handoff.md"
+
+
 def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     result = run_script(
         "scripts/run_slice_closeout.py",

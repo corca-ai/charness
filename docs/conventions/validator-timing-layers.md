@@ -42,8 +42,9 @@ guarding erosion.
 
 Budget rule: the pulled commit-time subset must stay small enough that the
 hook never tempts `--no-verify`. The 2026-06-10 audit's five pulled guards add
-about 0.5s combined; treat ~1s of additional typical-path latency as the line
-that requires removing something before adding more.
+about 0.5s combined (the 2026-06-11 handoff pull adds ~0.1s more, only when
+`docs/handoff.md` is staged); treat ~1s of additional typical-path latency as
+the line that requires removing something before adding more.
 
 ## Classification table (2026-06-10 audit)
 
@@ -67,7 +68,8 @@ this audit; those rows are listed compressed.
 | check-command-docs | broad only | stays | ~3.3s, over budget |
 | validate-usage-episodes, report-usage-episodes, check-cli-skill-surface, validate-inference-interpretation | broad only | stays | adapter/runtime-state sweeps, not changed-scoped |
 | validate-public-skill-validation, validate-public-skill-dogfood, cautilus trio | broad only | stays | policy/proof sweeps over standing artifacts (validate-all class) |
-| validate-handoff/debug/quality artifact, debug-seam/retro-lesson indexes, inventory-quality-handoff, validate-quality-closeout-contract, validate-critique-artifacts (sweep form), validate-maintainer-setup, check-inventory-declaration-coverage, validate-inventory-consumption(-declaration) | broad only | stays | validate-all artifact/contract sweeps (the critique/ideation/retro *shape* checks are already pulled per-file via the artifact-shape dispatcher) |
+| validate-handoff-artifact | broad only (was grouped with the sweeps below) | **pulled → commit-time** (2026-06-11) | ~0.1s and changed-scoped after all — it validates exactly one file (`docs/handoff.md`), so the sweep argument never applied; pulled when that file is staged. Evidence: a goal-closeout commit (bc70d76a) emptied a required handoff section AFTER the session's final broad run and sat red-but-unpushed in the commit→push window |
+| validate-debug/quality artifact, debug-seam/retro-lesson indexes, inventory-quality-handoff, validate-quality-closeout-contract, validate-critique-artifacts (sweep form), validate-maintainer-setup, check-inventory-declaration-coverage, validate-inventory-consumption(-declaration) | broad only | stays | validate-all artifact/contract sweeps (the critique/ideation/retro *shape* checks are already pulled per-file via the artifact-shape dispatcher) |
 | check-secrets, check-supply-chain(-online), check-shell, check-github-actions, check-links-internal/external, check-doc-near-duplicates, check-spec-evidence-durability, check-references-link-inventory, check-seed-fixture-budget, check-test-completeness, check-test-production-ratio, check-current-pointer-writes | broad only | stays | repo-wide scans, network, or suite-metric checks — boundary class |
 | pytest (broad), check-coverage, specdown, measure-startup-probes, check-runtime-budget, inventory-* | broad only | stays | expensive / measuring / inventory class — the boundary IS their timing |
 

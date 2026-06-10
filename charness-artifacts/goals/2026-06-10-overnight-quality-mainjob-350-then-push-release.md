@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 — C4 commit-time handoff validation wiring (C4 pulled
-  before C3: smaller, deterministic; C3 is the diagnose-first slice).
-- Next action: handoff gate in staged_commit_gate_plan/surfaces + test.
+- Current slice: 5 — C3 scheduled mutation lane base/auto-close semantics.
+- Next action: diagnose-first in the workflow JS + summary script; bound
+  to unit-testable logic; honor craken-agents#127 / #341 constraints.
 - Timebox: 6h
 - Activation time: 2026-06-11T06:31:18+09:00
 - Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
@@ -297,6 +297,20 @@ skill answers a boundary. Fill during the run:
   mutation run 27308933212 (768ded84) was in progress at the slice-2
   boundary — check at next boundary. Routing: quality -> impl-shaped
   slice.
+- **Slice 4 DONE (C4, 2026-06-11 ~09:1x+09:00).** `validate-handoff-artifact`
+  pulled into the commit-time timing layer when `docs/handoff.md` is staged
+  (`staged_commit_gate_plan._timing_layer_gates`; exact broad-gate command;
+  degrades by absence in consumer repos). Timing-layers doc table updated
+  (split out of the validate-all-sweeps row — it validates exactly one file,
+  so the sweep rationale never applied; bc70d76a evidence recorded) +
+  budget sentence refreshed. 2 tests added: fires-for-handoff-only and an
+  adapter-coupling pin (trigger literal == validator's adapter-resolved
+  target). Live probe: plan for `docs/handoff.md` carries the label; suite
+  36/36; broad gate 73/0; mirror byte-synced. Fresh-eye critique:
+  **SHIP-WITH-NITS**, both nits folded pre-commit (coupling pin test;
+  stale ~0.46s docstring number refreshed in both copies). Mutation run
+  27308933212 still in progress at this boundary (~2h — unusual; recheck).
+  Routing: quality -> impl-shaped slice.
 
 ## Context Sources
 
