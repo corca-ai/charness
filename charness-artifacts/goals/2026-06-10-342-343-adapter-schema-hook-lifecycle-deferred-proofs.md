@@ -9,13 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: COMPLETE — all three slices closed; closeout evidence in
-  `## Final Verification`, dispositions in `## Auto-Retro`.
+- Current slice: COMPLETE — all three planned slices plus the done-early
+  continuation slice closed; closeout evidence in `## Final Verification`,
+  dispositions in `## Auto-Retro`.
 - Slice 1 DONE: commit 76909cc8, #342 carrier verified.
 - Slice 2 DONE: commit 7f835610 (+ f084c875 coverage repair), #343 carrier
   verified. (GitHub closes land on the next operator push.)
 - Slice 3 DONE: all three deferred proofs consumed read-only (quality-core
   GREEN, edit-time guard observed firing, #335 bot-closed).
+- Slice 4 DONE (done-early continuation): commit cd2618d1, #344 carrier
+  verified — the retro's only surfaced improvement applied in-goal.
 - Timebox: 4h
 - Activation time: 2026-06-10T11:41:15+09:00
 - Closeout reserve: 35m
@@ -226,7 +229,7 @@ during the run:
 Routing: find-skills (session bootstrap + task recommendation) -> achieve (goal lifecycle), impl (slices 1-2), issue (#342/#343 closeout + #344 filing), quality (broad gate + producer cadence), critique (3 bounded fresh-eye reviews), retro (closeout).
 Gather: n/a — all `## Context Sources` are repo-local artifacts and `gh`-read issues/runs; no external URL/Slack/Notion/Docs source entered this goal.
 Release: n/a — no version bump or install-manifest edit; the v0.36 release lane pre-dates this goal and was consumed read-only.
-Issue closeout: #342 carrier=direct-commit 76909cc8 (validate-closeout-draft `draft_verified` pre-commit; verify-closeout `carrier_verified`); #343 carrier=direct-commit 7f835610 (`draft_verified` pre-commit; `carrier_verified`); GitHub closes land on the next operator push. #335 verify-only: closed by github-actions[bot] 2026-06-08T17:23:42Z (workflow marker owned it). #184 context-only: n/a.
+Issue closeout: #342 carrier=direct-commit 76909cc8 (validate-closeout-draft `draft_verified` pre-commit; verify-closeout `carrier_verified`); #343 carrier=direct-commit 7f835610 (`draft_verified` pre-commit; `carrier_verified`); #344 carrier=direct-commit cd2618d1 (`draft_verified` pre-commit; `carrier_verified`; filed and applied within this goal as the done-early continuation); GitHub closes land on the next operator push. #335 verify-only: closed by github-actions[bot] 2026-06-08T17:23:42Z (workflow marker owned it). #184 context-only: n/a.
 
 ## Slice Log
 
@@ -410,9 +413,8 @@ Issues or deferred findings discovered during the run.
 
 - **Issue #344** (filed at closeout from the retro's W1/Sibling Search): a
   slice that ADDS a new mutation-pool module gets no commit-time coverage
-  signal for its environment-dependent branches; destination is a
-  `run_slice_closeout` advisory. Reference only — resolution belongs to a
-  future slice.
+  signal for its environment-dependent branches. RESOLVED within this goal
+  as the slice 4 done-early continuation (carrier cd2618d1).
 
 ## Final Verification
 
@@ -421,20 +423,29 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Self-verification (executed this run): three commits on origin/main..HEAD —
+Self-verification (executed this run): four commits on origin/main..HEAD —
 76909cc8 (slice 1, Closes #342), 7f835610 (slice 2, Closes #343), f084c875
-(coverage-confirm repair). Broad gate `run-quality.sh --read-only` = **73
-passed / 0 failed**, re-run on the FINAL tree at 2026-06-10T12:41:35+09:00
-(after the f084c875 repair and all artifact edits — the disposition review
-flagged that the earlier visible 73/0 log predated the commits, so the gate
-was re-run rather than argued). Changed-line mutation producer
-(`run_slice_closeout.py --base --verification-lock
---produce-mutation-coverage`) over origin/main..HEAD: consumer `ok: true`, 0
-uncovered after one repair (3 lines discovered first — see Auto-Retro W1 →
-issue #344). Host-hook family 64 passed (54-test floor preserved);
-validate-adapters families 112 passed. Per-slice fresh-eye critiques:
-slice 1 SHIP-WITH-NITS (folded), slice 2 SHIP-WITH-NITS (folded), goal
-disposition review ACCEPT-WITH-NOTES (folded).
+(coverage-confirm repair), cd2618d1 (slice 4 continuation, Closes #344).
+Broad gate `run-quality.sh --read-only` = **73 passed / 0 failed**, re-run
+on the FINAL tree at 2026-06-10T13:11:20+09:00 after the last commit (the
+disposition review flagged that an earlier visible 73/0 log predated the
+commits, so the gate re-ran rather than being argued; it ran again after
+slice 4). Changed-line mutation producer (`run_slice_closeout.py --base
+--verification-lock --produce-mutation-coverage`) over origin/main..HEAD
+post-cd2618d1: consumer `ok: true`, 0 uncovered, no false-green warning
+(3 lines were discovered at the first bundle pass — see Auto-Retro W1 →
+#344, then applied in slice 4, whose advisory fired live on its own
+motivating instance). Host-hook family 64 passed (54-test floor preserved);
+validate-adapters families 112 passed; new advisory tests 7/7. Per-slice
+fresh-eye critiques: slice 1 SHIP-WITH-NITS (folded), slice 2
+SHIP-WITH-NITS (folded), slice 4 SHIP-WITH-NITS (folded), goal disposition
+review ACCEPT-WITH-NOTES (folded).
+
+No safe next slice: the three planned slices and the retro's only surfaced
+improvement (#344, applied as the done-early continuation slice) are all
+closed with verified carriers; the only remaining queue item (#184) is
+excluded by Non-Goals as product-level work needing its own operator
+`ideation`-shaped goal, and pushing the carriers is the operator lane.
 
 Live/external proof consumed (read-only): quality-core.yml first remote
 execution = run 27249353164 (event=push, main@58cc749a) **success** (core
@@ -454,6 +465,7 @@ quality-core PR-mirror job has not yet executed on a real PR (no PR has
 existed since it shipped) — its first PR-event run remains a deferred proof
 for the next PR.
 
+Early close report: charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs-early-close-report.md
 Retro: charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md
 Host log probe: charness-artifacts/retro/2026-06-10-342-343-goal-host-log-probe.md
 Disposition review: charness-artifacts/critique/2026-06-10-342-343-next-queue-goal-disposition-review.md
@@ -485,8 +497,8 @@ Disposition review: charness-artifacts/critique/2026-06-10-342-343-next-queue-go
 
 ## Auto-Retro
 
-Retro dispositions: issue #344 (recurs: the confirm-not-discover trap — 7/85 → 4 → 3 uncovered lines across three consecutive goals, each on a different new surface) — I1, the deterministic closeout nudge when a slice adds a new mutation-pool module, so the documented early producer self-check fires as workflow signal instead of memory.
+Retro dispositions: applied: the run_slice_closeout new-pool-module advisory (I1; filed as issue #344, then applied in-goal as the slice 4 done-early continuation, carrier cd2618d1) — the documented early producer self-check now fires as workflow signal instead of memory.
 - none — W2 (parser-fidelity near-miss) was caught pre-commit by the slice's own test; the verification design worked, and the fidelity rule is recorded in the slice 1 log and carrier commit 76909cc8.
 - none — W3 (mixed consumer output) was this session's own 2>&1 capture, corrected in the retro artifact; the consumer's stdout is already pure JSON (disposition review verified), nothing to fix.
 Disposition review: charness-artifacts/critique/2026-06-10-342-343-next-queue-goal-disposition-review.md (ACCEPT-WITH-NOTES; all four notes folded: final-tree gate re-run, W1 cost corrected to ~6.7 min, W3 attribution corrected, closeout bindings completed)
-Structural follow-up: issue #344 (recurs: the confirm-not-discover trap fired three goals running — 7/85 → 4 → 3 uncovered lines — each time on a different new surface; destination is a run_slice_closeout advisory beside the existing near-limit surfacing)
+Structural follow-up: applied: the run_slice_closeout new-pool-module advisory (scripts/slice_closeout_advisories.py `advise_new_pool_module`, slice 4 carrier cd2618d1, closes #344; lineage: the confirm-not-discover trap fired three consecutive goals — 7/85 → 4 → 3 uncovered lines — each on a different new surface)

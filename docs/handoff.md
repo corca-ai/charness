@@ -13,52 +13,45 @@
 
 ## Current State
 
-- **[closeout-preflight + scaffold-citation goal](../charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md) COMPLETE, awaiting push.**
-  Slice 1: author-time closeout preflight for the GitHub-issue **closeout-draft** +
-  **goal-closeout** surfaces (new `--type` surfaces in
-  `check_artifact_surface_preflight`, shape rendered LIVE from the owning
-  validators' constants via two `describe_*_shape.py` siblings, verdict-preserving).
-  Slice 2 (VERIFY-FIRST): scaffold repo-validator citation already shipped in
-  v0.29.0 — no gap (stale Discuss item resolved). Closeout disposition review
-  caught + fixed a template form-drift sibling (`goal_artifact_template.md` re-quoted
-  the live `DESTINATION_FORM_SUMMARY` + a drift-pin guard). Broad gate 73/0; three
-  fresh-eye critiques.
-- **Prior unpushed goals (also COMPLETE, awaiting push):** gate-recurrence (#335)
-  plus closeout-floor preflight (`goal-coordination`/`goal-early-close`); the
-  authoring-preflight/disposition de-launder (#284→#334; 7-surface preflight);
-  run_slice_closeout module split; #332 commit-boundary sweep. v0.27.0 shipped.
-- Open issues (`gh`): **#184** (product metrics); **#335** (mutation regression —
-  fixed locally, auto-closes on the next green scheduled run after push).
+- **[Next-queue goal (#342 + #343 + deferred proofs)](../charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md) COMPLETE, awaiting push.**
+  Slice 1 (#342): integration-schema validation pulled into
+  `validate_adapters.py` — `.agents/<name>-adapter.yaml` now jsonschema-validates
+  against `integrations/<name>/manifest.schema.json` at every validate-adapters
+  timing (commit 76909cc8). Slice 2 (#343): dangling-hook liveness in
+  `session-capture status`, the multi-checkout posture decision documented,
+  reconcile fan-out registry
+  ([host_hook_registry.py](../scripts/host_hook_registry.py), commit 7f835610).
+  Slice 3: deferred proofs consumed read-only — **quality-core first remote run
+  GREEN** (run 27249353164), the edit-time #N-anchor guard observed BLOCKING a
+  live scratch edit, **#335 confirmed bot-closed** (2026-06-08, workflow marker).
+  Slice 4 (done-early continuation, #344): new-pool-module closeout advisory so
+  the changed-line producer confirms instead of discovering (commit cd2618d1).
+  Broad gate 73/0 on the final tree; producer/consumer 0 uncovered; four
+  fresh-eye reviews; early-close report in the goal dir.
+- Open issues (`gh`): **#184** (product metrics — operator `ideation` needed);
+  #342/#343/#344 are open-but-carrier-staged (close on push).
 
 ## Next Session
 
 - **Push the staged closeouts** (maintainer; `achieve` does not push):
-  `origin/main..HEAD` carries this session's closeout-preflight goal (3 commits)
-  plus the prior unpushed work; the pre-push broad gate is the attestation
-  (last local run 73/0). The changed-line coverage is freshly produced +
-  fingerprint-stamped this session, so the pre-push changed-line consumer trusts it.
-- **#335** auto-closes on the **next green scheduled mutation run** after push (the
-  mutation-workflow marker owns it) — do NOT manually close. The local producer is
-  green over the next-run range; the CI run is the authoritative verdict.
-- **`charness update` standing release-closeout step — SHIPPED, not a to-do**
-  (v0.29.0 manual → v0.30.1 auto-run). The publish helper auto-runs the
-  adapter-declared `post_publish_install_refresh` (installed surface == repo);
-  contract in
-  [install-surface.md](../skills/public/release/references/install-surface.md).
-  Verified 2026-06-09: installed `0.33.0` == released `v0.33.0`. The actual
-  `charness update` + `nose` install stays the operator/host lane.
-- **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a slice.
+  `origin/main..HEAD` carries the four work commits + the goal-closeout commit;
+  `Closes #342/#343/#344` land on push. Pre-push gates are green (broad 73/0
+  at 2026-06-10T13:11+09:00; changed-line coverage freshly produced +
+  fingerprint-stamped post-cd2618d1, so the pre-push consumer trusts it).
+- **quality-core PR-mirror job** has never run on a real PR (push/tag jobs are
+  verified green) — its first PR-event execution is the remaining deferred
+  proof; nothing to do until a PR exists.
+- **#184** (product metrics) — product-level; needs `ideation`/`spec`, not a
+  slice (third consecutive deliberate exclusion; should be its own goal).
 
 ## Discuss
 
-- (Resolved 2026-06-10) **No push/tag CI** — shipped in the next-queue goal
-  slice 3: [.github/workflows/quality-core.yml](../.github/workflows/quality-core.yml)
-  (light push/tag core job + PR-only changed-line mutation mirror,
-  single-source via the repo validators).
-  Authored + locally validated; the first remote run is the operator-lane
-  deferred proof after the next push.
-- (Resolved 2026-06-09) "Scaffold should cite the repo validator" was already
-  shipped in v0.29.0 — verified read-only; all six scaffolds are repo-local-first.
+- (Resolved 2026-06-10) **quality-core first remote run** — GREEN: run
+  27249353164 (core job success, PR-mirror correctly skipped on push); the
+  2026-06-10 next-queue goal consumed the deferred proof read-only. Only the
+  PR-event mirror job remains unexecuted (needs a real PR).
+- (Resolved 2026-06-10) **#335 auto-close** — closed by github-actions[bot]
+  2026-06-08T17:23:42Z; the workflow marker owned it, no manual action.
 
 ## References
 
