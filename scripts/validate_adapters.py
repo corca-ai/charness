@@ -187,6 +187,53 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
         )
 
 
+def integration_schema_path(path: Path) -> Path | None:
+    """Return the integration manifest schema owning this adapter, if any.
+
+    `.agents/<name>-adapter.yaml` pairs with
+    `integrations/<name>/manifest.schema.json` (usage-episodes, t-events,
+    worktree). `.agents/cautilus-adapters/*.yaml` is excluded by the
+    parent-dir guard; a repo without the schema file inherits nothing.
+    """
+    if path.parent.name != ".agents" or not path.name.endswith("-adapter.yaml"):
+        return None
+    name = path.name.removesuffix("-adapter.yaml")
+    candidate = path.parent.parent / "integrations" / name / "manifest.schema.json"
+    return candidate if candidate.is_file() else None
+
+
+def validate_adapter_integration_schema(path: Path) -> None:
+    """#342: an adapter file has two validation owners — the generic shape
+    checks here and the owning integration's jsonschema consumed at runtime.
+    Run the stronger owner at every validate-adapters timing (commit-time
+    dispatcher + broad gate share this command) so a schema-rejected adapter
+    edit cannot land as a clean commit and fail slices later at the emitter."""
+    schema_path = integration_schema_path(path)
+    if schema_path is None:
+        return
+    try:
+        import jsonschema
+        import yaml
+    except ImportError:
+        return
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValidationError(f"{schema_path}: integration manifest schema is unreadable: {exc}") from exc
+    # Parse with yaml.safe_load like the runtime consumers (not the minimal
+    # adapter_lib parser) so the commit-time verdict matches the runtime owner.
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise ValidationError(f"{path}: adapter YAML failed to parse: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
+    try:
+        jsonschema.validate(data, schema)
+    except jsonschema.ValidationError as exc:
+        raise ValidationError(f"{path}: rejected by integration schema {schema_path}: {exc.message}") from exc
+
+
 def validate_adapter_yaml(path: Path) -> None:
     if path.name == "cautilus-adapter.yaml" and path.parent.name == ".agents":
         payload = load_cautilus_adapter(path.parent.parent.resolve())
@@ -231,6 +278,7 @@ def main() -> int:
         validate_resolver(resolver, root)
     for path in adapter_yaml:
         validate_adapter_yaml(path)
+        validate_adapter_integration_schema(path)
 
     print(f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s).")
     return 0

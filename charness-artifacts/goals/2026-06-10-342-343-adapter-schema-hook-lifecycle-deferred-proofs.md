@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — #342 adapter-schema commit-time pull + #343 host-hook lifecycle + deferred-proof verification
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md`
 
@@ -9,12 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md`.
+- Current slice: slice 1 — #342 adapter-schema commit-time pull (verify-first).
+- Next action: confirm the adapter/schema sibling set, record the seam
+  decision, then wire the pull.
 - Timebox: 4h
-- Activation time: set at `/goal` activation (REPLACE with an ISO timestamp at
-  activation — the complete gate parses `Activation time:` as ISO; the
-  2026-06-10 goal paid a closeout round-trip fixing this exact line).
+- Activation time: 2026-06-10T11:41:15+09:00
 - Closeout reserve: 35m
 - Done-early policy: continue_next_improvement (if a slice closes early,
   continue to the next surfaced improvement rather than stopping).
@@ -221,6 +220,48 @@ during the run:
   #184 is context-only (`Issue closeout: n/a` for those two).
 
 ## Slice Log
+
+### Slice 1 — seam decision (recorded before wiring)
+
+- **Decision: extend `validate_adapters.py`**, not a new bridging validator in
+  `_timing_layer_gates`. `validate-adapters` already runs as the SAME command at
+  both the commit boundary (dispatcher `.agents/` path condition,
+  `staged_commit_gate_plan.py:294`) and the broad gate (`run-quality.sh:397`) —
+  extending it keeps one rule across all timings with zero new dispatcher
+  wiring. A separate bridging validator would itself be a second validation
+  owner for the same file (the exact two-owner seam #342 closes) and would need
+  parallel broad-gate wiring to avoid verdict drift. Per-integration
+  hardcoding stays pre-rejected (Non-Goals).
+- **Verified sibling set (verify-first):** `usage-episodes`, `t-events`,
+  `worktree` each pair `.agents/<name>-adapter.yaml` with
+  `integrations/<name>/manifest.schema.json` (all three schemas are
+  `additionalProperties: false`); `tools/` has a schema but NO
+  `.agents/tools-adapter.yaml` (not a sibling, matching the disposition
+  review); `locks/` has no schema. All three live adapters pass their schemas
+  pre-wiring (verified directly).
+- **Degradation contract:** schema file absent → no new validation (consumer
+  repos inherit nothing); `jsonschema` import unavailable → skip; schema
+  present but unreadable/broken JSON → hard `ValidationError` (a real defect,
+  not a missing capability). `.agents/cautilus-adapters/*.yaml` excluded by
+  the parent-dir guard.
+- **Baseline cost:** `validate_adapters.py` ≈0.9s standing (resolver
+  subprocesses); the schema step adds ~3 file reads + 3 jsonschema validations
+  (~10ms). No new gate command, so no new budget entry — measured delta
+  recorded at slice close.
+
+### Slice 1: Slice 1 — #342 adapter-schema commit-time pull
+
+- Objective: Run the integration manifest schema (the stronger validation owner) at every validate-adapters timing so a schema-rejected adapter edit blocks at pre-commit instead of failing slices later at the emitter; close #342.
+- Why this approach: Extend validate_adapters.py (single-source seam): validate-adapters already runs as the same command at the commit-time dispatcher (.agents/ path condition) and the broad gate, so one rule covers all timings with zero new dispatcher wiring; parse with yaml.safe_load to match the runtime owner.
+- Commits:
+- What changed: scripts/validate_adapters.py (+ byte-synced plugins mirror), tests/test_validate_adapters_integration_schema.py (20 tests), docs/conventions/validator-timing-layers.md table row
+- Alternatives rejected: New bridging validator via _timing_layer_gates (rejected: itself a second validation owner for the same file, needs parallel broad-gate wiring); per-integration hardcoded checks (pre-rejected: forked logic)
+- Targeted verification: 20/20 new tests; 114 across touched families; live probe: forbidden key blocks at exit 1 naming the key; predict-commit shows validate-adapters for adapter paths only; cost ~0.07s inside the already-pulled command (~0.94s total, sub-second); mirror byte-synced; closeout draft validated (status draft_verified)
+- Test duplication pressure: 20 new tests in a new module for a previously untested script (validate_adapters.py had zero direct tests); no duplication with test_usage_episodes_schema.py / test_t_events_schema.py, which validate example fixtures rather than the gate seam
+- Critique: Fresh-eye bounded subagent (agentId a098aa449792d349f): SHIP-WITH-NITS, no blockers; nits folded (main() wiring subprocess test, missing-yaml degrade case, consumer-fallback asymmetry doc line); artifact charness-artifacts/critique/2026-06-10-342-adapter-schema-commit-pull-critique.md
+- Off-goal findings:
+- Lessons carried forward: The runtime owner and the gate must share the parse path (yaml.safe_load), or the pull itself creates a new two-parser drift; the first cut used the minimal adapter_lib parser and a test caught the divergence.
+- Metrics:
 
 ## Context Sources
 
