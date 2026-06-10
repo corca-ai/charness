@@ -7,6 +7,7 @@ description: "Use when automated review is not enough and deliberate human judgm
 
 Use this when the user wants interactive review, approval-gated change
 inspection, or a resumable human-in-the-loop pass over a bounded target.
+Post-apply verification of applied or live behavior routes to `hotl` instead.
 
 `hitl` is one public concept:
 
@@ -40,13 +41,8 @@ before continuing. Skip silently when `charness` is not on PATH.
 command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 ```
 
-Default durable artifact:
-
-- `<repo-root>/charness-artifacts/hitl/latest.md`
-
-Default runtime directory:
-
-- `.charness/hitl/runtime`
+Defaults: durable artifact `<repo-root>/charness-artifacts/hitl/latest.md`;
+runtime directory `.charness/hitl/runtime`.
 
 If the adapter is missing but the repo would benefit from explicit chunking or
 state location, scaffold one:

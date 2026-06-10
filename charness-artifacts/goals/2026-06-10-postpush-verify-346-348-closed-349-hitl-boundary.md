@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — post-push/release verification (#346/#348 CLOSED) + #349 hitl/hotl reciprocal boundary
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md`
 
@@ -9,12 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md`.
+- Current slice: 1 — post-push/release lane verification (read-only).
+- Next action: `gh run list` for the post-push quality-core run; verify-closeout
+  for #346/#348; release live installed-surface probe; mutation-run check.
 - Timebox: 2.5h
-- Activation time: set at `/goal` activation (REPLACE with an ISO timestamp at
-  activation — the complete gate parses `Activation time:` as ISO; four prior
-  goals carried this exact reminder for a reason).
+- Activation time: 2026-06-10T21:26:55+09:00
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (if a slice closes early,
   continue to the next surfaced improvement rather than stopping).
@@ -198,6 +197,34 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — third 2026-06-10 push/release lane verification (read-only)
+
+- Objective: Consume the operator-executed push + release-0.39.0 lane's deferred proofs read-only: post-push quality-core verdict, #346/#348 CLOSED state via verify-closeout, release installed-surface live probe, scheduled mutation coverage of the pushed state.
+- Why this approach: Fourth iteration of the proven deferred-proof verification pattern; all arms are read-only gh/issue_tool/local-filesystem probes, no remote mutation.
+- Commits: none (read/verify-only slice)
+- What changed: Goal artifact only (activation frame + this log).
+- Alternatives rejected:
+- Targeted verification: quality-core push run 27275145498 on pushed HEAD 768ded84: SUCCESS (companion run 27275131498 on release commit 0d001be0 also green; 27275130967 cancelled as superseded-by-768ded84 concurrency, not a failure). issue_tool.py verify-closeout: #346 status=verified state=CLOSED carrier=direct-commit 84dc1db3; #348 status=verified state=CLOSED carrier=direct-commit a65a232c. Release live probe: released tag v0.39.0 == installed plugin version 0.39.0 (~/.agents/src/charness/plugins/charness/.claude-plugin/plugin.json); installed checkout SHA 768ded84165e2417fbdbbe3ff485b5f56a15d684 == pushed HEAD (git rev-parse both sides). Scheduled mutation: latest green run 27270609532 covers pre-push fd3c2c6c; next ~3h cron slot (~13:40Z) is in-window — re-check at closeout, with the pre-resolved record-latest + named-deferred fallback if the slot is skipped.
+- Test duplication pressure:
+- Critique: No repair items surfaced; the lane verified clean on every arm checked so far. Mutation-arm disposition deferred to closeout by design (Boundaries fallback).
+- Off-goal findings: none
+- Lessons carried forward: zsh expands a bare === separator via =cmd expansion and aborts the compound command — use a quoted echo or separate calls when chaining verify commands.
+- Metrics:
+
+### Slice 2: Slice 2 — #349 hitl/hotl reciprocal boundary (frozen-contract preserve edit)
+
+- Objective: Make the hitl/hotl routing boundary bidirectional under hitl's 200-line ceiling: one reciprocal line in hitl's intro, compensated by a semantics-preserving trim, with the contract-freeze discipline the deferral was filed for.
+- Why this approach: Preserve claim: the issue's own suggested direction (trim redundancy + one line) — the defaults-block compression is pure formatting with both paths verbatim, confirmed unpinned by prose-pin scan, dogfood observed_evidence cross-check, and an exact-phrase grep; raising the ceiling was pre-rejected at shaping.
+- Commits: staged this slice: hitl SKILL.md + plugin mirror + resolution-critique artifact + this goal artifact, carrier 'Closes #349' (validate-closeout-draft: draft_verified, ready_to_commit_push; close lands on the next operator push)
+- What changed: skills/public/hitl/SKILL.md (intro +1 reciprocal line; Bootstrap defaults 7->2 lines), plugins/charness/skills/hitl/SKILL.md (byte-synced mirror), charness-artifacts/critique/2026-06-10-issue-349-resolution-critique.md (new).
+- Alternatives rejected: Guardrail-bullet placement (less routing-visible than the intro, and hotl's own statement lives in its intro — symmetry kept); trimming the Gawande style line (reviewed voice, not redundant); raising the 200-line ceiling (pre-rejected: weakens the headroom discipline that caught this).
+- Targeted verification: check_skill_surface_preflight: 196/200 total (4 left), 155/160 core. Mirror cmp: byte-identical. Gates green: validate_skills (24 packages), markdownlint (0 errors), check_doc_links, validate_skill_ergonomics, check_skill_ownership_overlap, validate_attention_state_visibility, validate_public_skill_dogfood (20 cases). check_prose_pin: no pins. plan_cautilus_proof: required=false, goal=preserve, run_mode=ask — no eval owed, deterministic gates own closeout. Changed-line consumer eligibility confirmed post-commit (markdown-only diff).
+- Test duplication pressure:
+- Critique: Fresh-eye slice critique BEFORE the locked producer (ordering contract honored): SHIP-WITH-NITS, no blockers — vocabulary symmetry with hotl verified, trim confirmed semantics-preserving, commit scoping nit folded (goal artifact committed deliberately with the slice). Resolution critique (recurrence focus): ACCEPT-WITH-PROPOSALS, persisted at charness-artifacts/critique/2026-06-10-issue-349-resolution-critique.md.
+- Off-goal findings: Recurrence-prevention proposals (create-skill at-cap checklist line; near-cap >=195/200 preflight warning) — five public skills sit at exactly 200/200, so the class is systemic; routed to one follow-up issue at goal closeout per the resolution critique (F2+F5).
+- Lessons carried forward: For at-cap reviewed skills, run the unpinned-prose triangulation (prose-pin scan + dogfood evidence dump + exact-phrase grep) BEFORE choosing the trim target; the defaults-style formatting blocks are the cheapest safe headroom.
+- Metrics:
 
 ## Context Sources
 
