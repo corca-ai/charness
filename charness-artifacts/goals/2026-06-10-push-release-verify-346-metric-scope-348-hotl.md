@@ -9,9 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — push/release-lane verification (read/verify-first).
-- Next action: activation plan critique (fresh-eye), then `gh run list/view`
-  for the post-push quality-core run + live installed-surface probe.
+- Current slice: 2 — #346 Claude-host metric scoping (corrected mechanism
+  per activation critique B1/B2).
+- Next action: implement Claude session audit module + render-path
+  host/staleness disambiguation + Claude window source; tests; mirrors;
+  staged `Closes #346` carrier. Then slice 3 (#348 hotl skill). Residual
+  slice-1 deferred check: scheduled mutation run over fd3c2c6c (~10:48Z
+  slot), re-probe before closeout.
 - Timebox: 4h
 - Activation time: 2026-06-10T08:50:14Z
 - Closeout reserve: 30m
@@ -96,16 +100,38 @@ in commit messages only).
   fired/completed within the timebox, record the latest available green run
   and keep the next-run check a named deferred proof (the same pre-resolved
   fallback two prior goals used — GitHub cron slots can be skipped).
-- **Slice 2 — #346.** Surfaces: `skills/public/retro/scripts/probe_host_logs.py`
-  and `skills/public/achieve/scripts/record_metric_window.py` (+ their
-  `plugins/charness/` mirrors and tests). Behavior-preserving for Codex
-  hosts and for existing payload keys; Claude scoping must degrade
-  gracefully (missing/ambiguous session file -> the current honest
-  aggregate-with-caveat posture, never a crash); per-goal scoping is opt-in
-  via the same `--goal-path` / window mechanics the Codex path uses. Tests
-  cover both hosts' selection logic and the degrade negative. Carrier
-  `Closes #346` staged via `issue_tool.py validate-closeout-draft` before
-  commit; no `#N` anchors inside skill-package files.
+- **Slice 2 — #346.** CORRECTED at activation critique (B1/B2): the
+  misattributed measured block was a STALE CODEX rollout (newest-by-mtime
+  under `~/.codex/sessions`) rendered as a Claude-host run's measured
+  block — `probe_claude` already picks one newest file and counts nothing;
+  the issue body's "project-dir aggregate" diagnosis is wrong and the #346
+  closeout draft must state the corrected root cause. Work: (a) a
+  Claude-format single-session audit (counts + timestamp window filter —
+  capability that exists nowhere today) so a scoped measured block and
+  `goal_window_audit` can exist on Claude hosts, with named provenance;
+  (b) host/staleness disambiguation in the render path so a stale
+  cross-host thread-wide audit is never presented as the run's measured
+  block; (c) a Claude session source for the `Host metric window:` line.
+  True owner surfaces: `scripts/host_log_probe_lib.py`,
+  `scripts/goal_metrics_render_lib.py`, a NEW Claude session audit module,
+  `skills/public/achieve/scripts/goal_metric_window_lib.py`,
+  `skills/public/retro/scripts/probe_host_logs.py`,
+  `skills/public/achieve/scripts/record_metric_window.py`, their
+  `plugins/charness/scripts/` + skill mirrors, and the three existing test
+  modules (`test_retro_host_log_probe`, `test_record_metric_window`,
+  `test_goal_metrics_render`). Behavior-preserving for Codex hosts and for
+  existing payload keys (existing codex-keyed window lines round-trip
+  unchanged — producer and consumer change in the same commit); Claude
+  scoping must degrade gracefully (missing/ambiguous session file -> the
+  current honest aggregate-with-caveat posture, never a crash); per-goal
+  scoping is opt-in via the same `--goal-path` / window mechanics the
+  Codex path uses. Pre-named deferral seam (critique F3): if the timebox
+  squeezes, land the misattribution fix + Claude single-session measured
+  block and defer window-filtered `goal_window_audit` parity with an
+  honest non-claim. Tests cover both hosts' selection logic and the
+  degrade negative. Carrier `Closes #346` staged via `issue_tool.py
+  validate-closeout-draft` before commit; no `#N` anchors inside
+  skill-package files.
 - **Slice 3 — #348 hotl skill.** Route through `create-skill` (public
   skill + adapter classification, failure-mode simulation, portable
   authoring contract). Smallest honest v1: SKILL.md + adapter contract +
@@ -154,11 +180,12 @@ What the user can do to verify completion directly.
   mutation run id over the pushed state or the named deferred-proof line.
 - **Slice 2:** on this machine,
   `python3 skills/public/retro/scripts/probe_host_logs.py --repo-root .
-  --format markdown` scoped to the current session no longer reports the
-  project-dir aggregate as its measured block, and a goal artifact carrying
-  a `Host metric window:` line recorded from a Claude session yields a
-  scoped `goal_window_audit`; `git log` shows the staged `Closes #346`
-  carrier.
+  --format markdown` no longer reports the stale Codex rollout's
+  thread-wide audit as the measured block of a Claude-host run — the
+  measured block derives from the current/named Claude session with named
+  provenance — and a goal artifact carrying a `Host metric window:` line
+  recorded from a Claude session yields a scoped `goal_window_audit`;
+  `git log` shows the staged `Closes #346` carrier.
 - **Slice 3:** `skills/public/hotl/SKILL.md` exists, passes the
   skill-package gates, names the adapter-owned seam, carries the preserved
   proof rules and ledger statuses, and contains no ceal host facts;
@@ -330,7 +357,20 @@ Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. A fresh-eye plan critique runs at
 activation per the verification cadence.
 
-- **Provenance:** self-critique by the shaping session.
+- **Provenance:** self-critique by the shaping session; fresh-eye
+  activation plan critique at activation (bounded subagent reviewer,
+  PROCEED-WITH-ADJUSTMENTS, recorded at
+  `charness-artifacts/critique/2026-06-10-next-queue-goal-activation-plan-critique.md`).
+- **Activation critique (folded):** B1 — slice 2's mechanism premise was
+  wrong (the misattributed measured block is a stale Codex rollout
+  rendered on a Claude-host run, not a Claude project-dir aggregate;
+  `probe_claude` already selects one newest file); Boundaries and User
+  Acceptance restated, and the #346 closeout draft must carry the
+  corrected root cause. B2 — surface set replaced with the true owners
+  (libs + new Claude audit module + `plugins/charness/scripts/` mirrors +
+  three test modules). F3 — slice-2 deferral seam pre-named. F4 — slice
+  1's deferred proof re-aimed at fd3c2c6c (39ff5432 already covered green
+  by scheduled run 27261418055).
 - **Slice 3 could blow the timebox (a whole new public skill).** Folded:
   smallest-honest-v1 boundary with ledger tooling explicitly deferrable to
   a follow-up issue; `create-skill` owns the classification so the slice
