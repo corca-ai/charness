@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — push/release-lane verification + #346 Claude-host metric scoping + #348 portable hotl skill
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md`
 
@@ -9,13 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — #346 Claude-host metric scoping (corrected mechanism
-  per activation critique B1/B2).
-- Next action: implement Claude session audit module + render-path
-  host/staleness disambiguation + Claude window source; tests; mirrors;
-  staged `Closes #346` carrier. Then slice 3 (#348 hotl skill). Residual
-  slice-1 deferred check: scheduled mutation run over fd3c2c6c (~10:48Z
-  slot), re-probe before closeout.
+- Current slice: COMPLETE — all three slices closed out; final broad gate
+  73/0; consumer 0 uncovered; disposition review ACCEPT; scheduled mutation
+  run 27270609532 green over fd3c2c6c (fired in-goal); handoff refreshed.
+- Next action: operator push lands the staged `Closes #346`/`Closes #348`
+  carriers; the next-queue goal verifies their CLOSED state.
 - Timebox: 4h
 - Activation time: 2026-06-10T08:50:14Z
 - Closeout reserve: 30m
@@ -262,6 +260,39 @@ during the run:
   becomes necessary, route that materialization through `gather` and record
   the asset here, else record `Gather: n/a — local checkout + permalink`.
 
+Completion evidence:
+
+- Routing: `find-skills` --recommend-for-task routed slice 2 to the `impl` spine —
+  the helper-script extension probe returned no overriding support route,
+  and slice 3's new-package probe routed through `create-skill`; the
+  session opened on the `find-skills` bootstrap inventory.
+- Routing: `find-skills` was not separately queried for a `debug` route — the
+  root-cause work (the B1 misattribution) ran inside the fresh-eye
+  critique cycles with live reproduction, not a standalone debug-skill
+  investigation; no debug artifact was owed.
+- Routing: `find-skills` recommendation-role validation was not re-queried for `quality` —
+  the `quality`-owned validation posture (broad read-only gate, locked
+  producer + changed-line consumer, skill-package gate set) came from the
+  goal's pre-resolved verification plan, which already named the
+  deterministic gate routes.
+- Routing: `find-skills` inventory names `issue` as the off-goal-finding route —
+  the finding was filed through the `issue` skill's issue_tool (create +
+  read-back, becoming issue 349) per the achieve coordination contract.
+- Gather: n/a — local checkout + permalink (the `../ceal` close-loop
+  reference was read read-only on disk; corca-ai/ceal
+  `.agents/skills/close-loop/SKILL.md` @ `70170c5` stays the durable
+  citation; no in-repo materialization was needed).
+- Release: n/a — no version bump or install-manifest edit in this goal; the
+  v0.38.0 release lane preceded activation and slice 1 verified it
+  read-only.
+- Issue closeout: #346 `direct-commit` carrier staged on 84dc1db3,
+  `validate-closeout-draft` status `draft_verified` (classification
+  feature, corrected root cause stated in the carrier body); #348
+  `direct-commit` carrier staged on a65a232c, `validate-closeout-draft`
+  status `draft_verified` (classification feature). Closes land on the
+  next operator push; CLOSED-state verification belongs to the next-queue
+  goal. Off-goal #349 filed via `issue_tool.py create` (read back OPEN).
+
 ## Slice Log
 
 ### Slice 1: Slice 1 — push/release-lane verification (read-only)
@@ -425,20 +456,104 @@ activation per the verification cadence.
 
 Issues or deferred findings discovered during the run.
 
+- corca-ai/charness#349 — hitl/hotl routing boundary is one-directional and
+  hitl's core sits at its 200-line total ceiling, so the reciprocal boundary
+  line needs a deliberate frozen-contract edit with a compensating trim
+  (surfaced by the slice 3 fresh-eye critique; a direct fold was attempted
+  and deliberately reverted in-slice).
+
 ## Final Verification
+
+Host metric window: started_at=2026-06-10T08:50:14Z completed_at=2026-06-10T10:26:02Z claude_session_file=/home/hwidong/.claude/projects/-home-hwidong-codes-charness/2b6bbcd7-0b78-4787-9a21-bfcb42ebb8b0.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-10-next-queue-goal-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-10-next-queue-goal-disposition-review.md
+Early close report: charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl-early-close-report.md
+
+No safe next slice: all three in-scope slices closed with verified proof
+(including the scheduled mutation run over fd3c2c6c, which fired inside the
+timebox); the surfaced improvement is filed as issue 349 because it requires
+trimming a reviewed, at-cap frozen contract — its own deliberate lane, not a
+closeout-reserve tail slice — and the remaining open item (#184) is excluded
+by Non-Goals; the staged carriers need the operator push before any
+verification-shaped continuation exists.
+
+Self-verification (executed):
+
+- Slice 1: quality-core push run 27264481707 GREEN on the pushed HEAD
+  fd3c2c6c; release v0.38.0 installed-surface LIVE probe (installed
+  checkout SHA == pushed HEAD; installed plugin version 0.38.0 == tag);
+  scheduled mutation run 27261418055 GREEN over 39ff5432 — the prior
+  goal's carried deferred proof is retired; the NEXT scheduled run over
+  fd3c2c6c FIRED inside the timebox and completed GREEN: run 27270609532
+  (schedule, created 2026-06-10T10:40:32Z, conclusion success) — the
+  pre-resolved cron-skip fallback was not needed.
+- Slice 2 (#346): 47+ related tests green; locked instrumented broad
+  pytest PASS; changed-line consumer ok=true with 0 uncovered (post-commit,
+  post-refresh); LIVE acceptance on this machine — the plain markdown
+  probe derives its measured block from the current Claude session with
+  named provenance, and this very goal's closeout carries a claude-keyed
+  `Host metric window:` yielding a scoped goal_window_audit (776 of 1027
+  records). Carrier `Closes #346` staged on 84dc1db3, draft_verified.
+- Slice 3 (#348): all skill-package and registry gates green; fresh-eye
+  SHIP-WITH-NITS with line-by-line port comparison (no lost load-bearing
+  concept; zero host-fact leaks); cold-start adapter resolve from a bare
+  repo returns visible defaults; changed-line consumer ok=true 0
+  uncovered. Carrier `Closes #348` staged on a65a232c, draft_verified.
+- Final broad read-only gate: 73 passed, 0 failed (post-d257efd2 tree).
+
+Residual risks and non-claims:
+
+- The #346/#348 closes have NOT happened: carriers land on the next
+  operator push; CLOSED-state verification belongs to the next-queue goal.
+- The hotl skill has no consumer-repo live run; its dogfood case records
+  checked-in, test-pinned behavior (consistent with the repo's pattern for
+  review-sampled skills). Consuming-repo wiring (including the reference
+  repo's adapter) is that repo's follow-up.
+- No charness-owned machine-readable hotl ledger schema or ledger tooling
+  ships in v1 (adapter-owned by design; recorded residual).
+- Claude session audits cannot represent subagent wait/close (only
+  spawns) and a named-but-missing --claude-session-file override also
+  suppresses an independently valid claude-keyed goal_window_audit
+  (deliberate never-substitute trade, recorded in the slice 2 critique).
+- The hitl->hotl routing boundary is one-directional until #349 is
+  resolved (deliberate frozen-contract deferral).
 
 ## User Verification Instructions
 
+- Slice 1: `gh run view 27264481707` (quality-core on fd3c2c6c, green),
+  `gh run view 27261418055` (scheduled mutation over 39ff5432, green), and
+  `gh run view 27270609532` (scheduled mutation over fd3c2c6c, green —
+  fired 10:40Z inside the timebox).
+- Slice 2: run `python3 skills/public/retro/scripts/probe_host_logs.py
+  --repo-root . --goal-path charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md
+  --format markdown` on this machine — the measured block is goal-window
+  scoped with this session's file as named provenance (not the stale
+  rollout aggregate); `git log --oneline -6` shows the staged
+  `Closes #346` carrier (84dc1db3).
+- Slice 3: `skills/public/hotl/SKILL.md` exists and passes
+  `python3 scripts/check_skill_surface_preflight.py --path
+  skills/public/hotl/SKILL.md --run-checks`; the skill text names the
+  adapter-owned seam and carries the seven ledger statuses and six proof
+  rules; `grep -ri "ceal\|slack\|sheets" skills/public/hotl/` returns no
+  host facts; the staged `Closes #348` carrier is a65a232c.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: critique-before-locked-producer ordering
+contract line in docs/conventions/implementation-discipline.md (the twice-paid
+producer-rerun waste); applied: probe-to-render dual-host integration tests
+pinning cross-host audit selection (slice 2, commits 84dc1db3 + cef0fa00);
+issue #349 (novel: first instance of the at-cap adjacent-skill propagation
+block — a reciprocal hitl boundary line needs a deliberate frozen-contract
+trim).
+Structural follow-up: applied: docs/conventions/implementation-discipline.md
+ordering contract line — the retro's Sibling Search names the closeout
+sequencing waste (locked producer before critique/late branch tests) as
+transferable (recurred twice within this goal).

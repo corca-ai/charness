@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-10",
-  "source_artifact_count": 186,
-  "candidate_count": 1008,
+  "source_artifact_count": 188,
+  "candidate_count": 1014,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -285,6 +285,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7468277b92fa",
+      "kind": "current_focus",
+      "lesson": "Goal: charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md Closeout retro for the 2026-06-10 next-queue goal (push/release-lane verification + #346 Claude-host metric scoping + #348 portable hotl skill), run as three independently closed-out slices inside a 4h timebox on a Claude host.",
+      "normalized_key": "goal charness artifacts goals 2026 06 10 push release verify 346 metric scope 348",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:91f78fce8a6d",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.36.0`.",
@@ -425,50 +445,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9f114fec4b4b",
+      "kind": "next_improvement",
+      "lesson": "cross-host audit selection must be pinned by probe-to-render integration tests with both hosts populated (applied: two integration tests in slice 2); the at-cap adjacent-skill propagation block is tracked as issue #349 (novel: first instance of the class).",
+      "normalized_key": "cross host audit selection must be pinned by probe to render integration tests with",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:523596d2b6cb",
       "kind": "next_improvement",
       "lesson": "I1 — adapter-vs-integration-schema commit-time validation gap: `issue #342`.",
       "normalized_key": "i1 adapter vs integration schema commit time validation gap issue 342",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
-          "date": "2026-06-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:fe27d9b42fde",
-      "kind": "next_improvement",
-      "lesson": "**I1 (workflow/capability): issue #344** — deterministic closeout nudge when a slice adds a new eligible mutation-pool file, naming the early producer self-check, so confirm-not-discover stops depending on recall.",
-      "normalized_key": "i1 workflow capability issue 344 deterministic closeout nudge when a slice adds a new",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-342-343-next-queue-goal-retro.md",
-          "date": "2026-06-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:3318f66a3ad8",
-      "kind": "next_improvement",
-      "lesson": "I2 — host-hook lifecycle robustness (dangling-checkout noise, one-logical- hook-per-machine coverage gap, reconcile fan-out registry refactor before a fourth hook): `issue #343`.",
-      "normalized_key": "i2 host hook lifecycle robustness dangling checkout noise one logical hook per machine coverage",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md",
       "latest_source_date": "2026-06-10",
@@ -757,6 +757,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7468277b92fa",
+      "kind": "current_focus",
+      "lesson": "Goal: charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md Closeout retro for the 2026-06-10 next-queue goal (push/release-lane verification + #346 Claude-host metric scoping + #348 portable hotl skill), run as three independently closed-out slices inside a 4h timebox on a Claude host.",
+      "normalized_key": "goal charness artifacts goals 2026 06 10 push release verify 346 metric scope 348",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:91f78fce8a6d",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.36.0`.",
@@ -897,6 +917,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9f114fec4b4b",
+      "kind": "next_improvement",
+      "lesson": "cross-host audit selection must be pinned by probe-to-render integration tests with both hosts populated (applied: two integration tests in slice 2); the at-cap adjacent-skill propagation block is tracked as issue #349 (novel: first instance of the class).",
+      "normalized_key": "cross host audit selection must be pinned by probe to render integration tests with",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:523596d2b6cb",
       "kind": "next_improvement",
       "lesson": "I1 — adapter-vs-integration-schema commit-time validation gap: `issue #342`.",
@@ -997,6 +1037,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:75d48d27c49a",
+      "kind": "next_improvement",
+      "lesson": "per-goal metrics now scope on Claude hosts via `--claude-session-file` and the dual-key `Host metric window:` grammar (applied in slice 2; this goal's own closeout dogfoods it).",
+      "normalized_key": "per goal metrics now scope on claude hosts via claude session file and the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:48112d8186f7",
+      "kind": "next_improvement",
+      "lesson": "run the fresh-eye slice critique before the locked producer run (applied: contract line in docs/conventions/implementation-discipline.md).",
+      "normalized_key": "run the fresh eye slice critique before the locked producer run applied contract line",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:259db4afda0a",
       "kind": "next_improvement",
       "lesson": "workflow (accepted-risk, per the goal's Auto-Retro disposition): \"read the CI workflow + gate source at shaping time when a slice depends on CI runtime behavior\" stays a judgment habit — the activation fresh-eye plan critique is the standing compensating gate and caught this class at zero rework cost this run; the lesson lives durably in this artifact's Expert Counterfactuals.",
@@ -1013,6 +1093,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
           "date": "2026-06-10",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99aab3753101",
+      "kind": "repeat_trap",
+      "lesson": "A small fold-then-revert cycle on `hitl` SKILL.md: the reciprocal boundary line hit the 200/200 total-line ceiling; reverted deliberately and routed as #349 instead of trimming reviewed prose under time pressure.",
+      "normalized_key": "a small fold then revert cycle on hitl skill md the reciprocal boundary line",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
         }
       ]
     },
@@ -1051,6 +1151,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cf0bf43c4ec4",
+      "kind": "repeat_trap",
+      "lesson": "One redundant locked producer run per mutating slice (~7 min each, twice): the instrumented broad-pytest producer ran BEFORE the fresh-eye slice critique (slice 2) and BEFORE the changed-line self-check surfaced uncovered new branches (slice 3), so critique-driven fixes and late branch-coverage tests invalidated the coverage fingerprint and forced full reruns. The ordering lesson is now a contract line in `docs/conventions/implementation-discipline.md`.",
+      "normalized_key": "one redundant locked producer run per mutating slice 7 min each twice the instrumented",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
+      "latest_source_date": "2026-06-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md",
           "date": "2026-06-10",
           "section": "Waste"
         }

@@ -46,6 +46,10 @@ the root instruction file but still apply to Charness maintenance work.
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.
+- Run the fresh-eye slice critique BEFORE the locked `--produce-mutation-coverage`
+  producer run, not after: critique-driven code or test changes invalidate the
+  coverage fingerprint and force a full instrumented broad-pytest rerun (two
+  reruns in one goal on 2026-06-10 — one per mutating slice).
 - `python3 scripts/sync_support.py --json` and
   `python3 scripts/update_tools.py --json` are dry-run sanity checks.
 - Use `python3 scripts/doctor.py --json` only when intentionally collecting
