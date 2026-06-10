@@ -52,7 +52,13 @@ def _exec_command_text(payload: dict[str, Any]) -> str:
     return cmd if isinstance(cmd, str) else ""
 
 
-def _iter_records(path: Path) -> tuple[list[dict[str, Any]], int]:
+def iter_records(path: Path) -> tuple[list[dict[str, Any]], int]:
+    """Read a JSONL file into dict records, counting malformed lines.
+
+    Generic over host formats: the Claude session auditor
+    (``claude_session_jsonl_audit``) shares this reader, the window filter, and
+    the repeated-command thresholds so cross-host audits stay comparable.
+    """
     records: list[dict[str, Any]] = []
     malformed = 0
     with path.open(encoding="utf-8", errors="replace") as handle:
@@ -84,8 +90,8 @@ def audit_session_jsonl(
     started_at: str | None = None,
     completed_at: str | None = None,
 ) -> dict[str, Any]:
-    records, malformed = _iter_records(path)
-    records, window_filter = _filter_records_for_window(records, started_at, completed_at)
+    records, malformed = iter_records(path)
+    records, window_filter = filter_records_for_window(records, started_at, completed_at)
 
     event_types: Counter[str] = Counter()
     subtypes: Counter[str] = Counter()
@@ -141,13 +147,13 @@ def audit_session_jsonl(
         "note": "Activity proxies derived from command shape, not measured cost.",
         "command_families": dict(families.most_common(top)),
         "phases": dict(phases.most_common()),
-        "repeated_broad_gates": _repeated_broad_gates(families),
-        "repeated_vcs_commands": _repeated_vcs_commands(families),
+        "repeated_broad_gates": repeated_broad_gates(families),
+        "repeated_vcs_commands": repeated_vcs_commands(families),
     }
     return {
         "schema_version": SCHEMA_VERSION,
         "source": {"kind": "session-jsonl", "path": str(path)},
-        "warnings": _warnings(malformed),
+        "warnings": malformed_warnings(malformed),
         "notes": [
             "patch_applications counts patch_apply_end events; those patches also appear in custom_tool_calls as apply_patch, so the two fields overlap rather than add.",
         ],
@@ -155,10 +161,11 @@ def audit_session_jsonl(
         "snapshots": snapshots,
         "proxy": proxy,
         "window_filter": window_filter,
+        "last_event_at": last_event_at(records),
     }
 
 
-def _filter_records_for_window(
+def filter_records_for_window(
     records: list[dict[str, Any]],
     started_at: str | None,
     completed_at: str | None,
@@ -233,7 +240,19 @@ def _record_ts(record: dict[str, Any]) -> datetime | None:
     return None
 
 
-def _repeated_broad_gates(families: Counter[str]) -> dict[str, int]:
+def last_event_at(records: list[dict[str, Any]]) -> str | None:
+    """Latest record timestamp as a UTC ISO string, or None when undated.
+
+    Lets the renderer prefer the most recently active host session instead of
+    presenting a stale cross-host audit as the run's measured block.
+    """
+    stamps = [ts for record in records if (ts := _record_ts(record)) is not None]
+    if not stamps:
+        return None
+    return max(stamps).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def repeated_broad_gates(families: Counter[str]) -> dict[str, int]:
     gate_tokens = ("pytest", "ruff", "mypy", "pyright", "eslint", "tsc", "check", "build", "test", "lint", "make")
     return {
         family: count
@@ -242,7 +261,7 @@ def _repeated_broad_gates(families: Counter[str]) -> dict[str, int]:
     }
 
 
-def _repeated_vcs_commands(families: Counter[str]) -> dict[str, int]:
+def repeated_vcs_commands(families: Counter[str]) -> dict[str, int]:
     return {
         family: count
         for family, count in families.items()
@@ -250,7 +269,7 @@ def _repeated_vcs_commands(families: Counter[str]) -> dict[str, int]:
     }
 
 
-def _warnings(malformed: int) -> list[str]:
+def malformed_warnings(malformed: int) -> list[str]:
     if malformed:
         return [f"{malformed} malformed JSONL line(s) dropped"]
     return []

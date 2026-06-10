@@ -12,21 +12,34 @@ import shlex
 
 _WINDOW_LINE = re.compile(r"^Host metric window:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
-_WINDOW_REQUIRED_KEYS = ("started_at", "completed_at", "codex_session_file")
+_WINDOW_REQUIRED_KEYS = ("started_at", "completed_at")
+# Exactly one per line; which one names the host that produced the session.
+_WINDOW_SESSION_KEYS = ("codex_session_file", "claude_session_file")
 
 
-def render_metric_window_line(*, started_at: str, completed_at: str, codex_session_file: str) -> str:
+def render_metric_window_line(
+    *,
+    started_at: str,
+    completed_at: str,
+    codex_session_file: str | None = None,
+    claude_session_file: str | None = None,
+) -> str:
     """Build the `Host metric window:` evidence line the host-log probe reads.
 
     Values are shell-quoted so a session-file path with spaces survives the
     probe's ``shlex.split`` parse. Empty fields are rejected so the probe never
-    sees a half-written window it would only reject as ``invalid``.
+    sees a half-written window it would only reject as ``invalid``; exactly one
+    session-file key is required because the probe treats a dual-host window as
+    ambiguous.
     """
-    fields = {
-        "started_at": started_at,
-        "completed_at": completed_at,
+    session_fields = {
         "codex_session_file": codex_session_file,
+        "claude_session_file": claude_session_file,
     }
+    provided = {label: value for label, value in session_fields.items() if value is not None and str(value).strip()}
+    if len(provided) != 1:
+        raise ValueError("exactly one of codex_session_file/claude_session_file must be non-empty")
+    fields = {"started_at": started_at, "completed_at": completed_at, **provided}
     for label, value in fields.items():
         if value is None or not str(value).strip():
             raise ValueError(f"metric window field {label!r} must be non-empty")
@@ -58,10 +71,21 @@ def metric_window_attention(text: str) -> dict[str, str]:
             ),
         }
     missing = [key for key in _WINDOW_REQUIRED_KEYS if f"{key}=" not in match.group(0)]
+    present_session_keys = [key for key in _WINDOW_SESSION_KEYS if f"{key}=" in match.group(0)]
+    if not present_session_keys:
+        missing.append("|".join(_WINDOW_SESSION_KEYS))
     if missing:
         return {
             "status": "incomplete",
             "note": "`Host metric window:` line is missing fields: " + ", ".join(missing),
+        }
+    if len(present_session_keys) > 1:
+        # The probe rejects a dual-host window as ambiguous; surface that at
+        # closeout attention instead of reading the line as recorded.
+        return {
+            "status": "incomplete",
+            "note": "`Host metric window:` line names more than one session-file key: "
+            + ", ".join(present_session_keys),
         }
     return {"status": "recorded"}
 
@@ -71,7 +95,8 @@ def record_metric_window(
     *,
     started_at: str,
     completed_at: str,
-    codex_session_file: str,
+    codex_session_file: str | None = None,
+    claude_session_file: str | None = None,
 ) -> str:
     """Insert or replace the `Host metric window:` line under `## Final Verification`.
 
@@ -83,6 +108,7 @@ def record_metric_window(
         started_at=started_at,
         completed_at=completed_at,
         codex_session_file=codex_session_file,
+        claude_session_file=claude_session_file,
     )
     existing = _WINDOW_LINE.search(text)
     if existing is not None:

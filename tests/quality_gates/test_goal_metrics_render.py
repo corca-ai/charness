@@ -62,7 +62,7 @@ def test_render_block_marks_codex_unavailable_when_no_audit() -> None:
     }
     block = render.render_goal_metrics_block(payload)
 
-    assert "unavailable: no Codex session audit for this run" in block
+    assert "unavailable: no Codex or Claude session audit for this run" in block
     assert "### Token availability (Claude host)" in block
     assert "available: usage fields present" in block
 
@@ -98,3 +98,86 @@ def test_render_block_handles_non_ascii() -> None:
     block = render.render_goal_metrics_block(payload)
     # rendering is pure-string and never raises on default content
     assert block.endswith("\n")
+
+
+def _claude_audit(*, last_event_at: str | None = "2026-06-10T09:00:00Z") -> dict:
+    return {
+        "source": {"kind": "session-jsonl", "host": "claude", "path": "/home/u/.claude/projects/p/s.jsonl"},
+        "measured": {
+            "token_count_snapshots": 7,
+            "function_calls": 21,
+            "custom_tool_calls": 1,
+            "patch_applications": 6,
+            "context_compactions": 0,
+            "subagent": {"spawn": 2},
+        },
+        "proxy": {"repeated_broad_gates": {}, "repeated_vcs_commands": {}},
+        "window_filter": {"status": "applied", "included_records": 30, "total_records": 40},
+        "last_event_at": last_event_at,
+    }
+
+
+def _codex_audit(*, last_event_at: str | None = "2026-06-05T16:00:00Z") -> dict:
+    return {
+        "source": {"kind": "session-jsonl", "path": "/home/u/.codex/sessions/r.jsonl"},
+        "measured": {
+            "token_count_snapshots": 434,
+            "function_calls": 429,
+            "custom_tool_calls": 149,
+            "patch_applications": 139,
+            "context_compactions": 4,
+            "subagent": {"spawn": 4, "wait": 3, "close": 3},
+        },
+        "proxy": {"repeated_broad_gates": {}, "repeated_vcs_commands": {}},
+        "window_filter": {},
+        "last_event_at": last_event_at,
+    }
+
+
+def test_render_block_scopes_to_claude_goal_window_audit_with_provenance() -> None:
+    payload = {
+        "goal_metric_window": {
+            "status": "parsed",
+            "started_at": "2026-06-10T08:50:14Z",
+            "completed_at": "2026-06-10T12:50:14Z",
+        },
+        "hosts": {"codex": {"session_audit": _codex_audit()}, "claude": {"goal_window_audit": _claude_audit()}},
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    assert "### Measured (goal-window, claude session scope)" in block
+    assert "- session: /home/u/.claude/projects/p/s.jsonl" in block
+    assert "function calls: 21" in block
+    # the stale codex audit must not be presented as the measured block
+    assert "function calls: 429" not in block
+
+
+def test_render_block_prefers_freshest_session_audit_over_stale_cross_host() -> None:
+    payload = {
+        "goal_metric_window": {"status": "not_requested"},
+        "hosts": {
+            "codex": {"session_audit": _codex_audit(last_event_at="2026-06-05T16:00:00Z")},
+            "claude": {"session_audit": _claude_audit(last_event_at="2026-06-10T09:00:00Z")},
+        },
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    assert "### Measured (thread-wide, claude session scope)" in block
+    assert "function calls: 21" in block
+    assert "function calls: 429" not in block
+
+
+def test_render_block_keeps_codex_audit_when_codex_is_fresher_or_tied() -> None:
+    payload = {
+        "goal_metric_window": {"status": "not_requested"},
+        "hosts": {
+            "codex": {"session_audit": _codex_audit(last_event_at="2026-06-10T09:00:00Z")},
+            "claude": {"session_audit": _claude_audit(last_event_at="2026-06-10T09:00:00Z")},
+        },
+    }
+    block = render.render_goal_metrics_block(payload)
+
+    assert "### Measured (thread-wide scope)" in block
+    assert "function calls: 429" in block
+    # codex-sourced output carries no claude provenance line
+    assert "- session:" not in block

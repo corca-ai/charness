@@ -33,10 +33,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--goal-path", type=Path, required=True, help="Path to the goal artifact to update")
     parser.add_argument("--started-at", required=True, help="Goal window start as an ISO-8601 timestamp")
     parser.add_argument("--completed-at", required=True, help="Goal window end as an ISO-8601 timestamp")
-    parser.add_argument(
+    session_source = parser.add_mutually_exclusive_group(required=True)
+    session_source.add_argument(
         "--codex-session-file",
-        required=True,
-        help="Path to the host rollout/session log file scoped by the window",
+        help="Path to the Codex rollout JSONL scoped by the window",
+    )
+    session_source.add_argument(
+        "--claude-session-file",
+        help="Path to the Claude project session JSONL scoped by the window",
     )
     return parser.parse_args()
 
@@ -54,6 +58,7 @@ def main() -> int:
             started_at=args.started_at,
             completed_at=args.completed_at,
             codex_session_file=args.codex_session_file,
+            claude_session_file=args.claude_session_file,
         )
     except ValueError as exc:
         print(json.dumps({"action": "refused", "note": str(exc)}, ensure_ascii=False))

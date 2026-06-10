@@ -393,9 +393,10 @@ At completion the goal artifact should contain:
   necessary safety cost versus reducible waste. Cached input alone is not a
   waste conclusion.
 - for long goals with available timestamps, a `Host metric window:` evidence
-  line (`started_at=<ISO> completed_at=<ISO> codex_session_file=<path>`) and a
-  host probe produced with `probe_host_logs.py --goal-path <artifact>`, so the
-  closeout can separate goal-window signals from thread-wide pressure.
+  line (`started_at=<ISO> completed_at=<ISO>` plus exactly one of
+  `codex_session_file=<path>` / `claude_session_file=<path>`) and a host probe
+  produced with `probe_host_logs.py --goal-path <artifact>`, so the closeout
+  can separate goal-window signals from thread-wide pressure.
 - a closeout narration that surfaces the retro's `## Waste`,
   `## Critical Decisions`, `## Next Improvements`, and `## Sibling Search`
   (when present) sections inline in the user-facing response — the retro

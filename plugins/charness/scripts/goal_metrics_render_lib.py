@@ -15,6 +15,7 @@ cannot re-advertise ``gh``/``ceal github``/etc. command strings.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 # Whether the signals below describe one goal window or the whole thread. Surfacing
@@ -40,12 +41,50 @@ def _fmt_counter(value: Any) -> str:
     return "none"
 
 
-def _select_codex_audit(codex: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
-    """Prefer the goal-window-scoped audit; fall back to the thread-wide audit."""
-    if isinstance(codex.get("goal_window_audit"), dict):
-        return codex["goal_window_audit"], "goal-window"
-    if isinstance(codex.get("session_audit"), dict):
-        return codex["session_audit"], "thread-wide"
+def _audit_or_none(host: dict[str, Any], key: str) -> dict[str, Any] | None:
+    audit = host.get(key)
+    return audit if isinstance(audit, dict) else None
+
+
+def _last_event_at(audit: dict[str, Any]) -> datetime | None:
+    value = audit.get("last_event_at")
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _select_measured_audit(hosts: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
+    """Pick the measured-block audit: goal-window scope first, then freshest session.
+
+    A goal-window audit exists for at most one host (the window line names one
+    session file). For the thread-wide fallback, the most recently active
+    session wins (`last_event_at`), so a stale cross-host rollout is never
+    presented as the run's measured block; a Codex-only host is unchanged.
+    """
+    codex = hosts.get("codex") or {}
+    claude = hosts.get("claude") or {}
+    if (audit := _audit_or_none(codex, "goal_window_audit")) is not None:
+        return audit, "goal-window"
+    if (audit := _audit_or_none(claude, "goal_window_audit")) is not None:
+        return audit, "goal-window, claude session"
+    codex_audit = _audit_or_none(codex, "session_audit")
+    claude_audit = _audit_or_none(claude, "session_audit")
+    if codex_audit is not None and claude_audit is not None:
+        codex_ts = _last_event_at(codex_audit)
+        claude_ts = _last_event_at(claude_audit)
+        # Chronological compare (an undated audit loses); ties keep codex so a
+        # codex-only host's rendering stays byte-stable.
+        if claude_ts is not None and (codex_ts is None or claude_ts > codex_ts):
+            return claude_audit, "thread-wide, claude session"
+        return codex_audit, "thread-wide"
+    if codex_audit is not None:
+        return codex_audit, "thread-wide"
+    if claude_audit is not None:
+        return claude_audit, "thread-wide, claude session"
     return None, ""
 
 
@@ -97,21 +136,24 @@ def render_goal_metrics_block(
         lines.append(f"  - window: {window.get('started_at')} -> {window.get('completed_at')}")
 
     hosts = payload.get("hosts") or {}
-    codex = hosts.get("codex") or {}
-    audit, scope = _select_codex_audit(codex)
+    audit, scope = _select_measured_audit(hosts)
     if audit is None:
         lines += [
             "",
-            "### Measured (Codex session)",
-            "- unavailable: no Codex session audit for this run",
+            "### Measured (no session audit)",
+            "- unavailable: no Codex or Claude session audit for this run",
         ]
     else:
         measured = audit.get("measured") or {}
         proxy = audit.get("proxy") or {}
         window_filter = audit.get("window_filter") or {}
+        source = audit.get("source") or {}
+        lines += ["", f"### Measured ({scope} scope)"]
+        if source.get("host") == "claude":
+            # Named provenance: a Claude-sourced measured block states the exact
+            # session file it derives from. Codex-sourced output is unchanged.
+            lines.append(f"- session: {_safe_field(source.get('path', ''))}")
         lines += [
-            "",
-            f"### Measured ({scope} scope)",
             f"- token snapshots: {measured.get('token_count_snapshots', 0)} "
             "(point-in-time, not a cumulative total)",
             f"- function calls: {measured.get('function_calls', 0)}",

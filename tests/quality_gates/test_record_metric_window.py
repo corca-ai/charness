@@ -160,3 +160,92 @@ def test_record_metric_window_cli_updates_artifact(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["action"] == "updated"
     assert "Host metric window:" in goal.read_text(encoding="utf-8")
+
+
+def test_record_metric_window_accepts_claude_session_source(tmp_path) -> None:
+    session = tmp_path / "claude-session.jsonl"
+    session.write_text("{}\n", encoding="utf-8")
+    goal = tmp_path / "goal.md"
+    goal.write_text(_goal_text(), encoding="utf-8")
+
+    result = run_script(
+        "skills/public/achieve/scripts/record_metric_window.py",
+        "--goal-path",
+        str(goal),
+        "--started-at",
+        "2026-06-10T08:50:14Z",
+        "--completed-at",
+        "2026-06-10T12:50:14Z",
+        "--claude-session-file",
+        str(session),
+    )
+    assert result.returncode == 0, result.stderr
+    text = goal.read_text(encoding="utf-8")
+    assert f"claude_session_file={session}" in text
+    assert "codex_session_file=" not in text
+    assert gal.metric_window_attention(text)["status"] == "recorded"
+
+
+def test_record_metric_window_rejects_both_session_sources(tmp_path) -> None:
+    goal = tmp_path / "goal.md"
+    goal.write_text(_goal_text(), encoding="utf-8")
+
+    result = run_script(
+        "skills/public/achieve/scripts/record_metric_window.py",
+        "--goal-path",
+        str(goal),
+        "--started-at",
+        "2026-06-10T08:50:14Z",
+        "--completed-at",
+        "2026-06-10T12:50:14Z",
+        "--codex-session-file",
+        "a.jsonl",
+        "--claude-session-file",
+        "b.jsonl",
+    )
+    assert result.returncode != 0
+    assert "not allowed with" in result.stderr
+
+
+def test_record_metric_window_rejects_missing_session_source(tmp_path) -> None:
+    goal = tmp_path / "goal.md"
+    goal.write_text(_goal_text(), encoding="utf-8")
+
+    result = run_script(
+        "skills/public/achieve/scripts/record_metric_window.py",
+        "--goal-path",
+        str(goal),
+        "--started-at",
+        "2026-06-10T08:50:14Z",
+        "--completed-at",
+        "2026-06-10T12:50:14Z",
+    )
+    assert result.returncode != 0
+    assert "is required" in result.stderr
+
+
+def test_render_metric_window_line_requires_exactly_one_session_source() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="exactly one"):
+        gal.render_metric_window_line(
+            started_at="2026-06-10T08:50:14Z",
+            completed_at="2026-06-10T12:50:14Z",
+        )
+    with pytest.raises(ValueError, match="exactly one"):
+        gal.render_metric_window_line(
+            started_at="2026-06-10T08:50:14Z",
+            completed_at="2026-06-10T12:50:14Z",
+            codex_session_file="a.jsonl",
+            claude_session_file="b.jsonl",
+        )
+
+
+def test_metric_window_attention_flags_dual_host_line_as_incomplete() -> None:
+    dual = (
+        "## Final Verification\n\nHost metric window: started_at=2026-06-10T08:00:00Z "
+        "completed_at=2026-06-10T09:00:00Z codex_session_file=a.jsonl claude_session_file=b.jsonl\n"
+    )
+    attention = gal.metric_window_attention(dual)
+    assert attention["status"] == "incomplete"
+    assert "more than one session-file key" in attention["note"]

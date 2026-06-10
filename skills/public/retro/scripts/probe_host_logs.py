@@ -36,6 +36,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to resolve repo-local log paths")
     parser.add_argument("--goal-path", type=Path, help="Optional goal artifact carrying a `Host metric window:` evidence line")
     parser.add_argument(
+        "--claude-session-file",
+        type=Path,
+        help="Scope the Claude session audit to this project session JSONL instead of the newest-by-mtime file",
+    )
+    parser.add_argument(
         "--format",
         choices=("json", "markdown"),
         default="json",
@@ -50,6 +55,7 @@ def main() -> int:
         home=args.home.expanduser().resolve(),
         repo_root=args.repo_root.expanduser().resolve(),
         goal_path=args.goal_path,
+        claude_session_file=args.claude_session_file.expanduser() if args.claude_session_file else None,
     )
     if args.format == "markdown":
         print(render_goal_metrics_block(payload), end="")

@@ -8,10 +8,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from scripts import codex_session_jsonl_audit
+from scripts import claude_session_jsonl_audit, codex_session_jsonl_audit
 
 ISO_TS_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 GOAL_WINDOW_LINE = re.compile(r"^Host metric window:\s*(?P<body>.+)$", re.MULTILINE)
+# Exactly one session-file key per window line; which one names the host.
+WINDOW_SESSION_KEYS = ("codex_session_file", "claude_session_file")
 
 
 def metric(status: str, *, source: str | None = None, detail: str | None = None) -> dict[str, str]:
@@ -38,10 +40,24 @@ def _pick_claude_project_log(project_root: Path, repo_root: Path) -> Path | None
     return max(project_paths, key=lambda path: path.stat().st_mtime)
 
 
-def probe_claude(home: Path, repo_root: Path) -> dict[str, Any]:
+def probe_claude(
+    home: Path,
+    repo_root: Path,
+    goal_window: dict[str, Any] | None = None,
+    session_file: Path | None = None,
+) -> dict[str, Any]:
     claude_root = home / ".claude"
     history_path = claude_root / "history.jsonl"
-    latest_project = _pick_claude_project_log(claude_root / "projects", repo_root)
+    missing_named_session = session_file is not None and not session_file.is_file()
+    latest_project = (
+        None
+        if missing_named_session
+        else (
+            session_file
+            or _goal_window_session_path(goal_window, key="claude_session_file")
+            or _pick_claude_project_log(claude_root / "projects", repo_root)
+        )
+    )
 
     result: dict[str, Any] = {
         "detected": claude_root.exists(),
@@ -58,14 +74,35 @@ def probe_claude(home: Path, repo_root: Path) -> dict[str, Any]:
             }
         )
     if latest_project is None:
+        # Never substitute a different session for a named-but-missing file —
+        # that would re-create the misattribution this probe exists to prevent.
+        detail = (
+            f"Named Claude session file not found: {session_file}"
+            if missing_named_session
+            else "No Claude project JSONL found"
+        )
         result["metrics"] = {
-            "duration": metric("unavailable", detail="No Claude project JSONL found"),
-            "turn_count": metric("unavailable", detail="No Claude project JSONL found"),
-            "token_count": metric("unavailable", detail="No Claude project JSONL found"),
-            "tool_call_count": metric("unavailable", detail="No Claude project JSONL found"),
+            "duration": metric("unavailable", detail=detail),
+            "turn_count": metric("unavailable", detail=detail),
+            "token_count": metric("unavailable", detail=detail),
+            "tool_call_count": metric("unavailable", detail=detail),
         }
         return result
 
+    result["sources"].append({"kind": "project-jsonl", "path": str(latest_project), "status": "used"})
+    result["session_audit"] = claude_session_jsonl_audit.audit_session_jsonl(latest_project)
+    window_session = _goal_window_session_path(goal_window, key="claude_session_file")
+    if window_session is not None:
+        result["goal_window_audit"] = claude_session_jsonl_audit.audit_session_jsonl(
+            window_session,
+            started_at=goal_window.get("started_at"),
+            completed_at=goal_window.get("completed_at"),
+        )
+    result["metrics"] = _claude_metrics_from_signals(latest_project)
+    return result
+
+
+def _claude_metrics_from_signals(latest_project: Path) -> dict[str, dict[str, str]]:
     has_usage = False
     has_token_fields = False
     has_tool_use = False
@@ -90,9 +127,7 @@ def probe_claude(home: Path, repo_root: Path) -> dict[str, Any]:
                     has_tool_use = has_tool_use or any(
                         isinstance(item, dict) and item.get("type") == "tool_use" for item in content
                     )
-
-    result["sources"].append({"kind": "project-jsonl", "path": str(latest_project), "status": "used"})
-    result["metrics"] = {
+    return {
         "duration": metric(
             "derivable" if has_timestamp else "unavailable",
             source=str(latest_project),
@@ -122,7 +157,6 @@ def probe_claude(home: Path, repo_root: Path) -> dict[str, Any]:
             detail="message.content includes tool_use items" if has_tool_use else "No tool_use items found",
         ),
     }
-    return result
 
 
 def _read_text(path: Path) -> str:
@@ -186,6 +220,9 @@ def _codex_session_audit_summary(path: Path, goal_window: dict[str, Any] | None 
         },
         "notes": audit.get("notes", []),
         "window_filter": audit.get("window_filter", {}),
+        # The renderer's freshest-session fallback compares this across hosts;
+        # dropping it here would make the other host win unconditionally.
+        "last_event_at": audit.get("last_event_at"),
     }
 
 
@@ -302,7 +339,9 @@ def probe_codex(home: Path, goal_window: dict[str, Any] | None = None) -> dict[s
     if session_summary is not None:
         result["sources"].append({"kind": "session-jsonl", "path": str(session_log), "status": "used"})
         result["session_audit"] = session_summary
-        if goal_window and goal_window.get("status") == "parsed":
+        # Scope only a codex-keyed window; a claude-keyed window must never
+        # window-filter a Codex rollout into a fake "goal-window" audit.
+        if _goal_window_session_path(goal_window) is not None:
             result["goal_window_audit"] = _codex_session_audit_summary(session_log, goal_window)
     session_measured = session_summary.get("measured", {}) if isinstance(session_summary, dict) else {}
     result["metrics"] = _codex_metrics_from_signals(
@@ -329,9 +368,19 @@ def parse_goal_metric_window(repo_root: Path, goal_path: Path | None) -> dict[st
     if match is None:
         return {"status": "absent", "path": str(path)}
     fields = _parse_window_fields(match.group("body"))
-    issues = [key for key in ("started_at", "completed_at", "codex_session_file") if key not in fields]
+    issues = [key for key in ("started_at", "completed_at") if key not in fields]
+    present_session_keys = [key for key in WINDOW_SESSION_KEYS if key in fields]
+    if not present_session_keys:
+        issues.append("|".join(WINDOW_SESSION_KEYS))
     if issues:
         return {"status": "invalid", "path": str(path), "missing": issues, "raw": match.group("body")}
+    if len(present_session_keys) > 1:
+        return {
+            "status": "invalid",
+            "path": str(path),
+            "ambiguous_session_file": present_session_keys,
+            "raw": match.group("body"),
+        }
     invalid_timestamps = [key for key in ("started_at", "completed_at") if _parse_window_ts(fields[key]) is None]
     if invalid_timestamps:
         return {
@@ -340,7 +389,8 @@ def parse_goal_metric_window(repo_root: Path, goal_path: Path | None) -> dict[st
             "invalid_timestamps": invalid_timestamps,
             "raw": match.group("body"),
         }
-    session_file = _resolve_window_path(repo_root, fields["codex_session_file"])
+    session_key = present_session_keys[0]
+    session_file = _resolve_window_path(repo_root, fields[session_key])
     if not session_file.is_file():
         return {
             "status": "invalid",
@@ -348,8 +398,9 @@ def parse_goal_metric_window(repo_root: Path, goal_path: Path | None) -> dict[st
             "missing_session_file": str(session_file),
             "raw": match.group("body"),
         }
-    fields["codex_session_file"] = str(session_file)
-    return {"status": "parsed", "path": str(path), **fields}
+    fields[session_key] = str(session_file)
+    session_host = "codex" if session_key == "codex_session_file" else "claude"
+    return {"status": "parsed", "path": str(path), "session_host": session_host, **fields}
 
 
 def _parse_window_fields(body: str) -> dict[str, str]:
@@ -375,17 +426,25 @@ def _parse_window_ts(value: str) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
-def _goal_window_session_path(goal_window: dict[str, Any] | None) -> Path | None:
+def _goal_window_session_path(
+    goal_window: dict[str, Any] | None, key: str = "codex_session_file"
+) -> Path | None:
     if not goal_window or goal_window.get("status") != "parsed":
         return None
-    value = goal_window.get("codex_session_file")
+    value = goal_window.get(key)
     if not isinstance(value, str):
         return None
     path = Path(value)
     return path if path.is_file() else None
 
 
-def build_payload(*, home: Path, repo_root: Path, goal_path: Path | None = None) -> dict[str, Any]:
+def build_payload(
+    *,
+    home: Path,
+    repo_root: Path,
+    goal_path: Path | None = None,
+    claude_session_file: Path | None = None,
+) -> dict[str, Any]:
     goal_window = parse_goal_metric_window(repo_root, goal_path)
     return {
         "schema_version": 1,
@@ -393,7 +452,7 @@ def build_payload(*, home: Path, repo_root: Path, goal_path: Path | None = None)
         "repo_root": str(repo_root),
         "goal_metric_window": goal_window,
         "hosts": {
-            "claude": probe_claude(home, repo_root),
+            "claude": probe_claude(home, repo_root, goal_window, claude_session_file),
             "codex": probe_codex(home, goal_window),
         },
     }

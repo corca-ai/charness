@@ -225,15 +225,20 @@ For long goals, record a goal-window evidence line when the host exposes enough
 timing data:
 
 ```text
-Host metric window: started_at=<ISO> completed_at=<ISO> codex_session_file=<path>
+Host metric window: started_at=<ISO> completed_at=<ISO> <host>_session_file=<path>
 ```
 
-Record it with the helper rather than hand-editing, so the probe sees a complete
-window instead of silently reporting `absent`:
+The session-file key names the host that produced the session log — exactly one
+of `codex_session_file` or `claude_session_file` per line (a dual-host line is
+rejected as ambiguous). Record it with the helper rather than hand-editing, so
+the probe sees a complete window instead of silently reporting `absent`:
 
 ```bash
 python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
   --started-at <ISO> --completed-at <ISO> --codex-session-file <host adapter path>
+# or, for a goal run on a Claude host:
+python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
+  --started-at <ISO> --completed-at <ISO> --claude-session-file <project session path>
 ```
 
 The host adapter supplies the timestamps and rollout-file path it can prove; the

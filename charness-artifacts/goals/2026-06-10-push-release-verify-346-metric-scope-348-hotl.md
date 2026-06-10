@@ -278,6 +278,20 @@ during the run:
 - Lessons carried forward: The release artifact's live-probe requirement (no install_refresh line) was satisfiable in two commands; keep the live probe as the canonical installed-surface proof.
 - Metrics:
 
+### Slice 2: Slice 2 — #346 Claude-host per-goal metric scoping (corrected mechanism)
+
+- Objective: Close the recurs-class per-goal metric attribution gap on Claude hosts with the CORRECTED root cause: a stale Codex rollout was rendered as a Claude-host run's measured block; ship a Claude single-session auditor, dual-key window grammar, render-path host/staleness disambiguation, and a Claude window source.
+- Why this approach: Activation critique B1/B2 redirected the slice from the issue body's wrong project-dir-aggregate diagnosis to the real seam (renderer only knew the Codex audit; no Claude-format auditor existed).
+- Commits: carrier commit with staged Closes #346 (direct-commit, draft_verified by issue_tool validate-closeout-draft)
+- What changed: NEW scripts/claude_session_jsonl_audit.py + tests/quality_gates/test_claude_session_jsonl_audit.py; scripts/codex_session_jsonl_audit.py (public shared helpers + last_event_at); scripts/host_log_probe_lib.py (dual-key window parse, claude session_audit/goal_window_audit, --claude-session-file, never-substitute, codex window scoping guard, _claude_metrics_from_signals extraction); scripts/goal_metrics_render_lib.py (goal-window-first + freshest-session selection, claude provenance line); achieve goal_metric_window_lib + record_metric_window (claude source, exactly-one); retro probe_host_logs CLI; 3 reference docs (window grammar); plugins/charness mirrors byte-synced.
+- Alternatives rejected: Implementing the issue body's suggested probe_claude file-selection fix rejected — probe_claude already selected one newest file; the misattribution lived in the render path and the missing Claude auditor.
+- Targeted verification: 47 related tests green (4 modules + codex audit suite); pre-lock rehearsal then locked run_slice_closeout --verification-lock --produce-mutation-coverage completed (broad pytest instrumented, PASS); consumer confirm deferred to post-commit (documented HEAD false-green trap); live acceptance: plain markdown probe derives the measured block from the current Claude session with provenance, claude-keyed window yields scoped goal_window_audit (291/402 records), fresh-codex-vs-stale-claude direction pinned by integration test after the reviewer's live repro.
+- Test duplication pressure: New tests target the new module and new negatives; updated pinned values replaced (missing-key value, no-audit message); no duplicated assertions observed across the four touched modules.
+- Critique: Fresh-eye bounded reviewer: HOLD (B1 last_event_at dropped from codex summary — claude always won the dual-host fallback; live repro) -> fixed in-slice + both-direction integration tests; N1 stale docs + N2 dual-key attention folded; N3 recorded as v1 trade. charness-artifacts/critique/2026-06-10-346-claude-metric-scoping-critique.md
+- Off-goal findings: none
+- Lessons carried forward: Synthetic render fixtures masked a dropped payload field; probe-to-render integration tests with both hosts populated are the cheap pin for cross-host selection logic.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
