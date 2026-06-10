@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import host_hook_install_lib as lib
@@ -17,6 +19,8 @@ import host_hook_skill_anchor_guard as guard
 import pytest
 
 from scripts.post_edit_skill_anchor_guard import main as guard_main
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture
@@ -94,6 +98,21 @@ def test_reconcile_honors_intent_and_reports_codex_unsupported(fake_repo: Path, 
     assert "error" in actions["codex"]
 
 
+def test_reconcile_surfaces_host_hook_error(fake_repo: Path, fake_home: Path) -> None:
+    # A corrupt settings file raises HostHookError; reconcile reports it per
+    # host instead of aborting the chain.
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True)
+    settings_path.write_text("not json", encoding="utf-8")
+
+    actions = guard.reconcile_skill_anchor_guard_hooks(
+        fake_repo, adapter={"skill_anchor_edit_guard": {"claude": "enabled"}}, home=fake_home
+    )
+
+    assert "error" in actions["claude"]
+    assert "result" not in actions["claude"]
+
+
 def test_reconcile_host_hooks_carries_anchor_guard_section(fake_repo: Path, fake_home: Path) -> None:
     adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
@@ -151,4 +170,24 @@ def test_guard_fail_open_paths(tmp_path: Path) -> None:
     assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(repo / "skills/public/demo/GONE.md"))) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("not json")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("")) == 0
+    assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("[]")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO(json.dumps({"tool_input": {}}))) == 0
+
+
+def test_guard_process_contract_exit_codes(tmp_path: Path) -> None:
+    # The host invokes the guard as a subprocess with the hook payload on
+    # stdin and branches on exit 0 (silent) vs 2 (surface findings) — that IS
+    # the contract, so one boundary-level proof runs the real process
+    # (ratchet-exempted); all logic tests above stay in-process.
+    repo = _seed_skill_repo(tmp_path)
+    target = repo / "skills" / "public" / "demo" / "SKILL.md"
+
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "post_edit_skill_anchor_guard.py"), "--repo-root", str(repo)],
+        input=json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(target)}}),
+        capture_output=True,
+        text=True,
+    )
+
+    assert proc.returncode == 2
+    assert "skill-issue-anchor-scan: blocked" in proc.stderr
