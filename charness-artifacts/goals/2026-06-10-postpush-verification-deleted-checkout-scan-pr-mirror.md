@@ -9,8 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — push/release-lane verification (read/verify-first).
-- Next action: fresh-eye plan critique at activation, then slice 1 `gh` reads.
+- Current slice: 2 — deleted-checkout settings scan (implemented; fresh-eye
+  slice critique in flight; commit after verdict).
+- Next action: fold slice 2 critique verdict, commit slice 2, then slice 3
+  (branch from origin/main; F4 e2e + minimal pool-file docstring touch so the
+  mirror gate runs its full real path — decision recorded in Plan Critique
+  Findings).
+- Slice 1: complete (all proofs recorded in Slice Log; mutation-run recheck
+  deferred to closeout).
 - Timebox: 3h
 - Activation time: 2026-06-10T15:14:07+09:00
 - Closeout reserve: 30m
@@ -220,6 +226,20 @@ during the run:
 - Lessons carried forward: Two push runs can appear for one lane (branch+tag); the concurrency-cancelled twin is expected, record the surviving green run id.
 - Metrics:
 
+### Slice 2: Slice 2 — deleted-checkout settings scan
+
+- Objective: Close the #343-documented blind spot: flag host-settings hook entries left behind by a DELETED checkout (invisible to state-driven hook_liveness) via a direct settings-file scan in the existing status surface.
+- Why this approach: Extend host_hook_registry in place (no new pool module, plenty of length headroom): known-basename set derived from the owning modules' script constants via a new script_relative_attr registry-row field (activation-critique adjustment 5); per-format readers reuse the existing JSON helpers and the TOML lib's line parser (made public: toml_command_value); settings_scan joins the pre-existing exit-1-on-drift status contract.
+- Commits:
+- What changed: scripts/host_hook_registry.py (script_relative_attr field, known_hook_script_basenames, _json_settings_commands, _toml_settings_commands, settings_file_scan, docstring no longer defers the scan); scripts/host_hook_codex_toml_lib.py (toml_command_value made public); scripts/reconcile_usage_episodes_host_hooks.py (settings_scan payload section + drift join); tests/test_host_hook_registry.py (+10 tests); docs/conventions/authoring-preflight.md (blind-spot paragraph now claims exactly the shipped behavior); plugins/charness/scripts/ mirrors byte-synced.
+- Alternatives rejected: Forked literal basename list (pre-rejected non-goal); marker-block TOML identification (shipped basename filter is strictly broader and safe — recorded as critique F3); module-attribute introspection for derivation (critique preferred the explicit registry-row field).
+- Targeted verification: 21/21 module tests, 64/64 host-hook family; ruff + py_compile + length headroom green (registry 216/480); registry line coverage 96% with every slice-changed line executed in-process (degrade branches walked deliberately: malformed JSON shapes, PermissionError, unparseable command — the W1 confirm-not-discover lesson applied); live scratch-HOME acceptance: leftover entry flagged with NO state file knowing it, exit 1; e2e subprocess test pins the same case.
+- Test duplication pressure: New tests reuse the module's existing _fake_home/_seed_state helpers plus one new _claude_settings_payload helper; the two status-mode subprocess tests share shape with the pre-existing dangling-hook test (acceptable duplication: each pins a distinct detection source — state vs settings).
+- Critique: Fresh-eye bounded reviewer (slice2-critique): SHIP-WITH-NITS, no blockers — charness-artifacts/critique/2026-06-10-settings-scan-slice-critique.md; F2 (intents passthrough) folded before commit, F1 (direct-exec loud-over-silent edge) and F3 (basename-not-marker TOML decision) documented.
+- Off-goal findings: none
+- Lessons carried forward: Non-claims: scan covers the three default settings paths only (no custom/project-level settings locations); a hand-written interpreter-less entry with a known basename reports loudly even when live (inherited posture); scan reports, never removes.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -299,7 +319,28 @@ Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. A fresh-eye plan critique runs at
 activation per the verification cadence.
 
-- **Provenance:** self-critique by the shaping session.
+- **Provenance:** self-critique by the shaping session; fresh-eye activation
+  critique by a bounded reviewer subagent at 2026-06-10 activation — verdict
+  PROCEED-WITH-ADJUSTMENTS, adjustments folded below.
+- **Activation critique adjustments (folded):** (1) the mirror JOB executes on
+  any PR (no path filter; `if: github.event_name == 'pull_request'` only), but
+  the gate inside short-circuits skip-green for a test-only diff (`tests/` is
+  not in `MUTATION_POOLS`) — slice 3 resolves this via the interview decision's
+  pre-authorized minimal pool-file touch, recorded at slice time. (2) Cut the
+  slice 3 branch from **origin/main**, never local main — local main carries
+  unpushed slice 1/2 commits that must not ride the PR; named residual: local
+  and remote main diverge until the next operator push (slice 2's work reaches
+  remote CI only then). (3) `verify-closeout` requires the full argparse set
+  (`--repo/--number/--classification/--carrier[/--commit-ref]`); slice 1 used
+  exactly that. (4) `latest.md` carries no `install_refresh` line (ephemeral
+  publish payload only) — slice 1's installed==released claim rests on the
+  live local probe (installed plugin version 0.37.0, checkout == repo HEAD),
+  not a recorded artifact line. (5) Slice 2's basename derivation gets an
+  explicit `script_relative_attr` registry-row field resolved against the
+  owning module's constant (keeps "a fourth intent is a table row" true; no
+  forked list). Over-worry (raised, not folded): post-merge push-run flake on
+  main — merge-when-green already CI-verifies the merged content; an infra
+  flake is the next operator lane.
 - **Slice 3 could quietly expand remote side-effects (extra PRs, workflow
   edits re-running CI).** Folded: ONE bounded PR named in Non-Goals +
   Boundaries; merge-when-green is the only remote mutation beyond it; the

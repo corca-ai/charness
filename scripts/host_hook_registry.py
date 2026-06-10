@@ -14,14 +14,16 @@ Keying hooks per checkout was rejected: shared host events would fire every
 checkout's copy of the same guard. The trade is that the surviving hook binds
 one checkout's absolute path — `hook_state_liveness` flags a moved checkout or
 a missing script from this checkout's own state. A DELETED checkout's leftover
-settings entries are not detectable from here (its state file died with it);
-the remedy is uninstall/reinstall from a live checkout, and a settings-file
-scan stays deferred.
+settings entries are not detectable from state (its state file died with it);
+`settings_file_scan` closes that gap by reading the host settings files
+directly and flagging entries whose command carries a known charness
+hook-script basename but whose embedded path no longer exists.
 """
 
 from __future__ import annotations
 
 import importlib
+import json
 import shlex
 import sys
 from dataclasses import dataclass
@@ -35,6 +37,10 @@ class SiblingHookIntent:
     module: str
     reconcile_function: str
     status_function: str
+    # Name of the module-owned `Path` constant for the hook script, resolved
+    # via getattr so the script identity stays single-source in the owning
+    # module (settings_file_scan derives its known-basename set from these).
+    script_relative_attr: str
 
 
 SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
@@ -43,12 +49,14 @@ SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
         module="host_hook_find_skills",
         reconcile_function="reconcile_find_skills_hooks",
         status_function="find_skills_routing_status",
+        script_relative_attr="FIND_SKILLS_SCRIPT_RELATIVE",
     ),
     SiblingHookIntent(
         key="skill_anchor_edit_guard",
         module="host_hook_skill_anchor_guard",
         reconcile_function="reconcile_skill_anchor_guard_hooks",
         status_function="skill_anchor_guard_status",
+        script_relative_attr="GUARD_SCRIPT_RELATIVE",
     ),
 )
 
@@ -139,4 +147,108 @@ def hook_state_liveness(repo_root: Path) -> dict[str, Any]:
             f"{key}: state-tracked {detail}; the installing checkout may have been "
             "deleted or moved — reinstall from a live checkout or uninstall the hook"
         )
+    return {"entries": entries, "dangling": dangling}
+
+
+def known_hook_script_basenames(
+    intents: tuple[SiblingHookIntent, ...] = SIBLING_HOOK_INTENTS,
+) -> set[str]:
+    """Charness hook-script basenames, derived from the owning modules'
+    constants (the usage-episodes install lib plus each registry row) — never
+    a forked literal list, so a new hook intent extends the scan by adding
+    its registry row."""
+    install_lib = _import_module("host_hook_install_lib")
+    names = {install_lib.HOOK_SCRIPT_RELATIVE.name}
+    for intent in intents:
+        module = _import_module(intent.module)
+        names.add(getattr(module, intent.script_relative_attr).name)
+    return names
+
+
+def _json_settings_commands(path: Path) -> list[str]:
+    # Claude settings.json and Codex hooks.json share the shape
+    # hooks.<event>[] -> {hooks: [{type: "command", command: ...}]}; every
+    # event is scanned (SessionStart, PostToolUse, ...). Absent or unreadable
+    # files degrade to silence — this is advisory surfacing, not a gate.
+    if not path.is_file():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(data, dict) or not isinstance(data.get("hooks"), dict):
+        return []
+    commands: list[str] = []
+    for event_entries in data["hooks"].values():
+        if not isinstance(event_entries, list):
+            continue
+        for entry in event_entries:
+            inner = entry.get("hooks") if isinstance(entry, dict) else None
+            if not isinstance(inner, list):
+                continue
+            for item in inner:
+                if isinstance(item, dict) and item.get("type") == "command" and isinstance(item.get("command"), str):
+                    commands.append(item["command"])
+    return commands
+
+
+def _toml_settings_commands(path: Path) -> list[str]:
+    toml_lib = _import_module("host_hook_codex_toml_lib")
+    try:
+        text = toml_lib.read_text_or_empty(path)
+    except OSError:
+        return []
+    commands: list[str] = []
+    for line in text.splitlines():
+        value = toml_lib.toml_command_value(line.strip())
+        if value is not None:
+            commands.append(value)
+    return commands
+
+
+def settings_file_scan(
+    home: Path,
+    *,
+    intents: tuple[SiblingHookIntent, ...] = SIBLING_HOOK_INTENTS,
+) -> dict[str, Any]:
+    """Deleted-checkout detection from the settings side: `hook_state_liveness`
+    only sees this checkout's state file, so a DELETED checkout's leftover
+    settings entries are invisible to it. This scan reads the host settings
+    files themselves and flags any entry whose command carries a known
+    charness hook-script basename but whose embedded path no longer exists —
+    dangling-from-any-checkout. Foreign hooks (no known charness basename)
+    are never flagged; missing/unreadable settings degrade to silence. A
+    dangling entry that IS state-tracked here is also reported by
+    hook_state_liveness; both point at the same leftover."""
+    install_lib = _import_module("host_hook_install_lib")
+    toml_lib = _import_module("host_hook_codex_toml_lib")
+    known = known_hook_script_basenames(intents)
+    entries: list[dict[str, Any]] = []
+    dangling: list[str] = []
+    sources = (
+        (install_lib.default_claude_settings_path(home), "claude-json", _json_settings_commands),
+        (install_lib.default_codex_hooks_json_path(home), "codex-json", _json_settings_commands),
+        (install_lib.default_codex_config_toml_path(home), "codex-toml", _toml_settings_commands),
+    )
+    for path, kind, read_commands in sources:
+        for command in read_commands(path):
+            if toml_lib.script_basename(command) not in known:
+                continue
+            script = _command_script_path(command)
+            exists = script is not None and script.is_file()
+            entries.append(
+                {
+                    "settings_path": str(path),
+                    "kind": kind,
+                    "script_path": str(script) if script is not None else None,
+                    "script_exists": exists,
+                }
+            )
+            if exists:
+                continue
+            where = f"missing charness hook script {script}" if script is not None else f"no script path found in command {command!r}"
+            dangling.append(
+                f"{path}: settings entry invokes {where} — likely a deleted "
+                "checkout's leftover; remove the entry or reinstall from a live checkout"
+            )
     return {"entries": entries, "dangling": dangling}

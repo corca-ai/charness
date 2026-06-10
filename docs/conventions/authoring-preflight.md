@@ -207,10 +207,15 @@ checkout is moved (or the hook script disappears),
 `python3 scripts/reconcile_usage_episodes_host_hooks.py --mode status`
 (= `charness session-capture status`) flags the dangling state-tracked hook
 via its `hook_liveness` section — reinstall from a live checkout or
-uninstall. A *deleted* checkout's leftover settings entries are not
-detectable from a surviving checkout's state (the state file dies with the
-deleted checkout); the same uninstall/reinstall remedy applies, and a
-settings-file scan stays deferred.
+uninstall. A *deleted* checkout's leftover settings entries are invisible to
+state (the state file dies with the deleted checkout); the same status
+surface's `settings_scan` section catches them by reading the host settings
+files directly (claude `settings.json`, codex `hooks.json`, codex
+`config.toml`) and flagging entries whose command carries a known charness
+hook-script basename — derived from the owning modules' script constants,
+never a forked list — but whose embedded path no longer exists. Both
+sections join the exit-1 drift list; missing or unreadable settings files
+degrade to silence, and foreign hooks are never flagged.
 
 ### One-shot portable-package preflight
 

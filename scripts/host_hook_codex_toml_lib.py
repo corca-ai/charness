@@ -33,7 +33,7 @@ def script_basename(command: str) -> str | None:
     return None
 
 
-def _toml_command_value(stripped_line: str) -> str | None:
+def toml_command_value(stripped_line: str) -> str | None:
     """Parse the value of a `command = "..."` TOML line, or None."""
     if not stripped_line.startswith("command ="):
         return None
@@ -114,7 +114,7 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                     if stripped == expected_command_line:
                         seen_command = True
                     elif target_identity is not None:
-                        existing = _toml_command_value(stripped)
+                        existing = toml_command_value(stripped)
                         if existing is not None and script_basename(existing) == target_identity:
                             seen_command = True
                     block_end += 1
@@ -140,7 +140,7 @@ def _replace_span(existing: str, start: int, end: int, block: str) -> str:
 def _matching_existing_command(block_text: str, command: str) -> str | None:
     target_identity = script_basename(command)
     for line in block_text.splitlines():
-        existing = _toml_command_value(line.strip())
+        existing = toml_command_value(line.strip())
         if existing is None:
             continue
         if existing == command:
