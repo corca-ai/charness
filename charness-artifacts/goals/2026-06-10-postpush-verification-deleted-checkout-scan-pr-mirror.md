@@ -1,6 +1,6 @@
 # Achieve Goal: Post-push queue — push/release-lane verification + deleted-checkout settings scan + PR-mirror first execution
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror.md`
 
@@ -9,12 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-postpush-verification-deleted-checkout-scan-pr-mirror.md`.
+- Current slice: 1 — push/release-lane verification (read/verify-first).
+- Next action: fresh-eye plan critique at activation, then slice 1 `gh` reads.
 - Timebox: 3h
-- Activation time: set at `/goal` activation (REPLACE with an ISO timestamp at
-  activation — the complete gate parses `Activation time:` as ISO; two prior
-  goals carried this exact reminder for a reason).
+- Activation time: 2026-06-10T15:14:07+09:00
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (if a slice closes early,
   continue to the next surfaced improvement rather than stopping).
@@ -207,6 +205,20 @@ during the run:
   files something new).
 
 ## Slice Log
+
+### Slice 1: Slice 1 — push/release-lane verification (read-only)
+
+- Objective: Consume the 2026-06-10 push + release lane's deferred proofs read-only: issue closes, post-push CI, release installed-surface, scheduled mutation run.
+- Why this approach: Verify-first per the goal: carriers own the closes; gh + issue_tool verify-closeout are the read-only consumption surfaces; no remote mutation.
+- Commits: none (read-only slice; goal-artifact log update committed with activation bookkeeping)
+- What changed: Goal artifact only (activation stamp + this slice log).
+- Alternatives rejected: Manual gh issue close on mismatch (pre-rejected non-goal); re-running release verification instead of consuming recorded proof (over-worry, rejected at shaping).
+- Targeted verification: issue_tool.py verify-closeout --expect-state CLOSED: #342 via 76909cc8, #343 via 7f835610, #344 via cd2618d1 — all status=verified, state=CLOSED. quality-core.yml push run 27254637832 on HEAD 3310b28b: success (3e735cad run 27254628529 also success; sibling 27254628519 cancelled by concurrency, superseded). Release: charness-artifacts/release/latest.md records v0.37.0 publish + verification; installed plugin ~/.agents/src/charness at version 0.37.0, checkout v0.37.0-1-g3310b28b == repo HEAD (installed == released tag). mutation-tests.yml: latest scheduled run 27253892006 (58cc749a, 04:47:58Z) success — fired pre-push; post-push scheduled run not yet fired at activation; named deferred proof with recheck at closeout per the activation-timing interview decision.
+- Test duplication pressure:
+- Critique: Activation-time fresh-eye plan critique running in parallel (bounded reviewer); slice 1 itself is non-mutating so no slice-boundary critique owed.
+- Off-goal findings: none
+- Lessons carried forward: Two push runs can appear for one lane (branch+tag); the concurrency-cancelled twin is expected, record the surviving green run id.
+- Metrics:
 
 ## Context Sources
 
