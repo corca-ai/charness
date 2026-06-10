@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — light push/tag CI + CI-PR changed-line mirror
-  (repo-local, consumer-inert; remote run stays the operator lane).
-- Next action: classify the slice-3 shape (push/tag workflow vs CI-PR check vs
-  both) against the existing local gates (`run-quality.sh --read-only`,
-  pre-push changed-line consumer), then author + YAML-validate the workflow;
-  slices 1–2 are done (see `## Slice Log`).
+- Current slice: 4 — source-guard timing audit (verify-first enumeration,
+  classification table, pull only the favorable subset earlier via the
+  existing dispatcher).
+- Next action: enumerate the broad-gate-only source-guard validators and where
+  each runs today (preflight / edit scan / commit sweep / broad gate only),
+  classify timing-eligibility, then wire the favorable subset through
+  `staged_commit_gate_plan.py`; slices 1–3 are done (see `## Slice Log`).
 - Timebox: ~one focused session per slice (4 slices); Activation time:
   2026-06-10 (session start); Closeout reserve: ~15% for the After-phase proof + retro;
   Done-early policy: continue_next_improvement (if a slice closes early, continue
@@ -188,6 +189,10 @@ during the run:
   parallel-hook pattern (adapter-declared, state-tracked) rather than a new
   capability surface; fresh-eye bounded subagent critique at the slice
   boundary.
+- Routing (slice 3): impl-discipline route (declarative CI config invoking
+  repo-owned validators); quality posture honored by mirroring — not forking —
+  the changed-line gate; fresh-eye bounded subagent critique at the slice
+  boundary.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -230,6 +235,20 @@ during the run:
 - Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied: doc/adapter matcher drift (Edit|Write|MultiEdit). Recorded, not applied: two-checkout coverage gap (~/.agents/src/charness edits get no edit-time guard — basename dedupe allows one logical hook per machine; falls to commit sweep, pattern-consistent); dangling-checkout exit-2 noise hazard (pre-existing class, doctor/status candidate); host_hook_install_lib reconcile fan-out should become a registry at the NEXT hook addition.
 - Off-goal findings: Dangling-checkout hook noise (deleted checkout => python3 exit 2 on every Edit) is a pre-existing hazard class for all three hooks — candidate for a charness doctor/status check; reconcile fan-out registry refactor deferred to the next hook addition.
 - Lessons carried forward: The parallel-hook pattern made the portable mechanism nearly free; the expensive part was classifying the firing mechanism honestly (adapter vs preset vs plugin-shipped) before wiring.
+- Metrics:
+
+### Slice 3: Slice 3 — light push/tag CI + CI-PR changed-line mirror
+
+- Objective: Author .github/workflows/quality-core.yml: a light core job (push to main / v* tags / PRs / dispatch) running the repo-owned deterministic validators (ruff pinned, validate_packaging, validate_packaging_committed, check_doc_links, check-markdown via lockfile-pinned markdownlint, check_github_actions), plus a PR-only changed-line-mutation-mirror job running check_changed_line_mutation_coverage.py over the PR range with the gate's own plain coverage probe. Repo-local, consumer-inert; remote execution stays the operator lane.
+- Why this approach: Shape classification (deferred probe resolved): BOTH a push/tag core and the CI-PR mirror, in one workflow. Wholesale run-quality --read-only in CI was rejected as not light (specdown binary, agent-browser gates, 83-check queue); instead each CI step invokes a repo-owned validator directly so rules stay single-source and the YAML only schedules. The mirror reuses mutation-tests.yml's proven CI env recipe; core omits pytest deliberately (pool-touching PRs run the suite via the mirror's probe; main gets the suite from the ≤3h cron).
+- Commits:
+- What changed: .github/workflows/quality-core.yml (new); charness-artifacts/spec/mutation-changed-line-premerge-gate.md (CI-PR deferred decision marked RESOLVED with honest scope); docs/handoff.md (Discuss item resolved, deferred remote proof named).
+- Alternatives rejected: run-quality.sh --read-only wholesale in CI (not light; host-binary coupling); PR-mirror-only without push/tag core (leaves the direct-push bypass uncovered); re-encoding gate steps in YAML (single-source violation).
+- Targeted verification: YAML parses; check_github_actions.py validates both workflows; every core-job command run green locally (ruff, packaging x2, doc links, markdown); no remote execution (non-claim: first run is the operator-lane deferred proof; PR-mirror wall-clock unproven, bounded by 60-min timeout; no actionlint).
+- Test duplication pressure: No tests added (declarative CI config; the invoked validators carry their own suites). No new subprocess boundary.
+- Critique: Fresh-eye bounded subagent: SHIP-WITH-NITS. Applied pre-push fixes: (1) --write-fresh-marker so the mirror uses the plain probe instead of the documented multi-GB dynamic-context export; (2) core job setup-node + npm ci so markdownlint-cli2 resolves lockfile-pinned instead of unpinned-latest; (3) ruff pinned 0.15.10; plus single-source cross-ref comment on the ruff path list. Recorded only: stale pull_request.base.sha can over-include other PRs' merged changes (over-checking, self-clears on re-sync; HEAD^1 is the fallback anchor); spec/handoff resolved-marking verified as honestly scoped.
+- Off-goal findings: none
+- Lessons carried forward: A fresh-eye reviewer reading the gate script's own docstrings caught the dynamic-context blow-up an author-side YAML review would have missed — the slice packet pointing at the CLI contract paid for itself.
 - Metrics:
 
 ## Context Sources

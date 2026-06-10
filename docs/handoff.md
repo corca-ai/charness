@@ -51,9 +51,12 @@
 
 ## Discuss
 
-- **No push/tag CI.** The local `--release` gate is the bundle proof. Open: add
-  light push/tag CI and/or mirror the changed-line gate into a CI-PR check (spec
-  "Deferred Decisions").
+- (Resolved 2026-06-10) **No push/tag CI** — shipped in the next-queue goal
+  slice 3: [.github/workflows/quality-core.yml](../.github/workflows/quality-core.yml)
+  (light push/tag core job + PR-only changed-line mutation mirror,
+  single-source via the repo validators).
+  Authored + locally validated; the first remote run is the operator-lane
+  deferred proof after the next push.
 - (Resolved 2026-06-09) "Scaffold should cite the repo validator" was already
   shipped in v0.29.0 — verified read-only; all six scaffolds are repo-local-first.
 

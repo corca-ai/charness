@@ -154,9 +154,13 @@ mutation-pool file fails locally — with an actionable `path:line` target —
   uncovered changed line; the per-file budget is unchanged. Genuine
   selection-CONTENTION drops (cumulative budget / nodeid budget / no covering test)
   stay blocking and remain the deferred follow-up.
-- **CI-PR enforcement**: charness runs no push/tag CI (only
-  `workflow_dispatch`/path-scoped PR/cron). A future light push/tag CI mirror of
-  this gate is a separate decision (handoff `Discuss`).
+- **CI-PR enforcement**: RESOLVED (2026-06-10 next-queue goal, slice 3).
+  `.github/workflows/quality-core.yml` now carries a light push/tag core job
+  plus a PR-only `changed-line-mutation-mirror` job that runs
+  `check_changed_line_mutation_coverage.py` over the PR range with the gate's
+  own coverage probe (single source; env recipe matches `mutation-tests.yml`).
+  Authored + YAML-validated locally; the first remote run is the
+  operator-lane deferred proof.
 
 ## Non-Goals
 

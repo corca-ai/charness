@@ -1,0 +1,132 @@
+# charness:gate-policy push-tag-light-ci
+# Authored by the 2026-06-10 next-queue goal (slice 3). The local
+# run-quality --release / pre-push gate is the maintainer-machine bundle
+# proof; this workflow adds a remote authoritative LIGHT layer that catches a
+# bypass (a direct push without the local hooks) and mirrors the changed-line
+# mutation gate into a CI-PR check. It is repo-local CI config: installed-
+# plugin consumer repos inherit nothing from it.
+#
+# Deliberately NOT the full run-quality broad gate: specdown, the
+# agent-browser runtime gates, and the full local check queue stay
+# local/scheduled surfaces (see mutation-tests.yml for the scheduled deeper
+# check). Each step below invokes a repo-owned validator directly, so the
+# rules stay single-source — this file only schedules them.
+
+name: Quality Core
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-core-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Core deterministic gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Setup Node
+        # check-markdown.sh resolves markdownlint-cli2 via npm exec; npm ci
+        # pins it to the lockfile version instead of fetching latest.
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Install core gate dependencies
+        # ruff pinned so the bypass-catcher only reds on repo regressions,
+        # not on new upstream lint rules.
+        run: pip install -r packaging/bootstrap-requirements.txt "ruff==0.15.10"
+
+      - name: Lint (ruff)
+        # Path list mirrors the broad gate's ruff invocation in
+        # scripts/run-quality.sh; rules stay single-source in pyproject.toml.
+        run: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
+
+      - name: Validate plugin packaging export
+        run: python3 scripts/validate_packaging.py --repo-root .
+
+      - name: Validate committed plugin export drift
+        run: python3 scripts/validate_packaging_committed.py --repo-root .
+
+      - name: Validate doc links
+        run: python3 scripts/check_doc_links.py --repo-root .
+
+      - name: Validate markdown
+        run: ./scripts/check-markdown.sh
+
+      - name: Validate workflow action majors
+        run: python3 scripts/check_github_actions.py --repo-root .
+
+  changed-line-mutation-mirror:
+    # The same blocking signal as the local pre-push teeth
+    # (check_changed_line_mutation_coverage), run over the PR range with the
+    # gate's own coverage probe — the env recipe matches mutation-tests.yml,
+    # which already runs this suite in CI. Head defaults to HEAD (the checked
+    # out PR merge commit), so the verdict covers the change as it would land.
+    name: Changed-line mutation coverage (PR mirror)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install suite dependencies
+        run: pip install -r packaging/mutation-requirements.txt
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Install validation binaries
+        run: |
+          if ! command -v tokei >/dev/null 2>&1; then
+            cargo --version
+            cargo install tokei
+          fi
+          tokei --version
+
+      - name: Changed-line mutation coverage gate
+        # --write-fresh-marker selects the plain (no dynamic_context) probe:
+        # the changed-line verdict only needs executed-vs-missing lines, and
+        # the per-test-context export is the documented multi-GB blow-up. The
+        # fingerprint marker it writes is ephemeral in CI.
+        run: |
+          python3 scripts/check_changed_line_mutation_coverage.py --repo-root . \
+            --base-sha "${{ github.event.pull_request.base.sha }}" \
+            --write-fresh-marker
