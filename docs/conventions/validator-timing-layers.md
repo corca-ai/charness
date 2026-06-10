@@ -60,6 +60,7 @@ this audit; those rows are listed compressed.
 | check-skill-bootstrap-vars | broad only | **pulled → commit-time** | <0.1s, skills/-scoped |
 | validate-surfaces | broad only | **pulled → commit-time** | <0.1s, flips only on a [surfaces manifest](../../.agents/surfaces.json) edit; a broken manifest degrades every surface-driven gate |
 | check-title-slug-drift | broad only | **pulled → commit-time** | <0.1s, flips only on a markdown edit |
+| inventory-ci-local-gate-parity | broad only (inventory + the real-repo pytest watchdog) | **pulled → commit-time** | <0.1s, flips only on a workflow edit; the commit-time pull carries `--require-canonical-gate-match` so it enforces the same bar as the pytest watchdog (pulled at the goal's own bundle boundary, where the watchdog fired two slices after the workflow was authored) |
 | check-python-runtime-inheritance | broad only | stays | borderline cost (~0.75s) for a rare verdict flip; revisit if the class recurs |
 | check-export-safe-imports, check-plugin-import-smoke | broad only | stays | import-graph / import-execution cost |
 | check-command-docs | broad only | stays | ~3.3s, over budget |

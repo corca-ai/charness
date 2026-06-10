@@ -75,6 +75,19 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
     if any(path.endswith(".md") for path in paths):
         gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py", "--strict"))
+    if _any_starts(paths, ".github/workflows/"):
+        # <0.1s; only a workflow edit can flip the parity verdict. Carries
+        # --require-canonical-gate-match so the commit boundary enforces the
+        # same bar as the broad gate's real-repo parity test, not just the
+        # inventory's parity-issue subset.
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "inventory-ci-local-gate-parity",
+                "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+                "--repo-root", str(repo_root), "--require-empty-parity-issues",
+                "--require-canonical-gate-match", "--require-git-file-listing",
+            )
+        )
     return gates
 
 

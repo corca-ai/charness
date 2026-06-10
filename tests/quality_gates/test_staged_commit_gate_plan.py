@@ -219,6 +219,14 @@ def test_timing_pull_title_slug_drift_fires_for_markdown_only() -> None:
     assert "check-title-slug-drift" not in _labels(["scripts/new_helper.py"])
 
 
+def test_timing_pull_ci_parity_fires_for_workflow_edits_only() -> None:
+    # The slice-3 parity miss was caught only by the bundle pytest watchdog;
+    # a workflow edit now pays the same bar (--require-canonical-gate-match)
+    # at commit time.
+    assert "inventory-ci-local-gate-parity" in _labels([".github/workflows/quality-core.yml"])
+    assert "inventory-ci-local-gate-parity" not in _labels(["docs/usage.md"])
+
+
 def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     result = run_script(
         "scripts/run_slice_closeout.py",

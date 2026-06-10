@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — coverage-producer ergonomics + #N-anchor edit-time guard + push/tag CI + source-guard timing audit
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`
 
@@ -9,15 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: After-phase — all 4 slices done (see `## Slice Log`).
-- Next action: commit slice 4, then the bundle boundary: broad gate
-  (`run-quality.sh --read-only`) + changed-line producer via the NEW `--base`
-  (dogfooding slice 1), Final Verification bindings, retro + dispositions,
-  flip status to complete.
-- Timebox: ~one focused session per slice (4 slices); Activation time:
-  2026-06-10 (session start); Closeout reserve: ~15% for the After-phase proof + retro;
-  Done-early policy: continue_next_improvement (if a slice closes early, continue
-  to the next surfaced improvement rather than stopping).
+- Current slice: CLOSEOUT — all 4 slices done and committed; bundle boundary
+  proven (producer via `--base` completed + fingerprint stamped; changed-line
+  consumer ok with 0 blocking; broad gate 73/0).
+- Next action: disposition review + flip to complete (this is the final
+  frame state; history in `## Slice Log` and `## Final Verification`).
+- Timebox: 4h
+- Activation time: 2026-06-10T08:15:00+09:00
+- Closeout reserve: 35m
+- Done-early policy: continue_next_improvement (if a slice closes early,
+  continue to the next surfaced improvement rather than stopping).
+- Early close rationale: all four slices are committed with per-slice
+  fresh-eye critiques, the bundle proofs ran green (producer via `--base`,
+  changed-line consumer 0 blocking, broad gate 73/0), and the done-early
+  policy was honored by continuing into surfaced improvements (I3/I4 applied,
+  #342/#343 filed) — the operator-selected queue is exhausted, so the
+  remaining timebox would only idle.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -177,6 +184,7 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+- Routing: find-skills ran the session bootstrap inventory and the activation routed to achieve as goal operator; slice work ran under impl discipline; gate design, bundle verification, and closeout posture ran under quality; off-goal findings were filed through issue (#342, #343). Per-slice detail below.
 - Routing (slice 1): `find-skills --recommend-for-task` (producer --base range
   ergonomics) returned no specific tool/support/workflow route; proceeded as
   repo-local Python impl under `docs/conventions/implementation-discipline.md`,
@@ -375,6 +383,12 @@ Issues or deferred findings discovered during the run.
   refresh is owed; the existing hitl-recommended posture is unchanged.
   Decision: ack and proceed; revisit only if a real `quality` semantic change
   lands.
+- Filed during closeout via `issue`: **#342** (adapter edits pass commit-time
+  `validate-adapters` while an integration manifest schema rejects them — the
+  slice-2 escape class, with a timing-pull destination) and **#343**
+  (host-hook lifecycle robustness: dangling-checkout noise, one-logical-hook
+  multi-checkout coverage gap, reconcile fan-out registry refactor — the
+  slice-2 critique's recorded nits, generalized).
 - Bundle-boundary addendum to the same review: the broad gate's CI/local
   parity watchdog fired on `quality-core.yml` (jobs without a canonical-gate
   anchor), and the resolution used the doctrine's own extension path — a new
@@ -394,13 +408,65 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Bundle proofs (all executed this session, after the four slice commits plus
+the two boundary-fix commits):
+
+- Producer (slice-1 acceptance, live): `python3 scripts/run_slice_closeout.py
+  --repo-root . --base --produce-mutation-coverage --verification-lock
+  --ack-cautilus-skill-review` → `status: completed`, coverage exported and
+  fingerprint stamped over the auto-detected merge-base(origin/main, HEAD)
+  range with NO manual `--paths`.
+- Changed-line consumer: `check_changed_line_mutation_coverage.py --base-sha
+  <merge-base> --head-sha HEAD --reuse-coverage --skip-if-no-coverage
+  --require-fresh-coverage` → `ok: true`, 8 pool files verified, 0 blocking
+  (a real verification, not a skip).
+- Broad gate: `./scripts/run-quality.sh --read-only` → 73 passed, 0 failed.
+- Risk interrupt: `plan_risk_interrupt` → `handoff-recorded` after the spec
+  carry-forward refresh to the live issue-335 interrupt.
+- Deferred live proof (named, NOT run): the quality-core.yml remote CI
+  execution — operator lane after the next push, per Non-Goals.
+
+- Early close rationale: all four slices are committed with per-slice
+  fresh-eye critiques, the bundle proofs above ran green, and the done-early
+  policy was honored by continuing into surfaced improvements (I3/I4 applied,
+  #342/#343 filed) — the operator-selected queue is exhausted, so the
+  remaining timebox would only idle.
+Early close report: charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci-early-close-report.md
+Retro: charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md
+Host log probe: skipped: host-log-not-exposed: this runtime exposes no host token/time/compaction log surface to the session and the goal set no host metric window; efficiency was reviewed via proxy signals (gate round-trips, producer re-run count) in the retro instead.
+Disposition review: charness-artifacts/critique/2026-06-10-producer-base-nanchor-edittime-pushtag-ci-disposition-review.md
 
 ## User Verification Instructions
 
+- **Producer ergonomics (slice 1):** after any committed bundle, run
+  `python3 scripts/run_slice_closeout.py --base --produce-mutation-coverage
+  --verification-lock` with NO `--paths` — the committed range's paths are
+  collected (no `Changed paths: none` noop) and
+  `reports/mutation/test-coverage.json.fingerprint` is stamped; the default
+  (no `--base`) still collects only the working tree.
+- **#N-anchor edit-time guard (slice 2):** in a fresh Claude session on this
+  machine, edit a `#NNN` anchor into any `skills/public/**` file — the
+  PostToolUse hook surfaces `skill-issue-anchor-scan: blocked` with the
+  path:line immediately (the commit sweep still blocks as backstop). Check
+  `python3 scripts/reconcile_usage_episodes_host_hooks.py --mode status`
+  shows `skill_anchor_edit_guard` in sync. A repo/machine without the adapter
+  intent inherits nothing.
+- **Push/tag CI (slice 3):** `.github/workflows/quality-core.yml` exists,
+  YAML-parses, and passes `check_github_actions.py`; after the next operator
+  push, the `Quality Core` run on GitHub Actions is the deferred live proof
+  (core job on push/tag, changed-line mirror on PRs).
+- **Timing audit (slice 4):** read the classification table in
+  `docs/conventions/validator-timing-layers.md`; verify a pull live, e.g.
+  stage a markdown edit and run `run_slice_closeout.py --predict-commit
+  --plan-only --paths docs/handoff.md` — `check-title-slug-drift` appears in
+  the plan; the broad gate still runs all of them (the enforcement floor).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Substantive retro findings are inline in the retro's `## Waste` /
+`## Next Improvements` (three waste items, all structurally dispositioned;
+the coverage confirm-not-discover trap recurred but smaller — 4 lines vs 7
+prior).
+
+Retro dispositions: issue #342 (recurs: the #320→#251→#260→#335 two-owner validation seam family — a weaker generic gate at the boundary while the authoritative validator runs later; this instance is the adapter-vs-integration-schema split, W1); issue #343 (novel: no recurring host-hook-lifecycle class exists in recent-lessons or the issue tracker — first generalized filing of the dangling-checkout + multi-checkout + reconcile-registry hazards from the slice-2 critique, I2); applied: in-process branch tests + one ratchet-exempted subprocess proof for the guard's stdin/exit-code contract, commit 2bbd8a40, with the producer re-run confirming green (I3); applied: commit-time parity-inventory pull with --require-canonical-gate-match for workflow edits via _timing_layer_gates + dispatcher test + doctrine row (I4)
+Structural follow-up: issue #342 (recurs: the two-validation-owners class has known siblings in every integrations/*/manifest.schema.json that validates an .agents/*-adapter.yaml consumed elsewhere; the issue records the changed-scoped commit-time jsonschema pull destination through the existing dispatcher)
