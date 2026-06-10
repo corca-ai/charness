@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Closeout retro for `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md` (6h timebox, operator asleep, Claude host): five quality slices (posture refresh, #350, C2 bootstrap data-loss fix, C4 commit-time handoff pull, C3 scheduled-mutation capacity-advisory reclassification) then the pre-authorized single push + v0.40.0 release lane. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
 - Closeout retro for the activated goal `charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md` (2.5h timebox, Claude host): slice 1 consumed the operator-executed third 2026-06-10 push + v0.39.0 release lane read-only (fourth iteration of the deferred-proof pattern), and slice 2 resolved #349 with a deliberate frozen-contract `preserve` edit to the at-cap hitl skill core. (source: `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`)
-- Goal: charness-artifacts/goals/2026-06-10-push-release-verify-346-metric-scope-348-hotl.md Closeout retro for the 2026-06-10 next-queue goal (push/release-lane verification + #346 Claude-host metric scoping + #348 portable hotl skill), run as three independently closed-out slices inside a 4h timebox on a Claude host. (source: `charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`; sources: 26)
-- A small fold-then-revert cycle on `hitl` SKILL.md: the reciprocal boundary line hit the 200/200 total-line ceiling; reverted deliberately and routed as #349 instead of trimming reviewed prose under time pressure. (source: `charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md`)
-- A zsh `===` separator in a compound verify command expanded via `=cmd` lookup and aborted the second call; one rerun. (source: `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`)
-- Carrier drafting took three `validate-closeout-draft` rounds (missing `resolution_critique`, then missing the labeled Boundary/Resolution-brief/Implementation/Prevention fields) because the draft was hand-shaped from memory. The issue skill ships `describe_closeout_draft_shape.py`; one consult would have produced the full required shape in a single pass. (source: `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`)
+- First disposition of the red mutation run was "flake" from same-SHA greens; reading the workflow's base/seed mechanism flipped it to real-by-design within slice 1. Pattern-matching red->green->flake without reading the selection mechanism is the trap. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
+- Slice-log timestamps were written as estimates and drifted ~2.5h fast; corrected in a dedicated bundle-boundary commit. `date` at each boundary costs nothing. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
+- validate-quality-artifact's 140-line cap took ~6 trim edit rounds because trimming and field-engagement requirements interact; the scaffold prints the skeleton but not a per-section line budget. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`; sources: 26)
-- at-cap adjacent-skill propagation recurrence guards (create-skill checklist line + near-cap preflight warning) — filed as issue #350. (source: `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`)
-- before hand-drafting any structured closeout body or carrier, run the owning skill's `describe_*_shape` helper and fill its printed field list (this retro is the source; lands in recent-lessons via the refresh below). (source: `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`)
-- capability (filed): per-goal metric scoping for `probe_host_logs.py` on Claude hosts — select the current/named session file instead of the project-dir aggregate, and extend the metric-window recorder beyond `--codex-session-file`. Structural pattern: goal-closeout metrics on Claude hosts cannot be scoped to the goal, so every closeout either hand-writes caveats or risks misattributing thread-wide numbers. Triggering instances: this goal's probe artifact and the prior goal's (`2026-06-10-342-343-goal-host-log-probe.md`), both carrying the same caveat. Destination: issue (recurs). (source: `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`)
+- adapter_lib renderer hygiene — filed as issue #353. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
+- refresh `charness-artifacts/retro/recent-lessons.md` sourcing this retro (repo-loader-as-oracle; date-at-boundary; read-the-mechanism before CI-flap disposition). (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
+- when a quality artifact must satisfy both a line cap and field-engagement minima, draft sections against the cap from the start instead of trimming post-hoc. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
 
 ## Selection Policy
 
@@ -48,11 +48,10 @@
 - `charness-artifacts/retro/2026-06-09-v0-33-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-09-v0-34-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-09-v0-35-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-10-next-queue-goal-retro.md`
 - `charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md`
-- `charness-artifacts/retro/2026-06-10-postpush-goal-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-36-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-38-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`

@@ -13,53 +13,51 @@
 
 ## Current State
 
-- **[Post-push verification + #349 goal](../charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md) COMPLETE, awaiting push.**
-  Slice 1: third 2026-06-10 push + v0.39.0 release lane verified read-only
-  (quality-core 27275145498 green on pushed HEAD 768ded84; #346/#348
-  `verify-closeout` verified CLOSED via carriers 84dc1db3/a65a232c;
-  installed plugin 0.39.0 == tag and installed SHA == pushed HEAD via live
-  probe). Slice 2 (#349): hitl's reviewed core now names the reciprocal
-  `hotl` boundary (intro line; Bootstrap defaults compressed 7->2 under
-  the 200-line ceiling — 196/200, preserve claim, mirrors byte-synced;
-  carrier 763653c7 `Closes #349` staged, `draft_verified`). Bundle: broad
-  73/0, changed-line consumer "no eligible files", two slice-level
-  fresh-eye reviews + recurrence resolution critique + disposition review
-  ACCEPT-WITH-CORRECTIONS (all corrections were closeout bookkeeping).
-- Open issues (`gh`): **#184** (product metrics — operator `ideation`
-  needed, SIXTH exclusion); **#350** (NEW, from #349's resolution
-  critique: create-skill propagation step silent on the at-cap
-  adjacent-skill outcome; five skills sit at exactly 200/200 — proposes a
-  checklist line + near-cap `>=195/200` preflight warning).
+- **[Overnight quality goal](../charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md) COMPLETE; v0.40.0 SHIPPED.**
+  Five quality slices + the pre-authorized push/release lane all verified:
+  posture refreshed (quality/latest.md @ 2026-06-11); **#350 CLOSED**
+  (at-cap checklist line + near-cap >=195/200 preflight warning, carrier
+  31dbe3ad) and **#349 CLOSED** (carrier 763653c7) — both `verify-closeout`
+  verified; bootstrap adapter unknown-field round-trip FIXED (aa8670c8 —
+  it had silently dropped two live config blocks); `validate-handoff-artifact`
+  now runs at COMMIT time when this file is staged (8288d54a); scheduled
+  mutation lane reclassified — capacity drops of covered changed files are
+  advisory, only uncovered changed lines block (da6b9a8e; the 47-auto-issue
+  noise engine). Push 768ded84..a7185616; quality-core 27312178167 green;
+  release v0.40.0 published + public-verified, install refresh auto-ran,
+  live probe matched (installed SHA == a7d50604 == origin/main).
+- Open issues (`gh`): **#184** (product metrics — operator ideation needed,
+  SEVENTH exclusion; see Discuss); **#353** (NEW, off-goal: adapter_lib
+  renderer hygiene — newline escaping, lossy rewrite normalization,
+  falsy-explicit drops; latent, not user-visible).
 
 ## Next Session
 
-- **Push the staged closeouts** (maintainer; `achieve` does not push):
-  `origin/main..HEAD` carries 763653c7 (`Closes #349`, `draft_verified`)
-  plus the goal closeout commit; verify #349 flips CLOSED after the push
-  (`issue_tool.py verify-closeout`).
+- **Push the goal-closeout commit** (local-only by design; the single
+  authorized push was spent on the lane). It carries the completed goal
+  artifact, retro + recent-lessons refresh, disposition review, early-close
+  report, and this handoff.
 - **Deferred proof to consume:** the first scheduled `mutation-tests.yml`
-  run whose headSha is 768ded84 or later (none had fired by goal
-  closeout; latest green 27270609532 covers pre-push fd3c2c6c) — plus the
-  post-push quality-core run on the new HEAD.
-- **#350** — small bounded slice: create-skill at-cap checklist line +
-  optional near-cap preflight warning (recurrence guards for the #349
-  class).
-- **ceal-side consumption of `hotl`** — named in #348 as the consuming
-  repo's follow-up; not charness work, but worth surfacing to the
-  operator.
-- **#184** (product metrics) — product-level; needs `ideation`/`spec`,
-  not a slice (sixth consecutive deliberate exclusion; should be its own
-  goal).
+  run with headSha >= a7185616 — it is ALSO the live proof of the
+  scheduled-lane reclassification (expect: green on capacity drops; still
+  red on score break / uncovered changed lines / partial runs).
+- **#353** — bounded candidate when ranked: adapter_lib renderer hygiene.
+- **#184** — operator decision first (Discuss), not a slice.
 
 ## Discuss
 
 - **#184 product success metrics** — seventh consecutive deliberate
   exclusion; needs a dedicated operator `ideation` session shaped into its
   own goal. Decide: schedule it or explicitly close as not-now.
+- **Announce the scheduled-mutation-lane change?** Optional operator call
+  (release-critique nit): consumer operators tracking scheduled-run red
+  rates will see them drop after v0.40.0; a short `announcement` would
+  explain capacity-advisory vs still-blocking coverage.
 
 ## References
 
 - [premerge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)
-  (canonical), [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md)
+  (canonical; deferred follow-up now RESOLVED), [preflight coverage spec](../charness-artifacts/spec/artifact-shape-preflight-coverage.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md),
-  [quality latest](../charness-artifacts/quality/latest.md)
+  [quality latest](../charness-artifacts/quality/latest.md),
+  [v0.40.0 release record](../charness-artifacts/release/latest.md)

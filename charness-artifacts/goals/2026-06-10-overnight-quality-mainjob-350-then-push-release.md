@@ -1,6 +1,6 @@
 # Achieve Goal: Overnight quality-improvement main job (+#350) then operator-authorized push + release
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md`
 
@@ -9,9 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: final — push + post-push CI + verify-closeout + release.
-- Next action: bundle gates (broad + locked producer/consumer over
-  origin/main..HEAD — mutation-pool files changed), then push.
+- Current slice: closeout — all slices and the lane are DONE and verified.
+- Next action: none; goal complete (see Slice Log + Final Verification).
+- No safe next slice: the slice-1 posture ranking is exhausted — C2/C3/C4
+  and #350 are all implemented and shipped; every remaining posture item is
+  explicitly watch-class ("not slices, because none is yet actionable") and
+  the Non-Goals fence forbids unranked refactors (the goal's own
+  scope-control decision). The single authorized push + release lane is
+  SPENT, so any further slice would accumulate unpushed local state — the
+  exact bc70d76a exposure class this goal just closed — without a lane to
+  ship it. Continuing would be unranked-drift, not improvement.
 - Timebox: 6h
 - Activation time: 2026-06-11T06:31:18+09:00
 - Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
@@ -194,7 +201,7 @@ What the user can do to verify completion directly (after waking).
 | 1 | Quality posture refresh on current main -> prioritized bounded candidate list | latest.md is 15 releases stale; the operator made quality the main job — ranking before implementing prevents unranked-refactor drift over 6h | refreshed quality/latest.md, gates summary, ranked candidates scoping slices 3..N | done |
 | 2 | #350: create-skill at-cap checklist line + near-cap preflight warning + tests, carrier staged | already-shaped, bounded, directly a quality-gate improvement; closes the recurrence loop #349 opened | gates green, tests for the warning, draft_verified carrier `Closes #350` | done |
 | 3..N | Top-ranked slice-1 candidates, one bounded slice each with per-slice closeout, until reserve | continue_next_improvement inside the operator's quality mandate | per-slice: gates green, critique verdict, commit | planned |
-| final | Push -> post-push quality-core green -> verify-closeout #349(/#350) -> release cut -> live probe | operator-pre-authorized terminal lane ("그다음 푸시 릴리즈"); closes the staged-carrier loop | run ids + verdicts, CLOSED payloads, new tag, live-probe match | planned |
+| final | Push -> post-push quality-core green -> verify-closeout #349(/#350) -> release cut -> live probe | operator-pre-authorized terminal lane ("그다음 푸시 릴리즈"); closes the staged-carrier loop | run ids + verdicts, CLOSED payloads, new tag, live-probe match | done |
 
 ## Coordination Cues
 
@@ -208,9 +215,22 @@ skill answers a boundary. Fill during the run:
   phase or boundary, and record the route it returns. At completion,
   recorded implementation / debug / quality / issue work needs this
   `Routing:` evidence or a `Routing: n/a — <reason>` opt-out.
-- Routing: slice 1 — find-skills `--recommend-for-task` (read-only, posture
-  refresh task text) returned no overriding support/tool route; goal-mandated
-  `quality` skill confirmed as the slice-1..N main-job route.
+- Routing: find-skills session bootstrap routed the pickup to `achieve` (goal lifecycle); its `--recommend-for-task` probe (read-only) confirmed the goal-mandated `quality` skill for slices 1..5, whose implementation work ran as `impl`-shaped slices under quality routing; the terminal lane routed through `release` (publish helper) and `issue` (verify-closeout + the #353 off-goal filing). One line names them all: find-skills -> achieve / quality / impl / release / issue.
+- Gather: n/a — no external URL/Slack/Notion/Docs source named in
+  `## Context Sources`; all six sources are repo-local artifacts or GitHub
+  issues consumed read-only via `gh`.
+- Release: v0.40.0 published and public-verified
+  (https://github.com/corca-ai/charness/releases/tag/v0.40.0); proof =
+  publish-helper record (792ffaaf release commit, a7d50604 verification
+  record, fresh-checkout probes passed, install_refresh `refreshed`) + the
+  live probe in the FINAL LANE slice-log entry (installed SHA ==
+  origin/main == a7d50604; installed plugin 0.40.0 == tag); release
+  critique charness-artifacts/critique/2026-06-11-release-v0.40.0-critique.md.
+- Issue closeout: #349 (carrier 763653c7) and #350 (carrier 31dbe3ad,
+  `validate-closeout-draft` = draft_verified pre-commit) both verified
+  CLOSED post-push via `issue_tool.py verify-closeout` (status `verified`,
+  full-arg form). #184 stays open by design (seventh exclusion); #353 filed
+  as a new off-goal issue, not closed here.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing
   at the gathered asset, or write `Gather: n/a — <reason>` when no external
@@ -345,6 +365,30 @@ skill answers a boundary. Fill during the run:
   `plan_cautilus_proof` next_action=none -> no eval; deterministic gates
   own closeout. Rerunning the locked producer with
   --ack-cautilus-skill-review on this recorded decision.
+- **FINAL LANE DONE (2026-06-11 ~07:55-08:20+09:00).** Bundle gates: broad
+  73/0 (x3 incl. pre-push hook), locked producer fresh
+  (`--verification-lock --produce-mutation-coverage` over `--base`,
+  fingerprint 07:54), changed-line consumer **ok** over the explicit
+  768ded84..da6b9a8e range (6 eligible pool files, blocking empty). Push
+  768ded84..a7185616. Post-push `quality-core` **27312178167 SUCCESS** on
+  a7185616 (later release commits also green: 27312614684 on 792ffaaf,
+  27312624914 on a7d50604). verify-closeout: **#349 CLOSED** (carrier
+  763653c7) and **#350 CLOSED** (carrier 31dbe3ad), both `verified`.
+  Release: fresh-eye release critique **SHIP**
+  (charness-artifacts/critique/2026-06-11-release-v0.40.0-critique.md);
+  update_instructions prepped via `--prep-update-instructions` (the 0.30.0
+  affordance — staleness HOLD pre-empted, though one pyyaml-wrong-oracle
+  detour cost two rounds; repo loader validated it fine); publish helper
+  cut **v0.40.0** (minor; rationale in the critique), public release
+  **verified** at https://github.com/corca-ai/charness/releases/tag/v0.40.0,
+  fresh-checkout probes passed, install refresh auto-ran (0.39.0->0.40.0).
+  LIVE PROBE: installed checkout SHA == repo HEAD == origin/main ==
+  a7d50604; installed plugin version 0.40.0 == tag. Deferred-proof addendum:
+  the stuck run 27308933212 completed **success** (4th green-or-disposed run
+  on 768ded84). Off-goal #353 filed (adapter_lib renderer hygiene, from
+  slice-3 reviewer nits). NEXT GOAL's named deferred proof: the first
+  scheduled `mutation-tests.yml` run with headSha >= a7185616 — it is also
+  the live proof of slice 5's reclassification.
 
 ## Context Sources
 
@@ -442,22 +486,91 @@ Issues or deferred findings discovered during the run.
   rewrite (no-op path is safe — that is the live-repo case); (c) known
   falsy explicit fields (`spec_pytest_reference_format: ""`,
   `preset_version: null`) drop on rewrite while statuses say preserved.
-  Disposition at goal closeout (file one renderer-hygiene issue or defer).
+  DISPOSITIONED at closeout: filed as corca-ai/charness#353 (one bundled
+  renderer-hygiene issue; novel class, not yet user-visible).
+- Release-critique advisory nit: an optional post-release `announcement`
+  explaining the scheduled-lane semantics change to consumer operators —
+  deferred to operator judgment on wake (narrative-announcement boundary;
+  no announcement was authorized in the shaping directive).
 
 ## Final Verification
+
+Host metric window: started_at=2026-06-11T06:31:18+09:00 completed_at=2026-06-11T08:45:00+09:00 claude_session_file=/home/hwidong/.claude/projects/-home-hwidong-codes-charness/ce736bfb-565a-4a61-a057-89fa26e799dc.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-then-push-release-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-11-overnight-quality-mainjob-350-then-push-release-disposition-review.md
+Early close report: charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-then-push-release-early-close-report.md
+
+No safe next slice: the slice-1 posture ranking is exhausted (C2/C3/C4 and
+#350 implemented and shipped); every remaining posture item is watch-class
+by the posture's own ranking, the Non-Goals fence forbids unranked
+refactors, and the single authorized push + release lane is SPENT — a
+further slice would accumulate unpushed local state (the bc70d76a exposure
+class this goal just closed) with no lane to ship it.
+
+Non-claims (honest residuals):
+- Slice 5's reclassification has NO scheduled-lane live proof yet; the
+  first scheduled `mutation-tests.yml` run with headSha >= a7185616 is the
+  NEXT goal's named deferred proof (it should stay green on capacity drops
+  and still fail on uncovered changed lines / score breaks).
+- The 6h timebox was barely used (~2h); continue_next_improvement was NOT
+  exhausted — C-list candidates beyond C2/C3/C4 (test-economics growth,
+  coverage budget brush, warn-band files) remain watch items, deliberately
+  not slices per the posture ranking.
+- The goal-closeout commit itself stays LOCAL (the single authorized push
+  already happened); it rides the next operator push, now guarded by the
+  slice-4 commit-time handoff validator for the bc70d76a class.
 
 ## User Verification Instructions
 
+After waking, each line is one command or one look:
+
+1. `git log --oneline origin/main -10` — the five quality slices + release
+   commits are on origin/main (HEAD a7d50604).
+2. `gh issue view 349` and `gh issue view 350` — both CLOSED.
+3. `gh run view 27312178167` — post-push quality-core green on a7185616.
+4. `gh release view v0.40.0` — the published release.
+5. `git -C ~/.agents/src/charness rev-parse HEAD` — equals a7d50604;
+   `charness --version`-equivalent: installed plugin.json shows 0.40.0.
+6. `cat charness-artifacts/quality/latest.md` — posture dated 2026-06-11.
+7. Decide the handoff Discuss item (#184) and whether to announce the
+   scheduled-mutation-lane change (optional, deferred to you).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: consulted `describe_closeout_draft_shape.py`
+and `describe_goal_closeout_shape.py` before drafting this goal's carrier
+and closeout — zero draft_failed rounds this run (prior run paid three);
+the shape-describer-first workflow improvement is now exercised practice.
+Disposition: issue #353 (novel: latent adapter_lib renderer round-trip
+class — newline escaping, lossy normalization, falsy-explicit drops share
+one seam, none yet reachable through normal flows) — the capability
+improvement from the slice-3 reviewer nits.
+Disposition: applied: refreshed `charness-artifacts/retro/recent-lessons.md`
+via `refresh_recent_lessons.py` sourcing this goal's retro (section counts
+2/4/4, lesson index rebuilt) — the memory improvements
+(repo-loader-as-oracle; date-at-boundary; read-the-mechanism before
+CI-flap disposition).
+Disposition: none — the draft-against-the-cap workflow item stays
+unstructured because the quality-artifact 140-line cap plus
+field-engagement minima interact only on full posture rewrites (a few per
+month) and the validator already fails loudly and cheaply; a template
+change buys less than it costs.
+Disposition: accepted-risk: verify-closeout sketched-args waste (THIRD
+recurrence) — the argparse error is loud and self-documenting (full usage
+printed), recovery costs ~30s per recurrence, and the failure cannot
+silently corrupt anything, so any wrapper guard costs more than the trap
+(reviewer-required explicit form).
+Structural follow-up: none — for the retro's Sibling Search trigger (the
+wrong-validation-oracle axis): the repo loader is already the enforced
+parse path (HEAD's adapter is pyyaml-invalid yet shipped and parsed by
+every release helper), so the detour was an agent-side verifier choice a
+gate cannot intercept, not a gate gap; lesson lives in recent-lessons. The
+separate renderer-hygiene finding routes via the capability line's issue
+#353, not as this axis's structural destination (reviewer-corrected form).
