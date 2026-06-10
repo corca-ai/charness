@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-06-09
+Date: 2026-06-10
 
 ## Scope
 
-Advanced `charness` toward release `0.35.0` (tag `v0.35.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.36.0` (tag `v0.36.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.34.0`
-- target version: `0.35.0`
+- previous version: `0.35.0`
+- target version: `0.36.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.35.0` (tag `v0.35.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.35.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.36.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.34.0`
+- Previous release ref: `refs/tags/v0.35.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,34 +50,34 @@ Advanced `charness` toward release `0.35.0` (tag `v0.35.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-09-v0-35-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-10-v0-36-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 28.
+- Evaluated changed paths: 49.
   - `.agents/release-adapter.yaml`
+  - `.agents/surfaces.json`
+  - `.agents/usage-episodes-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-09-closeout-preflight-and-scaffold-validator-citation-disposition-review.md`
-  - `charness-artifacts/critique/2026-06-10-v0.35.0-release-critique.md`
-  - `charness-artifacts/goals/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
+  - `.github/workflows/quality-core.yml`
+  - `charness-artifacts/critique/2026-06-10-producer-base-nanchor-edittime-pushtag-ci-disposition-review.md`
+  - `charness-artifacts/critique/2026-06-10-v0-36-0-release-critique.md`
+  - `charness-artifacts/goals/2026-06-10-342-343-adapter-schema-hook-lifecycle-deferred-proofs.md`
+  - `charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci-early-close-report.md`
   - `charness-artifacts/goals/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation-host-log.md`
-  - `charness-artifacts/retro/2026-06-09-closeout-preflight-and-scaffold-validator-citation.md`
+  - `charness-artifacts/retro/2026-06-10-producer-base-nanchor-edittime-pushtag-ci.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
+  - `charness-artifacts/spec/mutation-changed-line-premerge-gate.md`
   - `docs/conventions/authoring-preflight.md`
+  - `docs/conventions/validator-timing-layers.md`
   - `docs/handoff.md`
+  - `integrations/usage-episodes/manifest.schema.json`
   - `packaging/charness.json`
-  - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/scripts/check_artifact_surface_preflight.py`
-  - `plugins/charness/skills/achieve/scripts/describe_goal_closeout_shape.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_template.md`
-  - `plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py`
-  - ... 8 more
+  - ... 29 more
 
 ## Real-Host Verification
 
@@ -98,11 +97,7 @@ Advanced `charness` toward release `0.35.0` (tag `v0.35.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-10-v0.35.0-release-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.35.0`.
+- Review proof: `charness-artifacts/critique/2026-06-10-v0-36-0-release-critique.md`.
 
 ## Fresh Checkout Probes
 
@@ -113,10 +108,11 @@ Advanced `charness` toward release `0.35.0` (tag `v0.35.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.36.0 (minor release). Four additive capabilities from the 2026-06-10 next-queue goal, plus an inert next-queue draft. (1) CLOSEOUT `--base` COMMITTED-RANGE OPTION - `scripts/run_slice_closeout.py --base [<ref>]` collects the committed merge-base(<ref>, HEAD)..HEAD range PLUS the working tree, so a post-commit closeout (including `--produce-mutation-coverage`) covers the bundle without a manual `--paths` list; bare `--base` auto-detects origin/main (the changed-line gate's range anchor, so producer == gate by construction). The working-tree default and `--paths` are unchanged; `--base` is rejected with `--paths` and `--predict-commit`. (2) #N-ANCHOR EDIT-TIME GUARD AUTO-FIRING - a new `skill_anchor_edit_guard` intent in `.agents/usage-episodes-adapter.yaml` makes `charness update` install a Claude PostToolUse(Edit|Write|MultiEdit) hook running the repo-owned anchor scan on the skill-package file just edited (fail-open, scoped to the charness checkout's `skills/public|support`, state-tracked + basename-deduped like the SessionStart hooks; codex is honestly unsupported and the commit-time `validate_skill_ergonomics` sweep stays the backstop). MAINTAINER NOTE - after this update your Claude settings gain that hook; remove by setting the intent to `disabled` and re-running `charness update`. (3) FIRST PUSH/TAG CI - `.github/workflows/quality-core.yml` (repo-local) adds a light core job on push-to-main/v*-tags/PRs running the repo-owned deterministic validators, plus a PR-only changed-line mutation mirror using the gate's own plain coverage probe; it declares `# charness:gate-policy local-gate-subset-mirror` - a NEW additive parity-policy keyword in the public `quality` skill (`ci_local_gate_parity_lib.py` + a maintainer-local-enforcement.md section) for workflows whose every quality step verbatim re-runs a canonical-local-gate validator; consumer workflows without the marker see zero behavior change. (4) VALIDATOR TIMING-LAYER DOCTRINE + COMMIT-TIME PULLS - new `docs/conventions/validator-timing-layers.md` (one portable validator, invoked at as many cheap timings as fit; full classification table) and six cheap changed-scoped guards now ALSO run at the pre-commit boundary via the existing dispatcher (python filenames, skill contracts, skill bootstrap vars, surfaces manifest, title-slug drift, CI parity inventory; ~0.5s combined, existence-guarded so repos without a validator inherit nothing; the broad gate stays the enforcement floor). OPERATOR NOTE - additive; the only installed-host mutation is the opt-in (2) hook on charness-maintainer machines, and installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (#342 adapter-vs-integration-schema commit-time pull, #343 host-hook lifecycle robustness, deferred-proof verification); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.35.0 (minor release). Author-time closeout preflight extended to the last two surfaces of the authoring-preflight class, plus an inert next-queue draft. (1) CLOSEOUT-DRAFT + GOAL-CLOSEOUT PREFLIGHT - `scripts/check_artifact_surface_preflight.py` adds a new `--type closeout-draft` surface (the GitHub-issue closeout body shape - carrier-body source = `--commit-message-file` for direct-commit, close keyword, `resolution_critique` + the cited critique's `validate_critique_artifacts` requirement, per-classification ledger fields, manual-fallback enum, source-preservation, proof-ledger) and ENRICHES `--type goal-closeout` (the template block + the enforced FORMS - the `ALLOWED_SKIP_REASONS` enum, the goal-slug binding, the `Retro dispositions:` form = `disposition_form.VALID_FORM_SUMMARY`, the `Structural follow-up:` destination = `DESTINATION_FORM_SUMMARY`, the `Routing:` form), each rendered LIVE from the owning validators' constants via two new describe-shape siblings (`describe_closeout_draft_shape.py`, `describe_goal_closeout_shape.py`). The underlying validators (`issue_tool.py validate-closeout-draft`, `check_goal_artifact.py`) are untouched - verdict-preserving (no validator verdict changes), drift-tested against the live constants, additive author-time-only (no new blocking gate). (2) DISPOSITION-FORM DRIFT-PIN GUARD - the goal template's `Structural follow-up:` seed line had drifted from `disposition_form.DESTINATION_FORM_SUMMARY`; it is re-quoted verbatim and pinned by a new drift test so the author-facing seed cannot drift from the enforced form again. (3) Verified (no code change) - the six artifact-authoring scaffolds already cite the repo-local validator (shipped v0.29.0); the stale handoff Discuss item was resolved. OPERATOR NOTE - additive; the closeout preflight is author-time surfacing of the EXISTING validator shape (no verdict change) and installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (coverage-producer range ergonomics + #N-anchor edit-time guard + light push/tag CI); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.34.0 (minor release). Two additive capabilities from the next-queue goal, plus an inert next-queue draft. (1) #N-ANCHOR EDIT-TIME GUARD - new `scripts/skill_issue_anchor_scan.py` + `check_skill_surface_preflight.py --scan-issue-anchors` flag a disallowed `#NNN`/issue anchor in ONE just-edited skill-package file (including helper `.py`) BEFORE the commit-time `validate_skill_ergonomics` sweep round-trips; it reuses the canonical rule (`ISSUE_ANCHOR_RE` + `is_allowed_issue_anchor_context`) so the per-file verdict is byte-identical to the commit sweep, which stays the backstop. Additive author-time surface - no new blocking gate. (2) #338 GATHER X/TWITTER EXACT-SOURCE - the `twitter-syndication` `domain-specific-route` stage (previously a not-implemented skip) now fetches the EXACT post through identity-keyed endpoints (Syndication CDN by status id, then oEmbed), accepts a result as the original ONLY when the returned status id matches (`identity_proof.matched`; a mismatch is `invalid-proof`, never substituted), and exposes `source_identity` (exact-fetched/exact-blocked/exact-unavailable) so the answer path never passes off a merely-similar public source as the original. Live X fetch is operator-gated (`--live-domain-route`); behavior-preserving for non-X gather sources. Closes #338. (3) The `charness update` standing release-closeout step was verified already-shipped (v0.29.0->v0.30.1) and the stale handoff to-do corrected - no behavior change. OPERATOR NOTE - additive; the #N-anchor scan is author-time/opt-in and the gather change adds `source_identity` only on the twitter route (behavior-preserving for other sources), so installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (author-time closeout-draft/goal-closeout preflight + scaffold repo-validator citation verify); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
 - Run `charness update` to pull 0.33.0 (minor release). Two fixes from the deferred-queue goal, plus an inert next-queue draft. (1) FIND-SKILLS SUPPORT ROUTING (#340) - `find-skills --recommend-for-task` now surfaces a tool's SHIPPED charness-support skill (specdown, cautilus, agent-browser) via `support_skill_recommendations`, not only as a binary `tool_recommendation`, EVEN when that support skill is not materialized locally (a consumer repo before `charness update`/support sync); the recommendation carries the integration `summary` and points the agent at the shipped authoring guidance instead of reverse-engineering the binary. Additive - the inventory arrays and every other recommendation are behavior-preserved. (2) MUTATION-GATE PER-FILE-BUDGET RECLASSIFICATION (#341, maintainer-facing) - a changed mutation-pool file dropped SOLELY because its own covered-mutable-line count exceeds the per-file mutation budget is reclassified from the blocking `selection_excluded_changed_files` signal to a NON-blocking advisory `changed_files_excluded_by_per_file_budget` bucket; the changed-line coverage arm still blocks any uncovered changed line and the per-file budget is unchanged. This unblocks the scheduled mutation gate when a module split produces an oversized-but-well-covered changed file (#341 auto-closes on the next green scheduled run). OPERATOR NOTE - minor; #340 is additive new behavior on the find-skills recommendation surface (no migration), #341 is internal to the maintainer mutation gate, and installed-plugin consumers inherit no new blocking behavior. This release also ships an inert DRAFT goal artifact for the next queue (#N-anchor edit-time guard, #338 gather X/Twitter exact-source, charness-update release-closeout); it is artifact-only (`Status: draft`) and changes no behavior until a maintainer activates it with `/goal`.
