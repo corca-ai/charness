@@ -1,6 +1,6 @@
 # Achieve Goal: Next queue — post-push/release verification (#346/#348 CLOSED) + #349 hitl/hotl reciprocal boundary
 
-Status: active
+Status: complete
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md`
 
@@ -9,10 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — post-push/release lane verification (read-only).
-- Next action: `gh run list` for the post-push quality-core run; verify-closeout
-  for #346/#348; release live installed-surface probe; mutation-run check.
-- Timebox: 2.5h
+- Current slice: closeout — both slices done (slice 1 verified the lane all
+  green; slice 2 committed 763653c7 with the validated `Closes #349` carrier).
+- Next action: none — final verification, retro, and disposition review are
+  recorded below; the staged carrier lands on the next operator push.
+- Early close: see `No safe next slice:` evidence and the early-close report
+  bound under `## Final Verification`.
+- Timebox: 2h30m
 - Activation time: 2026-06-10T21:26:55+09:00
 - Closeout reserve: 30m
 - Done-early policy: continue_next_improvement (if a slice closes early,
@@ -196,6 +199,21 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+- Routing: find-skills session-start probe routed the active-goal frame to `achieve`; slice 2's hitl edit ran as `impl` work per that route.
+- Routing: find-skills inventory named the repo `quality` gate surfaces (surface preflight, package gates, broad `run-quality.sh`) consumed at the slice and bundle boundaries.
+- Routing: find-skills routed tracked-issue closeout through the `issue` skill tooling (validate-closeout-draft, verify-closeout, the #350 filing).
+- Gather: n/a — no external URL/Slack/Notion/Docs source became working
+  context; all context sources are repo-local artifacts plus GitHub issues
+  read through the adapter-resolved `gh` backend.
+- Release: n/a — no release surface touched; slice 1 only verified the
+  operator's pre-activation v0.39.0 release read-only (live-probe evidence
+  in the Slice 1 log).
+- Issue closeout: #349 close-INTENDED via direct-commit carrier 763653c7
+  (`validate-closeout-draft`: draft_verified, ready_to_commit_push; lands on
+  the next operator push). #346/#348 verified CLOSED read-only via
+  `verify-closeout` (slice 1). #350 filed as an off-goal finding, context
+  only for this goal's closeout.
+
 ## Slice Log
 
 ### Slice 1: Slice 1 — third 2026-06-10 push/release lane verification (read-only)
@@ -322,20 +340,91 @@ activation per the verification cadence.
 
 Issues or deferred findings discovered during the run.
 
+- corca-ai/charness#350 — create-skill propagation step is silent on the
+  at-cap adjacent-skill outcome (five public skills sit at exactly 200/200).
+  Reason: resolution-critique recurrence findings F2+F5 for #349; editing
+  `create-skill` or the preflight in-slice would have broken the
+  frozen-contract slice scope, so both guards routed to one issue.
+
 ## Final Verification
+
+Host metric window: started_at=2026-06-10T21:26:55+09:00 completed_at=2026-06-10T21:42:43+09:00 claude_session_file=/home/hwidong/.claude/projects/-home-hwidong-codes-charness/86541e27-cd60-46cb-80f1-bfefacca08ba.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Self-verification (deterministic, this session): slice 1 — quality-core push
+run 27275145498 SUCCESS on pushed HEAD 768ded84; verify-closeout #346/#348
+both `verified`/CLOSED (carriers 84dc1db3 / a65a232c); live probe installed
+plugin 0.39.0 == tag v0.39.0, installed checkout SHA == pushed HEAD. Slice 2 —
+commit 763653c7; preflight 196/200 (4 headroom), 155/160 core; mirrors
+byte-synced; all package gates green; broad gate `run-quality.sh --read-only`
+73 passed / 0 failed; changed-line consumer: "no eligible mutation-pool files
+changed" (locked producer skipped on that verdict); carrier draft_verified.
+
+Named deferred proof (pre-resolved fallback): the next scheduled
+`mutation-tests.yml` run over the pushed state had not fired by closeout
+(latest green: run 27270609532 over pre-push fd3c2c6c, schedule cron
+~3-hourly; the next slot was ~13:40Z). The next goal verifies the first
+scheduled run whose headSha is 768ded84 or later — alongside #349 CLOSED
+verification after the next operator push.
+
+Non-claims: no behavior improvement claimed for hitl (preserve only — no
+router/live test proves capture-prompts now route to hotl; the line is a
+contract statement). #349 is NOT closed yet; its carrier lands on the next
+operator push. No cautilus eval ran (planner: required=false). hotl keeps a
+guardrail bullet for the boundary that hitl does not carry, and hitl's
+frontmatter description is unchanged — recorded asymmetries, not defects.
+
+No safe next slice: both slices closed with their full per-slice closeout
+~2h before the timebox deadline; the continuation candidates are all out of
+bounds — #350 (this goal's own off-goal filing; touching create-skill or the
+preflight would break the frozen-contract slice scope and Non-Goals), #184
+(sixth deliberate exclusion, operator ideation), ceal-side hotl consumption
+(the consuming repo's work), and the mutation arm (named deferred proof whose
+pre-resolved fallback rejects idle-waiting on the cron slot).
+Early close rationale: continue_next_improvement honored by filing and
+scoping issue 350 for the NEXT goal rather than expanding a frozen-contract
+slice under spare-time pressure — the same closeout-pressure trap issue 349
+was filed to avoid.
+Early close report: charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary-early-close-report.md
+
+Retro: charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-10-postpush-349-goal-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-10-postpush-349-goal-disposition-review.md
 
 ## User Verification Instructions
 
+- `gh issue view 346` / `gh issue view 348` — both CLOSED, closed by commits
+  84dc1db3 / a65a232c.
+- `gh run view 27275145498` — green quality-core on pushed HEAD 768ded84.
+- `git -C ~/.agents/src/charness rev-parse HEAD` == `git rev-parse origin/main`
+  and the installed `plugins/charness/.claude-plugin/plugin.json` version is
+  0.39.0 == newest tag.
+- `git show 763653c7 --stat` — the `Closes #349` carrier touching hitl
+  SKILL.md + mirror + critique artifact + this goal artifact;
+  `python3 scripts/check_skill_surface_preflight.py --path skills/public/hitl/SKILL.md`
+  reports 196/200, and `skills/public/hitl/SKILL.md:10` names the `hotl`
+  boundary.
+- After the next operator push: `gh issue view 349` shows CLOSED and the
+  first scheduled mutation run at or after 768ded84 is green.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #350 (novel: first recurrence-prevention pass for
+the at-cap adjacent-skill propagation class; in-slice edits would have broken
+the frozen-contract scope) — the capability improvement (create-skill at-cap
+checklist line + near-cap preflight warning) from resolution-critique F2+F5.
+Disposition: applied: `charness-artifacts/retro/recent-lessons.md` (+
+selection index) regenerated via `refresh_recent_lessons.py` sourcing this
+goal's retro — the workflow/memory improvement (consult the owning skill's
+`describe_*_shape` helper before hand-drafting structured bodies); lands in
+the closeout commit.
+Structural follow-up: none — the carrier-draft shape waste already fails
+loudly and cheaply at `validate-closeout-draft` time (three draft rounds cost
+minutes, not silent corruption); the transferable lesson (consult the owning
+skill's `describe_*_shape` helper before hand-drafting) is carried by the
+committed recent-lessons refresh, and no gate, validator, or contract change
+is warranted on two low-cost instances.
