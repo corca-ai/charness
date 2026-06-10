@@ -174,6 +174,7 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     mutation_testing = _load_explicit_mutation_testing(raw, adapter_path)
     data = dict(defaults)
     data["_explicit_fields"] = set(raw.keys())
+    data["_raw_adapter"] = raw
     _apply_existing_scalar_fields(data, raw)
     _apply_existing_policy_fields(data, raw, validated_skill_rules)
     if mutation_testing is not None:
@@ -356,6 +357,18 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["review_commands"] = []
         field_statuses["review_commands"] = "deferred"
 
+    # Unknown top-level fields (repo-extended config such as a consumer-owned
+    # gate block) must round-trip verbatim: every known field is in `final` by
+    # now, so anything else in the raw adapter would otherwise be silently
+    # dropped on rewrite — observed data loss, not a hypothetical.
+    raw_adapter = existing.get("_raw_adapter")
+    if isinstance(raw_adapter, dict):
+        unknown_fields = {key: value for key, value in raw_adapter.items() if key not in final}
+        if unknown_fields:
+            final["_unknown_fields"] = unknown_fields
+            for key in unknown_fields:
+                field_statuses[key] = "preserved"
+
     return final, field_statuses, deferred_setup
 
 
@@ -426,6 +439,8 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
     if data.get("spec_pytest_reference_format"):
         policy_items.insert(4, ("spec_pytest_reference_format", data["spec_pytest_reference_format"]))
     items.extend(policy_items)
+    for key, value in (data.get("_unknown_fields") or {}).items():
+        items.append((key, value))
     return render_yaml_mapping(items)
 
 

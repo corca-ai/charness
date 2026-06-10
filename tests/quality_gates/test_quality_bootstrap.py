@@ -297,6 +297,51 @@ def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_p
     assert adapter_path.read_text(encoding="utf-8") == trimmed
 
 
+def test_quality_bootstrap_round_trips_unknown_top_level_fields(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    first = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert first.returncode == 0, first.stderr
+
+    adapter_path = repo / ".agents" / "quality-adapter.yaml"
+    extended = adapter_path.read_text(encoding="utf-8") + "\n".join(
+        [
+            "consumer_owned_gate:",
+            "  coverage_json: reports/custom-coverage.json",
+            "  eligible_globs:",
+            "  - scripts/**/*.py",
+            "",
+        ]
+    )
+    adapter_path.write_text(extended, encoding="utf-8")
+
+    second = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert second.returncode == 0, second.stderr
+    payload = json.loads(second.stdout)
+    assert payload["adapter_status"] == "unchanged"
+    assert payload["field_statuses"]["consumer_owned_gate"] == "preserved"
+    assert adapter_path.read_text(encoding="utf-8") == extended
+
+
+def test_quality_bootstrap_rewrite_keeps_unknown_fields(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    write_explicit_quality_adapter(repo)
+    adapter_path = repo / ".agents" / "quality-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nconsumer_owned_gate:\n  coverage_json: reports/custom-coverage.json\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["adapter_status"] == "updated"
+    assert payload["field_statuses"]["consumer_owned_gate"] == "preserved"
+    rewritten = adapter_path.read_text(encoding="utf-8")
+    assert "consumer_owned_gate:" in rewritten
+    assert "coverage_json: reports/custom-coverage.json" in rewritten
+
+
 def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     write_explicit_quality_adapter(repo)

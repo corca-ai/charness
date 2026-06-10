@@ -9,8 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — C2 bootstrap adapter data-loss fix.
-- Next action: preserve unknown fields in quality_bootstrap_lib + test.
+- Current slice: 4 — C4 commit-time handoff validation wiring (C4 pulled
+  before C3: smaller, deterministic; C3 is the diagnose-first slice).
+- Next action: handoff gate in staged_commit_gate_plan/surfaces + test.
 - Timebox: 6h
 - Activation time: 2026-06-11T06:31:18+09:00
 - Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
@@ -282,6 +283,20 @@ skill answers a boundary. Fill during the run:
   checked in at
   charness-artifacts/critique/2026-06-11-issue-350-resolution-critique.md.
   Routing: quality (goal-mandated) -> impl-shaped slice.
+- **Slice 3 DONE (C2, 2026-06-11 ~08:3x+09:00).** Unknown top-level
+  adapter fields now round-trip through `quality_bootstrap_lib.py`
+  (`_raw_adapter` capture -> `_unknown_fields` in build -> rendered
+  verbatim after policy items; statuses `preserved`). Restores the no-op
+  path: live probe on this repo = `adapter_status: unchanged`, both
+  previously-dropped blocks preserved, file untouched. 2 regression tests
+  (no-op byte-identical; rewrite survival), suite 15/15, broad gate 73/0,
+  lib mirror byte-synced. Sibling scan clean (init/seed helpers refuse
+  without --force; markdown-preview preserves existing). Fresh-eye
+  critique: **SHIP-WITH-NITS** — 3 latent pre-existing renderer nits
+  recorded in Off-Goal Findings for closeout disposition. Scheduled
+  mutation run 27308933212 (768ded84) was in progress at the slice-2
+  boundary — check at next boundary. Routing: quality -> impl-shaped
+  slice.
 
 ## Context Sources
 
@@ -370,6 +385,16 @@ activation per the verification cadence.
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- Slice-3 reviewer nits (latent, pre-existing, adapter_lib renderer):
+  (a) `_yaml_scalar` does not escape `\n` — invalid YAML if a value ever
+  contains a newline (unreachable today: repo `load_yaml` cannot produce
+  multiline strings); (b) unsupported YAML constructs (block scalars,
+  inline comments) inside unknown blocks normalize lossily on a LEGITIMATE
+  rewrite (no-op path is safe — that is the live-repo case); (c) known
+  falsy explicit fields (`spec_pytest_reference_format: ""`,
+  `preset_version: null`) drop on rewrite while statuses say preserved.
+  Disposition at goal closeout (file one renderer-hygiene issue or defer).
 
 ## Final Verification
 
