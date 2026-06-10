@@ -86,6 +86,18 @@ def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch)
     assert "claude" in actions["skill_anchor_edit_guard"]
 
 
+def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
+    # The lazy-import fallback fires when scripts/ is absent from sys.path
+    # (module invoked from elsewhere): the first import raises ImportError,
+    # then the registry inserts its own parent dir and retries.
+    scripts_dir = (REPO_ROOT / "scripts").resolve()
+    cleaned = [p for p in sys.path if Path(p or ".").resolve() != scripts_dir]
+    monkeypatch.setattr(sys, "path", cleaned)
+    monkeypatch.delitem(sys.modules, "host_hook_find_skills", raising=False)
+    module = registry._import_module("host_hook_find_skills")
+    assert module.__name__ == "host_hook_find_skills"
+
+
 def test_liveness_flags_missing_script(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
     missing = repo / "scripts" / "usage_episode_session_start.py"
