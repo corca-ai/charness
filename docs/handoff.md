@@ -53,6 +53,10 @@
 
 ## Discuss
 
+- **#184 product success metrics** — seventh consecutive deliberate
+  exclusion; needs a dedicated operator `ideation` session shaped into its
+  own goal. Decide: schedule it or explicitly close as not-now.
+
 ## References
 
 - [premerge-gate spec](../charness-artifacts/spec/mutation-changed-line-premerge-gate.md)

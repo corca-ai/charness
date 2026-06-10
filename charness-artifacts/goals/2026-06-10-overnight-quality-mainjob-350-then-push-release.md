@@ -1,6 +1,6 @@
 # Achieve Goal: Overnight quality-improvement main job (+#350) then operator-authorized push + release
 
-Status: draft
+Status: active
 Created: 2026-06-10
 Activation: `/goal @charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md`
 
@@ -9,12 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md`.
+- Current slice: 2 — #350 (create-skill at-cap line + near-cap warning).
+- Next action: #350 headroom/triangulation check, then implement + tests.
 - Timebox: 6h
-- Activation time: set at `/goal` activation (REPLACE with an ISO timestamp at
-  activation — the complete gate parses `Activation time:` as ISO; five prior
-  goals carried this exact reminder for a reason).
+- Activation time: 2026-06-11T06:31:18+09:00
+- Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
 - Closeout reserve: 40m
 - Done-early policy: continue_next_improvement (quality improvement is
   deliberately open-ended inside the timebox: when a slice closes early, pull
@@ -191,7 +190,7 @@ What the user can do to verify completion directly (after waking).
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Quality posture refresh on current main -> prioritized bounded candidate list | latest.md is 15 releases stale; the operator made quality the main job — ranking before implementing prevents unranked-refactor drift over 6h | refreshed quality/latest.md, gates summary, ranked candidates scoping slices 3..N | planned |
+| 1 | Quality posture refresh on current main -> prioritized bounded candidate list | latest.md is 15 releases stale; the operator made quality the main job — ranking before implementing prevents unranked-refactor drift over 6h | refreshed quality/latest.md, gates summary, ranked candidates scoping slices 3..N | done |
 | 2 | #350: create-skill at-cap checklist line + near-cap preflight warning + tests, carrier staged | already-shaped, bounded, directly a quality-gate improvement; closes the recurrence loop #349 opened | gates green, tests for the warning, draft_verified carrier `Closes #350` | planned |
 | 3..N | Top-ranked slice-1 candidates, one bounded slice each with per-slice closeout, until reserve | continue_next_improvement inside the operator's quality mandate | per-slice: gates green, critique verdict, commit | planned |
 | final | Push -> post-push quality-core green -> verify-closeout #349(/#350) -> release cut -> live probe | operator-pre-authorized terminal lane ("그다음 푸시 릴리즈"); closes the staged-carrier loop | run ids + verdicts, CLOSED payloads, new tag, live-probe match | planned |
@@ -208,6 +207,9 @@ skill answers a boundary. Fill during the run:
   phase or boundary, and record the route it returns. At completion,
   recorded implementation / debug / quality / issue work needs this
   `Routing:` evidence or a `Routing: n/a — <reason>` opt-out.
+- Routing: slice 1 — find-skills `--recommend-for-task` (read-only, posture
+  refresh task text) returned no overriding support/tool route; goal-mandated
+  `quality` skill confirmed as the slice-1..N main-job route.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing
   at the gathered asset, or write `Gather: n/a — <reason>` when no external
@@ -221,6 +223,51 @@ skill answers a boundary. Fill during the run:
   Sources` as context only, use `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+- **Activation (2026-06-11T06:31+09:00).** Goal activated; fresh-eye plan
+  critique (bounded subagent, read-only) verdict: **proceed-with-adjustments**,
+  no blockers. Folded adjustments: (1) deferred mutation proof consumed at
+  activation instead of opportunistically; (2) #350 slice must keep the four
+  preflight-output consumers green (`check_artifact_surface_preflight.py`,
+  `staged_commit_gate_plan.py`, `slice_closeout_advisories.py`,
+  `skill_issue_anchor_scan.py`) — no exit-code or JSON-shape break;
+  (3) bundle-boundary producer/consumer eligibility is near-certain (mutants
+  pool contains create-skill SKILL.md and scripts/ surfaces) — budget the
+  locked producer before the push; (4) activation edit rides the first slice
+  commit. Over-worry (not folded): create-skill at-cap fallback (188/200,
+  one-line addition cannot hit cap); push-autonomy contradiction (directive
+  supersedes older handoff line).
+- **Deferred proof CONSUMED (activation).** Scheduled `mutation-tests.yml`
+  on headSha 768ded84 fired three times pre-activation: run **27279937136**
+  (2026-06-10T13:32Z, **failure** — overall score PASS 88.2% vs 80%, but the
+  changed-line coverage/selection blocking signal FAILED; auto-filed #351),
+  then runs **27290330577** (16:28Z, success) and **27299766603** (19:10Z,
+  success) on the SAME SHA; #351 auto-closed 17:03Z. Disposition (CORRECTED
+  during slice 1): the red run's blocking signal was REAL and by-design —
+  the fd3c2c6c..768ded84 range changed 10 eligible Python files vs the
+  5-file workload cap, so eligible files were necessarily budget-dropped.
+  The two "green" reruns were VACUOUS: scheduled base = previous completed
+  run's headSha, so same-SHA reruns diff base==head (empty) and auto-closed
+  #351 without the backlog ever being scheduled-lane mutation-tested.
+  Mitigation: the local pre-push changed-line gate is the primary lane and
+  covered those commits before the push. Scheduled-lane semantics (vacuous
+  green auto-close; base advances past budget-dropped backlog) fed to
+  slice 1 as candidate C4 (renamed C3 in the posture artifact).
+- **Slice 1 DONE (2026-06-11 ~07:1x+09:00).** Posture refreshed:
+  `charness-artifacts/quality/latest.md` re-derived at v0.39.0+3 staged
+  commits (prior archived to `history/2026-06-06-quality-review.md`).
+  Broad gates: initially 71/2 (`validate-handoff-artifact` empty Discuss —
+  introduced by bc70d76a AFTER the prior session's final gate run;
+  `validate-retro-lesson-index` stale) — both repaired, re-run **73/0**.
+  NEW BUG found+reverted: `quality_bootstrap_lib.py` allowlist rewrite
+  silently dropped live `standing_doc_provenance` +
+  `changed_line_mutation_gate` adapter blocks (= candidate C2). Ranked
+  candidates scoping slices 3..5: C2 bootstrap data-loss fix; C3 scheduled
+  mutation lane base/auto-close semantics (constraints: craken-agents#127,
+  #341); C4 commit-time handoff validation wiring. Fresh-eye posture
+  reviewer (high-leverage, read-only): REVISE -> folded (attribution,
+  47-issue noise count, vacuous-arm precision); artifact validators green
+  (140 lines, consumption + closeout contract OK). Routing: quality.
 
 ## Context Sources
 
