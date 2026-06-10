@@ -14,6 +14,11 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 _issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
 MAX_SKILL_MD_LINES = 200
+# Non-blocking near-cap warning floor (#350): at or above this total, an added
+# line (e.g. a reciprocal propagation line from an adjacent skill's author) may
+# not land without a deliberate trim of reviewed prose, so surface the trap
+# before prose is written instead of at validator rejection.
+NEAR_CAP_WARN_LINES = 195
 MAX_CORE_NONEMPTY_LINES = 160
 # A changed SKILL.md must keep at least this many core_nonempty lines of headroom
 # below MAX_CORE_NONEMPTY_LINES. This buffer is the single source of truth shared
@@ -355,11 +360,26 @@ def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_check
         for name, row in headroom.items()
         if row["blocked"]
     ]
+    warnings: list[dict[str, str]] = []
+    current_total = headroom["skill_md_total"]["current"]
+    if current_total >= NEAR_CAP_WARN_LINES:
+        warnings.append(
+            {
+                "id": "near_cap",
+                "message": (
+                    f"SKILL.md total {current_total}/{MAX_SKILL_MD_LINES} is at/above the "
+                    f"{NEAR_CAP_WARN_LINES}-line near-cap floor: an added line may not land "
+                    "without a deliberate trim of reviewed prose. Trim deliberately or file "
+                    "an issue; never silently drop a reciprocal/propagation line."
+                ),
+            }
+        )
     checks = _run_checks(repo_root) if run_checks else []
     check_failures = [row["id"] for row in checks if row["returncode"] != 0]
     return {
         "status": "blocked" if blockers or check_failures else "ok",
         "blockers": blockers,
+        "warnings": warnings,
         "check_failures": check_failures,
         "skill": {
             "id": context["skill_id"],
@@ -395,6 +415,8 @@ def format_human(report: dict[str, Any]) -> str:
         _format_headroom("SKILL.md total", report["headroom"]["skill_md_total"]),
         _format_headroom("core nonempty", report["headroom"]["core_nonempty"]),
     ]
+    for row in report.get("warnings", []):
+        lines.append(f"WARN {row['id']}: {row['message']}")
     if report["target"]["current_lines"] is not None:
         lines.append(f"target current lines: {report['target']['current_lines']}")
     lines.append("couplings:")

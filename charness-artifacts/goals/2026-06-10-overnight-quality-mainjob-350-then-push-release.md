@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — #350 (create-skill at-cap line + near-cap warning).
-- Next action: #350 headroom/triangulation check, then implement + tests.
+- Current slice: 3 — C2 bootstrap adapter data-loss fix.
+- Next action: preserve unknown fields in quality_bootstrap_lib + test.
 - Timebox: 6h
 - Activation time: 2026-06-11T06:31:18+09:00
 - Implementation stop (reserve start): ~2026-06-11T11:51+09:00; hard end ~12:31.
@@ -191,7 +191,7 @@ What the user can do to verify completion directly (after waking).
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Quality posture refresh on current main -> prioritized bounded candidate list | latest.md is 15 releases stale; the operator made quality the main job — ranking before implementing prevents unranked-refactor drift over 6h | refreshed quality/latest.md, gates summary, ranked candidates scoping slices 3..N | done |
-| 2 | #350: create-skill at-cap checklist line + near-cap preflight warning + tests, carrier staged | already-shaped, bounded, directly a quality-gate improvement; closes the recurrence loop #349 opened | gates green, tests for the warning, draft_verified carrier `Closes #350` | planned |
+| 2 | #350: create-skill at-cap checklist line + near-cap preflight warning + tests, carrier staged | already-shaped, bounded, directly a quality-gate improvement; closes the recurrence loop #349 opened | gates green, tests for the warning, draft_verified carrier `Closes #350` | done |
 | 3..N | Top-ranked slice-1 candidates, one bounded slice each with per-slice closeout, until reserve | continue_next_improvement inside the operator's quality mandate | per-slice: gates green, critique verdict, commit | planned |
 | final | Push -> post-push quality-core green -> verify-closeout #349(/#350) -> release cut -> live probe | operator-pre-authorized terminal lane ("그다음 푸시 릴리즈"); closes the staged-carrier loop | run ids + verdicts, CLOSED payloads, new tag, live-probe match | planned |
 
@@ -268,6 +268,20 @@ skill answers a boundary. Fill during the run:
   reviewer (high-leverage, read-only): REVISE -> folded (attribution,
   47-issue noise count, vacuous-arm precision); artifact validators green
   (140 lines, consumption + closeout contract OK). Routing: quality.
+- **Slice 2 DONE (#350, 2026-06-11 ~07:5x+09:00).** Both issue guards
+  landed additively: create-skill Guardrails at-cap line (+1, 189/200,
+  core 156/160 exactly at ratchet buffer — the real binding constraint was
+  core_nonempty, not the 200 total the plan critique sized); non-blocking
+  `near_cap` warning (>=195) in `check_skill_surface_preflight.py --path`
+  with 3 boundary tests (195 fires/194 absent/200 coexists-with-blocked).
+  Live probe: hitl 196/200 warns, exit 0. Consumers green (136+10+21
+  tests), broad gate 73/0, mirrors byte-synced. Fresh-eye slice critique:
+  **SHIP** (3 nits recorded as F2/F3 dispositions in the critique
+  artifact). Carrier `Closes #350` **draft_verified** (direct-commit,
+  feature class, shape-describer consulted first); resolution critique
+  checked in at
+  charness-artifacts/critique/2026-06-11-issue-350-resolution-critique.md.
+  Routing: quality (goal-mandated) -> impl-shaped slice.
 
 ## Context Sources
 

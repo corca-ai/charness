@@ -167,6 +167,7 @@ canonical adapter when the repo should own topology terms.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.
+- If the adjacent skill sits at its line ceiling (surface preflight warns near-cap), trim deliberately or file an issue — never silently drop the reciprocal line.
 - Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
   `references/`.
 

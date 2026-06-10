@@ -49,6 +49,61 @@ def test_skill_surface_preflight_blocks_skill_md_preview_past_known_ceilings(
     assert payload["headroom"]["core_nonempty"]["remaining_after_preview"] == -1
 
 
+def _skill_near_cap(total_lines: int) -> list[str]:
+    lines = [
+        "---",
+        "name: demo",
+        'description: "Demo skill."',
+        "---",
+        "",
+        "# Demo",
+        "",
+        "Use this when the repo needs a demo skill.",
+        "",
+        "## References",
+        "",
+        "- `references/note.md`",
+    ]
+    lines.extend("" for _ in range(total_lines - len(lines)))
+    assert len(lines) == total_lines
+    return lines
+
+
+def test_skill_surface_preflight_warns_near_cap_without_blocking(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(repo, skill_lines=_skill_near_cap(195))
+
+    payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
+    assert payload["status"] == "ok"
+    assert payload["blockers"] == []
+    assert [row["id"] for row in payload["warnings"]] == ["near_cap"]
+    assert "195/200" in payload["warnings"][0]["message"]
+    assert "never silently drop" in payload["warnings"][0]["message"]
+    human = preflight.format_human(payload)
+    assert "WARN near_cap:" in human
+
+
+def test_skill_surface_preflight_no_near_cap_warning_below_floor(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(repo, skill_lines=_skill_near_cap(194))
+
+    payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
+    assert payload["status"] == "ok"
+    assert payload["warnings"] == []
+    assert "WARN near_cap:" not in preflight.format_human(payload)
+
+
+def test_skill_surface_preflight_at_ceiling_warns_and_blocks_independently(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(repo, skill_lines=_skill_at_ceiling())
+
+    payload = preflight.build_report(repo.resolve(), str(skill_path), 1, False)
+    assert payload["status"] == "blocked"
+    assert [row["id"] for row in payload["warnings"]] == ["near_cap"]
+
+
 def test_skill_surface_preflight_reference_preview_preserves_core_headroom(
     tmp_path: Path,
 ) -> None:
