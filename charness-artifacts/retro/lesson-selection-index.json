@@ -957,10 +957,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:f9a42c0ad3bd",
+      "candidate_id": "next_improvement:259db4afda0a",
       "kind": "next_improvement",
-      "lesson": "workflow (memory): encode \"read the CI workflow + gate source at shaping time when a slice depends on CI runtime behavior\" as a lesson; the activation plan critique remains the backstop.",
-      "normalized_key": "workflow memory encode read the ci workflow gate source at shaping time when a",
+      "lesson": "workflow (accepted-risk, per the goal's Auto-Retro disposition): \"read the CI workflow + gate source at shaping time when a slice depends on CI runtime behavior\" stays a judgment habit — the activation fresh-eye plan critique is the standing compensating gate and caught this class at zero rework cost this run; the lesson lives durably in this artifact's Expert Counterfactuals.",
+      "normalized_key": "workflow accepted risk per the goal s auto retro disposition read the ci workflow",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-10-postpush-goal-retro.md",
       "latest_source_date": "2026-06-10",
