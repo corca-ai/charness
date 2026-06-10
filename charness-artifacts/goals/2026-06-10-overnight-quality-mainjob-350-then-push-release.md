@@ -330,6 +330,21 @@ skill answers a boundary. Fill during the run:
   copies; spec enumeration corrected). Routing: quality -> impl-shaped
   slice. NEXT-RUN PROOF: the first scheduled mutation run on the pushed
   HEAD proves the reclassification live (named deferred proof, next goal).
+- **Timestamp correction:** slice-log times for slices 2-5 above were
+  drifted estimates; actual wall clock: activation 06:31, slices 1-5 all
+  completed by ~07:45+09:00 (bundle boundary). Reserve margin is large.
+- **Bundle-boundary scenario review (recorded decision).** Changed public
+  skills in origin/main..HEAD: create-skill (evaluator-required; +1
+  additive Guardrails line — dogfood observed_evidence pins routing +
+  contract-freezing anchors, untouched; scenario
+  `representative-skill-contracts` unaffected), hitl (763653c7 — reviewed
+  and frozen by the PRIOR goal's own closeout; rides this push only),
+  quality (references/mutation-testing.md prose de-staled to match the
+  slice-5 executable semantics; #223 dogfood pin untouched). Decision: NO
+  maintained scenario coverage change, NO dogfood contract change;
+  `plan_cautilus_proof` next_action=none -> no eval; deterministic gates
+  own closeout. Rerunning the locked producer with
+  --ack-cautilus-skill-review on this recorded decision.
 
 ## Context Sources
 
