@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — deleted-checkout settings scan (implemented; fresh-eye
-  slice critique in flight; commit after verdict).
-- Next action: fold slice 2 critique verdict, commit slice 2, then slice 3
-  (branch from origin/main; F4 e2e + minimal pool-file docstring touch so the
-  mirror gate runs its full real path — decision recorded in Plan Critique
-  Findings).
-- Slice 1: complete (all proofs recorded in Slice Log; mutation-run recheck
-  deferred to closeout).
+- Current slice: 3 — PR-mirror first execution + F4 (PR #345 open from
+  branch pr-mirror-f4-seeded-e2e cut at origin/main; carries the F4 e2e test
+  + the recorded minimal pool-file docstring touch; quality-core PR run in
+  progress).
+- Next action: consume the PR-mirror job verdict (run id + conclusion),
+  merge when green, then goal closeout (bundle gates + retro + recheck of
+  the scheduled mutation run).
+- Slices 1 and 2: complete (proofs and critique verdicts in Slice Log;
+  slice 2 committed as 868181ef).
 - Timebox: 3h
 - Activation time: 2026-06-10T15:14:07+09:00
 - Closeout reserve: 30m
@@ -238,6 +239,20 @@ during the run:
 - Critique: Fresh-eye bounded reviewer (slice2-critique): SHIP-WITH-NITS, no blockers — charness-artifacts/critique/2026-06-10-settings-scan-slice-critique.md; F2 (intents passthrough) folded before commit, F1 (direct-exec loud-over-silent edge) and F3 (basename-not-marker TOML decision) documented.
 - Off-goal findings: none
 - Lessons carried forward: Non-claims: scan covers the three default settings paths only (no custom/project-level settings locations); a hand-written interpreter-less entry with a known basename reports loudly even when live (inherited posture); scan reports, never removes.
+- Metrics:
+
+### Slice 3: Slice 3 — PR-mirror first execution + F4
+
+- Objective: Land the deferred F4 seeded-repo e2e test for advise_new_pool_module via ONE bounded PR and consume the quality-core PR-mirror job's first real verdict.
+- Why this approach: Branch pr-mirror-f4-seeded-e2e cut from origin/main (activation-critique adjustment 2 — local main carried unpushed slice 1/2 commits). The mirror JOB executes on any PR, but a test-only diff short-circuits the gate green (tests/ is not a mutation pool), so per the interview decision's pre-authorized minimal adjustment the branch also carries a docstring amendment to scripts/slice_closeout_advisories.py (eligible pool file) noting the e2e pin — making the gate run its full real path (coverage probe + changed-line classification). Decision recorded in Plan Critique Findings before the branch was cut.
+- Commits: 43476ae6 on the branch; squash-merged to origin/main as 39ff5432 (PR https://github.com/corca-ai/charness/pull/345); branch deleted after merge.
+- What changed: tests/quality_gates/test_slice_closeout_new_pool_advisory.py (+1 e2e test: seeded tmp repo with local origin/main anchor, real eligibility glob, no mocks); scripts/slice_closeout_advisories.py docstring (+plugins mirror byte-synced).
+- Alternatives rejected: Test-only PR accepting the gate-internal skip-green (rejected: equivalent to the trivial-doc PR the goal pre-rejected — exercises the trigger, not the gate's real path); a behavior-bearing pool change (rejected: scope creep; the docstring touch is zero-behavior-risk and still puts an eligible file in the range).
+- Targeted verification: PR-mirror job EXECUTED on PR 345: run 27258023056, job 80496728903 'Changed-line mutation coverage (PR mirror)', conclusion success, 9m51s; gate payload: ok=true, blocking=[], changed_pool_files=[scripts/slice_closeout_advisories.py] — the eligible-file analysis path, not the no-eligible-files skip. Core deterministic gates job 80496728922 success. Local: 8/8 advisory module tests, ruff, length headroom, mirror cmp. Merged only after green; merge commit 39ff5432 verified on origin/main.
+- Test duplication pressure: The e2e test seeds its own tmp repo inline rather than importing the base-range module's _seed_repo (cross-test-module imports avoided); duplication is one ~10-line git seed block shared as a PATTERN across two modules — acceptable, each module stays self-contained.
+- Critique: Slice design was pre-reviewed in depth by the activation plan critique (mirror path-filter analysis, branch-base contamination, ONLY-F4 boundary tension — all folded); a post-hoc fresh-eye pass runs with the goal-closeout disposition review.
+- Off-goal findings: none
+- Lessons carried forward: Non-claim: the PR carried no mutable changed line (docstring only), so the blocking arm classified an empty changed-mutable-line set; blocking-arm-on-real-uncovered-lines remains proven by local/unit tests and the scheduled mutation suite, not by this PR. Residual: local main diverged from remote during the lane (rebased after merge); slice 1/2 work reaches remote CI on the next operator push.
 - Metrics:
 
 ## Context Sources
