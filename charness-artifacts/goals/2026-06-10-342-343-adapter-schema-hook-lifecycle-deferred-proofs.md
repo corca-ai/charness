@@ -9,9 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 1 — #342 adapter-schema commit-time pull (verify-first).
-- Next action: confirm the adapter/schema sibling set, record the seam
-  decision, then wire the pull.
+- Current slice: slice 2 — #343 host-hook lifecycle robustness.
+- Next action: dangling-checkout liveness in the existing status surface,
+  multi-checkout posture decision documented, reconcile fan-out registry
+  refactor (52-test suite floor, per-host error isolation preserved).
+- Slice 1 DONE: commit 76909cc8, #342 carrier verified
+  (`verify-closeout` → `carrier_verified`; GitHub close lands on the next
+  operator push).
 - Timebox: 4h
 - Activation time: 2026-06-10T11:41:15+09:00
 - Closeout reserve: 35m
@@ -261,6 +265,20 @@ during the run:
 - Critique: Fresh-eye bounded subagent (agentId a098aa449792d349f): SHIP-WITH-NITS, no blockers; nits folded (main() wiring subprocess test, missing-yaml degrade case, consumer-fallback asymmetry doc line); artifact charness-artifacts/critique/2026-06-10-342-adapter-schema-commit-pull-critique.md
 - Off-goal findings:
 - Lessons carried forward: The runtime owner and the gate must share the parse path (yaml.safe_load), or the pull itself creates a new two-parser drift; the first cut used the minimal adapter_lib parser and a test caught the divergence.
+- Metrics:
+
+### Slice 2: Slice 2 — #343 host-hook lifecycle robustness
+
+- Objective: Dangling-hook liveness in the existing status surface, the multi-checkout posture decision documented, and the reconcile sibling fan-out factored into a registry; close #343.
+- Why this approach: New scripts/host_hook_registry.py module (host_hook_install_lib had 69 lines headroom — implementation discipline says new module, not append): SIBLING_HOOK_INTENTS data table + reconcile_sibling_hooks/sibling_hook_statuses/hook_state_liveness; reconcile_host_hooks replaces two copied lazy-import blocks with one registry call; status mode gains an additive hook_liveness payload section whose dangling entries join the drift list (exit 1 = the documented drift contract, not a new gate).
+- Commits:
+- What changed: scripts/host_hook_registry.py (new), scripts/host_hook_install_lib.py (fan-out -> registry, 411->402 code lines), scripts/reconcile_usage_episodes_host_hooks.py (status wiring), docs/conventions/authoring-preflight.md (posture paragraph), tests/test_host_hook_registry.py (new, 10 tests), tests/test_usage_episodes_host_hooks.py (one floor-test fixture made honest), plugins mirrors byte-synced
+- Alternatives rejected: hooks/ package with one module per intent (rejected: heavier than the issue's narrow ask); leaving the copies (pre-rejected for the reconcile fan-out); settings-file scan for deleted-checkout leftovers (deferred: the issue's stated Destination is the state-tracked check; named as a non-claim)
+- Targeted verification: 64/64 host-hook family (54-test floor preserved; reviewer counted 91 across the four family files); live probe on the real machine: status exit 0, two state-tracked hooks both script_exists true; per-host error isolation pinned by a monkeypatched HostHookError test; fourth-intent-is-a-table-row pinned by test; ruff/py_compile/lengths/doc-links green; mirrors byte-synced
+- Test duplication pressure: 10 new tests in a new module scoped to the new registry/liveness seam; the one floor-test edit seeds fixture scripts (the old fixture genuinely had dangling hooks under the new semantics) and adds a dangling==[] pin; no duplication with the existing intent-behavior tests
+- Critique: Fresh-eye bounded subagent (agentId a41e2d3ff6b13b606): SHIP-WITH-NITS, no blockers; folded the deleted-checkout doc overclaim + the command-shape contract comment; artifact charness-artifacts/critique/2026-06-10-343-host-hook-lifecycle-critique.md
+- Off-goal findings:
+- Lessons carried forward: Status-tracked liveness cannot see a DELETED checkout (the state dies with it) — write the claim at the strength the mechanism supports; the reviewer caught the prose claiming more than the design delivers.
 - Metrics:
 
 ## Context Sources

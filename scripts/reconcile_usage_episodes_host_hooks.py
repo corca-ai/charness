@@ -8,7 +8,8 @@ settings paths under `--home`. The `charness` CLI invokes this script during
 `charness session-capture` subcommand.
 
 Exit code: 0 when the requested mode succeeds and (for status) intent matches
-actual; 1 when status detects drift or a HostHookError occurs.
+actual; 1 when status detects drift, a dangling state-tracked hook script
+(#343 liveness), or a HostHookError occurs.
 """
 
 from __future__ import annotations
@@ -44,6 +45,13 @@ def _import_lib():
     return host_hook_install_lib
 
 
+def _import_registry():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import host_hook_registry  # type: ignore[import-not-found]
+
+    return host_hook_registry
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Charness source repo (contains the usage-episodes adapter).")
@@ -68,16 +76,20 @@ def main(argv: list[str] | None = None) -> int:
         }
         exit_code = 0
     elif args.mode == "status":
+        registry = _import_registry()
         status = lib.session_capture_status(repo_root, adapter=adapter, home=home)
-        find_skills_status = lib.find_skills_routing_status(repo_root, adapter=adapter, home=home)
-        anchor_guard_status = lib.skill_anchor_guard_status(repo_root, adapter=adapter, home=home)
+        sibling_statuses = registry.sibling_hook_statuses(repo_root, adapter=adapter, home=home)
+        liveness = registry.hook_state_liveness(repo_root)
         payload = {
             "mode": "status",
             **status,
-            "find_skills_routing": find_skills_status,
-            "skill_anchor_edit_guard": anchor_guard_status,
+            **sibling_statuses,
+            "hook_liveness": liveness,
         }
-        extra_drift = [*find_skills_status["drift"], *anchor_guard_status["drift"]]
+        extra_drift = [
+            *(line for sibling in sibling_statuses.values() for line in sibling["drift"]),
+            *liveness["dangling"],
+        ]
         if extra_drift:
             payload["in_sync"] = False
             payload["drift"] = [*status["drift"], *extra_drift]

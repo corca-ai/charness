@@ -495,6 +495,10 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
 
     lib.install_claude_hook(fake_repo, home=fake_home)
     fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+    # The #343 liveness check flags state-tracked hooks whose script path does
+    # not exist; seed the scripts so the in-sync verdict stays about drift.
+    (fake_repo / "scripts" / "usage_episode_session_start.py").touch()
+    (fake_repo / "scripts" / "session_start_find_skills.py").touch()
     result = subprocess.run(
         [sys.executable, str(runner), "--repo-root", str(fake_repo), "--home", str(fake_home), "--mode", "status"],
         capture_output=True,
@@ -503,6 +507,7 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["in_sync"] is True
+    assert payload["hook_liveness"]["dangling"] == []
 
 
 # --- find-skills routing hook (#244) ---

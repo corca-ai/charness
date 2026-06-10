@@ -197,6 +197,21 @@ machine without the adapter intent inherits nothing. The firing stays
 host-specific and adapter-declared; the scan stays the single repo-owned rule
 source, and the commit sweep stays the backstop.
 
+Multi-checkout posture (#343, decided 2026-06-10): charness installs **one
+logical hook per machine**, deduped by script basename across checkouts —
+NOT one hook per checkout, which would make every shared host event fire each
+checkout's copy of the same guard. The commit-time sweep is the backstop for
+edits made in a checkout the surviving hook does not cover. The trade is that
+the installed hook binds one checkout's absolute script path; when that
+checkout is moved (or the hook script disappears),
+`python3 scripts/reconcile_usage_episodes_host_hooks.py --mode status`
+(= `charness session-capture status`) flags the dangling state-tracked hook
+via its `hook_liveness` section — reinstall from a live checkout or
+uninstall. A *deleted* checkout's leftover settings entries are not
+detectable from a surviving checkout's state (the state file dies with the
+deleted checkout); the same uninstall/reinstall remedy applies, and a
+settings-file scan stays deferred.
+
 ### One-shot portable-package preflight
 
 Authoring into a skill package otherwise pays for the portable-package gates as

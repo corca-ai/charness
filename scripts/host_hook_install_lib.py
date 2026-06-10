@@ -370,27 +370,18 @@ def reconcile_host_hooks(
                 actions[host]["result"] = uninstaller(repo_root, home=home)
         except HostHookError as exc:
             actions[host]["error"] = str(exc)
-    # find-skills routing (#244): opt-in second hook, reconciled in parallel.
-    # Lazy import keeps the sibling module's dependency on this one acyclic.
+    # Opt-in sibling hook intents (find-skills routing, anchor edit guard, ...)
+    # reconcile in parallel via the registry table in host_hook_registry; a new
+    # intent is a table row there, not another copied import block. Lazy import
+    # keeps the sibling modules' dependency on this one acyclic.
     try:
-        from host_hook_find_skills import reconcile_find_skills_hooks
+        from host_hook_registry import reconcile_sibling_hooks
     except ImportError:  # pragma: no cover - module-from-elsewhere fallback
         import sys
 
         sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from host_hook_find_skills import reconcile_find_skills_hooks  # type: ignore[no-redef]
-    actions["find_skills_routing"] = reconcile_find_skills_hooks(repo_root, adapter=adapter, home=home)
-    # skill #N-anchor edit-time guard: opt-in third hook, reconciled in parallel.
-    try:
-        from host_hook_skill_anchor_guard import reconcile_skill_anchor_guard_hooks
-    except ImportError:  # pragma: no cover - module-from-elsewhere fallback
-        import sys
-
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from host_hook_skill_anchor_guard import (
-            reconcile_skill_anchor_guard_hooks,  # type: ignore[no-redef]
-        )
-    actions["skill_anchor_edit_guard"] = reconcile_skill_anchor_guard_hooks(repo_root, adapter=adapter, home=home)
+        from host_hook_registry import reconcile_sibling_hooks  # type: ignore[no-redef]
+    actions.update(reconcile_sibling_hooks(repo_root, adapter=adapter, home=home))
     return actions
 
 
