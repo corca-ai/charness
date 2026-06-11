@@ -211,6 +211,20 @@ Activation started at 2026-06-11T22:09:06+09:00.
 - Lessons carried forward:
 - Metrics: Broad nose moved `526 families / 12590 dup_lines` after Slice 2 to `525 families / 12577 dup_lines` after this slice. Resolver-filtered top40 shown duplicated lines moved from `3025` during the initial scaffold helper attempt to `3007` after removing duplicated wrapper comments and current-pointer payload copies.
 
+### Slice 4: find-skills length split
+
+- Objective: Reduce quality-gate pressure from find-skills Python length warn-band files without changing routing behavior.
+- Why this approach: After the scaffold helper commit, the next broad quality signal was `check_python_lengths.py`: `find-skills/scripts/list_capabilities.py` and `list_capabilities_lib.py` were both in the advisory warn band, with `list_capabilities_lib.py` one line below its hard limit. Workflow recommendation and summary rendering were cohesive leaf responsibilities.
+- Commits: pending.
+- What changed: Added `workflow_recommendations.py` for temporary worktree workflow registry/routing logic and `list_capabilities_summary.py` for summary JSON shaping; `list_capabilities.py` now loads both via `SKILL_RUNTIME.load_local_skill_module`; synced plugin mirrors.
+- Alternatives rejected: Rejected further bootstrap loader commonization in this slice because more than 60 scripts still use a bootstrap wrapper and broad conversion would risk creating new clone families without focused behavior value. Rejected moving workflow recommendations into manifests now because that is a larger design change than a length-pressure cleanup.
+- Targeted verification: Focused find-skills pytest 40 passed; targeted ruff and py_compile passed; packaging/skill/public-skill/inference/hygiene gates passed; broad pytest `2803 passed, 4 skipped, 26 deselected`.
+- Test duplication pressure: Existing find-skills and plugin-export tests covered summary output, task recommendation, support/materialized routing, and plugin mirror execution. Fresh-eye reviewer additionally smoke-probed create-worktree, cleanup-worktree, validation-shaped recommendation, plugin mirror execution, and summary with/without recommendations.
+- Critique: Fresh-eye subagent review found no blocker. Low residual: ensure both new helper files are committed in source and plugin mirror trees.
+- Off-goal findings: Full length gate still reports 8 existing warn-band files outside this slice: `quality_bootstrap_lib.py`, `issue_tool.py`, two release scripts, `web-fetch/acquire_public_url.py`, and three large tests.
+- Lessons carried forward:
+- Metrics: Full `check_python_lengths.py --require-git-file-listing` warn-band count moved from 10 files to 8. Targeted length check for `find-skills` source/plugin files reports no warnings after the split.
+
 ## Context Sources
 
 - User request on 2026-06-11: "앞으로 최대 6시간 동안 이 중복을 비롯한 품질 문제를 개선하는 골".

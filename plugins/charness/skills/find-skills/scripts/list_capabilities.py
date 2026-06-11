@@ -31,8 +31,11 @@ _list_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_l
 build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payload, _list_lib.referenced_skill_paths
 resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
 shipped_support_recommendations_for_task = _list_lib.shipped_support_recommendations_for_task
-workflow_integrations = _list_lib.workflow_integrations
-workflow_recommendations_for_task = _list_lib.workflow_recommendations_for_task
+_workflow = SKILL_RUNTIME.load_local_skill_module(__file__, "workflow_recommendations")
+workflow_integrations = _workflow.workflow_integrations
+workflow_recommendations_for_task = _workflow.workflow_recommendations_for_task
+_summary = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_summary")
+summary_payload = _summary.summary_payload
 _public_rec = SKILL_RUNTIME.load_local_skill_module(__file__, "public_skill_recommendations")
 public_skill_recommendations_for_task = _public_rec.public_skill_recommendations_for_task
 _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
@@ -208,42 +211,6 @@ def _is_recommendation_query(args: argparse.Namespace) -> bool:
     return bool(args.recommend_for_task or args.recommend_for_skill or args.recommendation_role)
 
 
-def _summary_payload(payload: dict[str, object]) -> dict[str, object]:
-    counts: dict[str, int] = {}
-    for key in (
-        "public_skills",
-        "support_skills",
-        "support_capabilities",
-        "integrations",
-        "workflow_integrations",
-        "trusted_skills",
-    ):
-        value = payload.get(key)
-        counts[key] = len(value) if isinstance(value, list) else 0
-    return {
-        "mode": "summary",
-        "adapter": payload.get("adapter"),
-        "counts": counts,
-        "artifacts": payload.get("artifacts"),
-        "recommendations": {
-            "tool_recommendations": payload.get("tool_recommendations", []),
-            "tool_recommendation_query": payload.get("tool_recommendation_query"),
-            "support_skill_recommendations": payload.get("support_skill_recommendations", []),
-            "support_recommendation_query": payload.get("support_recommendation_query"),
-            "support_recommendation_note": payload.get("support_recommendation_note"),
-            "workflow_recommendations": payload.get("workflow_recommendations", []),
-            "public_skill_recommendations": payload.get("public_skill_recommendations", []),
-            "public_recommendation_query": payload.get("public_recommendation_query"),
-            # Inference-layer self-declaration; present only when a ranking was produced.
-            **(
-                {"recommendation_interpretation": payload["recommendation_interpretation"]}
-                if payload.get("recommendation_interpretation")
-                else {}
-            ),
-        },
-    }
-
-
 def _task_support_recommendations(
     task_text: str,
     *,
@@ -358,7 +325,7 @@ def main() -> None:
         except ValueError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             raise SystemExit(1) from exc
-    output_payload = _summary_payload(payload) if args.summary else payload
+    output_payload = summary_payload(payload) if args.summary else payload
     print(json.dumps(output_payload, ensure_ascii=False, indent=2))
 if __name__ == "__main__":
     main()
