@@ -10,31 +10,45 @@ import pytest
 from .support import ROOT, run_script
 
 
+def demo_surface(
+    *,
+    source_paths: list[str] | None = None,
+    derived_paths: list[str] | None = None,
+    sync_commands: list[str] | None = None,
+    verify_commands: list[str] | None = None,
+    notes: list[str] | None = None,
+) -> dict[str, object]:
+    return {
+        "surface_id": "demo-surface",
+        "description": "demo",
+        "source_paths": source_paths if source_paths is not None else ["README.md"],
+        "derived_paths": derived_paths if derived_paths is not None else [],
+        "sync_commands": sync_commands if sync_commands is not None else [],
+        "verify_commands": verify_commands if verify_commands is not None else [],
+        "notes": notes if notes is not None else [],
+    }
+
+
+def write_surface_manifest(repo: Path, *surfaces: dict[str, object]) -> None:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps({"version": 1, "surfaces": list(surfaces)}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md"],
-                        "derived_paths": ["plugins/demo/README.md"],
-                        "sync_commands": ["python3 scripts/sync.py"],
-                        "verify_commands": ["python3 scripts/verify.py"],
-                        "notes": ["demo note"],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    write_surface_manifest(
+        repo,
+        demo_surface(
+            derived_paths=["plugins/demo/README.md"],
+            sync_commands=["python3 scripts/sync.py"],
+            verify_commands=["python3 scripts/verify.py"],
+            notes=["demo note"],
+        ),
     )
     (repo / "scripts" / "sync.py").write_text(
         "\n".join(
@@ -82,30 +96,9 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
 
 def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["python3 scripts/verify.py"],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_surface_manifest(repo, demo_surface(verify_commands=["python3 scripts/verify.py"]))
     (repo / "scripts" / "verify.py").write_text("from pathlib import Path\nPath('verify.log').write_text('verify\\n')\n", encoding="utf-8")
     (repo / "scripts" / "agent_browser_runtime_guard.py").write_text(
         "from pathlib import Path\nPath('hygiene.log').write_text('hygiene\\n')\n",
@@ -120,28 +113,11 @@ def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_
 
 def test_run_slice_closeout_blocks_unsafe_agent_browser_surface_commands(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
+    repo.mkdir()
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["bash -lc 'agent-browser open https://example.com'"],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    write_surface_manifest(
+        repo,
+        demo_surface(verify_commands=["bash -lc 'agent-browser open https://example.com'"]),
     )
 
     result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
@@ -265,28 +241,7 @@ def test_check_python_runtime_inheritance_rejects_unpinned_bash_login_shell(tmp_
 
 def test_run_slice_closeout_blocks_unmatched_paths_by_default(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_surface_manifest(repo, demo_surface())
 
     result = run_script(
         "scripts/run_slice_closeout.py",
@@ -391,26 +346,15 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
         ),
         encoding="utf-8",
     )
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md", "charness-artifacts/debug/latest.md", "charness-artifacts/spec/*.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    write_surface_manifest(
+        repo,
+        demo_surface(
+            source_paths=[
+                "README.md",
+                "charness-artifacts/debug/latest.md",
+                "charness-artifacts/spec/*.md",
+            ],
+        ),
     )
     (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
         "\n".join(
@@ -494,5 +438,3 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["risk_interrupt_plan"]["status"] == "blocked"
-
-

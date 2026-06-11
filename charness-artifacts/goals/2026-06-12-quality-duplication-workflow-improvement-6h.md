@@ -10,11 +10,11 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 - continue with the next locally safe cleanup after
-  committing the quality bootstrap output/rendered-diff split.
-- Next action: inspect the remaining warn-band files (release/web-fetch scripts)
-  and the repeated temporary surface-manifest fixtures in the closeout test file,
-  then choose the smallest structural cleanup that preserves behavior intent.
+- Current slice: Slice 7 - continue with final closeout or the next locally safe
+  cleanup after committing the surface-manifest fixture helper slice.
+- Next action: commit the surface-manifest fixture helper slice, then either
+  continue into a remaining warn-band file (release/web-fetch scripts) or start
+  final closeout if the reserve window is reached.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -98,9 +98,9 @@ check.
 | 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | committed (`6287bb27`) |
 | 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | committed (`c863bac9`) |
 | 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | committed (`1f50ab7f`) |
-| 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
-| 6 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
-| 7 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
+| 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | committed (`5c5ffa1e`) |
+| 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | implemented; commit pending |
+| 7 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
 
 ## Coordination Cues
 
@@ -198,7 +198,7 @@ general quality-improvement goal.
 
 - Objective: Remove the next production helper warn-band pressure point while preserving quality bootstrap behavior and public import compatibility.
 - Why this approach: `scripts/quality_bootstrap_lib.py` was 441/480 code lines. Its YAML output rendering and rendered-output defaulted-only diff check formed a coherent helper boundary separate from adapter detection/state/write orchestration.
-- Commits: pending commit
+- Commits: `5c5ffa1e`
 - What changed: Added `scripts/quality_bootstrap_render.py`; moved `render_bootstrap_adapter` and the defaulted-only rendered diff helper there; kept `quality_bootstrap_lib.render_bootstrap_adapter` available by importing it from the new module; aliased `diff_is_defaulted_only` back to `_diff_is_defaulted_only` for the existing write path; regenerated `plugins/charness/scripts/quality_bootstrap_lib.py` and added `plugins/charness/scripts/quality_bootstrap_render.py`.
 - Alternatives rejected: Rejected calling this a render-only boundary because the moved diff helper is write-suppression policy coupled to rendered output. Rejected direct private-helper tests because the focused bootstrap tests already cover rendering and defaulted-only short-circuit behavior through the public bootstrap path.
 - Targeted verification: focused ruff passed; `pytest -q tests/quality_gates/test_quality_bootstrap.py` passed 16; headroom check showed `quality_bootstrap_lib.py` 441/480 -> 369/480 and new `quality_bootstrap_render.py` 81/480; packaging and validate_packaging_committed passed; validate_integrations, sync_support dry-run, and update_tools dry-run passed; full repo ruff passed; full Python length gate passed with warn-band files 4 -> 3; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed; gitignore scan hygiene passed; broad pytest passed 2807, 4 skipped, 26 deselected.
@@ -207,6 +207,20 @@ general quality-improvement goal.
 - Off-goal findings: none.
 - Lessons carried forward: When splitting a production helper, preserve the old import surface unless the slice explicitly owns an API migration. Name the boundary by the behavior moved, not by a cleaner-sounding partial label.
 - Metrics: Python length warn-band files 4 -> 3; `quality_bootstrap_lib.py` 441 -> 369 code lines; new `quality_bootstrap_render.py` 81 code lines; broad pytest 2807 passed.
+
+### Slice 6: surface-manifest fixture helper
+
+- Objective: Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests without hiding behavior assertions.
+- Why this approach: Slice 3 moved closeout-runner behavior into `test_run_slice_closeout_surface_obligations.py` but deliberately left repeated inline `.agents/surfaces.json` setup for a later fixture cleanup. The repeated schema boilerplate made each test longer while the behavior-specific fields were a small subset of each manifest.
+- Commits: pending commit
+- What changed: Added local `demo_surface()` and `write_surface_manifest()` helpers in `tests/quality_gates/test_run_slice_closeout_surface_obligations.py`; converted repeated inline manifest JSON setup to helper calls; preserved explicit behavior-specific fields at call sites; used explicit `is not None` defaults so future tests can intentionally pass empty lists.
+- Alternatives rejected: Rejected a shared support helper because this fixture shape is currently local to the closeout-runner tests. Rejected hiding script body setup or assertions behind helpers; only manifest boilerplate moved.
+- Targeted verification: focused ruff passed; `git diff --check` passed; `pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py` passed 11; Python length gate still passed with the same 3 warn-band files.
+- Test duplication pressure: The file changed by 50 additions and 108 deletions, reducing repeated inline manifest setup by 58 net lines while keeping behavior assertions in test bodies.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-surface-manifest-fixture-helper.md`. Counterweight required no additional code/test changes after the optional-list default fix.
+- Off-goal findings: none.
+- Lessons carried forward: A local test helper is worthwhile when it removes repeated fixture schema while leaving the fields that express each test's behavior visible at the call site.
+- Metrics: `test_run_slice_closeout_surface_obligations.py` 498 -> 440 total lines and 455 -> 395 nonblank/noncomment lines; net diff 50 insertions and 108 deletions; focused pytest 11 passed.
 
 ## Context Sources
 
