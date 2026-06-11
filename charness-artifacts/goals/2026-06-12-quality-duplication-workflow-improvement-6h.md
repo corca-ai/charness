@@ -10,11 +10,12 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 - reduce the test-side pressure exposed by Slice 1 or
-  pick another safe duplication/workflow cleanup.
-- Next action: after committing Slice 1, inspect `tests/quality_gates/test_issue_skill.py`
-  length/cohesion and the remaining nose top findings, then choose the next
-  local slice without claiming total clone-line reduction from Slice 1.
+- Current slice: Slice 3 - choose the next locally safe quality cleanup.
+- Next action: after committing Slice 2, inspect remaining warn-band files
+  (`tests/quality_gates/test_surface_obligations.py`,
+  `tests/quality_gates/test_quality_mutation_sampling.py`, release/web-fetch
+  scripts) and the deferred fake-`ceal` fixture repetition, then choose the
+  smallest structural cleanup that preserves behavior intent.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -94,8 +95,8 @@ check.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Pick and land one structural quality cleanup from current duplication/workflow pressure. | The user explicitly objected to low-yield goal execution; the next move must produce a concrete quality delta. | Committed code/test/doc change plus focused and surface-recommended gates. | implemented; commit pending |
-| 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | active |
+| 1 | Pick and land one structural quality cleanup from current duplication/workflow pressure. | The user explicitly objected to low-yield goal execution; the next move must produce a concrete quality delta. | Committed code/test/doc change plus focused and surface-recommended gates. | committed (`25201777`) |
+| 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | implemented; commit pending |
 | 3 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
 
 ## Coordination Cues
@@ -138,7 +139,7 @@ general quality-improvement goal.
 
 - Objective: Reduce a concrete issue-skill duplication and length-pressure point without changing issue CLI behavior.
 - Why this approach: The issue loader duplication was local, repeated across several sibling scripts, and issue_tool.py was at 358/360 code lines. Moving the sibling loader into issue_local_import.py and backend probe construction into issue_backend.py removes a real source-file pressure point while staying inside the issue skill boundary.
-- Commits: pending commit
+- Commits: `25201777`
 - What changed: Added issue_local_import.py; converted issue_tool.py, issue_read.py, issue_close.py, issue_create.py, issue_verify_closeout.py, and describe_closeout_draft_shape.py to use it; moved preflight probe/payload helpers into issue_backend.py; synced plugins/charness issue export; added a focused non-JSON preflight config-error test.
 - Alternatives rejected: Rejected broad init_adapter/resolve_adapter cleanup for this first slice because it spans many public skills and generated surfaces. Rejected a broader import framework because the remaining runpy one-liner is smaller than the duplicated spec loader bodies and avoids package-layout assumptions.
 - Targeted verification: ruff changed issue files/tests; focused pytest 110 passed; broad pytest before the final cheap test was 2806 passed, 4 skipped, 26 deselected; changed-surface validators for packaging, skills, public-skill policy/dogfood, markdown/docs/secrets, py_compile, attention-state, gitignore scan hygiene, boundary ratchet passed.
@@ -147,6 +148,20 @@ general quality-improvement goal.
 - Off-goal findings: nose total_dup_lines was not a clean win (baseline 3063 -> 3073 after helper/relocation), so this slice must not claim total clone-line reduction. Nose family count improved 525 -> 523 and the issue loader family disappeared from the top findings.
 - Lessons carried forward: Metric-only claims are fragile; pair clone inventory with file-level pressure and reviewer triage. Next cleanup should avoid improving one source file by pushing unchecked pressure into a test file.
 - Metrics: issue_tool.py 358 -> 291 code lines; Python length warn-band files 8 -> 7 before the added test, then 7 with test_issue_skill.py still warned; nose total_families 525 -> 523; nose total_dup_lines 3063 -> 3073.
+
+### Slice 2: Slice 2 - issue preflight test split
+
+- Objective: Reduce the test-side length pressure introduced/exposed by Slice 1 without hiding behavior assertions outside test files.
+- Why this approach: test_issue_skill.py was in the test-file warn band after the previous slice. Its preflight/backend-resolution tests formed a coherent sub-surface, and the duplicated issue adapter YAML writer also appeared in test_issue_closeout_verifier.py.
+- Commits: pending commit
+- What changed: Added tests/quality_gates/test_issue_preflight.py for preflight/backend-resolution assertions; added write_issue_adapter_with_backend to tests/quality_gates/support.py; removed duplicate adapter writer from test_issue_skill.py and test_issue_closeout_verifier.py; updated callers.
+- Alternatives rejected: Rejected a broader generic adapter-fixture DSL because remaining inline adapter writes are shape-specific. Rejected moving behavior assertions into support helpers; only mechanical YAML setup moved.
+- Targeted verification: ruff changed files and repo-wide ruff passed; focused issue tests passed 60; full length gate passed and warn-band count dropped 7 -> 6; check_test_repo_copy_invariants, boundary-bypass ratchet, attention-state visibility passed; critique artifacts validator passed; broad pytest passed 2807, 4 skipped, 26 deselected.
+- Test duplication pressure: test_issue_skill.py moved from 761/800 code lines and warn-band to 585/800; test_issue_preflight.py is 151/800; support.py is 332/800; test_issue_closeout_verifier.py dropped from 614/800 to 583/800.
+- Critique: Fresh-eye critique: charness-artifacts/critique/2026-06-12-issue-preflight-test-split.md. Counterweight required no further code edits; remaining Act Before Ship item is inclusion/staging of the new test file.
+- Off-goal findings: Nose production clone inventory was unchanged; this was a test-pressure cleanup, not a production clone-line reduction.
+- Lessons carried forward: A test split is only a quality improvement when behavior assertions remain in test files and only mechanical scaffolding moves to support. Next candidate: fake ceal binary setup repetition or another warn-band file.
+- Metrics: Python length warn-band files 7 -> 6; test_issue_skill.py 761 -> 585 code lines; test_issue_closeout_verifier.py 614 -> 583; broad pytest 2807 passed.
 
 ## Context Sources
 

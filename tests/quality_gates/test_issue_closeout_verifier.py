@@ -6,7 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.quality_gates.support import run_script
+from tests.quality_gates.support import run_script, write_issue_adapter_with_backend
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 VERIFY_MODULE_PATH = Path(__file__).resolve().parents[2] / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
@@ -18,39 +18,6 @@ def _load_verify_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-def _write_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:
-    adapter_dir = tmp_path / ".agents"
-    adapter_dir.mkdir(exist_ok=True)
-    (adapter_dir / "issue-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "default_org: corca-ai",
-                "remote_name: origin",
-                "issue_backend:",
-                f"  id: {backend_id}",
-                f"  binary: {binary}",
-                "  commands:",
-                "    create:",
-                "      - github",
-                "      - issue",
-                "      - create",
-                "      - '-R'",
-                "      - '{repo}'",
-                "    search_newest_open:",
-                "      - github",
-                "      - issue",
-                "      - list",
-                "      - '-R'",
-                "      - '{repo}'",
-                "      - '--json'",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
 
 
 def _seed_commit(repo: Path, body: str) -> None:
@@ -377,7 +344,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -440,7 +407,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
 
 
 def test_issue_verify_closeout_rejects_adapter_view_without_target_placeholders(tmp_path: Path) -> None:
-    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -685,5 +652,4 @@ def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
     assert payload["manual_comment_missing"] == [42]
-
 

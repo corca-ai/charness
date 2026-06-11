@@ -62,6 +62,39 @@ def write_executable(path: Path, content: str) -> None:
     path.chmod(0o755)
 
 
+def write_issue_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir(exist_ok=True)
+    (adapter_dir / "issue-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "default_org: corca-ai",
+                "remote_name: origin",
+                "issue_backend:",
+                f"  id: {backend_id}",
+                f"  binary: {binary}",
+                "  commands:",
+                "    create:",
+                "      - github",
+                "      - issue",
+                "      - create",
+                "      - '-R'",
+                "      - '{repo}'",
+                "    search_newest_open:",
+                "      - github",
+                "      - issue",
+                "      - list",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '--json'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def init_git_repo(repo: Path, *tracked_paths: str) -> None:
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     if tracked_paths:
