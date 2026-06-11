@@ -134,14 +134,13 @@ def test_init_adapter_scaffolds_empty_proof_surface(tmp_path: Path, monkeypatch,
 def test_bootstrap_loader_raises_when_runtime_bootstrap_missing(monkeypatch) -> None:
     import pytest
 
-    init_adapter = _load_hotl_module("init_adapter")
     # simulate a package copy stranded outside any checkout that carries the
     # runtime bootstrap: no ancestor offers skill_runtime_bootstrap.py
     monkeypatch.setattr(Path, "is_file", lambda self: False)
     with pytest.raises(ImportError, match="skill_runtime_bootstrap"):
         resolve_adapter._load_skill_runtime_bootstrap()
     with pytest.raises(ImportError, match="skill_runtime_bootstrap"):
-        init_adapter._load_skill_runtime_bootstrap()
+        _load_hotl_module("init_adapter")
 
 
 def test_validate_adapter_accepts_configured_artifact_class(tmp_path: Path) -> None:

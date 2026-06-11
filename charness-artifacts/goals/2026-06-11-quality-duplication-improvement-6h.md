@@ -1,10 +1,10 @@
 # Achieve Goal: Quality and duplication improvement timebox
 
-Status: draft
+Status: active
 Created: 2026-06-11
 Activation: `/goal @charness-artifacts/goals/2026-06-11-quality-duplication-improvement-6h.md`
 Timebox: 6h maximum
-Activation time: pending until `/goal` activation
+Activation time: 2026-06-11T22:09:06+09:00
 Closeout reserve: 30m
 Done-early policy: continue_next_improvement
 
@@ -13,8 +13,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-11-quality-duplication-improvement-6h.md`.
+- Current slice: Slice 2 — commit init adapter bootstrap simplification.
+- Next action: run pre-commit, commit the completed slice, then choose the next
+  safe Slice 3 quality target if time remains.
 - Timebox posture: spend at most six hours after activation; reserve the final
   30 minutes for final proof, artifact closeout, retro disposition, and commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -124,8 +125,8 @@ After completion, the user can inspect the final report and verify:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Rebaseline duplication and classify top families | The new `nose` scope/ranking support makes broad versus filtered scans comparable. | Broad `--top 0` scan, resolver-filtered scan, classification notes in Slice Log. | planned |
-| 2 | Choose and implement the safest structural reduction | Start with narrow bootstrap/scaffold/load-helper repetition rather than broad resolver surgery. | Small refactor, focused tests, plugin sync if needed, before/after nose sample. | planned |
+| 1 | Rebaseline duplication and classify top families | The new `nose` scope/ranking support makes broad versus filtered scans comparable. | Broad `--top 0` scan, resolver-filtered scan, classification notes in Slice Log. | completed |
+| 2 | Choose and implement the safest structural reduction | Start with narrow bootstrap/scaffold/load-helper repetition rather than broad resolver surgery. | Small refactor, focused tests, plugin sync if needed, before/after nose sample. | verifying |
 | 3 | Apply a second quality improvement if time remains | Done-early policy should continue into the next safe improvement instead of stopping after one cleanup. | Another committed cleanup or `No safe next slice:` with reason. | planned |
 | 4 | Closeout proof, residual ledger, retro disposition | Timebox requires protected final proof and explicit non-claims. | Final gates, critique/retro artifacts, completed goal artifact. | planned |
 
@@ -155,9 +156,31 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+- Routing: `find-skills` read-only recommendation at activation returned
+  `achieve`, `quality`, and `nose`; implementation proceeded under the active
+  goal artifact plus `impl` sequence discipline.
+- Gather: n/a — no external URL or source link was introduced for this slice.
+- Release: n/a — no version bump, install manifest, publish, or release surface
+  changed.
+- Issue closeout: n/a — this goal does not close a tracked GitHub issue.
+
 ## Slice Log
 
-No slices executed yet. This draft is inert until `/goal` activation.
+Activation started at 2026-06-11T22:09:06+09:00.
+
+### Slice 1: rebaseline and init adapter bootstrap simplification
+
+- Objective: Reduce extractable bootstrap/init_adapter duplication without changing public skill adapter behavior.
+- Why this approach: Filtered nose scans showed init_adapter.py full-file duplication as a high-value non-resolver candidate; the irreducible part is root discovery before repo helpers are importable.
+- Commits: `Simplify init adapter bootstrap loaders`
+- What changed: Replaced repeated runpy/SimpleNamespace bootstrap wrappers in 11 public skill init_adapter.py files with a shorter ancestor-root sys.path import pattern, updated HOTL stranded-bootstrap test, synced plugin mirrors, and recorded critique.
+- Alternatives rejected: Rejected full resolve_adapter.py commonization as too broad for this slice. Rejected eliminating all local bootstrap code because scripts need a local root-discovery step before shared helpers can be imported.
+- Targeted verification: Focused pytest 33 passed; 11 init_adapter scaffold smoke passed; ruff passed; py_compile all skill scripts passed; validate_skills/public-skill-validation/public-skill-dogfood/packaging/packaging_committed passed; doc and hygiene gates passed; broad pytest 2803 passed, 4 skipped, 26 deselected.
+- Test duplication pressure:
+- Critique: Fresh-eye subagent review found no blocker. Low residual: same-interpreter multi-root import could reuse sys.modules['skill_runtime_bootstrap']; normal CLI/plugin execution is fresh-process, so recorded for future long-lived importer work.
+- Off-goal findings: Remaining top families include resolve_adapter.py, scaffold footer/main blocks, _mask_fences, and adapter validation helpers; not resolved by this slice.
+- Lessons carried forward:
+- Metrics: Broad nose --top 0 moved 526 families / 13164 dup_lines to 525 / 12773. Resolver+scaffold-filtered top25 dup_lines moved 2924 to 2278. Classification: broad resolver families remain high-volume portability boilerplate; scaffold footer/main blocks and `_mask_fences` remain plausible future extraction candidates; init adapter full-file duplication was the safest structural candidate because it used an existing runtime helper boundary.
 
 ## Context Sources
 
