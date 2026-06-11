@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/support/web-fetch/references/routing-table.md`, `skills/support/web-fetch/references/runtime-contract.md`, `skills/support/web-fetch/scripts/acquire_public_url.py`, `skills/support/web-fetch/scripts/acquisition_trace_lib.py`, `skills/support/web-fetch/scripts/agent_browser_session.py`, `skills/support/web-fetch/scripts/browser_fallback_stages.py`, `skills/support/web-fetch/scripts/route_public_fetch.py`, `skills/support/web-fetch/scripts/youtube_browser_ui.py`, `skills/support/web-fetch/scripts/youtube_source.py`.
-- Evaluated changed paths: 83.
+- Evaluated changed paths: 85.
 
 ## Waste
 

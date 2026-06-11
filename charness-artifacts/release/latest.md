@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.41.0` (tag `v0.41.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -65,7 +65,7 @@ Advanced `charness` toward release `0.41.0` (tag `v0.41.0`) through the repo-own
   - `skills/support/web-fetch/scripts/route_public_fetch.py`
   - `skills/support/web-fetch/scripts/youtube_browser_ui.py`
   - `skills/support/web-fetch/scripts/youtube_source.py`
-- Evaluated changed paths: 83.
+- Evaluated changed paths: 85.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-06-11-023045-packet.json`
@@ -86,7 +86,7 @@ Advanced `charness` toward release `0.41.0` (tag `v0.41.0`) through the repo-own
   - `charness-artifacts/gather/2026-06-11-youtube-hak1koqwm18-unavailable-details.md`
   - `charness-artifacts/gather/latest.md`
   - `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md`
-  - ... 63 more
+  - ... 65 more
 
 ## Real-Host Verification
 
@@ -110,7 +110,7 @@ Advanced `charness` toward release `0.41.0` (tag `v0.41.0`) through the repo-own
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
