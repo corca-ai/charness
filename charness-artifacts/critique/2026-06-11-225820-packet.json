@@ -1,0 +1,42 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-06-11T22:58:20Z",
+  "prepared_for": "release adapter preflight helper split",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "service_tier": "priority"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- plugins/charness/skills/release/scripts/publish_release_preflight.py\n- skills/public/release/scripts/publish_release_preflight.py\n- plugins/charness/skills/release/scripts/publish_release_adapter_preflight.py\n- skills/public/release/scripts/publish_release_adapter_preflight.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/release/scripts/publish_release_preflight.py, skills/public/release/scripts/publish_release_adapter_preflight.py\n  derived matches: plugins/charness/skills/release/scripts/publish_release_preflight.py, plugins/charness/skills/release/scripts/publish_release_adapter_preflight.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/release/scripts/publish_release_preflight.py, skills/public/release/scripts/publish_release_adapter_preflight.py\n  derived matches: plugins/charness/skills/release/scripts/publish_release_preflight.py, plugins/charness/skills/release/scripts/publish_release_adapter_preflight.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/release/scripts/publish_release_preflight.py, skills/public/release/scripts/publish_release_adapter_preflight.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/release/scripts/publish_release_preflight.py, skills/public/release/scripts/publish_release_adapter_preflight.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/release/scripts/publish_release_preflight.py, skills/public/release/scripts/publish_release_adapter_preflight.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- The retro skill does not consume this packet today. A retro-side prepare slot (retro-adapter.yaml packet_sections) is a separate follow-up.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true
+}

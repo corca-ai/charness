@@ -10,9 +10,10 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 8 - continue with final closeout or the next locally safe
-  cleanup after recording the committed web-fetch acquire policy helper split.
-- Next action: choose between the remaining release warn-band files and final
+- Current slice: Slice 9 - continue with final closeout or the next locally safe
+  cleanup after committing the release adapter preflight helper split.
+- Next action: commit the release adapter preflight helper split, then choose
+  between the remaining release CLI warn-band/function pressure and final
   closeout if the reserve window is reached.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
@@ -100,7 +101,8 @@ check.
 | 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | committed (`5c5ffa1e`) |
 | 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | committed (`9fdc07e8`) |
 | 7 | Remove the next support helper warn-band pressure point. | `acquire_public_url.py` had 12 lines of headroom before the hard limit, and fallback/direct-attempt policy was a coherent boundary. | Policy helper split, plugin sync, fresh-eye critique, focused web-fetch/youtube tests, and surface-recommended gates. | committed (`c4b28eab`) |
-| 8 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
+| 8 | Remove the next release helper warn-band pressure point. | `publish_release_preflight.py` was close to its hard limit, and release adapter focused-preflight logic was a coherent sub-boundary. | Adapter preflight helper split, plugin sync, fresh-eye critique, focused release tests, and surface-recommended gates. | implemented; commit pending |
+| 9 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
 
 ## Coordination Cues
 
@@ -235,6 +237,20 @@ general quality-improvement goal.
 - Off-goal findings: none.
 - Lessons carried forward: Preserve compatibility aliases when moving private helpers that tests already exercise. Split by behavior boundary, not by moving arbitrary lines.
 - Metrics: Python length warn-band files 3 -> 2; `acquire_public_url.py` 348 -> 296 code lines; new `acquire_public_url_policy.py` 67 code lines; focused pytest 63 passed.
+
+### Slice 8: release adapter preflight helper split
+
+- Objective: Remove the next release helper warn-band pressure point without changing release adapter focused-preflight behavior.
+- Why this approach: `skills/public/release/scripts/publish_release_preflight.py` was 334/360 code lines. The release-adapter focused-preflight logic had a coherent boundary around adapter candidate paths, field diffing, focused command payload construction, and command execution, distinct from critique, update-instructions, and real-host preflight checks.
+- Commits: pending commit
+- What changed: Added `skills/public/release/scripts/publish_release_adapter_preflight.py`; moved adapter-diff and focused command logic there; kept `publish_release_preflight.release_adapter_preflight_payload` and `publish_release_preflight.run_release_adapter_preflight` as wrapper functions; loaded the helper by sibling path so direct `spec_from_file_location` tests keep working; moved attention-state visibility declaration for `not_configured`/`not_evaluable` to the new helper; regenerated `plugins/charness/skills/release/scripts/publish_release_preflight.py` and added its plugin helper mirror.
+- Alternatives rejected: Rejected converting release scripts to normal package imports because existing tests and skill runtime paths load release scripts by file location. Rejected preserving old private helper symbols on `publish_release_preflight.py` because no current callers use them.
+- Targeted verification: focused ruff passed; `pytest -q tests/quality_gates/test_release_backend.py tests/quality_gates/test_release_publish.py::test_publish_release_runs_adapter_preflight_before_bump tests/quality_gates/test_release_publish.py::test_publish_release_records_adapter_preflight_in_release_artifact` passed 16; direct `spec_from_file_location` import smoke passed; Python length gate passed with warn-band files 2 -> 1; packaging and validate_packaging_committed passed; validate_skills and skill py_compile passed; check_skill_ownership_overlap and validate_skill_ergonomics passed; validate_public_skill_validation and validate_public_skill_dogfood passed; validate_attention_state_visibility passed after declaration ownership moved with the helper; validate_cautilus_proof passed; gitignore scan hygiene passed; staged mirror drift check passed before staging.
+- Release pressure: `publish_release_preflight.py` left the warn band, moving from 334/360 code lines to 215/360; the new adapter helper is 153/360 code lines. Remaining warn-band/function pressure is `publish_release_cli.py` and `execute_publish_plan()`.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-release-adapter-preflight-helper-split.md`. Counterweight required no further code/test changes beyond including the new source/plugin helper files and recording validation evidence.
+- Off-goal findings: none.
+- Lessons carried forward: For release scripts loaded by path, preserve wrapper surfaces and use sibling-path loading unless a slice explicitly owns the broader import contract migration.
+- Metrics: Python length warn-band files 2 -> 1; `publish_release_preflight.py` 334 -> 215 code lines; new `publish_release_adapter_preflight.py` 153 code lines; focused pytest 16 passed.
 
 ## Context Sources
 
