@@ -10,13 +10,12 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 - continue with the next locally safe cleanup after
-  committing the surface-obligations split.
+- Current slice: Slice 5 - continue with the next locally safe cleanup after
+  committing the mutation coverage collection test split.
 - Next action: inspect the remaining warn-band files
-  (`tests/quality_gates/test_quality_mutation_sampling.py`,
-  `scripts/quality_bootstrap_lib.py`, release/web-fetch scripts) and the
-  repeated temporary surface-manifest fixtures in the new closeout test file,
-  then choose the smallest structural cleanup that preserves behavior intent.
+  (`scripts/quality_bootstrap_lib.py`, release/web-fetch scripts) and the
+  repeated temporary surface-manifest fixtures in the closeout test file, then
+  choose the smallest structural cleanup that preserves behavior intent.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -98,9 +97,10 @@ check.
 | --- | --- | --- | --- | --- |
 | 1 | Pick and land one structural quality cleanup from current duplication/workflow pressure. | The user explicitly objected to low-yield goal execution; the next move must produce a concrete quality delta. | Committed code/test/doc change plus focused and surface-recommended gates. | committed (`25201777`) |
 | 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | committed (`6287bb27`) |
-| 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
-| 4 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
-| 5 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
+| 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | committed (`c863bac9`) |
+| 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
+| 5 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
+| 6 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
 
 ## Coordination Cues
 
@@ -170,7 +170,7 @@ general quality-improvement goal.
 
 - Objective: Remove the immediate hard-limit pressure from `test_surface_obligations.py` without deleting or hiding closeout-runner behavior assertions.
 - Why this approach: `tests/quality_gates/test_surface_obligations.py` was at 798/800 code lines. The `run_slice_closeout` tests formed a coherent runner-behavior cluster distinct from changed-surface selection and surfaces-manifest validation.
-- Commits: pending commit
+- Commits: `c863bac9`
 - What changed: Added `tests/quality_gates/test_run_slice_closeout_surface_obligations.py` for closeout runner tests; removed the moved tests and unused imports from `test_surface_obligations.py`; regenerated `scripts/boundary-bypass-baseline.json` for the test-file key migration and synced `plugins/charness/scripts/boundary-bypass-baseline.json`.
 - Alternatives rejected: Rejected extracting all repeated temporary `.agents/surfaces.json` setup in the same slice because that would broaden a length/cohesion split into a fixture-refactor slice. Rejected hand-editing stale baseline keys back into the regenerated baseline just to keep the diff narrower.
 - Targeted verification: focused pytest for the two split files passed 36; changed-file ruff passed; full repo ruff passed; full Python length gate passed with warn-band files 6 -> 5; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed after canonical baseline regeneration; packaging, packaging-committed, integrations, sync_support dry-run, and update_tools dry-run passed; broad pytest passed 2807, 4 skipped, 26 deselected.
@@ -179,6 +179,20 @@ general quality-improvement goal.
 - Off-goal findings: Boundary-bypass baseline regeneration also removed two stale scaffold/export keys (`tests/test_critique_scaffold.py::scripts/export_plugin.py` and `tests/test_handoff_scaffold.py::scripts/export_plugin.py`). Reviewers treated this as canonical baseline cleanup because current inventory and root/plugin baselines match.
 - Lessons carried forward: A file split can honestly fix hard-limit pressure and cohesion without fixing every local duplication. Next slice should choose between the remaining warn-band files and the repeated temporary surface-manifest fixture setup.
 - Metrics: Python length warn-band files 6 -> 5; `test_surface_obligations.py` 798 -> 347 code lines; new `test_run_slice_closeout_surface_obligations.py` 455 code lines; broad pytest 2807 passed.
+
+### Slice 4: Slice 4 - mutation coverage collection test split
+
+- Objective: Remove the next test warn-band pressure point without deleting coverage regression assertions or overclaiming a broad mutation-test cleanup.
+- Why this approach: `tests/quality_gates/test_quality_mutation_sampling.py` was 763/800 code lines. Its coverage collection tests (`coverage_run_command`, subprocess coverage capture, stale coverage shard cleanup) form a coherent cluster distinct from sampling selection, changed-line filtering, and manifest assertions.
+- Commits: pending commit
+- What changed: Added `tests/quality_gates/test_quality_mutation_coverage.py` for coverage collection regression tests; removed the moved tests and coverage-collection-only imports from `test_quality_mutation_sampling.py`; removed an unused `ROOT` constant from the new file after fresh-eye review.
+- Alternatives rejected: Rejected a broader mutation-test taxonomy rewrite because remaining coverage filtering/context/manifest tests still belong with sampling behavior. Rejected moving behavior assertions into support helpers; this is a file-boundary split only.
+- Targeted verification: focused ruff passed; focused pytest for the split files passed 29 both before and after the tiny unused-constant cleanup; headroom check showed `test_quality_mutation_sampling.py` 763/800 -> 676/800 and new `test_quality_mutation_coverage.py` 96/800; full repo ruff passed; full Python length gate passed with warn-band files 5 -> 4; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed; final broad pytest passed 2807, 4 skipped, 26 deselected.
+- Test duplication pressure: `test_quality_mutation_sampling.py` left the warn band. This is a coverage collection split only; sampling still owns coverage filtering, coverage context/nodeid, and manifest coverage assertions.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-quality-mutation-coverage-test-split.md`. Counterweight required no additional implementation beyond staging the new test file and keeping wording scoped to coverage collection.
+- Off-goal findings: none.
+- Lessons carried forward: Splits should name the behavior cluster they actually move. Do not claim all coverage-related mutation behavior moved when the original sampling file still owns coverage filtering and manifest coverage assertions.
+- Metrics: Python length warn-band files 5 -> 4; `test_quality_mutation_sampling.py` 763 -> 676 code lines; new `test_quality_mutation_coverage.py` 96 code lines; final broad pytest 2807 passed.
 
 ## Context Sources
 
