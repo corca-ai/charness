@@ -13,9 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — commit goal artifact markdown helper.
-- Next action: run pre-commit, commit the completed slice, then choose the next
-  safe quality target if time remains.
+- Current slice: Slice 3 — scaffold artifact helper refactor.
+- Next action: finish fresh-eye review, record critique disposition, run
+  pre-commit, commit the completed slice, then decide whether to close out or
+  take one more safe quality target.
 - Timebox posture: spend at most six hours after activation; reserve the final
   30 minutes for final proof, artifact closeout, retro disposition, and commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -195,6 +196,20 @@ Activation started at 2026-06-11T22:09:06+09:00.
 - Off-goal findings: Remaining top candidates include unresolved bootstrap root-discovery blocks, init_adapter minimal boilerplate, scaffold footer/main blocks, adapter validation helpers, and resolver families.
 - Lessons carried forward:
 - Metrics: Broad nose moved 525 families / 12773 dup_lines to 526 / 12590 after this slice. Resolver+scaffold-filtered top40 dup_lines moved 3033 to 2943. The original _mask_fences family disappeared from top findings.
+
+### Slice 3: scaffold artifact helper
+
+- Objective: Reduce duplicated scaffold CLI/validator/current-pointer logic while preserving public skill and installed-plugin scaffold behavior.
+- Why this approach: After excluding broad resolver boilerplate, scaffold scripts remained an extractable family. The shared behavior was validator lookup, JSON/template CLI emission, and debug/quality current-pointer symlink handling; each skill's template and adapter-specific payload choices stayed local.
+- Commits: pending.
+- What changed: Added `scripts/scaffold_artifact_lib.py`, loaded it from six public scaffold scripts, moved repo-local-first validator lookup and CLI output handling into the helper, moved debug/quality current-pointer payload handling into the helper, exposed `VALIDATOR_SCRIPT_NAMES` for tests, updated in-process and changed-line coverage tests, and synced plugin mirrors.
+- Alternatives rejected: Rejected broad `resolve_adapter.py` extraction as still too coupled to skill portability. Rejected filtering scaffold files out of `nose` as proof because that would hide, not reduce, duplicated behavior. Rejected a single full scaffold framework because the templates and adapter payloads differ enough that over-generalizing would make authoring harder.
+- Targeted verification: Focused scaffold pytest 38 passed including the release-only changed-line coverage probe; targeted ruff and py_compile passed; packaging, skill, public-skill validation/dogfood, doc, hygiene, integration/support dry-run, repo-python, and broad pytest gates passed. Broad pytest: `2803 passed, 4 skipped, 26 deselected`.
+- Test duplication pressure: `tests/test_scaffold_inprocess_coverage.py` now reads `VALIDATOR_SCRIPT_NAMES` rather than parsing `validator_command` source shape. `tests/quality_gates/test_scaffold_changed_line_coverage.py` now verifies the shared helper fallback line coverage while still asserting each scaffold is tracked by the probe.
+- Critique: Fresh-eye subagent review found no blocker. Low residuals: installed-plugin fallback is covered by exported scaffold tests rather than the in-process monkeypatch test; standalone single-file scaffold copying is unsupported because the helper must travel with the source/plugin layout; same-process mixed-version import cache risk is theoretical and outside normal CLI execution.
+- Off-goal findings: `check_python_lengths.py` still reports 10 existing warn-band files; none are introduced by this slice. Tool update diagnostics show some installed tools are not latest or missing (`defuddle`, `gws`), but tool upgrades are out of scope for this local quality run.
+- Lessons carried forward:
+- Metrics: Broad nose moved `526 families / 12590 dup_lines` after Slice 2 to `525 families / 12577 dup_lines` after this slice. Resolver-filtered top40 shown duplicated lines moved from `3025` during the initial scaffold helper attempt to `3007` after removing duplicated wrapper comments and current-pointer payload copies.
 
 ## Context Sources
 

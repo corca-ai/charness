@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import datetime as dt
-import json
 import re
-import runpy
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
+SKILL_RUNTIME_PATH = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+if SKILL_RUNTIME_PATH is None:
+    raise ImportError("skill_runtime_bootstrap.py not found")
+sys_path_root = str(SKILL_RUNTIME_PATH.parent)
+if sys_path_root not in sys.path:
+    sys.path.insert(0, sys_path_root)
+import skill_runtime_bootstrap as SKILL_RUNTIME  # noqa: E402
 
-def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
-    if bootstrap is None:
-        raise ImportError("skill_runtime_bootstrap.py not found")
-    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
-
-
-SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+_scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
 # The critique validator (scripts/validate_critique_artifacts.py) is opt-in but
 # enforces real schemas when their sections appear: `## Structured Findings`
@@ -48,6 +44,7 @@ ALLOWED_HOST_EXPOSURE_STATES = (
     "unsupported",
     "applied",
 )
+VALIDATOR_SCRIPT_NAMES = ("validate_critique_artifacts.py", "validate-critique-artifacts.py")
 
 
 def allowed_enums() -> dict[str, object]:
@@ -126,21 +123,12 @@ def render_template(*, title: str, date_text: str) -> str:
 
 
 def validator_command(repo_root: Path, write_artifact_path: str) -> str:
-    # Prefer the repo-local validator when the working repo owns one so the cited
-    # check == the broad gate; fall back to the installed-plugin copy only for a
-    # consumer repo that ships no validator of its own. Repo-local-first kills the
-    # installed-vs-repo version-skew class (an installed validator looser than the
-    # repo's must not shadow it).
-    for script_name in ("validate_critique_artifacts.py", "validate-critique-artifacts.py"):
-        repo_local = repo_root / "scripts" / script_name
-        if repo_local.is_file():
-            return f"python3 scripts/{script_name} --repo-root . --paths {write_artifact_path}"
-    for ancestor in Path(__file__).resolve().parents:
-        for script_name in ("validate_critique_artifacts.py", "validate-critique-artifacts.py"):
-            candidate = ancestor / "scripts" / script_name
-            if candidate.is_file():
-                return f"python3 {candidate} --repo-root . --paths {write_artifact_path}"
-    raise FileNotFoundError("validate_critique_artifacts.py not found in installed Charness layout")
+    return _scaffold_lib.validator_command(
+        repo_root=repo_root,
+        script_file=__file__,
+        script_names=VALIDATOR_SCRIPT_NAMES,
+        artifact_path=write_artifact_path,
+    )
 
 
 def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
@@ -162,18 +150,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold the critique artifact into")
-    parser.add_argument("--title", help="Title for the scaffolded critique artifact")
-    parser.add_argument("--json", action="store_true", help="Emit the payload as JSON instead of the rendered template")
-    args = parser.parse_args()
-
-    payload = payload_for(args.repo_root.resolve(), title=args.title)
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    else:
-        sys.stdout.write(payload["template"])
-    return 0
+    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="critique")
 
 
 if __name__ == "__main__":

@@ -29,7 +29,6 @@ import inspect
 import io
 import json
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -69,11 +68,10 @@ def _load_scaffold(slug: str):
 
 
 def _expected_validator_names(module) -> tuple[str, ...]:
-    """Parse the validator filenames the scaffold's repo_local fallback looks for."""
-    source = inspect.getsource(module.validator_command)
-    match = re.search(r"for script_name in \(([^)]*)\)", source)
-    assert match, "validator_command must iterate a script_name tuple"
-    return tuple(re.findall(r"[\"']([^\"']+\.py)[\"']", match.group(1)))
+    """Return the validator filenames the scaffold's repo_local fallback looks for."""
+    names = getattr(module, "VALIDATOR_SCRIPT_NAMES", ())
+    assert names, "scaffold must expose VALIDATOR_SCRIPT_NAMES"
+    return tuple(names)
 
 
 def _call_validator(module, repo_root: Path) -> str:

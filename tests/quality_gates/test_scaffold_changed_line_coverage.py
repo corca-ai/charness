@@ -38,19 +38,20 @@ from mutation_sampling_lib import (  # noqa: E402
     run_test_coverage,
 )
 
-# Scaffolds and the validator-fallback / non-json print statement lines that the
+# Scaffolds and the shared validator-fallback statement lines that the
 # subprocess-only tests left uncovered and that the in-process test now drives.
 # Re-resolved structurally below so a line shift does not silently pass.
 SCAFFOLDS = ["critique", "debug", "handoff", "ideation", "quality", "retro"]
+SCAFFOLD_HELPER_REL = "scripts/scaffold_artifact_lib.py"
 
 
 def _scaffold_rel(slug: str) -> str:
     return f"skills/public/{slug}/scripts/scaffold_{slug}_artifact.py"
 
 
-def _validator_fallback_lines(slug: str) -> list[int]:
-    """Statement line numbers inside the validator_command repo_local fallback."""
-    path = REPO_ROOT / _scaffold_rel(slug)
+def _validator_fallback_lines() -> list[int]:
+    """Statement line numbers inside the shared validator_command repo_local fallback."""
+    path = REPO_ROOT / SCAFFOLD_HELPER_REL
     lines = path.read_text(encoding="utf-8").splitlines()
     fallback: list[int] = []
     in_fallback = False
@@ -63,7 +64,7 @@ def _validator_fallback_lines(slug: str) -> list[int]:
         elif in_fallback and stripped.startswith("return f\"python3 scripts/"):
             fallback.append(index)
             break
-    assert fallback, f"could not locate validator fallback lines in {slug}"
+    assert fallback, "could not locate shared validator fallback lines"
     return fallback
 
 
@@ -80,17 +81,21 @@ def test_scaffold_changed_lines_read_covered_through_gate_probe(tmp_path: Path) 
     )
     statement_lines = load_file_statement_lines(REPO_ROOT, coverage_json)
 
+    assert SCAFFOLD_HELPER_REL in statement_lines, (
+        f"{SCAFFOLD_HELPER_REL} not tracked by the probe -- shared fallback coverage is invisible"
+    )
+    executed, missing = statement_lines[SCAFFOLD_HELPER_REL]
+    fallback_lines = _validator_fallback_lines()
+    still_missing = [line for line in fallback_lines if line in missing]
+    assert not still_missing, (
+        f"{SCAFFOLD_HELPER_REL} validator fallback lines still uncovered: {still_missing} "
+        f"(executed has {len(executed)} lines)"
+    )
+
     for slug in SCAFFOLDS:
         rel = _scaffold_rel(slug)
         assert rel in statement_lines, (
             f"{rel} not tracked by the probe -- it would read as subprocess-only 0%"
-        )
-        executed, missing = statement_lines[rel]
-        fallback_lines = _validator_fallback_lines(slug)
-        still_missing = [line for line in fallback_lines if line in missing]
-        assert not still_missing, (
-            f"{rel} validator fallback lines still uncovered: {still_missing} "
-            f"(executed has {len(executed)} lines)"
         )
 
 

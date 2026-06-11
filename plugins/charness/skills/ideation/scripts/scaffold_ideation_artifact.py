@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import datetime as dt
-import json
+import importlib.util
 import re
-import sys
 from pathlib import Path
 
 # `ideation` is a conversation-first skill with no adapter or scripts package, so
@@ -24,6 +22,23 @@ STRUCTURED_QUESTIONS = (
     "- Q2 | urgency: probe-in-impl | depends-on: Q1 | action: impl"
     " | note: TODO the item safe to defer into implementation as a probe",
 )
+VALIDATOR_SCRIPT_NAMES = ("validate_ideation_artifact.py", "validate-ideation-artifact.py")
+
+
+def _load_scaffold_artifact_lib():
+    for ancestor in Path(__file__).resolve().parents:
+        candidate = ancestor / "scripts" / "scaffold_artifact_lib.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("scaffold_artifact_lib", candidate)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"Unable to load scaffold_artifact_lib from {candidate}")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scaffold_artifact_lib.py not found")
+
+
+_scaffold_lib = _load_scaffold_artifact_lib()
 
 
 def default_title(title: str | None) -> str:
@@ -47,21 +62,12 @@ def render_template(*, title: str, date_text: str) -> str:
 
 
 def validator_command(repo_root: Path, write_artifact_path: str) -> str:
-    # Prefer the repo-local validator when the working repo owns one so the cited
-    # check == the broad gate; fall back to the installed-plugin copy only for a
-    # consumer repo that ships no validator of its own. Repo-local-first kills the
-    # installed-vs-repo version-skew class (an installed validator looser than the
-    # repo's must not shadow it).
-    for script_name in ("validate_ideation_artifact.py", "validate-ideation-artifact.py"):
-        repo_local = repo_root / "scripts" / script_name
-        if repo_local.is_file():
-            return f"python3 scripts/{script_name} --repo-root . --paths {write_artifact_path}"
-    for ancestor in Path(__file__).resolve().parents:
-        for script_name in ("validate_ideation_artifact.py", "validate-ideation-artifact.py"):
-            candidate = ancestor / "scripts" / script_name
-            if candidate.is_file():
-                return f"python3 {candidate} --repo-root . --paths {write_artifact_path}"
-    raise FileNotFoundError("validate_ideation_artifact.py not found in installed Charness layout")
+    return _scaffold_lib.validator_command(
+        repo_root=repo_root,
+        script_file=__file__,
+        script_names=VALIDATOR_SCRIPT_NAMES,
+        artifact_path=write_artifact_path,
+    )
 
 
 def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
@@ -80,18 +86,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold the ideation artifact into")
-    parser.add_argument("--title", help="Title for the scaffolded ideation artifact")
-    parser.add_argument("--json", action="store_true", help="Emit the payload as JSON instead of the rendered template")
-    args = parser.parse_args()
-
-    payload = payload_for(args.repo_root.resolve(), title=args.title)
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    else:
-        sys.stdout.write(payload["template"])
-    return 0
+    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="ideation")
 
 
 if __name__ == "__main__":
