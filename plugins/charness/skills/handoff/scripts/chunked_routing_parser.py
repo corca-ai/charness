@@ -31,6 +31,7 @@ is_nontrivial_token = _types.is_nontrivial_token
 _H2 = re.compile(r"^## (.+?)\s*$", re.MULTILINE)
 _NEXT_SESSION_HEADER = "Next Session"
 _NUMBERED_BULLET = re.compile(r"^(\d+)\.\s+(.*)$")
+_UNORDERED_BULLET = re.compile(r"^[-*]\s+(.*)$")
 _BOLD_TITLE = re.compile(r"^\*\*(.+?)\*\*", re.DOTALL)
 _MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 _ISSUE_REF = re.compile(r"#(\d+)(?:\s*-\s*#?(\d+))?\b")
@@ -72,18 +73,31 @@ def extract_next_session_block(text: str) -> str:
     return ""
 
 
-def _split_numbered_items(block: str) -> list[tuple[int, str]]:
-    """Split a numbered-list block into ``(index, raw_text)`` tuples."""
+def _split_list_items(block: str) -> list[tuple[int, str]]:
+    """Split top-level list items into ``(index, raw_text)`` tuples.
+
+    Historic handoff chunker fixtures used numbered lists. The rolling handoff
+    artifact now uses top-level bullets, so preserve explicit numbered indices
+    when present and assign sequential indices to unordered items.
+    """
     items: list[tuple[int, str]] = []
     current_lines: list[str] = []
     current_index: int | None = None
+    next_unordered_index = 1
     for line in block.splitlines():
-        match = _NUMBERED_BULLET.match(line)
-        if match:
+        numbered = _NUMBERED_BULLET.match(line)
+        unordered = _UNORDERED_BULLET.match(line)
+        if numbered or unordered:
             if current_index is not None:
                 items.append((current_index, "\n".join(current_lines).rstrip()))
-            current_index = int(match.group(1))
-            current_lines = [match.group(2)]
+            if numbered:
+                current_index = int(numbered.group(1))
+                current_lines = [numbered.group(2)]
+                next_unordered_index = max(next_unordered_index, current_index + 1)
+            else:
+                current_index = next_unordered_index
+                next_unordered_index += 1
+                current_lines = [unordered.group(1)]
         else:
             if current_index is not None:
                 current_lines.append(line)
@@ -282,7 +296,7 @@ def parse_handoff_entries(
     if not block.strip():
         return []
     entries: list[HandoffEntry] = []
-    for index, raw_text in _split_numbered_items(block):
+    for index, raw_text in _split_list_items(block):
         title, body = _extract_title(raw_text)
         link_paths, bare_paths = _collect_paths(raw_text)
         # Dedup after normalization so `../foo.md` and `foo.md` count once.

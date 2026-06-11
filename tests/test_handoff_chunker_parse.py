@@ -228,6 +228,32 @@ def test_parser_filters_preflight_and_completed_goal_activation(lib, tmp_path):
     assert entries[0].referenced_issues == (184, 261)
 
 
+def test_parser_reads_top_level_bullet_next_session_entries(lib):
+    text = """# Handoff
+
+## Next Session
+
+- **Push the goal-closeout commit** before new work.
+- **#353** — adapter_lib renderer hygiene.
+- **#184** — operator decision first, not a slice.
+
+## Discuss
+
+- Not part of Next Session parsing.
+"""
+
+    entries = lib.parse_handoff_entries(text)
+
+    assert [entry.index for entry in entries] == [1, 2, 3]
+    assert [entry.title for entry in entries] == [
+        "Push the goal-closeout commit",
+        "#353",
+        "#184",
+    ]
+    assert entries[1].referenced_issues == (353,)
+    assert entries[2].referenced_issues == (184,)
+
+
 def test_parser_filters_completed_goal_markdown_link_activation(lib, tmp_path):
     goal = tmp_path / "charness-artifacts/goals/2026-06-01-done.md"
     goal.parent.mkdir(parents=True)

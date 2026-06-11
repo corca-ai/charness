@@ -14,6 +14,7 @@ from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
+CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
 COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(call|invoke|run)\s+`?find-skills`?\b")
 COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(call|invoke|run)\s+`?find-skills`?\b")
 RECOMMENDATION_PRIORITY_ORDER = {
@@ -29,6 +30,8 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "fresh_eye_task_review_scope_uses_legacy_init_repo": "advisory",
     "fresh_eye_review_still_requires_consent_or_fallback": "review_required",
     "fresh_eye_delegation_caveat_weakens_contract": "advisory",
+    "critique_adapter_missing_for_fresh_eye_review": "review_required",
+    "critique_adapter_codex_reasoning_effort_drift": "review_required",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
     "commit_discipline_drift": "review_required",
@@ -129,6 +132,63 @@ def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tup
     )
 
 
+def _detect_critique_adapter_normalization(
+    repo_root: Path,
+    *,
+    fresh_eye_review: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, str]]]:
+    from scripts.critique_adapter_lib import load_adapter
+
+    adapter = load_adapter(repo_root)
+    data = adapter.get("data", {}) if isinstance(adapter.get("data"), dict) else {}
+    reviewer_tiers = data.get("reviewer_tiers", {}) if isinstance(data.get("reviewer_tiers"), dict) else {}
+    high_leverage = (
+        reviewer_tiers.get("high-leverage", {})
+        if isinstance(reviewer_tiers.get("high-leverage"), dict)
+        else {}
+    )
+    model = str(high_leverage.get("model", ""))
+    reasoning_effort = str(high_leverage.get("reasoning_effort", ""))
+    stop_gate_detected = bool(fresh_eye_review.get("stop_gate_detected"))
+    findings: list[dict[str, str]] = []
+    if stop_gate_detected and not adapter.get("found"):
+        findings.append(
+            {
+                "type": "critique_adapter_missing_for_fresh_eye_review",
+                "message": (
+                    "Fresh-eye or critique review policy is present, but no critique adapter pins reviewer tiers; "
+                    "Codex subagents may inherit the parent turn's reasoning effort instead of the intended medium tier."
+                ),
+                "recommended_action": "run_critique_init_adapter_or_add_reviewer_tiers",
+            }
+        )
+    if adapter.get("found") and model.startswith("gpt-") and reasoning_effort != "medium":
+        findings.append(
+            {
+                "type": "critique_adapter_codex_reasoning_effort_drift",
+                "message": (
+                    "Critique adapter maps the Codex high-leverage reviewer tier without "
+                    "`reasoning_effort: medium`, so spawned reviewers can drift to high."
+                ),
+                "recommended_action": "set_codex_high_leverage_reasoning_effort_medium",
+            }
+        )
+    return (
+        {
+            "found": bool(adapter.get("found")),
+            "valid": bool(adapter.get("valid")),
+            "path": (
+                Path(str(adapter["path"])).resolve().relative_to(repo_root.resolve()).as_posix()
+                if adapter.get("path")
+                else None
+            ),
+            "high_leverage_model": model or None,
+            "high_leverage_reasoning_effort": reasoning_effort or None,
+        },
+        findings,
+    )
+
+
 def _recommendation(
     *,
     rec_id: str,
@@ -154,10 +214,15 @@ def _recommendation(
 
 
 def finding_recommendation(finding: dict[str, str], *, priority: str = "advisory") -> dict[str, object]:
+    target = "AGENTS.md"
+    kind = "policy_sync"
+    if finding["type"].startswith("critique_adapter_"):
+        target = CRITIQUE_ADAPTER_RELATIVE_PATH.as_posix()
+        kind = "adapter_sync"
     return _recommendation(
         rec_id=finding["type"],
-        target="AGENTS.md",
-        kind="policy_sync",
+        target=target,
+        kind=kind,
         priority=priority,
         confidence="medium",
         enforcement_tier="NON_AUTOMATABLE",
@@ -303,6 +368,10 @@ def detect_agent_docs(
         action = "inspect_manually"
     retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
     fresh_eye_review, fresh_eye_findings = detect_fresh_eye_normalization(agents_text)
+    critique_adapter, critique_adapter_findings = _detect_critique_adapter_normalization(
+        repo_root,
+        fresh_eye_review=fresh_eye_review,
+    )
     charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
     commit_discipline, commit_discipline_findings = detect_commit_discipline_policy(agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
@@ -322,6 +391,7 @@ def detect_agent_docs(
     normalization_findings = [
         *retro_findings,
         *fresh_eye_findings,
+        *critique_adapter_findings,
         *charness_artifact_findings,
         *commit_discipline_findings,
         *skill_routing_findings,
@@ -340,6 +410,7 @@ def detect_agent_docs(
             "extra_recommendations": extra_recommendations,
             "retro_memory": retro_memory,
             "fresh_eye_review": fresh_eye_review,
+            "critique_adapter": critique_adapter,
             "charness_artifacts": charness_artifacts,
             "commit_discipline": commit_discipline,
             "skill_routing": skill_routing,
