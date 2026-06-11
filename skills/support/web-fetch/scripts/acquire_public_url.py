@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import subprocess
 import sys
 import time
@@ -21,14 +20,24 @@ import browser_fallback_stages  # noqa: E402
 import twitter_exact_source  # noqa: E402
 import youtube_browser_ui  # noqa: E402
 import youtube_source  # noqa: E402
+from acquire_public_url_policy import (  # noqa: E402
+    direct_attempt_sufficient as _direct_attempt_sufficient,
+)
+from acquire_public_url_policy import (  # noqa: E402
+    should_try_browser as _should_try_browser,
+)
+from acquire_public_url_policy import (  # noqa: E402
+    should_try_defuddle as _should_try_defuddle,
+)
+from acquire_public_url_policy import (  # noqa: E402
+    should_try_youtube_browser as _should_try_youtube_browser,
+)
 from acquisition_trace_lib import (  # noqa: E402
     AcquisitionAttempt,
     disposition_for_attempts,
     has_stage,
     has_success,
-    last_content_attempt,
     payload,
-    should_stop,
     skip_attempt,
 )
 from classify_fetch_response import classify, extract_persistable_text  # noqa: E402
@@ -128,64 +137,6 @@ def _attempt_from_text(
     )
 
 
-def _should_try_defuddle(route_id: str, attempts: list[AcquisitionAttempt]) -> tuple[bool, str | None]:
-    if route_id not in {"direct-then-fallback", "reader-fallback", "naver-blog-mobile"}:
-        return False, "route-not-applicable"
-    last = last_content_attempt(attempts)
-    if last is not None and last.status not in {"partial-content", "empty-spa", "unclear", "error", "captcha", "error-page"}:
-        return False, "prior-stage-sufficient"
-    if shutil.which("defuddle") is None:
-        return False, "missing-tool"
-    return True, None
-
-
-def _should_try_browser(
-    route_id: str,
-    attempts: list[AcquisitionAttempt],
-    *,
-    browser_mode: str,
-) -> tuple[bool, str | None]:
-    if browser_mode == "off":
-        return False, "browser-mode-off"
-    last = last_content_attempt(attempts)
-    if last is not None and last.status not in {"partial-content", "empty-spa", "captcha", "unclear", "error", "error-page"}:
-        return False, "prior-stage-sufficient"
-    if shutil.which("agent-browser") is None:
-        return False, "missing-tool"
-    if browser_mode == "always":
-        return True, None
-    if route_id not in {"direct-then-fallback", "reader-fallback", "naver-blog-mobile"}:
-        return False, "route-not-applicable"
-    if last is None:
-        return False, "no-prior-content"
-    return True, None
-
-
-def _should_try_youtube_browser(
-    route_id: str,
-    attempts: list[AcquisitionAttempt],
-    *,
-    browser_mode: str,
-) -> tuple[bool, str | None]:
-    if route_id != "yt-dlp-metadata":
-        return False, "route-not-applicable"
-    if browser_mode == "off":
-        return False, "browser-mode-off"
-    for attempt in attempts:
-        if (
-            attempt.stage_id == youtube_source.STAGE_ID
-            and attempt.status == "success"
-            and attempt.details.get("source_type") == "youtube-transcript"
-        ):
-            return False, "prior-stage-sufficient"
-    last = last_content_attempt(attempts)
-    if last is not None and last.stage_id == "direct-public-fetch" and should_stop(last, proof_required=False):
-        return False, "prior-stage-sufficient"
-    if shutil.which("agent-browser") is None:
-        return False, "missing-tool"
-    return True, None
-
-
 def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
     route = {
         "input_url": args.url,
@@ -254,19 +205,6 @@ def _run_domain_specific_route(
         )
     else:
         attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
-
-
-def _direct_attempt_sufficient(
-    route: dict[str, object],
-    attempt: AcquisitionAttempt,
-    *,
-    proof_required: bool,
-) -> bool:
-    if not should_stop(attempt, proof_required=proof_required):
-        return False
-    if route.get("route_id") == "yt-dlp-metadata" and attempt.confidence != "strong":
-        return False
-    return True
 
 
 def acquire(args: argparse.Namespace) -> dict[str, object]:
