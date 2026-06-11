@@ -11,10 +11,9 @@ created the host goal and asked the agent to continue.
 ## Active Operating Frame
 
 - Current slice: Slice 7 - continue with final closeout or the next locally safe
-  cleanup after committing the surface-manifest fixture helper slice.
-- Next action: commit the surface-manifest fixture helper slice, then either
-  continue into a remaining warn-band file (release/web-fetch scripts) or start
-  final closeout if the reserve window is reached.
+  cleanup after recording the committed surface-manifest fixture helper slice.
+- Next action: choose between a remaining warn-band file (release/web-fetch
+  scripts) and final closeout if the reserve window is reached.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -99,7 +98,7 @@ check.
 | 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | committed (`c863bac9`) |
 | 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | committed (`1f50ab7f`) |
 | 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | committed (`5c5ffa1e`) |
-| 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | implemented; commit pending |
+| 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | committed (`9fdc07e8`) |
 | 7 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
 
 ## Coordination Cues
@@ -212,7 +211,7 @@ general quality-improvement goal.
 
 - Objective: Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests without hiding behavior assertions.
 - Why this approach: Slice 3 moved closeout-runner behavior into `test_run_slice_closeout_surface_obligations.py` but deliberately left repeated inline `.agents/surfaces.json` setup for a later fixture cleanup. The repeated schema boilerplate made each test longer while the behavior-specific fields were a small subset of each manifest.
-- Commits: pending commit
+- Commits: `9fdc07e8`
 - What changed: Added local `demo_surface()` and `write_surface_manifest()` helpers in `tests/quality_gates/test_run_slice_closeout_surface_obligations.py`; converted repeated inline manifest JSON setup to helper calls; preserved explicit behavior-specific fields at call sites; used explicit `is not None` defaults so future tests can intentionally pass empty lists.
 - Alternatives rejected: Rejected a shared support helper because this fixture shape is currently local to the closeout-runner tests. Rejected hiding script body setup or assertions behind helpers; only manifest boilerplate moved.
 - Targeted verification: focused ruff passed; `git diff --check` passed; `pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py` passed 11; Python length gate still passed with the same 3 warn-band files.
