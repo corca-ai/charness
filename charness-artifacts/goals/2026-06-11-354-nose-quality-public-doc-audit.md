@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: complete locally — closeout proof is recorded and ready for the
-  direct-commit carrier.
-- Next action: commit the direct-commit carrier. Remote issue closure remains a
-  non-claim until push/CI is approved and executed.
+- Current slice: complete locally — closeout proof is recorded and the
+  direct-commit carrier is committed.
+- Next action: push/watch CI only if explicitly approved. Remote issue closure
+  remains a non-claim until push/CI is approved and executed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -155,7 +155,7 @@ recommendation engine) rather than hard-coded here. Fill during the run:
   consumes remaining v0.41.0 release real-host proof as release closeout.
 - Issue closeout: pending — #354 is close-intended; use issue workflow closeout
   validation and verify CLOSED after the carrier lands. #184 is context only.
-- Issue closeout result: direct-commit carrier is validated and ready to commit;
+- Issue closeout result: direct-commit carrier is committed and locally verified;
   remote CLOSED verification is intentionally pending push/CI approval.
 
 Discuss before activation: resolved — the operator explicitly requested this
@@ -308,6 +308,16 @@ not pre-granted by this draft.
   check is non-blocking by construction. The stronger #354-specific base/head
   rerun from the scheduled-run evidence remains the causal proof for the issue.
 
+### 2026-06-11 20:36 KST — Local Commit Carrier
+
+- Commit: `b6bbf6f7 Fix mutation changed-line subprocess coverage`.
+- Post-commit verifier: `issue_tool.py verify-closeout --repo corca-ai/charness
+  --number 354 --classification bug --carrier direct-commit --commit-ref
+  b6bbf6f7 --repo-root .` returned `status: carrier_verified`.
+- Remote state check after the local commit still showed #354 `OPEN`, which is
+  expected because the branch was not pushed; the goal's acceptance path is the
+  issue-tool closeout proof plus explicit remote non-claim.
+
 ## Context Sources
 
 - [handoff](../../docs/handoff.md) — next-session sequencing and v0.41.0 release
@@ -385,7 +395,8 @@ Host log probe: charness-artifacts/probe/2026-06-11-354-nose-quality-public-doc-
 Disposition review: charness-artifacts/critique/2026-06-11-354-nose-quality-public-doc-audit-disposition-review.md
 - Issue closeout draft:
   charness-artifacts/issue/2026-06-11-issue-354-closeout-commit-message.md
-  validated with `status: draft_verified`.
+  validated with `status: draft_verified`; after commit, `verify-closeout`
+  returned `status: carrier_verified` for `b6bbf6f7`.
 - Remote issue state: #354 remains open until the direct commit is pushed and
   the remote close/CI proof is verified. This is an explicit non-claim, not an
   omission.
