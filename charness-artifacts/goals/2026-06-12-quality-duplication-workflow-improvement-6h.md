@@ -10,12 +10,13 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 - choose the next locally safe quality cleanup.
-- Next action: after committing Slice 2, inspect remaining warn-band files
-  (`tests/quality_gates/test_surface_obligations.py`,
-  `tests/quality_gates/test_quality_mutation_sampling.py`, release/web-fetch
-  scripts) and the deferred fake-`ceal` fixture repetition, then choose the
-  smallest structural cleanup that preserves behavior intent.
+- Current slice: Slice 4 - continue with the next locally safe cleanup after
+  committing the surface-obligations split.
+- Next action: inspect the remaining warn-band files
+  (`tests/quality_gates/test_quality_mutation_sampling.py`,
+  `scripts/quality_bootstrap_lib.py`, release/web-fetch scripts) and the
+  repeated temporary surface-manifest fixtures in the new closeout test file,
+  then choose the smallest structural cleanup that preserves behavior intent.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -96,8 +97,10 @@ check.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Pick and land one structural quality cleanup from current duplication/workflow pressure. | The user explicitly objected to low-yield goal execution; the next move must produce a concrete quality delta. | Committed code/test/doc change plus focused and surface-recommended gates. | committed (`25201777`) |
-| 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | implemented; commit pending |
-| 3 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
+| 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | committed (`6287bb27`) |
+| 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
+| 4 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
+| 5 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
 
 ## Coordination Cues
 
@@ -153,7 +156,7 @@ general quality-improvement goal.
 
 - Objective: Reduce the test-side length pressure introduced/exposed by Slice 1 without hiding behavior assertions outside test files.
 - Why this approach: test_issue_skill.py was in the test-file warn band after the previous slice. Its preflight/backend-resolution tests formed a coherent sub-surface, and the duplicated issue adapter YAML writer also appeared in test_issue_closeout_verifier.py.
-- Commits: pending commit
+- Commits: `6287bb27`
 - What changed: Added tests/quality_gates/test_issue_preflight.py for preflight/backend-resolution assertions; added write_issue_adapter_with_backend to tests/quality_gates/support.py; removed duplicate adapter writer from test_issue_skill.py and test_issue_closeout_verifier.py; updated callers.
 - Alternatives rejected: Rejected a broader generic adapter-fixture DSL because remaining inline adapter writes are shape-specific. Rejected moving behavior assertions into support helpers; only mechanical YAML setup moved.
 - Targeted verification: ruff changed files and repo-wide ruff passed; focused issue tests passed 60; full length gate passed and warn-band count dropped 7 -> 6; check_test_repo_copy_invariants, boundary-bypass ratchet, attention-state visibility passed; critique artifacts validator passed; broad pytest passed 2807, 4 skipped, 26 deselected.
@@ -162,6 +165,20 @@ general quality-improvement goal.
 - Off-goal findings: Nose production clone inventory was unchanged; this was a test-pressure cleanup, not a production clone-line reduction.
 - Lessons carried forward: A test split is only a quality improvement when behavior assertions remain in test files and only mechanical scaffolding moves to support. Next candidate: fake ceal binary setup repetition or another warn-band file.
 - Metrics: Python length warn-band files 7 -> 6; test_issue_skill.py 761 -> 585 code lines; test_issue_closeout_verifier.py 614 -> 583; broad pytest 2807 passed.
+
+### Slice 3: Slice 3 - surface-obligations closeout test split
+
+- Objective: Remove the immediate hard-limit pressure from `test_surface_obligations.py` without deleting or hiding closeout-runner behavior assertions.
+- Why this approach: `tests/quality_gates/test_surface_obligations.py` was at 798/800 code lines. The `run_slice_closeout` tests formed a coherent runner-behavior cluster distinct from changed-surface selection and surfaces-manifest validation.
+- Commits: pending commit
+- What changed: Added `tests/quality_gates/test_run_slice_closeout_surface_obligations.py` for closeout runner tests; removed the moved tests and unused imports from `test_surface_obligations.py`; regenerated `scripts/boundary-bypass-baseline.json` for the test-file key migration and synced `plugins/charness/scripts/boundary-bypass-baseline.json`.
+- Alternatives rejected: Rejected extracting all repeated temporary `.agents/surfaces.json` setup in the same slice because that would broaden a length/cohesion split into a fixture-refactor slice. Rejected hand-editing stale baseline keys back into the regenerated baseline just to keep the diff narrower.
+- Targeted verification: focused pytest for the two split files passed 36; changed-file ruff passed; full repo ruff passed; full Python length gate passed with warn-band files 6 -> 5; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed after canonical baseline regeneration; packaging, packaging-committed, integrations, sync_support dry-run, and update_tools dry-run passed; broad pytest passed 2807, 4 skipped, 26 deselected.
+- Test duplication pressure: `test_surface_obligations.py` moved from 798/800 to 347/800 code lines; the new closeout test file is 455/800. Remaining repeated temporary surface-manifest setup is acknowledged as a future fixture cleanup candidate, not claimed solved here.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-surface-obligation-closeout-test-split.md`. Counterweight required no additional implementation; Act Before Ship items are staging the new test file and critique packet artifacts.
+- Off-goal findings: Boundary-bypass baseline regeneration also removed two stale scaffold/export keys (`tests/test_critique_scaffold.py::scripts/export_plugin.py` and `tests/test_handoff_scaffold.py::scripts/export_plugin.py`). Reviewers treated this as canonical baseline cleanup because current inventory and root/plugin baselines match.
+- Lessons carried forward: A file split can honestly fix hard-limit pressure and cohesion without fixing every local duplication. Next slice should choose between the remaining warn-band files and the repeated temporary surface-manifest fixture setup.
+- Metrics: Python length warn-band files 6 -> 5; `test_surface_obligations.py` 798 -> 347 code lines; new `test_run_slice_closeout_surface_obligations.py` 455 code lines; broad pytest 2807 passed.
 
 ## Context Sources
 
