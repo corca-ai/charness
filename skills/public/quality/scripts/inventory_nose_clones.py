@@ -39,9 +39,7 @@ def build_command(
     paths: list[str],
     *,
     mode: str,
-    threshold: float,
-    min_lines: int,
-    min_tokens: int,
+    min_size: int,
     top: int,
     sort: str,
 ) -> list[str]:
@@ -51,12 +49,8 @@ def build_command(
         *paths,
         "--mode",
         mode,
-        "--threshold",
-        str(threshold),
-        "--min-lines",
-        str(min_lines),
-        "--min-tokens",
-        str(min_tokens),
+        "--min-size",
+        str(min_size),
         "--sort",
         sort,
         "--top",
@@ -206,9 +200,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         nose_bin,
         roots,
         mode=args.mode,
-        threshold=args.threshold,
-        min_lines=args.min_lines,
-        min_tokens=args.min_tokens,
+        min_size=args.min_size,
         top=args.top,
         sort=args.sort,
     )
@@ -272,9 +264,10 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--path", action="append", default=[], help="Repo-relative path to scan; repeatable")
     parser.add_argument("--mode", default=DEFAULT_MODE)
-    parser.add_argument("--threshold", type=float, default=0.70)
-    parser.add_argument("--min-lines", type=int, default=18)
-    parser.add_argument("--min-tokens", type=int, default=24)
+    parser.add_argument("--min-size", type=int, default=24)
+    parser.add_argument("--threshold", type=float, default=0.70, help=argparse.SUPPRESS)
+    parser.add_argument("--min-lines", type=int, default=18, help=argparse.SUPPRESS)
+    parser.add_argument("--min-tokens", dest="min_size", type=int, help=argparse.SUPPRESS)
     parser.add_argument("--top", type=int, default=20)
     parser.add_argument("--sort", default="extractability", choices=("extractability", "value", "sites"))
     parser.add_argument("--json", action="store_true")

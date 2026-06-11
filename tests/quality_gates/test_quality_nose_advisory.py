@@ -37,7 +37,11 @@ def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
             import json
             import sys
 
-            assert sys.argv[1] == "scan"
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert args[args.index("--min-size") + 1] == "24"
+            for legacy_flag in ("--threshold", "--min-lines", "--min-tokens"):
+                assert legacy_flag not in args
             print(json.dumps([
                 {
                     "value": 10.0,
@@ -93,7 +97,11 @@ def test_nose_advisory_emits_interpretation_self_declaration(tmp_path: Path) -> 
             import json
             import sys
 
-            assert sys.argv[1] == "scan"
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert args[args.index("--min-size") + 1] == "24"
+            for legacy_flag in ("--threshold", "--min-lines", "--min-tokens"):
+                assert legacy_flag not in args
             print(json.dumps([
                 {
                     "value": 10.0, "members": 2, "files": 2, "modules": 1,
@@ -138,7 +146,11 @@ def test_nose_advisory_parses_v05_object_schema(tmp_path: Path) -> None:
             import json
             import sys
 
-            assert sys.argv[1] == "scan"
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert args[args.index("--min-size") + 1] == "24"
+            for legacy_flag in ("--threshold", "--min-lines", "--min-tokens"):
+                assert legacy_flag not in args
             print(json.dumps({
                 "schema_version": 1,
                 "tool_version": "0.5.0",

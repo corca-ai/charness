@@ -1,6 +1,6 @@
 # Achieve Goal: Resolve #354 with updated nose quality scan and public-doc audit
 
-Status: draft
+Status: complete
 Created: 2026-06-11
 Activation: `/goal @charness-artifacts/goals/2026-06-11-354-nose-quality-public-doc-audit.md`
 
@@ -9,9 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with
-  `/goal @charness-artifacts/goals/2026-06-11-354-nose-quality-public-doc-audit.md`.
+- Current slice: complete locally — closeout proof is recorded and ready for the
+  direct-commit carrier.
+- Next action: commit the direct-commit carrier. Remote issue closure remains a
+  non-claim until push/CI is approved and executed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -135,25 +136,27 @@ The user can verify completion directly by checking:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Refresh routing and issue context | #354 comments changed the real blocker after v0.41.0 | `find-skills` route, `issue_tool.py read` with comments, summarized base/seed/test-selection facts | planned |
-| 2 | Establish latest `nose` quality posture | User explicitly asked for updated `nose` quality scanning | `charness tool doctor nose`, install/update proof or advisory state, `nose --version` when available | planned |
-| 3 | Audit public docs for hard coupling | Prevent issue-number/release-specific details from leaking into reusable guidance | Inventory command/output, changed docs or explicit no-change rationale | planned |
-| 4 | Improve bounded reviewer effort policy | Current session exposed waste from inherited high effort on a routine review | Shared policy/critique guidance edit, validator proof, and any AGENTS pointer if justified | planned |
-| 5 | Diagnose and fix #354 | Current open regression blocks main quality posture | Root-cause note, focused tests, code/doc changes, changed-line coverage proof | planned |
-| 6 | Closeout and publish proof | Goal includes tracked issue resolution and optional remote proof | Closeout gate, critique, retro, issue closeout draft/verification, push/CI proof if approved | planned |
+| 1 | Refresh routing and issue context | #354 comments changed the real blocker after v0.41.0 | `find-skills` route, `issue_tool.py read` with comments, summarized base/seed/test-selection facts | complete |
+| 2 | Establish latest `nose` quality posture | User explicitly asked for updated `nose` quality scanning | `charness tool doctor nose`, install/update proof or advisory state, `nose --version` when available | complete |
+| 3 | Audit public docs for hard coupling | Prevent issue-number/release-specific details from leaking into reusable guidance | Inventory command/output, changed docs or explicit no-change rationale | complete |
+| 4 | Improve bounded reviewer effort policy | Current session exposed waste from inherited high effort on a routine review | Shared policy/critique guidance edit, validator proof, and any AGENTS pointer if justified | complete |
+| 5 | Diagnose and fix #354 | Current open regression blocks main quality posture | Root-cause note, focused tests, code/doc changes, changed-line coverage proof | complete |
+| 6 | Closeout and publish proof | Goal includes tracked issue resolution and optional remote proof | Closeout gate, critique, retro, issue closeout draft/verification, push/CI proof if approved | complete |
 
 ## Coordination Cues
 
 Phase-appropriate routing for this run, deferred to `find-skills` (its
 recommendation engine) rather than hard-coded here. Fill during the run:
 
-- Routing: pending — ask `find-skills` at activation for the current phase.
+- Routing: find-skills routed debug-shaped root-cause work through issue and quality for this slice; critique and retro handled closeout review.
 - Gather: n/a — no external URL needs to become repo context before activation;
   GitHub issue #354 is read through the issue workflow.
 - Release: pending — only required if this goal touches release surfaces or
   consumes remaining v0.41.0 release real-host proof as release closeout.
 - Issue closeout: pending — #354 is close-intended; use issue workflow closeout
   validation and verify CLOSED after the carrier lands. #184 is context only.
+- Issue closeout result: direct-commit carrier is validated and ready to commit;
+  remote CLOSED verification is intentionally pending push/CI approval.
 
 Discuss before activation: resolved — the operator explicitly requested this
 goal artifact now and named the bundle scope: updated `nose` quality scan,
@@ -162,7 +165,148 @@ not pre-granted by this draft.
 
 ## Slice Log
 
-Not activated yet.
+### 2026-06-11 18:32 KST — Activation
+
+- Routing: `find-skills` session-start route selected `quality` for the active
+  goal and surfaced the `nose` validation integration as repair-needed on this
+  machine.
+- Activation proof: `check_goal_artifact.py --pursue-ready --goal-path
+  charness-artifacts/goals/2026-06-11-354-nose-quality-public-doc-audit.md`
+  reported `pursue_ready: true`.
+- Working tree: `main...origin/main [ahead 1]` with no uncommitted changes
+  before activation edit.
+- Next evidence target: GitHub issue #354 with comments plus scheduled mutation
+  run mechanics; avoid classifying the red run before reading the selection
+  mechanism.
+
+### 2026-06-11 18:58 KST — #354 Issue And Mutation Evidence
+
+- Issue read: `issue_tool.py read --repo corca-ai/charness --number 354`
+  returned `comments_read: true`, `state: OPEN`, `comment_count: 2`.
+- Latest blocker: scheduled run `27332665340` on head
+  `5051119dd3196bcbd7bf36db4c6a1494aeec73d4` over base
+  `a7d50604347cbff5d00d45602baacf92e0f7c6d3`; raw artifact
+  `/tmp/charness-354-mutation-report.zip` showed changed-line blockers for
+  `skills/public/issue/scripts/issue_read.py` and
+  `skills/public/issue/scripts/issue_tool.py`.
+- Root cause: tests that passed a fake-tool `PATH` made the shared
+  `tests/quality_gates/support.py::run_script` choose `python3` from PATH on
+  CI instead of the coverage-instrumented current interpreter, so subprocess
+  coverage was lost while the tests still passed.
+- Fresh-eye causal review: executed (`parent-delegated`, subagent
+  `019eb622-c19b-7dc3-a3af-f292f43754a4`); reviewer confirmed the root cause
+  and recommended the narrow `sys.executable` helper fix, with broader helper
+  scans treated as adjacent follow-up risk rather than #354 scope.
+- Proof: focused pytest passed (`60 passed in 103.54s`), and
+  `check_changed_line_mutation_coverage.py` over the same base/head with the
+  faithful coverage artifact reported `blocking: []`.
+
+### 2026-06-11 19:05 KST — `nose` 0.6 Quality Posture
+
+- Latest upstream release: `v0.6.0`, observed locally as `nose 0.6.0`;
+  `doctor.py --tool-id nose` initially failed because the integration
+  healthcheck expected old help text.
+- Fix: updated `integrations/tools/nose.json` and exported plugin mirror to
+  accept the current `nose scan --help` surface, and updated
+  `inventory_nose_clones.py` to call `nose scan ... --min-size 24` instead of
+  removed legacy flags.
+- Proof: `doctor.py --tool-id nose` now reports `doctor_status: ok`, and both
+  source and plugin `inventory_nose_clones.py --json` runs succeed with
+  `tool_version: 0.6.0`, `family_count: 20`, `total_dup_lines: 3124`.
+- Advisory interpretation: top families are mostly intentional
+  per-skill/portable bootstrap duplication; no refactor was bundled from the
+  advisory scan in this slice.
+
+### 2026-06-11 19:12 KST — Public-Doc Coupling And Reviewer Effort
+
+- Audit result: historical issue references in design docs, dogfood evidence,
+  and current handoff/release artifacts remain provenance, not reusable
+  guidance. Edited exported reusable guidance only.
+- Changed files: `skills/shared/references/fresh-eye-subagent-review.md`,
+  `skills/public/critique/adapter.example.yaml`,
+  `skills/public/critique/references/adapter-contract.md`,
+  `skills/public/critique/references/rename-critique.md`,
+  `skills/public/release/references/install-surface.md`, and
+  `skills/public/release/references/closeout-critique-gate.md`, plus plugin
+  mirrors.
+- Reviewer policy: added a portable `medium` reviewer tier for routine bounded
+  fresh-eye reviews and reserved `high-leverage` for issue/release/quality
+  closeout, deployment-confidence, or explicitly justified high-risk packets.
+- Coupling cleanup: removed the stale `#258`, `v0.5.0`,
+  `v0.27.0/v0.28.0`, and dated-release-critique example anchors from exported
+  reusable guidance.
+- Proof so far: `validate_integrations.py`, `validate_skills.py`,
+  `validate_packaging.py`, and skill script `py_compile` passed after plugin
+  sync.
+
+### 2026-06-11 19:45 KST — Critique And Closeout Carrier
+
+- Critique packet:
+  `charness-artifacts/critique/2026-06-11-101503-packet.md`.
+- Fresh-eye code critique: three parent-delegated bounded reviewers covered
+  problem framing, root-cause diagnosis, and operational closeout risk; no
+  `Act Before Ship` blockers were found.
+- Folded critique findings: added deterministic fake-nose assertions for
+  `--min-size 24` and absence of removed legacy flags, and updated the fake nose
+  fixture to report `nose 0.6.0` consistently with its help surface.
+- Counterweight: parent-delegated counterweight confirmed the folded items were
+  sufficient; the remaining `tests/control_plane/support.py` `python3` helper is
+  valid but deferred because it is outside #354's failing quality-gate path.
+- Issue carrier:
+  `charness-artifacts/issue/2026-06-11-issue-354-closeout-commit-message.md`;
+  `issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 354
+  --classification bug --carrier direct-commit --commit-message-file ...`
+  returned `status: draft_verified`, `publication_status:
+  ready_to_commit_push`.
+- Resolution critique:
+  `charness-artifacts/critique/2026-06-11-issue-354-mutation-coverage-resolution.md`
+  binds to #354 and validates through the issue tool.
+- Non-claim: #354 remains open remotely until the direct commit is pushed and
+  the scheduled mutation/CI proof runs; this session has not been granted remote
+  push approval.
+
+### 2026-06-11 20:05 KST — Validation Snapshot
+
+- Focused tests after #354/nose edits passed: issue-read, issue-skill,
+  nose-advisory, tool lifecycle/install/update tests.
+- Broad standing pytest passed before the final critique-driven test hardening:
+  `2799 passed, 4 skipped, 26 deselected`.
+- Post-hardening focused pytest passed: `27 passed in 101.15s`.
+- Deterministic validators passed locally: integration manifests, skills,
+  packaging, critique artifacts, public-skill validation and dogfood,
+  inference-interpretation, markdown links, command docs, markdown lint, secret
+  scan, Cautilus proof validator, skill ownership overlap, skill ergonomics,
+  packaging committed, Python length gate (warn-band advisories only), attention
+  state visibility, test-repo copy invariants, boundary bypass ratchet, ruff,
+  gitignore-scan hygiene, support sync dry-run, and tool update dry-run.
+- `nose` proof: observed `nose 0.6.0`, latest upstream `v0.6.0` published
+  2026-06-11T07:25:19Z; doctor is healthy; source and plugin nose inventory
+  scripts both report `family_count: 20`, `total_dup_lines: 3124`.
+
+### 2026-06-11 20:24 KST — Scenario Review And Verification Lock
+
+- Public-skill scenario review: `plan_cautilus_proof.py --repo-root . --json`
+  reported `next_action: none` and `run_mode: ask`; no Cautilus eval was run.
+  The required HITL scenario-review decisions for `critique`, `quality`, and
+  `release` were recorded in `docs/public-skill-dogfood.json`, and
+  `validate_public_skill_dogfood.py` passed.
+- Retro and disposition: persisted
+  `charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md`,
+  host probe
+  `charness-artifacts/probe/2026-06-11-354-nose-quality-public-doc-audit-host-log.json`,
+  and disposition review
+  `charness-artifacts/critique/2026-06-11-354-nose-quality-public-doc-audit-disposition-review.md`.
+- Pre-lock closeout: `run_slice_closeout.py --skip-broad-pytest
+  --ack-cautilus-skill-review` completed.
+- Final lock: `run_slice_closeout.py --verification-lock
+  --produce-mutation-coverage --ack-cautilus-skill-review` completed. Broad
+  non-release pytest passed under coverage, and `reports/mutation/test-coverage.json`
+  plus `.fingerprint` were produced for the pre-push changed-line gate.
+- Changed-line coverage consumer: `check_changed_line_mutation_coverage.py
+  --reuse-coverage --coverage-json reports/mutation/test-coverage.json` returned
+  `blocking: []` and noted that without a base SHA the workflow-dispatch-shaped
+  check is non-blocking by construction. The stronger #354-specific base/head
+  rerun from the scheduled-run evidence remains the causal proof for the issue.
 
 ## Context Sources
 
@@ -236,12 +380,19 @@ None yet; not activated.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound path or explicit allowed
-skip before completion.
-
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md
+Host log probe: charness-artifacts/probe/2026-06-11-354-nose-quality-public-doc-audit-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-11-354-nose-quality-public-doc-audit-disposition-review.md
+- Issue closeout draft:
+  charness-artifacts/issue/2026-06-11-issue-354-closeout-commit-message.md
+  validated with `status: draft_verified`.
+- Remote issue state: #354 remains open until the direct commit is pushed and
+  the remote close/CI proof is verified. This is an explicit non-claim, not an
+  omission.
+- Verification lock:
+  `run_slice_closeout.py --verification-lock --produce-mutation-coverage
+  --ack-cautilus-skill-review` completed, including broad non-release pytest and
+  mutation coverage freshness production.
 
 ## User Verification Instructions
 
@@ -256,5 +407,12 @@ After activation and completion, review the final report and check:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: none — the session retro names no actionable Next
+Improvements; the existing issue validator caught closeout-shape mistakes before
+commit, fresh-eye critique caught the nose fake-boundary gap before ship, and
+the only residual sibling risk is documented as out-of-scope in the #354
+resolution critique.
+Structural follow-up: none — the retro's Sibling Search says no transferable
+waste pattern is proposed; the deferred control-plane helper note is an
+out-of-scope code-family risk, not a structural workflow destination for this
+goal.

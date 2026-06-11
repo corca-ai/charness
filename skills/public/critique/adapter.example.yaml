@@ -4,10 +4,11 @@ language: en
 output_dir: charness-artifacts/critique
 # Host-specific translation of the portable reviewer tiers defined in
 # skills/shared/references/fresh-eye-subagent-review.md. The portable policy
-# names only the tier; each host maps it to that host's strongest reviewer.
+# names only the tier; each host maps it to that host's reviewer fields.
 # Set the values for the host this repo runs on. Known host defaults:
 #   Codex host:        high-leverage -> model: gpt-5.5,
 #                        reasoning_effort: medium, service_tier: priority
+#                      medium -> inherited model, reasoning_effort: medium
 #   Claude Code host:  high-leverage -> model: sonnet-4.6
 # reasoning_effort / service_tier only apply where the host exposes them.
 reviewer_tiers:
@@ -15,6 +16,8 @@ reviewer_tiers:
     model: gpt-5.5
     reasoning_effort: medium
     service_tier: priority
+  medium:
+    reasoning_effort: medium
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces

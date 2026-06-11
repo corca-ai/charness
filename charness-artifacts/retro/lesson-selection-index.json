@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-11",
-  "source_artifact_count": 198,
-  "candidate_count": 1040,
+  "source_artifact_count": 199,
+  "candidate_count": 1041,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -355,6 +355,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:15ccf6f891df",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal `charness-artifacts/goals/2026-06-11-354-nose-quality-public-doc-audit.md`: resolve #354's scheduled mutation changed-line false negative, update the available `nose 0.6.0` quality path, audit reusable public guidance for stale anchors, and document routine medium-effort bounded review guidance.",
+      "normalized_key": "this retro covers the active goal charness artifacts goals 2026 06 11 354 nose",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md",
+          "date": "2026-06-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3f8bce140446",
       "kind": "current_focus",
       "lesson": "This reviews the goal `2026-06-11-youtube-gather-and-adapter-renderer-hygiene`: #352 YouTube gather support and #353 adapter-lib YAML renderer hygiene.",
@@ -491,26 +511,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
           "date": "2026-06-11",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:5fae26ba58ad",
-      "kind": "repeat_trap",
-      "lesson": "First disposition of the red mutation run was \"flake\" from same-SHA greens; reading the workflow's base/seed mechanism flipped it to real-by-design within slice 1. Pattern-matching red->green->flake without reading the selection mechanism is the trap.",
-      "normalized_key": "first disposition of the red mutation run was flake from same sha greens reading",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-          "date": "2026-06-11",
-          "section": "Waste"
         }
       ]
     }
@@ -851,6 +851,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md",
+          "date": "2026-06-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:15ccf6f891df",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal `charness-artifacts/goals/2026-06-11-354-nose-quality-public-doc-audit.md`: resolve #354's scheduled mutation changed-line false negative, update the available `nose 0.6.0` quality path, audit reusable public guidance for stale anchors, and document routine medium-effort bounded review guidance.",
+      "normalized_key": "this retro covers the active goal charness artifacts goals 2026 06 11 354 nose",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-354-nose-quality-public-doc-audit.md",
           "date": "2026-06-11",
           "section": "Context"
         }

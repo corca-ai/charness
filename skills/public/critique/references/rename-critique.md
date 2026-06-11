@@ -84,10 +84,10 @@ unless the reviewer can show the friction is bounded and worth the slice.
 
 Run `<repo-root>/scripts/check_title_slug_drift.py` against the affected
 spec or docs roots as deterministic evidence for the title-slug lens
-before relying on prose judgment alone. The validator is advisory in
-v0.5.0; treat its findings as `Bundle Anyway` if cheap, `Act Before Ship`
-if a generated surface is wrong, and surface its dogfood as part of the
-output.
+before relying on prose judgment alone. The validator is advisory in current
+Charness releases; treat its findings as `Bundle Anyway` if cheap,
+`Act Before Ship` if a generated surface is wrong, and surface its dogfood as
+part of the output.
 
 ## Output Shape
 

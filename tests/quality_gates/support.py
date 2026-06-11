@@ -24,7 +24,7 @@ def run_script(
     *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["python3", *args],
+        [sys.executable, *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,

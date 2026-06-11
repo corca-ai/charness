@@ -55,7 +55,7 @@
       ],
       "success_criteria": [
         "exit_code:0",
-        "stdout_contains:Find clone families"
+        "stdout_contains:Find duplicated code"
       ],
       "failure_hint": "The `nose` binary exists but its scan surface is unavailable. Reinstall or upgrade from the upstream release."
     }
@@ -97,6 +97,6 @@
   },
   "host_notes": [
     "`nose` is advisory in Charness quality. It should propose refactoring candidates, not fail standing quality by default.",
-    "Use `nose scan scripts skills/public skills/support --mode syntax,semantic,near --threshold 0.70 --min-lines 18 --min-tokens 24 --sort extractability` for broad Charness clone-family review."
+    "Use `nose scan scripts skills/public skills/support --mode syntax,semantic,near --min-size 24 --sort extractability` for broad Charness clone-family review."
   ]
 }

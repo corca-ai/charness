@@ -15,8 +15,17 @@ that expresses leverage, never a provider model name:
 
 - `high-leverage`: reasoning-heavy judgment — critique angles and counterweight,
   release / issue / quality closeout review, and deployment-confidence scans.
-- `standard`: routine bounded checks where the host's default reviewer model is
+- `medium`: routine bounded checks where the caller needs a real fresh-eye
+  read but does not need full deployment-confidence or issue-closeout depth.
+- `standard`: simple bounded checks where the host's default reviewer model is
   enough.
+
+Routine fresh-eye reviews should request `medium` when the host exposes a
+medium-effort mapping. Use `high-leverage` only when the owning skill names a
+review class that needs it, such as release, issue, or quality closeout, or
+when the caller records a one-line reason that the narrow packet is still
+high-risk. This keeps bounded reviewer packets from silently inheriting a
+high-effort parent session just because a fresh context was needed.
 
 The portable contract names only the tier. A host that exposes subagent model
 overrides resolves the tier to concrete spawn fields (model, reasoning effort,
@@ -90,8 +99,8 @@ to "see the old behavior" silently corrupts the operator's pending commit: a
 `git checkout <base> -- <path>` to read pre-change code leaves the parent index
 holding a staged reversion, so the operator's closeout `git add -A && git commit`
 re-commits the old code and undoes the very change under review — with every gate
-still green, because the reverted code is internally self-consistent. This is
-the #258 trap, and it is a hard rule, not a default.
+still green, because the reverted code is internally self-consistent. This
+staged-reversion trap is a hard rule, not a default.
 
 When you review in a shared worktree, treat git as read-only:
 

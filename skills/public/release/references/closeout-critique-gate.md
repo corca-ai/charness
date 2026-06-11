@@ -41,7 +41,7 @@ For a normal critique-backed release:
 ```bash
 python3 skills/public/release/scripts/publish_release.py \
   --repo-root . --part patch \
-  --critique-artifact charness-artifacts/critique/2026-05-28-v0.10.1-release-critique.md \
+  --critique-artifact charness-artifacts/critique/<date>-<release>-critique.md \
   --execute
 ```
 

@@ -15,6 +15,24 @@ sys.path.insert(0, str(ROOT / "skills" / "public" / "issue" / "scripts"))
 import issue_read  # noqa: E402
 
 
+def test_run_script_uses_current_python_when_path_shadows_python(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_python = bin_dir / "python3"
+    fake_python.write_text("#!/usr/bin/env bash\nexit 88\n", encoding="utf-8")
+    fake_python.chmod(0o755)
+    script = tmp_path / "probe.py"
+    script.write_text("print('current-python')\n", encoding="utf-8")
+
+    result = run_script(
+        str(script),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "current-python"
+
+
 def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

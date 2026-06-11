@@ -56,9 +56,9 @@ drifting away from the gate. (The deeper root — scaffolds preferring the
 repo-local `scripts/` validator when present — is fixed separately; this step is
 the standing belt-and-suspenders.)
 
-This step subsumes the previously open v0.27.0/v0.28.0 real-host smoke: it is
-folded into the standing real-host checklist below rather than tracked as a
-perpetually-open one-off.
+This step subsumes prior one-off real-host smoke checks: they are folded into
+the standing real-host checklist below rather than tracked as perpetually-open
+release-specific tasks.
 
 If a repo treats a version bump as a published release boundary rather than a
 private maintainer checkpoint, do not leave push, tag, and GitHub release as

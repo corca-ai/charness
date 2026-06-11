@@ -4,7 +4,8 @@
 The adapter is optional. Without it, `critique` runs with inferred
 defaults and consumes no prepare packet. Newly scaffolded adapters include the
 Codex `high-leverage` reviewer tier (`model: gpt-5.5`,
-`reasoning_effort: medium`, `service_tier: priority`), so repos adopting the
+`reasoning_effort: medium`, `service_tier: priority`) plus a routine `medium`
+tier (`reasoning_effort: medium` with the inherited model), so repos adopting the
 adapter get the current Codex default without making adapter-less non-Codex
 hosts inherit a provider-specific model.
 
@@ -32,6 +33,8 @@ reviewer_tiers:        # values are host-specific; Codex shown, Claude Code uses
     model: gpt-5.5
     reasoning_effort: medium
     service_tier: priority
+  medium:
+    reasoning_effort: medium
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
@@ -61,18 +64,22 @@ Field semantics:
 - `packet_sections` — list of declared sections; empty list is valid
   (signals "no opt-in" same as omitting the field)
 - `reviewer_tiers` — optional mapping from a portable reviewer tier
-  (`high-leverage` or `standard`) to host-specific spawn fields. The tier is
+  (`high-leverage`, `medium`, or `standard`) to host-specific spawn fields. The tier is
   host-plural: it translates the portable policy in
   [fresh-eye-subagent-review.md](../../../shared/references/fresh-eye-subagent-review.md)
-  into the values for whichever host this repo runs on. Known host defaults for
-  the `high-leverage` tier: a Codex host uses `model: gpt-5.5`,
-  `reasoning_effort: medium`, `service_tier: priority`; a Claude Code host uses
-  `model: sonnet-4.6`. Each tier value may set `model`, `reasoning_effort`, and
-  `service_tier` (all strings, all optional); `reasoning_effort` /
+  into the values for whichever host this repo runs on. Use `medium` for
+  routine bounded fresh-eye packets and reserve `high-leverage` for release,
+  issue, quality closeout, deployment-confidence, or explicitly justified
+  high-risk reviews. Known host defaults for the `high-leverage` tier: a Codex
+  host uses `model: gpt-5.5`, `reasoning_effort: medium`,
+  `service_tier: priority`; a Claude Code host uses `model: sonnet-4.6`. Each
+  tier value may set `model`, `reasoning_effort`, and `service_tier` (all
+  strings, all optional); `reasoning_effort` /
   `service_tier` apply only where the host exposes them. Unknown tier names
   warn; unknown sub-fields error. A host without subagent model overrides
   ignores it. Newly scaffolded adapters default the Codex `high-leverage` tier
-  to `gpt-5.5` with `medium` reasoning.
+  to `gpt-5.5` with `medium` reasoning and the routine `medium` tier to an
+  inherited model with `medium` reasoning.
 
 Each `packet_sections` entry:
 
