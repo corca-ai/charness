@@ -27,6 +27,7 @@ def _load_sibling(module_name: str):
 
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
+_markdown = _load_sibling("goal_artifact_markdown")
 _metric_window = _load_sibling("goal_metric_window_lib")
 _timebox = _load_sibling("goal_artifact_timebox")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
@@ -42,6 +43,7 @@ render_metric_window_line = _metric_window.render_metric_window_line
 record_metric_window = _metric_window.record_metric_window
 metric_window_attention = _metric_window.metric_window_attention
 check_timebox_closeout = _timebox.check_timebox_closeout
+_mask_fences = _markdown.mask_fences
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -84,28 +86,6 @@ _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-
-def _mask_fences(text: str) -> str:
-    """Return ``text`` with fenced code-block regions blanked to spaces.
-
-    Length and newline positions are preserved, so a match found on the masked
-    copy maps to the same offset in the real text. Heading and slice-number
-    detection runs on the masked copy so that ``##``/``### Slice`` lines pasted
-    inside ``` fences are ignored instead of corrupting the artifact.
-    """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        # Unbalanced fences (an unclosed ``` block) would mask every heading to
-        # EOF, which is worse than not masking. Fail open: trust the raw text.
-        return text
-    return "".join(masked)
 
 _TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
 

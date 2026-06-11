@@ -46,6 +46,7 @@ _load_sibling_coordination_floors = _loaders._load_sibling_coordination_floors
 _load_sibling_phase_routing = _loaders._load_sibling_phase_routing
 _load_sibling_closeout_delegation = _loaders._load_sibling_closeout_delegation
 _load_sibling_adapter_policy = _loaders._load_sibling_adapter_policy
+_mask_fences = _load_local_module("goal_artifact_markdown").mask_fences
 
 
 # After-phase evidence names. The achieve closeout requires a checked-in retro
@@ -154,23 +155,6 @@ def narration_sections_present(retro_text: str) -> list[str]:
         if pattern.search(masked):
             present.append(section)
     return present
-
-
-def _mask_fences(text: str) -> str:
-    """Mirror of ``goal_artifact_lib._mask_fences`` so this module stays
-    self-contained without a circular sibling import.
-    """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        return text
-    return "".join(masked)
 
 
 def _normalize_evidence_name(label: str) -> str:

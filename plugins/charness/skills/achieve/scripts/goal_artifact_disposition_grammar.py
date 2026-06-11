@@ -19,7 +19,9 @@ Owns:
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 # Both rungs fire only for goals Created on or after the disposition rule's
@@ -59,24 +61,9 @@ _DISPOSITION_PLACEHOLDER = re.compile(
 )
 
 
-def _mask_fences(text: str) -> str:
-    """Blank fenced code-block regions to spaces (length/newlines preserved).
-
-    A self-contained mirror of ``goal_artifact_lib._mask_fences`` so this module
-    keeps no sibling import; fenced ``##`` / ``Created:`` / opt-out lines must not
-    be read as real artifact content.
-    """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        return text
-    return "".join(masked)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
 
 def goal_created_date(text: str) -> date | None:

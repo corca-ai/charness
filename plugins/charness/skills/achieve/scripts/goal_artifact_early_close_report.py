@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -23,16 +24,9 @@ _REPORT_SECTIONS = {
 _MIN_SECTION_CHARS = 20
 
 
-def _mask_fences(text: str) -> str:
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    return text if in_fence else "".join(masked)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
 
 def _section_body(masked: str, heading: str) -> str | None:

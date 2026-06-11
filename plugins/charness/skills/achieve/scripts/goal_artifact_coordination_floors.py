@@ -7,7 +7,9 @@ real step line or explicit opt-out in ``## Coordination Cues``.
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 # The floors landed around 2026-05-30; the cutoff grandfathers same-day in-flight goals.
@@ -59,24 +61,9 @@ _CLOSE_KEYWORD = re.compile(
 )
 
 
-def _mask_fences(text: str) -> str:
-    """Blank fenced code-block regions to spaces (length / newlines preserved).
-
-    A self-contained mirror of ``goal_artifact_lib._mask_fences`` so this module
-    keeps no sibling import; fenced ``##`` / ``Created:`` / step lines must not be
-    read as real artifact content. Unbalanced fences fail open (trust raw text).
-    """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        return text
-    return "".join(masked)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
 
 def _section_span(masked: str, heading: str) -> tuple[int, int] | None:

@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 PHASE_ROUTING_FLOOR_RULE_DATE = date(2026, 6, 4)
@@ -39,16 +41,9 @@ _QUALITY_RECORD = re.compile(
 )
 
 
-def _mask_fences(text: str) -> str:
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    return text if in_fence else "".join(masked)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
 
 def _section_span(masked: str, heading: str) -> tuple[int, int] | None:

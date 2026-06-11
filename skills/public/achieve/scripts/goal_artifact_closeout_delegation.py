@@ -25,6 +25,8 @@ not require those exact tokens, only that each checklist item is resolved.
 from __future__ import annotations
 
 import re
+import sys
+from pathlib import Path
 from typing import Any
 
 # The six closeout-proof levels — the single source for the taxonomy vocabulary.
@@ -66,22 +68,9 @@ _NEG_BEFORE_VERIFIED = re.compile(
 _UNCHECKED_BOX = re.compile(r"\[\s\]")
 
 
-def _mask_fences(text: str) -> str:
-    """Blank out fenced code so a ``## heading`` inside a code block is not read
-    as a section. Local copy to avoid a circular import on the parent
-    closeout-evidence module (mirrors that module's own local copy).
-    """
-    masked: list[str] = []
-    in_fence = False
-    for line in text.splitlines(keepends=True):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            masked.append("".join("\n" if char == "\n" else " " for char in line))
-            continue
-        masked.append("".join("\n" if char == "\n" else " " for char in line) if in_fence else line)
-    if in_fence:
-        return text
-    return "".join(masked)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
 
 def _section(text: str, name: str) -> str | None:

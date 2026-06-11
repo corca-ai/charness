@@ -13,9 +13,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — commit init adapter bootstrap simplification.
+- Current slice: Slice 3 — commit goal artifact markdown helper.
 - Next action: run pre-commit, commit the completed slice, then choose the next
-  safe Slice 3 quality target if time remains.
+  safe quality target if time remains.
 - Timebox posture: spend at most six hours after activation; reserve the final
   30 minutes for final proof, artifact closeout, retro disposition, and commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -126,8 +126,8 @@ After completion, the user can inspect the final report and verify:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Rebaseline duplication and classify top families | The new `nose` scope/ranking support makes broad versus filtered scans comparable. | Broad `--top 0` scan, resolver-filtered scan, classification notes in Slice Log. | completed |
-| 2 | Choose and implement the safest structural reduction | Start with narrow bootstrap/scaffold/load-helper repetition rather than broad resolver surgery. | Small refactor, focused tests, plugin sync if needed, before/after nose sample. | verifying |
-| 3 | Apply a second quality improvement if time remains | Done-early policy should continue into the next safe improvement instead of stopping after one cleanup. | Another committed cleanup or `No safe next slice:` with reason. | planned |
+| 2 | Choose and implement the safest structural reduction | Start with narrow bootstrap/scaffold/load-helper repetition rather than broad resolver surgery. | Small refactor, focused tests, plugin sync if needed, before/after nose sample. | completed |
+| 3 | Apply a second quality improvement if time remains | Done-early policy should continue into the next safe improvement instead of stopping after one cleanup. | Another committed cleanup or `No safe next slice:` with reason. | verifying |
 | 4 | Closeout proof, residual ledger, retro disposition | Timebox requires protected final proof and explicit non-claims. | Final gates, critique/retro artifacts, completed goal artifact. | planned |
 
 ## Coordination Cues
@@ -181,6 +181,20 @@ Activation started at 2026-06-11T22:09:06+09:00.
 - Off-goal findings: Remaining top families include resolve_adapter.py, scaffold footer/main blocks, _mask_fences, and adapter validation helpers; not resolved by this slice.
 - Lessons carried forward:
 - Metrics: Broad nose --top 0 moved 526 families / 13164 dup_lines to 525 / 12773. Resolver+scaffold-filtered top25 dup_lines moved 2924 to 2278. Classification: broad resolver families remain high-volume portability boilerplate; scaffold footer/main blocks and `_mask_fences` remain plausible future extraction candidates; init adapter full-file duplication was the safest structural candidate because it used an existing runtime helper boundary.
+
+### Slice 2: goal artifact markdown helper
+
+- Objective: Reduce duplicated markdown fence-masking logic in achieve goal-artifact gates.
+- Why this approach: After bootstrap cleanup, _mask_fences remained a real behavioral duplicate: several gates depended on identical fenced-code masking semantics, unlike irreducible bootstrap root discovery.
+- Commits:
+- What changed: Added goal_artifact_markdown.py as the single fence-masking helper, replaced duplicated _mask_fences implementations with aliases in goal-artifact modules, preserved private _mask_fences surfaces for tests/callers, and synced plugin mirrors.
+- Alternatives rejected: Rejected leaving duplicated leaf copies because divergence would corrupt goal parsing. Rejected broader section-body commonization in the same slice to keep the behavior boundary narrow.
+- Targeted verification: Focused pytest 191 passed; targeted ruff and py_compile passed; all public/support skill py_compile passed; validate_packaging/committed, validate_skills, ownership overlap, ergonomics, public skill validation/dogfood, gitignore scan hygiene passed; broad pytest 2803 passed, 4 skipped, 26 deselected.
+- Test duplication pressure:
+- Critique: Fresh-eye subagent review found no blocker. Low residuals: ensure new helper source and plugin files are staged; bare sibling import can share sys.modules in same-interpreter public/plugin mixed imports, but helper is pure and source/plugin copies are identical.
+- Off-goal findings: Remaining top candidates include unresolved bootstrap root-discovery blocks, init_adapter minimal boilerplate, scaffold footer/main blocks, adapter validation helpers, and resolver families.
+- Lessons carried forward:
+- Metrics: Broad nose moved 525 families / 12773 dup_lines to 526 / 12590 after this slice. Resolver+scaffold-filtered top40 dup_lines moved 3033 to 2943. The original _mask_fences family disappeared from top findings.
 
 ## Context Sources
 
