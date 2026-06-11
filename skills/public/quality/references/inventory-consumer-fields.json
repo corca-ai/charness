@@ -73,7 +73,11 @@
         "advisory",
         "family_count",
         "families",
+        "excludes",
+        "ignore_file",
         "paths",
+        "ranking",
+        "scope",
         "notes"
       ]
     },

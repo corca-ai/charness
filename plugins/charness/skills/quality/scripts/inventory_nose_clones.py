@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -42,8 +43,10 @@ def build_command(
     min_size: int,
     top: int,
     sort: str,
+    exclude: list[str] | None = None,
+    ignore_file: str | None = None,
 ) -> list[str]:
-    return [
+    command = [
         nose_bin,
         "scan",
         *paths,
@@ -55,9 +58,13 @@ def build_command(
         sort,
         "--top",
         str(top),
-        "--format",
-        "json",
     ]
+    for pattern in exclude or []:
+        command.extend(["--exclude", pattern])
+    if ignore_file:
+        command.extend(["--ignore-file", ignore_file])
+    command.extend(["--format", "json"])
+    return command
 
 
 def _family_summary(family: dict[str, Any]) -> dict[str, Any]:
@@ -125,7 +132,7 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
             "families": [],
             "tool_version": "",
         }
-    families, tool_version = _extract_families(parsed)
+    families, tool_version, scope, ranking = _extract_report(parsed)
     status = "findings" if families else "clean"
     if completed.returncode != 0:
         status = "error"
@@ -136,11 +143,13 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
         "stderr": completed.stderr.strip(),
         "families": families,
         "tool_version": tool_version,
+        "scope": scope,
+        "ranking": ranking,
     }
 
 
-def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
-    """Return (families, tool_version) across nose 0.4 and 0.5 JSON shapes.
+def _extract_report(parsed: Any) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, Any]]:
+    """Return report fields across nose 0.4 and 0.5+ JSON shapes.
 
     nose 0.5 emits a top-level object ({"families": [...], "tool_version": ...});
     nose 0.4 emitted a bare top-level array. Reading the 0.5 object as a list
@@ -149,15 +158,30 @@ def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
     if isinstance(parsed, dict):
         families = parsed.get("families")
         tool_version = str(parsed.get("tool_version") or "")
+        scope = parsed.get("scope")
+        ranking = parsed.get("ranking")
     elif isinstance(parsed, list):
         families = parsed
         tool_version = ""
+        scope = {}
+        ranking = {}
     else:
         families = []
         tool_version = ""
+        scope = {}
+        ranking = {}
     if not isinstance(families, list):
         families = []
-    return [family for family in families if isinstance(family, dict)], tool_version
+    if not isinstance(scope, dict):
+        scope = {}
+    if not isinstance(ranking, dict):
+        ranking = {}
+    return [family for family in families if isinstance(family, dict)], tool_version, scope, ranking
+
+
+def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
+    families, tool_version, _scope, _ranking = _extract_report(parsed)
+    return families, tool_version
 
 
 # Advisory interpretation contract (see skills/shared/references/
@@ -181,6 +205,8 @@ INTERPRETATION = {
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     roots = [str(path) for path in (args.path or DEFAULT_PATHS)]
+    excludes = list(args.exclude or [])
+    ignore_file = args.ignore_file
     nose_bin = resolve_nose_bin()
     if nose_bin is None:
         return {
@@ -188,6 +214,10 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "advisory": True,
             "repo_root": str(repo_root),
             "paths": roots,
+            "excludes": excludes,
+            "ignore_file": ignore_file,
+            "scope": {},
+            "ranking": {},
             "tool_version": "",
             "family_count": 0,
             "families": [],
@@ -203,6 +233,8 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         min_size=args.min_size,
         top=args.top,
         sort=args.sort,
+        exclude=excludes,
+        ignore_file=ignore_file,
     )
     result = run_nose(repo_root, command)
     families = result["families"]
@@ -211,7 +243,11 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "advisory": True,
         "repo_root": str(repo_root),
         "paths": roots,
-        "command": " ".join(command),
+        "excludes": excludes,
+        "ignore_file": ignore_file,
+        "scope": result.get("scope", {}),
+        "ranking": result.get("ranking", {}),
+        "command": shlex.join(command),
         "exit_code": result["exit_code"],
         "tool_version": result.get("tool_version", ""),
         "family_count": len(families),
@@ -239,6 +275,21 @@ def print_human(payload: dict[str, Any]) -> None:
         f"nose clone advisory (nose {version_label}): {status}; {payload['family_count']} families, "
         f"{payload['total_dup_lines']} duplicated lines in reported families."
     )
+    ranking = payload.get("ranking")
+    if isinstance(ranking, dict):
+        total_families = ranking.get("total_families")
+        shown_families = ranking.get("shown_families")
+        if isinstance(total_families, int) and isinstance(shown_families, int) and total_families != shown_families:
+            print(f"RANKING: showing {shown_families} of {total_families} ranked families.")
+    excludes = payload.get("excludes")
+    ignore_file = payload.get("ignore_file")
+    if excludes or ignore_file:
+        parts = []
+        if excludes:
+            parts.append(f"excludes={', '.join(str(pattern) for pattern in excludes)}")
+        if ignore_file:
+            parts.append(f"ignore_file={ignore_file}")
+        print(f"SCOPE: filtered scan ({'; '.join(parts)}). Excluded findings are not resolved.")
     for index, family in enumerate(payload["families"][:5], start=1):
         samples = ", ".join(
             f"{item['file']}:{item['start_line']}-{item['end_line']}"
@@ -265,6 +316,8 @@ def main() -> int:
     parser.add_argument("--path", action="append", default=[], help="Repo-relative path to scan; repeatable")
     parser.add_argument("--mode", default=DEFAULT_MODE)
     parser.add_argument("--min-size", type=int, default=24)
+    parser.add_argument("--exclude", action="append", default=[], help="Gitignore-style glob to skip; repeatable")
+    parser.add_argument("--ignore-file", help="Structured nose ignore file to apply")
     parser.add_argument("--threshold", type=float, default=0.70, help=argparse.SUPPRESS)
     parser.add_argument("--min-lines", type=int, default=18, help=argparse.SUPPRESS)
     parser.add_argument("--min-tokens", dest="min_size", type=int, help=argparse.SUPPRESS)

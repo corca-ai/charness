@@ -142,9 +142,14 @@ to the first activated refactoring slice:
 
 ```sh
 nose scan scripts skills/public skills/support \
-  --mode syntax,semantic,near --threshold 0.70 \
-  --min-lines 18 --min-tokens 24 --sort extractability --top 20
+  --mode syntax,semantic,near --min-size 24 \
+  --sort extractability --top 20
 ```
+
+Use repeatable `--exclude <glob>` (for example, `--exclude '**/resolve_adapter.py'`)
+or a structured `--ignore-file <file>` for focused follow-up scans after
+classifying intentional boilerplate; do not treat filters as proof that the
+excluded duplication was resolved.
 
 ## Test DSL And Testability Policy
 

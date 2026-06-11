@@ -131,6 +131,8 @@ product-policy decision before proposing new gates.
   `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root .`
 - code clone-family advisory:
   `$SKILL_DIR/scripts/inventory_nose_clones.py --repo-root .`
+  (`--exclude <glob>` is repeatable for focused review; `--ignore-file <file>`
+  applies a structured nose ignore file)
 
 When dual implementation smell is real, require one honest contract: parity
 harness, canonical side plus deletion/wrapper plan, or intentional divergence
