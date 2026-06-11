@@ -13,23 +13,13 @@ confirmed write from an unverified one.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import re
+import runpy
 from pathlib import Path
 from typing import Any
 
-
-def _load_local(module_name: str, alias: str | None = None):
-    module_path = Path(__file__).resolve().parent / f"{module_name}.py"
-    spec = importlib.util.spec_from_file_location(alias or module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BACKEND = _load_local("issue_backend", "issue_create_backend")
 _ADAPTER = _load_local("resolve_adapter", "issue_create_adapter")
 run_backend = _BACKEND.run_backend

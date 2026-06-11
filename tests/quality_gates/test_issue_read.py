@@ -91,7 +91,11 @@ def test_issue_read_reports_invalid_json(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_issue_read_load_local_missing_spec(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(issue_read.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        issue_read._load_local.__globals__["importlib"].util,
+        "spec_from_file_location",
+        lambda *_args, **_kwargs: None,
+    )
 
     with pytest.raises(ImportError, match="Unable to load"):
         issue_read._load_local("missing")

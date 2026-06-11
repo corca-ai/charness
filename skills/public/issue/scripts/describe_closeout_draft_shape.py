@@ -14,26 +14,11 @@ sibling verifier modules, so the surfaced shape cannot drift from the gate.
 from __future__ import annotations
 
 import argparse
-import importlib.util
+import runpy
 import sys
 from pathlib import Path
-from typing import Any
 
-
-def _load_local(module_name: str) -> Any:
-    """Load a sibling issue-script module by filesystem spec (clone-safe; no
-    sys.modules registration), so this resolves in the working tree and the
-    installed plugin export alike."""
-    spec = importlib.util.spec_from_file_location(
-        module_name, Path(__file__).resolve().parent / f"{module_name}.py"
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError(f"{module_name}.py not found beside describe_closeout_draft_shape.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _VERIFY = _load_local("issue_verify_closeout")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique")

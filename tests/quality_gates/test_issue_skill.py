@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import importlib.util
 import json
 import os
 import subprocess
@@ -8,6 +10,15 @@ from pathlib import Path
 from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+ISSUE_TOOL_PATH = ROOT / SCRIPT
+
+
+def _load_issue_tool():
+    spec = importlib.util.spec_from_file_location("issue_tool_under_test", ISSUE_TOOL_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
@@ -204,6 +215,26 @@ def test_issue_preflight_fails_when_gh_auth_fails(tmp_path: Path) -> None:
     assert payload["auth_status"]["exit_code"] == 1
     assert payload["selected_backend"]["id"] == "gh"
     assert payload["selected_backend"]["binary"] == "gh"
+
+
+def test_issue_preflight_non_json_reports_backend_config_error(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    issue_tool = _load_issue_tool()
+    monkeypatch.setattr(
+        issue_tool,
+        "_resolve_backend",
+        lambda _repo_root: {
+            "adapter_ok": True,
+            "adapter": {"valid": True},
+            "backend": {"commands": None},
+        },
+    )
+
+    code = issue_tool.command_preflight(argparse.Namespace(repo_root=tmp_path, json=False))
+
+    assert code == 1
+    assert "issue_backend produced no binary" in capsys.readouterr().out
 
 
 def _write_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:

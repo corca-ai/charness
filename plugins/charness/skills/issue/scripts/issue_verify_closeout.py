@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import runpy
 import subprocess
@@ -45,16 +44,7 @@ def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> 
         result["status"] = "failed"
 
 
-def _load_local(module_name: str, alias: str | None = None):
-    module_path = Path(__file__).resolve().parent / f"{module_name}.py"
-    spec = importlib.util.spec_from_file_location(alias or module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_resolution_critique")

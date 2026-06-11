@@ -11,10 +11,12 @@ backend byte-for-byte.
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from typing import Any
 
 BACKEND_TIMEOUT_SECONDS = 60
+BACKEND_PROBE_TIMEOUT_SECONDS = 60
 
 PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 
@@ -94,3 +96,78 @@ def resolve_op(
         )
     rendered = [part.format(**subs) if "{" in part else part for part in template]
     return [binary, *rendered]
+
+
+def run_probe(binary: str, args: list[str]) -> dict[str, Any]:
+    try:
+        result = subprocess.run(
+            [binary, *args],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=BACKEND_PROBE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "exit_code": 124,
+            "stdout": str(exc.stdout or "").strip(),
+            "stderr": f"timed out after {BACKEND_PROBE_TIMEOUT_SECONDS}s",
+        }
+    return {"exit_code": result.returncode, "stdout": result.stdout.strip(), "stderr": result.stderr.strip()}
+
+
+def probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
+    binary = backend.get("binary") or backend.get("id")
+    if not binary:
+        raise RuntimeError(
+            "issue_backend produced no binary; configure issue_backend.id and "
+            "issue_backend.binary in .agents/issue-adapter.yaml."
+        )
+    binary_path = shutil.which(binary)
+    selected: dict[str, Any] = {
+        "id": backend.get("id", "gh"),
+        "binary": binary,
+        "binary_path": binary_path,
+        "found": binary_path is not None,
+        "commands": backend.get("commands"),
+        "auth_status": None,
+        "version": None,
+    }
+    if binary_path is None:
+        return selected
+    if selected["id"] == "gh":
+        selected["auth_status"] = run_probe(binary, ["auth", "status"])
+    else:
+        selected["version"] = run_probe(binary, ["--version"])
+    return selected
+
+
+def backend_ok(selected: dict[str, Any]) -> bool:
+    if not selected["found"]:
+        return False
+    if selected["id"] == "gh":
+        return bool(selected["auth_status"]) and selected["auth_status"]["exit_code"] == 0
+    return True
+
+
+def build_preflight_payload(resolved: dict[str, Any]) -> dict[str, Any]:
+    try:
+        selected = probe_backend(resolved["backend"])
+    except RuntimeError as exc:
+        return {
+            "ok": False,
+            "error": str(exc),
+            "adapter": resolved["adapter"],
+            "selected_backend": resolved["backend"],
+        }
+    ok = resolved["adapter_ok"] and backend_ok(selected)
+    payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
+    if selected["id"] == "gh":
+        payload.update(gh_found=selected["found"], gh_path=selected["binary_path"], auth_status=selected["auth_status"])
+    if not selected["found"]:
+        payload["error"] = (
+            f"issue_backend binary {selected['binary']!r} not found on PATH. "
+            f"Install the declared backend or update issue_backend in "
+            f".agents/issue-adapter.yaml so it matches a backend the host exposes."
+        )
+    return payload

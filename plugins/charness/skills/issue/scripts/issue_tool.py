@@ -2,34 +2,22 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
-import shutil
-import subprocess
+import runpy
 from pathlib import Path
 from typing import Any
 
-
-def _load_local(module_name: str, alias: str | None = None):
-    module_path = Path(__file__).resolve().parent / f"{module_name}.py"
-    spec = importlib.util.spec_from_file_location(alias or module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
 RUNTIME = _load_local("issue_runtime")
 BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 CREATE = _load_local("issue_create")
+BACKEND = _load_local("issue_backend", "issue_tool_backend")
 READ = _load_local("issue_read")
 VERIFY = _load_local("issue_verify_closeout")
 VERIFY_BODY = _load_local("issue_verify_closeout_body")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
-BACKEND_PROBE_TIMEOUT_SECONDS = 60
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -44,79 +32,15 @@ def _resolve_backend(repo_root: Path) -> dict[str, Any]:
     return {"adapter": adapter, "backend": backend, "adapter_ok": True}
 
 
-def _run_probe(binary: str, args: list[str]) -> dict[str, Any]:
-    try:
-        result = subprocess.run(
-            [binary, *args],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=BACKEND_PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "exit_code": 124,
-            "stdout": str(exc.stdout or "").strip(),
-            "stderr": f"timed out after {BACKEND_PROBE_TIMEOUT_SECONDS}s",
-        }
-    return {"exit_code": result.returncode, "stdout": result.stdout.strip(), "stderr": result.stderr.strip()}
-
-
-def _probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
-    binary = backend.get("binary") or backend.get("id")
-    if not binary:
-        raise RuntimeError(
-            "issue_backend produced no binary; configure issue_backend.id and "
-            "issue_backend.binary in .agents/issue-adapter.yaml."
-        )
-    binary_path = shutil.which(binary)
-    selected: dict[str, Any] = {
-        "id": backend.get("id", "gh"), "binary": binary, "binary_path": binary_path,
-        "found": binary_path is not None, "commands": backend.get("commands"),
-        "auth_status": None, "version": None,
-    }
-    if binary_path is None:
-        return selected
-    if selected["id"] == "gh":
-        selected["auth_status"] = _run_probe(binary, ["auth", "status"])
-    else:
-        selected["version"] = _run_probe(binary, ["--version"])
-    return selected
-
-
-def _backend_ok(selected: dict[str, Any]) -> bool:
-    if not selected["found"]:
-        return False
-    if selected["id"] == "gh":
-        return bool(selected["auth_status"]) and selected["auth_status"]["exit_code"] == 0
-    return True
-
-
 def command_preflight(args: argparse.Namespace) -> int:
     resolved = _resolve_backend(args.repo_root.resolve())
-    try:
-        selected = _probe_backend(resolved["backend"])
-    except RuntimeError as exc:
-        payload = {"ok": False, "error": str(exc), "adapter": resolved["adapter"],
-                   "selected_backend": resolved["backend"]}
-        if args.json:
-            emit(payload)
-        else:
-            print(str(exc))
-        return 1
-    ok = resolved["adapter_ok"] and _backend_ok(selected)
-    payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
-    if selected["id"] == "gh":
-        payload.update(gh_found=selected["found"], gh_path=selected["binary_path"],
-                       auth_status=selected["auth_status"])
-    if not selected["found"]:
-        payload["error"] = (
-            f"issue_backend binary {selected['binary']!r} not found on PATH. "
-            f"Install the declared backend or update issue_backend in "
-            f".agents/issue-adapter.yaml so it matches a backend the host exposes."
-        )
+    payload = BACKEND.build_preflight_payload(resolved)
+    selected = payload["selected_backend"]
+    ok = payload["ok"]
     if args.json:
         emit(payload)
+    elif "found" not in selected:
+        print(payload["error"])
     elif ok:
         print(f"{selected['id']} backend ready")
     elif selected["found"]:
