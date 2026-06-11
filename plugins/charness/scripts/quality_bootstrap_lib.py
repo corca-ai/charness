@@ -313,6 +313,8 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         "customized_from": existing.get("customized_from") or (detected_lineage[0] if detected_lineage else "portable-defaults"),
         "preset_version": existing.get("preset_version"),
     }
+    if "preset_version" in explicit_fields:
+        field_statuses["preset_version"] = "preserved"
 
     merged_lineage = _merge_lineage(existing, detected_lineage, field_statuses)
     final["preset_lineage"] = merged_lineage
@@ -381,7 +383,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("preset_id", data["preset_id"]),
         ("customized_from", data["customized_from"]),
     ]
-    if data.get("preset_version"):
+    if data.get("preset_version") or field_statuses.get("preset_version") == "preserved":
         items.append(("preset_version", data["preset_version"]))
     policy_items: list[tuple[str, Any]] = [
         ("preset_lineage", data["preset_lineage"]),
@@ -436,7 +438,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         for key, value in policy_items
         if not (key in optional_empty_fields and value in ({}, []) and field_statuses.get(key) != "preserved")
     ]
-    if data.get("spec_pytest_reference_format"):
+    if data.get("spec_pytest_reference_format") or field_statuses.get("spec_pytest_reference_format") == "preserved":
         policy_items.insert(4, ("spec_pytest_reference_format", data["spec_pytest_reference_format"]))
     items.extend(policy_items)
     for key, value in (data.get("_unknown_fields") or {}).items():

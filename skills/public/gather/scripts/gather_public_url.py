@@ -131,6 +131,32 @@ def _extracted_content_lines(acquisition: dict[str, object], *, requested: bool)
     ]
 
 
+def _source_detail_lines(selected: dict[str, object]) -> list[str]:
+    details = selected.get("details")
+    if not isinstance(details, dict) or not any(
+        details.get(key) not in (None, "", [], {}) for key in ("source_type", "video_id", "reason")
+    ):
+        return []
+    lines = ["", "## Source Details", ""]
+    if details.get("source_type"):
+        lines.append(f"- Source Type: `{details.get('source_type')}`")
+    for key in ("video_id", "transcript_language", "transcript_source", "caption_ext", "reason"):
+        value = details.get(key)
+        if value not in (None, "", [], {}):
+            lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")
+    metadata = details.get("metadata")
+    if isinstance(metadata, dict):
+        for key in ("title", "channel", "upload_date", "duration", "thumbnail", "chapter_count"):
+            value = metadata.get(key)
+            if value not in (None, "", [], {}):
+                lines.append(f"- {key.replace('_', ' ').title()}: {value}")
+    caption_errors = details.get("caption_errors")
+    if isinstance(caption_errors, list) and caption_errors:
+        rendered = ", ".join(str(item) for item in caption_errors)
+        lines.append(f"- Caption Errors: `{rendered}`")
+    return lines
+
+
 def _render_record(url: str, acquisition: dict[str, object], *, persist_requested: bool) -> str:
     route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
     selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
@@ -145,6 +171,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
     gap_lines = _attempt_lines(open_gaps) or ["- None recorded."]
     attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
     content_persistence, content_lines = _extracted_content_lines(acquisition, requested=persist_requested)
+    source_detail_lines = _source_detail_lines(selected)
     return "\n".join(
         [
             "# Gathered Public URL",
@@ -174,6 +201,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
             "## Open Gaps",
             "",
             *gap_lines,
+            *source_detail_lines,
             *content_lines,
             "",
             "## Trace JSON",
@@ -219,6 +247,13 @@ def _build_acquire_cmd(args: argparse.Namespace) -> list[str]:
     return acquire_cmd
 
 
+def _is_youtube_acquisition(acquisition: dict[str, object]) -> bool:
+    route = acquisition.get("route")
+    return isinstance(route, dict) and route.get("route_id") == "yt-dlp-metadata" and str(
+        acquisition.get("source_identity", "")
+    ).startswith("youtube-")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
     parser.add_argument("--url", required=True, help="Public URL to gather")
@@ -244,7 +279,8 @@ def main() -> int:
     final_status = str(acquisition.get("final_status", "unknown"))
     final_confidence = str(acquisition.get("final_confidence", "none"))
     content_persistence = _content_persistence(acquisition, requested=args.persist_extracted_content)
-    if acquisition_disposition != "success":
+    should_write_partial = _is_youtube_acquisition(acquisition) and acquisition_disposition in {"blocked", "degraded"}
+    if acquisition_disposition != "success" and not should_write_partial:
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
             "reason": f"acquisition-{acquisition_disposition}",

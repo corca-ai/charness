@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
+SUPPORTED_BLOCK_SCALAR_RE = re.compile(r"^[|>](-)?$")
+
 
 def _coerce_scalar(value: str) -> Any:
+    _reject_unsupported_scalar(value)
     if value == "":
         return ""
     lower = value.lower()
@@ -25,7 +29,7 @@ def _coerce_scalar(value: str) -> Any:
     except ValueError:
         pass
     if value.startswith('"') and value.endswith('"'):
-        return value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+        return _decode_double_quoted(value[1:-1])
     if value.startswith("'") and value.endswith("'"):
         return value[1:-1].replace("''", "'")
     return value
@@ -33,6 +37,37 @@ def _coerce_scalar(value: str) -> Any:
 
 def _is_quoted_scalar(value: str) -> bool:
     return (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))
+
+
+def _decode_double_quoted(value: str) -> str:
+    decoded: list[str] = []
+    index = 0
+    while index < len(value):
+        char = value[index]
+        if char != "\\" or index + 1 >= len(value):
+            decoded.append(char)
+            index += 1
+            continue
+        escaped = value[index + 1]
+        if escaped == "n":
+            decoded.append("\n")
+        elif escaped == "r":
+            decoded.append("\r")
+        elif escaped in {'"', "\\"}:
+            decoded.append(escaped)
+        else:
+            decoded.append("\\")
+            decoded.append(escaped)
+        index += 2
+    return "".join(decoded)
+
+
+def _reject_unsupported_scalar(value: str) -> None:
+    stripped = value.strip()
+    if not stripped or _is_quoted_scalar(stripped):
+        return
+    if stripped.startswith(("*", "&", "!")):
+        raise ValueError(f"unsupported YAML construct in scalar: {value!r}")
 
 
 def _find_mapping_separator(value: str) -> int:
@@ -108,7 +143,14 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
                 key, value = mapping_entry
                 item: dict[str, Any] = {}
                 if value:
-                    item[key] = [] if value == "[]" else _coerce_scalar(value)
+                    if value == "[]":
+                        item[key] = []
+                    elif value.startswith(("|", ">")):
+                        item[key], index = _parse_block_scalar(lines, index, indent, value)
+                        items.append(item)
+                        continue
+                    else:
+                        item[key] = _coerce_scalar(value)
                     index += 1
                 else:
                     item[key], index = _parse_empty_value(lines, index, indent)
@@ -137,6 +179,34 @@ def _parse_empty_value(lines: list[str], index: int, current_indent: int) -> tup
     if next_indent <= current_indent:
         return {}, index + 1
     return _parse_block(lines, index + 1, current_indent + 2)
+
+
+def _parse_block_scalar(lines: list[str], start: int, current_indent: int, header: str) -> tuple[str, int]:
+    if SUPPORTED_BLOCK_SCALAR_RE.fullmatch(header) is None:
+        raise ValueError(f"unsupported YAML construct in block scalar header: {header!r}")
+    style = header[0]
+    strip_final = header.endswith("-")
+    index = start + 1
+    block_indent: int | None = None
+    collected: list[str] = []
+    while index < len(lines):
+        raw = lines[index]
+        stripped = raw.strip()
+        indent = len(raw) - len(raw.lstrip(" "))
+        if stripped and indent <= current_indent:
+            break
+        if block_indent is None and stripped:
+            block_indent = indent
+        trim = block_indent if block_indent is not None else current_indent + 2
+        collected.append(raw[trim:] if len(raw) >= trim else "")
+        index += 1
+    if style == ">":
+        rendered = " ".join(line.strip() for line in collected if line.strip())
+    else:
+        rendered = "\n".join(collected)
+    if not strip_final:
+        rendered += "\n"
+    return rendered, index
 
 
 def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, Any], int]:
@@ -169,6 +239,9 @@ def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, A
         if value:
             if value == "[]":
                 result[key] = []
+            elif value.startswith(("|", ">")):
+                result[key], index = _parse_block_scalar(lines, index, current_indent, value)
+                continue
             else:
                 result[key] = _coerce_scalar(value)
             index += 1
@@ -215,10 +288,10 @@ def _yaml_scalar(value: Any) -> str:
         if (
             value == ""
             or value[0] in "*&!@`#{}[],:>|-'\""
-            or any(char in value for char in ("\n", ": ", "#", "\\"))
+            or any(char in value for char in ("\n", "\r", ": ", "#", "\\"))
             or value != value.strip()
         ):
-            escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+            escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
             return f'"{escaped}"'
     return str(value)
 

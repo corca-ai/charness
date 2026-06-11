@@ -13,7 +13,7 @@ coverage_floor_policy:
   warn_ceiling_pct: 95.0
   floor_drift_lock_pp: 1.0
   exemption_list_path: scripts/coverage-floor-exemptions.txt
-  gate_script_pattern: *-quality-gate.sh
+  gate_script_pattern: "*-quality-gate.sh"
   lefthook_path: lefthook.yml
   ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns: []

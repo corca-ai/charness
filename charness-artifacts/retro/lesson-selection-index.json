@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-11",
-  "source_artifact_count": 195,
-  "candidate_count": 1032,
+  "source_artifact_count": 197,
+  "candidate_count": 1039,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -325,6 +325,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3f8bce140446",
+      "kind": "current_focus",
+      "lesson": "This reviews the goal `2026-06-11-youtube-gather-and-adapter-renderer-hygiene`: #352 YouTube gather support and #353 adapter-lib YAML renderer hygiene.",
+      "normalized_key": "this reviews the goal 2026 06 11 youtube gather and adapter renderer hygiene 352",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:52b5b265aa27",
       "kind": "next_improvement",
       "lesson": "adapter_lib renderer hygiene — filed as issue #353.",
@@ -339,6 +359,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3249500823e9",
+      "kind": "next_improvement",
+      "lesson": "before locking a direct-commit closeout carrier that covers multiple issues or classifications, run `describe_closeout_draft_shape.py` and validate the exact commit-message file for each issue-specific classification before final artifact edits.",
+      "normalized_key": "before locking a direct commit closeout carrier that covers multiple issues or classifications run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b46933ccfa1a",
+      "kind": "next_improvement",
+      "lesson": "record that `proof:`-style continuation lines inside issue closeout draft fields can be parsed as new fields; use semicolon or same-field prose when a field requires both decision and proof.",
+      "normalized_key": "record that proof style continuation lines inside issue closeout draft fields can be parsed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
           "date": "2026-06-11",
           "section": "Next Improvements"
         }
@@ -385,6 +445,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e87e81e115e9",
+      "kind": "next_improvement",
+      "lesson": "when a support/export surface is touched, keep the final sequence as sync plugin/debug exports, then changed-surface validators, then broad pytest, then only artifact-only edits plus the narrow artifact validators.",
+      "normalized_key": "when a support export surface is touched keep the final sequence as sync plugin",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:5fae26ba58ad",
       "kind": "repeat_trap",
       "lesson": "First disposition of the red mutation run was \"flake\" from same-SHA greens; reading the workflow's base/seed mechanism flipped it to real-by-design within slice 1. Pattern-matching red->green->flake without reading the selection mechanism is the trap.",
@@ -421,86 +501,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
           "date": "2026-06-11",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b588131538b3",
-      "kind": "repeat_trap",
-      "lesson": "validate-quality-artifact's 140-line cap took ~6 trim edit rounds because trimming and field-engagement requirements interact; the scaffold prints the skeleton but not a per-section line budget.",
-      "normalized_key": "validate quality artifact s 140 line cap took 6 trim edit rounds because trimming",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-          "date": "2026-06-11",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:55f25a8c8ef3",
-      "kind": "repeat_trap",
-      "lesson": "verify-closeout invoked again with sketched args (third goal running); one usage round. The error is loud and self-documenting; cost stays ~30s.",
-      "normalized_key": "verify closeout invoked again with sketched args third goal running one usage round the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-          "date": "2026-06-11",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:e8b89b959472",
-      "kind": "repeat_trap",
-      "lesson": "Wrong oracle for the release adapter edit: validated with pyyaml, which rejects the file HEAD already shipped (the repo's own tolerant loader is the canonical parser); cost two error rounds before checking `git show HEAD | pyyaml`. Lesson: validate a repo-owned format with the repo's own loader first.",
-      "normalized_key": "wrong oracle for the release adapter edit validated with pyyaml which rejects the file",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-          "date": "2026-06-11",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d4deae42401b",
-      "kind": "current_focus",
-      "lesson": "Closeout retro for the activated goal `charness-artifacts/goals/2026-06-10-postpush-verify-346-348-closed-349-hitl-boundary.md` (2.5h timebox, Claude host): slice 1 consumed the operator-executed third 2026-06-10 push + v0.39.0 release lane read-only (fourth iteration of the deferred-proof pattern), and slice 2 resolved #349 with a deliberate frozen-contract `preserve` edit to the at-cap hitl skill core.",
-      "normalized_key": "closeout retro for the activated goal charness artifacts goals 2026 06 10 postpush verify",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md",
-      "latest_source_date": "2026-06-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-post-push-verification-349-hitl-hotl-boundary-goal-retro.md",
-          "date": "2026-06-10",
-          "section": "Context"
         }
       ]
     }
@@ -817,6 +817,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3f8bce140446",
+      "kind": "current_focus",
+      "lesson": "This reviews the goal `2026-06-11-youtube-gather-and-adapter-renderer-hygiene`: #352 YouTube gather support and #353 adapter-lib YAML renderer hygiene.",
+      "normalized_key": "this reviews the goal 2026 06 11 youtube gather and adapter renderer hygiene 352",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:52b5b265aa27",
       "kind": "next_improvement",
       "lesson": "adapter_lib renderer hygiene — filed as issue #353.",
@@ -831,6 +851,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3249500823e9",
+      "kind": "next_improvement",
+      "lesson": "before locking a direct-commit closeout carrier that covers multiple issues or classifications, run `describe_closeout_draft_shape.py` and validate the exact commit-message file for each issue-specific classification before final artifact edits.",
+      "normalized_key": "before locking a direct commit closeout carrier that covers multiple issues or classifications run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b46933ccfa1a",
+      "kind": "next_improvement",
+      "lesson": "record that `proof:`-style continuation lines inside issue closeout draft fields can be parsed as new fields; use semicolon or same-field prose when a field requires both decision and proof.",
+      "normalized_key": "record that proof style continuation lines inside issue closeout draft fields can be parsed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
           "date": "2026-06-11",
           "section": "Next Improvements"
         }
@@ -877,6 +937,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e87e81e115e9",
+      "kind": "next_improvement",
+      "lesson": "when a support/export surface is touched, keep the final sequence as sync plugin/debug exports, then changed-surface validators, then broad pytest, then only artifact-only edits plus the narrow artifact validators.",
+      "normalized_key": "when a support export surface is touched keep the final sequence as sync plugin",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:5fae26ba58ad",
       "kind": "repeat_trap",
       "lesson": "First disposition of the red mutation run was \"flake\" from same-SHA greens; reading the workflow's base/seed mechanism flipped it to real-by-design within slice 1. Pattern-matching red->green->flake without reading the selection mechanism is the trap.",
@@ -917,6 +997,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:632e097e5b2e",
+      "kind": "repeat_trap",
+      "lesson": "The adapter parser fix initially over-refused real workflow-style block scalars; broad tests caught that, but the round trip cost came from treating unsupported YAML refusal and current workflow compatibility as one decision.",
+      "normalized_key": "the adapter parser fix initially over refused real workflow style block scalars broad tests",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e3e86733bcf1",
+      "kind": "repeat_trap",
+      "lesson": "The issue closeout draft initially failed the bug sibling predicate because a continuation line named `proof:` was parsed as a separate field. The live closeout-shape helper and validator caught it before commit, but the first draft still encoded the shape by habit instead of by exact parser behavior.",
+      "normalized_key": "the issue closeout draft initially failed the bug sibling predicate because a continuation line",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+          "date": "2026-06-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:b588131538b3",
       "kind": "repeat_trap",
       "lesson": "validate-quality-artifact's 140-line cap took ~6 trim edit rounds because trimming and field-engagement requirements interact; the scaffold prints the skeleton but not a per-section line budget.",
@@ -931,6 +1051,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
+          "date": "2026-06-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ba9d462136ba",
+      "kind": "repeat_trap",
+      "lesson": "Validation was repeated after critique folds and artifact updates. That was appropriate for the phase, but it reinforces that final artifact edits should be batched before the last broad gate when possible.",
+      "normalized_key": "validation was repeated after critique folds and artifact updates that was appropriate for the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
+      "latest_source_date": "2026-06-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md",
           "date": "2026-06-11",
           "section": "Waste"
         }

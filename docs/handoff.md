@@ -26,22 +26,27 @@
   noise engine). Push 768ded84..a7185616; quality-core 27312178167 green;
   release v0.40.0 published + public-verified, install refresh auto-ran,
   live probe matched (installed SHA == a7d50604 == origin/main).
+- **YouTube gather + adapter renderer goal COMPLETE locally.** Goal
+  [2026-06-11-youtube-gather-and-adapter-renderer-hygiene](../charness-artifacts/goals/2026-06-11-youtube-gather-and-adapter-renderer-hygiene.md)
+  implements #352 and #353, with direct-commit closeout carrier staged in
+  [2026-06-11-issues-352-353-closeout-commit-message.md](../charness-artifacts/issue/2026-06-11-issues-352-353-closeout-commit-message.md).
+  #352/#353 closeout drafts verified locally (`draft_verified`); final
+  `verify-closeout --expect-state CLOSED` waits for push.
 - Open issues (`gh`): **#184** (product metrics — operator ideation needed,
-  SEVENTH exclusion; see Discuss); **#353** (NEW, off-goal: adapter_lib
-  renderer hygiene — newline escaping, lossy rewrite normalization,
-  falsy-explicit drops; latent, not user-visible).
+  SEVENTH exclusion; see Discuss); **#352/#353** remain GitHub-open until the
+  local closeout carrier is pushed and verified CLOSED.
 
 ## Next Session
 
-- **Push the goal-closeout commit** (local-only by design; the single
-  authorized push was spent on the lane). It carries the completed goal
-  artifact, retro + recent-lessons refresh, disposition review, early-close
-  report, and this handoff.
+- **Push the #352/#353 goal-closeout commit** after local commit exists. It
+  carries `Closes #352` and `Closes #353`, the completed goal artifact, gather
+  proof, debug/critique/retro artifacts, refreshed recent lessons, plugin
+  exports, tests, and this handoff. After push, run issue closeout verification
+  separately for #352 (`feature`) and #353 (`bug`), expecting CLOSED.
 - **Deferred proof to consume:** the first scheduled `mutation-tests.yml`
   run with headSha >= a7185616 — it is ALSO the live proof of the
   scheduled-lane reclassification (expect: green on capacity drops; still
   red on score break / uncovered changed lines / partial runs).
-- **#353** — bounded candidate when ranked: adapter_lib renderer hygiene.
 - **#184** — operator decision first (Discuss), not a slice.
 
 ## Discuss

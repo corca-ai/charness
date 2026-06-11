@@ -451,6 +451,40 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 
+def test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    adapter_path = repo / ".agents" / "quality-adapter.yaml"
+    adapter_path.parent.mkdir(exist_ok=True)
+    adapter_path.write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "preset_id: custom",
+                "customized_from: custom",
+                "preset_version: null",
+                'spec_pytest_reference_format: ""',
+                "gate_commands:",
+                "  - python3 -m pytest -q",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["adapter_status"] == "updated"
+    assert payload["field_statuses"]["preset_version"] == "preserved"
+    assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
+    rewritten = adapter_path.read_text(encoding="utf-8")
+    assert "preset_version: null" in rewritten
+    assert 'spec_pytest_reference_format: ""' in rewritten
+
+
 def test_quality_bootstrap_does_not_materialize_pytest_defaults_for_node_go_repo(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

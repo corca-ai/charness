@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from .support import ADAPTER_LIB
 
 
@@ -120,3 +122,20 @@ def test_adapter_lib_renders_mapping_keys_with_colons_as_quoted_keys() -> None:
 def test_adapter_lib_loads_single_quoted_mapping_keys_with_escaped_quotes() -> None:
     loaded = ADAPTER_LIB.load_yaml("'pre''push:full': 19000\n")
     assert loaded == {"pre'push:full": 19000}
+
+
+def test_adapter_lib_renders_newline_scalars_as_round_trippable_escapes() -> None:
+    rendered = ADAPTER_LIB.render_yaml_mapping([("body", "line1\nline2")])
+    assert rendered == 'body: "line1\\nline2"\n'
+    assert ADAPTER_LIB.load_yaml(rendered) == {"body": "line1\nline2"}
+
+
+def test_adapter_lib_loads_block_scalars_without_dropping_body() -> None:
+    assert ADAPTER_LIB.load_yaml("body: |\n  line1\n  line2\n") == {"body": "line1\nline2\n"}
+    assert ADAPTER_LIB.load_yaml("body: >-\n  line1\n  line2\n") == {"body": "line1 line2"}
+
+
+@pytest.mark.parametrize("yaml_text", ["alias: *shared\n", "tagged: !custom value\n", "body: |+\n  line1\n"])
+def test_adapter_lib_rejects_unsupported_yaml_constructs_loudly(yaml_text: str) -> None:
+    with pytest.raises(ValueError, match="unsupported YAML construct"):
+        ADAPTER_LIB.load_yaml(yaml_text)

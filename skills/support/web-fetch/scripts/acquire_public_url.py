@@ -18,6 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import twitter_exact_source  # noqa: E402
+import youtube_source  # noqa: E402
 from acquisition_trace_lib import (  # noqa: E402
     AcquisitionAttempt,
     disposition_for_attempts,
@@ -207,6 +208,8 @@ def _payload_for(
     )
     if route.get("route_id") == "twitter-syndication":
         result["source_identity"] = twitter_exact_source.classify_source_identity(result)
+    if route.get("route_id") == "yt-dlp-metadata":
+        result["source_identity"] = youtube_source.classify_source_identity(result)
     return result
 
 
@@ -306,6 +309,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
     if has_stage(route, "domain-specific-route"):
         if route["route_id"] == "twitter-syndication":
             attempts.extend(twitter_exact_source.run_exact_source_stage(args.url, fetcher=_domain_route_fetcher(args)))
+        elif route["route_id"] == "yt-dlp-metadata" and youtube_source.normalized_host(args.url).endswith(
+            ("youtube.com", "youtu.be")
+        ):
+            attempts.extend(
+                youtube_source.run_youtube_stage(
+                    args.url,
+                    run_command=lambda command: _run_command(command, timeout=args.timeout),
+                )
+            )
         else:
             attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
     if direct_attempt.status == "invalid-proof":

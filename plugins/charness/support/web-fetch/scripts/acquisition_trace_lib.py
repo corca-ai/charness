@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-SUCCESS_STATUSES = {"success"}
+SUCCESS_STATUSES = {"success", "metadata-only"}
 BLOCKED_STATUSES = {"captcha", "login-wall", "error-page"}
 
 

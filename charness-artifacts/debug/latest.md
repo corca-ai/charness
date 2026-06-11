@@ -1,169 +1,129 @@
-# Issue #335 Changed-Line Mutation Recurrence Debug
-Date: 2026-06-08
+# Issue #353 Adapter YAML Renderer Hygiene Debug
+Date: 2026-06-11
 
 ## Problem
 
-Scheduled mutation gate on `main` (run `27110952590`) reported `Status: FAIL`,
-`Mutation score: PASS` (86.7% vs 80%), `Blocking signals: FAIL` — "changed lines
-left test-uncovered, or eligible changed files dropped by selection/workload
-budgets, before mutation" — and auto-filed #335. Nth instance of the
-#219 → #251 → #260 → #320 → #321 seam.
+`scripts/adapter_lib.py` silently corrupts YAML-adjacent adapter data at rewrite
+time: newline-bearing strings render with literal newlines inside quotes,
+unsupported YAML constructs are parsed as ordinary scalars and normalized, and
+`quality_bootstrap_lib.py` reports falsy explicit fields as preserved while the
+renderer omits them.
 
 ## Correct Behavior
 
-- Given a `base..head` range whose eligible mutation-pool changed lines are all
-  test-covered, the blocking changed-line signal is clean (score path is
-  independent).
-- Given a closeout touched eligible mutation-pool files, any uncovered changed
-  line is SURFACED to the author before it lands on `main` — not discovered
-  post-merge by the cron, whose only action is to auto-file.
+- Given a string value containing `\n`, rendering then loading it returns the
+  original string.
+- Given limited block scalars (`|`, `|-`, `>`, `>-`), the small adapter parser
+  preserves the body instead of dropping it; given aliases, tags, or unsupported
+  block-scalar modifiers, it refuses loudly instead of guessing semantics.
+- Given explicit falsy known quality-adapter fields (`preset_version: null`,
+  `spec_pytest_reference_format: ""`), rewrite output preserves them when
+  `field_statuses` says `preserved`.
 
 ## Observed Facts
 
-- #335 lists exact `path:line` targets in TWO files: `check_python_lengths.py`
-  (217, 281, 282, 289) and `staged_commit_gate_plan.py` (361–364) — the #332
-  additions (`function_warn_for` test-branch return, `function_headroom_for`
-  `except SyntaxError`/None-lineno guards, `block_on_structural_sweep` failing-
-  stream print). Per-line `changed_and_missing` lists (not a budget-drop notice)
-  ⇒ genuinely uncovered, not a selection drop; files are in the eligible set.
-- Scheduled CI base = the previous completed run's `head_sha`
-  (`mutation-tests.yml:149-150`, success OR failure). #335 ran `7f0231e3..858c9eab`;
-  the NEXT run uses base `858c9eab` → HEAD, accumulating all commits since.
-- The LOCAL gate uses a different base, `merge-base origin/main HEAD`
-  (`run-quality.sh:509`, producer `mutation_coverage_producer.py:81-89`).
-  Producing coverage is opt-in (`--produce-mutation-coverage`); the consumer
-  skips silently (`--skip-if-no-coverage` exits 0; `--require-fresh-coverage`
-  skips on a stale fingerprint).
+- Repro before fix: `render_yaml_mapping([("body", "line1\nline2")])` emitted
+  `body: "line1\nline2"` and `load_yaml()` returned `{"body": "\"line1"}`.
+- Before fix, `load_yaml("body: |\n  line1\n")` returned `{"body": "|"}` and
+  ignored the block body.
+- Before fix, the quality bootstrap render path only appended `preset_version`
+  and `spec_pytest_reference_format` when truthy, despite earlier status code
+  marking explicit fields as `preserved`.
 
 ## Reproduction
 
-One instrumented coverage run (the gate's own `run_test_coverage`, parallel +
-subprocess-capturing), then classify:
-
-- `7f0231e3..HEAD` (incl. #332 + v0.28.0): 5 blocking files.
-- `858c9eab..HEAD` (ACTUAL next-run base): **85 uncovered changed lines / 3
-  files** — `check_artifact_surface_preflight.py` (33: `_format_changed` + `main`
-  CLI), `slice_closeout_reporting.py` (47: the extracted print functions),
-  `check_goal_artifact.py` (5: de-launder reporting).
-
-Cmd: `MUTATION_BASE_SHA=7f0231e3 MUTATION_HEAD_SHA=HEAD python3
-scripts/check_changed_line_mutation_coverage.py --repo-root . --write-fresh-marker`
-then `--base-sha 858c9eab --head-sha HEAD --reuse-coverage`. The #335 survivors
-are now in the next run's base, so covering ONLY them leaves the 85 v0.28.0 lines
-to fail the next run and auto-file a fresh issue — the recurrence.
+- `python3 -m pytest -q tests/quality_gates/test_adapter_lib_yaml.py`
+  with the new regression cases failed on newline rendering and unsupported
+  construct refusal before the production patch.
+- `python3 -m pytest -q tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields`
+  pinned the consumer mismatch after a fixture setup correction.
 
 ## Candidate Causes
 
-- Genuinely uncovered changed lines: #332 + v0.28.0 added branch/print/CLI lines
-  tested only on happy/JSON paths.
-- Selection/workload-budget drop: FALSIFIED — per-line `changed_and_missing`, files
-  in eligible set, no budget-drop notice.
-- Stale-coverage false positive: FALSIFIED — coverage produced fresh this session
-  over the current worktree via the gate's own probe.
-- Structural recurrence: local gate runs a narrower base than the scheduled gate
-  AND skips silently without fresh coverage, so debt accumulates on `main`.
+- Missing scalar escaping: `_yaml_scalar()` escaped quotes/backslashes but not
+  newline or carriage-return characters.
+- Parser over-acceptance: `_coerce_scalar()` accepted every unquoted scalar,
+  including YAML syntax this hand-rolled subset cannot represent.
+- Consumer truthiness gate: `render_bootstrap_adapter()` used `data.get(...)`
+  rather than preservation status for optional falsy fields.
 
 ## Hypothesis
 
-Covering the genuinely-uncovered lines (the #335 survivors + the 85 v0.28.0 lines)
-flips the local producer's changed-line verdict green over the next-run range; and
-making the gate SURFACE the obligation when eligible files changed but no fresh
-coverage exists stops the class reaching the scheduled run un-checked. Falsifier:
-a covered line still reported uncovered ⇒ a measurement/selection bug, not a gap.
+If the renderer escapes newline/carriage-return characters, the loader decodes
+only supported double-quoted escapes, the parser preserves limited block-scalar
+bodies while rejecting unsupported aliases/tags/modifiers, and
+quality-bootstrap renders fields when their status is `preserved`, then the
+three #353 failure modes are fixed without making `adapter_lib` a general YAML
+engine.
 
 ## Verification
 
-- Budget-drop and stale-coverage refuted by the per-line evidence + fresh probe.
-- Slice 2 covers the lines and re-runs the producer to confirm `ok: true` over
-  `858c9eab..HEAD` (no threshold/pool/signal change).
-- The authoritative #335 verdict is the next SCHEDULED run; agent cannot run CI —
-  recorded as external proof, not claimed.
+- `python3 -m pytest -q tests/quality_gates/test_adapter_lib_yaml.py tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_adapter_preserves_existing_explicit_commands`
+  passed after the fix.
+- Compatibility correction: the first decoder patch collapsed unknown regex
+  escapes such as `\s`; the existing explicit-commands test caught it, and the
+  decoder now preserves unknown escapes as literal backslash+character.
 
 ## Root Cause
 
-1. **Instance:** #332 (and, for the next run, the v0.28.0 commits) added
-   branch/print/CLI lines to eligible mutation-pool scripts with tests covering
-   only happy/JSON paths; the gate correctly flagged the uncovered lines.
-2. **Recurrence:** the local changed-line gate (a) runs over `merge-base origin/
-   main HEAD` while the scheduled gate runs `prev-run-head..HEAD` — so local
-   "green" never spans the accumulated since-last-cron range — and (b) skips
-   silently (exit 0) without fresh coverage, which is opt-in. Uncovered changed
-   lines land on `main` and are caught only by the cron, which can only auto-file.
+The repo-owned YAML seam was a deliberately small parser/renderer, but it had no
+clear refusal boundary. It accepted input that exceeded its subset, then rewrote
+it through the subset renderer. Separately, quality-bootstrap status reporting
+tracked explicitness correctly but rendering used truthiness, creating a
+status/output mismatch for falsy explicit values.
 
 ## Invariant Proof
 
-- Invariant: every changed line in an eligible mutation-pool file is test-covered
-  (or its absence surfaced) BEFORE it lands on `main`, so the scheduled consumer
-  never finds a NEW uncovered changed line.
-- Producer Proof: local gate over `merge-base..HEAD` — PARTIAL (skips silently;
-  narrower range than the consumer).
-- Final-Consumer Proof: the scheduled run over `prev-run-head..HEAD`, where #335
-  surfaced — confirming producer-only proof is not end-to-end.
-- Interface-Shape Sibling Scan: consumer base (`prev-run head`) and producer base
-  (`merge-base origin/main HEAD`) are different functions of history.
-- Non-Claims: NOT proven the next CI run is green (agent cannot run CI); only the
-  local producer over the next-run range.
+- Invariant: adapter rewrite either preserves a supported value exactly across
+  render/load or refuses an unsupported construct before normalization.
+- Producer Proof: focused parser/renderer tests cover newline escaping, limited
+  block-scalar body preservation, unsupported alias/tag/modifier refusal, and
+  existing regex escape compatibility.
+- Final-Consumer Proof: quality-bootstrap rewrite test proves explicit falsy
+  known fields are present in output when reported as preserved.
+- Interface-Shape Sibling Scan: `quality_bootstrap_lib.py` was the concrete
+  consumer sibling where renderer truthiness leaked into operator status.
+- Non-Claims: not a general YAML implementation; only plain and strip-chomped
+  literal/folded block scalar headers are supported.
 
 ## Detection Gap
 
-- local changed-line consumer | `--skip-if-no-coverage` exits 0 silently and
-  `--produce-mutation-coverage` is opt-in | fire it: when eligible files changed
-  AND no fresh coverage exists, SURFACE a visible "produce coverage + verify
-  changed lines" obligation instead of a silent skip.
+- adapter renderer tests | did not cover richer-than-subset YAML input or
+  falsy explicit fields in a real consumer rewrite | added focused tests for
+  newline round-trip, limited block-scalar body preservation, unsupported
+  alias/tag/modifier refusal, regex escape compatibility, and
+  quality-bootstrap falsy preservation.
 
 ## Sibling Search
 
-- Mental model (wrong): "a local gate over `merge-base..HEAD` proves no uncovered
-  changed line reaches the scheduled run."
-- same-file: `check_python_lengths.py`, `staged_commit_gate_plan.py` (#335) |
-  fixed now (Slice 2) | proof: producer re-run.
-- same-boundary: `check_artifact_surface_preflight.py`, `slice_closeout_reporting.py`,
-  `check_goal_artifact.py` (same class already queued) | fixed now (Slice 2) |
-  proof: producer re-run.
-- same-mental-model: producer/consumer base divergence + opt-in/silent-skip |
-  structural reduction (Slice 3) + critique | proof: deferred to Slice 3.
-- adjacent-clean: `disposition_form.py`, `validate_retro_artifact.py`,
-  `run_slice_closeout.py`, `goal_artifact_disposition.py` changed but covered |
-  no action | proof: not in `blocking`.
-- cross-file: `scripts/check_artifact_surface_preflight.py`,
-  `scripts/slice_closeout_reporting.py`,
-  `skills/public/achieve/scripts/check_goal_artifact.py` — same-class uncovered
-  changed lines OUTSIDE the subject changed-line-gate file (the v0.28.0 debt),
-  covered in Slice 2.
-- follow-up: none outside this goal's slices.
+- Mental model: "the adapter parser only sees values it created itself."
+- same-file: `scripts/adapter_lib.py` scalar rendering/loading | fixed now |
+  proof: `test_adapter_lib_yaml.py`.
+- consumer sibling: `scripts/quality_bootstrap_lib.py` optional falsy fields |
+  fixed now | proof: `test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields`.
+- cross-file: other adapter helpers that call `render_yaml_mapping()` | decision:
+  no direct change; the shared renderer now refuses unsupported constructs and
+  preserves newline scalars for all callers | proof: focused shared tests.
 
 ## Seam Risk
 
-- Interrupt ID: issue-335-changed-line-mutation-recurrence
-- Risk Class: host-disproves-local
-- Seam: local closeout gate (`merge-base..HEAD`, opt-in/skip-prone) → `main` →
-  scheduled run (`prev-run-head..HEAD`, authoritative).
-- Disproving Observation: v0.28.0 closeouts left 85 uncovered changed lines the
-  scheduled run would flag; the local gate skipped without fresh coverage.
-- What Local Reasoning Cannot Prove: the next scheduled CI run is green.
-- Generalization Pressure: factor-now
+- Interrupt ID: issue-353-adapter-yaml-renderer-hygiene
+- Risk Class: none
+- Seam: repo-owned adapter parser/renderer subset
+- Disproving Observation: local focused tests reproduced and then retired the
+  three named failure modes.
+- What Local Reasoning Cannot Prove: arbitrary YAML compatibility outside the
+  declared subset.
+- Generalization Pressure: none
 
 ## Interrupt Decision
 
 - Critique Required: yes
-- Next Step: spec
-- Handoff Artifact: charness-artifacts/spec/mutation-changed-line-premerge-gate.md
-  (the canonical premerge-gate spec — the seam mechanism is designed + critiqued
-  there in Slice 3 before its impl; Slice 2 covers the lines as ordinary impl.)
+- Next Step: impl
+- Handoff Artifact: none
 
 ## Prevention
 
-Turn the local gate's silent skip into a SURFACED obligation when eligible
-mutation-pool files changed but no fresh coverage exists (Slice 3), so the author
-covers the line before it lands. Cover the genuinely-uncovered changed lines
-across all 5 files (Slice 2) so the next-run range is green — not just #335's two
-survivors.
-
-## Related Prior Incidents
-
-- `2026-06-06-issue-320-mutation-changed-line-coverage.md`: the direct #320
-  predecessor on this seam.
-- `2026-05-22-mutation-changed-diff-suppression.md`: failed changed-file diff
-  collapsed to empty changed set (a different failure on the same gate).
-- `2026-05-21-mutation-subprocess-coverage.md`: subprocess CLI scripts read as 0%
-  under naive coverage — why the gate uses parallel coverage.
+Keep the adapter seam subset explicit in tests: any future construct either gets
+a supported round-trip test or a refusal test before a consumer rewrite path can
+claim preservation.

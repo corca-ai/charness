@@ -1,6 +1,6 @@
 # Achieve Goal: YouTube gather support and adapter renderer hygiene
 
-Status: draft
+Status: complete
 Created: 2026-06-11
 Activation: `/goal @charness-artifacts/goals/2026-06-11-youtube-gather-and-adapter-renderer-hygiene.md`
 
@@ -9,8 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-11-youtube-gather-and-adapter-renderer-hygiene.md`.
+- Current slice: complete — bundle closeout, critique, issue closeout draft,
+  retro, disposition review, and final quality proof are recorded.
+- Next action: commit the local direct-commit carrier; push/remote issue CLOSED
+  verification remains out of this activation scope.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -111,11 +113,11 @@ Implement the selected chunks from handoff pickup: #352 explicit YouTube gather-
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Shape #352 YouTube gather contract from current gather/provider code and issue source context. | Avoid implementing a URL handler that cannot state transcript vs metadata-only proof honestly. | Source/context read; chosen artifact schema/status semantics; focused tests or spec notes named. | planned |
-| 2 | Implement #352 YouTube URL handling and downstream confidence visibility. | Converts the recurring YouTube summary request into a durable gather path. | Focused gather tests for caption-available and blocked/unavailable cases, plus artifact fields proving source identity and partial status. | planned |
-| 3 | Debug #353 adapter renderer failure modes before fixing. | #353 is bug-class work; root cause must precede patching. | Minimal reproductions for newline scalar, unsupported construct rewrite, and falsy-explicit handling. | planned |
-| 4 | Fix #353 renderer hygiene and consumer status reporting. | Removes the latent config-corruption trap after the failure modes are pinned. | Focused adapter/quality-bootstrap tests; no silent lossy rewrite; falsy-explicit behavior matches status. | planned |
-| 5 | Bundle closeout, critique, issue closeout draft, and final quality proof. | The slices are independent but share one operator-selected goal closeout. | Slice closeout proof, final goal artifact gate, retro/disposition, issue-closeout validation for #352/#353 when applicable. | planned |
+| 1 | Shape #352 YouTube gather contract from current gather/provider code and issue source context. | Avoid implementing a URL handler that cannot state transcript vs metadata-only proof honestly. | Source/context read; chosen artifact schema/status semantics; focused tests or spec notes named. | completed |
+| 2 | Implement #352 YouTube URL handling and downstream confidence visibility. | Converts the recurring YouTube summary request into a durable gather path. | Focused gather tests for caption-available and blocked/unavailable cases, plus artifact fields proving source identity and partial status. | completed |
+| 3 | Debug #353 adapter renderer failure modes before fixing. | #353 is bug-class work; root cause must precede patching. | Minimal reproductions for newline scalar, unsupported construct rewrite, and falsy-explicit handling. | completed |
+| 4 | Fix #353 renderer hygiene and consumer status reporting. | Removes the latent config-corruption trap after the failure modes are pinned. | Focused adapter/quality-bootstrap tests; no silent lossy rewrite; falsy-explicit behavior matches status. | completed |
+| 5 | Bundle closeout, critique, issue closeout draft, and final quality proof. | The slices are independent but share one operator-selected goal closeout. | Slice closeout proof, final goal artifact gate, retro/disposition, issue-closeout validation for #352/#353 when applicable. | completed |
 
 ## Coordination Cues
 
@@ -143,14 +145,17 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-- Routing: pending — use `find-skills` at each phase boundary; likely routes
-  include gather/spec/impl/debug/quality/issue, but the current skill resolver
-  owns the final choice.
-- Gather: pending for #352 source context and YouTube source acquisition
-  semantics.
+Routing: find-skills routed gather for #352 source-ingestion, debug for #353 RCA, quality for validation, issue for #352/#353 closeout, and impl for code/test slices; achieve remained the lifecycle wrapper.
+- Gather: `charness-artifacts/gather/2026-06-11-youtube-hak1koqwm18-unavailable-details.md`
+  captures the issue #352 source URL through the new YouTube gather path in this
+  unauthenticated runtime: direct fetch hit captcha/bot signals, `yt-dlp` was
+  missing, and the artifact records `Source Identity: youtube-unavailable`.
 - Release: n/a — no version bump or release surface is in the activation scope.
-- Issue closeout: pending for #352 and #353; close only after carrier and
-  validation proof exist.
+- Issue closeout: #352/#353 close-intended via direct-commit carrier
+  `charness-artifacts/issue/2026-06-11-issues-352-353-closeout-commit-message.md`;
+  `issue_tool.py validate-closeout-draft` returned `ok: true` for #352 as
+  `feature` and #353 as `bug`. `verify-closeout --expect-state CLOSED` is
+  deferred until the direct-commit carrier is pushed, per Non-Goals.
 
 Discuss before activation: resolved for draft shaping — operator explicitly
 selected chunks 2 + 3 as one goal, despite the chunker finding no shared merge
@@ -159,6 +164,35 @@ YouTube/browser proof, no push/release, and issue closure only after the
 standard issue-closeout path is prepared.
 
 ## Slice Log
+
+- 2026-06-11 11:29 KST — Slices 1-2 (#352) implemented explicit YouTube
+  handling under support/web-fetch's `yt-dlp-metadata` domain route and
+  gather's durable public-URL record. New tests cover transcript-backed
+  acquisition from seeded subtitle data, metadata-only acquisition, blocked
+  bot-verification acquisition, and missing-`yt-dlp` unavailable acquisition.
+  Live/local proof on `https://youtu.be/haK1KoQWm18` produced
+  `charness-artifacts/gather/2026-06-11-youtube-hak1koqwm18-unavailable-details.md`
+  with no transcript claim. Focused proof: `python3 -m pytest -q
+  tests/test_youtube_source.py tests/test_twitter_exact_source.py
+  tests/test_web_fetch_support.py tests/test_web_fetch_content_persistence.py`
+  passed (65 tests) before bundle validation.
+- 2026-06-11 11:29 KST — Slices 3-4 (#353) reproduced and fixed the
+  adapter-lib renderer bugs. RCA captured in
+  `charness-artifacts/debug/latest.md`; seam-risk index regenerated. Fixes:
+  newline/carriage-return scalar escaping and decoding; limited block-scalar
+  parsing so workflow `run: |` bodies are preserved rather than dropped;
+  anchors/tags refused loudly; quality-bootstrap renders explicit falsy fields
+  when status says `preserved`. Focused proof: `python3 -m pytest -q
+  tests/quality_gates/test_adapter_lib_yaml.py
+  tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields
+  tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_adapter_preserves_existing_explicit_commands`
+  passed after the fix; broad proof later passed with 2769 passed, 4 skipped,
+  26 deselected.
+- 2026-06-11 11:48 KST — Slice 5 closeout completed: final critique
+  `charness-artifacts/critique/2026-06-11-youtube-gather-and-adapter-renderer-closeout-critique.md`
+  folded all Act Before Ship findings; direct-commit closeout draft validated
+  for #352 and #353; retro and host-log probe artifacts were written; final
+  broad proof passed with 2771 passed, 4 skipped, 26 deselected.
 
 ## Context Sources
 
@@ -216,23 +250,110 @@ the active run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Retro: charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md
+Host log probe: charness-artifacts/retro/2026-06-11-youtube-gather-adapter-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-11-youtube-gather-adapter-disposition-review.md
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+### Focused And Live Proof
+
+- `python3 -m pytest -q tests/test_youtube_source.py tests/test_twitter_exact_source.py tests/test_web_fetch_support.py tests/test_web_fetch_content_persistence.py`
+  — passed, 65 tests.
+- `python3 -m pytest -q tests/test_youtube_source.py tests/quality_gates/test_adapter_lib_yaml.py tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_adapter_preserves_existing_explicit_commands tests/quality_gates/test_inventory_ci_local_gate_parity.py`
+  — passed, 40 tests.
+- `python3 skills/public/gather/scripts/gather_public_url.py --repo-root . --url https://youtu.be/haK1KoQWm18 --browser-mode off --slug youtube-hak1koqwm18-unavailable-details --date 2026-06-11 --execute`
+  — wrote
+  `charness-artifacts/gather/2026-06-11-youtube-hak1koqwm18-unavailable-details.md`
+  with `Source Identity: youtube-unavailable`, `Video Id: haK1KoQWm18`, and
+  `Reason: missing-tool`; no transcript-backed claim.
+
+### Changed-Surface Proof
+
+- `python3 scripts/check_changed_surfaces.py --repo-root .` — passed and mapped
+  checked-in plugin export, repo markdown, skill packages, public skill policy
+  and dogfood, adapters, critique artifacts, debug seam-risk index,
+  integrations/control plane, repo Python, and Python scan hygiene.
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .` and
+  `python3 scripts/build_debug_seam_risk_index.py --repo-root . --write` —
+  completed before verification.
+- `python3 scripts/validate_packaging.py --repo-root .` —
+  passed.
+- `python3 scripts/validate_packaging_committed.py --repo-root .` —
+  passed.
+- `python3 scripts/check_doc_links.py --repo-root .` — passed.
+- `python3 scripts/check_command_docs.py --repo-root .` — passed.
+- `./scripts/check-markdown.sh` — passed.
+- `./scripts/check-secrets.sh` — passed.
+- `python3 scripts/validate_skills.py --repo-root .` — passed.
+- `python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py`
+  — passed.
+- `python3 scripts/check_skill_ownership_overlap.py --repo-root .` — passed.
+- `python3 scripts/validate_skill_ergonomics.py --repo-root .` — passed.
+- `python3 scripts/validate_public_skill_validation.py --repo-root .` —
+  passed.
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .` — passed.
+- `python3 scripts/validate_adapters.py --repo-root .` — passed.
+- `python3 scripts/validate_critique_artifacts.py --repo-root . --all` —
+  passed.
+- `python3 scripts/validate_critique_packet.py charness-artifacts/critique/2026-06-11-023045-packet.json`
+  — passed.
+- `python3 scripts/validate_debug_artifact.py --repo-root .` — passed.
+- `python3 scripts/build_debug_seam_risk_index.py --repo-root . --check` —
+  passed.
+- `python3 scripts/validate_integrations.py --repo-root .` — passed.
+- `python3 scripts/sync_support.py --repo-root . --json` — passed as dry-run.
+- `python3 scripts/update_tools.py --repo-root . --json` — passed as dry-run;
+  reported current manual/missing tool readiness without mutating.
+- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`
+  — passed.
+- `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+  — passed with advisory warn-band notes only, including touched
+  `scripts/quality_bootstrap_lib.py` and
+  `skills/support/web-fetch/scripts/acquire_public_url.py`.
+- `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`
+  — passed.
+- `python3 scripts/check_test_repo_copy_invariants.py --repo-root .` — passed.
+- `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` — passed.
+- `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`
+  — passed.
+- `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`
+  — passed, 2771 passed, 4 skipped, 26 deselected.
+
+### Issue Closeout Proof
+
+- `python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 352 --classification feature --carrier direct-commit --commit-message-file charness-artifacts/issue/2026-06-11-issues-352-353-closeout-commit-message.md --repo-root .`
+  — `ok: true`, `status: draft_verified`.
+- `python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo corca-ai/charness --number 353 --classification bug --carrier direct-commit --commit-message-file charness-artifacts/issue/2026-06-11-issues-352-353-closeout-commit-message.md --repo-root .`
+  — `ok: true`, `status: draft_verified`.
+- Final GitHub state verification is intentionally not claimed: this activation
+  is local-only and no push is in scope.
 
 ## User Verification Instructions
 
 - Activate only if the local-only proof and two-independent-slice bundle are
   acceptable: `/goal @charness-artifacts/goals/2026-06-11-youtube-gather-and-adapter-renderer-hygiene.md`.
-- After completion, inspect the gathered YouTube artifact examples and the
-  adapter renderer tests named in `## Final Verification`.
+- After completion, inspect the gathered YouTube artifact and the adapter
+  renderer tests named in `## Final Verification`.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: all surfaced retro improvements are dispositioned
+below.
+
+- applied: issue-closeout draft shape now comes from the live
+  `describe_closeout_draft_shape.py` helper and the exact direct-commit carrier
+  was validated separately for #352 as `feature` and #353 as `bug` before
+  commit.
+- applied: support/export surface closeout followed sync-before-verify
+  ordering: `sync_root_plugin_manifests.py` and seam-risk index write first;
+  changed-surface validators and broad pytest next; artifact-only closeout
+  edits last, followed by narrow artifact validators before commit.
+- applied: `charness-artifacts/retro/recent-lessons.md` now records the
+  `proof:`-style continuation trap and the mixed-class closeout validation
+  habit.
+
+Structural follow-up: applied: the transferable field-shaped-continuation
+pattern was corrected in
+`charness-artifacts/issue/2026-06-11-issues-352-353-closeout-commit-message.md`
+and guarded by both successful `validate-closeout-draft` runs; durable memory is
+the refreshed `charness-artifacts/retro/recent-lessons.md`; no new issue is
+needed.
