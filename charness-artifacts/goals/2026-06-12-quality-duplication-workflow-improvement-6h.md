@@ -1,6 +1,6 @@
 # Achieve Goal: Quality Duplication Workflow Improvement 6h
 
-Status: active
+Status: complete
 Created: 2026-06-12
 Activation: `/goal @charness-artifacts/goals/2026-06-12-quality-duplication-workflow-improvement-6h.md`
 
@@ -10,10 +10,9 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 9 - release publish execution helper split is implemented
-  and awaiting commit/final evidence recording.
-- Next action: commit Slice 9, record its commit hash, then choose final
-  closeout or the next locally safe cleanup if time remains.
+- Current slice: Slice 9 - release publish execution helper split committed.
+- Next action: run final closeout, record retro and early-close sufficiency
+  ledger, then mark this goal complete if the artifact passes validation.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -101,7 +100,7 @@ check.
 | 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | committed (`9fdc07e8`) |
 | 7 | Remove the next support helper warn-band pressure point. | `acquire_public_url.py` had 12 lines of headroom before the hard limit, and fallback/direct-attempt policy was a coherent boundary. | Policy helper split, plugin sync, fresh-eye critique, focused web-fetch/youtube tests, and surface-recommended gates. | committed (`c4b28eab`) |
 | 8 | Remove the next release helper warn-band pressure point. | `publish_release_preflight.py` was close to its hard limit, and release adapter focused-preflight logic was a coherent sub-boundary. | Adapter preflight helper split, plugin sync, fresh-eye critique, focused release tests, and surface-recommended gates. | committed (`e6796431`) |
-| 9 | Remove the final release CLI warn-band/function pressure point. | `publish_release_cli.py` was the last Python length warn-band file, and `execute_publish_plan()` was near the function hard limit. | Execute helper split, plugin sync, fresh-eye critique, focused release tests, exported plugin smoke, and surface-recommended gates. | implemented pending commit |
+| 9 | Remove the final release CLI warn-band/function pressure point. | `publish_release_cli.py` was the last Python length warn-band file, and `execute_publish_plan()` was near the function hard limit. | Execute helper split, plugin sync, fresh-eye critique, focused release tests, exported plugin smoke, and surface-recommended gates. | committed (`8f44194d`) |
 
 ## Coordination Cues
 
@@ -131,7 +130,11 @@ during the run:
 
 Routing: find-skills task recommendation (2026-06-12) selected `quality` for
 the active quality-improvement workflow; `achieve` owns the long-running goal
-artifact and `impl` will own code/config/test mutations when a slice is chosen.
+artifact, `impl` routed the code/config/test mutations, and `debug` routed the
+weak-proof/RCA ledger follow-up discovered during release closeout.
+Routing: find-skills routed quality for validation cadence, changed-surface gates, broad proof, and closeout evidence.
+Routing: find-skills routed impl for code, config, test, helper extraction, and regression-test mutations.
+Routing: find-skills routed debug for the weak-proof/RCA ledger follow-up discovered during release closeout.
 Gather: n/a — no external source is needed for the first local quality slice.
 Release: n/a — no version, release, or install-manifest surface is in scope.
 Issue closeout: n/a — no tracked issue is being resolved by default in this
@@ -255,7 +258,7 @@ general quality-improvement goal.
 
 - Objective: Remove the final release CLI warn-band and function-length pressure point without changing publish execution semantics.
 - Why this approach: `skills/public/release/scripts/publish_release_cli.py` was 342/360 code lines and `execute_publish_plan()` was near its function limit. The publish execution tail formed a coherent boundary separate from CLI parsing, dry-run plan construction, and resume gating.
-- Commits: pending
+- Commits: `8f44194d`
 - What changed: Added `skills/public/release/scripts/publish_release_execute.py`; moved the execute tail into prepare, release-commit, and publish/finalize helper phases; kept `publish_release_cli.execute_publish_plan()` as the public wrapper; added an explicit `_execution_context()` namespace for execute and resume so direct file-location loaders do not depend on `sys.modules[__name__]`; fixed the pre-existing install-refresh durability gap by running refresh before the final release artifact commit and rendering an `Install Refresh` section; regenerated the checked-in plugin mirror.
 - Alternatives rejected: Rejected converting release scripts to package imports because existing skill runtime and tests load release scripts by file location. Rejected a broader typed protocol for the `cli` dependency object because that is a separate API cleanup beyond this behavior-preserving split.
 - Targeted verification: focused ruff passed for changed release source/test files; direct `spec_from_file_location` loader smoke passed; exported plugin `publish_release.py --help` smoke passed 1; `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_backend.py tests/quality_gates/test_release_publish_resilience.py` passed 48; Python length headroom showed `publish_release_cli.py` 296/360, new `publish_release_execute.py` 201/360, `publish_release_artifact.py` 228/360, `publish_release_resume.py` 137/360, and no function near-limit; repo Python length gate passed for 772 files; packaging and validate_packaging_committed passed; validate_skills and skill py_compile passed; check_skill_ownership_overlap and validate_skill_ergonomics passed; validate_public_skill_validation and validate_public_skill_dogfood passed; gitignore scan hygiene passed; markdown/link/command-doc/secrets checks passed; attention-state visibility, test-repo-copy invariants, and boundary-bypass ratchet passed; broad pytest `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py` passed 2807, 4 skipped, 26 deselected.
@@ -312,18 +315,64 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Host metric window: started_at=2026-06-11T21:13:55Z completed_at=2026-06-11T23:29:26Z codex_session_file=/home/hwidong/.codex/sessions/2026/06/11/rollout-2026-06-11T18-30-43-019eb605-06a7-7401-aad8-18e71fa5d5ff.jsonl
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Status: complete.
+
+Completed commits: `25201777`, `6287bb27`, `c863bac9`, `1f50ab7f`,
+`5c5ffa1e`, `9fdc07e8`, `c4b28eab`, `e6796431`, `8f44194d`.
+
+High-confidence proof:
+
+- `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`: 2807 passed, 4 skipped, 26 deselected.
+- `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_backend.py tests/quality_gates/test_release_publish_resilience.py`: 48 passed.
+- `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`: passed for 772 files; Python length warn-band files are 0.
+- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`: passed.
+- `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`: passed.
+- `python3 scripts/check_test_repo_copy_invariants.py --repo-root .`: passed.
+- `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`: passed.
+- Packaging/skill/public-skill/markdown/secret/critique/goal validators passed during Slice 9 closeout and pre-commit.
+- `python3 scripts/validate_rca_ledger.py --repo-root .`: passed after the retro RCA event.
+
+External or live proof: skipped: allowed non-goal — this goal did not push,
+publish, release, or watch remote CI. No live/provider proof is claimed.
+
+Retro: charness-artifacts/retro/2026-06-12-quality-goal-closeout.md
+
+Host log probe: charness-artifacts/goals/2026-06-12-quality-duplication-workflow-improvement-host-log-probe.md
+
+Early close rationale: macro objective satisfied before the reserve window; all tracked Python length warn-band pressure was eliminated, final focused and broad proof passed, and remaining work is better scoped as a new optimization goal.
+
+Early close report: charness-artifacts/goals/2026-06-12-quality-duplication-workflow-improvement-early-close.md
+
+Next slice candidate: validation-churn gate cadence helper | decision: defer | reason: Real next objective, but the current goal already passed final broad proof and should not start a new validation-policy slice after closeout.
+
+Next slice candidate: focused duplicate-family review | decision: defer | reason: Real next objective, but the current goal eliminated length warn-band pressure and the duplicate-family review needs its own scoped selection criteria.
+
+Next slice candidate: release execution context API cleanup | decision: defer | reason: Real next objective, but replacing the broad dependency object is a design cleanup beyond the behavior-preserving split already proven here.
+
+Outcome sufficiency check: sufficient: the run landed nine substantive commits, eliminated tracked Python length warn-band files from 8 to 0, fixed a release artifact durability gap found by review, and passed both focused release proof and broad deterministic proof.
+
+Disposition review: charness-artifacts/critique/2026-06-12-quality-goal-final-disposition-review.md
 
 ## User Verification Instructions
 
+- Inspect the slice commits listed above and confirm each changes code, tests,
+  or operational artifacts rather than only status prose.
+- Re-run the broad proof command:
+  `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`.
+- Re-run the release proof command:
+  `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_backend.py tests/quality_gates/test_release_publish_resilience.py`.
+- Re-run `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing` and confirm there are no warn-band files.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+applied: direct-loader helper extraction smoke is now a regression test in `tests/quality_gates/test_release_publish_resilience.py::test_publish_release_cli_direct_loader_context_without_sys_modules`.
+applied: release "recorded payload" durability is now guarded by `tests/quality_gates/test_release_publish_resilience.py::test_publish_auto_runs_declared_install_refresh_end_to_end` and `skills/public/release/scripts/publish_release_artifact.py`.
+applied: broad-gate-vs-slice-gate waste is recorded in `charness-artifacts/retro/recent-lessons.md` and this goal's early-close report for the next goal's planning floor.
+applied: RCA ledger event `release-recorded-payload-not-durable-artifact` appended to `charness-artifacts/metrics/rca-ledger.jsonl` and validated.
+
+Structural follow-up: applied: direct-loader and durable-artifact patterns are
+covered by release resilience tests; validation-churn and duplicate-family
+follow-ups are intentionally routed as next-goal candidates in the early-close
+report, not hidden as untracked prose memory.

@@ -15,6 +15,7 @@ from .release_publish_fixtures import (
 )
 
 PREFLIGHT_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_preflight.py"
+PUBLISH_CLI_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py"
 CRITIQUE_BLOCKED = "synthetic-test-harness does not spawn real critique subagents"
 
 
@@ -35,6 +36,21 @@ def _load_post_create():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None:
+    module_name = "publish_release_cli_direct_loader_probe"
+    sys.modules.pop(module_name, None)
+    spec = importlib.util.spec_from_file_location(module_name, PUBLISH_CLI_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module_name not in sys.modules
+    context = module._execution_context()
+    assert callable(module.execute_publish_plan)
+    assert callable(context.run)
+    assert hasattr(context, "_helpers")
 
 
 class _FakeShellResult:

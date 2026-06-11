@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This retro covers the active 6h quality goal that continued from the user's complaint about low-yield work. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
 - Closeout retro for `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md` (6h timebox, operator asleep, Claude host): five quality slices (posture refresh, #350, C2 bootstrap data-loss fix, C4 commit-time handoff pull, C3 scheduled-mutation capacity-advisory reclassification) then the pre-authorized single push + v0.40.0 release lane. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.41.0`. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
-- First disposition of the red mutation run was "flake" from same-SHA greens; reading the workflow's base/seed mechanism flipped it to real-by-design within slice 1. Pattern-matching red->green->flake without reading the selection mechanism is the trap. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
-- Slice-log timestamps were written as estimates and drifted ~2.5h fast; corrected in a dedicated bundle-boundary commit. `date` at each boundary costs nothing. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
-- The adapter parser fix initially over-refused real workflow-style block scalars; broad tests caught that, but the round trip cost came from treating unsupported YAML refusal and current workflow compatibility as one decision. (source: `charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md`)
+- The install-refresh artifact gap was pre-existing but was only surfaced by a reviewer after the split. That was worth fixing in-slice, but it shows the release contract lacked a focused assertion that "recorded" means durable artifact content, not only final JSON payload. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- The release publish split initially fixed the line/function pressure but missed a direct-loader issue on `sys.modules[__name__]`; fresh-eye caught it before commit. The workflow worked, but the parent should have run a direct-loader smoke immediately after introducing the module boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- The run still spent too much effort on repeated validation churn. Some of that was legitimate bundle proof, but the metric window shows repeated `pytest`, `ruff`, markdown/secrets, and VCS probes at a level that should push future goals toward a clearer gate cadence table before implementation starts. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
-- adapter_lib renderer hygiene — filed as issue #353. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
-- before locking a direct-commit closeout carrier that covers multiple issues or classifications, run `describe_closeout_draft_shape.py` and validate the exact commit-message file for each issue-specific classification before final artifact edits. (source: `charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md`)
-- record that `proof:`-style continuation lines inside issue closeout draft fields can be parsed as new fields; use semicolon or same-field prose when a field requires both decision and proof. (source: `charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md`)
+- Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- The release resilience tests now assert that install-refresh status is recorded in the durable release artifact, not only in the final JSON payload. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- The release resilience tests now include a direct `spec_from_file_location` loader regression for the extracted publish CLI context; future helper extractions should treat this as the local pattern. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
 
 ## Selection Policy
 
@@ -55,4 +55,4 @@
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-11-youtube-gather-adapter-closeout.md`
+- `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`
