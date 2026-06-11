@@ -92,7 +92,7 @@ lifecycle instead of starting a new one.
    - record high-confidence / live proof, or state explicitly that it was not run
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
-   - if a timeboxed goal stops early, write the report required by `references/lifecycle.md`
+   - if a timeboxed goal stops early, follow `references/lifecycle.md`
    - run `retro` for the automatic efficiency review
    - for a long goal with host timing data, record the goal window with
      `record_metric_window.py`, then render the provider-safe metrics block with

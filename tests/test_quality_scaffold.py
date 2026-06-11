@@ -5,7 +5,10 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
+_export_plugin = import_repo_module(__file__, "scripts.export_plugin")
 
 SCAFFOLD = "skills/public/quality/scripts/scaffold_quality_artifact.py"
 
@@ -110,17 +113,14 @@ def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Pa
 
 def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
-    export_result = run_script(
-        "scripts/export_plugin.py",
-        "--repo-root",
-        str(ROOT),
-        "--host",
+    manifest = _export_plugin.load_manifest(ROOT, "charness")
+    plugin_root = _export_plugin.export_plugin(
+        ROOT,
+        export_root,
+        manifest,
         "codex",
-        "--output-root",
-        str(export_root),
+        with_marketplace=False,
     )
-    assert export_result.returncode == 0, export_result.stderr
-    plugin_root = export_root / "plugins" / "charness"
     scaffold = plugin_root / "skills" / "quality" / "scripts" / "scaffold_quality_artifact.py"
 
     consumer = tmp_path / "consumer"

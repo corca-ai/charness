@@ -5,7 +5,10 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
+_export_plugin = import_repo_module(__file__, "scripts.export_plugin")
 
 SCAFFOLD = "skills/public/handoff/scripts/scaffold_handoff_artifact.py"
 
@@ -87,17 +90,14 @@ def test_handoff_scaffold_guards_custom_title(tmp_path: Path) -> None:
 
 def test_exported_handoff_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
-    export_result = run_script(
-        "scripts/export_plugin.py",
-        "--repo-root",
-        str(ROOT),
-        "--host",
+    manifest = _export_plugin.load_manifest(ROOT, "charness")
+    plugin_root = _export_plugin.export_plugin(
+        ROOT,
+        export_root,
+        manifest,
         "codex",
-        "--output-root",
-        str(export_root),
+        with_marketplace=False,
     )
-    assert export_result.returncode == 0, export_result.stderr
-    plugin_root = export_root / "plugins" / "charness"
     scaffold = plugin_root / "skills" / "handoff" / "scripts" / "scaffold_handoff_artifact.py"
 
     consumer = tmp_path / "consumer"

@@ -192,10 +192,23 @@ macro-outcome checklist. The artifact records:
 This field set makes a time budget operational: it tells the next session when
 the clock started, how much closeout time to protect, and what to do if the
 first slice finishes early. A timebox goal may still stop early when continuing
-would be unsafe or needs a user decision, but that is evidence, not vibes:
-record `No safe next slice: <reason>`, `Early close rationale: <reason>`, or a
-specific `Stop condition:` line under `## Final Verification` with enough detail
-for a fresh reviewer to falsify it. The same closeout must also bind an
+would be unsafe or needs a user decision, but that is evidence, not vibes. Before
+the closeout reserve window, a one-line `No safe next slice:` or
+`Early close rationale:` is not enough: under `## Final Verification`, record
+one early-close reason, at least two candidate ledger lines, and an outcome
+sufficiency check:
+
+```md
+Early close rationale: <why the run should end before the reserve window>
+Next slice candidate: <candidate> | decision: defer | reason: <why not now>
+Next slice candidate: <candidate> | decision: user-decision | reason: <why not now>
+Outcome sufficiency check: accepted-low-yield: <why the achieved result is still honest to close>
+```
+
+Valid candidate decisions are `defer`, `blocked`, `unsafe`, `user-decision`, and
+`out-of-scope`; `continue` is deliberately invalid before the reserve window.
+Valid sufficiency statuses are `sufficient`, `accepted-low-yield`, and
+`blocked-by-user-decision`. The same closeout must also bind an
 `Early close report: <path>` artifact that transports the user-facing rationale:
 why the run ended early, which items require the user's decision, and what waste
 or retro findings should change the next run. The report is required even when
@@ -417,12 +430,13 @@ For timebox mode, `upsert_goal.py --status complete` and
 `check_goal_artifact.py` enforce the closeout boundary. A goal with
 `Done-early policy: continue_next_improvement` cannot flip to `complete` before
 `Activation time + Timebox - Closeout reserve` unless the artifact records a
-valid `No safe next slice:`, `Early close rationale:`, or supported
-`Stop condition:` line under `## Final Verification`. This catches the failure
-mode where the agent declares the macro target done early and ignores the user's
-time budget. When such an early-close reason is recorded, the After-phase
-evidence gate also requires `Early close report: <path>` so the closeout cannot
-pass without a report for the user.
+valid early-close reason, at least two `Next slice candidate:` ledger lines, and
+a valid `Outcome sufficiency check:` line under `## Final Verification`. This
+catches the failure mode where the agent declares the macro target done early
+and ignores the user's time budget or closes with low yield without saying so.
+When such an early-close reason is recorded, the After-phase evidence gate also
+requires `Early close report: <path>` so the closeout cannot pass without a
+report for the user.
 
 Mutable `HEAD` claims are live-state claims, not durable proof by themselves.
 When a goal artifact says `current HEAD`, `HEAD is`, or equivalent and also

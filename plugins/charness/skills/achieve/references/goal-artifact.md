@@ -144,14 +144,25 @@ Verification, and Auto-Retro sections.
 Add the timebox fields only when the user gives a fixed duration. `Timebox:`,
 `Activation time:`, `Closeout reserve:`, and
 `Done-early policy: continue_next_improvement` make the budget enforceable:
-before the closeout reserve begins, completion is blocked unless the artifact
-records `No safe next slice:`, `Early close rationale:`, or a supported
-`Stop condition:` with a concrete reason under `## Final Verification`. These
-lines are plain markdown so a fresh session can continue the clock without host
-memory. When an early-close reason is recorded, `## Final Verification` must
-also include `Early close report: <path>` pointing at a checked-in report that
-explains why the run stopped early, what decisions require the user, and what
-waste/retro findings should shape the next run.
+before the closeout reserve begins, completion is blocked unless
+`## Final Verification` records a concrete early-close reason plus a candidate
+ledger and outcome sufficiency check:
+
+```md
+Early close rationale: <why this closes before reserve>
+Next slice candidate: <candidate> | decision: defer | reason: <why not now>
+Next slice candidate: <candidate> | decision: user-decision | reason: <why not now>
+Outcome sufficiency check: accepted-low-yield: <why this is still honest to close>
+```
+
+These lines are plain markdown so a fresh session can continue the clock without
+host memory. The early-close reason may still be `No safe next slice:`,
+`Early close rationale:`, or a supported `Stop condition:` line; the candidate
+ledger and sufficiency check decide whether that reason is enough before the
+reserve window. When an early-close reason is recorded, `## Final Verification`
+must also include `Early close report: <path>` pointing at a checked-in report
+that explains why the run stopped early, what decisions require the user, and
+what waste/retro findings should shape the next run.
 
 When changing the goal artifact shape, update every goal producer that emits a
 new artifact, not only the primary `achieve` template. The current producer

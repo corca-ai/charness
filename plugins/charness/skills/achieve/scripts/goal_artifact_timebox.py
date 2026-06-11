@@ -27,6 +27,21 @@ _EARLY_EVIDENCE = (
         ),
     ),
 )
+_EARLY_CLOSE_CANDIDATE = re.compile(
+    r"^(?:[-*]\s*)?Next slice candidate:\s*(?P<name>[^|\n]{3,})"
+    r"\s*\|\s*decision:\s*(?P<decision>[a-z-]+)"
+    r"\s*\|\s*reason:\s*(?P<reason>.+?)\s*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+_SUFFICIENCY_CHECK = re.compile(
+    r"^(?:[-*]\s*)?Outcome sufficiency check:\s*(?P<status>[a-z-]+)\s*:\s*(?P<reason>.+?)\s*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+_ALLOWED_EARLY_CLOSE_DECISIONS = frozenset({"defer", "blocked", "unsafe", "user-decision", "out-of-scope"})
+_ALLOWED_SUFFICIENCY_STATUSES = frozenset({"sufficient", "accepted-low-yield", "blocked-by-user-decision"})
+_MIN_CANDIDATE_REASON_CHARS = 30
+_MIN_CANDIDATES = 2
+_MIN_SUFFICIENCY_REASON_CHARS = 40
 
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -83,6 +98,62 @@ def _evidence(text: str) -> str | None:
         if value and len(value) >= 30 and "<" not in value and ">" not in value:
             return name
     return None
+
+
+def _candidate_ledger(text: str) -> dict[str, Any]:
+    candidates: list[dict[str, str]] = []
+    invalid: list[dict[str, str]] = []
+    distinct_names: set[str] = set()
+    for match in _EARLY_CLOSE_CANDIDATE.finditer(text):
+        entry = {
+            "name": match.group("name").strip(),
+            "decision": match.group("decision").strip().casefold(),
+            "reason": match.group("reason").strip(),
+        }
+        candidates.append(entry)
+        distinct_names.add(" ".join(entry["name"].casefold().split()))
+        if entry["decision"] not in _ALLOWED_EARLY_CLOSE_DECISIONS:
+            invalid.append({**entry, "problem": "decision does not justify early close"})
+        elif len(entry["reason"]) < _MIN_CANDIDATE_REASON_CHARS:
+            invalid.append({**entry, "problem": "reason too short"})
+    return {"count": len(candidates), "distinct_count": len(distinct_names), "candidates": candidates, "invalid": invalid}
+
+
+def _sufficiency(text: str) -> dict[str, str | bool | None]:
+    match = _SUFFICIENCY_CHECK.search(text)
+    if match is None:
+        return {"ok": False, "status": None, "reason": None, "problem": "missing"}
+    status = match.group("status").strip().casefold()
+    reason = match.group("reason").strip()
+    if status not in _ALLOWED_SUFFICIENCY_STATUSES:
+        return {"ok": False, "status": status, "reason": reason, "problem": "invalid status"}
+    if len(reason) < _MIN_SUFFICIENCY_REASON_CHARS:
+        return {"ok": False, "status": status, "reason": reason, "problem": "reason too short"}
+    return {"ok": True, "status": status, "reason": reason, "problem": None}
+
+
+def _early_close_readiness(final_verification: str) -> dict[str, Any]:
+    evidence = _evidence(final_verification)
+    ledger = _candidate_ledger(final_verification)
+    sufficiency = _sufficiency(final_verification)
+    issues: list[str] = []
+    if evidence is None:
+        issues.append("record `No safe next slice:` / `Early close rationale:` / supported `Stop condition:`")
+    if ledger["count"] < _MIN_CANDIDATES:
+        issues.append(f"record at least {_MIN_CANDIDATES} `Next slice candidate:` ledger lines")
+    elif ledger["distinct_count"] < _MIN_CANDIDATES:
+        issues.append(f"record at least {_MIN_CANDIDATES} distinct `Next slice candidate:` names")
+    if ledger["invalid"]:
+        issues.append("fix invalid `Next slice candidate:` decisions or reasons")
+    if not sufficiency["ok"]:
+        issues.append("record a valid `Outcome sufficiency check:` line")
+    return {
+        "ok": not issues,
+        "evidence": evidence,
+        "candidate_ledger": ledger,
+        "outcome_sufficiency": sufficiency,
+        "issues": issues,
+    }
 
 
 def _section(text: str, heading: str) -> str:
@@ -167,14 +238,13 @@ def check_timebox_closeout(text: str, *, now: datetime | None = None) -> dict[st
         return report
     if now_utc >= closeout_start:
         return report
-    evidence = _evidence(_section(masked, "Final Verification"))
-    report["evidence"] = evidence
-    if evidence:
+    readiness = _early_close_readiness(_section(masked, "Final Verification"))
+    report["evidence"] = readiness["evidence"]
+    report["early_close_readiness"] = readiness
+    if readiness["ok"]:
         report["status"] = "early_close_with_evidence"
         return report
     report["ok"] = False
     report["status"] = "early_close_blocked"
-    report["issues"].append(
-        "timebox closeout window has not started; continue a safe next slice or record `No safe next slice:` / `Early close rationale:`"
-    )
+    report["issues"].append("timebox closeout window has not started; " + "; ".join(readiness["issues"]))
     return report
