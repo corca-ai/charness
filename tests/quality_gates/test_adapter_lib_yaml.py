@@ -130,6 +130,20 @@ def test_adapter_lib_renders_newline_scalars_as_round_trippable_escapes() -> Non
     assert ADAPTER_LIB.load_yaml(rendered) == {"body": "line1\nline2"}
 
 
+def test_adapter_lib_loads_carriage_return_escape_and_inline_empty_list_item() -> None:
+    loaded = ADAPTER_LIB.load_yaml(
+        "\n".join(
+            [
+                'body: "line1\\rline2"',
+                "steps:",
+                "  - command: []",
+                "",
+            ]
+        )
+    )
+    assert loaded == {"body": "line1\rline2", "steps": [{"command": []}]}
+
+
 def test_adapter_lib_loads_block_scalars_without_dropping_body() -> None:
     assert ADAPTER_LIB.load_yaml("body: |\n  line1\n  line2\n") == {"body": "line1\nline2\n"}
     assert ADAPTER_LIB.load_yaml("body: >-\n  line1\n  line2\n") == {"body": "line1 line2"}

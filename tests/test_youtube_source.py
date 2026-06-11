@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -180,6 +181,124 @@ def test_acquire_youtube_transcript_from_ytdlp_subtitles(tmp_path: Path) -> None
     assert "Hello transcript." in payload["selected_content"]["text"]
 
 
+def test_youtube_source_parses_json3_captions_and_url_variants(monkeypatch) -> None:
+    monkeypatch.setattr(youtube_source.shutil, "which", lambda _name: "/bin/yt-dlp")
+    json3 = json.dumps(
+        {
+            "events": [
+                "not-a-dict",
+                {"segs": [{"utf8": "Hello "}, {}, {"utf8": "world"}]},
+            ]
+        }
+    )
+    info = {
+        "id": "abc123",
+        "title": "JSON3 Video",
+        "subtitles": {
+            123: [{"ext": "vtt", "data": "ignored"}],
+            "en": {"not": "a-list"},
+            "ko": [{"ext": "json3", "url": "https://captions.example/json3"}],
+        },
+    }
+
+    attempts = youtube_source.run_youtube_stage(
+        "https://www.youtube.com/watch?v=abc123",
+        run_command=lambda _command: (json.dumps(info), None),
+        fetch_url=lambda url: (json3, None),
+    )
+
+    assert attempts[0].status == "success"
+    assert attempts[0].details["transcript_language"] == "ko"
+    assert attempts[0].details["caption_ext"] == "json3"
+    assert "Hello world" in (attempts[0].content_text or "")
+
+
+def test_youtube_source_caption_error_paths_and_metadata_only(monkeypatch) -> None:
+    monkeypatch.setattr(youtube_source.shutil, "which", lambda _name: "/bin/yt-dlp")
+    info = {
+        "id": "abc123",
+        "title": "Caption Errors",
+        "subtitles": {
+            "en": [
+                {"ext": "vtt"},
+                {"ext": "vtt", "url": "https://captions.example/fail"},
+            ]
+        },
+    }
+
+    attempts = youtube_source.run_youtube_stage(
+        "https://youtu.be/abc123",
+        run_command=lambda _command: (json.dumps(info), None),
+        fetch_url=lambda _url: ("", "HTTPError:blocked"),
+    )
+
+    assert attempts[0].status == "metadata-only"
+    assert attempts[0].details["caption_errors"] == [
+        "en:caption-missing-url",
+        "en:HTTPError:blocked",
+    ]
+
+
+def test_youtube_source_error_and_identity_edge_cases(monkeypatch) -> None:
+    assert youtube_source.parse_video_id("https://example.com/watch?v=abc123") is None
+    assert youtube_source.run_youtube_stage("https://example.com/not-youtube", run_command=lambda _command: ("", None))[
+        0
+    ].details["reason"] == "missing-video-id"
+    assert youtube_source._classify_error("plain failure") == ("error", "fetch-failed")
+    monkeypatch.setattr(youtube_source.shutil, "which", lambda _name: "/bin/yt-dlp")
+    invalid = youtube_source.run_youtube_stage(
+        "https://youtu.be/abc123",
+        run_command=lambda _command: ("{", None),
+    )
+    assert invalid[0].error == "invalid-json:Expecting property name enclosed in double quotes"
+    assert youtube_source.classify_source_identity({"route": {"route_id": "other"}}) == "not-applicable"
+    assert (
+        youtube_source.classify_source_identity({"route": {"route_id": "yt-dlp-metadata"}, "selected_attempt": None})
+        == "youtube-unavailable"
+    )
+
+
+def test_youtube_source_default_fetch_url_success_and_error(monkeypatch) -> None:
+    class Headers:
+        def __init__(self, charset: str | None) -> None:
+            self._charset = charset
+
+        def get_content_charset(self) -> str | None:
+            return self._charset
+
+    class Response:
+        headers = Headers(None)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def read(self) -> bytes:
+            return "caption body".encode()
+
+    monkeypatch.setattr(youtube_source.urllib.request, "urlopen", lambda _url, timeout=20: Response())
+    assert youtube_source._default_fetch_url("https://captions.example/ok") == ("caption body", None)
+
+    def raise_url_error(_url, timeout=20):
+        raise RuntimeError("network down")
+
+    monkeypatch.setattr(youtube_source.urllib.request, "urlopen", raise_url_error)
+    assert youtube_source._default_fetch_url("https://captions.example/fail") == ("", "RuntimeError:network down")
+
+
+def test_youtube_source_import_bootstrap_adds_script_dir(monkeypatch) -> None:
+    module_path = ROOT / "skills" / "support" / "web-fetch" / "scripts" / "youtube_source.py"
+    script_dir = str(module_path.parent)
+    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != script_dir])
+    spec = importlib.util.spec_from_file_location("youtube_source_bootstrap_probe", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert script_dir in sys.path
+
+
 def test_gather_youtube_metadata_only_writes_partial_record(tmp_path: Path) -> None:
     info = {
         "id": "abc123",
@@ -188,6 +307,7 @@ def test_gather_youtube_metadata_only_writes_partial_record(tmp_path: Path) -> N
         "upload_date": "20260611",
         "description": "metadata summary only",
         "chapters": [{"title": "Intro", "start_time": 0}],
+        "subtitles": {"en": [{"ext": "vtt"}]},
     }
     result = run_helper(
         "skills/public/gather/scripts/gather_public_url.py",
@@ -216,6 +336,7 @@ def test_gather_youtube_metadata_only_writes_partial_record(tmp_path: Path) -> N
     assert "Source Type: `youtube-metadata-only`" in record
     assert "Title: Metadata Video" in record
     assert "Chapter Count: 1" in record
+    assert "Caption Errors: `en:caption-missing-url`" in record
     assert "## Extracted Content" not in record
 
 
