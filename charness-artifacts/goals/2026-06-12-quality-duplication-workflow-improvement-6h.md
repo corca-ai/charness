@@ -10,12 +10,11 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 - continue with the next locally safe cleanup after
-  committing the mutation coverage collection test split.
-- Next action: inspect the remaining warn-band files
-  (`scripts/quality_bootstrap_lib.py`, release/web-fetch scripts) and the
-  repeated temporary surface-manifest fixtures in the closeout test file, then
-  choose the smallest structural cleanup that preserves behavior intent.
+- Current slice: Slice 6 - continue with the next locally safe cleanup after
+  committing the quality bootstrap output/rendered-diff split.
+- Next action: inspect the remaining warn-band files (release/web-fetch scripts)
+  and the repeated temporary surface-manifest fixtures in the closeout test file,
+  then choose the smallest structural cleanup that preserves behavior intent.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -98,9 +97,10 @@ check.
 | 1 | Pick and land one structural quality cleanup from current duplication/workflow pressure. | The user explicitly objected to low-yield goal execution; the next move must produce a concrete quality delta. | Committed code/test/doc change plus focused and surface-recommended gates. | committed (`25201777`) |
 | 2 | Continue to the next distinct safe cleanup if time remains. | Done-early policy requires continuation rather than stopping after one small win. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | committed (`6287bb27`) |
 | 3 | Remove the next hard-limit pressure point without changing behavior assertions. | `test_surface_obligations.py` was 798/800 code lines, leaving only two lines of hard-limit headroom. | Split test module, regenerated boundary-bypass baseline, fresh-eye critique, focused and surface-recommended gates. | committed (`c863bac9`) |
-| 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
-| 5 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
-| 6 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
+| 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | committed (`1f50ab7f`) |
+| 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | implemented; commit pending |
+| 6 | Continue to another distinct safe cleanup if time remains. | The 6h goal must not stop after a small number of slices while clear candidates remain. | Another committed cleanup or a valid early-close ledger with distinct candidates and sufficiency check. | planned |
+| 7 | Final closeout with retro, host-log probe, disposition review, and broad verification. | The goal must prove honest completion, non-claims, and residual work. | Complete goal artifact passing `check_goal_artifact.py`. | planned |
 
 ## Coordination Cues
 
@@ -184,7 +184,7 @@ general quality-improvement goal.
 
 - Objective: Remove the next test warn-band pressure point without deleting coverage regression assertions or overclaiming a broad mutation-test cleanup.
 - Why this approach: `tests/quality_gates/test_quality_mutation_sampling.py` was 763/800 code lines. Its coverage collection tests (`coverage_run_command`, subprocess coverage capture, stale coverage shard cleanup) form a coherent cluster distinct from sampling selection, changed-line filtering, and manifest assertions.
-- Commits: pending commit
+- Commits: `1f50ab7f`
 - What changed: Added `tests/quality_gates/test_quality_mutation_coverage.py` for coverage collection regression tests; removed the moved tests and coverage-collection-only imports from `test_quality_mutation_sampling.py`; removed an unused `ROOT` constant from the new file after fresh-eye review.
 - Alternatives rejected: Rejected a broader mutation-test taxonomy rewrite because remaining coverage filtering/context/manifest tests still belong with sampling behavior. Rejected moving behavior assertions into support helpers; this is a file-boundary split only.
 - Targeted verification: focused ruff passed; focused pytest for the split files passed 29 both before and after the tiny unused-constant cleanup; headroom check showed `test_quality_mutation_sampling.py` 763/800 -> 676/800 and new `test_quality_mutation_coverage.py` 96/800; full repo ruff passed; full Python length gate passed with warn-band files 5 -> 4; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed; final broad pytest passed 2807, 4 skipped, 26 deselected.
@@ -193,6 +193,20 @@ general quality-improvement goal.
 - Off-goal findings: none.
 - Lessons carried forward: Splits should name the behavior cluster they actually move. Do not claim all coverage-related mutation behavior moved when the original sampling file still owns coverage filtering and manifest coverage assertions.
 - Metrics: Python length warn-band files 5 -> 4; `test_quality_mutation_sampling.py` 763 -> 676 code lines; new `test_quality_mutation_coverage.py` 96 code lines; final broad pytest 2807 passed.
+
+### Slice 5: quality bootstrap output/rendered-diff split
+
+- Objective: Remove the next production helper warn-band pressure point while preserving quality bootstrap behavior and public import compatibility.
+- Why this approach: `scripts/quality_bootstrap_lib.py` was 441/480 code lines. Its YAML output rendering and rendered-output defaulted-only diff check formed a coherent helper boundary separate from adapter detection/state/write orchestration.
+- Commits: pending commit
+- What changed: Added `scripts/quality_bootstrap_render.py`; moved `render_bootstrap_adapter` and the defaulted-only rendered diff helper there; kept `quality_bootstrap_lib.render_bootstrap_adapter` available by importing it from the new module; aliased `diff_is_defaulted_only` back to `_diff_is_defaulted_only` for the existing write path; regenerated `plugins/charness/scripts/quality_bootstrap_lib.py` and added `plugins/charness/scripts/quality_bootstrap_render.py`.
+- Alternatives rejected: Rejected calling this a render-only boundary because the moved diff helper is write-suppression policy coupled to rendered output. Rejected direct private-helper tests because the focused bootstrap tests already cover rendering and defaulted-only short-circuit behavior through the public bootstrap path.
+- Targeted verification: focused ruff passed; `pytest -q tests/quality_gates/test_quality_bootstrap.py` passed 16; headroom check showed `quality_bootstrap_lib.py` 441/480 -> 369/480 and new `quality_bootstrap_render.py` 81/480; packaging and validate_packaging_committed passed; validate_integrations, sync_support dry-run, and update_tools dry-run passed; full repo ruff passed; full Python length gate passed with warn-band files 4 -> 3; validate_attention_state_visibility passed; check_test_repo_copy_invariants passed; check_boundary_bypass_ratchet passed; gitignore scan hygiene passed; broad pytest passed 2807, 4 skipped, 26 deselected.
+- Production pressure: `quality_bootstrap_lib.py` left the warn band. Remaining warn-band files are release/web-fetch scripts, plus a near-limit `publish_release_cli.execute_publish_plan` function.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-quality-bootstrap-output-rendered-diff-split.md`. Counterweight required no code or test change beyond staging the new source/plugin render modules and keeping wording scoped to output/rendered-diff logic.
+- Off-goal findings: none.
+- Lessons carried forward: When splitting a production helper, preserve the old import surface unless the slice explicitly owns an API migration. Name the boundary by the behavior moved, not by a cleaner-sounding partial label.
+- Metrics: Python length warn-band files 4 -> 3; `quality_bootstrap_lib.py` 441 -> 369 code lines; new `quality_bootstrap_render.py` 81 code lines; broad pytest 2807 passed.
 
 ## Context Sources
 
