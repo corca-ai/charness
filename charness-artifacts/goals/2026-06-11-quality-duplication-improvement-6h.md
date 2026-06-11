@@ -1,9 +1,9 @@
 # Achieve Goal: Quality and duplication improvement timebox
 
-Status: active
+Status: complete
 Created: 2026-06-11
 Activation: `/goal @charness-artifacts/goals/2026-06-11-quality-duplication-improvement-6h.md`
-Timebox: 6h maximum
+Timebox: 6h
 Activation time: 2026-06-11T22:09:06+09:00
 Closeout reserve: 30m
 Done-early policy: continue_next_improvement
@@ -13,10 +13,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — scaffold artifact helper refactor.
-- Next action: finish fresh-eye review, record critique disposition, run
-  pre-commit, commit the completed slice, then decide whether to close out or
-  take one more safe quality target.
+- Current slice: closeout complete.
+- Next action: no in-goal implementation remains; commit the closeout artifact
+  update after final validation.
 - Timebox posture: spend at most six hours after activation; reserve the final
   30 minutes for final proof, artifact closeout, retro disposition, and commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -128,8 +127,8 @@ After completion, the user can inspect the final report and verify:
 | --- | --- | --- | --- | --- |
 | 1 | Rebaseline duplication and classify top families | The new `nose` scope/ranking support makes broad versus filtered scans comparable. | Broad `--top 0` scan, resolver-filtered scan, classification notes in Slice Log. | completed |
 | 2 | Choose and implement the safest structural reduction | Start with narrow bootstrap/scaffold/load-helper repetition rather than broad resolver surgery. | Small refactor, focused tests, plugin sync if needed, before/after nose sample. | completed |
-| 3 | Apply a second quality improvement if time remains | Done-early policy should continue into the next safe improvement instead of stopping after one cleanup. | Another committed cleanup or `No safe next slice:` with reason. | verifying |
-| 4 | Closeout proof, residual ledger, retro disposition | Timebox requires protected final proof and explicit non-claims. | Final gates, critique/retro artifacts, completed goal artifact. | planned |
+| 3 | Apply a second quality improvement if time remains | Done-early policy should continue into the next safe improvement instead of stopping after one cleanup. | Another committed cleanup or `No safe next slice:` with reason. | completed |
+| 4 | Closeout proof, residual ledger, retro disposition | Timebox requires protected final proof and explicit non-claims. | Final gates, critique/retro artifacts, completed goal artifact. | completed |
 
 ## Coordination Cues
 
@@ -157,9 +156,12 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-- Routing: `find-skills` read-only recommendation at activation returned
-  `achieve`, `quality`, and `nose`; implementation proceeded under the active
-  goal artifact plus `impl` sequence discipline.
+- Routing: `find-skills` read-only recommendation at activation routed goal
+  orchestration to `achieve`, duplicate/quality classification to `quality` and
+  `nose`, and implementation slices to `impl` sequence discipline.
+- Routing: `find-skills` -> `impl` for committed code/helper refactor slices.
+- Routing: `find-skills` -> `quality` for `nose`, length-gate, packaging, skill,
+  inference, hygiene, and pytest verification.
 - Gather: n/a — no external URL or source link was introduced for this slice.
 - Release: n/a — no version bump, install manifest, publish, or release surface
   changed.
@@ -280,24 +282,89 @@ Activation started at 2026-06-11T22:09:06+09:00.
 
 ## Off-Goal Findings
 
-None yet.
+- Tool diagnostics during `scripts/update_tools.py --json` reported missing or
+  not-current installed tools (`defuddle`, `gws`, newer upstream releases for
+  some tools). Tool installation/upgrades were outside this local quality goal.
+- Remaining Python length warn-band files at closeout: `scripts/quality_bootstrap_lib.py`,
+  `skills/public/issue/scripts/issue_tool.py`,
+  `skills/public/release/scripts/publish_release_cli.py`,
+  `skills/public/release/scripts/publish_release_preflight.py`,
+  `skills/support/web-fetch/scripts/acquire_public_url.py`,
+  `tests/quality_gates/test_issue_skill.py`,
+  `tests/quality_gates/test_quality_mutation_sampling.py`, and
+  `tests/quality_gates/test_surface_obligations.py`.
+- Remaining broad `nose` top families still include resolver/bootstrap
+  boilerplate and adapter validation helpers. Those are not proven safe to
+  collapse by this run.
 
 ## Final Verification
 
-Pending until active run closeout.
+Stop condition: goal completed after four committed quality slices, within the
+six-hour maximum and before the closeout reserve was exhausted.
 
-Retro: pending until active run closeout.
-Host log probe: pending until active run closeout.
-Disposition review: pending until active run closeout.
+Early close rationale: remaining obvious candidates are broad resolver/bootstrap
+commonization or unrelated tool upgrades; those require a new design slice rather
+than another safe local refactor inside this closeout window.
+
+- Commits in this goal:
+  - `23c12960 Simplify init adapter bootstrap loaders`
+  - `a153ca80 Extract goal artifact markdown fence helper`
+  - `beb7c28f Extract scaffold artifact helper`
+  - `daa4a05b Split find-skills capability helpers`
+- Broad `nose --top 0`: baseline `526 families / 13164 dup_lines / 473 files`;
+  closeout `525 families / 12580 dup_lines / 477 files`.
+- Python length warn-band count: `10` files before the find-skills slice, `8`
+  files at closeout.
+- Repeated broad pytest after substantial later slices:
+  `2803 passed, 4 skipped, 26 deselected`.
+- Focused verification included init-adapter smoke, achieve goal-artifact tests,
+  scaffold tests including release-only changed-line coverage, and find-skills
+  task/plugin tests.
+- Sync/quality gates run across the goal included packaging, committed
+  packaging, skill validation, ownership overlap, skill ergonomics, public skill
+  validation/dogfood, inference interpretation, gitignore scan hygiene, doc
+  links, markdown lint, secrets scan, ruff, py_compile, changed surfaces, and
+  pre-commit.
+- Fresh-eye reviews found no blockers for each substantive slice.
+- Non-claim: this did not resolve broad `resolve_adapter.py` duplication.
+- Non-claim: this did not make bootstrap root discovery universally shared.
+- Non-claim: this did not push, release, publish, or rely on remote CI.
+
+Retro: charness-artifacts/retro/2026-06-11-quality-duplication-improvement-6h.md
+Host log probe: charness-artifacts/probe/2026-06-11-quality-duplication-improvement-6h.json
+Disposition review: charness-artifacts/critique/2026-06-11-231800-quality-goal-disposition-review.md
+Early close report: charness-artifacts/goals/2026-06-11-quality-duplication-improvement-6h-early-close-report.md
 
 ## User Verification Instructions
 
-Pending until active run closeout. Expected final instructions should name the
-commits, before/after duplicate evidence, local gates run, residual risks, and
-any off-goal issues filed.
+To verify this run locally:
+
+- Inspect the four goal commits listed under `## Final Verification`.
+- Run `git status --short --branch` and confirm only the closeout artifact commit
+  is pending after this update, then clean after commit.
+- Re-run the closeout headline checks if desired:
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json --top 0`
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+  - `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`
 
 ## Auto-Retro
 
-Retro dispositions: pending until active run closeout.
-Structural follow-up: pending until active run closeout if the retro names a
-transferable waste item.
+Retro dispositions: applied: committed four local quality slices that reduced
+real duplication/quality pressure while preserving public skill portability.
+
+Disposition: applied: `nose` scope filters were used as review lenses, not as
+success proof; structural changes were backed by before/after metrics and tests.
+
+Disposition: accepted-risk: broad `resolve_adapter.py` duplication remains until
+a smaller shared resolver contract can prove export safety.
+
+Disposition: accepted-risk: remaining bootstrap loader duplication should be
+reduced only where focused tests or a cohesive helper boundary exist.
+
+Disposition: out-of-scope: installed tool upgrades surfaced by diagnostics are
+outside this local quality goal.
+
+Disposition: accepted-risk: remaining length warn-band files are named under
+`## Off-Goal Findings`; they are outside this timebox and did not block the
+current quality gates, but should be considered future slice candidates before
+they reach hard limits.
