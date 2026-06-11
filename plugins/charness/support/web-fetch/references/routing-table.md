@@ -29,6 +29,9 @@ reduced to tactics `charness` is willing to carry locally.
     (stop with missing-capability or public REST only)
 - `youtube.com`, `youtu.be`, `vimeo.com`, `twitch.tv`, `tiktok.com`, `soundcloud.com`
   - prefer `yt-dlp` metadata or subtitle paths
+  - for YouTube, if metadata/subtitle extraction does not produce a transcript,
+    the route may open the page transcript section with `agent-browser` and
+    extract accessibility snapshot segments as `youtube-browser-transcript-ui`
 - `blog.naver.com`
   - prefer mobile URL transform plus mobile user agent
 - `news.naver.com`, `n.news.naver.com`, `finance.naver.com`

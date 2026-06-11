@@ -126,6 +126,25 @@ When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.
 
+## Read Before Resolution
+
+Issue resolution must read comments with the body before designing. Use:
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" read \
+  --repo <full_name> --number <n>
+```
+
+For the default `gh` backend this runs:
+
+```bash
+gh issue view --comments --json number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+```
+
+For adapter backends, `commands.view` must return the same `comments` list when
+passed `{json_fields}` containing `comments`; otherwise `read` fails and the
+resolution is blocked.
+
 ## Milestones
 
 The skill assigns only milestones the repository already has and never creates

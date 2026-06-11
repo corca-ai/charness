@@ -17,7 +17,9 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import browser_fallback_stages  # noqa: E402
 import twitter_exact_source  # noqa: E402
+import youtube_browser_ui  # noqa: E402
 import youtube_source  # noqa: E402
 from acquisition_trace_lib import (  # noqa: E402
     AcquisitionAttempt,
@@ -28,12 +30,6 @@ from acquisition_trace_lib import (  # noqa: E402
     payload,
     should_stop,
     skip_attempt,
-)
-from agent_browser_session import (  # noqa: E402
-    assert_runtime_clean,
-    close_session,
-    run_browser_network,
-    run_browser_text,
 )
 from classify_fetch_response import classify, extract_persistable_text  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
@@ -165,6 +161,31 @@ def _should_try_browser(
     return True, None
 
 
+def _should_try_youtube_browser(
+    route_id: str,
+    attempts: list[AcquisitionAttempt],
+    *,
+    browser_mode: str,
+) -> tuple[bool, str | None]:
+    if route_id != "yt-dlp-metadata":
+        return False, "route-not-applicable"
+    if browser_mode == "off":
+        return False, "browser-mode-off"
+    for attempt in attempts:
+        if (
+            attempt.stage_id == youtube_source.STAGE_ID
+            and attempt.status == "success"
+            and attempt.details.get("source_type") == "youtube-transcript"
+        ):
+            return False, "prior-stage-sufficient"
+    last = last_content_attempt(attempts)
+    if last is not None and last.stage_id == "direct-public-fetch" and should_stop(last, proof_required=False):
+        return False, "prior-stage-sufficient"
+    if shutil.which("agent-browser") is None:
+        return False, "missing-tool"
+    return True, None
+
+
 def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
     route = {
         "input_url": args.url,
@@ -213,74 +234,39 @@ def _payload_for(
     return result
 
 
-def _browser_stage(
+def _run_domain_specific_route(
     args: argparse.Namespace,
     route: dict[str, object],
     attempts: list[AcquisitionAttempt],
+) -> None:
+    if not has_stage(route, "domain-specific-route"):
+        return
+    if route["route_id"] == "twitter-syndication":
+        attempts.extend(twitter_exact_source.run_exact_source_stage(args.url, fetcher=_domain_route_fetcher(args)))
+    elif route["route_id"] == "yt-dlp-metadata" and youtube_source.normalized_host(args.url).endswith(
+        ("youtube.com", "youtu.be")
+    ):
+        attempts.extend(
+            youtube_source.run_youtube_stage(
+                args.url,
+                run_command=lambda command: _run_command(command, timeout=args.timeout),
+            )
+        )
+    else:
+        attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
+
+
+def _direct_attempt_sufficient(
+    route: dict[str, object],
+    attempt: AcquisitionAttempt,
     *,
     proof_required: bool,
-) -> dict[str, object] | None:
-    """Run the agent-browser render/network recon, then ALWAYS close + prove clean.
-
-    Once the session is opened, close + runtime proof run on every in-process
-    path — render/network success or failure, or an unexpected raise — via the
-    ``finally`` block, so a session is never leaked. Returns a payload to
-    short-circuit ``acquire`` (degraded close or proven success), else None.
-    """
-    try:
-        started = time.monotonic()
-        text, error, details = run_browser_text(args.url, timeout=args.timeout, run_command=_run_command)
-        attempts.append(
-            _attempt_from_text(
-                stage_id="agent-browser-render-recon",
-                tool_id="agent-browser",
-                text=text,
-                elapsed_s=round(time.monotonic() - started, 3),
-                error=error,
-                intent=args.intent,
-                expect_text=args.expect_text,
-                expect_regex=args.expect_regex,
-                expect_json_field=args.expect_json_field,
-                details=details,
-            )
-        )
-        if args.intent == "collect":
-            started = time.monotonic()
-            network_text, network_error, network_details = run_browser_network(
-                args.url, timeout=args.timeout, run_command=_run_command
-            )
-            attempts.append(
-                AcquisitionAttempt(
-                    stage_id="agent-browser-network-recon",
-                    tool_id="agent-browser",
-                    status="diagnostic" if network_error is None else "error",
-                    confidence="weak" if network_text.strip() else "none",
-                    elapsed_s=round(time.monotonic() - started, 3),
-                    error=network_error,
-                    output_chars=len(network_text),
-                    details={**network_details, "diagnostic": True},
-                )
-            )
-    finally:
-        close_error = close_session(args.url, timeout=args.timeout, run_command=_run_command)
-        cleanup_error = close_error or assert_runtime_clean(
-            SCRIPT_DIR, args.repo_root, timeout=args.timeout, run_command=_run_command
-        )
-    if cleanup_error:
-        last = attempts[-1]
-        # Preserve the attempt's real acquisition signal (status/confidence/error)
-        # and record the cleanup failure in details, so BOTH the "why the fetch
-        # failed" reason and the cleanup error survive. Only when the attempt
-        # carried no acquisition error of its own do we surface the cleanup error
-        # as the attempt error, so the degraded close is not silent.
-        last.details["cleanup"] = "failed"
-        last.details["cleanup_error"] = cleanup_error
-        if last.error is None:
-            last.status, last.confidence, last.error = "error", "none", cleanup_error
-        return _payload_for(args, route, attempts, "degraded")
-    if has_success(attempts, proof_required=proof_required):
-        return _payload_for(args, route, attempts, "success")
-    return None
+) -> bool:
+    if not should_stop(attempt, proof_required=proof_required):
+        return False
+    if route.get("route_id") == "yt-dlp-metadata" and attempt.confidence != "strong":
+        return False
+    return True
 
 
 def acquire(args: argparse.Namespace) -> dict[str, object]:
@@ -306,24 +292,30 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         )
     )
     direct_attempt = attempts[-1]
-    if has_stage(route, "domain-specific-route"):
-        if route["route_id"] == "twitter-syndication":
-            attempts.extend(twitter_exact_source.run_exact_source_stage(args.url, fetcher=_domain_route_fetcher(args)))
-        elif route["route_id"] == "yt-dlp-metadata" and youtube_source.normalized_host(args.url).endswith(
-            ("youtube.com", "youtu.be")
-        ):
-            attempts.extend(
-                youtube_source.run_youtube_stage(
-                    args.url,
-                    run_command=lambda command: _run_command(command, timeout=args.timeout),
-                )
-            )
-        else:
-            attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
+    _run_domain_specific_route(args, route, attempts)
     if direct_attempt.status == "invalid-proof":
         return _payload_for(args, route, attempts, "error")
-    if should_stop(direct_attempt, proof_required=proof_required):
+    if _direct_attempt_sufficient(route, direct_attempt, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
+    try_youtube_browser, youtube_browser_skip_reason = _should_try_youtube_browser(
+        str(route["route_id"]), attempts, browser_mode=args.browser_mode
+    )
+    if try_youtube_browser:
+        youtube_browser_payload = browser_fallback_stages.run_youtube_browser_stage(
+            args,
+            route,
+            attempts,
+            proof_required=proof_required,
+            script_dir=SCRIPT_DIR,
+            run_command=_run_command,
+            payload_for=_payload_for,
+        )
+        if youtube_browser_payload is not None:
+            return youtube_browser_payload
+    elif youtube_browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(
+        route, youtube_browser_ui.UI_STAGE_ID
+    ):
+        attempts.append(skip_attempt(youtube_browser_ui.UI_STAGE_ID, "agent-browser", reason=youtube_browser_skip_reason))
     if has_success(attempts, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
@@ -350,7 +342,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
     try_browser, browser_skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if try_browser:
-        browser_payload = _browser_stage(args, route, attempts, proof_required=proof_required)
+        browser_payload = browser_fallback_stages.run_generic_browser_stage(
+            args,
+            route,
+            attempts,
+            proof_required=proof_required,
+            script_dir=SCRIPT_DIR,
+            run_command=_run_command,
+            payload_for=_payload_for,
+        )
         if browser_payload is not None:
             return browser_payload
     elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):

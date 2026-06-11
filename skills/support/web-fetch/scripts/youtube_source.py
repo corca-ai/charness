@@ -19,6 +19,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
 
 STAGE_ID = "domain-specific-route"
+UI_STAGE_ID = "youtube-browser-transcript-ui"
 YOUTUBE_HOSTS = {"youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com", "music.youtube.com"}
 
 
@@ -273,6 +274,14 @@ def classify_source_identity(acquisition: dict[str, object]) -> str:
         return "youtube-unavailable"
     details = attempt.get("details")
     source_type = details.get("source_type") if isinstance(details, dict) else None
+    if attempt.get("stage_id") == UI_STAGE_ID:
+        if attempt.get("status") == "success" and source_type == "youtube-transcript-browser-ui":
+            return "youtube-transcript-browser-ui"
+        if attempt.get("status") == "metadata-only":
+            return "youtube-metadata-only"
+        if attempt.get("status") in {"captcha", "login-wall"}:
+            return "youtube-blocked"
+        return "youtube-unavailable"
     if attempt.get("stage_id") != STAGE_ID:
         return "youtube-unavailable"
     if attempt.get("status") == "success" and source_type == "youtube-transcript":

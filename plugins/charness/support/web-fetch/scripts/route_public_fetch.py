@@ -284,6 +284,18 @@ def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
                 "proof": "route-specific structured output",
             }
         )
+    if route_id == "yt-dlp-metadata":
+        plan.append(
+            {
+                "stage_id": "youtube-browser-transcript-ui",
+                "tool_id": "agent-browser",
+                "when": (
+                    "Use the YouTube page UI transcript button when metadata/subtitle extraction is blocked "
+                    "or transcript captions are not returned."
+                ),
+                "proof": "opened transcript UI plus accessibility snapshot segment extraction",
+            }
+        )
     if route_id in {"reader-fallback", "direct-then-fallback", "naver-blog-mobile"}:
         plan.extend(
             [

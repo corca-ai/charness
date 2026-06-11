@@ -94,3 +94,11 @@ def assert_runtime_clean(script_dir: Path, repo_root: Path, *, timeout: int, run
         return GUARD_UNAVAILABLE
     command = [sys.executable, str(guard), "--repo-root", str(repo_root), "--assert-no-orphans"]
     return run_command(command, timeout=timeout)[1]
+
+
+def cleanup_orphans(script_dir: Path, repo_root: Path, *, timeout: int, run_command: RunCommand) -> str | None:
+    guard = resolve_runtime_guard(script_dir, repo_root)
+    if guard is None:
+        return GUARD_UNAVAILABLE
+    command = [sys.executable, str(guard), "--repo-root", str(repo_root), "--cleanup-orphans", "--execute"]
+    return run_command(command, timeout=timeout)[1]

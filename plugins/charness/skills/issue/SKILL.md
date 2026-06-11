@@ -81,10 +81,9 @@ repo by created date. It must not use the current session's last created issue.
    - no number means newest open issue from GitHub SoT
    - one non-numeric token means repo target; two tokens mean repo target plus
      selector
-2. Read each selected issue from GitHub with body, comments, labels, state,
-   linked PRs when available, and current branch/repo context. Capture the
-   reporter's job-to-be-done in one line; mark inferred or not inferable
-   explicitly instead of inventing missing intent.
+2. Read each selected issue with `issue_tool.py read --repo <org/repo> --number <n>`;
+   require `comments_read: true` before design. Capture the reporter's
+   job-to-be-done in one line without inventing missing intent.
 3. Classify as `bug`, `feature`, `question`, `decision-needed`, or
    `deferred-work` (default `bug` when real-world behavior diverges from a
    documented or implied contract). Routing: `bug` → step 4 causal review;

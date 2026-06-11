@@ -57,6 +57,58 @@ def test_issue_selector_rejects_non_positive_number_and_range() -> None:
     assert json.loads(zero_range.stdout)["ok"] is False
 
 
+def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "gh-log.json"
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "log = Path(os.environ['GH_LOG'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'comments': [{'body': 'comment'}], 'labels': [], 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+
+    result = run_script(
+        SCRIPT,
+        "read",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["comments_read"] is True
+    assert payload["comment_count"] == 1
+    entries = json.loads(log.read_text(encoding="utf-8"))
+    assert [
+        "issue",
+        "view",
+        "--repo",
+        "corca-ai/charness",
+        "42",
+        "--comments",
+        "--json",
+        "number,title,body,comments,labels,state,url,author,createdAt,updatedAt",
+    ] in entries
+
+
 def test_issue_brief_path_rejects_non_positive_number_with_structured_error(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "brief-path", "--repo-root", str(tmp_path), "--number", "0")
 

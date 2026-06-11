@@ -109,6 +109,21 @@ def test_route_public_fetch_maps_naver_news_to_reader_fallback() -> None:
     assert "agent-browser-network-recon" in stage_ids
 
 
+def test_route_public_fetch_youtube_declares_ui_transcript_stage() -> None:
+    result = run_helper(
+        "skills/support/web-fetch/scripts/route_public_fetch.py",
+        "--url",
+        "https://www.youtube.com/watch?v=abc123",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["route_id"] == "yt-dlp-metadata"
+    stage_ids = [stage["stage_id"] for stage in payload["acquisition_plan"]]
+    assert "domain-specific-route" in stage_ids
+    assert "youtube-browser-transcript-ui" in stage_ids
+    assert "agent-browser-render-recon" not in stage_ids
+
+
 def test_classify_fetch_response_reports_login_wall() -> None:
     result = run_helper(
         "skills/support/web-fetch/scripts/classify_fetch_response.py",

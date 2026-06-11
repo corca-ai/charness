@@ -20,11 +20,14 @@ Prefer this order:
 2. domain-specific public API or URL transform
 3. authenticated or installed binary when the route explicitly needs one
 4. `defuddle` reader extraction for article-like public pages
-5. `agent-browser` render/network reconnaissance when the page is JS-rendered,
+5. route-owned `agent-browser` UI extraction when a domain-specific public page
+   exposes a stable read-only content control, such as YouTube's transcript
+   section
+6. `agent-browser` render/network reconnaissance when the page is JS-rendered,
    weak/partial after cleaner extraction, blocked by repeated challenge signals,
    or the user intent is list/collection and internal public APIs may exist
-6. archive/cache fallback
-7. clean stop with the failure mode recorded
+7. archive/cache fallback
+8. clean stop with the failure mode recorded
 
 ## Acquisition Invariant
 
@@ -41,7 +44,8 @@ Reader fallbacks such as `defuddle` are part of this ladder when installed and
 appropriate for the page type. When they are missing, the trace should say so
 instead of silently collapsing the route.
 
-`agent-browser` reconnaissance is automatic only inside these read-only bounds:
+Generic `agent-browser` reconnaissance is automatic only inside these read-only
+bounds:
 
 - open the target URL
 - wait briefly for render
@@ -52,6 +56,11 @@ instead of silently collapsing the route.
 Do not click through login, submit forms, solve challenges, or persist
 discovered internal endpoints as reusable site knowledge unless a maintainer
 accepts that source route explicitly.
+
+Route-owned UI extraction may click a stable public content control only when
+the route declares the control and records a distinct stage id. For YouTube,
+`youtube-browser-transcript-ui` opens the transcript section and extracts
+snapshot-visible transcript segments; it is not a generic gather fallback.
 
 ## Response Classes
 

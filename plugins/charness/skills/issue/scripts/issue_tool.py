@@ -25,6 +25,7 @@ RUNTIME = _load_local("issue_runtime")
 BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 CREATE = _load_local("issue_create")
+READ = _load_local("issue_read")
 VERIFY = _load_local("issue_verify_closeout")
 VERIFY_BODY = _load_local("issue_verify_closeout_body")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
@@ -156,6 +157,21 @@ def command_select(args: argparse.Namespace) -> int:
         return 1
     emit({"ok": True, "repo": args.repo, "numbers": numbers, "source": source,
           "issue": issue, "selected_backend": backend})
+    return 0
+
+
+def command_read(args: argparse.Namespace) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        emit({"ok": False, "adapter": resolved["adapter"]})
+        return 1
+    try:
+        result = READ.read_issue_with_comments(args.repo, args.number, backend=resolved["backend"])
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
+    result["selected_backend"] = resolved["backend"]
+    emit(result)
     return 0
 
 
@@ -319,6 +335,12 @@ def build_parser() -> argparse.ArgumentParser:
     select.add_argument("--selector", help="Issue selector (number, comma list, or omit to pick newest open)")
     select.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     select.set_defaults(func=command_select)
+
+    read = subparsers.add_parser("read", help="Read an issue body and comments through the selected backend")
+    read.add_argument("--repo", required=True, help="Target repository in owner/repo form")
+    read.add_argument("--number", type=int, required=True, help="Issue number to read")
+    read.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
+    read.set_defaults(func=command_read)
 
     close = subparsers.add_parser("close-with-comment", help="Close an issue with a comment body sourced from --body-file")
     close.add_argument("--repo", required=True, help="Target repository in owner/repo form")

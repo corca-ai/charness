@@ -11,6 +11,16 @@ GitHub owns issue identity and freshness:
 - issue body, comments, labels, state, and linked PR state should be read from
   GitHub before design
 
+Read each selected issue before designing:
+
+```bash
+issue_tool.py read --repo <org/repo> --number <n>
+```
+
+Require `comments_read: true`. The helper uses the selected backend and fails
+when the returned payload has no `comments` list, so issue comments cannot be
+accidentally skipped while resolving.
+
 Resolution order is a generative sequence in Christopher Alexander's sense:
 each move should create the conditions that make the next move cheaper and
 more correct. Start with issues that clarify shared contracts, unblock later
