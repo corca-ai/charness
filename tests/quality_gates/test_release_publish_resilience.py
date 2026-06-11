@@ -99,6 +99,10 @@ def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -
     assert payload["install_refresh"]["status"] == "refreshed"
     assert payload["install_refresh"]["command"] == "charness update"
     assert refresh_log.exists() and "ran update" in refresh_log.read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Install Refresh" in artifact_text
+    assert "Post-publish install refresh status: `refreshed`." in artifact_text
+    assert "Command: `charness update`" in artifact_text
 
 
 def test_post_publish_install_refresh_records_failure_without_raising() -> None:

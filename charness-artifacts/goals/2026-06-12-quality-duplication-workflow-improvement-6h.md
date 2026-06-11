@@ -10,10 +10,10 @@ created the host goal and asked the agent to continue.
 
 ## Active Operating Frame
 
-- Current slice: Slice 9 - continue with final closeout or the next locally safe
-  cleanup after recording the committed release adapter preflight helper split.
-- Next action: choose between the remaining release CLI warn-band/function
-  pressure and final closeout if the reserve window is reached.
+- Current slice: Slice 9 - release publish execution helper split is implemented
+  and awaiting commit/final evidence recording.
+- Next action: commit Slice 9, record its commit hash, then choose final
+  closeout or the next locally safe cleanup if time remains.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -101,7 +101,7 @@ check.
 | 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | committed (`9fdc07e8`) |
 | 7 | Remove the next support helper warn-band pressure point. | `acquire_public_url.py` had 12 lines of headroom before the hard limit, and fallback/direct-attempt policy was a coherent boundary. | Policy helper split, plugin sync, fresh-eye critique, focused web-fetch/youtube tests, and surface-recommended gates. | committed (`c4b28eab`) |
 | 8 | Remove the next release helper warn-band pressure point. | `publish_release_preflight.py` was close to its hard limit, and release adapter focused-preflight logic was a coherent sub-boundary. | Adapter preflight helper split, plugin sync, fresh-eye critique, focused release tests, and surface-recommended gates. | committed (`e6796431`) |
-| 9 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
+| 9 | Remove the final release CLI warn-band/function pressure point. | `publish_release_cli.py` was the last Python length warn-band file, and `execute_publish_plan()` was near the function hard limit. | Execute helper split, plugin sync, fresh-eye critique, focused release tests, exported plugin smoke, and surface-recommended gates. | implemented pending commit |
 
 ## Coordination Cues
 
@@ -250,6 +250,20 @@ general quality-improvement goal.
 - Off-goal findings: none.
 - Lessons carried forward: For release scripts loaded by path, preserve wrapper surfaces and use sibling-path loading unless a slice explicitly owns the broader import contract migration.
 - Metrics: Python length warn-band files 2 -> 1; `publish_release_preflight.py` 334 -> 215 code lines; new `publish_release_adapter_preflight.py` 153 code lines; focused pytest 16 passed.
+
+### Slice 9: release publish execute helper split
+
+- Objective: Remove the final release CLI warn-band and function-length pressure point without changing publish execution semantics.
+- Why this approach: `skills/public/release/scripts/publish_release_cli.py` was 342/360 code lines and `execute_publish_plan()` was near its function limit. The publish execution tail formed a coherent boundary separate from CLI parsing, dry-run plan construction, and resume gating.
+- Commits: pending
+- What changed: Added `skills/public/release/scripts/publish_release_execute.py`; moved the execute tail into prepare, release-commit, and publish/finalize helper phases; kept `publish_release_cli.execute_publish_plan()` as the public wrapper; added an explicit `_execution_context()` namespace for execute and resume so direct file-location loaders do not depend on `sys.modules[__name__]`; fixed the pre-existing install-refresh durability gap by running refresh before the final release artifact commit and rendering an `Install Refresh` section; regenerated the checked-in plugin mirror.
+- Alternatives rejected: Rejected converting release scripts to package imports because existing skill runtime and tests load release scripts by file location. Rejected a broader typed protocol for the `cli` dependency object because that is a separate API cleanup beyond this behavior-preserving split.
+- Targeted verification: focused ruff passed for changed release source/test files; direct `spec_from_file_location` loader smoke passed; exported plugin `publish_release.py --help` smoke passed 1; `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_backend.py tests/quality_gates/test_release_publish_resilience.py` passed 48; Python length headroom showed `publish_release_cli.py` 296/360, new `publish_release_execute.py` 201/360, `publish_release_artifact.py` 228/360, `publish_release_resume.py` 137/360, and no function near-limit; repo Python length gate passed for 772 files; packaging and validate_packaging_committed passed; validate_skills and skill py_compile passed; check_skill_ownership_overlap and validate_skill_ergonomics passed; validate_public_skill_validation and validate_public_skill_dogfood passed; gitignore scan hygiene passed; markdown/link/command-doc/secrets checks passed; attention-state visibility, test-repo-copy invariants, and boundary-bypass ratchet passed; broad pytest `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py` passed 2807, 4 skipped, 26 deselected.
+- Release pressure: Python length warn-band files moved 1 -> 0 after the helper file is committed. `publish_release_cli.py` moved from 342/360 to 294/360 code lines, and `execute_publish_plan()` no longer owns the publish tail.
+- Critique: Fresh-eye critique: `charness-artifacts/critique/2026-06-12-release-publish-execute-helper-split.md`. Reviewers required including the new source/plugin helper files and fixing `sys.modules[__name__]`; both were addressed before commit.
+- Off-goal findings: none. The pre-existing install-refresh durability gap found during fresh-eye review was fixed in this slice because it contradicted the release skill contract and had a focused end-to-end test.
+- Lessons carried forward: For file-location-loaded release scripts, pass explicit dependency context when moving execution into helper modules. Do not assume direct loaders register the module in `sys.modules`.
+- Metrics: Python length warn-band files 1 -> 0; `publish_release_cli.py` 342 -> 296 code lines; new `publish_release_execute.py` 201 code lines; focused release pytest 48 passed.
 
 ## Context Sources
 

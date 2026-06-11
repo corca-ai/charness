@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -31,6 +30,7 @@ _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_
 _release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
 _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
+_execute = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_execute")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 build_real_host_payload = _check_real_host.build_payload
@@ -65,6 +65,41 @@ build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
 release_previous_version = _helpers.release_previous_version
 resume_publish = _resume.resume_publish
+
+
+def _execution_context() -> SimpleNamespace:
+    names = (
+        "run_notes_file_preflight",
+        "_helpers",
+        "run",
+        "backend_command",
+        "expected_github_release_url",
+        "preflight_release_issues",
+        "run_release_adapter_preflight",
+        "run_bump",
+        "ensure_release_surface",
+        "changed_paths",
+        "safe_real_host_payload",
+        "build_real_host_payload",
+        "build_retro_trigger_evaluation",
+        "build_fresh_checkout_payload",
+        "write_current_artifact",
+        "run_requested_review_gate",
+        "run_cli_skill_surface_gate",
+        "run_shell",
+        "run_narrative_audit",
+        "release_commit_body",
+        "run_fresh_checkout_probes",
+        "amend_fresh_checkout_artifact",
+        "create_release",
+        "verify_release_visible",
+        "finalize_release_payload",
+        "commit_final_release_artifact",
+        "fail_after_post_create_verification",
+        "ensure_release_issues_closed",
+        "run_post_publish_install_refresh",
+    )
+    return SimpleNamespace(**{name: globals()[name] for name in names})
 
 
 def parse_args() -> argparse.Namespace:
@@ -128,6 +163,7 @@ def write_current_artifact(
     fresh_checkout_payload: dict[str, Any] | None = None,
     release_url: str | None = None,
     issue_closeout: dict[str, Any] | None = None,
+    install_refresh: dict[str, Any] | None = None,
 ) -> str:
     return write_release_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
@@ -136,6 +172,7 @@ def write_current_artifact(
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
         release_adapter_preflight_payload=payload.get("release_adapter_preflight"),
         fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
+        install_refresh=install_refresh or payload.get("install_refresh"),
         tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
         review_proof=payload.get("critique_artifact"),
@@ -263,94 +300,7 @@ def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> N
 def execute_publish_plan(
     args: argparse.Namespace, repo_root: Path, plan: dict[str, Any], adapter_data: dict[str, Any]
 ) -> None:
-    payload = plan["payload"]
-    next_version = plan["next_version"]
-    branch = plan["branch"]
-    tag_name = plan["tag_name"]
-    title = plan["title"]
-    backend = plan["backend"]
-    release_content_paths = plan["release_content_paths"]
-    adapter_preflight_payload = plan["adapter_preflight_payload"]
-    issue_repo = plan["issue_repo"]
-
-    notes_file = args.notes_file.resolve() if args.notes_file else None
-    run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file)
-
-    run(backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
-    expected_release_url = expected_github_release_url(repo_root, backend, tag_name)
-    payload["expected_release_url"] = expected_release_url
-    preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
-    run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=run)
-    run_bump(args, repo_root)
-    ensure_release_surface(repo_root, next_version)
-
-    final_release_paths = sorted(set(release_content_paths + changed_paths(repo_root)))
-    host_payload = safe_real_host_payload(repo_root, final_release_paths, build_payload=build_real_host_payload)
-    payload["retro_trigger_evaluation"] = build_retro_trigger_evaluation(
-        repo_root,
-        final_release_paths,
-        evaluated_at="final_release_paths",
-        tag_name=tag_name,
-        execute=True,
-    )
-    fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
-    write_current_artifact(repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url, quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan)
-    run_requested_review_gate(repo_root)
-    run_cli_skill_surface_gate(repo_root, adapter_data)
-    run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan, release_url=expected_release_url)
-    run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
-    run(["git", "add", "-A"], cwd=repo_root)
-    commit_command = ["git", "commit", "-m", payload["commit_message"]]
-    for body_line in release_commit_body(payload, args.close_issue):
-        commit_command.extend(["-m", body_line])
-    run(commit_command, cwd=repo_root)
-    fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
-    payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
-    if fresh_checkout_payload["status"] == "passed":
-        amend_fresh_checkout_artifact(
-            repo_root, write_artifact=lambda **kwargs: write_current_artifact(
-                repo_root, adapter_data, payload, host_payload, **kwargs
-            ), fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
-            artifact_relpath=artifact_relpath, tag_name=tag_name, notes_file=notes_file,
-            run_narrative_audit=run_narrative_audit, run_command=run,
-        )
-        fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
-        payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
-    run(["git", "tag", tag_name], cwd=repo_root)
-    run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
-
-    release_result = create_release(repo_root, backend, tag_name=tag_name, title=title, notes_file=notes_file)
-    release_verify_result = verify_release_visible(
-        repo_root, tag_name, backend, backend_command=backend_command, run=run
-    )
-    release_verified = release_verify_result.returncode == 0
-    finalize_release_payload(
-        repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
-        release_stdout=release_result.stdout, expected_release_url=expected_release_url,
-        release_verified=release_verified,
-    )
-    if not release_verified:
-        commit_final_release_artifact(
-            repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
-            fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
-            expected_release_url=expected_release_url, remote=args.remote, branch=branch,
-            has_issue_closeout=False,
-        )
-        fail_after_post_create_verification(payload, verification_result=release_verify_result)
-    ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
-    commit_final_release_artifact(
-        repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
-        fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
-        expected_release_url=expected_release_url, remote=args.remote, branch=branch,
-        has_issue_closeout=bool(args.close_issue),
-    )
-    # The release is published + verified; auto-run the adapter-declared
-    # install-refresh on the authoring machine so the managed install ends == repo.
-    payload["install_refresh"] = run_post_publish_install_refresh(
-        repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=run_shell
-    )
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    _execute.execute_publish_plan(args, repo_root, plan, adapter_data, cli=_execution_context())
 
 
 def main() -> None:
@@ -373,7 +323,7 @@ def main() -> None:
 
     plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
     if args.resume:
-        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=sys.modules[__name__])
+        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=_execution_context())
         return
     if not args.execute:
         print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
