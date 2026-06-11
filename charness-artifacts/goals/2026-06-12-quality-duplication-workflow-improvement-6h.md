@@ -11,10 +11,9 @@ created the host goal and asked the agent to continue.
 ## Active Operating Frame
 
 - Current slice: Slice 8 - continue with final closeout or the next locally safe
-  cleanup after committing the web-fetch acquire policy helper split.
-- Next action: commit the web-fetch acquire policy helper split, then choose
-  between the remaining release warn-band files and final closeout if the
-  reserve window is reached.
+  cleanup after recording the committed web-fetch acquire policy helper split.
+- Next action: choose between the remaining release warn-band files and final
+  closeout if the reserve window is reached.
 - Timebox: 6h
 - Activation time: 2026-06-11T21:13:55Z
 - Closeout reserve: 30m
@@ -100,7 +99,7 @@ check.
 | 4 | Remove the next test warn-band pressure point without overgeneralizing coverage behavior. | `test_quality_mutation_sampling.py` was 763/800 code lines; coverage collection tests formed a coherent cluster. | Split coverage collection test module, fresh-eye critique, focused and surface-recommended gates. | committed (`1f50ab7f`) |
 | 5 | Remove the next production helper warn-band pressure point. | `quality_bootstrap_lib.py` was 441/480 code lines, close to its hard limit. | Split bootstrap output/rendered-diff helper module, plugin sync, fresh-eye critique, focused and surface-recommended gates. | committed (`5c5ffa1e`) |
 | 6 | Reduce repeated temporary surface-manifest fixture setup in the closeout-runner tests. | Slice 3 intentionally deferred the fixture duplication after splitting the hard-limit test file. | Local fixture helper, fresh-eye critique, focused ruff and pytest. | committed (`9fdc07e8`) |
-| 7 | Remove the next support helper warn-band pressure point. | `acquire_public_url.py` had 12 lines of headroom before the hard limit, and fallback/direct-attempt policy was a coherent boundary. | Policy helper split, plugin sync, fresh-eye critique, focused web-fetch/youtube tests, and surface-recommended gates. | implemented; commit pending |
+| 7 | Remove the next support helper warn-band pressure point. | `acquire_public_url.py` had 12 lines of headroom before the hard limit, and fallback/direct-attempt policy was a coherent boundary. | Policy helper split, plugin sync, fresh-eye critique, focused web-fetch/youtube tests, and surface-recommended gates. | committed (`c4b28eab`) |
 | 8 | Final closeout or continue to another distinct safe cleanup if time remains. | The goal must prove honest completion, non-claims, and residual work without stopping early while clear candidates remain. | Complete goal artifact passing `check_goal_artifact.py`, or another committed cleanup before final closeout. | planned |
 
 ## Coordination Cues
@@ -227,7 +226,7 @@ general quality-improvement goal.
 
 - Objective: Remove the next support helper warn-band pressure point without changing public acquisition behavior.
 - Why this approach: `skills/support/web-fetch/scripts/acquire_public_url.py` had only 12 lines of hard-limit headroom. Its defuddle/browser/YouTube fallback decisions and direct-attempt sufficiency guard form policy logic separate from URL acquisition orchestration, payload rendering, and CLI parsing.
-- Commits: pending commit
+- Commits: `c4b28eab`
 - What changed: Added `skills/support/web-fetch/scripts/acquire_public_url_policy.py`; moved fallback/direct-attempt policy helpers there; preserved old private aliases in `acquire_public_url.py` for existing tests and callers; regenerated `plugins/charness/support/web-fetch/scripts/acquire_public_url.py` and added `plugins/charness/support/web-fetch/scripts/acquire_public_url_policy.py`.
 - Alternatives rejected: Rejected changing tests to import the new helper directly because the old private import surface is already used by tests and compatibility costs almost nothing. Rejected standalone direct-import support for the new helper because sibling script modules in this skill already rely on script-directory path setup through entrypoints.
 - Targeted verification: focused ruff passed; `pytest -q tests/test_web_fetch_support.py tests/test_web_fetch_cleanup.py tests/test_youtube_source.py` passed 63; Python length gate passed with warn-band files 3 -> 2; packaging and validate_packaging_committed passed; validate_skills and skill py_compile passed; check_skill_ownership_overlap and validate_skill_ergonomics passed; gitignore scan hygiene passed; staged mirror drift check passed before staging.
