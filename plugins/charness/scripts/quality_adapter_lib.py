@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
@@ -84,24 +84,6 @@ def _load_adapter_validators():
 
 
 adapter_validators = _load_adapter_validators()
-
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        return value
-    errors.append(f"{field} must be a string")
-    return None
-
-
-def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
-    if value is None:
-        return None
-    if isinstance(value, list) and all(isinstance(item, str) for item in value):
-        return list(value)
-    errors.append(f"{field} must be a list of strings")
-    return None
 
 
 def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
@@ -195,7 +177,7 @@ def _validate_version_field(data: dict[str, Any], validated: dict[str, Any], err
 
 def _apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 
@@ -211,13 +193,13 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if coverage_floor_policy is not None:
         validated["coverage_floor_policy"] = coverage_floor_policy
 
-    specdown_smoke_patterns = _string_list(
+    specdown_smoke_patterns = optional_string_list(
         data.get("specdown_smoke_patterns"), "specdown_smoke_patterns", errors
     )
     if specdown_smoke_patterns is not None:
         validated["specdown_smoke_patterns"] = specdown_smoke_patterns
 
-    spec_pytest_reference_format = _string(
+    spec_pytest_reference_format = optional_string(
         data.get("spec_pytest_reference_format"), "spec_pytest_reference_format", errors
     )
     if spec_pytest_reference_format is not None:
@@ -275,7 +257,7 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
 
 def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     for field in LIST_FIELDS:
-        items = _string_list(data.get(field), field, errors)
+        items = optional_string_list(data.get(field), field, errors)
         if items is not None:
             validated[field] = items
 

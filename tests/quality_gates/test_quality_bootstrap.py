@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
 from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
+from scripts.simple_skill_adapter_lib import validate_simple_adapter_data
 
 from .support import ROOT, run_script
 
@@ -176,6 +177,18 @@ def write_explicit_quality_adapter(repo: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def test_simple_adapter_data_rejects_non_string_scalar_fields(tmp_path: Path) -> None:
+    _validated, errors, warnings = validate_simple_adapter_data(
+        {"repo": 123, "output_dir": []},
+        repo_root=tmp_path,
+        output_dir="charness-artifacts/demo",
+    )
+
+    assert warnings == []
+    assert "repo must be a string" in errors
+    assert "output_dir must be a string" in errors
 
 
 def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_path: Path) -> None:

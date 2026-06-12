@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, optional_string
 
 DEFAULT_OUTPUT_DIR = "charness-artifacts/critique"
 ADAPTER_CANDIDATES = (
@@ -28,15 +28,6 @@ STRING_FIELDS = ("repo", "language", "output_dir")
 VALID_CONTENT_KINDS = ("static", "script")
 VALID_REVIEWER_TIERS = ("high-leverage", "standard")
 REVIEWER_TIER_FIELDS = ("model", "reasoning_effort", "service_tier")
-
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -57,7 +48,7 @@ def _validate_section_identity(
     errors: list[str],
 ) -> dict[str, Any]:
     section: dict[str, Any] = {}
-    section_id = _string(raw.get("id"), f"{field}.id", errors)
+    section_id = optional_string(raw.get("id"), f"{field}.id", errors)
     if section_id is None:
         errors.append(f"{field}.id is required")
     else:
@@ -66,7 +57,7 @@ def _validate_section_identity(
         else:
             seen_ids.add(section_id)
         section["id"] = section_id
-    title = _string(raw.get("title"), f"{field}.title", errors)
+    title = optional_string(raw.get("title"), f"{field}.title", errors)
     if title is None:
         errors.append(f"{field}.title is required")
     else:
@@ -77,7 +68,7 @@ def _validate_section_identity(
 def _validate_section_kind(
     raw: dict[str, Any], *, field: str, errors: list[str]
 ) -> str | None:
-    content_kind = _string(raw.get("content_kind"), f"{field}.content_kind", errors)
+    content_kind = optional_string(raw.get("content_kind"), f"{field}.content_kind", errors)
     if content_kind is None:
         errors.append(f"{field}.content_kind is required")
         return None
@@ -111,13 +102,13 @@ def _validate_section_payload(
         errors.append(f"{field}.content_kind=static requires `content` or `content_path`, not `command`")
         return None
     if populated == "command":
-        command = _string(raw.get("command"), f"{field}.command", errors)
+        command = optional_string(raw.get("command"), f"{field}.command", errors)
         if not command:
             errors.append(f"{field}.command must be a non-empty string")
             return None
         return {"command": command}
     if populated == "content_path":
-        content_path = _string(raw.get("content_path"), f"{field}.content_path", errors)
+        content_path = optional_string(raw.get("content_path"), f"{field}.content_path", errors)
         if not content_path:
             errors.append(f"{field}.content_path must be a non-empty string")
             return None
@@ -178,7 +169,7 @@ def _validate_reviewer_tiers(
                     f"({', '.join(REVIEWER_TIER_FIELDS)})"
                 )
                 continue
-            text = _string(value, f"{field}.{key}", errors)
+            text = optional_string(value, f"{field}.{key}", errors)
             if text is not None:
                 entry[key] = text
         tiers[name] = entry
@@ -200,7 +191,7 @@ def validate_adapter_data(
             errors.append("version must be an integer")
 
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 

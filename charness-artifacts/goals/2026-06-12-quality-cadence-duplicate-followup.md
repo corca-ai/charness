@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: ready for slice 3 — focused duplicate-family review.
-- Next action: select one duplicate family with concrete owner surface and maintainability benefit, then keep any cleanup targeted.
+- Current slice: ready for slice 4 — final honest proof and next-candidate ledger.
+- Next action: lock final/bundle verification, run broad proof once, then close with explicit non-claims and retro.
 - Structural priority: closeout grammar must come from validator-owned
   templates or stubs with placeholders; operators fill values, not parser-shaped
   prose.
@@ -116,7 +116,7 @@ is final/bundle-only, not per-slice.
 | --- | --- | --- | --- | --- |
 | 1 | Make achieve Before/After authoring path explicit: Before-phase drafts only, `/goal` pursues only, and closeout fields are template-first via validator-owned stubs. | The operator corrections are right: shaping a next-session goal must not activate it, and closeout authoring must not rely on opening grammar and hand-matching it. | Contract/helper change, focused tests that draft artifacts stay inert and filled closeout placeholders pass `check_goal_artifact.py`, plus clear instructions for both operator paths. | committed `ac7d37ea` |
 | 2 | Reduce validation-churn waste by making slice-vs-bundle gate cadence explicit and testable. | The prior goal's host metrics showed repeated broad gates; the retro named this as the next workflow-quality problem. | Contract or helper change, focused tests, surface validators, and a before/after explanation of when broad proof runs. | committed in this slice commit |
-| 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | planned |
+| 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | verified; commit pending |
 | 4 | Close with honest proof and next-candidate ledger. | Avoid repeating the previous low-yield closeout complaint. | Goal artifact complete, retro, host metric/proxy summary, and final validators. | planned |
 
 ## Coordination Cues
@@ -180,6 +180,20 @@ Issue closeout: n/a — slices 1-2 resolved no tracked GitHub issue and carry no
 - Off-goal findings: `docs/conventions/validator-timing-layers.md` had a stale backticked `validate_adapters.py` reference; fixed as a link-only markdown-gate repair.
 - Lessons carried forward: Cadence rules belong in the active operating frame where resumed sessions start, and focused tests should assert the whole timing relationship rather than command-token presence.
 - Metrics: Broad pytest intentionally deferred to final/bundle boundary per this goal's validation-cadence contract; no live/external proof run.
+
+### Slice 3: Adapter scalar helper duplicate cleanup
+
+- Objective: Select one focused duplicate family with an owner surface and reduce it without hiding behavior or chasing the whole clone backlog.
+- Why this approach: `nose` showed the largest backlog is intentional portable skill boilerplate; repo-owned adapter scalar validation helpers were a smaller extractable family with a shared helper already present in `scripts/adapter_lib.py`.
+- Commits: pending until this slice commit lands.
+- What changed: Replaced local `_string` / `_string_list` helpers in `scripts/critique_adapter_lib.py`, `scripts/proof_semantics_adapter_lib.py`, `scripts/quality_adapter_lib.py`, and `scripts/simple_skill_adapter_lib.py` with `optional_string` / `optional_string_list`, synced plugin mirrors, and added direct scalar rejection assertions for proof verifier refs and simple adapter fields.
+- Alternatives rejected: Did not refactor portable skill-local adapter resolver copies, change adapter semantics, alter `nose` ranking, or chase all clone families.
+- Targeted verification: `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "focused duplicate-family review and cleanup for active achieve goal slice 3" --read-only --summary`; `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --top 20 --json`; `pytest -q tests/test_critique_prepare_packet.py tests/quality_gates/test_reviewer_tier_policy.py tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_mutation_testing.py tests/quality_gates/test_proof_semantics_adapter.py tests/quality_gates/test_proof_mismatch.py` (131 passed); `ruff check scripts/critique_adapter_lib.py scripts/proof_semantics_adapter_lib.py scripts/quality_adapter_lib.py scripts/simple_skill_adapter_lib.py tests/quality_gates/test_proof_semantics_adapter.py tests/quality_gates/test_quality_bootstrap.py`; `python3 scripts/sync_root_plugin_manifests.py --repo-root .`; `python3 scripts/check_changed_surfaces.py --repo-root . --json`; `python3 scripts/validate_packaging.py --repo-root .`; `python3 scripts/validate_packaging_committed.py --repo-root .`; `python3 scripts/validate_adapters.py --repo-root .`; `python3 scripts/validate_integrations.py --repo-root .`; `python3 scripts/sync_support.py --repo-root . --json`; `python3 scripts/update_tools.py --repo-root . --json`; `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`; `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`; `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`; `python3 scripts/check_test_repo_copy_invariants.py --repo-root .`; `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`; `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`; `python3 scripts/validate_critique_artifacts.py --repo-root . --all`; `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest` (completed; broad pytest skipped under pre-lock rehearsal policy).
+- Test duplication pressure: Added two narrow assertions in existing adapter test files; no new test helper or fixture layer.
+- Critique: Fresh-eye parent-delegated review recorded in `charness-artifacts/critique/2026-06-12-adapter-scalar-duplicate-cleanup-critique.md`; two angle reviewers plus one counterweight found no remaining Act Before Ship findings after the folded tests and wording correction.
+- Off-goal findings: Remaining top `nose` families are mostly intentional portable skill bootstrap/resolver boilerplate; they are candidates for future portability-aware review, not this slice.
+- Lessons carried forward: Treat `nose` as advisory selection evidence: pick a family with owner surface and extraction boundary, then record measured movement without claiming broad duplication health.
+- Metrics: `nose` advisory moved from 524 to 523 total ranked families and from 3073 to 3045 duplicated lines in the top report; the selected scalar helper-shaped family moved from 15 files / 112 duplicated lines to 11 files / 84 duplicated lines. Broad pytest intentionally deferred to final/bundle boundary.
 
 ## Context Sources
 

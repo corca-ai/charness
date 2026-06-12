@@ -34,7 +34,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, optional_string
 
 ADAPTER_CANDIDATES = (
     Path(".agents/proof-semantics-adapter.yaml"),
@@ -44,15 +44,6 @@ ADAPTER_CANDIDATES = (
     Path("proof-semantics-adapter.yaml"),
 )
 STRING_FIELDS = ("repo", "language")
-
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -169,7 +160,7 @@ def _validate_verifier_refs(data: dict[str, Any], levels: list[str], errors: lis
         if level not in known:
             errors.append(f"{field} references undeclared proof level `{level}`")
             continue
-        text = _string(ref, field, errors)
+        text = optional_string(ref, field, errors)
         if text is not None:
             result[str(level)] = text
     return result
@@ -217,7 +208,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         else:
             errors.append("version must be an integer")
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
     levels = _validate_proof_levels(data, errors)

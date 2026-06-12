@@ -195,6 +195,7 @@ def test_validate_adapter_data_type_errors_each_section(tmp_path: Path) -> None:
     assert "acceptance_map must be a mapping" in errs({"proof_levels": ["a"], "acceptance_map": "x"})
     assert "must name a proof level" in errs({"proof_levels": ["a"], "acceptance_map": {"r": 5}})
     assert "verifier_refs must be a mapping" in errs({"proof_levels": ["a"], "verifier_refs": "x"})
+    assert "verifier_refs.a must be a string" in errs({"proof_levels": ["a"], "verifier_refs": {"a": 123}})
     assert "undeclared proof level `ghost`" in errs({"proof_levels": ["a"], "verifier_refs": {"ghost": "x"}})
     assert "gap_policy must be a mapping" in errs({"gap_policy": "x"})
     assert "gap_policy.acceptable must be a list" in errs({"gap_policy": {"acceptable": "x"}})

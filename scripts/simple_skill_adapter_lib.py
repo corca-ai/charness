@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, optional_string
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
@@ -119,15 +119,6 @@ def infer_simple_adapter_defaults(repo_root: Path, *, output_dir: str) -> dict[s
     }
 
 
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
-
-
 def validate_simple_adapter_data(
     data: dict[str, Any], *, repo_root: Path, output_dir: str
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -143,7 +134,7 @@ def validate_simple_adapter_data(
             errors.append("version must be an integer")
 
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 
