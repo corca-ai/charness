@@ -64,6 +64,11 @@ focused duplicate-family review if time remains.
 - If the first slice proposes changing validation policy, run a fresh-eye
   critique before locking the contract.
 
+Discuss before activation: RESOLVED in-thread. The goal is local-only by default;
+no push, release, remote CI, live proof, or host active-goal slot is authorized
+until an explicit `/goal @...` pursuit or later operator instruction. Broad proof
+is final/bundle-only, not per-slice.
+
 ## User Acceptance
 
 - Inspect the committed slice(s) and confirm they reduce validation churn,
