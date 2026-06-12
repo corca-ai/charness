@@ -257,6 +257,11 @@ sample, not the full broad gate, and it carries the test-debt signal forward in
 the goal artifact so a compacted or resumed session does not rediscover the same
 late blocker.
 
+For Charness-maintained repos, the generated active frame names the concrete
+gate cadence: pre-lock slices run `run_slice_closeout.py --skip-broad-pytest`;
+final or bundle proof records the verification lock and reruns with
+`--verification-lock` before claiming broad pytest evidence.
+
 ### External-side-effect approval is phase-scoped
 
 Operator approval for an external side effect — publish, push, remote CI watch,

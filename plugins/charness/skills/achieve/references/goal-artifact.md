@@ -36,6 +36,8 @@ runs the activation command.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final/bundle proof records the verification lock and uses `--verification-lock`.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed
   files and owning/generated surfaces, expected invariants, tests/proof,
   non-claims, out-of-scope lines, and reviewer questions.

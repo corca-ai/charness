@@ -35,7 +35,12 @@ def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     text = _goal_text(tmp_path)
     assert gal.check_goal(text)["ok"] is True
     assert text.index("## Active Operating Frame") < text.index("## Goal")
+    frame = text[text.index("## Active Operating Frame") : text.index("## Goal")]
     assert "Verification cadence: cheap deterministic checks at commit boundaries" in text
+    assert (
+        "Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;\n"
+        "  final/bundle proof records the verification lock and uses `--verification-lock`."
+    ) in frame
     assert "changed\n  files and owning/generated surfaces" in text
     assert "out-of-scope lines" in text
     assert "History boundary: keep this frame current" in text
