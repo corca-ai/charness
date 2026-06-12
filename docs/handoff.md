@@ -13,20 +13,18 @@
 
 ## Current State
 
-- **v0.44.0 shipped and public release is verified.** `main`/`origin/main`
-  are at `f27f18d7 Record release verification for v0.44.0`; tag `v0.44.0`
+- **v0.44.0 shipped and public release is verified.** Release commit
+  `f27f18d7 Record release verification for v0.44.0`; tag `v0.44.0`
   is published and the maintainer install auto-refreshed to 0.44.0 (see
   [release latest](../charness-artifacts/release/latest.md)).
+- **#359 resolved and CLOSED (carrier `ebff7d50`, GitHub state verified).**
+  `achieve` complete-state closeout now blocks pending section placeholders via
+  `section_placeholders`; draft/active scaffolds remain allowed. Critique:
+  [#359](../charness-artifacts/critique/2026-06-13-issue-359-goal-placeholder-closeout-resolution.md).
 - **#358 resolved and CLOSED (carrier `22f3542d`, GitHub state verified).**
-  The `mutation-dispatch-no-base-sha-false-proof` conversion is upgraded
-  from retro_lesson to gate:
-  [check_mutation_run_proof.py](../scripts/check_mutation_run_proof.py)
-  refuses citing a dispatch/no-base-sha mutation run as changed-line proof,
-  the coverage script's no-base-sha verdict is loud, the mutation workflow
-  auto-close is schedule-only (repo workflow + shipped template), and the
-  upgrade is in the RCA ledger via the new `conversion_upgrade` mechanism.
-  Resolution critique:
-  [issue-358 critique](../charness-artifacts/critique/2026-06-13-issue-358-dispatch-proof-gate-resolution.md).
+  The dispatch/no-base-sha mutation-proof false conversion is now gate-backed
+  and RCA-upgraded. Critique:
+  [#358](../charness-artifacts/critique/2026-06-13-issue-358-dispatch-proof-gate-resolution.md).
 - **#184 target verdict stays not-met by design** until the 06-05 recurrence
   ages out of the rolling 28d window (tripwire-response contract: the
   upgrade annotates, never clears). The aggregator now renders
@@ -56,10 +54,8 @@
 
 ## Discuss
 
-- After #354's fix shipped, decide whether an operator announcement is still
-  useful for the v0.40.0 scheduled-mutation-lane change and the v0.41.0
-  YouTube/issue retrieval improvements — and now whether the v0.43.0
-  scorecard/cadence contracts deserve one consumer-facing announcement.
+- Decide whether a consumer-facing announcement is still useful for recent
+  scheduled-mutation, YouTube/issue retrieval, and scorecard/cadence changes.
 
 ## References
 
