@@ -14,6 +14,9 @@ runs the activation command.
 - Structural priority: closeout grammar must come from validator-owned
   templates or stubs with placeholders; operators fill values, not parser-shaped
   prose.
+- Activation boundary: `/achieve`/Before-phase creates an inert draft artifact
+  for the next session; only an explicit `/goal @...` pursuit may consume the
+  host active-goal slot or start slices.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -26,10 +29,11 @@ runs the activation command.
 ## Goal
 
 Improve the next Charness quality layer after the warn-band cleanup: first
-replace parser-spelunking closeout fixes with validator-backed templates or
-stubs that operators fill through placeholders, then reduce validation-churn
-waste with explicit slice-vs-bundle gate cadence, then run a focused
-duplicate-family review if time remains.
+repair the `achieve` authoring path so Before-phase goal shaping stays inert
+until explicit `/goal` activation and closeout fixes use validator-backed
+templates or stubs that operators fill through placeholders, then reduce
+validation-churn waste with explicit slice-vs-bundle gate cadence, then run a
+focused duplicate-family review if time remains.
 
 ## Non-Goals
 
@@ -40,6 +44,9 @@ duplicate-family review if time remains.
 - Do not fix goal closeout failures by manually reading validator grammar and
   hand-shaping prose as the normal workflow. That may diagnose a bug, but the
   productized path must be validator-owned templates or stubs.
+- Do not activate, create a host active goal, or start slices while preparing a
+  next-session goal artifact. Before-phase ends with a draft file and activation
+  command only.
 - Do not chase clone totals as the only success metric. A duplicate cleanup must
   name the specific family, owner surface, and maintainability benefit.
 
@@ -67,6 +74,8 @@ duplicate-family review if time remains.
 - Confirm achieve closeout authors no longer need to infer required grammar from
   validators for the common closeout fields; they receive a generated or
   documented placeholder surface that the validator accepts.
+- Confirm `/achieve` preparation no longer confuses "shape a goal for later"
+  with "activate or create a host-level active goal now."
 
 ## Agent Verification Plan
 
@@ -77,6 +86,9 @@ duplicate-family review if time remains.
 - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
 - If closeout templates/stubs are added, a focused regression that fills sample
   placeholders and proves `check_goal_artifact.py` accepts the result.
+- A focused contract/test or skill instruction check that the Before-phase
+  output remains `Status: draft`, includes the activation line, and does not
+  instruct the agent to call host `create_goal` or execute slices.
 
 ### High-Confidence Checks
 
@@ -95,7 +107,7 @@ duplicate-family review if time remains.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Make achieve closeout fields template-first: validators or validator-owned helpers emit accepted stubs with placeholders for common required floors. | The operator correction is right: the intended path is not opening grammar and hand-matching it; the validator should define the authoring shape. | Contract/helper change, focused tests that filled placeholders pass `check_goal_artifact.py`, and clear instructions for the operator path. | planned |
+| 1 | Make achieve Before/After authoring path explicit: Before-phase drafts only, `/goal` pursues only, and closeout fields are template-first via validator-owned stubs. | The operator corrections are right: shaping a next-session goal must not activate it, and closeout authoring must not rely on opening grammar and hand-matching it. | Contract/helper change, focused tests that draft artifacts stay inert and filled closeout placeholders pass `check_goal_artifact.py`, plus clear instructions for both operator paths. | planned |
 | 2 | Reduce validation-churn waste by making slice-vs-bundle gate cadence explicit and testable. | The prior goal's host metrics showed repeated broad gates; the retro named this as the next workflow-quality problem. | Contract or helper change, focused tests, surface validators, and a before/after explanation of when broad proof runs. | planned |
 | 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | planned |
 | 4 | Close with honest proof and next-candidate ledger. | Avoid repeating the previous low-yield closeout complaint. | Goal artifact complete, retro, host metric/proxy summary, and final validators. | planned |
@@ -146,6 +158,9 @@ the originating context by following them in order.
 - Operator correction in 2026-06-12 session: closeout syntax should be
   validator-backed templates with placeholders, not prose hand-matched after
   opening validator grammar.
+- Operator correction in 2026-06-12 session: `/achieve` preparation should create
+  and discuss a draft goal artifact for the next session; it should not activate
+  the goal or consume the host active-goal slot.
 
 ## Interview Decisions
 
@@ -155,15 +170,18 @@ itself so a fresh session sees the design space, not only the closed point.
 
 - Goal mode: draft next-goal artifact now because the host `create_goal` slot
   refused a new goal in this thread even after the previous goal was complete.
-- Scope priority: validator-backed closeout template/stub path first,
-  validation-churn cadence second, focused duplicate-family review third,
-  release execution context cleanup deferred unless the first three prove
-  exhausted.
+- Scope priority: achieve activation-boundary and validator-backed closeout
+  template/stub path first, validation-churn cadence second, focused
+  duplicate-family review third, release execution context cleanup deferred
+  unless the first three prove exhausted.
 - Proof budget: focused gates during slices, broad pytest only at bundle/final
   boundary, because the prior retro identified repeated broad gates as waste.
 - Authoring model: validators own accepted closeout shapes; the agent should fill
   placeholders in a generated or documented stub instead of reverse-engineering
   the grammar from failures.
+- Activation model: `/achieve` Before-phase is artifact-only and inert; `/goal`
+  is the only pursuit boundary that may create or resume host-level active goal
+  execution.
 
 ## Plan Critique Findings
 
@@ -178,6 +196,9 @@ re-verifies the folded revisions without re-running critique.
 - Folded blocker: avoid normalizing parser spelunking as the authoring path; the
   first slice must make the accepted closeout shape available from the validator
   or a validator-owned helper.
+- Folded blocker: avoid normalizing accidental activation during preparation; the
+  first slice must make the draft-vs-pursue boundary visible and mechanically
+  hard to miss.
 - Over-worry not folded: release execution context cleanup is valid but not the
   first slice because it is a design cleanup after a just-proven behavior split.
 
