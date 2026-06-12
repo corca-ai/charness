@@ -39,8 +39,19 @@ Always sync the mirror before validators. Background: retro/2026-05-01-mirror-dr
 
 ## Standing-Rule Docs vs Tracking Docs
 
-The policy does **not** blanket-strip refs. Two doc classes:
+The policy does **not** blanket-strip refs. The doc classes, strictest first:
 
+- **Exported reusable guidance** — surfaces that ship to consumers as current
+  guidance: `skills/public/**` and `skills/support/**` package text,
+  `skills/shared/references/**`, and `docs/generated/**`. Here the bar is
+  stricter than for standing-rule docs: **no issue anchors and no charness
+  self-version pins at all** — not even a single load-bearing trailing ref.
+  Provenance for exported guidance lives in the commit message and the
+  goal/critique/retro record, never in the package. Skill packages are
+  enforced blocking by `validate_skill_ergonomics`; the remaining exported
+  surfaces are scanned by the advisory `check_public_doc_coupling.py`
+  (`check-public-doc-coupling` in the quality gate). External tool versions
+  are not self-version pins and stay legitimate.
 - **Standing-rule docs** — their job is to state timeless rules/contracts (the
   docs linked from `AGENTS.md`/`CLAUDE.md` as the rule layer, e.g.
   [operating-contract.md](./operating-contract.md),

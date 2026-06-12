@@ -221,6 +221,20 @@ doc-coupling gate.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 3: Public-doc hard-coupling advisory gate
+
+- Objective: Lock in the 06-11 audit cleanup with a validator: new advisory scripts/check_public_doc_coupling.py reuses the canonical ISSUE_ANCHOR_RE/is_allowed_issue_anchor_context rule for the unowned exported surfaces (skills/shared/references, docs/generated) and adds a charness self-version-pin arm over all exported guidance (v0.x family + charness <semver>; external tool pins out of pattern). Codified the exported-reusable-guidance class in docs/conventions/provenance-placement.md, which resolves handoff Discuss item 1 at closeout. Portability classification: gate is host-local today (zero-baseline assertion is charness state); the placement policy itself is the portable artifact via provenance-placement.md and the existing standing-doc-provenance quality capability
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 6 new tests pass incl. real-repo zero-baseline assertion and external-version negative cases; gate clean on real tree; ruff, doc-links, markdown, attention-state green; mirror synced
+- Test duplication pressure: 6 subprocess-style gate tests; reuses canonical regex from skill_text_quality_lib rather than forking the rule
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
