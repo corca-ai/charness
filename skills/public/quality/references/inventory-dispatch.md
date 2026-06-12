@@ -137,9 +137,39 @@ product-policy decision before proposing new gates.
 When dual implementation smell is real, require one honest contract: parity
 harness, canonical side plus deletion/wrapper plan, or intentional divergence
 backed by an assertion. Treat first-run dead-code findings as advisory until
-the repo accounts for dynamic entrypoints. Treat `nose` findings the same way:
-review extractable non-bootstrap families first, and do not refactor every
-reported family just because the advisory scanner can see it.
+the repo accounts for dynamic entrypoints.
+
+### Clone Families As Structural Signals
+
+Clone-family advisories are structural signals, never a number to drive down.
+Do not use `total_dup_lines` or family counts as a reduction target, and do
+not read them as a cross-version trend: scanner upgrades change the surface
+model and ranking, so re-baseline per scanner version instead of treating a
+larger number as a regression. Answer the advisory's declared interpretation
+question per family, then map each reviewed family to one structural
+response:
+
+- **Intentional duplication** (portability or bootstrap fences): keep the
+  copies, and machine-own their consistency — a canonical block plus a
+  consistency gate with a fix mode, or a generator that stamps the copies. A
+  fence without a consistency guard is an unverified claim, and silent
+  divergence among "intentional" copies is how the fence rots.
+- **Extract candidate** (byte-identical members with a plausible owning
+  module): extract only when the owner is nameable and the abstraction cost
+  is below the payoff; prefer many-member small families over two-member
+  large ones.
+- **Generated-surface candidate** (copies exist because one source should be
+  stamped into many places): move ownership to the generator or sync
+  machinery and gate drift there, instead of editing the copies.
+- **Design-shaped family** (many members, low shared-line ratio): treat it as
+  a design question and route it through a spec/design pass before any
+  extraction attempt.
+
+Record the chosen response — or an explicit keep-with-fence — per reviewed
+family in the quality artifact, so the next scan consumes dispositions
+instead of rediscovering the same families. Review extractable non-bootstrap
+families first, and do not refactor every reported family just because the
+advisory scanner can see it.
 
 Elevate source-guard pressure as a rollup: total rows, top specs, brittle
 count, and next action category should be visible together. Blanket, file-level,

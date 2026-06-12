@@ -235,6 +235,20 @@ doc-coupling gate.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 4: Nose advisories as structural signals
+
+- Objective: Upgrade the quality skill's clone-advisory consumer contract: new Clone Families As Structural Signals section in references/inventory-dispatch.md maps each reviewed family to one structural response (machine-owned consistency / owned extraction / generated-surface ownership / design review), forbids total_dup_lines as a reduction target or cross-scanner-version trend, and requires per-family dispositions in the quality artifact; inventory_nose_clones.py notes now carry the same two consumer rules. Slice 1's shim gate is the live exemplar of the intentional-duplication response
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 8 nose-advisory tests pass; skill-surface preflight --run-checks all PASS (skills, ergonomics, ownership overlap, attention-state, doc links, markdown); live inventory run renders the new notes (nose 0.7.0, 20 families); prose-pin clean; mirror synced
+- Test duplication pressure: no new tests; existing nose-advisory suite covers notes payload shape
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

@@ -258,6 +258,8 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "notes": [
             "nose findings are refactoring candidates, not standing quality failures.",
             "Review only extractable non-bootstrap families before changing code; do not chase every reported family.",
+            "Map each reviewed family to a structural response (machine-owned consistency for intentional duplication, owned extraction, generated-surface ownership, or design review) per the quality inventory-dispatch reference.",
+            "Never treat total_dup_lines as a reduction target or a cross-scanner-version trend; re-baseline per scanner version.",
         ],
     }
 
