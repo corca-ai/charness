@@ -123,6 +123,7 @@ an author otherwise discovers by failing the validator several times:
 ```bash
 python3 scripts/check_artifact_surface_preflight.py --type closeout-draft   # issue closeout body shape
 python3 scripts/check_artifact_surface_preflight.py --type goal-closeout     # goal complete-gate forms
+python3 scripts/check_artifact_surface_preflight.py --type goal-closeout --emit-stub  # fill-in closeout starter
 ```
 
 - `closeout-draft` surfaces what `issue_tool.py validate-closeout-draft` (which

@@ -1,6 +1,6 @@
 # Achieve Goal: Quality Cadence Duplicate Followup
 
-Status: draft
+Status: active
 Created: 2026-06-12
 Activation: `/goal @charness-artifacts/goals/2026-06-12-quality-cadence-duplicate-followup.md`
 
@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-12-quality-cadence-duplicate-followup.md`.
+- Current slice: active slice 1 — validator-backed goal-closeout stub proof.
+- Next action: finish slice 1 verification and append slice evidence, then move to validation-cadence slice 2 if local proof remains green.
 - Structural priority: closeout grammar must come from validator-owned
   templates or stubs with placeholders; operators fill values, not parser-shaped
   prose.
@@ -112,7 +112,7 @@ is final/bundle-only, not per-slice.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Make achieve Before/After authoring path explicit: Before-phase drafts only, `/goal` pursues only, and closeout fields are template-first via validator-owned stubs. | The operator corrections are right: shaping a next-session goal must not activate it, and closeout authoring must not rely on opening grammar and hand-matching it. | Contract/helper change, focused tests that draft artifacts stay inert and filled closeout placeholders pass `check_goal_artifact.py`, plus clear instructions for both operator paths. | planned |
+| 1 | Make achieve Before/After authoring path explicit: Before-phase drafts only, `/goal` pursues only, and closeout fields are template-first via validator-owned stubs. | The operator corrections are right: shaping a next-session goal must not activate it, and closeout authoring must not rely on opening grammar and hand-matching it. | Contract/helper change, focused tests that draft artifacts stay inert and filled closeout placeholders pass `check_goal_artifact.py`, plus clear instructions for both operator paths. | implemented; commit pending |
 | 2 | Reduce validation-churn waste by making slice-vs-bundle gate cadence explicit and testable. | The prior goal's host metrics showed repeated broad gates; the retro named this as the next workflow-quality problem. | Contract or helper change, focused tests, surface validators, and a before/after explanation of when broad proof runs. | planned |
 | 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | planned |
 | 4 | Close with honest proof and next-candidate ledger. | Avoid repeating the previous low-yield closeout complaint. | Goal artifact complete, retro, host metric/proxy summary, and final validators. | planned |
@@ -143,9 +143,26 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Routing: find-skills recommended `quality` for the active goal continuation; slice 1 used `impl` for the code/test/doc change and `critique` for fresh-eye review.
+Gather: n/a — no external URL or private source context was used; slice 1 used local repo artifacts and docs only.
+Release: n/a — slice 1 changed no version, release record, install manifest, or publication surface.
+Issue closeout: n/a — slice 1 resolved no tracked GitHub issue and carries no close-intended issue.
+
 ## Slice Log
 
-N/A — draft goal; no slices have run.
+### Slice 1: Validator-backed goal-closeout stub
+
+- Objective: Prove the goal-closeout authoring path is template/stub first and that a filled emitted stub passes the real complete-state goal validator without parser spelunking.
+- Why this approach: The helper already rendered live validator-owned forms; the missing proof was an end-to-end regression against the documented dispatcher --emit-stub path.
+- Commits:
+- What changed: Added a dispatcher-stub round-trip regression in tests/quality_gates/test_check_artifact_surface_preflight.py, documented the goal-closeout --emit-stub operator command in docs/conventions/authoring-preflight.md, aligned --emit-stub help text for shape-source emitters, synced plugins/charness/scripts/check_artifact_surface_preflight.py, and corrected this goal's active frame/coordination cues.
+- Alternatives rejected: Did not change validator grammar, add a slug/date-aware emitter, broaden into validation-cadence gates, or run duplicate-family cleanup in this slice.
+- Targeted verification: pytest -q tests/quality_gates/test_check_artifact_surface_preflight.py tests/quality_gates/test_achieve_before_activation.py tests/quality_gates/test_goal_artifact_lib.py tests/charness_cli/test_goal_helpers.py (117 passed); python3 scripts/check_artifact_surface_preflight.py --type goal-closeout --emit-stub; ruff check ...; python3 scripts/check_boundary_bypass_ratchet.py --repo-root .; python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest (completed; broad pytest skipped under pre-lock rehearsal policy).
+- Test duplication pressure: Added one focused regression in an existing artifact-preflight test file; duplicate-pressure sampled through check_boundary_bypass_ratchet after the first subprocess version failed and was converted to in-process.
+- Critique: Fresh-eye parent-delegated review recorded in charness-artifacts/critique/2026-06-12-goal-closeout-stub-roundtrip-critique.md; two angle reviewers and one counterweight found no remaining Act Before Ship findings after fixes.
+- Off-goal findings: N/A — no off-goal findings filed.
+- Lessons carried forward: When proving an operator command path, test the dispatcher output directly; helper-level proof alone can leave the authoring path unproven.
+- Metrics: Broad pytest intentionally deferred to final/bundle boundary per this goal's validation-cadence contract; no live/external proof run.
 
 ## Context Sources
 

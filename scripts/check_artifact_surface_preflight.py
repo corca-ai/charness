@@ -395,7 +395,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--path", help="Artifact path to surface required shape for")
     parser.add_argument("--type", dest="artifact_type", help="Artifact type (see the registry)")
-    parser.add_argument("--emit-stub", action="store_true", help="Emit a starter stub via the owning scaffold")
+    parser.add_argument("--emit-stub", action="store_true", help="Emit a starter stub via the owning scaffold or shape source")
     parser.add_argument("--changed-artifacts", nargs="*", help="Commit-boundary: relocate owning validator verdicts for these paths")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()

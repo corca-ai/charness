@@ -514,6 +514,130 @@ def test_goal_closeout_emit_stub_combines_template_message_and_enforced_stub() -
     assert "## Final Verification" in text and "Retro:" in text  # enforced-form starter
 
 
+def test_goal_closeout_stub_round_trips_complete_gate_when_filled(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    slug = "closeout-stub-roundtrip"
+    date = "2026-06-12"
+    goal_rel = f"charness-artifacts/goals/{date}-{slug}.md"
+    evidence_paths = {
+        "retro": f"charness-artifacts/retro/{date}-{slug}.md",
+        "host": f"charness-artifacts/retro/{date}-{slug}-host-log.md",
+        "review": f"charness-artifacts/critique/{date}-{slug}-disposition-review.md",
+    }
+    for rel in evidence_paths.values():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"{slug}\nNo actionable improvements were surfaced.\n", encoding="utf-8")
+
+    emitted_stub, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-closeout"))
+    assert code == 0
+    closeout_stub = (
+        emitted_stub[emitted_stub.index("## Final Verification") :]
+        .replace("charness-artifacts/retro/<date>-<goal-slug>.md", evidence_paths["retro"])
+        .replace("charness-artifacts/retro/<date>-<goal-slug>-host-log.md", evidence_paths["host"])
+        .replace(
+            "charness-artifacts/critique/<date>-<goal-slug>-disposition-review.md",
+            evidence_paths["review"],
+        )
+        .replace(
+            "Retro dispositions: none — <>=30-char reason no surfaced improvement needs active disposition>",
+            "Retro dispositions: none — the bound retro fixture records no actionable improvements, so no active disposition is needed",
+        )
+    )
+    goal_path = tmp_path / goal_rel
+    goal_path.parent.mkdir(parents=True, exist_ok=True)
+    goal_path.write_text(
+        f"""# Achieve Goal: Closeout Stub Roundtrip
+
+Status: complete
+Created: {date}
+Activation: `/goal @{goal_rel}`
+
+## Active Operating Frame
+
+- Current slice: final closeout fixture.
+- Next action: validate the filled goal-closeout stub.
+
+## Goal
+
+Prove the surfaced goal-closeout stub can be filled without reading validator grammar.
+
+## Non-Goals
+
+N/A — fixture-only goal.
+
+## Boundaries
+
+N/A — local fixture with no external side effects.
+
+## User Acceptance
+
+Run the goal checker and see it accept the completed fixture.
+
+## Agent Verification Plan
+
+Run the actual `check_goal_artifact.py` complete-state validator.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+
+## Coordination Cues
+
+Routing: n/a — synthetic closeout fixture recorded no implementation, debug, quality, or issue phase work.
+Gather: n/a — synthetic closeout fixture used no external URL or private-source context.
+Release: n/a — synthetic closeout fixture touched no release or install manifest surface.
+Issue closeout: n/a — synthetic closeout fixture resolved no tracked GitHub issue.
+
+## Slice Log
+
+N/A — synthetic closeout round-trip fixture; no implementation slices.
+
+## Context Sources
+
+N/A — synthetic fixture.
+
+## Interview Decisions
+
+N/A — synthetic fixture.
+
+## Plan Critique Findings
+
+N/A — synthetic fixture.
+
+## Off-Goal Findings
+
+N/A — synthetic fixture.
+
+{closeout_stub}
+## User Verification Instructions
+
+Run `check_goal_artifact.py` on the fixture.
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "check_goal_artifact.py",
+            "--repo-root",
+            str(tmp_path),
+            "--goal-path",
+            str(goal_path),
+        ],
+    )
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(str(ROOT / "skills/public/achieve/scripts/check_goal_artifact.py"), run_name="__main__")
+
+    assert exc.value.code == 0, capsys.readouterr().out
+
+
 def test_run_shape_command_reports_render_failure() -> None:
     bad = replace(
         preflight.surface_for_type("closeout-draft"),
