@@ -628,6 +628,21 @@ def test_target_falsified_recurrence_outside_window_does_not_trip() -> None:
     assert target["status"] == "met"
 
 
+def test_event_identity_non_string_fields_and_upgrade_ref() -> None:
+    # The early return for a record missing/typed-wrong identity fields, and
+    # the upgrade identity extension (marker + redesign ref) that lets an
+    # upgrade append alongside the original triple.
+    assert lib.event_identity({"source": "issue", "event_kind": "bug"}) is None
+    assert lib.event_identity({"source": "issue", "event_kind": "bug", "class_key": 7}) is None
+    base = {"source": "issue", "event_kind": "bug", "class_key": "k"}
+    assert lib.event_identity(base) == ("issue", "bug", "k")
+    upgrade = dict(base, conversion_upgrade=True, ref="#358")
+    assert lib.event_identity(upgrade) == ("issue", "bug", "k", "conversion_upgrade", "#358")
+    assert lib.event_identity(dict(base, conversion_upgrade=True)) == (
+        "issue", "bug", "k", "conversion_upgrade", "",
+    )
+
+
 def test_conversion_upgrade_is_not_a_recurrence_but_refreshes_the_stamp() -> None:
     # #358 tripwire response: an explicit conversion_upgrade=true re-record is
     # artifact work, not a new occurrence — it must not be listed as a
