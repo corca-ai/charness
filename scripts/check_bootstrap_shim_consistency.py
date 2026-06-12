@@ -71,11 +71,14 @@ def fix_file(path: Path, source: str, nodes: list[ast.FunctionDef]) -> bool:
     fixable = [node for node in drifted_copies(source, nodes) if node.col_offset == 0]
     if not fixable:
         return False
-    lines = source.splitlines(keepends=True)
+    # Split on real newlines only: ast line numbers count "\n", while
+    # str.splitlines also splits on form feeds and unicode separators, which
+    # would shift the splice window and corrupt the file.
+    lines = source.split("\n")
     for node in sorted(fixable, key=lambda n: n.lineno, reverse=True):
         end = node.end_lineno if node.end_lineno is not None else node.lineno
-        lines[node.lineno - 1 : end] = [CANONICAL_SHIM + "\n"]
-    path.write_text("".join(lines), encoding="utf-8")
+        lines[node.lineno - 1 : end] = CANONICAL_SHIM.split("\n")
+    path.write_text("\n".join(lines), encoding="utf-8")
     return True
 
 
@@ -101,8 +104,13 @@ def main() -> int:
             if fix_file(path, source, nodes):
                 fixed.append(rel)
             new_source = path.read_text(encoding="utf-8")
-            if drifted_copies(new_source, _shim_nodes(new_source)):
+            new_nodes = _shim_nodes(new_source)
+            # A file that had shim defs before --fix and parses to none after
+            # is corrupted, not clean; never report that as fixed.
+            if not new_nodes or drifted_copies(new_source, new_nodes):
                 unfixable.append(rel)
+                if rel in fixed:
+                    fixed.remove(rel)
         else:
             drifted.append(rel)
 
@@ -128,6 +136,7 @@ def main() -> int:
         for rel in drifted + unfixable:
             print(f"- {rel}", file=sys.stderr)
         print("Run: python3 scripts/check_bootstrap_shim_consistency.py --repo-root . --fix", file=sys.stderr)
+        print("To evolve the shim deliberately, edit CANONICAL_SHIM in this gate first, then --fix to propagate.", file=sys.stderr)
     return 0 if status == "ok" else 1
 
 

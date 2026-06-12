@@ -50,7 +50,8 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path) -> 
         "Use runner v2.327.1 or newer.\n"
         "cautilus 0.15.4 renamed the topic.\n"
         "Dated 2026.06.05 in a table.\n"
-        "charness 0.42.0 shipped the change.\n",
+        "Charness 0.42.0 shipped the change.\n"
+        "An external 0.x tool pin like v0.4.0 also matches by design.\n",
         encoding="utf-8",
     )
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
@@ -59,6 +60,7 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path) -> 
     assert [(f["kind"], f["line"]) for f in findings] == [
         ("self_version_pin", 1),
         ("self_version_pin", 5),
+        ("self_version_pin", 6),
     ]
 
 
@@ -85,5 +87,11 @@ def test_human_output_names_the_policy_owner(tmp_path: Path) -> None:
 
 
 def test_real_repo_baseline_is_clean() -> None:
+    """Intentional zero-baseline ratchet.
+
+    The CLI gate stays advisory (exit 0), but this repo chooses to hold its
+    own exported guidance at zero findings; a deliberate new exception should
+    update this test (or the gate scope) with the reasoning, not slip past.
+    """
     findings = coupling_gate.find_coupling(Path(__file__).resolve().parents[2])
     assert findings == []

@@ -81,6 +81,41 @@ def test_nested_drifted_copy_is_reported_not_rewritten(tmp_path: Path) -> None:
     assert textwrap.indent(DRIFTED_SHIM, "    ").rstrip() in nested.read_text(encoding="utf-8")
 
 
+def test_fix_is_safe_with_form_feed_before_the_shim(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, drifted=False)
+    target = repo / "skills" / "public" / "demo" / "scripts" / "second_helper.py"
+    target.write_text(
+        HEADER + 'PAGE_BREAK = "before\x0cafter"\nKEEP_ME = 1\n\n' + DRIFTED_SHIM,
+        encoding="utf-8",
+    )
+    # splitlines-based splicing would treat the \x0c as a line break, shift
+    # the window, and delete real statements while reporting success.
+    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix", "--json")
+    assert fix_result.returncode == 0
+    rewritten = target.read_text(encoding="utf-8")
+    assert "KEEP_ME = 1" in rewritten
+    assert shim_gate.CANONICAL_SHIM in rewritten
+    recheck = run_script(SCRIPT, "--repo-root", str(repo))
+    assert recheck.returncode == 0
+
+
+def test_fix_rewrites_two_module_level_shims_in_one_file(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, drifted=False)
+    target = repo / "skills" / "public" / "demo" / "scripts" / "second_helper.py"
+    target.write_text(HEADER + DRIFTED_SHIM + "\n\n" + DRIFTED_SHIM, encoding="utf-8")
+    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix", "--json")
+    assert fix_result.returncode == 0
+    rewritten = target.read_text(encoding="utf-8")
+    assert rewritten.count(shim_gate.CANONICAL_SHIM) == 2
+
+
+def test_failure_message_names_the_deliberate_evolution_path(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, drifted=True)
+    result = run_script(SCRIPT, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "CANONICAL_SHIM" in result.stderr
+
+
 def test_name_prefix_collision_is_not_scanned(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, drifted=False)
     holder = repo / "scripts" / "module_loader.py"

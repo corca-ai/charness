@@ -148,6 +148,8 @@ QUALITY_PYTHON_STUBS = (
     ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-skill-bootstrap-vars", "check_skill_bootstrap_vars.py"),
+    ("check-bootstrap-shim-consistency", "check_bootstrap_shim_consistency.py"),
+    ("check-public-doc-coupling", "check_public_doc_coupling.py"),
     ("check-export-safe-imports", "check_export_safe_imports.py"),
     ("check-plugin-import-smoke", "check_plugin_import_smoke.py"),
     ("check-command-docs", "check_command_docs.py"),

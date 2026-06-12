@@ -45,7 +45,9 @@ The policy does **not** blanket-strip refs. The doc classes, strictest first:
   guidance: `skills/public/**` and `skills/support/**` package text,
   `skills/shared/references/**`, and `docs/generated/**`. Here the bar is
   stricter than for standing-rule docs: **no issue anchors and no charness
-  self-version pins at all** — not even a single load-bearing trailing ref.
+  self-version pins in prose at all** — not even a single load-bearing
+  trailing ref (the gates' structured-field and placeholder-URL carve-outs
+  stand).
   Provenance for exported guidance lives in the commit message and the
   goal/critique/retro record, never in the package. Skill packages are
   enforced blocking by `validate_skill_ergonomics`; the remaining exported

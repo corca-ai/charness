@@ -9,10 +9,11 @@ covers the remaining exported surfaces (shared references, generated docs)
 with the same canonical anchor rule, plus the self-version-pin class across
 all exported guidance. Record-layer artifacts and tracking ledgers are out of
 scope by design: docs/conventions/provenance-placement.md owns the placement
-policy. External tool versions (for example a pinned runner release) are not
-self-version pins; the pin pattern is bound to the charness v0.x release
-family and `charness <semver>` mentions, and it is revisited if the project
-leaves the 0.x family.
+policy. The pin pattern is bound to the charness v0.x release family plus
+`charness <semver>` mentions, so external tools versioned 1.x and above (for
+example a pinned runner release) are out of pattern; an external tool still
+in its own 0.x family does match, and that finding stays a judgment call for
+the reader. Revisit the pattern if charness leaves the 0.x family.
 
 Always exits 0; findings print as `ADVISORY:` lines for run-quality attention.
 """
@@ -39,7 +40,9 @@ PIN_PATTERNS = (
     "skills/shared/references/**/*.md",
     "docs/generated/**/*.md",
 )
-SELF_VERSION_PIN_RE = re.compile(r"(?<![A-Za-z0-9.])v0\.\d+\.\d+\b|\bcharness\s+v?\d+\.\d+\.\d+\b")
+SELF_VERSION_PIN_RE = re.compile(
+    r"(?<![A-Za-z0-9.])v0\.\d+\.\d+\b|\bcharness\s+v?\d+\.\d+\.\d+\b", re.IGNORECASE
+)
 
 
 def _load_text_quality_lib():
