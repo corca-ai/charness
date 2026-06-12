@@ -1,0 +1,256 @@
+{
+  "goal_metric_window": {
+    "claude_session_file": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+    "completed_at": "2026-06-12T22:51:22+09:00",
+    "path": "/home/hwidong/codes/charness/charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md",
+    "session_host": "claude",
+    "started_at": "2026-06-12T21:42:32+09:00",
+    "status": "parsed"
+  },
+  "home": "/home/hwidong",
+  "hosts": {
+    "claude": {
+      "detected": true,
+      "goal_window_audit": {
+        "last_event_at": "2026-06-12T13:51:19.241000Z",
+        "measured": {
+          "context_compactions": 0,
+          "custom_tool_calls": 0,
+          "custom_tool_names": {},
+          "function_call_names": {
+            "Agent": 5,
+            "Bash": 99,
+            "Edit": 45,
+            "Read": 10,
+            "Skill": 1,
+            "TaskCreate": 7,
+            "TaskUpdate": 12,
+            "ToolSearch": 1,
+            "Write": 12
+          },
+          "function_calls": 192,
+          "patch_applications": 57,
+          "subagent": {
+            "spawn": 5
+          },
+          "token_count_snapshots": 330,
+          "total_events": 547
+        },
+        "notes": [
+          "patch_applications counts Edit/Write/MultiEdit/NotebookEdit tool_use items; they also appear in function_calls, so the two fields overlap rather than add.",
+          "subagent wait/close are not represented in Claude session logs; only spawns are counted."
+        ],
+        "proxy": {
+          "note": "Activity proxies derived from command shape, not measured cost.",
+          "repeated_broad_gates": {},
+          "repeated_vcs_commands": {
+            "git add": 7
+          }
+        },
+        "schema_version": 1,
+        "source": {
+          "host": "claude",
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl"
+        },
+        "warnings": [],
+        "window_filter": {
+          "completed_at": "2026-06-12T22:51:22+09:00",
+          "excluded_after": 4,
+          "excluded_before": 89,
+          "included_records": 547,
+          "started_at": "2026-06-12T21:42:32+09:00",
+          "status": "applied",
+          "total_records": 887,
+          "undated_records": 247
+        }
+      },
+      "metrics": {
+        "duration": {
+          "detail": "timestamped session events exist",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+          "status": "derivable"
+        },
+        "token_count": {
+          "detail": "message.usage.input_tokens/output_tokens present",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+          "status": "available"
+        },
+        "tool_call_count": {
+          "detail": "message.content includes tool_use items",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+          "status": "derivable"
+        },
+        "turn_count": {
+          "detail": "user/assistant events exist but require pairing heuristics",
+          "source": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+          "status": "derivable"
+        }
+      },
+      "session_audit": {
+        "last_event_at": "2026-06-12T13:51:31.448000Z",
+        "measured": {
+          "context_compactions": 0,
+          "custom_tool_calls": 0,
+          "custom_tool_names": {},
+          "function_call_names": {
+            "Agent": 8,
+            "Bash": 112,
+            "Edit": 45,
+            "Read": 18,
+            "Skill": 3,
+            "TaskCreate": 7,
+            "TaskUpdate": 12,
+            "ToolSearch": 1,
+            "Write": 12
+          },
+          "function_calls": 218,
+          "patch_applications": 57,
+          "subagent": {
+            "spawn": 8
+          },
+          "token_count_snapshots": 379,
+          "total_events": 887
+        },
+        "notes": [
+          "patch_applications counts Edit/Write/MultiEdit/NotebookEdit tool_use items; they also appear in function_calls, so the two fields overlap rather than add.",
+          "subagent wait/close are not represented in Claude session logs; only spawns are counted."
+        ],
+        "proxy": {
+          "note": "Activity proxies derived from command shape, not measured cost.",
+          "repeated_broad_gates": {},
+          "repeated_vcs_commands": {
+            "git -C": 3,
+            "git add": 7
+          }
+        },
+        "schema_version": 1,
+        "source": {
+          "host": "claude",
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl"
+        },
+        "warnings": [],
+        "window_filter": {
+          "completed_at": null,
+          "included_records": 887,
+          "started_at": null,
+          "status": "not_applied",
+          "total_records": 887,
+          "undated_records": 0
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.claude/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "project-jsonl",
+          "path": "/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl",
+          "status": "used"
+        }
+      ]
+    },
+    "codex": {
+      "detected": true,
+      "metrics": {
+        "duration": {
+          "detail": "No timestamped runtime lines found",
+          "source": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "unavailable"
+        },
+        "token_count": {
+          "detail": "Codex session JSONL exposes 250 token_count snapshot(s)",
+          "source": "/home/hwidong/.codex/sessions/2026/06/12/rollout-2026-06-12T09-34-13-019eb940-33c7-7912-a550-cf6c1f8dc098.jsonl",
+          "status": "available"
+        },
+        "tool_call_count": {
+          "detail": "Codex session JSONL exposes 502 function/custom tool call(s)",
+          "source": "/home/hwidong/.codex/sessions/2026/06/12/rollout-2026-06-12T09-34-13-019eb940-33c7-7912-a550-cf6c1f8dc098.jsonl",
+          "status": "derivable"
+        },
+        "turn_count": {
+          "detail": "No turn.id markers found",
+          "source": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "unavailable"
+        }
+      },
+      "session_audit": {
+        "last_event_at": "2026-06-12T07:30:41.336000Z",
+        "measured": {
+          "context_compactions": 4,
+          "custom_tool_calls": 39,
+          "function_calls": 463,
+          "patch_applications": 38,
+          "subagent": {
+            "close": 14,
+            "spawn": 16,
+            "wait": 12
+          },
+          "token_count_snapshots": 250,
+          "total_events": 1981
+        },
+        "notes": [
+          "patch_applications counts patch_apply_end events; those patches also appear in custom_tool_calls as apply_patch, so the two fields overlap rather than add."
+        ],
+        "proxy": {
+          "repeated_broad_gates": {
+            "./scripts/check-markdown.sh": 7,
+            "./scripts/check-secrets.sh": 5,
+            "pytest": 11,
+            "ruff": 9
+          },
+          "repeated_vcs_commands": {
+            "git add": 7,
+            "git commit": 4,
+            "git diff": 23,
+            "git log": 8,
+            "git show": 3,
+            "git status": 28
+          }
+        },
+        "source": {
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.codex/sessions/2026/06/12/rollout-2026-06-12T09-34-13-019eb940-33c7-7912-a550-cf6c1f8dc098.jsonl"
+        },
+        "warnings": [],
+        "window_filter": {
+          "completed_at": null,
+          "included_records": 1981,
+          "started_at": null,
+          "status": "not_applied",
+          "total_records": 1981,
+          "undated_records": 0
+        }
+      },
+      "sources": [
+        {
+          "kind": "history",
+          "path": "/home/hwidong/.codex/history.jsonl",
+          "reason": "thin-history",
+          "status": "ignored"
+        },
+        {
+          "kind": "sqlite-log",
+          "path": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "used"
+        },
+        {
+          "kind": "sqlite-log",
+          "path": "/home/hwidong/.codex/logs_2.sqlite",
+          "status": "available"
+        },
+        {
+          "kind": "session-jsonl",
+          "path": "/home/hwidong/.codex/sessions/2026/06/12/rollout-2026-06-12T09-34-13-019eb940-33c7-7912-a550-cf6c1f8dc098.jsonl",
+          "status": "used"
+        }
+      ]
+    }
+  },
+  "repo_root": "/home/hwidong/codes/charness",
+  "schema_version": 1
+}

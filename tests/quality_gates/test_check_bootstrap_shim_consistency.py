@@ -127,3 +127,43 @@ def test_name_prefix_collision_is_not_scanned(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
     assert result.returncode == 0
     assert json.loads(result.stdout)["checked_files"] == 2
+
+
+def test_syntax_error_file_is_not_scanned_and_does_not_crash(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, drifted=False)
+    bad = repo / "scripts" / "broken_helper.py"
+    bad.parent.mkdir(parents=True, exist_ok=True)
+    bad.write_text("def _load_skill_runtime_bootstrap(:\n    pass\n", encoding="utf-8")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["checked_files"] == 2
+
+
+def test_fix_with_residual_nested_drift_reports_unfixable_not_fixed(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, drifted=False)
+    target = repo / "scripts" / "mixed_holder.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        HEADER + DRIFTED_SHIM + "\n\ndef outer():\n" + textwrap.indent(DRIFTED_SHIM, "    "),
+        encoding="utf-8",
+    )
+    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix", "--json")
+    assert fix_result.returncode == 1
+    payload = json.loads(fix_result.stdout)
+    assert payload["unfixable"] == ["scripts/mixed_holder.py"]
+    assert payload["fixed"] == []
+    rewritten = target.read_text(encoding="utf-8")
+    assert shim_gate.CANONICAL_SHIM in rewritten
+
+
+def test_normalized_setup_helper_still_bootstraps() -> None:
+    import importlib.util
+
+    from .support import ROOT
+
+    target = ROOT / "skills" / "public" / "setup" / "scripts" / "normalize_host_docs.py"
+    spec = importlib.util.spec_from_file_location("normalize_host_docs_shim_smoke", target)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert callable(module.main)

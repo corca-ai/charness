@@ -1,6 +1,6 @@
 # Achieve Goal: Autonomous structural quality bundle: shim drift gate, doc-coupling gate, contract fixture, nose-as-structural-signal
 
-Status: active
+Status: complete
 Created: 2026-06-12
 Activation: `/goal @charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`
 Timebox: 8h
@@ -13,14 +13,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — bootstrap-shim consistency gate.
+- Current slice: complete — all seven slices (five planned plus the
+  operator-added #356/#357 resolution) are committed locally with the
+  verification lock recorded.
 - Proof base for closeout: `c1f7b581` (HEAD == origin/main at activation).
-- Next action: implement `scripts/check_bootstrap_shim_consistency.py` with
-  `--fix`, normalize the 3 wrapped variants, wire into run-quality.sh, test,
-  sync mirror, commit.
-- Slice queue after current: 2 doc-coupling gate -> 3 nose structural-signal
-  contract -> 4 contract fixture -> 5 closeout (critique BEFORE coverage
-  producer; single handoff write; no push).
+- Next action (operator wake-up): decide the push; the pre-push full gate is
+  green and the changed-line coverage consumer reports `blocking: []`. After
+  push, verify #356/#357 CLOSED via the issue tool. `docs/handoff.md` carries
+  the same sequence.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -182,6 +182,21 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Closeout-floor evidence (filled during the run):
+
+- Routing: `find-skills` recommendation probe ran at session start and the run routed through `achieve` for the goal lifecycle, with `impl` discipline for mutation slices, `quality` for gate design, `critique` for plan/bundle/resolution reviews, `issue` for #356/#357, and `retro` for the after-action review.
+- Gather: n/a — no external URL/Slack/Notion source became repo context;
+  GitHub issues were read through the issue workflow's own tool.
+- Release: n/a — no version bump or install-manifest edit; the release
+  adapter checklist edit (second-machine retirement) is a proof-policy
+  change, dispositioned in the v0.42.0 release record, with the release
+  decision itself left to the operator.
+- Issue closeout: #356 and #357, carrier direct-commit `f9271594` with
+  `Close #356. Close #357.`; `validate-closeout-draft` returned
+  `draft_verified` / `ready_to_commit_push`; post-commit `verify-closeout`
+  returned `carrier_verified`. Remote CLOSED verification intentionally
+  pends the operator's wake-up push.
+
 Discuss before activation: resolved — the operator approved the bundle scope
 in two explicit messages this session (improvement items 2/3/4, the added
 nose-as-structural-signal skill request, and second-machine carryover removal)
@@ -258,6 +273,34 @@ doc-coupling gate.
 - Alternatives rejected:
 - Targeted verification: validate-cautilus-scenarios, validate-cautilus-proof, validate-cautilus-call-provenance green; run_evals 22 scenarios pass with the new fixture auto-discovered; planner re-consult after the fixture: next_action none, scenario_registry_review_required false; doc-links and markdown green
 - Test duplication pressure: no new pytest; fixture is validated by the standing cautilus scenario gate (schema + concept assertions)
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 6: Resolve issues 356 and 357
+
+- Objective: Operator mid-run instruction: resolve newly opened issues. Both classified feature; resolution briefs emitted in-transcript with empty open decisions (adapter on-open-decisions). Issue 357: new shared meaningful-slice-cadence reference (slice = reviewable intent unit; fresh-eye per unit/risk; broad/pre-push proof at bundle boundary; artifact churn guard) wired from critique/impl/quality/achieve. Issue 356: new quality-signal-scorecard reference (per-candidate behavior value, ownership, blast radius, stop condition; metric-only rationale rejected) wired from inventory-dispatch, testability-and-selection, and the SKILL testability anchor after the resolution reviewer caught the incident's real entry path bypassing it; helper+guard deferred as D29. Carrier commit with Close keywords is local-only; remote close is the wake-up push decision
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: validate-closeout-draft: draft_verified/ready_to_commit_push for the bundle; resolution critique artifact validated; verify-closeout against the local carrier commit run post-commit; skill validators, doc links, markdown, coupling gate, 14 gate tests green; quality SKILL.md at 199/200 after in-place compression
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 7: Closeout: critique folds, retro, handoff, verification lock
+
+- Objective: Bundle critique (2 angle reviewers + counterweight) folded: --fix newline-splice corruption fix with real form-feed regression test, harness stub registration (+stub-parity drift guard test), coupling-gate honesty (IGNORECASE, external-0.x semantics, ratchet docstring), provenance carve-out clause. Second-machine arm retired from release adapter + v0.42.0 record disposition. Session retro persisted with dispositions; disposition review DISPOSITIONS-SOUND. Handoff single write landed (ahead-of-origin/no-push state, stale items retired, Discuss item 1 resolved). Scenario-review decisions for achieve/critique/impl/quality/setup recorded in docs/public-skill-dogfood.json
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: run_slice_closeout --verification-lock --produce-mutation-coverage --base c1f7b581 completed (broad pytest under coverage PASS); check_changed_line_mutation_coverage blocking: [] after covering all new-gate changed lines (boundary-bypass ratchet respected via in-process smoke); CHARNESS_FORCE_FULL_GATE run-quality --read-only: 75 passed 0 failed
+- Test duplication pressure: 21 tests across the two new gate suites incl. coverage-closing cases; one drift-guard test in test_quality_runner.py; no new fixture infra
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
@@ -392,22 +435,105 @@ re-verifies the folded revisions without re-running critique.
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- None filed as new issues. The operator's mid-run instruction pulled the
+  newly opened #356/#357 into goal scope as slices 6-7 (scope addendum
+  recorded in the Slice Log); no other off-goal findings surfaced.
 
 ## Final Verification
+
+Host metric window: started_at=2026-06-12T21:42:32+09:00 completed_at=2026-06-12T22:51:22+09:00 claude_session_file=/home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md
+Host log probe: charness-artifacts/probe/2026-06-12-autonomous-structural-quality-bundle-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-12-autonomous-structural-quality-bundle-disposition-review.md
+
+Early close rationale: all approved scope (five planned slices plus the
+operator-added #356/#357 resolution) is complete, fresh-eye reviewed, and
+locked; every remaining do-now candidate is deliberately passive/deferred by
+recorded dispositions, and further unsupervised mutation would invalidate the
+verification lock for work the repo has explicitly decided not to do yet.
+Next slice candidate: clone families #11/#12 adapter-validation extraction | decision: defer | reason: the standing quality review dispositioned both passive — #12 needs a field-spec helper design first and #11's payoff is below the abstraction cost.
+Next slice candidate: D29 scorecard helper script and metric-only closeout guard | decision: defer | reason: deferred this same session with recorded reopen triggers; building it hours after deferring it would contradict the recorded decision without new evidence.
+Next slice candidate: #184 product success metrics | decision: user-decision | reason: operator ideation decision, explicitly out of goal scope.
+Next slice candidate: push and optional release cut | decision: user-decision | reason: external side effects were not granted while the operator sleeps; this is the named wake-up decision.
+Outcome sufficiency check: accepted-low-yield: the goal delivered its full approved outcome set with proof; the unused timebox reflects candidate exhaustion under recorded dispositions, not unfinished work, so closing is more honest than manufacturing slices to fill the window.
+Early close report: charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle-early-close-report.md
+
+- Bundle critique:
+  charness-artifacts/critique/2026-06-12-autonomous-structural-quality-bundle.md
+  (plan critique before mutation; two angle reviewers; counterweight pass;
+  every act-before-ship finding folded and re-verified).
+- Issue resolution critique:
+  charness-artifacts/critique/2026-06-12-issue-356-357-cadence-scorecard-resolution.md
+  (binds #356/#357; `validate-closeout-draft` `draft_verified`;
+  `verify-closeout` `carrier_verified` for `f9271594`).
+- Verification lock: recorded below after the locked
+  `run_slice_closeout.py --verification-lock --produce-mutation-coverage`
+  run over base `c1f7b581`.
+- Non-claims, stated plainly: nothing was pushed (remote `origin/main` still
+  at `c1f7b581`; #356/#357 remain OPEN remotely until the wake-up push); no
+  live cautilus run happened (planner `next_action: none`, no operator-named
+  failing-log path); no release was cut; no second-machine proof was run —
+  that arm is retired by operator decision, not silently passed.
+
+## Goal Closeout Metrics
+
+- Goal metric window: parsed — applied — signals below are scoped to the recorded goal window
+  - window: 2026-06-12T21:42:32+09:00 -> 2026-06-12T22:51:22+09:00
+
+### Measured (goal-window, claude session scope)
+- session: /home/hwidong/.claude/projects/-home-hwidong-codes-charness/78f05915-4c01-4297-b6b5-b58899594d00.jsonl
+- token snapshots: 330 (point-in-time, not a cumulative total)
+- function calls: 192
+- custom tool calls: 0
+- patch applications: 57
+- context compactions: 0
+- subagent spawn/wait/close: spawn=5
+
+### Proxy (activity shape, not measured cost)
+- repeated broad gates: none
+- repeated VCS commands: git add=7
+
+### Window filter
+- status: applied; included 547 of 889 records
+
+### Token availability (Claude host)
+- available: message.usage.input_tokens/output_tokens present
 
 ## User Verification Instructions
 
+On wake-up, you can verify the bundle directly:
+
+1. `git log --oneline c1f7b581..HEAD` — eight local commits, none pushed;
+   `git status` clean.
+2. `./scripts/run-quality.sh` — 76 gates green, including
+   `check-bootstrap-shim-consistency` and `check-public-doc-coupling`; break
+   a shim copy or add `(#999)` to a shared reference to watch each fire.
+3. Read the new contracts:
+   `skills/public/quality/references/inventory-dispatch.md` (Clone Families
+   As Structural Signals), `references/quality-signal-scorecard.md`, and
+   `skills/shared/references/meaningful-slice-cadence.md`.
+4. Decide the push; after pushing, run the issue tool `verify-closeout` for
+   #356/#357 with `--expect-state CLOSED`.
+5. `docs/handoff.md` carries the same wake-up sequence.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: stub-parity drift guard
+(`test_every_queued_repo_script_gate_has_a_seeded_harness_stub` in
+`tests/quality_gates/test_quality_runner.py`) pins the harness-stub failure
+class committed this run; applied: the scorecard/taxonomy references
+themselves are the structural absorption of the advisory-as-KPI waste
+(commits `3266d590`, `f9271594`); the pre-fix-test-run rule is carried in the
+retro/recent-lessons memory surface with an explicit no-structural-destination
+call rather than a gate.
+Disposition review: charness-artifacts/critique/2026-06-12-autonomous-structural-quality-bundle-disposition-review.md
+Structural follow-up: applied: stub-parity drift guard (axis: harness mirrors
+of registry surfaces); none — for the cannot-fail-test axis: single observed
+instance this session, and a generic detector is a content classifier the
+deterministic-floor philosophy avoids; reopen on a second reviewed instance.

@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Operator-approved 8h autonomous goal (`charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`, proof base `c1f7b581`): two new quality gates (bootstrap-shim consistency, public-doc coupling), the clone-advisory structural-signal taxonomy, a log-backed contract-effectiveness cautilus fixture, second-machine release-proof retirement, plus a mid-run operator instruction to resolve the newly opened issues #356/#357 (meaningful-slice cadence and quality-signal scorecard references). (source: `charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md`)
 - Release publish triggered a configured automatic session retro for `v0.41.1`. (source: `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.42.0`. (source: `charness-artifacts/retro/2026-06-12-v0-42-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -54,6 +54,7 @@
 - `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md`
 - `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
 - `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`
 - `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`

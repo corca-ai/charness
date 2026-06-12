@@ -95,3 +95,18 @@ def test_real_repo_baseline_is_clean() -> None:
     """
     findings = coupling_gate.find_coupling(Path(__file__).resolve().parents[2])
     assert findings == []
+
+
+def test_missing_text_quality_lib_fails_loudly(tmp_path: Path, monkeypatch) -> None:
+    import pytest
+
+    monkeypatch.setattr(coupling_gate, "LIB_ROOT", tmp_path)
+    with pytest.raises(SystemExit):
+        coupling_gate._load_text_quality_lib()
+
+
+def test_unreadable_file_is_passed_over(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    bad = repo / "skills" / "shared" / "references" / "binary.md"
+    bad.write_bytes(b"\xff\xfe\x00 not utf8 \xff")
+    assert coupling_gate.find_coupling(repo) == []

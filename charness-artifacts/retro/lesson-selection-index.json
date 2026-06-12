@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-12",
-  "source_artifact_count": 204,
-  "candidate_count": 1061,
+  "source_artifact_count": 205,
+  "candidate_count": 1068,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -335,6 +335,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cc71f2520abf",
+      "kind": "current_focus",
+      "lesson": "Operator-approved 8h autonomous goal (`charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`, proof base `c1f7b581`): two new quality gates (bootstrap-shim consistency, public-doc coupling), the clone-advisory structural-signal taxonomy, a log-backed contract-effectiveness cautilus fixture, second-machine release-proof retirement, plus a mid-run operator instruction to resolve the newly opened issues #356/#357 (meaningful-slice cadence and quality-signal scorecard references).",
+      "normalized_key": "operator approved 8h autonomous goal charness artifacts goals 2026 06 12 autonomous structural quality",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b5124e217fad",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.41.1`.",
@@ -475,12 +495,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:7328a40a9049",
+      "candidate_id": "next_improvement:a37aa017a9e6",
       "kind": "next_improvement",
-      "lesson": "The release resilience tests now assert that install-refresh status is recorded in the durable release artifact, not only in the final JSON payload.",
-      "normalized_key": "the release resilience tests now assert that install refresh status is recorded in the",
+      "lesson": "run any new regression test against the pre-fix code once before counting it as a guard (folded into this retro's lesson surface; no gate — judgment rule).",
+      "normalized_key": "run any new regression test against the pre fix code once before counting it",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
       "latest_source_date": "2026-06-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -488,19 +508,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:5c8422fa535f",
+      "candidate_id": "next_improvement:f800dc889704",
       "kind": "next_improvement",
-      "lesson": "The release resilience tests now include a direct `spec_from_file_location` loader regression for the extracted publish CLI context; future helper extractions should treat this as the local pattern.",
-      "normalized_key": "the release resilience tests now include a direct spec from file location loader regression",
+      "lesson": "stub-parity drift guard for run-quality.sh registrations — applied this session in `tests/quality_gates/test_quality_runner.py`.",
+      "normalized_key": "stub parity drift guard for run quality sh registrations applied this session in tests",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
       "latest_source_date": "2026-06-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -508,29 +528,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:bb743d24fea8",
-      "kind": "repeat_trap",
-      "lesson": "Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work.",
-      "normalized_key": "slice 2 briefly created superseded critique packet files before the final stable packet slug",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
-      "latest_source_date": "2026-06-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
-          "date": "2026-06-12",
-          "section": "Waste"
         }
       ]
     }
@@ -857,6 +857,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cc71f2520abf",
+      "kind": "current_focus",
+      "lesson": "Operator-approved 8h autonomous goal (`charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`, proof base `c1f7b581`): two new quality gates (bootstrap-shim consistency, public-doc coupling), the clone-advisory structural-signal taxonomy, a log-backed contract-effectiveness cautilus fixture, second-machine release-proof retirement, plus a mid-run operator instruction to resolve the newly opened issues #356/#357 (meaningful-slice cadence and quality-signal scorecard references).",
+      "normalized_key": "operator approved 8h autonomous goal charness artifacts goals 2026 06 12 autonomous structural quality",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b5124e217fad",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.41.1`.",
@@ -997,6 +1017,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a37aa017a9e6",
+      "kind": "next_improvement",
+      "lesson": "run any new regression test against the pre-fix code once before counting it as a guard (folded into this retro's lesson surface; no gate — judgment rule).",
+      "normalized_key": "run any new regression test against the pre fix code once before counting it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f800dc889704",
+      "kind": "next_improvement",
+      "lesson": "stub-parity drift guard for run-quality.sh registrations — applied this session in `tests/quality_gates/test_quality_runner.py`.",
+      "normalized_key": "stub parity drift guard for run quality sh registrations applied this session in tests",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7328a40a9049",
       "kind": "next_improvement",
       "lesson": "The release resilience tests now assert that install-refresh status is recorded in the durable release artifact, not only in the final JSON payload.",
@@ -1031,6 +1091,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:03d08ffb8479",
+      "kind": "next_improvement",
+      "lesson": "the structural-signal taxonomy and scorecard now own what was previously per-session judgment about clone advisories; quality artifacts should record per-family dispositions so later scans consume decisions.",
+      "normalized_key": "the structural signal taxonomy and scorecard now own what was previously per session judgment",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
         }
@@ -1097,6 +1177,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:afe7bdd5be70",
+      "kind": "repeat_trap",
+      "lesson": "The first form-feed regression test wrote an escape sequence instead of the byte, making the guard inert; only the counterweight pass caught it. A self-review of \"does this test fail on the old code\" would have cost less.",
+      "normalized_key": "the first form feed regression test wrote an escape sequence instead of the byte",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:af4d6de1d9e0",
       "kind": "repeat_trap",
       "lesson": "The install-refresh artifact gap was pre-existing but was only surfaced by a reviewer after the split. That was worth fixing in-slice, but it shows the release contract lacked a focused assertion that \"recorded\" means durable artifact content, not only final JSON payload.",
@@ -1151,6 +1251,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "date": "2026-06-12",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d14fad9d8436",
+      "kind": "repeat_trap",
+      "lesson": "The shim gate's first design assumed a clean 73-copy population; reality had 3 drifted variants and 74 copies. Cheap to absorb because the plan critique surfaced it before implementation, not after.",
+      "normalized_key": "the shim gate s first design assumed a clean 73 copy population reality had",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+          "date": "2026-06-12",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a3b458489b23",
+      "kind": "repeat_trap",
+      "lesson": "The two new gates were registered in `run-quality.sh` but not in the seeded harness stub list, so four runner tests broke at the broad boundary; the slice loop's `--skip-broad-pytest` cadence hid it until an angle reviewer ran the full gate. One avoidable rework round-trip.",
+      "normalized_key": "the two new gates were registered in run quality sh but not in the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
           "date": "2026-06-12",
           "section": "Waste"
         }

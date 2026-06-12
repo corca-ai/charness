@@ -778,3 +778,21 @@ def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) 
         text=True,
     )
     assert ready.returncode == 0, ready.stderr
+
+
+def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
+    """Drift guard: a gate queued in run-quality.sh must exist in the seeded
+    harness repo, or four runner tests fail at the broad boundary instead of
+    the slice loop (the failure class this pins)."""
+    import re
+
+    from .support import QUALITY_PYTHON_STUBS
+
+    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
+    stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
+    missing = sorted(queued - stubbed)
+    assert missing == [], (
+        "run-quality.sh queues repo-script gates with no seeded harness stub; "
+        f"add them to QUALITY_PYTHON_STUBS in tests/quality_gates/support.py: {missing}"
+    )
