@@ -23,9 +23,7 @@ Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
 resolve the adapter and re-derive the source, spec, artifact, and gate surface
 before trusting a prior review.
 
-Key references for the frequent path are `references/bootstrap-escalations.md`,
-`references/inventory-dispatch.md`, `references/skill-ergonomics.md`, and
-`references/skill-quality.md`.
+Frequent-path references: `references/bootstrap-escalations.md`, `references/inventory-dispatch.md`, `references/skill-ergonomics.md`, `references/skill-quality.md`.
 
 ```bash
 # Required Tools: rg
@@ -119,7 +117,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
 - Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
 - Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles, Pytest Economics, and bounded test-ratio posture.
-- Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, classify hidden broad-test compensation as a design smell rather than only a runtime smell, distinguish structural test cleanup (extract builders/wrappers/runners/shared assertions, keep intent in `.test.*`) from hiding test bodies in support files, and on duplicate/pressure-gate failure name the smallest next structural cleanup instead of only reporting the percentage.
+- Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, classify hidden broad-test compensation as a design smell rather than only a runtime smell, distinguish structural test cleanup (extract builders/wrappers/runners/shared assertions, keep intent in `.test.*`) from hiding test bodies in support files, and on duplicate/pressure-gate failure score candidates through `references/quality-signal-scorecard.md` and name the smallest next structural cleanup instead of only reporting the percentage.
 - Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`: `quality` owns the portable payload, no-increase, and exemption contract; consumer repos own stack-specific probes and DSLs.
 - Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
 - Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule. This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
@@ -183,6 +181,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/proposal-flow.md`
 - `references/public-spec-layering.md`
 - `references/quality-lenses.md`
+- `references/quality-signal-scorecard.md`
 - `references/sample-presets.md`
 - `references/security-overview.md`
 - `references/security-npm.md`

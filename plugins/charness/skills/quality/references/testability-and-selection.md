@@ -4,6 +4,11 @@ Use this reference when quality review touches slow tests, mutation testing,
 changed-file test selection, broad end-to-end coverage, or claims that a test
 tool can identify the relevant subset.
 
+When a slow-test, duplicate, coverage, or pressure-gate signal points at
+structural test cleanup, score the candidates through
+[quality-signal-scorecard](./quality-signal-scorecard.md) before editing;
+the signal chooses where to look, not what to ship.
+
 ## Principle
 
 Testability is a structural quality property. A codebase is more testable when

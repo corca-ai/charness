@@ -252,6 +252,14 @@ Reopen trigger:
 - Impact surfaces: [scripts/scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py), [scripts/artifact_validator.py](../scripts/artifact_validator.py), the retro/handoff/ideation validators and the five sibling scaffolds, [scripts/run-quality.sh](../scripts/run-quality.sh).
 - Reopen trigger: A session hits multi-run post-hoc validator rework on any sibling artifact family, or a slice already touches `emit_payload_main` for another reason.
 
+### D29. Quality-Signal Scorecard Helper Script And Metric-Only Closeout Guard
+
+- Question: Should the quality-signal scorecard ([quality-signal-scorecard.md](../skills/public/quality/references/quality-signal-scorecard.md), the #356 resolution) gain a helper script that renders a candidate scorecard skeleton from known adapter gates, and a closeout guard validator that refuses metric-only rationale for structural cleanup?
+- Current choice: Defer both; ship the reference plus mandatory wiring from the inventory-dispatch structural-signals path, the testability/duplicate-pressure path, and the quality SKILL anchor. The issue's Desired Outcome requires the scorecard judgment itself; the helper and guard are its "Possible Direction" items.
+- Why now: The scorecard rows are repo-judgment fields (behavior value, ownership, stop condition) that a renderer cannot fill, so a skeleton helper saves little until the prose contract has consumer mileage; a rationale-classifying guard is a content classifier, which the repo's deterministic-floor philosophy avoids until an observed gaming instance shapes a narrow checkable form.
+- Impact surfaces: [skills/public/quality/references/quality-signal-scorecard.md](../skills/public/quality/references/quality-signal-scorecard.md), [skills/public/quality/references/inventory-dispatch.md](../skills/public/quality/references/inventory-dispatch.md), quality closeout validators.
+- Reopen trigger: A consumer-repo run skips the scorecard despite the wiring (discovery failure), or a quality closeout ships metric-only rationale past review (guard-shaped failure), or an operator asks for the rendered skeleton.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

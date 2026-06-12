@@ -1,6 +1,11 @@
 # Gate Classification
 
-Classify each observed gate or missing gate honestly.
+Classify each observed gate or missing gate honestly. When recommending how
+often a gate should run, pace targeted vs broad proof by the meaningful-unit
+cadence in
+[meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md):
+broad standing gates and pre-push proof default to the bundle/final boundary,
+not the inner loop.
 
 This happens after enforcement triage:
 

@@ -1,6 +1,9 @@
 # Review Gate
 
 Every meaningful implementation slice needs a review pass before stopping.
+What makes a slice meaningful — a reviewable intent unit with a named proof
+intent and verification boundary, never merely a small diff — is owned by
+[meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md).
 
 ## Minimum Lenses
 

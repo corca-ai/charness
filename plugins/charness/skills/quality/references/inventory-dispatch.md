@@ -171,6 +171,12 @@ instead of rediscovering the same families. Review extractable non-bootstrap
 families first, and do not refactor every reported family just because the
 advisory scanner can see it.
 
+Before any structural cleanup edit driven by these signals, fill the
+per-candidate scorecard in
+[quality-signal-scorecard](./quality-signal-scorecard.md): it forces the
+behavior-value, ownership, blast-radius, and stop-condition judgments that no
+advisory number can make, and it rejects metric-only cleanup rationale.
+
 Elevate source-guard pressure as a rollup: total rows, top specs, brittle
 count, and next action category should be visible together. Blanket, file-level,
 or retained policy-level lint ignores need provenance and revisit conditions.

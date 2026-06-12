@@ -1,6 +1,9 @@
 # Critique Cadence
 
-Critique cadence is scoped by risk boundary, not by commit count.
+Critique cadence is scoped by risk boundary, not by commit count. The
+slice-unit definition itself — what makes a unit meaningful enough to review —
+is owned by
+[meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md).
 
 ## Escalation Ladder
 
