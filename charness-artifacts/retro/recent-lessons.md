@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v0.41.1`. (source: `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`)
 - This retro covers the active 6h quality goal that continued from the user's complaint about low-yield work. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- This retro covers the active goal `quality-cadence-duplicate-followup`, spanning three committed slices after `b300c8bf`: goal-closeout stub authoring, explicit slice-vs-bundle validation cadence, and one focused adapter scalar helper duplicate cleanup. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`; sources: 28)
 - Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`; sources: 28)
 - Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
 - For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as "adapter scalar helper-shaped", instead of a narrow function-name label. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
@@ -56,3 +56,4 @@
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
 - `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`
+- `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`
