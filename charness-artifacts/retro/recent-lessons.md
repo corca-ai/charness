@@ -3,21 +3,21 @@
 ## Current Focus
 
 - This retro covers the active 6h quality goal that continued from the user's complaint about low-yield work. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- Closeout retro for `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md` (6h timebox, operator asleep, Claude host): five quality slices (posture refresh, #350, C2 bootstrap data-loss fix, C4 commit-time handoff pull, C3 scheduled-mutation capacity-advisory reclassification) then the pre-authorized single push + v0.40.0 release lane. (source: `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`)
+- This retro covers the active goal `quality-cadence-duplicate-followup`, spanning three committed slices after `b300c8bf`: goal-closeout stub authoring, explicit slice-vs-bundle validation cadence, and one focused adapter scalar helper duplicate cleanup. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
-- The install-refresh artifact gap was pre-existing but was only surfaced by a reviewer after the split. That was worth fixing in-slice, but it shows the release contract lacked a focused assertion that "recorded" means durable artifact content, not only final JSON payload. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- The release publish split initially fixed the line/function pressure but missed a direct-loader issue on `sys.modules[__name__]`; fresh-eye caught it before commit. The workflow worked, but the parent should have run a direct-loader smoke immediately after introducing the module boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- The run still spent too much effort on repeated validation churn. Some of that was legitimate bundle proof, but the metric window shows repeated `pytest`, `ruff`, markdown/secrets, and VCS probes at a level that should push future goals toward a clearer gate cadence table before implementation starts. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
+- Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
+- The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`; sources: 27)
+- Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- The release resilience tests now assert that install-refresh status is recorded in the durable release artifact, not only in the final JSON payload. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- The release resilience tests now include a direct `spec_from_file_location` loader regression for the extracted publish CLI context; future helper extractions should treat this as the local pattern. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
+- For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as "adapter scalar helper-shaped", instead of a narrow function-name label. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Selection Policy
 
@@ -53,6 +53,6 @@
 - `charness-artifacts/retro/2026-06-10-v0-38-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
 - `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`

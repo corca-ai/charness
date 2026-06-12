@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-12",
-  "source_artifact_count": 201,
-  "candidate_count": 1053,
+  "source_artifact_count": 202,
+  "candidate_count": 1059,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -335,6 +335,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:5d8c669e4b9f",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal `quality-cadence-duplicate-followup`, spanning three committed slices after `b300c8bf`: goal-closeout stub authoring, explicit slice-vs-bundle validation cadence, and one focused adapter scalar helper duplicate cleanup.",
+      "normalized_key": "this retro covers the active goal quality cadence duplicate followup spanning three committed slices",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:80cdb0e0cdeb",
+      "kind": "next_improvement",
+      "lesson": "Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`.",
+      "normalized_key": "before final bundle closeout on a multi goal branch record the intended proof base",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:34e1a228f95f",
       "kind": "next_improvement",
       "lesson": "Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary.",
@@ -349,6 +389,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a1696a884c40",
+      "kind": "next_improvement",
+      "lesson": "For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as \"adapter scalar helper-shaped\", instead of a narrow function-name label.",
+      "normalized_key": "for advisory duplicate cleanup keep using a family label that names the shape and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
         }
@@ -395,12 +455,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:af4d6de1d9e0",
+      "candidate_id": "repeat_trap:bb743d24fea8",
       "kind": "repeat_trap",
-      "lesson": "The install-refresh artifact gap was pre-existing but was only surfaced by a reviewer after the split. That was worth fixing in-slice, but it shows the release contract lacked a focused assertion that \"recorded\" means durable artifact content, not only final JSON payload.",
-      "normalized_key": "the install refresh artifact gap was pre existing but was only surfaced by a",
+      "lesson": "Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work.",
+      "normalized_key": "slice 2 briefly created superseded critique packet files before the final stable packet slug",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
       "latest_source_date": "2026-06-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -408,19 +468,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
           "date": "2026-06-12",
           "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:c6cea67fb261",
+      "candidate_id": "repeat_trap:00cc8a3f316e",
       "kind": "repeat_trap",
-      "lesson": "The release publish split initially fixed the line/function pressure but missed a direct-loader issue on `sys.modules[__name__]`; fresh-eye caught it before commit. The workflow worked, but the parent should have run a direct-loader smoke immediately after introducing the module boundary.",
-      "normalized_key": "the release publish split initially fixed the line function pressure but missed a direct",
+      "lesson": "Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it.",
+      "normalized_key": "slice 3 initially wrote a critique artifact that said no counterweight was spawned the",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
       "latest_source_date": "2026-06-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -428,19 +488,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
           "date": "2026-06-12",
           "section": "Waste"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:40577de24d38",
+      "candidate_id": "repeat_trap:97e3e65e4595",
       "kind": "repeat_trap",
-      "lesson": "The run still spent too much effort on repeated validation churn. Some of that was legitimate bundle proof, but the metric window shows repeated `pytest`, `ruff`, markdown/secrets, and VCS probes at a level that should push future goals toward a clearer gate cadence table before implementation starts.",
-      "normalized_key": "the run still spent too much effort on repeated validation churn some of that",
+      "lesson": "The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`.",
+      "normalized_key": "the final closeout first used origin main as the base which pulled unrelated older",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
       "latest_source_date": "2026-06-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -448,69 +508,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
           "date": "2026-06-12",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:25a9d9bf605a",
-      "kind": "current_focus",
-      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-10-overnight-quality-mainjob-350-then-push-release.md` (6h timebox, operator asleep, Claude host): five quality slices (posture refresh, #350, C2 bootstrap data-loss fix, C4 commit-time handoff pull, C3 scheduled-mutation capacity-advisory reclassification) then the pre-authorized single push + v0.40.0 release lane.",
-      "normalized_key": "closeout retro for charness artifacts goals 2026 06 10 overnight quality mainjob 350 then",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-overnight-quality-mainjob-350-push-release-goal-retro.md",
-          "date": "2026-06-11",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b3e105c77d1d",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.41.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 41 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md",
-          "date": "2026-06-11",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:ceb35833881f",
-      "kind": "current_focus",
-      "lesson": "This retro closes the active goal `charness-artifacts/goals/2026-06-11-quality-duplication-improvement-6h.md`.",
-      "normalized_key": "this retro closes the active goal charness artifacts goals 2026 06 11 quality duplication",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-11-quality-duplication-improvement-6h.md",
-      "latest_source_date": "2026-06-11",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-quality-duplication-improvement-6h.md",
-          "date": "2026-06-11",
-          "section": "Context"
         }
       ]
     }
@@ -837,6 +837,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:5d8c669e4b9f",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal `quality-cadence-duplicate-followup`, spanning three committed slices after `b300c8bf`: goal-closeout stub authoring, explicit slice-vs-bundle validation cadence, and one focused adapter scalar helper duplicate cleanup.",
+      "normalized_key": "this retro covers the active goal quality cadence duplicate followup spanning three committed slices",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:80cdb0e0cdeb",
+      "kind": "next_improvement",
+      "lesson": "Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`.",
+      "normalized_key": "before final bundle closeout on a multi goal branch record the intended proof base",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:34e1a228f95f",
       "kind": "next_improvement",
       "lesson": "Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary.",
@@ -851,6 +891,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
+          "date": "2026-06-12",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a1696a884c40",
+      "kind": "next_improvement",
+      "lesson": "For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as \"adapter scalar helper-shaped\", instead of a narrow function-name label.",
+      "normalized_key": "for advisory duplicate cleanup keep using a family label that names the shape and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
         }
@@ -893,6 +953,66 @@
           "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
           "date": "2026-06-12",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bb743d24fea8",
+      "kind": "repeat_trap",
+      "lesson": "Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work.",
+      "normalized_key": "slice 2 briefly created superseded critique packet files before the final stable packet slug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:00cc8a3f316e",
+      "kind": "repeat_trap",
+      "lesson": "Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it.",
+      "normalized_key": "slice 3 initially wrote a critique artifact that said no counterweight was spawned the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:97e3e65e4595",
+      "kind": "repeat_trap",
+      "lesson": "The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`.",
+      "normalized_key": "the final closeout first used origin main as the base which pulled unrelated older",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+      "latest_source_date": "2026-06-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md",
+          "date": "2026-06-12",
+          "section": "Waste"
         }
       ]
     },

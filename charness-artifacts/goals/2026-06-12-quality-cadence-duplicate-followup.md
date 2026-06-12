@@ -1,6 +1,6 @@
 # Achieve Goal: Quality Cadence Duplicate Followup
 
-Status: active
+Status: complete
 Created: 2026-06-12
 Activation: `/goal @charness-artifacts/goals/2026-06-12-quality-cadence-duplicate-followup.md`
 
@@ -116,8 +116,8 @@ is final/bundle-only, not per-slice.
 | --- | --- | --- | --- | --- |
 | 1 | Make achieve Before/After authoring path explicit: Before-phase drafts only, `/goal` pursues only, and closeout fields are template-first via validator-owned stubs. | The operator corrections are right: shaping a next-session goal must not activate it, and closeout authoring must not rely on opening grammar and hand-matching it. | Contract/helper change, focused tests that draft artifacts stay inert and filled closeout placeholders pass `check_goal_artifact.py`, plus clear instructions for both operator paths. | committed `ac7d37ea` |
 | 2 | Reduce validation-churn waste by making slice-vs-bundle gate cadence explicit and testable. | The prior goal's host metrics showed repeated broad gates; the retro named this as the next workflow-quality problem. | Contract or helper change, focused tests, surface validators, and a before/after explanation of when broad proof runs. | committed in this slice commit |
-| 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | verified; commit pending |
-| 4 | Close with honest proof and next-candidate ledger. | Avoid repeating the previous low-yield closeout complaint. | Goal artifact complete, retro, host metric/proxy summary, and final validators. | planned |
+| 3 | Run one focused duplicate-family review and cleanup if earlier slices leave time. | Length warn-band pressure is now zero, so duplicate-family cleanup can be selected on cohesion rather than emergency line limits. | Nose or equivalent family selection evidence, a targeted cleanup, and proof that behavior/assertions did not move into opaque helpers. | committed `75eed2fb` |
+| 4 | Close with honest proof and next-candidate ledger. | Avoid repeating the previous low-yield closeout complaint. | Goal artifact complete, retro, host metric/proxy summary, and final validators. | active |
 
 ## Coordination Cues
 
@@ -185,7 +185,7 @@ Issue closeout: n/a — slices 1-2 resolved no tracked GitHub issue and carry no
 
 - Objective: Select one focused duplicate family with an owner surface and reduce it without hiding behavior or chasing the whole clone backlog.
 - Why this approach: `nose` showed the largest backlog is intentional portable skill boilerplate; repo-owned adapter scalar validation helpers were a smaller extractable family with a shared helper already present in `scripts/adapter_lib.py`.
-- Commits: pending until this slice commit lands.
+- Commits: `75eed2fb` Reduce adapter scalar helper duplication
 - What changed: Replaced local `_string` / `_string_list` helpers in `scripts/critique_adapter_lib.py`, `scripts/proof_semantics_adapter_lib.py`, `scripts/quality_adapter_lib.py`, and `scripts/simple_skill_adapter_lib.py` with `optional_string` / `optional_string_list`, synced plugin mirrors, and added direct scalar rejection assertions for proof verifier refs and simple adapter fields.
 - Alternatives rejected: Did not refactor portable skill-local adapter resolver copies, change adapter semantics, alter `nose` ranking, or chase all clone families.
 - Targeted verification: `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "focused duplicate-family review and cleanup for active achieve goal slice 3" --read-only --summary`; `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --top 20 --json`; `pytest -q tests/test_critique_prepare_packet.py tests/quality_gates/test_reviewer_tier_policy.py tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_mutation_testing.py tests/quality_gates/test_proof_semantics_adapter.py tests/quality_gates/test_proof_mismatch.py` (131 passed); `ruff check scripts/critique_adapter_lib.py scripts/proof_semantics_adapter_lib.py scripts/quality_adapter_lib.py scripts/simple_skill_adapter_lib.py tests/quality_gates/test_proof_semantics_adapter.py tests/quality_gates/test_quality_bootstrap.py`; `python3 scripts/sync_root_plugin_manifests.py --repo-root .`; `python3 scripts/check_changed_surfaces.py --repo-root . --json`; `python3 scripts/validate_packaging.py --repo-root .`; `python3 scripts/validate_packaging_committed.py --repo-root .`; `python3 scripts/validate_adapters.py --repo-root .`; `python3 scripts/validate_integrations.py --repo-root .`; `python3 scripts/sync_support.py --repo-root . --json`; `python3 scripts/update_tools.py --repo-root . --json`; `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`; `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`; `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`; `python3 scripts/check_test_repo_copy_invariants.py --repo-root .`; `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`; `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`; `python3 scripts/validate_critique_artifacts.py --repo-root . --all`; `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest` (completed; broad pytest skipped under pre-lock rehearsal policy).
@@ -259,22 +259,27 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-N/A — draft goal; no run findings yet.
+- Final proof initially used `origin/main` and pulled older, unrelated local commits into the proof range. Rerun with the goal-specific base `b300c8bf`.
+- Remaining `nose` clone families are not all actionable debt; many are intentional portable skill boilerplate. Future cleanup should keep naming owner surfaces before editing.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Verification lock: `python3 scripts/run_slice_closeout.py --repo-root . --base b300c8bf --verification-lock --ack-cautilus-skill-review --refresh-broad-pytest-proof` completed. Broad pytest ran once at final/bundle lock and passed in 230.1s.
+Broad proof command: `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`
+Final proof base: `b300c8bf` (`Mark followup goal activation discussion resolved`); proven range includes `ac7d37ea`, `21bd45e5`, and `75eed2fb`.
+Outcome sufficiency check: sufficient — the three intended slices landed, the final bundle gate passed, no external/live proof was planned, and remaining duplicate-family backlog is explicitly not claimed fixed.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md
+Host log probe: charness-artifacts/probe/2026-06-12-quality-cadence-duplicate-followup-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-06-12-quality-cadence-duplicate-followup-disposition-review.md
 
 ## User Verification Instructions
 
+- Re-run `python3 scripts/run_slice_closeout.py --repo-root . --base b300c8bf --verification-lock --ack-cautilus-skill-review` if you want to recheck the final bundle without refreshing the already-written broad pytest proof.
+- Inspect the three slice commits: `ac7d37ea`, `21bd45e5`, and `75eed2fb`.
+- Confirm the duplicate cleanup claim is scoped: `nose` moved one scalar helper-shaped family, not the whole clone backlog.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: final verification now records the goal-specific proof base `b300c8bf`, and the slice 3 records use the scalar helper-shaped family label instead of claiming broad clone health.
+Structural follow-up: No new gate/tool follow-up — `run_slice_closeout.py --base` already provides the needed mechanism; this run needed disciplined base selection and scoped wording, not a new gate.
