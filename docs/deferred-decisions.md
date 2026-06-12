@@ -244,6 +244,14 @@ Reopen trigger:
 - Impact surfaces: [scripts/check-markdown.sh](../scripts/check-markdown.sh)
 - Reopen trigger: markdownlint-cli2 ships a documented quiet/verbosity flag, OR the per-error line format changes such that legitimate errors now begin with the same prefix the filter drops (caught by slice 6 stop condition on every fixture run).
 
+### D28. Template-First Fill Guards And Report-All For Sibling Artifact Validators
+
+- Question: Should the fill-time guard comments and gate-wired report-every-violation mode added to the quality artifact family (scaffold fill guards, `validate_quality_artifact.py --report-all` in [run-quality.sh](../scripts/run-quality.sh)) be generalized to the other scaffold families (debug, critique, retro, handoff, ideation), and should `emit_payload_main` in [scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py) grow a `--write` mode so scaffold-first becomes the path of least resistance?
+- Current choice: Defer. Quality is the family with observed n-fold rework evidence; the doctrine in [adapter-gate-review.md](../skills/public/quality/references/adapter-gate-review.md) names the pattern so reviews can classify sibling gaps as `AUTO_CANDIDATE` instead of rediscovering them.
+- Why now: Generalizing all five families plus the shared `--write` contract in one slice would change the shared scaffold payload contract without per-family rework evidence; bolting `--write` onto quality alone would fork the shared lib behavior.
+- Impact surfaces: [scripts/scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py), the five sibling `validate_*_artifact*.py` validators and their scaffolds, [scripts/run-quality.sh](../scripts/run-quality.sh).
+- Reopen trigger: A session hits multi-run post-hoc validator rework on any sibling artifact family, or a slice already touches `emit_payload_main` for another reason.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

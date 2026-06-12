@@ -20,6 +20,9 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 # Mirrors REQUIRED_SECTIONS in scripts/validate_quality_artifact.py. The scaffold
 # emits a skeleton that passes that validator out of the box so an author fills
 # slots instead of rediscovering the contract by trial-and-error.
+# Mirrors MAX_ARTIFACT_LINES in scripts/validate_quality_artifact.py so the
+# template can surface the cap as a fill-time guard.
+MAX_ARTIFACT_LINES = 140
 SECTIONS = (
     "## Scope",
     "## Current Gates",
@@ -45,7 +48,19 @@ def render_template(*, title: str, date_text: str) -> str:
     # Validator note: the first line must be exactly "# Quality Review"; the
     # Runtime Signals/Advisory/Delegated Review/Recommended/History blocks below
     # carry the literal tokens validate_quality_artifact.py asserts on.
-    lines = [f"# {title}", f"Date: {date_text}", ""]
+    # Fill-time guard comments surface the conditional rules that only fire
+    # AFTER the TODO slots are filled, so authors do not rediscover them one
+    # failed validator run at a time. Fill the slots in place; rewriting
+    # sections from scratch is what reintroduces the conditional violations.
+    lines = [
+        f"# {title}",
+        f"Date: {date_text}",
+        "",
+        f"<!-- fill guard: fill the TODO slots in place and keep the finished artifact"
+        f" <= {MAX_ARTIFACT_LINES} lines; check every rule in one pass with the"
+        " payload's validator_command plus `--report-all` -->",
+        "",
+    ]
     for heading in SECTIONS:
         if heading == "## Runtime Signals":
             lines.extend(
@@ -92,6 +107,9 @@ def render_template(*, title: str, date_text: str) -> str:
                     "",
                     "- active TODO — name the exact gate/seam/command family to implement now.",
                     "- passive TODO — describe the watch item, because TODO it is not yet actionable.",
+                    "<!-- fill guard: every bullet's FIRST line starts with `- active ` or"
+                    " `- passive `, and a passive bullet's first line must carry ` because`"
+                    " or ` until` before any wrap -->",
                     "",
                 ]
             )

@@ -9,6 +9,7 @@ from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
+_validate_quality_artifact = import_repo_module(__file__, "scripts.validate_quality_artifact")
 
 SCAFFOLD = "skills/public/quality/scripts/scaffold_quality_artifact.py"
 
@@ -78,6 +79,15 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # Delegated Review default is a fillable not_applicable that names the slow-gate lenses.
     assert "Delegated Review: not_applicable" in template
     assert "fixture-economics, parallel-critical-path, duplicated-proof" in template
+    # Fill-time guards surface the conditional rules that only fire after the
+    # TODO slots are filled (line cap, bullet prefixes, passive-because), so an
+    # author batches fixes instead of rediscovering them one gate run at a time.
+    # The cap is asserted against the validator's own constant so the template
+    # cannot drift into teaching a wrong number.
+    assert f"<= {_validate_quality_artifact.MAX_ARTIFACT_LINES} lines" in template
+    assert "--report-all" in template
+    assert "`- active ` or `- passive `" in template
+    assert "` because`" in template and "` until`" in template
 
     # Dogfood: the emitted skeleton must pass the real validator unedited.
     artifact_path = repo / payload["artifact_path"]
