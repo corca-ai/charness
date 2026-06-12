@@ -32,6 +32,7 @@ read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
+run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
 MAX_ARTIFACT_LINES = 140
 REQUIRED_SECTIONS = (
@@ -257,23 +258,9 @@ def validate_quality_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_subagent_blocker_reasoning(lines),
     )
 
-    if not collect_all:
-        # Default: fail fast on the first violation (unchanged behavior).
-        for check in checks:
-            check()
-        return
-
-    # --report-all: run every check and surface all violations in one pass, so a
-    # multi-rule artifact draft is not fixed one failed run at a time.
-    violations: list[str] = []
-    for check in checks:
-        try:
-            check()
-        except ValidationError as exc:
-            violations.append(str(exc))
-    if violations:
-        joined = "\n".join(f"- {message}" for message in violations)
-        raise ValidationError(f"{len(violations)} quality artifact rule violation(s):\n{joined}")
+    # Default fails fast on the first violation; --report-all surfaces every
+    # violation in one pass via the shared artifact_validator helper.
+    run_validation_checks(checks, collect_all=collect_all, artifact_label="quality artifact")
 
 
 def main() -> int:

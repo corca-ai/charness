@@ -14,6 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
+run_validation_checks = _artifact_validator.run_validation_checks
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
@@ -293,12 +294,15 @@ def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
 
 
 def validate_critique_artifact(
-    path: Path, *, repo_has_delegation_contract: bool, require_tier_evidence: bool
+    path: Path, *, repo_has_delegation_contract: bool, require_tier_evidence: bool, collect_all: bool = False
 ) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
     status_lowered = status.lower() if status is not None else ""
-    if repo_has_delegation_contract:
+
+    def _check_forbidden_blocker_phrases() -> None:
+        if not repo_has_delegation_contract:
+            return
         for phrase in FORBIDDEN_SUBAGENT_BLOCKER_PHRASES:
             if phrase in status_lowered:
                 raise ValidationError(
@@ -307,17 +311,30 @@ def validate_critique_artifact(
                     "the concrete spawn-tool refusal, missing tool surface, or exhausted host budget if "
                     "delegation is still blocked"
                 )
-    if status_lowered and "blocked" in status_lowered and "parent-delegated" not in status_lowered:
-        if not has_blocked_signal_detail(text):
-            raise ValidationError(
-                f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
-            )
-    validate_structured_findings(path, text)
-    requires_tier_evidence = require_tier_evidence and (
-        "parent-delegated" in status_lowered or PACKET_CONSUMED_RE.search(text)
+
+    def _check_blocked_signal_detail() -> None:
+        if status_lowered and "blocked" in status_lowered and "parent-delegated" not in status_lowered:
+            if not has_blocked_signal_detail(text):
+                raise ValidationError(
+                    f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
+                )
+
+    def _check_reviewer_tier_evidence() -> None:
+        requires_tier_evidence = require_tier_evidence and (
+            "parent-delegated" in status_lowered or PACKET_CONSUMED_RE.search(text)
+        )
+        if requires_tier_evidence or _section_field_map(text, REVIEWER_TIER_HEADING):
+            validate_reviewer_tier_evidence(path, text)
+
+    checks = (
+        _check_forbidden_blocker_phrases,
+        _check_blocked_signal_detail,
+        lambda: validate_structured_findings(path, text),
+        _check_reviewer_tier_evidence,
     )
-    if requires_tier_evidence or _section_field_map(text, REVIEWER_TIER_HEADING):
-        validate_reviewer_tier_evidence(path, text)
+    run_validation_checks(
+        checks, collect_all=collect_all, artifact_label="critique artifact", error_cls=ValidationError
+    )
 
 
 def main() -> int:
@@ -325,6 +342,11 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
     parser.add_argument("--all", action="store_true", help="Validate every checked critique artifact.")
+    parser.add_argument(
+        "--report-all",
+        action="store_true",
+        help="Report every rule violation per artifact in one pass instead of failing on the first.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -339,6 +361,7 @@ def main() -> int:
             artifact,
             repo_has_delegation_contract=repo_has_delegation_contract,
             require_tier_evidence=explicit_paths or relpath in require_tier_paths,
+            collect_all=args.report_all,
         )
     print(f"Validated {len(artifacts)} critique artifact(s).")
     return 0

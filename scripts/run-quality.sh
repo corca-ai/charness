@@ -399,7 +399,7 @@ queue_selected "validate-integrations" python3 scripts/validate_integrations.py 
 queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
 queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
 queue_selected "validate-handoff-artifact" python3 scripts/validate_handoff_artifact.py --repo-root "$REPO_ROOT"
-queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT" --report-all
 queue_selected "validate-debug-seam-index" python3 scripts/build_debug_seam_risk_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-retro-lesson-index" python3 scripts/build_retro_lesson_selection_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-quality-artifact" python3 scripts/validate_quality_artifact.py --repo-root "$REPO_ROOT" --report-all
@@ -408,7 +408,7 @@ queue_selected "validate-inventory-consumption" python3 scripts/validate_invento
 queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
 queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
-queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT"
+queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT" --report-all
 queue_selected "validate-ideation-artifact" python3 scripts/validate_ideation_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-retro-artifact" python3 scripts/validate_retro_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-current-pointer-freshness" python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"

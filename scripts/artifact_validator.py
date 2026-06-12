@@ -237,3 +237,34 @@ def validate_sibling_followups(
             "`follow-up: <issue-url>` or `follow-up: deferred <handoff-anchor>` identifier on the same "
             f"bullet (offender: `{offender[:120]}`); see {source_reference}."
         )
+
+
+def run_validation_checks(
+    checks: Sequence[Callable[[], None]],
+    *,
+    collect_all: bool,
+    artifact_label: str,
+    error_cls: type[Exception] = ValidationError,
+) -> None:
+    """Run checks fail-fast, or collect every violation when `collect_all` is set.
+
+    Artifact validators expose this as `--report-all` so a multi-rule draft is
+    fixed in one pass instead of one rule per gate run.
+    """
+    if not collect_all:
+        for check in checks:
+            check()
+        return
+    violations: list[str] = []
+    for check in checks:
+        try:
+            check()
+        except error_cls as exc:
+            # Overlapping checks (e.g. exact-section + nonempty-section) can
+            # surface the same message; keep the first occurrence only.
+            message = str(exc)
+            if message not in violations:
+                violations.append(message)
+    if violations:
+        joined = "\n".join(f"- {message}" for message in violations)
+        raise error_cls(f"{len(violations)} {artifact_label} rule violation(s):\n{joined}")

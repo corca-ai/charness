@@ -36,6 +36,7 @@ validate_section_order = _scripts_artifact_validator_module.validate_section_ord
 validate_title = _scripts_artifact_validator_module.validate_title
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
 is_trivial_short_circuit = _scripts_artifact_validator_module.is_trivial_short_circuit
+run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
 SIBLING_BOUNDARY_HEADINGS = (
     "## Seam Risk",
@@ -241,15 +242,17 @@ def validate_cross_file_sibling_marker(lines: list[str]) -> None:
     )
 
 
-def validate_debug_artifact(path: Path) -> None:
+def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = read_lines(path)
-    validate_title(
-        lines,
-        title_predicate=lambda line: line.startswith("# ") and "debug" in line.lower(),
-        error_message="debug artifact must start with a `# ... Debug ...` heading",
+    base_checks = (
+        lambda: validate_title(
+            lines,
+            title_predicate=lambda line: line.startswith("# ") and "debug" in line.lower(),
+            error_message="debug artifact must start with a `# ... Debug ...` heading",
+        ),
+        lambda: validate_date_line(lines),
+        lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact"),
     )
-    validate_date_line(lines)
-    validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact")
     if path.name == "latest.md":
         required_sections = (
             REQUIRED_SECTIONS[:8]
@@ -257,24 +260,37 @@ def validate_debug_artifact(path: Path) -> None:
             + CURRENT_INTERRUPT_SECTIONS
             + ("## Prevention",)
         )
-        validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS)
-        validate_nonempty_sections(lines, required_sections)
-        validate_candidate_causes(lines)
-        validate_current_invariant_proof(lines)
-        validate_sibling_followups(lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE)
-        validate_cross_file_sibling_marker(lines)
-        validate_current_interrupt_sections(lines)
-        return
-
-    validate_section_order(lines, REQUIRED_SECTIONS)
-    validate_nonempty_sections(lines, REQUIRED_SECTIONS)
-    validate_candidate_causes(lines)
-    validate_sibling_followups(lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE)
+        checks = base_checks + (
+            lambda: validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS),
+            lambda: validate_nonempty_sections(lines, required_sections),
+            lambda: validate_candidate_causes(lines),
+            lambda: validate_current_invariant_proof(lines),
+            lambda: validate_sibling_followups(
+                lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
+            ),
+            lambda: validate_cross_file_sibling_marker(lines),
+            lambda: validate_current_interrupt_sections(lines),
+        )
+    else:
+        checks = base_checks + (
+            lambda: validate_section_order(lines, REQUIRED_SECTIONS),
+            lambda: validate_nonempty_sections(lines, REQUIRED_SECTIONS),
+            lambda: validate_candidate_causes(lines),
+            lambda: validate_sibling_followups(
+                lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
+            ),
+        )
+    run_validation_checks(checks, collect_all=collect_all, artifact_label="debug artifact")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--report-all",
+        action="store_true",
+        help="Report every rule violation per artifact in one pass instead of failing on the first.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -291,7 +307,7 @@ def main() -> int:
     for artifact_path in artifacts:
         artifact_label = artifact_path.relative_to(repo_root)
         try:
-            validate_debug_artifact(artifact_path)
+            validate_debug_artifact(artifact_path, collect_all=args.report_all)
         except ValidationError as exc:
             errors.append(f"Invalid debug artifact {artifact_label}: {exc}")
             continue

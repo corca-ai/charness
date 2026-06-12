@@ -537,3 +537,27 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def _multi_violation_current_artifact() -> str:
+    # Breaks two independent checks at once: only two candidate causes and an
+    # unknown `Risk Class` value. Used to exercise --report-all vs fail-fast.
+    return valid_current_artifact(risk_class="bogus-class").replace("- three\n", "")
+
+
+def test_validate_debug_artifact_default_mode_fails_fast(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_current_artifact())
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "at least three plausible causes" in result.stderr
+    assert "rule violation(s)" not in result.stderr
+    assert "Risk Class" not in result.stderr
+
+
+def test_validate_debug_artifact_report_all_lists_every_violation(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_current_artifact())
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--report-all")
+    assert result.returncode == 1
+    assert "rule violation(s)" in result.stderr
+    assert "at least three plausible causes" in result.stderr
+    assert "`Risk Class` contains unknown values" in result.stderr
