@@ -24,9 +24,10 @@
   regression pickup. #184 remains an operator ideation decision about product
   success metrics, not the next implementation slice.
 - **Release real-host proof is not fully closed.** The release helper ran the
-  maintainer update path, but the remaining v0.41.0 proof is the clean
-  temp-home/second-machine operator path plus `nose` tool doctor/install/support
-  checks listed in the release artifact.
+  maintainer update path, and the 2026-06-12 quality pass closed the `nose`
+  tool doctor/install/support checks on this host (nose 0.6.0 → 0.7.0; see
+  [quality latest](../charness-artifacts/quality/latest.md)). The remaining
+  v0.41.0 proof is the clean temp-home/second-machine operator path.
 
 ## Next Session
 
