@@ -249,6 +249,20 @@ doc-coupling gate.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 5: Contract-effectiveness cautilus fixture
+
+- Objective: Author evals/cautilus/contract-effectiveness.fixture.json: three log-backed cases derived from real retro-documented contract violations (counterweight-miss and proof-base from charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md; same-agent substitution from the prescribed closeout-contract lineage), each asserting requiredConcepts against the owning instruction surfaces. evals/README.md names it the first log-backed tier member. NON-CLAIM: no live cautilus run — planner reports next_action none and the operator named no failing-log path; live execution stays behind run_cautilus_eval.py
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: validate-cautilus-scenarios, validate-cautilus-proof, validate-cautilus-call-provenance green; run_evals 22 scenarios pass with the new fixture auto-discovered; planner re-consult after the fixture: next_action none, scenario_registry_review_required false; doc-links and markdown green
+- Test duplication pressure: no new pytest; fixture is validated by the standing cautilus scenario gate (schema + concept assertions)
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

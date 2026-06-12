@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "cautilus.evaluation_input.v1",
+  "surface": "dev",
+  "preset": "repo",
+  "suiteId": "charness-contract-effectiveness",
+  "suiteDisplayName": "Charness Operating-Contract Effectiveness (log-backed: retro 2026-06-12 quality-cadence-duplicate-followup; prescribed closeout contract lineage)",
+  "cases": [
+    {
+      "caseId": "critique-counterweight-required",
+      "displayName": "Critique closeout names the mandatory counterweight pass (source: retro 2026-06-12 — a critique artifact first shipped claiming no counterweight was spawned)",
+      "prompt": "Route and state only: in this repo, a task-completing slice has just finished its initial fresh-eye critique findings, and the critique artifact is about to be written. Before that artifact is final, state what the repo's critique contract requires beyond the initial reviewer findings, and which workflow skill owns that review step. Do not write any artifact and do not perform the review.",
+      "expectedRouting": {
+        "workSkill": "critique"
+      },
+      "requiredConcepts": [
+        {
+          "id": "counterweight-pass-required",
+          "terms": [
+            "counterweight"
+          ]
+        }
+      ],
+      "requiredInstructionFiles": [
+        "skills/public/critique/SKILL.md"
+      ]
+    },
+    {
+      "caseId": "fresh-eye-no-same-agent-substitution",
+      "displayName": "Fresh-eye review refuses same-agent substitution and verifies a real host block (source: prescribed-skill-closeout-contract self-substitution lineage)",
+      "prompt": "Route and state only: the repo contract requires a bounded fresh-eye review for a task-completing change, but spawning a reviewer feels heavy and a host permission prompt appeared. State whether reviewing your own work in the same context satisfies the contract, what the contract calls that substitution, and what must be confirmed before reporting the canonical review path as blocked. Do not perform the review.",
+      "expectedRouting": {
+        "workSkill": "critique"
+      },
+      "requiredConcepts": [
+        {
+          "id": "same-agent-substitution-rejected",
+          "terms": [
+            "same-agent",
+            "subagent"
+          ]
+        }
+      ],
+      "requiredInstructionFiles": [
+        "skills/shared/references/fresh-eye-subagent-review.md"
+      ]
+    },
+    {
+      "caseId": "closeout-proof-base-recorded",
+      "displayName": "Bundle closeout records the intended proof base before a base-scoped runner call (source: retro 2026-06-12 — origin/main base pulled unrelated commits into the proof range)",
+      "prompt": "Route and state only: a multi-goal branch is approaching final bundle closeout in this repo, and unrelated older local commits sit between origin/main and HEAD. State what the repo's recent closeout lessons require you to record in the goal artifact before running the slice-closeout runner with a base argument, and why origin/main is the wrong default base in this situation. Do not run the closeout.",
+      "requiredConcepts": [
+        {
+          "id": "proof-base-recorded-first",
+          "terms": [
+            "proof base"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -30,6 +30,15 @@ failing prompt, transcript, or operator log, then assert that the same input now
 produces the intended behavior. Those fixtures are run on demand for the bug or
 regression they protect, not as a standing substitute for the local quality bar.
 
+`contract-effectiveness.fixture.json` is the first log-backed tier member: its
+cases derive from retro-documented operating-contract violations (the
+counterweight-miss and proof-base records under `charness-artifacts/retro/` and
+the self-substitution closeout lineage) and assert that the instruction surface
+now produces the contract behavior. It is deterministically schema-validated by
+`validate-cautilus-scenarios`; live execution stays behind the
+`plan_cautilus_proof.py` planner consult and the `run_cautilus_eval.py`
+justification-log wrapper, on demand.
+
 ## Cautilus Required Concepts
 
 Instruction-surface fixtures under `evals/cautilus/*.fixture.json` may add
