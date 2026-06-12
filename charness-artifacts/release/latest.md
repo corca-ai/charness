@@ -88,7 +88,7 @@ Advanced `charness` toward release `0.42.0` (tag `v0.42.0`) through the repo-own
 
 - Release-time real-host proof is required for this slice.
 - On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
-- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
+- Second-machine / clean temp-home refresh: retired by operator decision (2026-06-12) — the operator path has stabilized and prior automation attempts cost more than the proof returned; the arm is removed from the release adapter `real_host_checklist` so later releases do not regenerate it. The maintainer-machine `charness update` proof above remains the required arm.
 - Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
 - Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
 - Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
