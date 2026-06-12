@@ -628,6 +628,159 @@ def test_target_falsified_recurrence_outside_window_does_not_trip() -> None:
     assert target["status"] == "met"
 
 
+def test_conversion_upgrade_is_not_a_recurrence_but_refreshes_the_stamp() -> None:
+    # #358 tripwire response: an explicit conversion_upgrade=true re-record is
+    # artifact work, not a new occurrence — it must not be listed as a
+    # falsified conversion. It refreshes the conversion stamp, so a LATER
+    # recurrence still falsifies the upgraded artifact.
+    upgraded_only = [
+        ts_event(1, class_key="upgraded", converted=True, durable_kind="retro_lesson"),
+        ts_event(7, class_key="upgraded", converted=True, durable_kind="gate", conversion_upgrade=True),
+    ]
+    assert lib.falsified_conversions(upgraded_only) == []
+
+    recurred_after_upgrade = upgraded_only + [
+        ts_event(9, class_key="upgraded", converted=False, durable_kind="none"),
+    ]
+    [entry] = lib.falsified_conversions(recurred_after_upgrade)
+    assert entry["converted_ts"] == "2026-06-07T00:00:00Z"  # the upgrade is what got falsified
+    assert entry["recurrence_ts"] == "2026-06-09T00:00:00Z"
+
+
+def test_conversion_upgrade_annotates_but_does_not_clear_falsified_entry() -> None:
+    # The #358 shape itself: converted -> recurred -> artifact upgraded. The
+    # falsified entry stays (the tripwire response contract clears nothing) but
+    # carries the upgrade annotation so the response is visible in the report.
+    events = [
+        ts_event(1, class_key="c", converted=True, durable_kind="retro_lesson"),
+        ts_event(5, class_key="c", converted=False, durable_kind="none", ref="#301"),
+        ts_event(9, class_key="c", converted=True, durable_kind="gate", conversion_upgrade=True, ref="#358"),
+    ]
+    [entry] = lib.falsified_conversions(events)
+    assert entry["recurrence_ts"] == "2026-06-05T00:00:00Z"
+    assert entry["upgraded_ts"] == "2026-06-09T00:00:00Z"
+    assert entry["upgraded_ref"] == "#358"
+
+    # The in-window tripwire still trips on the recurrence ts: the upgrade
+    # annotates, it does not clear.
+    padding = [
+        ts_event(day, class_key=f"ok{day}", converted=True, durable_kind="gate")
+        for day in range(10, 20)
+    ]
+    target = lib.evaluate_target(events + padding)
+    assert target["status"] == "not-met"
+    assert target["reasons"] == ["falsified conversion in window (tripwire)"]
+
+
+def test_conversion_upgrade_excluded_from_rates_and_window_denominator() -> None:
+    # Upgrade events are always converted=true artifact-work records; counting
+    # them would let tripwire responses inflate the conversion rate.
+    events = [
+        ts_event(1, class_key="a", converted=True, durable_kind="gate"),
+        ts_event(2, class_key="b", converted=False, durable_kind="none"),
+        ts_event(3, class_key="a", converted=True, durable_kind="gate", conversion_upgrade=True, ref="#358"),
+    ]
+    payload = lib.aggregate(events)
+    assert payload["total_events"] == 3
+    assert payload["seed_excluded"]["total"] == 2
+    assert payload["seed_excluded"]["converted"] == 1
+    assert payload["seed_excluded"]["rate"] == 0.5
+    target = lib.evaluate_target(events)
+    assert target["window"]["total"] == 2
+
+
+def test_conversion_upgrade_render_text_shows_upgrade_annotation(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    write_ledger(
+        ledger,
+        [
+            ts_event(1, class_key="c", converted=True, durable_kind="retro_lesson"),
+            ts_event(5, class_key="c", converted=False, durable_kind="none"),
+            ts_event(9, class_key="c", converted=True, durable_kind="gate", conversion_upgrade=True, ref="#358"),
+        ],
+    )
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
+    assert result.returncode == 0, result.stderr
+    assert "c: converted 2026-06-01, recurred 2026-06-05 (artifact upgraded 2026-06-09, #358)" in result.stdout
+
+
+def test_conversion_upgrade_schema_requires_converted(tmp_path: Path) -> None:
+    bad = tmp_path / "bad.jsonl"
+    write_raw(
+        bad,
+        [json.dumps(event(converted=False, durable_kind="none", conversion_upgrade=True))],
+    )
+    assert run_script("validate_rca_ledger.py", "--ledger", str(bad)).returncode == 1
+
+    ok = tmp_path / "ok.jsonl"
+    write_ledger(ok, [event(conversion_upgrade=True)])  # converted=True in the base event
+    assert run_script("validate_rca_ledger.py", "--ledger", str(ok)).returncode == 0
+
+
+def test_conversion_upgrade_recorder_flag_round_trip_and_distinct_identity(tmp_path: Path) -> None:
+    # The upgrade re-records an existing (source, event_kind, class_key)
+    # identity triple, so the recorder must append it rather than refuse it as
+    # a duplicate; its identity carries the redesign ref.
+    ledger = tmp_path / "ledger.jsonl"
+    original = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue", "--event-kind", "weak_proof",
+        "--converted", "--durable-kind", "retro_lesson",
+        "--class-key", "upgrade-class", "--ref", "#251",
+    )
+    assert original.returncode == 0, original.stderr
+
+    upgrade = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue", "--event-kind", "weak_proof",
+        "--converted", "--durable-kind", "gate", "--conversion-upgrade",
+        "--class-key", "upgrade-class", "--ref", "#358", "--json",
+    )
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert json.loads(upgrade.stdout)["appended"] is True
+    records = lib.read_events(ledger)
+    assert len(records) == 2
+    assert records[1]["conversion_upgrade"] is True
+
+    # Re-running the same upgrade is the idempotent duplicate no-op.
+    duplicate = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue", "--event-kind", "weak_proof",
+        "--converted", "--durable-kind", "gate", "--conversion-upgrade",
+        "--class-key", "upgrade-class", "--ref", "#358", "--json",
+    )
+    assert duplicate.returncode == 0, duplicate.stderr
+    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert len(lib.read_events(ledger)) == 2
+
+    # An upgrade without --converted is refused before any write.
+    invalid = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue", "--event-kind", "weak_proof",
+        "--conversion-upgrade", "--class-key", "upgrade-class", "--ref", "#359",
+    )
+    assert invalid.returncode == 1
+    assert len(lib.read_events(ledger)) == 2
+
+    # An upgrade without --ref is refused: the redesign ref is the upgrade's
+    # idempotency identity; without it a second ref-less upgrade would be
+    # silently dropped as a duplicate.
+    refless = run_script(
+        "record_rca_event.py",
+        "--ledger", str(ledger),
+        "--source", "issue", "--event-kind", "weak_proof",
+        "--converted", "--durable-kind", "gate", "--conversion-upgrade",
+        "--class-key", "upgrade-class",
+    )
+    assert refless.returncode == 1
+    assert "--conversion-upgrade requires --ref" in refless.stderr
+    assert len(lib.read_events(ledger)) == 2
+
+
 def test_target_parse_ts_defensive_branches_skip_bad_timestamps() -> None:
     # Schema-valid ledgers always carry RFC3339 ts; the evaluator still
     # tolerates raw events with a missing or malformed ts by skipping them

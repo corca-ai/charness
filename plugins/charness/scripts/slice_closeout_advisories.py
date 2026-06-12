@@ -78,7 +78,10 @@ def advise_new_pool_module(repo_root: Path, changed_paths: list[str]) -> None:
         "(docs/conventions/implementation-discipline.md) so the bundle producer "
         "CONFIRMS instead of discovering: run the --produce-mutation-coverage "
         "closeout, then python3 scripts/check_changed_line_mutation_coverage.py "
-        "--repo-root . --base-sha origin/main --reuse-coverage",
+        "--repo-root . --base-sha origin/main --reuse-coverage. Before citing a "
+        "CI mutation run as changed-line proof, gate the claim with "
+        "python3 scripts/check_mutation_run_proof.py --claim changed-line "
+        "(a dispatch-green run proves only the score path).",
         file=sys.stderr,
     )
 

@@ -277,9 +277,14 @@ fails), two traps waste time and produce false proof:
 - **`workflow_dispatch` cannot prove a changed-line fix.** Only `schedule`
   events compute `base_sha` (see `mutation-tests.yml`); a dispatch run has zero
   changed files, so the changed-line classifier is inert. A green dispatch
-  proves only the **score/survivor** path. A changed-line-blocker fix is
-  confirmed by the **next scheduled run**, or locally by the sampler with
-  explicit `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
+  proves only the **score/survivor** path. This false-proof class recurred
+  after its prose-only lesson, so the rule is now gate-shaped: before citing a
+  CI mutation run as changed-line proof, run
+  `python3 scripts/check_mutation_run_proof.py --claim changed-line --run-id <id>`
+  (or pass explicit `--event`/`--base-sha`/`--sample-manifest` facts); it
+  refuses the claim deterministically when the run's trigger cannot evaluate
+  it. A changed-line-blocker fix is confirmed by the **next scheduled run**, or
+  locally by the sampler with explicit `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
 
 The signal is per-run `base..head`, so it can recur on any newly-changed file
 whose changed lines lack coverage; the durable fix is test coverage of those

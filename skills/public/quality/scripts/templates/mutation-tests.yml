@@ -255,7 +255,11 @@ jobs:
             }
 
       - name: Close recovered mutation issue
-        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && steps.run.outcome == 'success' && (steps.summary.outcome == 'success' || steps.adapter.outputs.cmd_summary == '')
+        # Only a scheduled run may auto-close: workflow_dispatch computes no
+        # base_sha, so its changed-line classifier is inert and a dispatch-green
+        # run cannot prove a changed-line regression recovered — closing on it
+        # is the dispatch-no-base-sha false-proof class performed by machine.
+        if: github.event_name == 'schedule' && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && steps.run.outcome == 'success' && (steps.summary.outcome == 'success' || steps.adapter.outputs.cmd_summary == '')
         uses: actions/github-script@v8
         env:
           ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}

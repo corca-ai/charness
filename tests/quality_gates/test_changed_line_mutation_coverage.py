@@ -122,7 +122,10 @@ def test_untracked_changed_file_blocks(tmp_path: Path) -> None:
 
 def test_no_base_sha_is_non_blocking_by_construction(tmp_path: Path) -> None:
     # Mirrors workflow_dispatch (#251 B1): with no base SHA the changed-line
-    # classifier returns nothing, so the teeth passes by construction.
+    # classifier returns nothing, so the teeth passes by construction. Since
+    # #358 the verdict is loud: the payload carries a machine-readable
+    # `changed_line_proof` bit and stderr names the false-proof class, so an
+    # `ok: true` here can no longer be silently read as changed-line proof.
     repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
 
     result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", "", "--reuse-coverage")
@@ -132,6 +135,9 @@ def test_no_base_sha_is_non_blocking_by_construction(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "no base_sha" in payload["reason"]
+    assert payload["changed_line_proof"] == "not-provable"
+    assert "mutation-dispatch-no-base-sha-false-proof" in result.stderr
+    assert "check_mutation_run_proof.py" in result.stderr
 
 
 def test_resolves_relative_coverage_json_under_repo_root(tmp_path: Path) -> None:

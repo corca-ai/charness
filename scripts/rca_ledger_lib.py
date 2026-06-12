@@ -107,11 +107,23 @@ def read_events(ledger_path: Path) -> list[dict[str, object]]:
     return events
 
 
-def event_identity(record: dict[str, object]) -> tuple[str, str, str] | None:
+def is_conversion_upgrade(record: dict[str, object]) -> bool:
+    """True for a re-conversion that upgrades an already-converted class's
+    durable artifact (the #184 tripwire response). Upgrade events record
+    artifact work, not a new occurrence of the mistake."""
+    return record.get("conversion_upgrade") is True
+
+
+def event_identity(record: dict[str, object]) -> tuple[str, ...] | None:
     values = tuple(record.get(field) for field in IDEMPOTENCY_FIELDS)
-    if all(isinstance(value, str) for value in values):
-        return values  # type: ignore[return-value]
-    return None
+    if not all(isinstance(value, str) for value in values):
+        return None
+    if is_conversion_upgrade(record):
+        # An upgrade re-records an existing (source, event_kind, class_key)
+        # triple, so its identity additionally carries the upgrade marker and
+        # the redesign ref — one upgrade record per tripwire-response issue.
+        return values + ("conversion_upgrade", str(record.get("ref") or ""))  # type: ignore[operator]
+    return values  # type: ignore[return-value]
 
 
 def has_existing_event_identity(
@@ -195,9 +207,18 @@ def falsified_conversions(events: list[dict[str, object]]) -> list[dict[str, obj
         key=lambda event: str(event.get("ts", "")),
     )
     first_converted: dict[str, str] = {}
+    upgrades: dict[str, dict[str, object]] = {}
     found: list[dict[str, object]] = []
     for event in ordered:
         key = str(event["class_key"])
+        if is_conversion_upgrade(event):
+            # An upgrade is artifact work, not a recurrence of the mistake. It
+            # refreshes the conversion stamp so a LATER recurrence still
+            # falsifies the upgraded artifact, and it annotates (never clears)
+            # already-detected falsified conversions for this class.
+            first_converted[key] = str(event.get("ts", ""))
+            upgrades[key] = event
+            continue
         if key in first_converted:
             found.append(
                 {
@@ -209,12 +230,26 @@ def falsified_conversions(events: list[dict[str, object]]) -> list[dict[str, obj
             )
         elif event.get("converted") is True:
             first_converted[key] = str(event.get("ts", ""))
+    for entry in found:
+        upgrade = upgrades.get(str(entry["class_key"]))
+        if upgrade is not None and str(upgrade.get("ts", "")) > str(entry["recurrence_ts"]):
+            entry["upgraded_ts"] = str(upgrade.get("ts", ""))
+            entry["upgraded_ref"] = upgrade.get("ref")
     return found
 
 
 def evaluate_target(events: list[dict[str, object]]) -> dict[str, object]:
-    """Judge the #184 numeric target: rolling floor + zero-falsified tripwire."""
-    non_seed = [event for event in events if event.get("seed") is not True]
+    """Judge the #184 numeric target: rolling floor + zero-falsified tripwire.
+
+    Conversion-upgrade events are excluded from the window rate and from the
+    window anchor: they are always converted=true artifact-work records, so
+    counting them would let tripwire responses inflate the rate — the exact
+    ceremony-gate failure mode the tripwire half guards."""
+    non_seed = [
+        event
+        for event in events
+        if event.get("seed") is not True and not is_conversion_upgrade(event)
+    ]
     falsified = falsified_conversions(events)
     payload: dict[str, object] = {
         "floor": TARGET_FLOOR,
@@ -265,14 +300,15 @@ def evaluate_target(events: list[dict[str, object]]) -> dict[str, object]:
 
 
 def aggregate(events: list[dict[str, object]]) -> dict[str, object]:
-    non_seed = [event for event in events if event.get("seed") is not True]
+    mistakes = [event for event in events if not is_conversion_upgrade(event)]
+    non_seed = [event for event in mistakes if event.get("seed") is not True]
     baseline_available = bool(non_seed)
     return {
         "auto_append_wired": AUTO_APPEND_WIRED,
         "auto_append": AUTO_APPEND_ON_BANNER if AUTO_APPEND_WIRED else AUTO_APPEND_OFF_BANNER,
         "total_events": len(events),
         "baseline_rate_available": baseline_available,
-        "seed_included": _summary(events),
+        "seed_included": _summary(mistakes),
         "seed_excluded": _summary(non_seed),
         "target": evaluate_target(events),
     }
@@ -338,9 +374,14 @@ def _render_target(target: dict[str, object]) -> list[str]:
     assert isinstance(falsified, list)
     lines.append(f"    falsified conversions (all-time, tripwire input): {len(falsified)}")
     for entry in falsified:
+        upgraded = ""
+        if "upgraded_ts" in entry:
+            ref = entry.get("upgraded_ref")
+            ref_suffix = f", {ref}" if ref else ""
+            upgraded = f" (artifact upgraded {str(entry['upgraded_ts'])[:10]}{ref_suffix})"
         lines.append(
             f"      {entry['class_key']}: converted {entry['converted_ts'][:10]}, "
-            f"recurred {entry['recurrence_ts'][:10]}"
+            f"recurred {entry['recurrence_ts'][:10]}{upgraded}"
         )
     status = target["status"]
     reasons = target["reasons"]

@@ -463,6 +463,21 @@ Landed:
    and structural (non-value-pinned) assertions over the committed ledger.
 4. First tripwire response filed: #358
    (`mutation-dispatch-no-base-sha-false-proof`).
+5. Tripwire-response recording (#358 resolution): the optional
+   `conversion_upgrade` schema field marks a re-conversion that upgrades an
+   already-converted class's durable artifact. Upgrade events are excluded
+   from conversion-rate denominators and the window anchor, are not counted
+   as recurrences (a plain `converted=true` re-record still is), refresh the
+   conversion stamp so a later recurrence falsifies the upgraded artifact,
+   and annotate — never clear — the falsified-conversion entry
+   (`upgraded_ts`/`upgraded_ref`). Recorder flag:
+   `record_rca_event.py --conversion-upgrade` (requires `--converted` and
+   `--ref`); the upgrade identity additionally carries the redesign `ref`, so
+   it can be appended alongside the original event's identity triple and a
+   later redesign with a new ref is never dropped as a duplicate. Judgment
+   calls stay owned by the rubric in `docs/product-success-metrics.md`,
+   including the anti-laundering rule: an actual recurrence is recorded as a
+   plain event first; the upgrade never substitutes for it.
 
 The target stays advisory: it is reported by the aggregator and reviewed in the
 weekly loop, never evaluated by `validate_rca_ledger.py` or any blocking gate

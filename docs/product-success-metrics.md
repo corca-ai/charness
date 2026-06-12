@@ -122,6 +122,21 @@ Decisions (2026-06-13, issue #184 baseline review — maintainer-confirmed):
   the recurrence to age out of the window. First instance at decision time:
   `mutation-dispatch-no-base-sha-false-proof`
   ([#358](https://github.com/corca-ai/charness/issues/358)).
+- Recording the redesign: append a `conversion_upgrade=true` re-record of the
+  same `class_key` via `record_rca_event.py` with `--conversion-upgrade`,
+  `--converted`, `--durable-kind <kind>`, and `--ref <response-issue>`
+  (the ref is required). An upgrade event records
+  artifact work, not a new occurrence of the mistake: it is excluded from
+  conversion-rate denominators, it does not count as a recurrence, it refreshes
+  the conversion stamp so a *later* recurrence falsifies the upgraded artifact,
+  and it does **not** clear an in-window tripwire — the recurrence still ages
+  out on its own ts, per this contract. The aggregator annotates the falsified
+  entry with `upgraded_ts`/`upgraded_ref` so the response is visible in the
+  report. Operational rule: an actual recurrence is always recorded as a
+  plain event **first**; the upgrade never substitutes for the recurrence
+  record. Recording a recurrence as an "upgrade" hides it from the rate, the
+  recurrence list, and the tripwire — the exact self-reporting corruption the
+  tripwire exists to catch.
 - Per-`event_kind` and per-`source` rates stay a monitored decomposition, not
   targets: at the observed inflow (~1.4 events/day) the per-kind samples
   (n=5–9 in the baseline window) are too small to target without rewarding

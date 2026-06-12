@@ -60,9 +60,22 @@
     "note": {
       "type": "string",
       "description": "Optional short non-PII human-readable summary."
+    },
+    "conversion_upgrade": {
+      "type": "boolean",
+      "description": "True marks a re-conversion that upgrades the durable artifact for an already-converted class (the #184 tripwire response). It records artifact work, not a new occurrence of the mistake: excluded from conversion-rate denominators, not counted as a recurrence, and it does not clear an in-window tripwire. Requires converted=true."
     }
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {"conversion_upgrade": {"const": true}},
+        "required": ["conversion_upgrade"]
+      },
+      "then": {
+        "properties": {"converted": {"const": true}}
+      }
+    },
     {
       "if": {
         "properties": {"converted": {"const": true}},

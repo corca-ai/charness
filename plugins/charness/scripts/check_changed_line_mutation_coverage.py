@@ -253,6 +253,28 @@ def _emit_skip_with_surfacing(skip: dict, changed_before_coverage: list[str], fg
     return 0
 
 
+def _emit_no_base_sha() -> int:
+    """No-base-sha verdict, made loud (#358): the exit stays 0 (matching the gate,
+    whose changed-line classifier is inert without a range), but the payload now
+    carries a machine-readable `changed_line_proof` bit and stderr names the
+    `mutation-dispatch-no-base-sha-false-proof` class, so an `ok: true` here can
+    no longer be read as changed-line proof. Claim-time refusal is owned by
+    `scripts/check_mutation_run_proof.py`."""
+    sys.stderr.write(
+        "WARNING (changed-line mutation gate): no base_sha, so this verdict proves NOTHING "
+        "about changed-line coverage (the mutation-dispatch-no-base-sha-false-proof class). "
+        "Before citing a run as changed-line proof, run "
+        "`python3 scripts/check_mutation_run_proof.py --claim changed-line ...`.\n"
+    )
+    _emit({
+        "ok": True,
+        "blocking": [],
+        "changed_line_proof": "not-provable",
+        "reason": "no base_sha: the changed-line classifier is non-blocking by construction (matches workflow_dispatch, which computes no base_sha)",
+    })
+    return 0
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -260,12 +282,7 @@ def main() -> int:
     head_sha = (args.head_sha if args.head_sha is not None else os.environ.get("MUTATION_HEAD_SHA") or "").strip() or "HEAD"
 
     if not base_sha:
-        _emit({
-            "ok": True,
-            "blocking": [],
-            "reason": "no base_sha: the changed-line classifier is non-blocking by construction (matches workflow_dispatch, which computes no base_sha)",
-        })
-        return 0
+        return _emit_no_base_sha()
 
     all_eligible = set(list_eligible(repo_root))
     fg_warning = false_green_warning(repo_root, head_sha, all_eligible)

@@ -38,6 +38,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="none",
         choices=["gate", "spec", "test", "issue", "retro_lesson", "none"],
     )
+    parser.add_argument(
+        "--conversion-upgrade",
+        action="store_true",
+        help=(
+            "Mark a re-conversion that upgrades the durable artifact for an "
+            "already-converted class (#184 tripwire response); requires --converted. "
+            "Recorded as artifact work, not a new occurrence of the mistake."
+        ),
+    )
     parser.add_argument("--class-key", required=True)
     parser.add_argument("--caught-by", default=None, choices=["agent", "human", "gate"])
     parser.add_argument("--seed", action="store_true")
@@ -58,6 +67,8 @@ def build_record(args: argparse.Namespace) -> dict[str, object]:
         "durable_kind": args.durable_kind,
         "class_key": args.class_key,
     }
+    if args.conversion_upgrade:
+        record["conversion_upgrade"] = True
     if args.caught_by is not None:
         record["caught_by"] = args.caught_by
     if args.seed:
@@ -71,6 +82,19 @@ def build_record(args: argparse.Namespace) -> dict[str, object]:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.conversion_upgrade and not args.ref:
+        message = (
+            "rejected: --conversion-upgrade requires --ref — the redesign ref is the "
+            "upgrade's idempotency identity; without it a second upgrade for the same "
+            "class is silently dropped as a duplicate"
+        )
+        print(
+            json.dumps({"status": "rejected", "appended": False, "error": message}, indent=2)
+            if args.json
+            else message,
+            file=sys.stderr,
+        )
+        return 1
     repo_root = Path(args.repo_root).resolve()
     ledger_path = lib.resolve_ledger_path(repo_root, Path(args.ledger) if args.ledger else None)
     record = build_record(args)
