@@ -18,25 +18,28 @@
   is published, the maintainer install auto-refreshed to 0.43.0, and the
   real-host proof arms are closed on this host (see
   [release latest](../charness-artifacts/release/latest.md)).
-- **v0.43.0 content** (2026-06-12 overnight autonomous goal,
-  [goal artifact](../charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md)):
-  clone advisories consumed as structural signals plus the quality-signal
-  scorecard and shared meaningful-slice cadence references (issues #356/#357,
-  both verified CLOSED), two new authoring-repo gates
-  (`check-bootstrap-shim-consistency` with `--fix`, advisory
-  `check-public-doc-coupling`) with the exported-reusable-guidance provenance
-  class, the log-backed contract-effectiveness cautilus fixture
-  (deterministically validated; no live run by design), and the
-  operator-approved retirement of the second-machine release-proof arm.
-- **Open issues (`gh`, 2026-06-12): #184 only** — an operator
-  product-metrics ideation decision, not an implementation slice.
+- v0.43.0 content summary lives in the
+  [goal artifact](../charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md)
+  (#356/#357 closed, two new authoring-repo gates, contract-effectiveness
+  fixture, second-machine proof-arm retirement).
+- **#184 closed (2026-06-13 baseline review).** Operator-confirmed numeric
+  target: conversion rate **≥70% rolling 28d seed-excluded (n≥10) + zero
+  falsified conversions**; baseline 76.9% (20/26). The aggregator judges it
+  (`target` block); current verdict **not-met** — the first falsified
+  conversion (`mutation-dispatch-no-base-sha-false-proof`) is in the window.
+  Decision record: [product-success-metrics.md](./product-success-metrics.md)
+  (Decisions 2026-06-13) + spec slice 3.
+- **Open issues (`gh`, 2026-06-13): #358 only** — tripwire response:
+  redesign that falsified conversion's durable artifact (likely gate-shaped).
 - Restart note: active sessions carry pre-0.43.0 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
 
-- No queued implementation work. The bundle closed early with a candidate
-  ledger; the live deferrals are D28/D29 in
+- **#358 is the queued implementation candidate** — it is also what flips the
+  #184 target verdict honestly (redesign the artifact; do not wait for the
+  06-05 recurrence to age out of the rolling window).
+- Live deferrals remain D28/D29 in
   [deferred decisions](./deferred-decisions.md) (D29: scorecard helper +
   metric-only closeout guard; reopens on consumer-repo discovery failure or
   operator request).
@@ -45,8 +48,6 @@
   needs an explicit log-backed request naming a
   failing-prompt/transcript/operator-log path, then the
   [cautilus eval wrapper](../scripts/run_cautilus_eval.py).
-- **Keep #184 separate.** Schedule it only if the operator wants a product
-  metrics ideation session.
 
 ## Discuss
 

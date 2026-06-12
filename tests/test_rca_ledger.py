@@ -535,3 +535,157 @@ def test_slice2_three_skills_cite_append_reference_with_correct_source() -> None
         text = (ROOT / "skills" / "public" / skill / "SKILL.md").read_text(encoding="utf-8")
         assert "rca-ledger-append.md" in text, f"{skill}/SKILL.md must cite the append reference"
         assert source_flag in text, f"{skill}/SKILL.md must wire {source_flag}"
+
+
+# Slice 3: #184 numeric target (floor + zero-falsified-conversion tripwire) ----
+def ts_event(day: int, **overrides: object) -> dict[str, object]:
+    return event(ts=f"2026-06-{day:02d}T00:00:00Z", **overrides)
+
+
+def test_target_falsified_detects_recurrence_after_conversion_only() -> None:
+    # converted then recurred -> falsified; never-converted recurrence -> not listed;
+    # recurrence BEFORE the conversion -> not listed (the artifact postdates it);
+    # a recurrence that is itself converted=true still counts (the class recurred).
+    events = [
+        ts_event(1, class_key="converted-then-recurred", converted=True, durable_kind="gate"),
+        ts_event(5, class_key="converted-then-recurred", converted=False, durable_kind="none"),
+        ts_event(1, class_key="never-converted", converted=False, durable_kind="none"),
+        ts_event(5, class_key="never-converted", converted=False, durable_kind="none"),
+        ts_event(1, class_key="recurred-before-conversion", converted=False, durable_kind="none"),
+        ts_event(5, class_key="recurred-before-conversion", converted=True, durable_kind="test"),
+        ts_event(2, class_key="reconverted-recurrence", converted=True, durable_kind="gate"),
+        ts_event(6, class_key="reconverted-recurrence", converted=True, durable_kind="test"),
+    ]
+    falsified = lib.falsified_conversions(events)
+    assert [entry["class_key"] for entry in falsified] == [
+        "converted-then-recurred",
+        "reconverted-recurrence",
+    ]
+    assert falsified[0]["converted_ts"] == "2026-06-01T00:00:00Z"
+    assert falsified[0]["recurrence_ts"] == "2026-06-05T00:00:00Z"
+
+
+def test_target_falsified_includes_converted_seed_recurring_live() -> None:
+    events = [
+        ts_event(1, class_key="seeded-conversion", converted=True, durable_kind="gate", seed=True),
+        ts_event(9, class_key="seeded-conversion", converted=False, durable_kind="none"),
+    ]
+    assert [entry["class_key"] for entry in lib.falsified_conversions(events)] == ["seeded-conversion"]
+
+
+def test_target_no_live_events_and_insufficient_n() -> None:
+    seed_only = [ts_event(1, class_key="s", seed=True)]
+    target = lib.evaluate_target(seed_only)
+    assert target["status"] == "no-live-events"
+    assert target["window"] is None
+
+    few = [ts_event(day, class_key=f"k{day}") for day in range(1, lib.TARGET_MIN_EVENTS)]
+    target = lib.evaluate_target(few)
+    assert target["status"] == "insufficient-n"
+    assert target["window"]["total"] == lib.TARGET_MIN_EVENTS - 1
+
+
+def test_target_met_not_met_and_tripwire() -> None:
+    converted = [
+        ts_event(day, class_key=f"ok{day}", converted=True, durable_kind="gate")
+        for day in range(1, 11)
+    ]
+    assert lib.evaluate_target(converted)["status"] == "met"
+
+    # 5/10 converted -> below the 70% floor.
+    half = converted[:5] + [
+        ts_event(day, class_key=f"miss{day}", converted=False, durable_kind="none")
+        for day in range(11, 16)
+    ]
+    below = lib.evaluate_target(half)
+    assert below["status"] == "not-met"
+    assert below["reasons"] == ["rate below floor"]
+
+    # Rate above floor but one converted class recurs inside the window -> tripwire.
+    tripped = lib.evaluate_target(
+        converted + [ts_event(12, class_key="ok1", converted=False, durable_kind="none")]
+    )
+    assert tripped["status"] == "not-met"
+    assert tripped["reasons"] == ["falsified conversion in window (tripwire)"]
+    assert tripped["window"]["falsified_in_window"] == 1
+
+
+def test_target_falsified_recurrence_outside_window_does_not_trip() -> None:
+    # The tripwire judges recurrences whose ts falls in the rolling window; an
+    # aged-out falsified conversion stays in the all-time list (and keeps its
+    # per-instance response contract) but no longer blocks the verdict.
+    stale_falsified = [
+        event(ts="2026-01-01T00:00:00Z", class_key="aged", converted=True, durable_kind="gate"),
+        event(ts="2026-01-05T00:00:00Z", class_key="aged", converted=False, durable_kind="none"),
+    ]
+    fresh = [
+        ts_event(day, class_key=f"new{day}", converted=True, durable_kind="gate")
+        for day in range(1, 11)
+    ]
+    target = lib.evaluate_target(stale_falsified + fresh)
+    assert [entry["class_key"] for entry in target["falsified_conversions"]] == ["aged"]
+    assert target["window"]["falsified_in_window"] == 0
+    assert target["status"] == "met"
+
+
+def test_target_parse_ts_defensive_branches_skip_bad_timestamps() -> None:
+    # Schema-valid ledgers always carry RFC3339 ts; the evaluator still
+    # tolerates raw events with a missing or malformed ts by skipping them
+    # instead of crashing or letting them anchor the window.
+    assert lib._parse_ts(None) is None
+    assert lib._parse_ts("not-a-dateZ") is None
+    bad_ts: list[dict[str, object]] = [
+        {"class_key": "no-ts", "converted": False},
+        event(ts="not-a-dateZ", class_key="bad-ts", converted=False, durable_kind="none"),
+    ]
+    fresh = [
+        ts_event(day, class_key=f"new{day}", converted=True, durable_kind="gate")
+        for day in range(1, 11)
+    ]
+    target = lib.evaluate_target(bad_ts + fresh)
+    assert target["window"]["total"] == 10
+    assert target["status"] == "met"
+
+
+def test_target_window_excludes_events_older_than_28_days() -> None:
+    stale = [
+        event(ts="2026-01-01T00:00:00Z", class_key=f"old{i}", converted=False, durable_kind="none")
+        for i in range(5)
+    ]
+    fresh = [
+        ts_event(day, class_key=f"new{day}", converted=True, durable_kind="gate")
+        for day in range(1, 11)
+    ]
+    target = lib.evaluate_target(stale + fresh)
+    # The stale unconverted events (and any stale recurrence) fall outside the
+    # rolling window anchored on the latest live event, so the verdict is met.
+    assert target["window"]["total"] == 10
+    assert target["status"] == "met"
+
+
+def test_target_render_text_reports_floor_falsified_and_status(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    write_ledger(
+        ledger,
+        [ts_event(1, class_key="c", converted=True, durable_kind="gate"),
+         ts_event(5, class_key="c", converted=False, durable_kind="none")],
+    )
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
+    assert result.returncode == 0, result.stderr
+    text = result.stdout
+    assert "target (#184, set 2026-06-13): >=70% rolling 28d" in text
+    assert "falsified conversions (all-time, tripwire input): 1" in text
+    assert "c: converted 2026-06-01, recurred 2026-06-05" in text
+    assert "status: insufficient-n" in text
+
+
+def test_target_committed_ledger_payload_is_structurally_judged() -> None:
+    # Structural assertions only: the committed ledger keeps accruing, so the
+    # live status/rate must not be pinned here (slice-2 retro lesson: never
+    # reuse the committed ledger as a value fixture).
+    payload = lib.aggregate(lib.read_events(COMMITTED_LEDGER))
+    target = payload["target"]
+    assert target["floor"] == 0.7
+    assert target["status"] in {"no-live-events", "insufficient-n", "met", "not-met"}
+    for entry in target["falsified_conversions"]:
+        assert entry["converted_ts"] < entry["recurrence_ts"]

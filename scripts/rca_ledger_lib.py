@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:  # reuse the portable-path helper rather than reinventing it
@@ -24,6 +24,14 @@ AUTO_APPEND_WIRED = True
 AUTO_APPEND_OFF_BANNER = "auto_append: OFF (slice 2 not wired)"
 AUTO_APPEND_ON_BANNER = "auto_append: ON (prompt-enforced; denominator self-reported, not gate-verified)"
 NA = "n/a"
+
+# #184 numeric target (set 2026-06-13 at the baseline review, from the matured
+# 2026-05-24..06-11 seed-excluded window): a floor on the rolling seed-excluded
+# rate plus the zero-falsified-conversion tripwire. The window anchors on the
+# latest non-seed event ts so the verdict is reproducible from the ledger alone.
+TARGET_FLOOR = 0.70
+TARGET_WINDOW_DAYS = 28
+TARGET_MIN_EVENTS = 10
 
 portable_path = _portable_path
 
@@ -165,6 +173,97 @@ def _summary(events: list[dict[str, object]]) -> dict[str, object]:
     }
 
 
+def _parse_ts(value: object) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError:
+        return None
+
+
+def falsified_conversions(events: list[dict[str, object]]) -> list[dict[str, object]]:
+    """List exact class_key recurrences after a converted=true event.
+
+    A recurrence after conversion means the recorded durable artifact did not
+    prevent the class — the #184 tripwire. Seed events participate: a converted
+    seed whose class recurs live is still a falsified conversion. Recurrences of
+    never-converted classes are not listed; they are ordinary unconverted events.
+    """
+    ordered = sorted(
+        (event for event in events if isinstance(event.get("class_key"), str)),
+        key=lambda event: str(event.get("ts", "")),
+    )
+    first_converted: dict[str, str] = {}
+    found: list[dict[str, object]] = []
+    for event in ordered:
+        key = str(event["class_key"])
+        if key in first_converted:
+            found.append(
+                {
+                    "class_key": key,
+                    "converted_ts": first_converted[key],
+                    "recurrence_ts": str(event.get("ts", "")),
+                    "recurrence_ref": event.get("ref"),
+                }
+            )
+        elif event.get("converted") is True:
+            first_converted[key] = str(event.get("ts", ""))
+    return found
+
+
+def evaluate_target(events: list[dict[str, object]]) -> dict[str, object]:
+    """Judge the #184 numeric target: rolling floor + zero-falsified tripwire."""
+    non_seed = [event for event in events if event.get("seed") is not True]
+    falsified = falsified_conversions(events)
+    payload: dict[str, object] = {
+        "floor": TARGET_FLOOR,
+        "window_days": TARGET_WINDOW_DAYS,
+        "min_events": TARGET_MIN_EVENTS,
+        "falsified_conversions": falsified,
+    }
+    stamps = [ts for event in non_seed if (ts := _parse_ts(event.get("ts"))) is not None]
+    if not stamps:
+        payload["window"] = None
+        payload["status"] = "no-live-events"
+        payload["reasons"] = ["no live (non-seed) events yet; the target is judged on live data only"]
+        return payload
+    window_end = max(stamps)
+    cutoff = window_end - timedelta(days=TARGET_WINDOW_DAYS)
+    in_window = [
+        event for event in non_seed if (ts := _parse_ts(event.get("ts"))) is not None and ts >= cutoff
+    ]
+    total = len(in_window)
+    converted = sum(1 for event in in_window if event.get("converted") is True)
+    rate = _rate(converted, total)
+    tripped = [
+        entry
+        for entry in falsified
+        if (ts := _parse_ts(entry["recurrence_ts"])) is not None and ts >= cutoff
+    ]
+    payload["window"] = {
+        "end": window_end.isoformat().replace("+00:00", "Z"),
+        "total": total,
+        "converted": converted,
+        "rate": rate,
+        "falsified_in_window": len(tripped),
+    }
+    reasons: list[str] = []
+    if total < TARGET_MIN_EVENTS:
+        payload["status"] = "insufficient-n"
+        reasons.append(
+            f"window holds {total} live events; the floor is judged only at n>={TARGET_MIN_EVENTS}"
+        )
+    else:
+        if isinstance(rate, float) and rate < TARGET_FLOOR:
+            reasons.append("rate below floor")
+        if tripped:
+            reasons.append("falsified conversion in window (tripwire)")
+        payload["status"] = "met" if not reasons else "not-met"
+    payload["reasons"] = reasons
+    return payload
+
+
 def aggregate(events: list[dict[str, object]]) -> dict[str, object]:
     non_seed = [event for event in events if event.get("seed") is not True]
     baseline_available = bool(non_seed)
@@ -175,6 +274,7 @@ def aggregate(events: list[dict[str, object]]) -> dict[str, object]:
         "baseline_rate_available": baseline_available,
         "seed_included": _summary(events),
         "seed_excluded": _summary(non_seed),
+        "target": evaluate_target(events),
     }
 
 
@@ -218,4 +318,33 @@ def render_text(payload: dict[str, object]) -> str:
         )
         lines.extend(_render_breakdown("source", excluded["by_source"]))  # type: ignore[index]
         lines.extend(_render_breakdown("event_kind", excluded["by_event_kind"]))  # type: ignore[index]
+    lines.extend(_render_target(payload["target"]))  # type: ignore[arg-type]
     return "\n".join(lines)
+
+
+def _render_target(target: dict[str, object]) -> list[str]:
+    floor = f"{TARGET_FLOOR * 100:.0f}%"
+    lines = [
+        f"target (#184, set 2026-06-13): >={floor} rolling {TARGET_WINDOW_DAYS}d seed-excluded"
+        f" (judged at n>={TARGET_MIN_EVENTS}) + zero falsified conversions",
+    ]
+    window = target["window"]
+    if isinstance(window, dict):
+        lines.append(
+            f"    window ending {window['end']}: {window['converted']}/{window['total']} "
+            f"({_format_rate(window['rate'])})"  # type: ignore[arg-type]
+        )
+    falsified = target["falsified_conversions"]
+    assert isinstance(falsified, list)
+    lines.append(f"    falsified conversions (all-time, tripwire input): {len(falsified)}")
+    for entry in falsified:
+        lines.append(
+            f"      {entry['class_key']}: converted {entry['converted_ts'][:10]}, "
+            f"recurred {entry['recurrence_ts'][:10]}"
+        )
+    status = target["status"]
+    reasons = target["reasons"]
+    assert isinstance(reasons, list)
+    suffix = f" — {'; '.join(reasons)}" if reasons else ""
+    lines.append(f"    status: {status}{suffix}")
+    return lines

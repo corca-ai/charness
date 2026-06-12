@@ -2,18 +2,21 @@
 
 This document defines the current Charness success baseline that informed
 issues [#184](https://github.com/corca-ai/charness/issues/184) and
-[#185](https://github.com/corca-ai/charness/issues/185). It is not a final
-`#184` product-success closeout; #184 remains open until maintainers synthesize
-the newer product-success framing and refresh the originating Slack source.
+[#185](https://github.com/corca-ai/charness/issues/185). The #184 baseline
+review closed on 2026-06-13: the maintainer confirmed the numeric target for
+the instrumented objective (see Decisions 2026-06-13 below), so #184 is now a
+closed decision record rather than an open synthesis item.
 
 Source note: both issues came from the 2026-05-20 Daily Scrum Slack thread
-`slack://C05J5LTFSCU/1778805288.184149`. This session could not re-fetch that
-private source because the local `ceal` binary was unavailable and the issue
-record did not include a Slack web URL usable by the checked-in gather-slack
-wrapper. The GitHub issue bodies and current repo docs are the available
-working evidence for this baseline. Human agreement is still required before
-treating numeric targets, product prioritization, or runtime capture activation
-as final.
+`slack://C05J5LTFSCU/1778805288.184149`. Neither the 2026-05-24 session nor
+the 2026-06-13 baseline review could re-fetch that private source (`ceal`
+unavailable on the deciding hosts; no Slack web URL usable by the checked-in
+gather-slack wrapper). At the baseline review the maintainer explicitly
+accepted the ceal-captured GitHub issue body as the working source for this
+decision. Non-claim: the original Slack thread was never re-read; if a future
+re-read surfaces intent the GitHub capture missed, the numeric-target decision
+is the surface to revisit. Runtime capture activation for consumer repos
+remains a separate deferred decision.
 
 ## One-Page Summary
 
@@ -92,6 +95,39 @@ Decisions (2026-05-24, issue #184):
 
 The ledger schema, append discipline, aggregation script, and review-loop wiring
 are specced separately (issue #185).
+
+Decisions (2026-06-13, issue #184 baseline review — maintainer-confirmed):
+
+- Numeric target, in force now: **conversion rate ≥ 70% on the rolling 28-day
+  seed-excluded window, judged only when the window holds ≥ 10 live events,
+  AND zero falsified conversions in the window.** A *falsified conversion* is
+  an exact `class_key` recurrence after a `converted=true` event — the
+  recorded durable artifact demonstrably did not prevent the class. Both
+  halves are reported by
+  [aggregate_rca_ledger.py](../scripts/aggregate_rca_ledger.py) (`target`
+  block, computed in `rca_ledger_lib.py`); the verdict anchors on the latest
+  live event timestamp so it is reproducible from the committed ledger alone.
+  When the window holds fewer than 10 live events the verdict reads
+  `insufficient-n` even if a falsified conversion sits in the window — the
+  tripwire-response contract below fires on *detection*, regardless of the
+  verdict string, and the all-time falsified list always renders.
+- Baseline at decision time: 76.9% (20/26 live events, 2026-05-24 → 06-11).
+  The floor sits below the baseline deliberately: the rubric's conservative
+  tie-break ("ambiguous → `converted=false`") and the quality-sustainability
+  criterion mean some non-conversions are correct judgment, so 100% — or even
+  holding the observed 77% — is **not** the goal. Pushing the rate up by
+  shipping ceremony gates is the failure mode the tripwire half guards.
+- Tripwire response contract: each falsified conversion requires redesigning
+  that conversion's durable artifact (tracked as an issue), not waiting for
+  the recurrence to age out of the window. First instance at decision time:
+  `mutation-dispatch-no-base-sha-false-proof`
+  ([#358](https://github.com/corca-ai/charness/issues/358)).
+- Per-`event_kind` and per-`source` rates stay a monitored decomposition, not
+  targets: at the observed inflow (~1.4 events/day) the per-kind samples
+  (n=5–9 in the baseline window) are too small to target without rewarding
+  reclassification games.
+- The target stays advisory (reported, reviewed in the weekly loop), not a
+  blocking quality gate, per the spec's gate-posture probe answer.
 
 ## RCA-To-Learning Classification Rubric
 

@@ -130,8 +130,11 @@ surfaces.
   tiny sample would still rest on biased data, so the numeric target stays
   baseline-first per the next bullet. The append is prompt-enforced, not
   gate-enforced (see slice-2 residual risk).
-- Numeric target for the conversion rate (baseline-first: revisit after 2-4
-  weeks of *auto-appended, seed-excluded* ledger data).
+- **DONE (slice 3, 2026-06-13)**: Numeric target for the conversion rate. The
+  baseline window matured (26 live events, 2026-05-24 → 06-11, 76.9%); the
+  maintainer confirmed **floor ≥70% rolling 28-day seed-excluded (judged at
+  n≥10) + zero falsified conversions** at the baseline review. Decision record:
+  `docs/product-success-metrics.md` (Decisions 2026-06-13) and issue #184.
 - Consumer-repo scope (depends on usage-episode capture; separate deferred
   decision, do not couple here). **Revisit trigger**: the 2-4 week baseline
   review. No hard kill-date is encoded now because there is no committed
@@ -147,13 +150,14 @@ surfaces.
   non-seed data to reconcile against yet; build it when the ledger actually
   accrues live events, since a self-reported denominator is otherwise
   unauditable.
-- **Recurrence rate of already-converted `class_key`s** (deferred to the
-  baseline review): the deepest signal is whether a *converted* class recurs
-  anyway (a gate that did not actually prevent recurrence), reported as a
-  headline alongside the conversion rate. The schema already carries `class_key`
-  for this. Deferred because recurrence cannot be computed until classes have had
-  weeks of real data to recur; wiring it now reports noise over a seed-only
-  window.
+- **DONE (slice 3, 2026-06-13)**: Recurrence of already-converted `class_key`s
+  is now computed as **falsified conversions** (exact-match per the probe
+  answer) by `falsified_conversions()` in `rca_ledger_lib.py`, reported in the
+  aggregator's `target` block, and wired into the target verdict as the
+  zero-tolerance tripwire half. The first real falsified conversion
+  (`mutation-dispatch-no-base-sha-false-proof`, converted 05-29 as a
+  retro_lesson, recurred 06-05) was detected on the landing run and filed as
+  the tripwire-response issue #358.
 
 ## Non-Goals
 
@@ -433,3 +437,36 @@ advisory closeout nudge (warn when a `debug`/`issue`/`retro` slice closed with n
 matching ledger append in the same commit); deferred to keep this slice minimal
 and because it depends on the denominator-reconciliation work already deferred to
 the baseline review.
+
+## Third Implementation Slice (Baseline Review: Numeric Target + Tripwire) — Landed
+
+Trigger: the baseline window matured (2026-05-24 → 06-11, 26 live events,
+76.9%), satisfying the 2-4 week baseline-first condition. The maintainer
+confirmed the target shape at the 2026-06-13 review (recorded in
+`docs/product-success-metrics.md`, Decisions 2026-06-13, and issue #184).
+
+Landed:
+
+1. `falsified_conversions()` in `rca_ledger_lib.py`: exact `class_key`
+   recurrence after a `converted=true` event (seeds participate; recurrences of
+   never-converted classes are excluded — those are ordinary unconverted
+   events, not falsified conversions).
+2. `evaluate_target()` + the aggregator `target` payload block and text
+   rendering: floor `0.70` on the rolling 28-day seed-excluded window, judged
+   only at n≥10 (`insufficient-n` otherwise), AND zero falsified conversions
+   whose recurrence falls in the window. The window anchors on the latest live
+   event `ts`, so the verdict is reproducible from the committed ledger alone
+   (no wall-clock dependence).
+3. Tests: falsified-conversion detection polarity (converted-then-recurred
+   only), seed participation, `no-live-events` / `insufficient-n` / `met` /
+   `not-met` (both reasons), window exclusion of stale events, text rendering,
+   and structural (non-value-pinned) assertions over the committed ledger.
+4. First tripwire response filed: #358
+   (`mutation-dispatch-no-base-sha-false-proof`).
+
+The target stays advisory: it is reported by the aggregator and reviewed in the
+weekly loop, never evaluated by `validate_rca_ledger.py` or any blocking gate
+(probe-question posture, unchanged). Still deferred: independent denominator
+reconciliation (the rate is self-reported until then) and the consumer-repo
+scope question, which the baseline review re-confirms as decoupled — reopen it
+with the usage-episode capture decision, not here.
