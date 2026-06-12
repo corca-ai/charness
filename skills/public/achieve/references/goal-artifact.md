@@ -130,6 +130,12 @@ carries a note so a caller expecting a new file can tell). The slice number in
 `append_slice_log.py` is derived from the existing `### Slice N:` headings, so
 reports stay ordered without a counter argument.
 
+At complete-state closeout, no section's first body line may remain a scaffold
+or closeout-pending placeholder such as `Pending until`, `TODO`, `TBD`, or
+`To be filled`. `check_goal_artifact.py` reports these under
+`section_placeholders`; replace the line with the real disposition, proof, or
+explicit opt-out before flipping `Status:` to `complete`.
+
 The `Slice Plan` table is hand-maintained planning intent; no helper updates its
 `Status` column. The `Slice Log` (appended by `append_slice_log.py`) is the
 execution source of truth. Keep the plan table for the up-front sequence and let

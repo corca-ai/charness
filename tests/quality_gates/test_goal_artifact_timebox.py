@@ -23,6 +23,14 @@ def _append_evidence_lines(text: str, retro_value: str, probe_value: str) -> str
     )
 
 
+def _fill_auto_retro_first_line(text: str) -> str:
+    return text.replace(
+        "Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out",
+        "Retro dispositions: none — no actionable improvement surfaced during this run",
+        1,
+    )
+
+
 def _seed_bound_report(tmp_path: Path, slug: str = "g") -> Path:
     report = tmp_path / "charness-artifacts/goals" / f"2026-05-28-{slug}-early-close-report.md"
     report.parent.mkdir(parents=True, exist_ok=True)
@@ -232,6 +240,7 @@ def test_upsert_refuses_timebox_complete_before_closeout_window(tmp_path: Path) 
         f"{_seed_closeout_lines(tmp_path)}",
         1,
     )
+    text = _fill_auto_retro_first_line(text)
     gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
     refusal = gal.upsert_goal(
         tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
@@ -257,6 +266,7 @@ def test_upsert_allows_timebox_complete_before_closeout_window_with_full_ledger(
         f"{_seed_closeout_lines(tmp_path)}",
         1,
     )
+    text = _fill_auto_retro_first_line(text)
     gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
 
     result = gal.upsert_goal(
@@ -274,6 +284,7 @@ def test_upsert_allows_timebox_complete_after_deadline(tmp_path: Path) -> None:
     text = _goal_text(tmp_path)
     text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
     text = _add_timebox(text, activation_time="2000-01-01T00:00:00Z")
+    text = _fill_auto_retro_first_line(text)
     gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
     result = gal.upsert_goal(
         tmp_path, date="2026-05-28", slug="g", title="T", status="complete"

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 _LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
+_CHECKER = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/check_goal_artifact.py"
 _spec = importlib.util.spec_from_file_location("goal_artifact_lib", _LIB)
 gal = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gal)
@@ -489,6 +493,31 @@ def _append_evidence_lines(text: str, retro_value: str, probe_value: str) -> str
     )
 
 
+def _fill_auto_retro_first_line(text: str) -> str:
+    return text.replace(
+        "Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out",
+        "Retro dispositions: none — no actionable improvement surfaced during this run",
+        1,
+    )
+
+
+def _run_goal_checker(repo_root: Path, goal_path: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(_CHECKER),
+            "--repo-root",
+            str(repo_root),
+            "--goal-path",
+            str(goal_path),
+        ],
+        check=False,
+        cwd=Path(__file__).resolve().parents[2],
+        text=True,
+        capture_output=True,
+    )
+
+
 def test_parse_closeout_evidence_handles_path_and_skip() -> None:
     text = (
         "Retro: charness-artifacts/retro/2026-05-28-g.md\n"
@@ -513,6 +542,7 @@ def test_check_complete_evidence_passes_with_real_files(tmp_path: Path) -> None:
         retro_value=str(retro.relative_to(tmp_path)),
         probe_value=str(probe.relative_to(tmp_path)),
     )
+    text = _fill_auto_retro_first_line(text)
     report = gal.check_complete_evidence(tmp_path, text)
     assert report["ok"] is True
 
@@ -580,6 +610,7 @@ def test_upsert_allows_flip_to_complete_with_valid_skips(tmp_path: Path) -> None
     skip_line = "skipped: host-log-not-exposed: claude jsonl path missing on this host"
     text = _goal_text(tmp_path, date="2026-05-28")
     text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
+    text = _fill_auto_retro_first_line(text)
     gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
     result = gal.upsert_goal(
         tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
@@ -618,6 +649,69 @@ def _seed_named(tmp_path: Path, rel: str, body: str) -> Path:
     return target
 
 
+def _complete_ready_goal_with_template_auto_retro(tmp_path: Path, *, status: str) -> tuple[str, Path]:
+    date = "2026-05-30"
+    slug = f"359-placeholder-{status}"
+    gal.upsert_goal(tmp_path, date=date, slug=slug, title="T", status="active")
+    retro = _seed_named(
+        tmp_path,
+        f"charness-artifacts/retro/{date}-{slug}.md",
+        "# Retro\n\n## Next Improvements\n\nnone\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/{date}-{slug}.json",
+        '{"host":"claude-code"}\n',
+    )
+    review = _seed_named(
+        tmp_path,
+        f"charness-artifacts/critique/{date}-{slug}-disposition.md",
+        f"# Disposition review for {slug}\n",
+    )
+    goal_path = gal.goal_path(tmp_path, date, slug)
+    text = goal_path.read_text(encoding="utf-8")
+    text = gal.set_status(text, status)
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(retro.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    text = text.replace(
+        f"Host log probe: {probe.relative_to(tmp_path)}\n",
+        f"Host log probe: {probe.relative_to(tmp_path)}\n"
+        f"Disposition review: {review.relative_to(tmp_path)}\n",
+        1,
+    )
+    goal_path.write_text(text, encoding="utf-8")
+    return slug, goal_path
+
+
+def test_goal_checker_section_placeholders_are_complete_only(tmp_path: Path) -> None:
+    _, active_path = _complete_ready_goal_with_template_auto_retro(tmp_path, status="active")
+    active = _run_goal_checker(tmp_path, active_path)
+    assert active.returncode == 0, active.stdout + active.stderr
+    assert "section_placeholders" not in active.stdout
+
+    _, complete_path = _complete_ready_goal_with_template_auto_retro(tmp_path, status="complete")
+    complete = _run_goal_checker(tmp_path, complete_path)
+    assert complete.returncode == 1
+    payload = json.loads(complete.stdout)
+    placeholders = payload["closeout_evidence"]["section_placeholders"]
+    assert placeholders[0]["section"] == "Auto-Retro"
+    assert placeholders[0]["marker"] == "TODO"
+    assert "section placeholders: Auto-Retro line" in payload["issues"][0]
+
+
+def test_upsert_refusal_summarizes_section_placeholders(tmp_path: Path) -> None:
+    slug, _ = _complete_ready_goal_with_template_auto_retro(tmp_path, status="active")
+    refusal = gal.upsert_goal(
+        tmp_path, date="2026-05-30", slug=slug, title="T", status="complete"
+    )
+    assert refusal["action"] == "refused"
+    assert refusal["section_placeholder_summary"].startswith("Auto-Retro line")
+    assert "Section placeholders: Auto-Retro line" in refusal["note"]
+
+
 def test_derive_goal_tokens_includes_slug_and_numeric_cluster(tmp_path: Path) -> None:
     gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
     text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
@@ -644,6 +738,7 @@ def test_check_complete_evidence_passes_with_bound_files(tmp_path: Path) -> None
         retro_value=str(retro.relative_to(tmp_path)),
         probe_value=str(probe.relative_to(tmp_path)),
     )
+    text = _fill_auto_retro_first_line(text)
     report = gal.check_complete_evidence(tmp_path, text)
     assert report["ok"] is True
     assert report["binding_failures"] == []

@@ -25,6 +25,7 @@ def _load(name: str):
 
 disp = _load("goal_artifact_disposition")
 ce = _load("goal_artifact_closeout_evidence")
+section_placeholders = _load("goal_artifact_section_placeholders")
 
 
 # --- grandfather-by-Created-date -------------------------------------------
@@ -179,6 +180,68 @@ def test_block_the_blank_passes_with_filled_auto_retro(tmp_path: Path) -> None:
     )
     assert "disposition_blank" not in report
     assert report["ok"] is True
+
+
+def test_complete_gate_blocks_pending_section_first_line(tmp_path: Path) -> None:
+    created = "2026-05-30"
+    _seed_evidence(tmp_path, created, improvements=False)
+    review_line = _seed_review(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _build_goal(
+            created,
+            "Pending until active run closeout. Retro dispositions must be recorded before completion.",
+            review_line=review_line,
+        ),
+    )
+    assert report["ok"] is False
+    assert report["section_placeholders"] == [
+        {
+            "section": "Auto-Retro",
+            "line": 15,
+            "marker": "Pending until",
+            "text": "Pending until active run closeout. Retro dispositions must be recorded before completion.",
+        }
+    ]
+
+
+def test_section_placeholder_scan_ignores_fenced_examples() -> None:
+    text = (
+        "## Goal\n\nReal goal content.\n\n"
+        "```md\n## Auto-Retro\n\nPending until closeout.\n```\n\n"
+        "## Auto-Retro\n\napplied: final disposition recorded\n"
+    )
+    assert section_placeholders.final_status_placeholders(text) == []
+
+
+def test_section_placeholder_scan_handles_heading_at_eof() -> None:
+    assert section_placeholders.final_status_placeholders("## Auto-Retro") == []
+
+
+def test_section_placeholder_scan_ignores_non_placeholder_pending_noun() -> None:
+    text = "## Auto-Retro\n\nPending reviewer assignment was deliberately out of scope.\n"
+    assert section_placeholders.final_status_placeholders(text) == []
+
+
+def test_section_placeholder_scan_catches_labeled_todo_first_line() -> None:
+    text = "## Auto-Retro\n\nRetro dispositions: TODO — disposition every surfaced improvement\n"
+    assert section_placeholders.final_status_placeholders(text) == [
+        {
+            "section": "Auto-Retro",
+            "line": 3,
+            "marker": "TODO",
+            "text": "Retro dispositions: TODO — disposition every surfaced improvement",
+        }
+    ]
+
+
+def test_section_placeholder_loader_fails_closed_when_markdown_helper_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    def missing_spec(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", missing_spec)
+    with pytest.raises(ImportError, match="goal_artifact_markdown.py not found"):
+        section_placeholders._load_markdown()
 
 
 def test_block_the_blank_inert_when_retro_lists_no_improvements(tmp_path: Path) -> None:

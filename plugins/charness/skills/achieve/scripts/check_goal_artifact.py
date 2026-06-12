@@ -95,6 +95,14 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
         )
     if evidence_report.get("closeout_delegation", {}).get("failures"):
         bits.append("closeout delegation: " + "; ".join(evidence_report["closeout_delegation"]["failures"]))
+    if evidence_report.get("section_placeholders"):
+        bits.append(
+            "section placeholders: "
+            + ", ".join(
+                f"{entry['section']} line {entry['line']} starts with {entry['marker']!r}"
+                for entry in evidence_report["section_placeholders"]
+            )
+        )
     return bits
 
 

@@ -225,6 +225,8 @@ apply_phase_routing_floor = _phase_routing.apply_phase_routing_floor
 _closeout_delegation = _load_sibling_closeout_delegation()
 apply_closeout_delegation = _closeout_delegation.apply_closeout_delegation
 
+_section_placeholders = _load_local_module("goal_artifact_section_placeholders")
+
 _metric_window = _load_sibling_metric_window()
 metric_window_attention = _metric_window.metric_window_attention
 
@@ -342,6 +344,10 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # default. Orchestrated sub-goals must name an orchestrator + list delegated
     # items; orchestrator goals must resolve every delegated checklist item.
     apply_closeout_delegation(report, text)
+
+    # Final-status placeholder floor: a complete goal cannot carry a section
+    # whose first real body line still says it is pending/TODO/TBD.
+    _section_placeholders.apply_final_status_placeholder_floor(report, text)
 
     # Metric-window affordance: surface whether a goal-scoped `Host metric window:` line
     # was recorded so an absent window is visible at flip-to-complete rather than

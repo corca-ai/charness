@@ -133,6 +133,14 @@ def read_status(text: str) -> str | None:
     return text[match.start():match.end()].split(":", 1)[1].strip()
 
 
+def _section_placeholder_summary(report: dict[str, Any]) -> str:
+    entries = report.get("section_placeholders") or []
+    return ", ".join(
+        f"{entry['section']} line {entry['line']} starts with {entry['marker']!r}"
+        for entry in entries
+    )
+
+
 def upsert_goal(
     repo_root: Path,
     *,
@@ -157,6 +165,12 @@ def upsert_goal(
             evidence_report = check_complete_evidence(repo_root, original)
             timebox_report = check_timebox_closeout(original)
             if not evidence_report["ok"] or not timebox_report["ok"]:
+                placeholder_summary = _section_placeholder_summary(evidence_report)
+                placeholder_note = (
+                    f" Section placeholders: {placeholder_summary}."
+                    if placeholder_summary
+                    else ""
+                )
                 return {
                     "action": "refused",
                     "path": rel,
@@ -171,11 +185,14 @@ def upsert_goal(
                         "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
                         "`Retro dispositions: none — <reason>` opt-out), and any triggered "
                         "`Routing:`/`Gather:`/`Release:`/`Issue closeout:` step in "
-                        "`## Coordination Cues`. For early timebox closeout, record why no "
-                        "safe next slice remains. "
+                        "`## Coordination Cues`. Each section's first body line must be real "
+                        "content, not a pending/TODO/TBD placeholder. For early timebox "
+                        "closeout, record why no safe next slice remains. "
                         "See the closeout contract."
+                        + placeholder_note
                     ),
                     "evidence_report": evidence_report,
+                    "section_placeholder_summary": placeholder_summary,
                     "timebox_report": timebox_report,
                 }
         updated = set_status(original, status)
