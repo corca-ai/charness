@@ -110,6 +110,34 @@ def test_cross_repo_non_claim_present() -> None:
     assert result["recurring_count"] == 0
 
 
+def test_non_numeric_elapsed_seconds_is_tolerated() -> None:
+    # float("slow") raises -> the except guard keeps aggregating (count still increments).
+    miner = _load_miner()
+    rec = json.dumps(
+        {
+            "event_type": "closeout_telemetry",
+            "gate_runtime": {
+                "budget_seconds": 120.0,
+                "over_budget": [
+                    {"phase": "verify", "command": "pytest", "elapsed_seconds": "slow", "over_budget": True}
+                ],
+            },
+            "over_slice": {"over": False, "threshold": 3, "trailing_artifact_only_run": 0},
+            "slice_churn": {},
+        }
+    )
+    result = miner.mine([rec, rec], recur_min=2)
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    assert gate["occurrences"] == 2
+    assert gate["peak_elapsed_seconds"] is None  # no numeric seconds were collected
+
+
+def test_read_lines_missing_stream_returns_empty(tmp_path: Path) -> None:
+    # A repo with no telemetry stream degrades to [] (OSError guard), never raises.
+    miner = _load_miner()
+    assert miner._read_lines(tmp_path, miner.DEFAULT_STREAM_PATH) == []
+
+
 def test_cli_over_seeded_stream(tmp_path: Path) -> None:
     stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
     stream.parent.mkdir(parents=True, exist_ok=True)

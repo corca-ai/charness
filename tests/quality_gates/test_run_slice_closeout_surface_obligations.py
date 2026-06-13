@@ -94,6 +94,23 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     assert (repo / "verify.log").read_text(encoding="utf-8").strip() == "verify"
 
 
+def test_run_slice_closeout_attaches_telemetry_on_stop_path(tmp_path: Path) -> None:
+    # A failing verify command drives main() to the should_stop branch, which must
+    # still attach closeout telemetry (spec achieve-efficiency E1 — failed runs
+    # record waste too). Covers the stop-path _attach_closeout_telemetry call site.
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    write_surface_manifest(repo, demo_surface(verify_commands=["python3 scripts/verify.py"]))
+    (repo / "scripts" / "verify.py").write_text("import sys\nsys.exit(1)\n", encoding="utf-8")
+
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "failed"
+    assert "closeout_telemetry" in payload  # attached on the stop path
+
+
 def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

@@ -7,6 +7,8 @@ frame bullet, never a required closeout section.
 """
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from scripts import slice_closeout_advisories as adv
@@ -82,6 +84,19 @@ def test_advise_silent_below_threshold(
     )
     advise_over_slicing(tmp_path)
     assert capsys.readouterr().err == ""
+
+
+def test_recent_commit_path_lists_breaks_when_show_fails(monkeypatch, tmp_path) -> None:
+    # log returns a sha, git show fails -> break before appending (degrade path).
+    def fake_run(cmd, **_kw):
+        if "log" in cmd:
+            return SimpleNamespace(returncode=0, stdout="abc123\n")
+        if "show" in cmd:
+            return SimpleNamespace(returncode=1, stdout="")
+        return SimpleNamespace(returncode=0, stdout="")
+
+    monkeypatch.setattr(adv.subprocess, "run", fake_run)
+    assert adv._recent_commit_path_lists(tmp_path, max_commits=3) == []
 
 
 def test_current_slice_intent_is_non_blocking() -> None:
