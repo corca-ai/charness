@@ -18,31 +18,35 @@
   `b0f06462 Record release verification for v0.44.1`; tag `v0.44.1`
   is published and the maintainer install auto-refreshed to 0.44.1 (see
   [release latest](../charness-artifacts/release/latest.md)).
-- **#359 resolved, CLOSED, and shipped in v0.44.1 (carrier `ebff7d50`).**
-  `achieve` complete-state closeout now blocks pending section placeholders via
-  `section_placeholders`; draft/active scaffolds remain allowed. Critique:
-  [#359](../charness-artifacts/critique/2026-06-13-issue-359-goal-placeholder-closeout-resolution.md).
-- **#358 resolved and CLOSED (carrier `22f3542d`, GitHub state verified).**
-  The dispatch/no-base-sha mutation-proof false conversion is now gate-backed
-  and RCA-upgraded. Critique:
-  [#358](../charness-artifacts/critique/2026-06-13-issue-358-dispatch-proof-gate-resolution.md).
-- **#184 target verdict stays not-met by design** until the 06-05 recurrence
-  ages out of the rolling 28d window (tripwire-response contract: the
-  upgrade annotates, never clears). The aggregator now renders
-  `(artifact upgraded 2026-06-12, #358)` on the falsified entry.
+- **#359 + #358 resolved, CLOSED, shipped in v0.44.1.** #359: `achieve`
+  complete-state closeout blocks pending section placeholders. #358: the
+  dispatch/no-base-sha mutation-proof false conversion is gate-backed + RCA-upgraded.
+- **#184 verdict stays not-met by design** until the 06-05 recurrence ages out of
+  the rolling 28d window (the upgrade annotates, never clears).
+- **achieve-efficiency effort in flight** (spec
+  [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md),
+  the canonical contract and resumption surface). Slice 1 (A describe-first
+  closeout, C gate-baseline-runtime waste lens) landed `55631fe8`; Slice 2 (B
+  over-slice advisory, `Current slice intent:` frame) landed `01104241`. Direction
+  **E** (objective waste telemetry — the loop-observability fix) is **designed and
+  critiqued, implementation deferred to this/next session by operator call**.
 - **Open issues (`gh`, 2026-06-13): none.**
 - Restart note: active sessions may carry pre-0.44.1 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
 
-- No queued implementation candidate; the tracker is empty. The #184 verdict
-  flips on its own as the window rolls forward if no new falsified
-  conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
-- Deferred from the #358/v0.44.0 critiques (valid-but-defer, not filed):
-  run-id-mode refusal reason without the dispatch class key for schedule
-  runs; a consumer template-drift advisory for installed mutation workflows;
-  mutation-score skip-denominator semantics if skip volume grows.
+- **Prioritized pickup: implement Slice 3 = E** of the
+  [achieve-efficiency spec](../charness-artifacts/spec/achieve-efficiency-improvements.md)
+  — read its `## Resumption` section first (names on-disk inputs, files to touch,
+  and the E → D → bundle-broad-pytest order). E1 records `gate_runtime`/`over_slice`
+  into a sibling closeout-telemetry stream; E2a mines it in the weekly retro and
+  routes recurring waste to filed issues (not the decaying digest). Then Slice 4 =
+  D, then the bundle-boundary `run_slice_closeout.py --verification-lock`.
+- The #184 verdict flips on its own as the window rolls forward if no new
+  falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
+- Deferred (valid-but-defer, not filed): run-id-mode refusal class key for
+  schedule runs; consumer template-drift advisory; mutation-score skip denominator.
 - Live deferrals remain D28/D29 in
   [deferred decisions](./deferred-decisions.md) (D29: scorecard helper +
   metric-only closeout guard; reopens on consumer-repo discovery failure or
