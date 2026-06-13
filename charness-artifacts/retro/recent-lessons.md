@@ -3,18 +3,18 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.44.1`. (source: `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`)
-- Operator-approved 8h autonomous goal (`charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`, proof base `c1f7b581`): two new quality gates (bootstrap-shim consistency, public-doc coupling), the clone-advisory structural-signal taxonomy, a log-backed contract-effectiveness cautilus fixture, second-machine release-proof retirement, plus a mid-run operator instruction to resolve the newly opened issues #356/#357 (meaningful-slice cadence and quality-signal scorecard references). (source: `charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md`)
+- Release publish triggered a configured automatic session retro for `v0.45.0`. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`; sources: 32)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`; sources: 33)
 - Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`; sources: 32)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`; sources: 33)
 - Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
 - For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as "adapter scalar helper-shaped", instead of a narrow function-name label. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
@@ -54,7 +54,6 @@
 - `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md`
 - `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
 - `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`
 - `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`
@@ -62,3 +61,4 @@
 - `charness-artifacts/retro/2026-06-12-v0-43-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-44-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`

@@ -3,12 +3,12 @@ Date: 2026-06-13
 
 ## Scope
 
-Advanced `charness` toward release `0.44.1` (tag `v0.44.1`) through the repo-owned release helper.
+Advanced `charness` toward release `0.45.0` (tag `v0.45.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.44.0`
-- target version: `0.44.1`
+- previous version: `0.44.1`
+- target version: `0.45.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.44.1` (tag `v0.44.1`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.44.1`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.45.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.44.0`
+- Previous release ref: `refs/tags/v0.44.1`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,70 +50,57 @@ Advanced `charness` toward release `0.44.1` (tag `v0.44.1`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 1.
+- Surface hits: 2.
   - `checked-in-plugin-export`
+  - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 28.
+- Evaluated changed paths: 52.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-12-231947-packet.json`
-  - `charness-artifacts/critique/2026-06-12-231947-packet.md`
-  - `charness-artifacts/critique/2026-06-13-000213-packet.json`
-  - `charness-artifacts/critique/2026-06-13-000213-packet.md`
-  - `charness-artifacts/critique/2026-06-13-issue-359-goal-placeholder-closeout-resolution.md`
-  - `charness-artifacts/critique/2026-06-13-release-v0.44.1-critique.md`
-  - `charness-artifacts/metrics/rca-ledger.jsonl`
+  - `charness-artifacts/audit/closeout-floors.md`
+  - `charness-artifacts/critique/2026-06-13-083603-packet.json`
+  - `charness-artifacts/critique/2026-06-13-083603-packet.md`
+  - `charness-artifacts/critique/2026-06-13-091505-packet.json`
+  - `charness-artifacts/critique/2026-06-13-091505-packet.md`
+  - `charness-artifacts/critique/2026-06-13-093834-packet.json`
+  - `charness-artifacts/critique/2026-06-13-093834-packet.md`
+  - `charness-artifacts/critique/2026-06-13-105232-packet.json`
+  - `charness-artifacts/critique/2026-06-13-105232-packet.md`
+  - `charness-artifacts/critique/2026-06-13-release-0.45.0-packet.md`
   - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/spec/achieve-efficiency-improvements.md`
+  - `docs/conventions/implementation-discipline.md`
   - `docs/handoff.md`
-  - `docs/public-skill-dogfood.json`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/skills/achieve/references/goal-artifact.md`
-  - `plugins/charness/skills/achieve/scripts/check_goal_artifact.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_closeout_evidence.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_lib.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_section_placeholders.py`
-  - ... 8 more
+  - `plugins/charness/scripts/run_slice_closeout.py`
+  - ... 32 more
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
+- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-13-release-v0.44.1-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.44.1`.
+- Review proof: `charness-artifacts/critique/2026-06-13-release-0.45.0-packet.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.44.0 -> 0.44.1
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.44.0 -> 0.44.1
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
@@ -125,10 +111,11 @@ CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code t
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.45.0 (minor release). achieve-efficiency improvements from the 2026-06-13 operator-reported achieve-waste session (directions A/B/C/E/D). (1) DESCRIBE-FIRST CLOSEOUT (A) - the `achieve` After-phase now gets the full required closeout-evidence list up front via the describe-first preflight plus a dry `check_goal_artifact.py` pass, replacing draft-fail-fix churn with describe-fill-verify. (2) SLICE-CADENCE TEETH (B) - a `Current slice intent:` operating-frame field plus a non-blocking over-slice advisory (N consecutive charness-artifacts/-only commits; tune `CHARNESS_OVERSLICE_ARTIFACT_RUN`) curb per-commit premortem and over-slicing. (3) GATE-BASELINE-RUNTIME WASTE LENS (C) - a passing-but-slow gate run through `run_slice_closeout` is surfaced in the durable closeout payload against an adapter-overridable budget (`CHARNESS_GATE_RUNTIME_BUDGET_SECONDS`) and classified in the retro's new gate-baseline-runtime waste lens; the host pre-push hook's own runtime stays an explicit non-claim. (4) OBJECTIVE WASTE TELEMETRY (E) - charness's OWN closeout records gate-runtime/over-slice/slice-churn into a gitignored, on-by-default local `closeout-telemetry` stream (`CHARNESS_CLOSEOUT_TELEMETRY=off` to disable), and the weekly `retro` ships a miner (`mine_closeout_telemetry.py`) that routes recurring waste to a filed issue rather than the decaying recent-lessons digest. OPERATOR/CONSUMER NOTE - E is INTERNAL INSTRUMENTATION; the telemetry emitter is wired into charness's repo-root closeout and githooks, which are NOT shipped in the plugin, so an installed-plugin consumer does NOT start collecting telemetry on upgrade. Consumers inherit the SKILLS only (the weekly retro can READ a local stream if one exists; no cross-repo telemetry visibility). (5) FLOOR-ADDITION RESTRAINT (D) - a restraint checklist in implementation-discipline.md plus a closeout-floor audit; additive docs/policy. OPERATOR NOTE - additive; normal `charness update` is enough, no migration or renamed command surface, and installed-plugin consumers inherit no new blocking behavior. Rollback - reinstall or pin 0.44.1; no data migration needs undoing.
 - Run `charness update` to pull 0.44.1 (patch release). Issue 359 goal-closeout placeholder hardening. Complete-state goal artifacts now refuse untouched template placeholder content instead of allowing a goal to close with scaffold text still present: Final Verification evidence placeholders are reported as missing evidence, and H2 section placeholders such as `## Auto-Retro` are reported under `section_placeholders`. Draft and active goal artifacts remain authorable with their scaffolding placeholders. The `charness goal check` command/options are unchanged; complete-state checks may now fail on untouched placeholders. OPERATOR NOTE - fix-class; normal `charness update` is enough, no migration or renamed command surface is required. Rollback: reinstall or pin 0.44.0; no data migration needs undoing.
 - Run `charness update` to pull 0.44.0 (minor release). Issue 358 tripwire response - citing mutation CI runs as proof is now gate-shaped instead of prose. (1) NEW CLAIM GATE - `scripts/check_mutation_run_proof.py` refuses citing a mutation workflow run as proof of a claim its trigger cannot evaluate. a `workflow_dispatch` run computes no `base_sha`, so a changed-line claim is refused deterministically (the `mutation-dispatch-no-base-sha-false-proof` class), `pull_request` dry-runs prove neither claim, and missing base evidence refuses by default; judge from explicit `--event`/`--base-sha` facts, the run's downloaded sample manifest (`--sample-manifest sample.json|sample.md`), or live run metadata via `--run-id` (`gh run view`); exit 0 means the run can support the claim, exit 1 prints the refusal with the supported proof paths. (2) LOUD NO-BASE-SHA VERDICT - `scripts/check_changed_line_mutation_coverage.py` with no base SHA now emits a machine-readable `changed_line_proof: not-provable` field plus a stderr warning naming the class and the claim gate, so its `ok: true` skip can no longer be silently read as changed-line proof. (3) BEHAVIOR CHANGE (mutation workflow auto-close) - the `Close recovered mutation issue` step in the shipped `quality` mutation-tests template and the charness repo workflow is now schedule-only, so a dispatch-green run no longer machine-closes a changed-line regression issue. scoping. this lands in the charness repo and in NEWLY installed consumer workflows only - an existing consumer's already-instantiated `mutation-tests.yml` keeps dispatch auto-close until you re-copy the updated template (the quality install probe short-circuits at `installed`); to adopt it, re-copy `skills/public/quality/scripts/templates/mutation-tests.yml` over your workflow instance and re-apply your stack-specific install steps. (4) RCA LEDGER CONVERSION UPGRADES (charness self-dev metric; silent no-op in consumer repos) - an optional `conversion_upgrade=true` re-record marks a tripwire-response durable-artifact upgrade. excluded from conversion-rate denominators and the window anchor, never counted as a recurrence, refreshes the conversion stamp so a later recurrence falsifies the upgraded artifact, and annotates (never clears) falsified-conversion entries; `record_rca_event.py --conversion-upgrade` requires `--converted` and `--ref`, and the rubric adds the anti-laundering rule that an actual recurrence is always recorded as a plain event first. OPERATOR NOTE - additive; normal `charness update` is enough, no migration or renamed command surface.
 - Run `charness update` to pull 0.43.0 (minor release). Structural-quality contracts from the 2026-06-12 autonomous overnight bundle plus issues 356/357. (1) CLONE ADVISORIES ARE STRUCTURAL SIGNALS - the `quality` skill's `inventory-dispatch.md` gains a Clone Families As Structural Signals taxonomy: each reviewed family maps to one structural response (machine-owned consistency for intentional duplication, owned extraction, generated-surface ownership, or design review), `total_dup_lines` is explicitly never a reduction target or a cross-scanner-version trend, and per-family dispositions are recorded in the quality artifact so later scans consume decisions; the nose inventory payload notes state the same rules. (2) QUALITY SIGNAL SCORECARD (issue 356) - new `quality` reference `quality-signal-scorecard.md`: before any structural quality cleanup edit, score candidates on behavior value, intent overlap, structural-signal class, tool signals, ownership, gate blast radius, cost, disposition, and stop condition; metric-only cleanup rationale is rejected; wired from the inventory-dispatch structural-signals path, `testability-and-selection.md`, and the SKILL testability anchor. (3) MEANINGFUL-SLICE CADENCE (issue 357) - new shared reference `meaningful-slice-cadence.md` owns the slice-unit definition (a reviewable intent unit with named proof intent and verification boundary, never merely a small diff), fresh-eye review per meaningful unit and risk rather than per commit, broad/pre-push proof as bundle/final-boundary proof by default, and an artifact/current-pointer churn guardrail; critique, impl, quality, and achieve references delegate to it. (4) AUTHORING-REPO GATES - the charness-local standing gate set adds `check-bootstrap-shim-consistency` (the 74 intentionally-duplicated `_load_skill_runtime_bootstrap` copies are now byte-consistency-guarded with a `--fix` mode) and the advisory `check-public-doc-coupling` (issue anchors and charness self-version pins are kept out of exported reusable guidance; the provenance-placement convention gains the exported-reusable-guidance class as its strictest tier); both run in the authoring repo, not in consumers. (5) CONTRACT-EFFECTIVENESS FIXTURE - `evals/cautilus/contract-effectiveness.fixture.json` derives three cases from retro-documented real contract violations; it is deterministically schema-validated and live execution stays behind the cautilus planner consult and justification-log wrapper. OPERATOR NOTE - additive; normal `charness update` is enough, no migration or renamed command surface; the second-machine/temp-home release-proof arm was retired from the release adapter checklist by operator decision.

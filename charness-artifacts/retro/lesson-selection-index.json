@@ -11,21 +11,21 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-13",
-  "source_artifact_count": 208,
-  "candidate_count": 1071,
+  "source_artifact_count": 209,
+  "candidate_count": 1072,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 32,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+      "source_count": 33,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
       "latest_source_date": "2026-06-13",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 11.85,
+      "selection_weight": 12.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -186,6 +186,11 @@
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -194,13 +199,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 32,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+      "source_count": 33,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
       "latest_source_date": "2026-06-13",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 11.85,
+      "selection_weight": 12.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -359,6 +364,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Waste"
         }
@@ -379,6 +389,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:70f1be7bfc9c",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v0.45.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v0 45 0",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
+      "latest_source_date": "2026-06-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Context"
         }
@@ -543,26 +573,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:34e1a228f95f",
-      "kind": "next_improvement",
-      "lesson": "Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary.",
-      "normalized_key": "carry forward that broad gates are final bundle proof slice iteration should rely on",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
-      "latest_source_date": "2026-06-12",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-quality-goal-closeout.md",
-          "date": "2026-06-12",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -571,13 +581,13 @@
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 32,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+      "source_count": 33,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
       "latest_source_date": "2026-06-13",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 11.85,
+      "selection_weight": 12.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -738,6 +748,11 @@
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -746,13 +761,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 32,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+      "source_count": 33,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
       "latest_source_date": "2026-06-13",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 11.85,
+      "selection_weight": 12.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -911,6 +926,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Waste"
         }
@@ -931,6 +951,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:70f1be7bfc9c",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v0.45.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v0 45 0",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
+      "latest_source_date": "2026-06-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
           "date": "2026-06-13",
           "section": "Context"
         }
