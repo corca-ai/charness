@@ -23,26 +23,25 @@
   dispatch/no-base-sha mutation-proof false conversion is gate-backed + RCA-upgraded.
 - **#184 verdict stays not-met by design** until the 06-05 recurrence ages out of
   the rolling 28d window (the upgrade annotates, never clears).
-- **achieve-efficiency effort in flight** (spec
-  [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md),
-  the canonical contract and resumption surface). Slice 1 (A describe-first
-  closeout, C gate-baseline-runtime waste lens) landed `55631fe8`; Slice 2 (B
-  over-slice advisory, `Current slice intent:` frame) landed `01104241`. Direction
-  **E** (objective waste telemetry — the loop-observability fix) is **designed and
-  critiqued, implementation deferred to this/next session by operator call**.
+- **achieve-efficiency effort COMPLETE** (spec
+  [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md)).
+  A+C `55631fe8`, B `01104241`, **E (objective waste telemetry) `785908e0`**,
+  **D (floor-restraint checklist + closeout-floor audit) `df407a07`**,
+  bundle-boundary spec fix `f79abce2`. Bundle re-confirmed green
+  (`--verification-lock --produce-mutation-coverage`): 2902 passed, mutation
+  coverage produced; E1 telemetry + C gate-runtime advisory dogfooded live. Each
+  slice fresh-eye critiqued (E/D found+folded real issues).
 - **Open issues (`gh`, 2026-06-13): none.**
 - Restart note: active sessions may carry pre-0.44.1 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
 
-- **Prioritized pickup: implement Slice 3 = E** of the
-  [achieve-efficiency spec](../charness-artifacts/spec/achieve-efficiency-improvements.md)
-  — read its `## Resumption` section first (names on-disk inputs, files to touch,
-  and the E → D → bundle-broad-pytest order). E1 records `gate_runtime`/`over_slice`
-  into a sibling closeout-telemetry stream; E2a mines it in the weekly retro and
-  routes recurring waste to filed issues (not the decaying digest). Then Slice 4 =
-  D, then the bundle-boundary `run_slice_closeout.py --verification-lock`.
+- **achieve-efficiency is done; no pickup owed.** Live follow-ons (spec Deferred
+  Decisions, each with a reopen trigger, none started): **E2b** (chunker ingests
+  recurring waste — autonomous-loop closure, likely needs a ceal run), **A2**
+  (goal-conditional describe absorbs the conditional `keep` floors), the
+  **Coordination-Cues floor merge**, `follow-up:floor-addition-restraint-nudge`.
 - The #184 verdict flips on its own as the window rolls forward if no new
   falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
 - Deferred (valid-but-defer, not filed): run-id-mode refusal class key for
