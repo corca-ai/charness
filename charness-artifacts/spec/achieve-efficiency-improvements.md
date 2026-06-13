@@ -89,6 +89,24 @@ silently decays.
    verification-lock is still memory-only. So the system both over-adds floors
    (feeding #1) and leaves real recurrences teeth-less (feeding #2/#3).
 
+5. **The self-improvement loop never observes its own operational waste (the
+   meta-gap the operator surfaced).** Despite repeated "autonomously choose the
+   next work" runs, none of #1–#3 surfaced on their own — a human had to name
+   them. Verified why: (a) autonomous next-work selection is the **handoff
+   chunker**, which reasons over the **issue backlog + handoff doc only** (no
+   usage-episode input) — so it can only pick up waste already *filed* as an
+   issue; (b) **usage episodes** accumulate at
+   `.charness/usage-episodes/usage_episode.jsonl` (gitignored, per-repo,
+   adapter-resolvable) but capture a **product-success** signal
+   (`outcome_status: delivered`, `t_status`) for the #184 conversion metric —
+   they have **no field** for gate runtime, commit churn, validator-rejection
+   rounds, or slice size, and the work-selection loop never reads them; (c)
+   waste-detection therefore lives only in the **agent-authored retro**, with the
+   #1–#3 blind spots above. Two compounding facts: cross-repo episodes are
+   gitignored local (charness *structurally cannot* see ceal's), and even
+   same-repo episodes record no waste fields and are not mined. Net: operational
+   waste surfaces only when a human notices — exactly what happened.
+
 **Version-skew context (scopes the fix, not fixed here).** ceal's installed
 `achieve` is an older era: `lifecycle.md` 520 lines vs 752 here; 16 scripts vs
 24; missing Structural-follow-up / recurrence-lineage / Closeout-Delegation /
@@ -96,20 +114,25 @@ silently decays.
 contract. The current charness contract is *heavier*, so naive propagation would
 make #1 **worse** unless A lands first. This is the central design constraint.
 
-## Current Slice
+## Current Slice / Sequence
 
-Sequence by risk, dependency, and the critique's anti-decay correction:
+Status (live):
 
-- **Slice 1 = A1 + C + the advisory-module split** (low-risk wiring + the
-  net-new runtime advisory surface). The advisory module is split out of
-  `run_slice_closeout.py` (already near its length cap per the #332 retro) so
-  both C and B build on it — this pre-empts the C7 module coupling.
-- **Slice 2 = B-core**, landed **enabled by default** (not deferred behind a
-  probe — see Fixed Decision B / C3 correction). Only the advisory's threshold
-  is probe-tuned.
-- **Slice 3 = D** (restraint rule + floor audit).
+- **Slice 1 = A1 + C** — **DONE** (commit `55631fe8`). Describe-first closeout
+  wiring + gate-baseline-runtime waste lens + advisory; broad pytest green, C
+  dogfooded live (231s gate fired the advisory).
+- **Slice 2 = B** — **DONE** (commit `01104241`). `Current slice intent:` frame
+  field + enabled over-slice advisory + premortem↔cadence single-source sentence.
+- **Slice 3 = E (E1 + E2a)** — **NEXT, PRIORITIZED above D** (operator call). Close
+  the loop on objective operational-waste telemetry. **Design-only for now;
+  implementation deferred to a post-compaction session** (see *Resumption*).
+- **Slice 4 = D** — restraint rule + floor audit. After E.
+- **Bundle boundary** — a final `run_slice_closeout.py --verification-lock`
+  broad-pytest re-confirmation before the whole effort is declared complete (the
+  Slice 2/E/D commits used targeted proof per the meaningful-slice cadence).
 
-This spec is the canonical contract for all four; only Slice 1 locks now.
+This spec is the canonical contract for all five directions and the canonical
+**resumption surface** after compaction.
 
 ## Fixed Decisions
 
@@ -153,8 +176,46 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
   fires once per slice-intent boundary; further commits in the same intent
   re-fire only when the risk boundary moves.* Reuse #357's
   `meaningful-slice-cadence.md` definition; do not re-define it.
-- **D (restraint rule + closeout-floor audit).** Add a "before adding a new
-  deterministic floor" restraint checklist to
+- **E (close the loop on objective operational-waste telemetry) — PRIORITIZED
+  above D (operator call).** The self-improvement loop today *captures*
+  (episodes) and *surfaces* (retro digest) but never *observes* operational waste
+  objectively or feeds it into work selection (Problem 5). E closes that. Two
+  parts:
+  - **E1 — record objective waste signals.** Persist the operational-waste
+    signals the closeout already computes into a durable, accumulating telemetry
+    record, reusing the usage-episode accumulation pattern (jsonl, adapter-
+    resolved path, rotation) but as a **sibling `closeout-telemetry` stream**,
+    *not* the product-success episode — so the #184 product-review consumers stay
+    clean (separation of product-success vs operational-waste concerns). Seed the
+    fields from what already exists after Slices 1–2: `gate_runtime` (C's
+    `gate_runtime_advisory` verdict) and `over_slice` (B's trailing artifact-only
+    run). Add `slice_churn` (commit count / artifact-only ratio over the slice).
+  - **E2a — mine the stream in the weekly retro.** `retro` weekly mode already
+    mines usage episodes for trends (`weekly-trends.md`); add a waste-trends
+    aggregation over the `closeout-telemetry` stream that surfaces recurring
+    over-budget gates / over-slice runs. **Teeth — must force the filed-issue
+    branch, not the digest (critique R1b).** A recurring (`recurs:`) waste item
+    must disposition to a **filed `issue`** (tracked work the chunker reasons
+    over), NOT to the `recent-lessons.md` digest — the digest has a 14-day
+    half-life and would decay the item back out, re-entering the exact
+    Problem-4 prose-decay trap this spec criticizes. "dispositioned" alone is not
+    enough; recurring waste → issue.
+  - **Honest non-claim (Fixed).** Telemetry is gitignored per-repo, so mining
+    surfaces *this* repo's waste only; ceal's waste needs the loop running *in*
+    ceal (with patched skills) over ceal's local stream. E does not — and must
+    not pretend to — give charness cross-repo visibility.
+  - **Scope honesty on closure (critique R1a).** E1+E2a **instrument and surface**
+    the loop; they do not by themselves close Problem 5's *autonomous-loop* gap —
+    the operator's pain was per-run, and E2a mines weekly. **E2b** (deferred —
+    chunker ingests recurring waste as candidate work) is what actually closes the
+    autonomous loop. Do not describe E1+E2a as "closing" Problem 5.
+  - **Authoring-repo thinness (critique R1, defer-with-note).** charness's own
+    stream is mostly release auto-retros, not heavy autonomous-goal churn, so
+    E2b's reopen trigger ("E2a proves the stream surfaces real waste") may not
+    trip in charness — it likely needs a **ceal** run to demonstrate value. Record
+    this so the deferred trigger is not silently dead.
+- **D (restraint rule + closeout-floor audit) — now AFTER E.** Add a "before
+  adding a new deterministic floor" restraint checklist to
   `docs/conventions/implementation-discipline.md`: (1) does this raise
   closeout-contract weight (Problem-1 cost)? (2) is advisory/prose enough? (3)
   can an existing describe-first preflight absorb it? Prefer advisory unless
@@ -191,6 +252,15 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
   threshold `N` (consecutive artifact-only commits / commits-per-intent) against
   the recent goal corpus so it does not false-fire on a legitimate multi-commit
   slice. Written back to the adapter and the B acceptance test.
+- **E stream shape — sibling vs episode-schema.** Confirm a sibling
+  `closeout-telemetry.jsonl` is the right home vs extending the usage-episode
+  schema with a `waste_signals` block. Recommend sibling (keeps the #184
+  product-success consumers clean). Answer at E implementation; written back here.
+- **E `fix_after_fail_rounds` capture (Problem-1 analog).** How to objectively
+  count validator-rejection rounds for a slice — closeout self-tracking across
+  re-runs, or a "describe-first preflight consulted?" proxy? This is the hardest
+  objective signal; E1 ships `gate_runtime` + `over_slice` + `slice_churn` first
+  and treats `fix_after_fail_rounds` as a follow-on probe, not a launch blocker.
 
 ## Deferred Decisions
 
@@ -204,6 +274,11 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
 - **Global autonomous budgets** (max wall/commit/slice) from ceal
   `2026-05-26-codex-goal-efficiency.md`. Reopen trigger: B's advisory proves
   insufficient to curb over-slicing in a real run.
+- **E2b — chunker waste-source.** Make the autonomous next-work loop (handoff
+  chunker) ingest the top recurring waste from the `closeout-telemetry` stream as
+  candidate work, alongside issues + handoff. Higher-leverage but higher-risk (it
+  changes autonomous work selection). Reopen trigger: E2a (weekly-retro mining)
+  proves the telemetry stream surfaces real, actionable recurring waste.
 - **Git-helper OSError hardening** (Slice 2 impl critique, Valid-but-Defer).
   `_recent_commit_path_lists` and the sibling `_added_vs_base` both guard only
   `returncode != 0`; a missing `git` binary would raise `FileNotFoundError`.
@@ -249,10 +324,13 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
   the disposition/structural-follow-up form drift pins, and `validate_skills`.
 - Prompt-surface claim split: closeout **correctness** guarantees are `preserve`;
   authoring **efficiency** is `improve`. Leave the Cautilus proof path visible.
-- `run_slice_closeout.py` is near its length cap (#332 retro) — Slice 1 **splits
-  the advisory into its own module** before C/B append to it (C7).
+- `run_slice_closeout.py` is near its length cap (#332 retro) — keep new logic in
+  `scripts/slice_closeout_advisories.py` (the advisory module already exists; the
+  C7 "split" dissolved — see Implementation Notes). E1's telemetry-writer should
+  follow the same module-not-entrypoint placement.
 - Advisory output must be non-blocking and quiet on the common case (no false
-  fire on a legitimately multi-commit slice).
+  fire on a legitimately multi-commit slice). E1's telemetry write must likewise
+  never block or fail closeout (degrade silently like the usage-episode emitter).
 
 ## Success Criteria
 
@@ -275,6 +353,14 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
   The premortem↔cadence collision has one authoritative resolution sentence.
 - **D:** A maintainer adding a new floor encounters the restraint checklist; the
   closeout-floor audit exists at the named path with a per-floor decision.
+- **E (instrument + surface; E2b closes).** Operational waste the closeout
+  already computes (gate runtime over budget, over-slice run) is recorded into a
+  durable accumulating stream, and the weekly retro surfaces recurring instances
+  and routes them to **filed issues** (not the decaying digest) — so recurring
+  waste becomes tracked work the chunker reasons over. This **instruments and
+  surfaces** the Problem-5 loop (scoped to this repo's stream); fully *closing*
+  the autonomous-loop gap is **E2b** (deferred), where the next-work loop ingests
+  the recurring waste directly.
 
 ## Acceptance Checks
 
@@ -303,6 +389,18 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
   negative test (C5):** a goal with **no** `Current slice intent:` line still
   passes `check_goal_artifact.py --status complete`. `critique/references/cadence.md`
   and `achieve` carry the single premortem↔cadence resolution sentence (grep).
+- **E1:** a `run_slice_closeout.py` run appends a durable `closeout-telemetry`
+  record carrying `gate_runtime` + `over_slice` (+ `slice_churn`) for the slice;
+  unit test asserts the record and fields exist and reuse C's `gate_runtime_advisory`
+  + B's over-slice run (no recomputation drift). Negative: a fast under-budget,
+  non-churning slice records the fields as empty/zero, not absent.
+- **E2a:** the weekly `retro` over a seeded `closeout-telemetry` stream (a gate
+  repeatedly over budget across N records) surfaces that gate and dispositions it
+  to a **filed `issue`** (recurring `recurs:` waste → tracked work), **not** a
+  `recent-lessons.md` digest line; fixture test asserts the recurring waste is
+  named AND the disposition is the issue branch (the digest-only branch fails the
+  test, per R1b). The cross-repo non-claim is stated in the weekly output (mines
+  this repo's stream only).
 - **D:** `implementation-discipline.md` carries the restraint checklist (grep);
   `charness-artifacts/audit/closeout-floors.md` exists listing each floor with an
   `absorb`/`merge`/`keep` decision.
@@ -351,6 +449,25 @@ Bounded fresh-eye spec critique ran before lock (target: `spec-critique.md`).
 **Fixed/Probe/Defer coherence after fold:** SC-A no longer over-claims past the
 Fixed mechanism; B is Fixed-enabled (no Fixed-leaning-on-Defer); D's deliverable
 has a path; all Deferred items name reopen triggers.
+
+### Direction E design critique (added later, design-only)
+
+Bounded fresh-eye spec critique on the E design (packet
+`charness-artifacts/critique/2026-06-13-105232-packet.md`; 2 angle reviewers +
+counterweight; parent-delegated). Coherence + acceptance coverage: PASS. Three
+Act-Before-Ship, all folded:
+
+- *R1b (must-fix)* — E2a's "dispositioned Next Improvement" could route to the
+  `recent-lessons.md` digest, which decays (14-day half-life) and re-enters the
+  Problem-4 prose-decay trap. Folded: E2a now **forces the filed-issue branch**
+  for recurring (`recurs:`) waste, with the acceptance check asserting it.
+- *R1a* — E's Success Criterion over-claimed "closes Problem 5". Folded: E1+E2a
+  **instrument + surface**; **E2b** (deferred) closes the autonomous-loop gap.
+- *R2* — a stale bottom-of-file "First Implementation Slice" block would mis-route
+  a post-compaction reader (D before E). Folded: superseded by Current Slice /
+  Sequence + Resumption.
+- *Valid-but-Defer (noted, not solved)* — E's authoring-repo value is thin
+  (mostly release auto-retros), so E2b's reopen trigger likely needs a ceal run.
 
 ## Implementation Notes (Slice 1 folds)
 
@@ -404,25 +521,33 @@ canonical build contract during implementation. The `achieve`/`retro`/`critique`
 skill surfaces and `implementation-discipline.md` are the edit targets; this spec
 is updated if implementation discovers a scope/acceptance change.
 
+## Resumption (post-compaction pickup)
+
+Implementation of E (and D) is deliberately deferred to a fresh session after
+compaction. To resume:
+
+1. This spec is canonical. Slices 1 (A1+C, `55631fe8`) and 2 (B, `01104241`) are
+   landed; read the `## Implementation Notes` folds before touching their code.
+2. **Start at Slice 3 = E.** E1's inputs already exist on disk: the closeout JSON
+   payload's `gate_runtime_advisory` field (C) and the over-slice trailing-run
+   logic in `scripts/slice_closeout_advisories.py` (B). E1 writes those into a
+   sibling `closeout-telemetry` stream (mirror the usage-episode emitter pattern
+   in `scripts/slice_closeout_usage_episode.py`: jsonl, adapter-resolved path,
+   rotation, degrade-silently). E2a adds weekly-retro mining in
+   `skills/public/retro/references/weekly-trends.md` + its consumer.
+3. Resolve the E probes (sibling-vs-schema, `fix_after_fail_rounds` capture)
+   before locking E's contract; run a fresh bounded critique on the E
+   implementation diff (impl stop gate).
+4. Then Slice 4 = D, then the **bundle-boundary** `run_slice_closeout.py
+   --verification-lock` broad-pytest re-confirmation before declaring done.
+5. Honest scope reminder: telemetry is gitignored per-repo — E surfaces this
+   repo's waste only; ceal needs the patched skills + its own loop run.
+
 ## First Implementation Slice
 
-**Slice 1 — A1 + C + advisory-module split (close-the-loop bundle):**
-1. Split the runtime/over-slice **advisory into its own module** out of
-   `run_slice_closeout.py` (pre-empts the length cap; gives C and B a shared
-   surface).
-2. Wire `check_artifact_surface_preflight.py --type goal-closeout` + the dry
-   `check_goal_artifact.py` pass as the pre-draft closeout step in `lifecycle.md`
-   After-phase and the SKILL.md After bullet; add the aggregate principle to the
-   closeout-gate paragraph.
-3. Add the gate-baseline-runtime waste category to `section-guide.md` and the
-   carve-out (with the host-pre-push-hook non-claim) to
-   `phase-aware-efficiency.md`; add the non-blocking advisory that aggregates
-   per-gate `elapsed_seconds` into the durable closeout payload against an
-   adapter-overridable budget.
-4. Sync `plugins/` mirrors; run `run_slice_closeout.py` (cheap structural sweep +
-   targeted tests), then the bundle broad gate; record the slice per the
-   operating contract.
-
-**Slice 2 — B-core** (frame field + enabled advisory + premortem↔cadence
-sentence) on the split advisory module. **Slice 3 — D** (restraint checklist +
-floor audit artifact).
+**Superseded by `## Current Slice / Sequence` and `## Resumption` above** — those
+are the live plan. Historical record only: Slice 1 (A1+C, landed `55631fe8` —
+note the planned "advisory-module split" *dissolved*, the module already existed)
+and Slice 2 (B, landed `01104241`) are done. The next implementation slice is
+**E** (post-compaction), then **D**, then the bundle-boundary broad-pytest
+re-confirmation.
