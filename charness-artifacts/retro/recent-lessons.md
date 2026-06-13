@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`; sources: 33)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`; sources: 34)
 - Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 - The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`; sources: 33)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`; sources: 34)
 - **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 - **workflow — stage explicit paths, not `git add -A`, when untracked/off-goal files may be present.** The closeout proof and commit should cover only the goal's own changed set; `git add -A` couples in concurrent WIP. (Transferable — see Sibling Search.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 - **workflow — the A2 `--goal-path` describe is now the right first closeout step**; it surfaced this goal's exact missing set first-try. Use it instead of the static catalog + separate dry check going forward (the SKILL.md/lifecycle wiring now points there). (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
@@ -61,4 +61,5 @@
 - `charness-artifacts/retro/2026-06-12-v0-44-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`
