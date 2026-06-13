@@ -13,11 +13,12 @@
 
 ## Current State
 
-- **v0.44.0 shipped and public release is verified.** Release commit
-  `f27f18d7 Record release verification for v0.44.0`; tag `v0.44.0`
-  is published and the maintainer install auto-refreshed to 0.44.0 (see
+- **v0.44.1 shipped and public release is verified.** Release commit
+  `ac0d8063 Release charness 0.44.1`; release-verification commit
+  `b0f06462 Record release verification for v0.44.1`; tag `v0.44.1`
+  is published and the maintainer install auto-refreshed to 0.44.1 (see
   [release latest](../charness-artifacts/release/latest.md)).
-- **#359 resolved and CLOSED (carrier `ebff7d50`, GitHub state verified).**
+- **#359 resolved, CLOSED, and shipped in v0.44.1 (carrier `ebff7d50`).**
   `achieve` complete-state closeout now blocks pending section placeholders via
   `section_placeholders`; draft/active scaffolds remain allowed. Critique:
   [#359](../charness-artifacts/critique/2026-06-13-issue-359-goal-placeholder-closeout-resolution.md).
@@ -30,7 +31,7 @@
   upgrade annotates, never clears). The aggregator now renders
   `(artifact upgraded 2026-06-12, #358)` on the falsified entry.
 - **Open issues (`gh`, 2026-06-13): none.**
-- Restart note: active sessions carry pre-0.44.0 plugin cache paths; restart
+- Restart note: active sessions may carry pre-0.44.1 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
@@ -61,5 +62,5 @@
 
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [quality latest](../charness-artifacts/quality/latest.md)
-- [v0.44.0 release record](../charness-artifacts/release/latest.md)
+- [v0.44.1 release record](../charness-artifacts/release/latest.md)
 - [overnight bundle critique](../charness-artifacts/critique/2026-06-12-autonomous-structural-quality-bundle.md)
