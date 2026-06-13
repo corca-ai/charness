@@ -123,10 +123,15 @@ Status (live):
   dogfooded live (231s gate fired the advisory).
 - **Slice 2 = B** — **DONE** (commit `01104241`). `Current slice intent:` frame
   field + enabled over-slice advisory + premortem↔cadence single-source sentence.
-- **Slice 3 = E (E1 + E2a)** — **NEXT, PRIORITIZED above D** (operator call). Close
-  the loop on objective operational-waste telemetry. **Design-only for now;
-  implementation deferred to a post-compaction session** (see *Resumption*).
-- **Slice 4 = D** — restraint rule + floor audit. After E.
+- **Slice 3 = E (E1 + E2a)** — **DONE** (this session, post-compaction). E1 emits a
+  sibling `closeout-telemetry` stream (`scripts/slice_closeout_telemetry.py`,
+  wired into `run_slice_closeout.py`) reusing C's `gate_runtime_advisory` + B's
+  `over_slice_run` (no recompute drift) plus a new `slice_churn` signal; E2a mines
+  it (`skills/public/retro/scripts/mine_closeout_telemetry.py` + `weekly-trends.md`)
+  and routes recurring (`recurs:`) waste to a **filed issue**, never the decaying
+  digest. 15 new tests green; targeted proof per cadence (bundle boundary owns the
+  broad re-confirm). See *Implementation Notes (Slice 3 folds — E)*.
+- **Slice 4 = D** — restraint rule + floor audit. **NEXT.** After E.
 - **Bundle boundary** — a final `run_slice_closeout.py --verification-lock`
   broad-pytest re-confirmation before the whole effort is declared complete (the
   Slice 2/E/D commits used targeted proof per the meaningful-slice cadence).
@@ -252,15 +257,23 @@ This spec is the canonical contract for all five directions and the canonical
   threshold `N` (consecutive artifact-only commits / commits-per-intent) against
   the recent goal corpus so it does not false-fire on a legitimate multi-commit
   slice. Written back to the adapter and the B acceptance test.
-- **E stream shape — sibling vs episode-schema.** Confirm a sibling
-  `closeout-telemetry.jsonl` is the right home vs extending the usage-episode
-  schema with a `waste_signals` block. Recommend sibling (keeps the #184
-  product-success consumers clean). Answer at E implementation; written back here.
-- **E `fix_after_fail_rounds` capture (Problem-1 analog).** How to objectively
-  count validator-rejection rounds for a slice — closeout self-tracking across
-  re-runs, or a "describe-first preflight consulted?" proxy? This is the hardest
-  objective signal; E1 ships `gate_runtime` + `over_slice` + `slice_churn` first
-  and treats `fix_after_fail_rounds` as a follow-on probe, not a launch blocker.
+- **E stream shape — sibling vs episode-schema. RESOLVED (Slice 3): sibling.**
+  `closeout-telemetry.jsonl` is a sibling file in the already-gitignored
+  `.charness/usage-episodes/` tree, with its own `event_type:
+  "closeout_telemetry"` — NOT a `waste_signals` block on the usage-episode schema.
+  This keeps the #184 product-success consumers (and the episode schema) untouched
+  and lets the stream be **on by default** (the usage episode is opt-in via an
+  adapter because it carries a product metric; operational-waste counters are safe
+  to always accumulate locally — and must, or Problem 5 recurs). The miner filters
+  by `event_type`, so the two streams could even share a file safely; separate
+  files are cleaner.
+- **E `fix_after_fail_rounds` capture (Problem-1 analog) — still DEFERRED.** E1
+  ships `gate_runtime` + `over_slice` + `slice_churn` (all reusing or cheaply
+  derived from existing closeout signals). Counting validator-rejection rounds
+  objectively still needs closeout self-tracking across re-runs or a
+  "describe-first preflight consulted?" proxy; carried as a follow-on probe, not a
+  launch blocker. Reopen trigger: A1's describe-first wiring lands a consulted/not
+  signal the closeout can record.
 
 ## Deferred Decisions
 
@@ -514,6 +527,73 @@ spec/impl discipline):
   `meaningful-slice-cadence.md` *Review Cadence*; `critique/references/cadence.md`
   and the `achieve` lifecycle defer to it (no duplicated copy that could drift).
 
+### Direction E implementation critique (Slice 3, post-compaction)
+
+Bounded fresh-eye code critique on the E implementation diff (impl stop gate;
+parent-delegated, 3 angle reviewers — correctness/robustness, boundary-honesty,
+portability/consistency — + 1 separate counterweight). **Verdict: ship; zero
+Act-Before-Ship across all four.** Record:
+
+- **Correctness/robustness:** the never-block contract holds — every git/import/
+  JSON path is inside the emitter's `try`; `CHARNESS_QUALITY_MODE` suppression is
+  first; emit fires exactly once per executed run with honest `status`; no-drift
+  verified live (advisory and telemetry both report the same `over_slice_run`).
+- **Boundary-honesty:** R1b teeth are enforced in *code*, not just prose —
+  `file-issue`/`watch` are the only disposition values; the digest is not a
+  reachable branch. Cross-repo non-claim emitted unconditionally. No source claims
+  E "closes" Problem 5. `disabled` state genuinely visible in the terminal payload
+  as declared.
+- **Portability:** two path literals (emitter repo-root + miner skill-local) are
+  the portable-correct choice (a shared constant would force the plugin to import
+  a repo-root module a consumer lacks — the version-skew failure class); miner is
+  pure stdlib and degrades gracefully on a stream-less repo; `weekly-trends.md`
+  invokes it via `$SKILL_DIR`.
+- **Folded (cheap):** a clarifying comment on `_slice_churn` documenting the
+  deliberate unbounded-window difference vs the bounded `over_slice` field.
+- **Confirmed-deferred (no action this slice):** `slice_churn` issues N+1 git
+  subprocesses (acceptable at closeout cadence; revisit only on latency);
+  git-OSError + float-cast hardening (already deferred with reopen triggers);
+  E2a labels the `file-issue` disposition but does not auto-open a `gh` issue —
+  automated chunker ingestion is **E2b** (deferred). Keep closeout language honest:
+  E1+E2a instrument + surface; E2b closes.
+
+## Implementation Notes (Slice 3 folds — E)
+
+Facts the E implementation surfaced (kept alive per spec/impl discipline):
+
+- **Telemetry is on by default; usage episodes stay opt-in.** The usage-episode
+  emitter requires an adapter + `enabled: true` because it carries the #184
+  product metric. Closeout-telemetry deliberately does NOT — gating operational
+  waste behind an opt-in adapter the operator forgets to set would reproduce
+  Problem 5 exactly (waste accumulates only when a human first notices). It is on
+  by default, writes only under the gitignored `.charness/` tree, and is escapable
+  via `CHARNESS_CLOSEOUT_TELEMETRY=off` (+ `CHARNESS_CLOSEOUT_TELEMETRY_MAX_MB`
+  rotation). The `disabled` state is declared in `attention-state-visibility.json`
+  so it stays visible in the terminal payload, not a silent clean state.
+- **`CHARNESS_QUALITY_MODE` suppression is mandatory, not optional.** Mirrors the
+  usage-episode emitter: a closeout spawned inside a quality/verification run (the
+  broad pytest exports `CHARNESS_QUALITY_MODE` to its whole tree) must NOT write
+  telemetry, or it races the suite (the #194 state-bleed class). Without this the
+  E1 emitter would fire during its own broad-pytest gate.
+- **No-drift achieved by one shared computation, not a cached value.** B's
+  `advise_over_slicing` was refactored to call a new `over_slice_run(repo_root)`;
+  E1's record calls the same function, so the telemetry number and the advisory
+  number cannot diverge. `gate_runtime` is the literal `gate_runtime_advisory`
+  object off the payload (asserted `is`-identical in the test).
+- **Emit on both success and stop paths.** Telemetry attaches right after
+  `attach_gate_runtime_advisory`, so a FAILED closeout (slow gate, churn) still
+  records its waste with an honest `status`, not only clean completions.
+- **E2a wiring lives in `weekly-trends.md`, not SKILL.md core.** The retro
+  SKILL.md core was at 160/160 nonempty (zero headroom); adding the miner pointer
+  to the core would have failed the length gate. The canonical weekly reference is
+  the correct layer anyway (detailed routing belongs in references). A clarifying
+  note resolves the apparent `What Not To Copy: telemetry` contradiction — weekly
+  *reads* an existing local stream, it does not *write* hidden telemetry.
+- **E2b reopen trigger unchanged.** E1+E2a instrument + surface; the autonomous
+  loop (handoff chunker ingesting recurring waste) is still E2b (deferred), and its
+  reopen still likely needs a ceal run to demonstrate value (charness's own stream
+  is mostly release auto-retros).
+
 ## Canonical Artifact
 
 `charness-artifacts/spec/achieve-efficiency-improvements.md` (this file) is the
@@ -528,18 +608,19 @@ compaction. To resume:
 
 1. This spec is canonical. Slices 1 (A1+C, `55631fe8`) and 2 (B, `01104241`) are
    landed; read the `## Implementation Notes` folds before touching their code.
-2. **Start at Slice 3 = E.** E1's inputs already exist on disk: the closeout JSON
-   payload's `gate_runtime_advisory` field (C) and the over-slice trailing-run
-   logic in `scripts/slice_closeout_advisories.py` (B). E1 writes those into a
-   sibling `closeout-telemetry` stream (mirror the usage-episode emitter pattern
-   in `scripts/slice_closeout_usage_episode.py`: jsonl, adapter-resolved path,
-   rotation, degrade-silently). E2a adds weekly-retro mining in
-   `skills/public/retro/references/weekly-trends.md` + its consumer.
-3. Resolve the E probes (sibling-vs-schema, `fix_after_fail_rounds` capture)
-   before locking E's contract; run a fresh bounded critique on the E
-   implementation diff (impl stop gate).
-4. Then Slice 4 = D, then the **bundle-boundary** `run_slice_closeout.py
-   --verification-lock` broad-pytest re-confirmation before declaring done.
+2. **Slice 3 = E is DONE.** E1 = `scripts/slice_closeout_telemetry.py` (wired into
+   `run_slice_closeout.py`); E2a = `skills/public/retro/scripts/mine_closeout_telemetry.py`
+   + `weekly-trends.md`. Read `## Implementation Notes (Slice 3 folds — E)` before
+   touching their code. The sibling-vs-schema probe is resolved (sibling);
+   `fix_after_fail_rounds` stays deferred.
+3. **Start at Slice 4 = D.** Add the "before adding a new deterministic floor"
+   restraint checklist to `docs/conventions/implementation-discipline.md`, and
+   produce the closeout-floor audit at `charness-artifacts/audit/closeout-floors.md`
+   (per-floor `absorb`/`merge`/`keep`; audit output only, no floor removed). Run a
+   fresh bounded critique on the D diff (impl stop gate).
+4. Then the **bundle-boundary** `run_slice_closeout.py --verification-lock`
+   broad-pytest re-confirmation before declaring done (Slices 2/3 used targeted
+   proof per the meaningful-slice cadence).
 5. Honest scope reminder: telemetry is gitignored per-repo — E surfaces this
    repo's waste only; ceal needs the patched skills + its own loop run.
 

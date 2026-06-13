@@ -38,6 +38,8 @@ advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface
 advise_new_pool_module = _slice_closeout_advisories.advise_new_pool_module
 advise_over_slicing = _slice_closeout_advisories.advise_over_slicing
 attach_gate_runtime_advisory = _slice_closeout_advisories.attach_gate_runtime_advisory
+_slice_closeout_telemetry = import_repo_module(__file__, "scripts.slice_closeout_telemetry")
+emit_closeout_telemetry_for_slice = _slice_closeout_telemetry.emit_closeout_telemetry_for_slice
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
@@ -360,6 +362,14 @@ def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) 
     return _maybe_block_on_risk_interrupt(repo_root, payload, as_json=args.json)
 
 
+def _attach_closeout_telemetry(repo_root: Path, payload: dict[str, object]) -> None:
+    """Append the objective operational-waste record for this run (spec
+    achieve-efficiency-improvements, E1). Reads the final ``status`` already on the
+    payload, so callers must set it first. Never raises (the emitter degrades
+    silently); attaches its status dict for visibility."""
+    payload["closeout_telemetry"] = emit_closeout_telemetry_for_slice(repo_root, payload)
+
+
 def main() -> int:
     args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
@@ -448,6 +458,7 @@ def main() -> int:
     attach_gate_runtime_advisory(payload)
 
     if should_stop:
+        _attach_closeout_telemetry(repo_root, payload)
         return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
 
     payload["status"] = "completed"
@@ -455,6 +466,7 @@ def main() -> int:
     payload["usage_episode"] = usage_episode
     if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}:
         payload["status"] = "failed"
+    _attach_closeout_telemetry(repo_root, payload)
     return _emit_payload(payload, as_json=args.json)
 
 

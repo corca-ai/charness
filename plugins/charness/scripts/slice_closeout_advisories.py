@@ -248,15 +248,24 @@ def _recent_commit_path_lists(repo_root: Path, max_commits: int) -> list[list[st
     return result
 
 
+def over_slice_run(repo_root: Path) -> tuple[int, int]:
+    """The over-slice run value ``advise_over_slicing`` decides on, plus its
+    threshold, exposed as ONE computation so the E1 closeout-telemetry record
+    (spec achieve-efficiency, E) stores the same number the advisory prints — no
+    second, drifting calculation."""
+    threshold = resolve_overslice_artifact_run_threshold()
+    run = trailing_artifact_only_run(
+        _recent_commit_path_lists(repo_root, max_commits=threshold + 1)
+    )
+    return run, threshold
+
+
 def advise_over_slicing(repo_root: Path) -> None:
     """Non-blocking advisory (spec achieve-efficiency, B): a run of consecutive
     charness-artifacts/-only commits is over-slicing churn. Enabled by default;
     the threshold tunes via ``CHARNESS_OVERSLICE_ARTIFACT_RUN``. Reads git
     directly and degrades silently when the git command fails (not a git repo)."""
-    threshold = resolve_overslice_artifact_run_threshold()
-    run = trailing_artifact_only_run(
-        _recent_commit_path_lists(repo_root, max_commits=threshold + 1)
-    )
+    run, threshold = over_slice_run(repo_root)
     if run < threshold:
         return
     print(

@@ -32,9 +32,33 @@ likely failure modes are:
 - A machine-readable weekly snapshot is allowed only when the adapter gives an
   explicit `snapshot_path`.
 
+## Closeout Waste Trends
+
+Weekly may mine the local **closeout-telemetry** stream (objective operational
+waste the slice closeout already records: gates that pass but run over budget,
+and over-slice artifact-only-commit runs — spec achieve-efficiency-improvements,
+direction E). Read it with
+`$SKILL_DIR/scripts/mine_closeout_telemetry.py --repo-root .`.
+
+- This is **reading** an already-written local stream, not the telemetry/usage
+  *logging* the skill must not add (see *What Not To Copy*). Weekly never writes
+  the stream; E1's closeout emitter does.
+- **Disposition teeth (route recurring waste to a filed issue, not the digest).**
+  A waste item the miner marks `recurs:` (seen across multiple runs) must
+  disposition to a **filed `issue`** — tracked work the handoff chunker reasons
+  over — using `../../../shared/references/retro-issue-destination-split.md`. Do
+  **not** park recurring waste in the `recent-lessons.md` digest: it has a
+  ~14-day half-life and would decay the item back out (the prose-decay trap this
+  direction exists to fix). A one-off (`watch`) waste item needs no issue yet.
+- **Cross-repo non-claim.** The miner mines *this* repo's local, gitignored
+  stream only. Waste produced while running the skills in another repo (e.g.
+  ceal) lives in that repo's own stream; charness has no cross-repo telemetry
+  visibility. State this in the weekly output rather than implying global reach.
+
 ## What Not To Copy
 
 - session-dir or live-state orchestration
-- telemetry and usage logging
+- telemetry and usage *logging* (the skill must not write hidden telemetry; it
+  may *read* an existing local closeout-telemetry stream — see above)
 - host-specific prompt injection or startup hooks
 - giant global dashboards that require non-portable infrastructure

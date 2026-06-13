@@ -212,6 +212,12 @@
       "evidence_terms": ["skipped_reason"],
       "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
     },
+    "scripts/slice_closeout_telemetry.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["status", "emitted"],
+      "rationale": "Closeout-telemetry emission (spec achieve-efficiency E1) is on by default but returns a disabled status in the closeout payload's closeout_telemetry field when the operator sets CHARNESS_CLOSEOUT_TELEMETRY=off, so the off state stays visible in the terminal payload instead of being treated as a successful waste-signal capture. This is operational-waste telemetry, never quality or release closeout proof."
+    },
     "scripts/slice_closeout_usage_episode.py": {
       "states": ["disabled", "no_adapter", "skipped"],
       "visibility": ["terminal_payload"],
