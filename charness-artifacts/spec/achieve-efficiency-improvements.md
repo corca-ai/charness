@@ -131,10 +131,21 @@ Status (live):
   and routes recurring (`recurs:`) waste to a **filed issue**, never the decaying
   digest. 15 new tests green; targeted proof per cadence (bundle boundary owns the
   broad re-confirm). See *Implementation Notes (Slice 3 folds — E)*.
-- **Slice 4 = D** — restraint rule + floor audit. **NEXT.** After E.
-- **Bundle boundary** — a final `run_slice_closeout.py --verification-lock`
-  broad-pytest re-confirmation before the whole effort is declared complete (the
-  Slice 2/E/D commits used targeted proof per the meaningful-slice cadence).
+- **Slice 4 = D** — **DONE** (this session). Floor-Addition Restraint checklist
+  added to `docs/conventions/implementation-discipline.md`; closeout-floor audit
+  produced at `charness-artifacts/audit/closeout-floors.md` (complete live set:
+  absorb 7 / merge 4 / keep 6 in surface A + keep-all in surface B; no floor
+  removed). Load-bearing finding (narrowed after critique): the Problem-1 churn was
+  the *absorb-class* floors (already fixed by A1 visibility) + cadence (B/C); the
+  *conditional `keep`* floors carry a residual reactive-rejection risk A2 closes.
+  D's net new contribution is the restraint checklist (honestly framed as prose
+  with an advisory-nudge follow-up), not remediation of existing floors.
+- **Bundle boundary** — **NEXT / FINAL.** A single `run_slice_closeout.py
+  --verification-lock` broad-pytest re-confirmation over the whole effort before it
+  is declared complete (Slices 2/3/4 used targeted proof per the meaningful-slice
+  cadence). New mutation-pool modules this effort added
+  (`slice_closeout_telemetry.py`, `mine_closeout_telemetry.py`) mean the bundle
+  closeout should add `--produce-mutation-coverage`.
 
 This spec is the canonical contract for all five directions and the canonical
 **resumption surface** after compaction.
@@ -292,6 +303,25 @@ This spec is the canonical contract for all five directions and the canonical
   candidate work, alongside issues + handoff. Higher-leverage but higher-risk (it
   changes autonomous work selection). Reopen trigger: E2a (weekly-retro mining)
   proves the telemetry stream surfaces real, actionable recurring waste.
+- **`follow-up:floor-addition-restraint-nudge`** (Slice 4 D critique). The
+  Floor-Addition Restraint checklist is prose with no firing mechanism; a
+  deterministic **non-blocking** advisory that flags a new blocking floor landing
+  without a recorded restraint call (mirroring
+  `follow-up:portability-classification-tripwire`) is the teeth. Deferred — a
+  *blocking* enforcement gate is rejected (it is the reflex D names). Reopen
+  trigger: a new blocking floor lands without a recorded restraint call, or an
+  operator requests the nudge.
+- **A2 closes the conditional-floor residual** (Slice 4 D critique sharpened the
+  scope). The `keep` goal-closeout floors (rungs 1a/1b/1e, section-placeholder,
+  closeout-delegation, timebox) are runtime-conditional, so the static describe-first
+  catalog cannot surface them up front — they keep a residual reactive-rejection
+  risk. Already tracked as the A2 probe; the D audit names the exact floor set A2
+  would absorb. Reopen trigger: A2 is picked up (preflight reads the goal artifact).
+- **Coordination-Cues floor merge** (Slice 4 D audit). The four
+  `## Coordination Cues` floors (routing/gather/release/issue-closeout) share a
+  section + opt-out grammar and could fold into one routing-presence check.
+  Audit-only here; removal/merge is a separate critiqued change. Reopen trigger:
+  operator request, or the floors observed to double-fire.
 - **Git-helper OSError hardening** (Slice 2 impl critique, Valid-but-Defer).
   `_recent_commit_path_lists` and the sibling `_added_vs_base` both guard only
   `returncode != 0`; a missing `git` binary would raise `FileNotFoundError`.
@@ -481,6 +511,37 @@ Act-Before-Ship, all folded:
   Sequence + Resumption.
 - *Valid-but-Defer (noted, not solved)* — E's authoring-repo value is thin
   (mostly release auto-retros), so E2b's reopen trigger likely needs a ceal run.
+
+### Direction D critique (Slice 4)
+
+Bounded fresh-eye critique on the D deliverables (2 angle reviewers —
+efficacy/self-consistency + factual-accuracy — + counterweight; parent-delegated).
+The counterweight returned "ship, zero Act-Before-Ship"; both angle reviewers
+returned real Act-Before-Ship findings. **Parent adjudication: the counterweight
+correctly killed the over-reactions (no *blocking* tripwire now, no floor removal
+now), but the honesty/accuracy findings were valid and folded:**
+
+- *Accuracy (Act-Before-Ship, folded):* the audit's Section A inventoried ~7 of
+  the live goal-closeout floors and **mis-attributed #359** to rung 1a. #359 in
+  fact shipped the section-placeholder floor. Folded: Section A now lists the
+  complete live set — added rungs 1e (structural-follow-up) + 1f (residual-ledger),
+  the `## Coordination Cues` gather/release/issue-closeout floors (the strongest
+  `merge` candidates, alongside routing), the section-placeholder floor (#359,
+  correctly attributed), and the closeout-delegation/timebox/early-close-report
+  floors. The tally was corrected (absorb 7 / merge 4 / keep 6).
+- *Efficacy (Act-Before-Ship, folded):* D's checklist is prose, and the spec/audit
+  over-claimed it "stops the next floor" — re-entering the prose-decay trap the
+  spec criticizes. Folded: an honest non-claim now states the checklist shares the
+  decay risk; a deterministic **non-blocking** nudge is the deferred teeth
+  (`follow-up:floor-addition-restraint-nudge`); a *blocking* gate is rejected as
+  self-contradictory. Checklist Q3 was scoped to static/form floors only (a
+  goal-conditional floor needs A2, deferred), matching the audit's `keep` rungs.
+- *Narrowing (Bundle, folded):* the audit's "no floor is a Problem-1 churn source
+  today" was narrowed to "no *absorb-class* floor; the conditional `keep` floors
+  carry a residual A2 closes."
+- *Over-Worry (rejected, per counterweight):* "add a blocking enforcement tripwire
+  NOW" (self-defeating); "remove the merge family NOW" (out of scope); "enumerate
+  every gate exhaustively in surface B" (grouping is appropriate there).
 
 ## Implementation Notes (Slice 1 folds)
 

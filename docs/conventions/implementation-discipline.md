@@ -101,6 +101,53 @@ the root instruction file but still apply to Charness maintenance work.
   never run sync, export, bump, install, update, or git mutation commands in
   parallel with validators, closeout, or publish steps.
 
+## Floor-Addition Restraint
+
+The repo's reflex to an observed waste is "add one more deterministic floor."
+That reflex is asymmetric: it over-applies blocking teeth where they create
+authoring churn (the validator-post-hoc-churn class, spec
+[achieve-efficiency-improvements](../../charness-artifacts/spec/achieve-efficiency-improvements.md)
+Problem 1) while real recurrences stay teeth-less. Before adding a **new
+deterministic blocking floor** (a gate that refuses closeout/commit), run this
+checklist and record the call:
+
+1. **Does it raise closeout-contract weight?** A new required field/section/form
+   the author must satisfy up front is Problem-1 cost: it is one more shape an
+   author discovers by failing the flip. If yes, the bar to add it is higher, not
+   lower.
+2. **Is advisory/prose enough?** Default to a **non-blocking advisory** (stderr +
+   durable payload, like the over-slice and gate-runtime advisories in
+   [slice_closeout_advisories.py](../../scripts/slice_closeout_advisories.py)).
+   Promote to a blocking floor only when prose has a **recorded recurrence count**
+   (the lesson kept decaying and recurring) — not on first sight. An advisory that
+   false-fires trains token-theater; so does a premature floor.
+3. **Can an existing describe-first preflight absorb it?** If the concern is "the
+   author did not know the required shape," the fix is usually to surface it in the
+   describe-first closeout preflight
+   ([describe_goal_closeout_shape.py](../../skills/public/achieve/scripts/describe_goal_closeout_shape.py))
+   so it is seen up front, **not** a new serial gate. A floor the author meets
+   only as a reactive end-gate is the churn pattern; a floor the preflight lists is
+   absorbed. Caveat: today's preflight renders a **static catalog**, so it can
+   absorb only *static or form-shaped* floors. A *goal-conditional* floor (one that
+   needs runtime evaluation of the specific artifact) cannot be absorbed by the
+   current preflight — that is A2 (deferred); such a floor stays a `keep` gate, and
+   adding one is a `keep`, not an `absorb`.
+
+Prefer advisory or describe-first absorption over a new blocking floor unless the
+recurrence is recorded. The standing closeout floors are audited (with an
+`absorb`/`merge`/`keep` call each) in
+[closeout-floors audit](../../charness-artifacts/audit/closeout-floors.md);
+consult it before adding a sibling floor that an existing one could merge.
+
+**Honest non-claim:** this checklist is itself prose and shares the decay risk it
+guards against — nothing makes it *fire* at the moment a floor is added. Recording
+the call is the intended (advisory) teeth level; a deterministic, **non-blocking**
+floor-addition nudge (mirroring `follow-up:portability-classification-tripwire`)
+is tracked as `follow-up:floor-addition-restraint-nudge`, reopening when a new
+blocking floor lands without a recorded restraint call. A *blocking* enforcement
+gate for this rule is deliberately rejected: it would be the exact reflex the rule
+names.
+
 ## Generated And Installed Surfaces
 
 - **Portability classification is a closeout checkpoint, not an optional
