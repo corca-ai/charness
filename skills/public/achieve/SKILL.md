@@ -87,8 +87,8 @@ lifecycle instead of starting a new one.
    - on blocker or `No safe next slice:` closeout, record reason and report artifacts
 3. After — prove and reflect.
    - **closeout preflight (describe-first):** before drafting closeout evidence,
-     get this goal's required-line set at once with `describe_goal_closeout_shape.py`
-     plus a dry `check_goal_artifact.py`, not by failing the complete flip serially
+     run `describe_goal_closeout_shape.py --goal-path <artifact>` for this goal's
+     conditional missing-line set in one pass, then verify once (not flip-serially)
    - run the final quality gate or documented substitute; if a broad
      duplicate/pressure gate fails, classify new-slice-local versus accumulated
      suite debt and name the smallest structural cleanup

@@ -1,6 +1,6 @@
 # Achieve Goal: achieve-efficiency internal follow-ups (A2 describe-first conditional + floor-addition restraint nudge)
 
-Status: draft
+Status: active
 Created: 2026-06-14
 Activation: `/goal @charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md`
 
@@ -9,12 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Current slice intent: before activation. The reviewable-intent unit in progress
-  and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md`.
+- Current slice: S2 — floor-addition restraint nudge: a non-blocking advisory
+  flagging a new blocking floor (new `report["ok"]=False` site / new
+  `REQUIRED_SECTIONS` entry) added without a recorded Floor-Addition Restraint call.
+- Current slice intent: S2 floor-addition restraint nudge. (S1 A2 done + fresh-eye
+  critiqued, zero Act-Before-Ship; committing.) The reviewable-intent unit in
+  progress and the commits it spans; critique and broad proof do not re-fire within
+  one unchanged intent — update it when the intent changes, not per commit.
+- Next action: ship the conservative new-floor detector (git-diff added
+  `report["ok"] = False` site / new `REQUIRED_SECTIONS` member) as a non-blocking
+  advisory naming the implementation-discipline checklist; both-polarity unit test;
+  fresh-eye critique; then bundle-boundary broad proof + closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -99,7 +104,7 @@ Canonical context: `charness-artifacts/spec/achieve-efficiency-improvements.md`
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 | A2: make `describe_goal_closeout_shape.py` goal-aware (`--goal-path`); emit only triggered floors + satisfied state; wire into the achieve After-phase | closes the residual Problem-1 churn the D audit flagged on conditional `keep` floors | multi-floor + bare fixture unit tests; first-flip closeout on a conditional floor | planned |
+| S1 | A2: make `describe_goal_closeout_shape.py` goal-aware (`--goal-path`); emit only triggered floors + satisfied state; wire into the achieve After-phase | closes the residual Problem-1 churn the D audit flagged on conditional `keep` floors | multi-floor + bare fixture unit tests; first-flip closeout on a conditional floor | done (6 tests; fresh-eye critique 0 Act-Before-Ship) |
 | S2 | floor-addition restraint nudge: a non-blocking advisory flagging a new blocking floor added without a recorded restraint call | gives D's prose checklist teeth (the deferred follow-up) | both-polarity unit test; advisory names the checklist; probe: how to detect "a new floor" (new `report["ok"]=False` / REQUIRED_SECTIONS entry) | planned |
 
 ## Coordination Cues
@@ -129,6 +134,20 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: A2: goal-conditional describe_goal_closeout_shape
+
+- Objective: Add a --goal-path mode that emits only the floors THIS goal triggers (and which are missing), folding the dry check_goal_artifact preview into one call; wire into the achieve After-phase (SKILL.md + lifecycle.md).
+- Why this approach: Closes the residual Problem-1 churn the D audit named: the static catalog cannot surface runtime-conditional keep floors (rungs 1a/1b/1e, section-placeholder, closeout-delegation, timebox). The mode reuses the LIVE check_complete_evidence + check_timebox_closeout reports, so it cannot drift from the gate.
+- Commits: S1 commit (this slice)
+- What changed: describe_goal_closeout_shape.py (+_evidence_unsatisfied/_evidence_row/_floor_rows/goal_conditional_shape/render_goal_conditional, --goal-path CLI); SKILL.md After bullet; lifecycle.md Closeout preflight; new test_describe_goal_closeout_shape.py; plugins/ mirror synced.
+- Alternatives rejected: Re-deriving floor triggers in the describe (rejected: drift risk — reused report fields instead). A new sibling module (rejected: 98 lines headroom remained; cohesive with the existing describe concept). Covering proof-mismatch/HEAD-freshness (rejected: from-scripts loader weight + not D-audit keep floors; left to the flip gate, stated as an explicit non-claim).
+- Targeted verification: 6 new unit tests (multi-floor + bare-grandfathered + rung-1e/1a keep-floor + non-blocking CLI + static-catalog backward-compat); 575 goal/preflight tests green; validate_skills + validate_skill_ergonomics + check_doc_links pass; live dogfood: the mode correctly surfaced this goal's Routing: + Auto-Retro placeholder floors the static catalog misses.
+- Test duplication pressure: New test file is the first dedicated suite for describe_goal_closeout_shape's goal-conditional path; no duplication with test_check_artifact_surface_preflight (which only covers the static required_shape/stub). Fixtures are purpose-built, not copied.
+- Critique: Bounded fresh-eye slice critique (separate agent context): ZERO Act-Before-Ship. Folded B1 (docstring also names the mutable-HEAD floor) + B2 (--goal-path/--stub mutual exclusion). Deferred V1 (section-placeholder pre-draft surfacing — honest reflection of the #359 floor) + V2 (timebox satisfied is clock-dependent — test asserts only triggered, by design).
+- Off-goal findings:
+- Lessons carried forward: Conditional-floor modules already expose rich *_scope/*_floor sub-reports (triggered/satisfied/enforced) — the goal-conditional view is pure projection over them, the drift-free way to add A2.
+- Metrics:
 
 ## Context Sources
 

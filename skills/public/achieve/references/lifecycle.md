@@ -373,25 +373,28 @@ and the `## Coordination Cues` evidence lines), get the full required-evidence
 shape for *this* goal in one pass instead of discovering it by failing the
 `complete` flip one rejection at a time:
 
-- run the skill-local `describe_goal_closeout_shape.py` for the enforced FORMS
-  (skip-reason enum, goal-slug binding, disposition and `Routing:` / `Gather:` /
-  `Release:` / `Issue closeout:` forms), rendered live from
-  `check_goal_artifact.py`'s constants — use the skill-local script, not the
-  authoring-repo `scripts/check_artifact_surface_preflight.py` dispatcher, so the
-  step stays portable to a consumer repo; and
-- run `check_goal_artifact.py` once as a dry pass over the in-progress artifact
-  for the goal-conditional missing-line set (which floors *this* goal triggers,
-  what is still placeholder).
+- run the skill-local `describe_goal_closeout_shape.py --goal-path <artifact>`:
+  it reads *this* goal and emits the goal-conditional missing-line set — only the
+  floors this goal triggers (including the runtime-conditional `keep` floors a
+  static catalog cannot name: disposition rungs 1a/1b/1e, the section-placeholder
+  floor, closeout-delegation, timebox) and which are still unmet — then appends
+  the enforced FORMS (skip-reason enum, goal-slug binding, disposition and
+  `Routing:` / `Gather:` / `Release:` / `Issue closeout:` forms) for filling them,
+  rendered live from `check_goal_artifact.py`'s constants. Use the skill-local
+  script, not the authoring-repo `scripts/check_artifact_surface_preflight.py`
+  dispatcher, so the step stays portable to a consumer repo.
 
-Fill every surfaced line once, then verify once. This is the commit-gate
-*aggregate, don't fix-one-rejection-at-a-time* principle (the
-`mutate → sync → verify → publish` rule earlier in this file, where a rejected
-commit gate triggers the aggregate rather than serial single-gate fixes) applied
-to the closeout-evidence gate — `achieve`'s own most-repeated authoring-churn
-source. Honest limit: the preflight FORM source is a static catalog, so the
-goal-conditional set comes from the dry `check_goal_artifact.py` pass; run both.
-(A goal-conditional preflight that reads the artifact directly is a tracked
-refinement, not a precondition for this aggregate-first habit.)
+Fill every surfaced line once, then verify once with `check_goal_artifact.py`
+(still the authoritative complete-flip gate; the describe is an authoring
+affordance, never a precondition). This is the commit-gate *aggregate, don't
+fix-one-rejection-at-a-time* principle (the `mutate → sync → verify → publish`
+rule earlier in this file, where a rejected commit gate triggers the aggregate
+rather than serial single-gate fixes) applied to the closeout-evidence gate —
+`achieve`'s own most-repeated authoring-churn source. The `--goal-path` mode (A2)
+folds the previously-separate dry `check_goal_artifact.py` preview into the one
+describe call by reusing the live `check_complete_evidence` + timebox reports.
+Honest scope: the proof-mismatch and mutable-HEAD floors stay the flip gate's
+job, outside the describe view, so `check_goal_artifact.py` is still the verify.
 
 At completion the goal artifact should contain:
 
