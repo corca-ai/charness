@@ -139,6 +139,26 @@ def test_advise_silent_when_no_new_floor(tmp_path: Path, capsys) -> None:
     assert capsys.readouterr().err == ""
 
 
+def test_balanced_segment_unbalanced_returns_to_end() -> None:
+    # no matching close bracket -> the loop never hits depth 0 -> returns to EOF
+    assert adv._balanced_segment("(no close here", 0) == "(no close here"
+
+
+def test_git_show_and_added_diff_lines_degrade_off_git(tmp_path: Path) -> None:
+    assert adv._git_show(tmp_path, "HEAD:nope.py") == ""  # git show fails -> ""
+    assert adv._added_diff_lines(tmp_path, "HEAD", []) == ""  # no paths -> ""
+    # git diff against an unresolvable base in a non-repo -> returncode != 0 -> ""
+    assert adv._added_diff_lines(tmp_path, "HEAD", ["x.py"]) == ""
+
+
+def test_advise_skips_unreadable_source_file(tmp_path: Path, capsys) -> None:
+    # a changed skills//scripts/ path absent from the worktree -> read_text raises
+    # OSError -> the loop `continue`s past it (no finding, no crash).
+    _seed_repo(tmp_path)
+    adv.advise_floor_addition_restraint(tmp_path, ["scripts/does_not_exist.py"], base="HEAD")
+    assert capsys.readouterr().err == ""
+
+
 def test_advise_degrades_silently_off_git(tmp_path: Path, capsys) -> None:
     # no git repo at all -> base ref does not resolve -> no crash, no output
     (tmp_path / "scripts").mkdir()

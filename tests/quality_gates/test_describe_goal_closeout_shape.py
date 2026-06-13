@@ -149,6 +149,46 @@ def test_goal_path_missing_file_reports_and_does_not_crash(tmp_path: Path, capsy
     assert "not found" in capsys.readouterr().err
 
 
+def test_evidence_unsatisfied_covers_every_refusal_branch() -> None:
+    ev = {
+        "missing": ["retro_artifact"],
+        "missing_evidence_files": [{"name": "host_log_probe", "path": "h.md"}],
+        "invalid_skips": [{"name": "disposition_review"}],
+        "binding_failures": [{"name": "early_close_report"}],
+    }
+    assert desc._evidence_unsatisfied(ev, "retro_artifact") == "missing line (or an untouched TODO/<path> placeholder)"
+    assert "not found: h.md" in desc._evidence_unsatisfied(ev, "host_log_probe")
+    assert "enum" in desc._evidence_unsatisfied(ev, "disposition_review")
+    assert "bind" in desc._evidence_unsatisfied(ev, "early_close_report")
+    assert desc._evidence_unsatisfied(ev, "not_present") is None
+
+
+def test_render_shows_missing_none_and_satisfied_block() -> None:
+    report = {
+        "triggered": [
+            {"floor": "a", "label": "Floor A", "satisfied": True, "detail": "ok"},
+            {"floor": "b", "label": "Floor B", "satisfied": True, "detail": "ok"},
+        ],
+        "missing": [],
+        "not_triggered": ["gather", "release"],
+    }
+    out = desc.render_goal_conditional(report, "g.md")
+    assert "MISSING — none: every triggered floor is currently satisfied." in out
+    assert "SATISFIED — already met" in out
+    assert "Floor A" in out and "Floor B" in out
+
+
+def test_goal_path_outside_repo_root_falls_back_to_abs_path(tmp_path: Path, capsys) -> None:
+    # goal lives OUTSIDE --repo-root -> path.relative_to(repo_root) raises
+    # ValueError -> the rendered header uses the absolute path, not a crash.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    goal = tmp_path / "outside-goal.md"
+    goal.write_text(_preamble("outside-goal", "2026-06-14") + "## Goal\n\nx.\n", encoding="utf-8")
+    assert desc.main(["--repo-root", str(repo), "--goal-path", str(goal)]) == 0
+    assert str(goal.resolve()) in capsys.readouterr().out
+
+
 def test_static_catalog_path_is_unchanged(capsys) -> None:
     # backward-compat: no --goal-path -> the dispatcher-facing static required_shape
     assert desc.main([]) == 0
