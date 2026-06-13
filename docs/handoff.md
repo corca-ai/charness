@@ -13,17 +13,16 @@
 
 ## Current State
 
-- **v0.44.1 shipped and public release is verified.** Release commit
-  `ac0d8063 Release charness 0.44.1`; release-verification commit
-  `b0f06462 Record release verification for v0.44.1`; tag `v0.44.1`
-  is published and the maintainer install auto-refreshed to 0.44.1 (see
-  [release latest](../charness-artifacts/release/latest.md)).
-- **#359 + #358 resolved, CLOSED, shipped in v0.44.1.** #359: `achieve`
-  complete-state closeout blocks pending section placeholders. #358: the
-  dispatch/no-base-sha mutation-proof false conversion is gate-backed + RCA-upgraded.
+- **v0.45.0 shipped and public release is verified.** Release commit
+  `48b9c1c4 Release charness 0.45.0`; verification commit
+  `f18a30cb Record release verification for v0.45.0`; tag `v0.45.0` is published
+  ([url](https://github.com/corca-ai/charness/releases/tag/v0.45.0)) and the
+  maintainer install auto-refreshed to 0.45.0. Ships the achieve-efficiency
+  effort; E is framed in `update_instructions` as **internal instrumentation**
+  (the emitter is NOT in the plugin, so consumers do not auto-collect telemetry).
 - **#184 verdict stays not-met by design** until the 06-05 recurrence ages out of
   the rolling 28d window (the upgrade annotates, never clears).
-- **achieve-efficiency effort COMPLETE** (spec
+- **achieve-efficiency effort COMPLETE + shipped in v0.45.0** (spec
   [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md)).
   A+C `55631fe8`, B `01104241`, **E (objective waste telemetry) `785908e0`**,
   **D (floor-restraint checklist + closeout-floor audit) `df407a07`**,
@@ -37,33 +36,35 @@
 
 ## Next Session
 
-- **achieve-efficiency is done; no pickup owed.** Live follow-ons (spec Deferred
-  Decisions, each with a reopen trigger, none started): **E2b** (chunker ingests
-  recurring waste — autonomous-loop closure, likely needs a ceal run), **A2**
-  (goal-conditional describe absorbs the conditional `keep` floors), the
+- **Prioritized pickup: the ceal-dogfood goal (DRAFT, needs activation discussion
+  resolved).** [goal](../charness-artifacts/goals/2026-06-13-ceal-achieve-efficiency-dogfood.md)
+  — dogfood 0.45.0 in `../ceal` to validate the achieve-efficiency improvements
+  reduce the *originally-reported* waste and characterize what E needs there
+  (the data E2b's trigger depends on). `shape_ready: true`, `pursue_ready: false`
+  until the 3 `Discuss before activation` items are resolved (cross-repo scope;
+  wire-vs-characterize E; which ceal vehicle). Activate with `/goal @...` after
+  resolving them.
+- **Other live follow-ons** (spec Deferred Decisions, reopen triggers, none
+  started): **E2b** (chunker ingests recurring waste — needs the ceal run above),
+  **A2** (goal-conditional describe absorbs the conditional `keep` floors), the
   **Coordination-Cues floor merge**, `follow-up:floor-addition-restraint-nudge`.
 - The #184 verdict flips on its own as the window rolls forward if no new
   falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
-- Deferred (valid-but-defer, not filed): run-id-mode refusal class key for
-  schedule runs; consumer template-drift advisory; mutation-score skip denominator.
-- Live deferrals remain D28/D29 in
-  [deferred decisions](./deferred-decisions.md) (D29: scorecard helper +
-  metric-only closeout guard; reopens on consumer-repo discovery failure or
-  operator request).
-- Live execution of the
+- Older deferrals (unchanged): D28/D29 in
+  [deferred decisions](./deferred-decisions.md); the
   [contract-effectiveness fixture](../evals/cautilus/contract-effectiveness.fixture.json)
-  needs an explicit log-backed request naming a
-  failing-prompt/transcript/operator-log path, then the
-  [cautilus eval wrapper](../scripts/run_cautilus_eval.py).
+  needs a log-backed request + the [cautilus wrapper](../scripts/run_cautilus_eval.py);
+  valid-but-defer (not filed): run-id-mode refusal key, consumer template-drift
+  advisory, mutation-score skip denominator.
 
 ## Discuss
 
-- Decide whether a consumer-facing announcement is still useful for recent
-  scheduled-mutation, YouTube/issue retrieval, and scorecard/cadence changes.
+- Whether a consumer-facing announcement is worth it for 0.45.0 (achieve-efficiency)
+  plus the earlier scheduled-mutation / scorecard / cadence changes.
 
 ## References
 
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [quality latest](../charness-artifacts/quality/latest.md)
-- [v0.44.1 release record](../charness-artifacts/release/latest.md)
+- [v0.45.0 release record](../charness-artifacts/release/latest.md)
 - [overnight bundle critique](../charness-artifacts/critique/2026-06-12-autonomous-structural-quality-bundle.md)
