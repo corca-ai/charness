@@ -23,30 +23,30 @@
 - **#184 verdict stays not-met by design** until the 06-05 recurrence ages out of
   the rolling 28d window (the upgrade annotates, never clears).
 - **achieve-efficiency effort COMPLETE + shipped in v0.45.0** (spec
-  [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md)).
-  A+C `55631fe8`, B `01104241`, **E (objective waste telemetry) `785908e0`**,
-  **D (floor-restraint checklist + closeout-floor audit) `df407a07`**,
-  bundle-boundary spec fix `f79abce2`. Bundle re-confirmed green
-  (`--verification-lock --produce-mutation-coverage`): 2902 passed, mutation
-  coverage produced; E1 telemetry + C gate-runtime advisory dogfooded live. Each
-  slice fresh-eye critiqued (E/D found+folded real issues).
+  [achieve-efficiency-improvements](../charness-artifacts/spec/achieve-efficiency-improvements.md);
+  A+C `55631fe8`, B `01104241`, E `785908e0`, D `df407a07`). Bundle green, dogfooded.
+- **achieve-efficiency internal follow-ups COMPLETE (2026-06-14)**
+  ([goal](../charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md);
+  additive, no floor removed/blocking). **S1 (A2) `e6d1a59a`**:
+  `describe_goal_closeout_shape.py --goal-path` emits the goal-conditional
+  missing-floor set (reuses live evidence+timebox reports, no drift), folding the
+  dry-check into one call. **S2 `c75de40f`**: `advise_floor_addition_restraint`
+  gives the Floor-Addition Restraint checklist non-blocking teeth. Closeout
+  `0535c79c`: bundle proof green, each slice fresh-eye critiqued (0 Act-Before-Ship).
 - **Open issues (`gh`, 2026-06-13): none.**
 - Restart note: active sessions may carry pre-0.44.1 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
 
-- **Prioritized pickup: achieve-efficiency internal follow-ups (DRAFT, pursue-ready).**
-  [goal](../charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md)
-  — charness-internal only (operator dropped the ceal cross-repo dogfood). Two
-  additive slices: **A2** (make describe-first goal-conditional so it absorbs the
-  conditional `keep` floors the static catalog misses) and
-  **floor-addition-restraint-nudge** (give D's prose checklist non-blocking teeth).
-  `shape_ready: true`, `pursue_ready: true` — activate with `/goal @...`.
-- **Still deferred** (reopen triggers, NOT in the goal above): **E2b** (chunker
-  ingests recurring waste — needs real usage telemetry; charness's own stream is
-  thin and we did not dogfood ceal, so it waits for natural 0.45.0 usage data), and
-  the **Coordination-Cues floor merge** (floor *removal* — a separate critiqued change).
+- **Still deferred** (reopen triggers): **E2b** (chunker ingests recurring waste —
+  needs real usage telemetry; waits for natural 0.45.0 usage data) and the
+  **Coordination-Cues floor merge** (floor *removal* — a separate critiqued
+  change). The `floor-addition-restraint-nudge` deferral is now **resolved** (S2).
+- **Heads-up:** a concurrent agent's pry-integration WIP (an untracked pry tool
+  manifest + a tool-lifecycle test edit adding `pry`) touched this worktree
+  mid-run; it is isolated in `git stash` (`stash@{0}`), not committed —
+  `git stash pop`/`drop` per that effort's intent. Not part of this goal.
 - The #184 verdict flips on its own as the window rolls forward if no new
   falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
 - Older deferrals (unchanged): D28/D29 in
