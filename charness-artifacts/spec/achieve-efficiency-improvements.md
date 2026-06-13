@@ -96,7 +96,7 @@ silently decays.
    chunker**, which reasons over the **issue backlog + handoff doc only** (no
    usage-episode input) — so it can only pick up waste already *filed* as an
    issue; (b) **usage episodes** accumulate at
-   `.charness/usage-episodes/usage_episode.jsonl` (gitignored, per-repo,
+   `.charness/usage-episodes/usage_episode.jsonl` <!-- reproduction-source --> (gitignored, per-repo,
    adapter-resolvable) but capture a **product-success** signal
    (`outcome_status: delivered`, `t_status`) for the #184 conversion metric —
    they have **no field** for gate runtime, commit churn, validator-rejection
