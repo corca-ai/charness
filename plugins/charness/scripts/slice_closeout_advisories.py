@@ -17,6 +17,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 DEFAULT_GATE_RUNTIME_BUDGET_SECONDS = 120.0
+DEFAULT_OVERSLICE_ARTIFACT_RUN = 3
 
 
 def advise_prose_pin(repo_root: Path, changed_paths: list[str]) -> None:
@@ -191,3 +192,79 @@ def attach_gate_runtime_advisory(payload: dict) -> None:
         "over_budget": over_budget,
     }
     advise_gate_runtime_budget(over_budget)
+
+
+def resolve_overslice_artifact_run_threshold() -> int:
+    """Override-able threshold for the over-slicing advisory: how many consecutive
+    artifact-only commits read as process churn (spec achieve-efficiency, B).
+    Floor of 2 — a single artifact-only commit is never churn."""
+    raw = os.environ.get("CHARNESS_OVERSLICE_ARTIFACT_RUN")
+    if raw is None:
+        return DEFAULT_OVERSLICE_ARTIFACT_RUN
+    try:
+        return max(2, int(raw))
+    except ValueError:
+        return DEFAULT_OVERSLICE_ARTIFACT_RUN
+
+
+def trailing_artifact_only_run(commit_path_lists: list[list[str]]) -> int:
+    """Count the leading run (most-recent-first) of commits whose changed paths are
+    ALL under ``charness-artifacts/`` — the operational-artifact churn signal
+    (meaningful-slice-cadence: frequent artifact-only commits are process churn,
+    not progress). A commit touching any code/skill/doc path breaks the run."""
+    run = 0
+    for paths in commit_path_lists:
+        if paths and all(p.startswith("charness-artifacts/") for p in paths):
+            run += 1
+        else:
+            break
+    return run
+
+
+def _recent_commit_path_lists(repo_root: Path, max_commits: int) -> list[list[str]]:
+    """Per-commit changed-path lists for the last ``max_commits`` commits,
+    most-recent-first. Degrades to ``[]`` when the git command fails (e.g. not a
+    git repo). Matches the sibling ``_added_vs_base`` returncode-only pattern: the
+    closeout context is always a git repo with git present."""
+    log = subprocess.run(
+        ["git", "log", "-n", str(max_commits), "--format=%H"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+    )
+    if log.returncode != 0:
+        return []
+    result: list[list[str]] = []
+    for sha in log.stdout.split():
+        show = subprocess.run(
+            ["git", "show", "--pretty=format:", "--name-only", sha],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if show.returncode != 0:
+            break
+        result.append([line for line in show.stdout.splitlines() if line.strip()])
+    return result
+
+
+def advise_over_slicing(repo_root: Path) -> None:
+    """Non-blocking advisory (spec achieve-efficiency, B): a run of consecutive
+    charness-artifacts/-only commits is over-slicing churn. Enabled by default;
+    the threshold tunes via ``CHARNESS_OVERSLICE_ARTIFACT_RUN``. Reads git
+    directly and degrades silently when the git command fails (not a git repo)."""
+    threshold = resolve_overslice_artifact_run_threshold()
+    run = trailing_artifact_only_run(
+        _recent_commit_path_lists(repo_root, max_commits=threshold + 1)
+    )
+    if run < threshold:
+        return
+    print(
+        f"ADVISORY: {run} consecutive charness-artifacts/-only commits — frequent "
+        "artifact-only commits are process churn, not progress. Fold artifact / "
+        "current-pointer updates into the meaningful unit they support, and do not "
+        "re-fire critique or broad proof within one unchanged slice intent "
+        "(meaningful-slice-cadence). Update `Current slice intent:` in the goal "
+        "frame when the intent actually changes, not per commit.",
+        file=sys.stderr,
+    )

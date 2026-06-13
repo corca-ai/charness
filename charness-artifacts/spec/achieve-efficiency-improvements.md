@@ -204,6 +204,13 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
 - **Global autonomous budgets** (max wall/commit/slice) from ceal
   `2026-05-26-codex-goal-efficiency.md`. Reopen trigger: B's advisory proves
   insufficient to curb over-slicing in a real run.
+- **Git-helper OSError hardening** (Slice 2 impl critique, Valid-but-Defer).
+  `_recent_commit_path_lists` and the sibling `_added_vs_base` both guard only
+  `returncode != 0`; a missing `git` binary would raise `FileNotFoundError`.
+  Unreachable in a git-repo closeout context, and fixing one site but not the
+  other would be worse (inconsistent). Reopen trigger: a gitless closeout path
+  becomes real — then harden BOTH helpers with `except OSError -> []` in one
+  change.
 - **Float-cast guard in `evaluate_gate_runtime_budget`** (impl critique,
   Valid-but-Defer). `float(elapsed)` would raise if a future producer ever stored
   a non-numeric `elapsed_seconds`. Deliberately NOT guarded now: every current
@@ -370,6 +377,25 @@ spec/impl discipline):
   the deterministic `validate_skills` / `validate_public_skill_dogfood` gates
   cover this slice; live scenario/cautilus eval stays deferred (no `cautilus
   evaluate` call, per the `next_action: none` contract).
+
+## Implementation Notes (Slice 2 folds — B)
+
+- **Over-slice detection is the artifact-only-commit run.** The enabled,
+  non-blocking advisory fires on ≥N consecutive `charness-artifacts/`-only commits
+  (default N=3, `CHARNESS_OVERSLICE_ARTIFACT_RUN`) — a cheap, deterministic,
+  both-polarity-testable churn signal read from `git log`. The alternative
+  "≥M commits in one slice intent" was **not** made a deterministic gate: it needs
+  goal-artifact intent-history attribution that is fragile to detect, so that
+  dimension is carried by the `Current slice intent:` frame field plus the cadence
+  prose, not a gate. Honest split: deterministic teeth where cheap, operational
+  frame where detection would be fragile.
+- **C5 satisfied structurally.** `Current slice intent:` is a bullet in
+  `## Active Operating Frame`, which is not in `REQUIRED_SECTIONS`, so a goal
+  without it still passes the complete flip — asserted directly by a test, not
+  only relied on by construction.
+- **Premortem↔cadence single source.** The resolution sentence lives once in
+  `meaningful-slice-cadence.md` *Review Cadence*; `critique/references/cadence.md`
+  and the `achieve` lifecycle defer to it (no duplicated copy that could drift).
 
 ## Canonical Artifact
 

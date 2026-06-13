@@ -36,7 +36,11 @@ expected invariants, proof already run, non-claims, and reviewer questions stay
 coherent. A later commit inside the same slice triggers another fresh-eye pass
 only when it changes the risk boundary, such as adding a new public skill
 surface, validator family, export path, issue-closeout carrier, release surface,
-host-proof claim, or irreversible migration.
+host-proof claim, or irreversible migration. Mandatory premortem follows the same
+rule — it fires once per slice-intent boundary, not per commit; see the single
+resolution in
+[meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md)
+*Review Cadence*.
 
 ## Slice Packet
 

@@ -286,8 +286,10 @@ Critique cadence is risk-boundary based, not commit-based: one standalone
 fresh-eye critique covers a coherent substantial slice or bundle, and another is
 needed only when later edits introduce a new workflow, prompt, public-skill,
 validator, export, release, issue-closeout, compatibility, host-proof, rename,
-deletion, or migration risk. The slice-unit definition and the proof/artifact
-cadence behind this rule are owned by
+deletion, or migration risk. Mandatory premortem is inside this cadence, not an
+exception: it fires once per slice-intent boundary, not per commit. The slice-unit
+definition, the premortem↔cadence resolution, and the proof/artifact cadence
+behind this rule are owned by
 [meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md). Final closeout review can then read across slices
 for cross-slice drift and Auto-Retro disposition instead of redoing every slice
 review.

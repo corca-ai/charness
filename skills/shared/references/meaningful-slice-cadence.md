@@ -38,6 +38,13 @@ shipping the next micro-diff.
   release/closeout carrier, irreversible migration).
 - Per-slice review used as reassurance — when the design did not change — is
   cadence waste, not rigor.
+- **Premortem is inside this cadence, not an exception to it.** Mandatory
+  premortem fires once per slice-intent boundary (the meaningful unit), and
+  further commits within one unchanged intent re-fire it only when the risk
+  boundary moves. A task-completing *change* is the slice; each commit inside it
+  is not its own premortem. This is the single resolution of the
+  "premortem per task-completing change" vs "critique is slice-level" tension —
+  `critique/references/cadence.md` and the `achieve` lifecycle defer here.
 
 ## Proof Cadence
 
@@ -61,3 +68,7 @@ shipping the next micro-diff.
   pointer churn never masquerades as progress.
 - A history of frequent artifact-only commits is process churn made visible;
   prefer folding artifact updates into the meaningful unit they support.
+  `run_slice_closeout.py` surfaces a non-blocking advisory when a run of
+  consecutive `charness-artifacts/`-only commits crosses the threshold
+  (`CHARNESS_OVERSLICE_ARTIFACT_RUN`, default 3), so the churn is visible at
+  closeout instead of only in hindsight.

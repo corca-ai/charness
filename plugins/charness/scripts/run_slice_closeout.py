@@ -36,6 +36,7 @@ _slice_closeout_advisories = import_repo_module(__file__, "scripts.slice_closeou
 advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
 advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 advise_new_pool_module = _slice_closeout_advisories.advise_new_pool_module
+advise_over_slicing = _slice_closeout_advisories.advise_over_slicing
 attach_gate_runtime_advisory = _slice_closeout_advisories.attach_gate_runtime_advisory
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
@@ -344,6 +345,7 @@ def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) 
     advise_prose_pin(repo_root, payload["changed_paths"])
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
     advise_new_pool_module(repo_root, payload["changed_paths"])
+    advise_over_slicing(repo_root)
 
     blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
     if blocked is not None:
