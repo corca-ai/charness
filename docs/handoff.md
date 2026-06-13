@@ -36,18 +36,17 @@
 
 ## Next Session
 
-- **Prioritized pickup: the ceal-dogfood goal (DRAFT, needs activation discussion
-  resolved).** [goal](../charness-artifacts/goals/2026-06-13-ceal-achieve-efficiency-dogfood.md)
-  — dogfood 0.45.0 in `../ceal` to validate the achieve-efficiency improvements
-  reduce the *originally-reported* waste and characterize what E needs there
-  (the data E2b's trigger depends on). `shape_ready: true`, `pursue_ready: false`
-  until the 3 `Discuss before activation` items are resolved (cross-repo scope;
-  wire-vs-characterize E; which ceal vehicle). Activate with `/goal @...` after
-  resolving them.
-- **Other live follow-ons** (spec Deferred Decisions, reopen triggers, none
-  started): **E2b** (chunker ingests recurring waste — needs the ceal run above),
-  **A2** (goal-conditional describe absorbs the conditional `keep` floors), the
-  **Coordination-Cues floor merge**, `follow-up:floor-addition-restraint-nudge`.
+- **Prioritized pickup: achieve-efficiency internal follow-ups (DRAFT, pursue-ready).**
+  [goal](../charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md)
+  — charness-internal only (operator dropped the ceal cross-repo dogfood). Two
+  additive slices: **A2** (make describe-first goal-conditional so it absorbs the
+  conditional `keep` floors the static catalog misses) and
+  **floor-addition-restraint-nudge** (give D's prose checklist non-blocking teeth).
+  `shape_ready: true`, `pursue_ready: true` — activate with `/goal @...`.
+- **Still deferred** (reopen triggers, NOT in the goal above): **E2b** (chunker
+  ingests recurring waste — needs real usage telemetry; charness's own stream is
+  thin and we did not dogfood ceal, so it waits for natural 0.45.0 usage data), and
+  the **Coordination-Cues floor merge** (floor *removal* — a separate critiqued change).
 - The #184 verdict flips on its own as the window rolls forward if no new
   falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
 - Older deferrals (unchanged): D28/D29 in
