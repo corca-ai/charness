@@ -33,28 +33,29 @@
   dry-check into one call. **S2 `c75de40f`**: `advise_floor_addition_restraint`
   gives the Floor-Addition Restraint checklist non-blocking teeth. Closeout
   `0535c79c`: bundle proof green, each slice fresh-eye critiqued (0 Act-Before-Ship).
-- **Open issues (`gh`, 2026-06-13): none.**
+- **Open issues (`gh`, 2026-06-14): #362** (doc/markdown authoring preflight — see
+  next pickup) and **#361** (mutation test regression on main).
 - Restart note: active sessions may carry pre-0.44.1 plugin cache paths; restart
   Claude/Codex sessions to load the refreshed install.
 
 ## Next Session
 
+- **Prioritized pickup: resolve #362 (pursue-ready draft).**
+  [goal](../charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md)
+  — an aggregate author-time preflight for general doc/markdown surfaces
+  (handoff/docs), the describe-first absorption A2 brought to goal-closeout extended
+  to docs. `pursue_ready: true` — activate with `/goal @...`.
 - **Still deferred** (reopen triggers): **E2b** (chunker ingests recurring waste —
   needs real usage telemetry; waits for natural 0.45.0 usage data) and the
   **Coordination-Cues floor merge** (floor *removal* — a separate critiqued
   change). The `floor-addition-restraint-nudge` deferral is now **resolved** (S2).
-- **Heads-up:** a concurrent agent's pry-integration WIP (an untracked pry tool
-  manifest + a tool-lifecycle test edit adding `pry`) touched this worktree
-  mid-run; it is isolated in `git stash` (`stash@{0}`), not committed —
-  `git stash pop`/`drop` per that effort's intent. Not part of this goal.
+- **Heads-up:** a concurrent agent's pry-integration WIP (untracked pry manifest +
+  a test edit) is isolated in `git stash` (`stash@{0}`), not committed —
+  `git stash pop`/`drop` per that effort. Not this goal's.
 - The #184 verdict flips on its own as the window rolls forward if no new
   falsified conversion lands — check `python3 scripts/aggregate_rca_ledger.py`.
-- Older deferrals (unchanged): D28/D29 in
-  [deferred decisions](./deferred-decisions.md); the
-  [contract-effectiveness fixture](../evals/cautilus/contract-effectiveness.fixture.json)
-  needs a log-backed request + the [cautilus wrapper](../scripts/run_cautilus_eval.py);
-  valid-but-defer (not filed): run-id-mode refusal key, consumer template-drift
-  advisory, mutation-score skip denominator.
+- Older deferrals: D28/D29 in [deferred decisions](./deferred-decisions.md); the
+  [contract-effectiveness fixture](../evals/cautilus/contract-effectiveness.fixture.json) needs a log-backed request.
 
 ## Discuss
 
