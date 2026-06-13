@@ -139,14 +139,21 @@ recurrence is recorded. The standing closeout floors are audited (with an
 [closeout-floors audit](../../charness-artifacts/audit/closeout-floors.md);
 consult it before adding a sibling floor that an existing one could merge.
 
-**Honest non-claim:** this checklist is itself prose and shares the decay risk it
-guards against — nothing makes it *fire* at the moment a floor is added. Recording
-the call is the intended (advisory) teeth level; a deterministic, **non-blocking**
-floor-addition nudge (mirroring `follow-up:portability-classification-tripwire`)
-is tracked as `follow-up:floor-addition-restraint-nudge`, reopening when a new
-blocking floor lands without a recorded restraint call. A *blocking* enforcement
-gate for this rule is deliberately rejected: it would be the exact reflex the rule
-names.
+**Teeth (non-blocking).** This checklist is prose and shares the decay risk it
+guards against, so a deterministic **non-blocking** nudge gives it the intended
+(advisory) teeth: `advise_floor_addition_restraint` in
+[slice_closeout_advisories.py](../../scripts/slice_closeout_advisories.py)
+(wired into `run_slice_closeout.py`) runs a conservative before/after detector
+over the slice diff and, when it sees a **new** blocking floor — a new
+`report["ok"] = False` site or a new `REQUIRED_*` / `_SECTIONS` / `_EVIDENCE_NAMES`
+member in `skills/`/`scripts/` source — *without* a recorded restraint call, it
+prints an advisory naming this checklist. **Record the call** to silence it (and
+to leave the durable provenance): a `Floor-Addition Restraint:` line in the
+slice's commit/goal/critique, or a `# floor-addition-restraint: <call>` comment at
+the floor site. The detector is deliberately conservative (a probe): exotic floor
+shapes may escape it — a missed nudge beats a false one that trains token-theater.
+A *blocking* enforcement gate for this rule is deliberately rejected: it would be
+the exact reflex the rule names.
 
 ## Generated And Installed Surfaces
 

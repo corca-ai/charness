@@ -37,6 +37,7 @@ advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
 advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 advise_new_pool_module = _slice_closeout_advisories.advise_new_pool_module
 advise_over_slicing = _slice_closeout_advisories.advise_over_slicing
+advise_floor_addition_restraint = _slice_closeout_advisories.advise_floor_addition_restraint
 attach_gate_runtime_advisory = _slice_closeout_advisories.attach_gate_runtime_advisory
 _slice_closeout_telemetry = import_repo_module(__file__, "scripts.slice_closeout_telemetry")
 emit_closeout_telemetry_for_slice = _slice_closeout_telemetry.emit_closeout_telemetry_for_slice
@@ -348,6 +349,7 @@ def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) 
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
     advise_new_pool_module(repo_root, payload["changed_paths"])
     advise_over_slicing(repo_root)
+    advise_floor_addition_restraint(repo_root, payload["changed_paths"])
 
     blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
     if blocked is not None:

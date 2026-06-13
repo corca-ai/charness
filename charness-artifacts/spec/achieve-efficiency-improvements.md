@@ -303,14 +303,16 @@ This spec is the canonical contract for all five directions and the canonical
   candidate work, alongside issues + handoff. Higher-leverage but higher-risk (it
   changes autonomous work selection). Reopen trigger: E2a (weekly-retro mining)
   proves the telemetry stream surfaces real, actionable recurring waste.
-- **`follow-up:floor-addition-restraint-nudge`** (Slice 4 D critique). The
-  Floor-Addition Restraint checklist is prose with no firing mechanism; a
-  deterministic **non-blocking** advisory that flags a new blocking floor landing
-  without a recorded restraint call (mirroring
-  `follow-up:portability-classification-tripwire`) is the teeth. Deferred — a
-  *blocking* enforcement gate is rejected (it is the reflex D names). Reopen
-  trigger: a new blocking floor lands without a recorded restraint call, or an
-  operator requests the nudge.
+- **`follow-up:floor-addition-restraint-nudge`** (Slice 4 D critique) —
+  **RESOLVED (2026-06-14, achieve-efficiency internal follow-ups goal).** Shipped
+  as `advise_floor_addition_restraint` in `scripts/slice_closeout_advisories.py`
+  (wired into `run_slice_closeout.py`): a deterministic **non-blocking** advisory
+  that flags a new blocking floor (new `report["ok"] = False` site / new
+  `REQUIRED_*`/`_SECTIONS`/`_EVIDENCE_NAMES` member in `skills/`/`scripts/`) landing
+  without a recorded restraint call (a `Floor-Addition Restraint:` line or
+  `# floor-addition-restraint:` comment in the diff). A *blocking* enforcement gate
+  stays rejected (it is the reflex D names). The detector is conservative (a probe):
+  reopen if an exotic floor shape repeatedly escapes it.
 - **A2 closes the conditional-floor residual** (Slice 4 D critique sharpened the
   scope). The `keep` goal-closeout floors (rungs 1a/1b/1e, section-placeholder,
   closeout-delegation, timebox) are runtime-conditional, so the static describe-first

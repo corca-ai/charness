@@ -9,17 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S2 — floor-addition restraint nudge: a non-blocking advisory
-  flagging a new blocking floor (new `report["ok"]=False` site / new
-  `REQUIRED_SECTIONS` entry) added without a recorded Floor-Addition Restraint call.
-- Current slice intent: S2 floor-addition restraint nudge. (S1 A2 done + fresh-eye
-  critiqued, zero Act-Before-Ship; committing.) The reviewable-intent unit in
-  progress and the commits it spans; critique and broad proof do not re-fire within
-  one unchanged intent — update it when the intent changes, not per commit.
-- Next action: ship the conservative new-floor detector (git-diff added
-  `report["ok"] = False` site / new `REQUIRED_SECTIONS` member) as a non-blocking
-  advisory naming the implementation-discipline checklist; both-polarity unit test;
-  fresh-eye critique; then bundle-boundary broad proof + closeout.
+- Current slice: bundle closeout — both slices (S1 A2 + S2 nudge) done and
+  fresh-eye critiqued (each zero Act-Before-Ship, folds applied). Now the
+  bundle-boundary broad proof + goal closeout.
+- Current slice intent: bundle-boundary verification + closeout. Critique and broad
+  proof do not re-fire within one unchanged intent — update it when the intent
+  changes, not per commit.
+- Next action: commit S2, run `run_slice_closeout.py --verification-lock
+  --produce-mutation-coverage` (new mutation-pool code in slice_closeout_advisories /
+  describe_goal_closeout_shape), then fill the closeout via the new `--goal-path`
+  describe (dogfood), write retro, flip to complete.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -105,7 +104,7 @@ Canonical context: `charness-artifacts/spec/achieve-efficiency-improvements.md`
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | S1 | A2: make `describe_goal_closeout_shape.py` goal-aware (`--goal-path`); emit only triggered floors + satisfied state; wire into the achieve After-phase | closes the residual Problem-1 churn the D audit flagged on conditional `keep` floors | multi-floor + bare fixture unit tests; first-flip closeout on a conditional floor | done (6 tests; fresh-eye critique 0 Act-Before-Ship) |
-| S2 | floor-addition restraint nudge: a non-blocking advisory flagging a new blocking floor added without a recorded restraint call | gives D's prose checklist teeth (the deferred follow-up) | both-polarity unit test; advisory names the checklist; probe: how to detect "a new floor" (new `report["ok"]=False` / REQUIRED_SECTIONS entry) | planned |
+| S2 | floor-addition restraint nudge: a non-blocking advisory flagging a new blocking floor added without a recorded restraint call | gives D's prose checklist teeth (the deferred follow-up) | both-polarity unit test; advisory names the checklist; probe: how to detect "a new floor" (new `report["ok"]=False` / REQUIRED_SECTIONS entry) | done (10 tests; fresh-eye critique 0 Act-Before-Ship; conservative detector = new ok=False site + new floor-set member, line-anchored) |
 
 ## Coordination Cues
 
@@ -147,6 +146,20 @@ during the run:
 - Critique: Bounded fresh-eye slice critique (separate agent context): ZERO Act-Before-Ship. Folded B1 (docstring also names the mutable-HEAD floor) + B2 (--goal-path/--stub mutual exclusion). Deferred V1 (section-placeholder pre-draft surfacing — honest reflection of the #359 floor) + V2 (timebox satisfied is clock-dependent — test asserts only triggered, by design).
 - Off-goal findings:
 - Lessons carried forward: Conditional-floor modules already expose rich *_scope/*_floor sub-reports (triggered/satisfied/enforced) — the goal-conditional view is pure projection over them, the drift-free way to add A2.
+- Metrics:
+
+### Slice 2: floor-addition restraint nudge (non-blocking advisory)
+
+- Objective: Give the prose Floor-Addition Restraint checklist non-blocking teeth: advise_floor_addition_restraint flags a new blocking floor (new report ok=False site / new REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES member in skills//scripts/) added without a recorded restraint call, naming the checklist. Wired into run_slice_closeout._run_preexecution_blocks.
+- Why this approach: Resolves follow-up:floor-addition-restraint-nudge (the deferred D follow-up). A blocking gate is rejected (it is the exact reflex the rule names); a conservative before/after detector + recorded-call check is the advisory teeth.
+- Commits: S2 commit (this slice)
+- What changed: scripts/slice_closeout_advisories.py (+detectors+advisory); scripts/run_slice_closeout.py (binding + 1 call in _run_preexecution_blocks, not main()); docs/conventions/implementation-discipline.md (Teeth para); spec + audit deferred entries -> resolved; new test_floor_addition_restraint_advisory.py.
+- Alternatives rejected: A blocking floor (rejected: the reflex D names). An AST tokenizer for code-only counting (rejected: line-anchored regex is simpler + robust — verified it ignores the module's own prose mentions). Scanning all changed files for floors incl tests/ (rejected: a report ok=False in tests/ is a fixture, not a floor — scoped to skills//scripts/).
+- Targeted verification: 10 unit tests (pure-detector polarities + B1 non-floor-set exclusion + B2 prose-marker non-match + 4 git-integration both-polarity); 261 advisory/closeout tests green; dogfood: detect_new_floors returns [] on its own changed source (no self-false-fire); run_slice_closeout imports + binds the advisory.
+- Test duplication pressure: First dedicated suite for the floor-addition nudge; pure detectors are unit-tested without git, integration via a real tmp git repo. No overlap with existing slice_closeout advisory tests (over-slice/gate-runtime/new-pool).
+- Critique: Bounded fresh-eye slice critique (separate agent context): ZERO Act-Before-Ship. Folded B1 (exclude OPTIONAL/ADVISORY/EXEMPT/NARRATION/RECORDED_WORK non-floor sets) + B2 (anchor the restraint marker to line-start so prose paraphrasing the form cannot wrongly silence). Deferred V1 (generated-surface coincidental match), V2 (a required-section rename reads as new member — arguably correct), V3 (multi-file marker test).
+- Off-goal findings:
+- Lessons carried forward: A heuristic detector over source is honest as a conservative non-blocking advisory; line-anchoring both the floor regex and the marker regex removed the two self-reference traps (own prose counting as a floor; prose describing the marker silencing it).
 - Metrics:
 
 ## Context Sources

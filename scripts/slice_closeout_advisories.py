@@ -10,6 +10,7 @@ broad suite.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +19,13 @@ from runtime_bootstrap import import_repo_module
 
 DEFAULT_GATE_RUNTIME_BUDGET_SECONDS = 120.0
 DEFAULT_OVERSLICE_ARTIFACT_RUN = 3
+
+# The rule's own home: excluded from the recorded-call scan so its example prose
+# (`a Floor-Addition Restraint: line`) never counts as a recorded call.
+_FLOOR_RESTRAINT_RULE_DOC = "docs/conventions/implementation-discipline.md"
+# Floors are defined in source and asserted in tests; a `report["ok"] = False` in
+# tests/ is a fixture, not a floor, so detection is scoped to these prefixes.
+_FLOOR_SOURCE_PREFIXES = ("skills/", "scripts/")
 
 
 def advise_prose_pin(repo_root: Path, changed_paths: list[str]) -> None:
@@ -258,6 +266,145 @@ def over_slice_run(repo_root: Path) -> tuple[int, int]:
         _recent_commit_path_lists(repo_root, max_commits=threshold + 1)
     )
     return run, threshold
+
+
+# --- floor-addition restraint nudge (spec achieve-efficiency, follow-up:floor- ---
+# addition-restraint-nudge). A conservative before/after detector: it fires only
+# when a diff ADDS a new blocking floor (a new `report["ok"] = False` site, or a
+# new member in a REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES set) without a recorded
+# Floor-Addition Restraint call. Deliberately conservative (a probe): exotic floor
+# shapes may not be caught — better a missed nudge than a false one that trains
+# token-theater, and a *blocking* gate is rejected as the exact reflex D names.
+# Anchored to line-start-after-indentation so it counts only an actual assignment
+# STATEMENT — a `report["ok"] = False` mentioned mid-line in a comment, docstring,
+# or print string (including this module's own) is not a floor and is not counted.
+_OK_FALSE_FLOOR = re.compile(r"""^[ \t]*report\s*\[\s*['"]ok['"]\s*\]\s*=\s*False""", re.MULTILINE)
+_REQUIRED_ASSIGN = re.compile(r"^(?P<name>[A-Z][A-Z0-9_]+)\s*=\s*(?P<open>[(\[])", re.MULTILINE)
+_QUOTED = re.compile(r"['\"]([^'\"\n]+)['\"]")
+# A blocking-floor required set names REQUIRED/_SECTIONS/_EVIDENCE_NAMES — but these
+# substrings also name non-floor sets (optional/advisory/narration affordances, the
+# RECORDED_WORK content-scan helper), so those are excluded to keep the nudge from
+# false-firing on a set whose members are not a blocking requirement.
+_FLOOR_SET_NEGATIVE = ("OPTIONAL", "ADVISORY", "EXEMPT", "NARRATION", "RECORDED_WORK")
+# A recorded call is a `Floor-Addition Restraint:`/`# floor-addition-restraint:`
+# colon-form line with content — anchored to line-start (after optional markup) so
+# prose that merely *describes* the marker form mid-sentence is not a recorded call.
+_RESTRAINT_MARKER = re.compile(
+    r"^[\s>#*-]*floor[- ]addition[- ]restraint\s*:\s*\S", re.IGNORECASE | re.MULTILINE
+)
+
+
+def _is_floor_set_name(name: str) -> bool:
+    if any(neg in name for neg in _FLOOR_SET_NEGATIVE):
+        return False
+    return "REQUIRED" in name or name.endswith("_SECTIONS") or name.endswith("_EVIDENCE_NAMES")
+
+
+def _balanced_segment(text: str, open_index: int) -> str:
+    open_char = text[open_index]
+    close_char = ")" if open_char == "(" else "]"
+    depth = 0
+    for i in range(open_index, len(text)):
+        if text[i] == open_char:
+            depth += 1
+        elif text[i] == close_char:
+            depth -= 1
+            if depth == 0:
+                return text[open_index : i + 1]
+    return text[open_index:]
+
+
+def ok_false_site_count(text: str) -> int:
+    """Count `report["ok"] = False` blocking-floor assignment sites in ``text``."""
+    return len(_OK_FALSE_FLOOR.findall(text))
+
+
+def required_set_members(text: str) -> dict[str, set[str]]:
+    """Map each module-level REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES tuple/list name to
+    its string members (handles single- and multi-line literals via bracket
+    balancing). Other UPPER_SNAKE assignments are ignored."""
+    members: dict[str, set[str]] = {}
+    for match in _REQUIRED_ASSIGN.finditer(text):
+        name = match.group("name")
+        if not _is_floor_set_name(name):
+            continue
+        segment = _balanced_segment(text, match.start("open"))
+        members.setdefault(name, set()).update(_QUOTED.findall(segment))
+    return members
+
+
+def detect_new_floors(base_text: str, new_text: str, path: str) -> list[dict]:
+    """Findings for blocking floors present in ``new_text`` but not ``base_text``."""
+    findings: list[dict] = []
+    new_sites = ok_false_site_count(new_text) - ok_false_site_count(base_text)
+    if new_sites > 0:
+        findings.append({"path": path, "kind": "ok_false_site",
+                         "detail": f'{new_sites} new `report["ok"] = False` blocking site(s)'})
+    base_members = required_set_members(base_text)
+    for name, members in required_set_members(new_text).items():
+        added = members - base_members.get(name, set())
+        if added:
+            findings.append({"path": path, "kind": "required_set_entry",
+                             "detail": f"new {name} member(s): {', '.join(sorted(added))}"})
+    return findings
+
+
+def restraint_call_recorded(added_text: str) -> bool:
+    """True when added diff lines carry a `Floor-Addition Restraint:` colon-form
+    call (a line or `# floor-addition-restraint:` comment), not a bare mention."""
+    return _RESTRAINT_MARKER.search(added_text) is not None
+
+
+def _git_show(repo_root: Path, ref_path: str) -> str:
+    res = subprocess.run(["git", "show", ref_path], cwd=repo_root, capture_output=True, text=True)
+    return res.stdout if res.returncode == 0 else ""
+
+
+def _added_diff_lines(repo_root: Path, base: str, paths: list[str]) -> str:
+    if not paths:
+        return ""
+    res = subprocess.run(["git", "diff", "--unified=0", base, "--", *paths],
+                         cwd=repo_root, capture_output=True, text=True)
+    if res.returncode != 0:
+        return ""
+    return "\n".join(line[1:] for line in res.stdout.splitlines()
+                     if line.startswith("+") and not line.startswith("+++"))
+
+
+def advise_floor_addition_restraint(repo_root: Path, changed_paths: list[str], base: str = "origin/main") -> None:
+    """Non-blocking nudge: a new blocking floor added without a recorded
+    Floor-Addition Restraint call (spec achieve-efficiency,
+    follow-up:floor-addition-restraint-nudge). Gives the implementation-discipline
+    checklist teeth without a blocking gate. Degrades silently off a git repo or
+    when ``base`` does not resolve (tmp repos)."""
+    probe = subprocess.run(["git", "rev-parse", "--verify", "--quiet", base], cwd=repo_root, capture_output=True)
+    if probe.returncode != 0:
+        return
+    source_py = [p for p in changed_paths
+                 if p.endswith(".py") and p.startswith(_FLOOR_SOURCE_PREFIXES) and not p.startswith("tests/")]
+    findings: list[dict] = []
+    for path in source_py:
+        try:
+            new_text = (repo_root / path).read_text(encoding="utf-8")
+        except OSError:
+            continue
+        findings.extend(detect_new_floors(_git_show(repo_root, f"{base}:{path}"), new_text, path))
+    if not findings:
+        return
+    marker_paths = [p for p in changed_paths if p != _FLOOR_RESTRAINT_RULE_DOC]
+    if restraint_call_recorded(_added_diff_lines(repo_root, base, marker_paths)):
+        return
+    summary = "; ".join(f"{f['path']}: {f['detail']}" for f in findings)
+    print(
+        "ADVISORY: new blocking floor added without a recorded Floor-Addition Restraint call — "
+        + summary + ". Run the Floor-Addition Restraint checklist "
+        "(docs/conventions/implementation-discipline.md): does it raise closeout-contract weight? "
+        "is a non-blocking advisory/prose enough? can the describe-first preflight absorb it? "
+        "Prefer an advisory unless the recurrence is recorded — a blocking floor on first sight "
+        "trains token-theater. Then record the call (a `Floor-Addition Restraint:` line in the "
+        "slice's commit/goal/critique, or a `# floor-addition-restraint:` comment at the site).",
+        file=sys.stderr,
+    )
 
 
 def advise_over_slicing(repo_root: Path) -> None:

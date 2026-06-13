@@ -122,10 +122,12 @@ checklist rather than being added by reflex.
   not remediation of existing ones, and not (yet) closure of the conditional
   residual. Removal of the `merge` family and an enforcement *nudge* for the
   checklist itself are separate changes with reopen triggers (see below).
-- **Honest non-claim:** this audit is output only and the restraint checklist is
-  prose; neither has teeth that fire when a floor is added. A deterministic,
-  *advisory* (non-blocking) floor-addition nudge — mirroring
-  `follow-up:portability-classification-tripwire` — is the teeth, tracked as
-  `follow-up:floor-addition-restraint-nudge` (reopen: a new blocking floor lands
-  without a recorded restraint call, or a maintainer requests it). A *blocking*
-  enforcement gate is deliberately rejected: it would be the exact reflex D names.
+- **Honest non-claim (updated 2026-06-14):** this audit is output only and the
+  restraint checklist was prose. The deterministic, *advisory* (non-blocking)
+  floor-addition nudge that gives it teeth — `advise_floor_addition_restraint` in
+  `scripts/slice_closeout_advisories.py`, wired into `run_slice_closeout.py` — has
+  now **shipped** (`follow-up:floor-addition-restraint-nudge`, resolved). It flags a
+  new blocking floor (new `report["ok"] = False` site / new `REQUIRED_*` member)
+  added without a recorded restraint call. The audit itself stays output-only. A
+  *blocking* enforcement gate is still deliberately rejected: it would be the exact
+  reflex D names.
