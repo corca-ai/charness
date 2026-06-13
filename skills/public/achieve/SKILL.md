@@ -86,6 +86,9 @@ lifecycle instead of starting a new one.
      reason in the artifact
    - on blocker or `No safe next slice:` closeout, record reason and report artifacts
 3. After — prove and reflect.
+   - **closeout preflight (describe-first):** before drafting closeout evidence,
+     get this goal's required-line set at once with `describe_goal_closeout_shape.py`
+     plus a dry `check_goal_artifact.py`, not by failing the complete flip serially
    - run the final quality gate or documented substitute; if a broad
      duplicate/pressure gate fails, classify new-slice-local versus accumulated
      suite debt and name the smallest structural cleanup
@@ -94,14 +97,10 @@ lifecycle instead of starting a new one.
      verification instructions
    - if a timeboxed goal stops early, follow `references/lifecycle.md`
    - run `retro` for the automatic efficiency review
-   - for a long goal with host timing data, record the goal window with
-     `record_metric_window.py`, then render the provider-safe metrics block with
-     `probe_host_logs.py --goal-path <artifact> --format markdown` instead of
-     hand-assembling it (see `references/goal-artifact.md`)
-   - when host evidence exists, summarize measured efficiency signals and proxy
-     pressure separately (tokens/time, compactions, tool-call counts, repeated
-     VCS/check commands, polling, subagent count); cached input alone is not
-     waste, and broad-gate proof is a result attestation, not a re-embedded CLI
+   - for a long goal with host timing data, record the goal window and render the
+     provider-safe metrics block per `references/goal-artifact.md`, not by hand
+   - when host evidence exists, summarize measured vs proxy efficiency signals
+     separately; cached input alone is not waste (see `references/goal-artifact.md`)
    - disposition every surfaced improvement in Auto-Retro: either
      `applied: <what>` (a gate, hook, validator, test, or code change committed
      this run) or `issue #N`; prose-only memory is invalid. If there is nothing

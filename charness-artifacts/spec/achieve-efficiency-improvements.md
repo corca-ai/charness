@@ -204,6 +204,12 @@ This spec is the canonical contract for all four; only Slice 1 locks now.
 - **Global autonomous budgets** (max wall/commit/slice) from ceal
   `2026-05-26-codex-goal-efficiency.md`. Reopen trigger: B's advisory proves
   insufficient to curb over-slicing in a real run.
+- **Float-cast guard in `evaluate_gate_runtime_budget`** (impl critique,
+  Valid-but-Defer). `float(elapsed)` would raise if a future producer ever stored
+  a non-numeric `elapsed_seconds`. Deliberately NOT guarded now: every current
+  producer writes a float, and the counterweight noted a try/except would *mask* a
+  future producer contract violation rather than surface it. Reopen trigger: a
+  non-float `elapsed_seconds` producer is added.
 
 ## Non-Goals
 
@@ -338,6 +344,32 @@ Bounded fresh-eye spec critique ran before lock (target: `spec-critique.md`).
 **Fixed/Probe/Defer coherence after fold:** SC-A no longer over-claims past the
 Fixed mechanism; B is Fixed-enabled (no Fixed-leaning-on-Defer); D's deliverable
 has a path; all Deferred items name reopen triggers.
+
+## Implementation Notes (Slice 1 folds)
+
+Facts implementation surfaced that revise the contract (kept alive per
+spec/impl discipline):
+
+- **C7 dissolved.** The advisory module already exists
+  (`scripts/slice_closeout_advisories.py`); the gate-runtime advisory was *added*
+  to it, so no `run_slice_closeout.py` module split was needed. The runtime
+  advisory runs **post-execution** (it needs `elapsed_seconds`), unlike the
+  existing pre-execution advisories, and attaches a `gate_runtime_advisory`
+  verdict to the durable JSON payload (satisfies C2).
+- **A portability correction.** The pre-draft step references the **skill-local**
+  `describe_goal_closeout_shape.py` (resolves via `$SKILL_DIR`), **not** the
+  authoring-repo-internal `scripts/check_artifact_surface_preflight.py`
+  dispatcher — caught by `validate_skill_ergonomics`
+  (`portable_package_host_surface_reference`). A consumer repo (ceal) has the
+  skill-local script via the installed plugin but not the repo-root dispatcher,
+  so referencing the dispatcher would have made A non-portable — the exact
+  version-skew failure class this spec guards against.
+- **Cautilus stance for this slice (planner-consulted).**
+  `plan_cautilus_proof.py`: `required=False`, `next_action=none`, `run_mode=ask`,
+  with advisory skill-validation recommendations for `achieve`/`retro`. Decision:
+  the deterministic `validate_skills` / `validate_public_skill_dogfood` gates
+  cover this slice; live scenario/cautilus eval stays deferred (no `cautilus
+  evaluate` call, per the `next_action: none` contract).
 
 ## Canonical Artifact
 

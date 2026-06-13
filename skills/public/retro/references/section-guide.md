@@ -23,6 +23,11 @@ Identify where effort was lost:
 - missing verification
 - repeated reconstruction
 - slow approval loops
+- gate-baseline runtime: a gate that PASSES but is slow by design (pre-push,
+  full suite, coverage). A passing slow gate is code-quality debt, not
+  "necessary safety cost" — name its measured runtime, route the structural fix
+  to the gate-implementation owner, and do not let it sit unflagged in an
+  Evidence line. See `phase-aware-efficiency.md` *Gate-Baseline Runtime*.
 
 For efficiency claims, identify the phase before prescribing a fix. Broad
 exploration is not waste solely because it was broad; first ask whether it was

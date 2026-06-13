@@ -9,11 +9,14 @@ broad suite.
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+
+DEFAULT_GATE_RUNTIME_BUDGET_SECONDS = 120.0
 
 
 def advise_prose_pin(repo_root: Path, changed_paths: list[str]) -> None:
@@ -105,3 +108,86 @@ def advise_skill_surface_preflight(repo_root: Path, changed_paths: list[str]) ->
         f"python3 scripts/check_skill_surface_preflight.py --path {edited[0]} --run-checks",
         file=sys.stderr,
     )
+
+
+def resolve_gate_runtime_budget_seconds() -> float:
+    """Portable, override-able budget for a single closeout gate's baseline
+    runtime. A gate that PASSES but exceeds this is gate-baseline / code-quality
+    debt (spec achieve-efficiency-improvements, direction C), distinct from
+    cadence waste and from 'necessary safety cost'. The env override mirrors the
+    progress-interval knob already used by run_slice_closeout; a richer per-gate
+    adapter field is a follow-up probe (spec C budget probe)."""
+    raw = os.environ.get("CHARNESS_GATE_RUNTIME_BUDGET_SECONDS")
+    if raw is None:
+        return DEFAULT_GATE_RUNTIME_BUDGET_SECONDS
+    try:
+        return max(1.0, float(raw))
+    except ValueError:
+        return DEFAULT_GATE_RUNTIME_BUDGET_SECONDS
+
+
+def evaluate_gate_runtime_budget(
+    executed_commands: list[dict], *, budget_seconds: float
+) -> list[dict]:
+    """Per-gate runtime verdict over the gates run_slice_closeout actually ran.
+    Returns one record per OVER-BUDGET gate so the durable closeout JSON payload
+    carries the signal, not only stderr (spec C2). Scope is honest: this sees
+    ONLY gates executed THROUGH run_slice_closeout (sync / verify / broad-pytest);
+    the host pre-push hook runs as its own process and is NOT covered here (spec
+    C1 — capturing the hook's own runtime is a separate probe). Cached/reused
+    gates carry no timing and are excluded from the verdict."""
+    over_budget: list[dict] = []
+    for entry in executed_commands:
+        elapsed = entry.get("elapsed_seconds")
+        if elapsed is None:
+            continue
+        if float(elapsed) > budget_seconds:
+            command = str(entry.get("command") or "")
+            over_budget.append(
+                {
+                    "phase": entry.get("phase"),
+                    "command": command,
+                    "elapsed_seconds": float(elapsed),
+                    "budget_seconds": budget_seconds,
+                    "over_budget": True,
+                }
+            )
+    return over_budget
+
+
+def advise_gate_runtime_budget(over_budget: list[dict]) -> None:
+    """Non-blocking stderr advisory for gates that passed but exceeded the
+    gate-baseline runtime budget. Pairs with the retro gate-baseline-runtime
+    waste lens (section-guide / phase-aware-efficiency)."""
+    if not over_budget:
+        return
+    budget = over_budget[0]["budget_seconds"]
+    names = ", ".join(
+        f"{r['phase']}:{r['command'][:60]} {r['elapsed_seconds']:.1f}s"
+        for r in over_budget
+    )
+    print(
+        f"ADVISORY: gate-baseline runtime over budget (> {budget:.0f}s): {names}. "
+        "A gate that PASSES but is slow by design is gate-baseline / code-quality "
+        "debt, not 'necessary safety cost' — classify it in the retro's "
+        "gate-baseline-runtime waste lens (route to the gate-implementation "
+        "owner), or raise CHARNESS_GATE_RUNTIME_BUDGET_SECONDS if the cost is "
+        "accepted. Note: the host pre-push hook runs as its own process and is "
+        "NOT measured here.",
+        file=sys.stderr,
+    )
+
+
+def attach_gate_runtime_advisory(payload: dict) -> None:
+    """Resolve the budget, evaluate the executed gates, attach the verdict to the
+    durable JSON ``payload``, and emit the non-blocking stderr advisory — one call
+    so the closeout entrypoint stays within its function-length budget."""
+    budget = resolve_gate_runtime_budget_seconds()
+    over_budget = evaluate_gate_runtime_budget(
+        payload["executed_commands"], budget_seconds=budget
+    )
+    payload["gate_runtime_advisory"] = {
+        "budget_seconds": budget,
+        "over_budget": over_budget,
+    }
+    advise_gate_runtime_budget(over_budget)

@@ -67,6 +67,27 @@ artifact records a `Host metric window:` evidence line with `started_at`,
 or `claude_session_file`). A full-thread audit remains a pressure signal, not a
 per-goal cost total.
 
+## Gate-Baseline Runtime
+
+Cadence is not the only runtime-waste axis. A broad gate run at the right time
+(final-bundle proof) can still be slow *by design* — pre-push, full suite, and
+coverage are the usual cases. That cost does not become "necessary safety cost"
+just because the gate passed and the cadence was correct: a slow-but-passing
+gate is gate-baseline / code-quality debt, and the retro names it under the
+`gate-baseline runtime` waste category (`section-guide.md`) instead of letting
+its measured seconds sit unflagged in an Evidence line.
+
+- Measure the gate's runtime against a budget; over budget is waste to *route*,
+  not to absorb. The structural fix belongs to the gate-implementation owner
+  (for example coverage or duplicate-detector cost), so pair the finding with a
+  `## Sibling Search` / structural-follow-up destination, never memory-only.
+- Honest capture scope: `run_slice_closeout.py` records `elapsed_seconds` only
+  for the gates it runs itself (sync / verify / broad-pytest) and surfaces an
+  over-budget verdict in its JSON `gate_runtime_advisory` field. The host
+  pre-push hook runs as its own process, so its runtime is NOT in that payload —
+  surface it as an explicit non-claim (or capture it from the hook) rather than
+  implying it was measured.
+
 ## Counterfactual Prompts
 
 - Was broad exploration explicitly intended by the user?

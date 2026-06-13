@@ -36,6 +36,7 @@ _slice_closeout_advisories = import_repo_module(__file__, "scripts.slice_closeou
 advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
 advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 advise_new_pool_module = _slice_closeout_advisories.advise_new_pool_module
+attach_gate_runtime_advisory = _slice_closeout_advisories.attach_gate_runtime_advisory
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
 headroom_for = _scripts_check_python_lengths.headroom_for
 _staged_commit_gate_plan = import_repo_module(__file__, "scripts.staged_commit_gate_plan")
@@ -436,6 +437,14 @@ def main() -> int:
         refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
         broad_pytest_producer=broad_pytest_producer,
     )
+
+    # Gate-baseline runtime advisory (spec achieve-efficiency-improvements C):
+    # a gate that PASSES but is slow by design is code-quality debt. Runs
+    # POST-execution (it needs elapsed_seconds), attaches a verdict to the durable
+    # JSON payload (spec C2), and is honest about scope — only gates run THROUGH
+    # this script, never the separate-process host pre-push hook (spec C1).
+    attach_gate_runtime_advisory(payload)
+
     if should_stop:
         return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
 
