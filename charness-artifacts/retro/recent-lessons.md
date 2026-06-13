@@ -2,8 +2,8 @@
 
 ## Current Focus
 
-- Release publish triggered a configured automatic session retro for `v0.44.1`. (source: `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.45.0`. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`)
+- **S1 (A2, `e6d1a59a`)** — made `describe_goal_closeout_shape.py` goal-aware via `--goal-path`: it reads the in-progress goal and emits only the floors *that* goal triggers (and which are missing), folding the dry `check_goal_artifact.py` preview into one call. Closes the residual Problem-1 churn the D closeout-floor audit named on the runtime-conditional `keep` floors a static catalog cannot. (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
+- **S2 (`c75de40f`)** — gave the prose Floor-Addition Restraint checklist non-blocking teeth: `advise_floor_addition_restraint` flags a new blocking floor (new `report["ok"] = False` site / new `REQUIRED_*` member) added without a recorded restraint call. Resolves `follow-up:floor-addition-restraint-nudge`. (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`; sources: 33)
-- Before final/bundle closeout on a multi-goal branch, record the intended proof base in the goal artifact before running `run_slice_closeout.py --base`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
-- Carry forward that broad gates are final/bundle proof; slice iteration should rely on focused tests plus surface validators until the bundle boundary. (source: `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`)
-- For advisory duplicate cleanup, keep using a family label that names the shape and owner surface, such as "adapter scalar helper-shaped", instead of a narrow function-name label. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
+- **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
+- **workflow — stage explicit paths, not `git add -A`, when untracked/off-goal files may be present.** The closeout proof and commit should cover only the goal's own changed set; `git add -A` couples in concurrent WIP. (Transferable — see Sibling Search.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
+- **workflow — the A2 `--goal-path` describe is now the right first closeout step**; it surfaced this goal's exact missing set first-try. Use it instead of the static catalog + separate dry check going forward (the SKILL.md/lifecycle wiring now points there). (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 
 ## Selection Policy
 
@@ -55,10 +55,10 @@
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
-- `charness-artifacts/retro/2026-06-12-quality-goal-closeout.md`
 - `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-42-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-43-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-44-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`

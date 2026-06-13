@@ -1,6 +1,6 @@
 # Achieve Goal: achieve-efficiency internal follow-ups (A2 describe-first conditional + floor-addition restraint nudge)
 
-Status: active
+Status: complete
 Created: 2026-06-14
 Activation: `/goal @charness-artifacts/goals/2026-06-14-achieve-efficiency-internal-followups.md`
 
@@ -9,16 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: bundle closeout — both slices (S1 A2 + S2 nudge) done and
-  fresh-eye critiqued (each zero Act-Before-Ship, folds applied). Now the
-  bundle-boundary broad proof + goal closeout.
-- Current slice intent: bundle-boundary verification + closeout. Critique and broad
-  proof do not re-fire within one unchanged intent — update it when the intent
-  changes, not per commit.
-- Next action: commit S2, run `run_slice_closeout.py --verification-lock
-  --produce-mutation-coverage` (new mutation-pool code in slice_closeout_advisories /
-  describe_goal_closeout_shape), then fill the closeout via the new `--goal-path`
-  describe (dogfood), write retro, flip to complete.
+- Current slice: COMPLETE. Both slices shipped (S1 A2 `e6d1a59a`, S2 nudge
+  `c75de40f`), bundle-boundary broad proof green (`--verification-lock
+  --produce-mutation-coverage`), closeout dogfooded first-flip-clean via the new
+  `--goal-path` describe, retro + disposition review recorded, status flipped.
+- Current slice intent: closed. The goal is complete; no further slices.
+- Next action: none — goal complete. The closeout commit lands the goal artifact,
+  retro, disposition review, and host-log probe.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -132,6 +129,13 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Recorded evidence (filled at closeout):
+
+Routing: find-skills (run at session start) recommended achieve as the goal-lifecycle owner; achieve coordinated the impl slice work and the quality bundle gate (run_slice_closeout) directly per its lifecycle, so no separate impl or quality skill route was spawned — the routing decision was find-skills -> achieve.
+Gather: n/a — every `## Context Sources` entry is a repo-relative path; no external URL / Slack / Notion / Docs / Drive source was consumed.
+Release: n/a — no version bump or install-manifest edit; the spec / audit / implementation-discipline edits are internal docs, not a release surface.
+Issue closeout: n/a — this goal resolves a spec-tracked follow-up (follow-up:floor-addition-restraint-nudge), not a tracked GitHub issue, and references no `Close #N` work.
+
 ## Slice Log
 
 ### Slice 1: A2: goal-conditional describe_goal_closeout_shape
@@ -201,6 +205,16 @@ precondition that blocks the flip (the spec's Deliberately-Not-Doing).
 
 Issues or deferred findings discovered during the run.
 
+- **Concurrent off-goal pry-integration WIP in the shared worktree.** An untracked
+  `integrations/tools/pry.json` plus a tracked edit to
+  `tests/charness_cli/test_tool_lifecycle.py` (adding `pry` to expected tool lists)
+  appeared mid-run — another agent's concurrent work that touched this worktree by
+  misunderstanding (operator-confirmed; that agent has since stopped). NOT mine and
+  out of this goal's scope. I isolated it via `git stash` so my closeout commits
+  cover only the goal's own changed set, and left their work preserved/untouched
+  for them to resume or discard. No issue filed (it is another effort's in-flight
+  work, not a defect).
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -208,13 +222,39 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Both slices passed the bundle-boundary `run_slice_closeout.py --verification-lock
+--produce-mutation-coverage --base 3abb20d1`: status completed, 0 failures, broad
+pytest green (446s), mutation coverage produced. 16 new unit tests green;
+`validate_skills` / `validate_skill_ergonomics` / `check_doc_links` pass. Each
+slice fresh-eye critiqued (separate agent context, zero Act-Before-Ship, folds
+applied). A2 dogfooded on this goal: `--goal-path` surfaced the exact conditional
+missing set first-try. Proof non-claim: no live Cautilus (planner
+`next_action: none`; deterministic skill gates cover the slice) and no release —
+both the correct default for additive internal skill refinements.
+
+Retro: charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md
+Host log probe: charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-14-achieve-efficiency-internal-followups-disposition-review.md
 
 ## User Verification Instructions
 
+- **A2 goal-conditional describe (hand-runnable):**
+  `python3 skills/public/achieve/scripts/describe_goal_closeout_shape.py --repo-root . --goal-path <any-goal.md>`
+  — emits only the floors that goal triggers + their missing/satisfied state, then
+  the static form reference. Run it on this goal and on a bare/old-dated fixture to
+  see the grandfathered floors drop out. The static catalog is unchanged:
+  `... describe_goal_closeout_shape.py` (no `--goal-path`).
+- **Floor-addition restraint nudge (both polarities):**
+  `python3 -m pytest tests/quality_gates/test_floor_addition_restraint_advisory.py -q`
+  — the git-integration tests show the advisory firing on a new `report["ok"] = False`
+  floor without a recorded call, and staying silent when a `# floor-addition-restraint:`
+  comment is present or no new floor is added. It is wired into
+  `run_slice_closeout.py` (non-blocking stderr).
+- **Full suite:** `python3 -m pytest tests/quality_gates/test_describe_goal_closeout_shape.py tests/quality_gates/test_floor_addition_restraint_advisory.py -q` (16 tests).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the achieve After-phase (SKILL.md + lifecycle.md) now instructs `describe_goal_closeout_shape.py --goal-path` as the closeout-preflight step (commit e6d1a59a), so the "A2 describe is the right first closeout step" improvement is shipped, not memory.
+Retro dispositions: none — the `git add -A` off-goal sweep is a first-occurrence habit lesson recorded in the retro + recent-lessons (stage explicit paths; pre-stage `git status` sanity); per the Floor-Addition Restraint discipline a new closeout guard on first sight is the exact reflex the rule names, so no structural change is warranted yet.
+Retro dispositions: none — the "scripts mirror into plugins/" lesson needs no new gate: the staged-mirror-drift gate already enforces it deterministically and caught it; the lesson is proactive sync, recorded in the retro.
+Structural follow-up: none — the transferable `git add -A` off-goal-sweep waste is first-occurrence; the downstream staged-mirror-drift and unmatched-path gates already block the worst outcome (a polluted mirror), and a new closeout guard on first sight is the exact reflex the Floor-Addition Restraint rule this goal shipped names — revisit a deterministic advisory only if it recurs.
