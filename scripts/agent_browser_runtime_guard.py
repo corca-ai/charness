@@ -9,7 +9,7 @@ import signal
 import sys
 import time
 from collections import defaultdict, deque
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -61,6 +61,10 @@ class ProcessInfo:
     ppid: int
     rss_kib: int
     command: str
+    # Working directory of the process (the daemon's launching checkout), read
+    # from /proc by list_processes. None when unreadable (non-Linux, permission
+    # denied, a process that released its cwd) -> fail-closed ownership (#365).
+    cwd: str | None = None
 
 
 def parse_ps_output(text: str) -> list[ProcessInfo]:
@@ -79,16 +83,46 @@ def parse_ps_output(text: str) -> list[ProcessInfo]:
     return processes
 
 
+def read_process_cwd(pid: int) -> str | None:
+    """The process working directory via ``/proc`` (Linux). ``None`` when it cannot
+    be read — non-Linux, permission denied (another user's process), or a process
+    that released its cwd (e.g. a ``<defunct>`` zombie). An unreadable cwd is the
+    fail-closed input to ``is_checkout_owned`` (#365): the guard never kills or
+    flags a process it cannot prove belongs to this checkout."""
+    try:
+        return os.readlink(f"/proc/{pid}/cwd")
+    except OSError:
+        return None
+
+
 def list_processes(repo_root: Path) -> list[ProcessInfo]:
     completed = run_process(["ps", "-eo", "pid=,ppid=,rss=,command="], cwd=repo_root, timeout_seconds=PS_TIMEOUT_SECONDS)
     if completed.returncode != 0:
         detail = completed.stderr.strip() or completed.stdout.strip() or "ps failed"
         raise RuntimeError(detail)
-    return parse_ps_output(completed.stdout)
+    return [replace(process, cwd=read_process_cwd(process.pid)) for process in parse_ps_output(completed.stdout)]
 
 
 def is_agent_browser_daemon(process: ProcessInfo) -> bool:
     return "agent-browser" in process.command and "daemon.js" in process.command
+
+
+def is_checkout_owned(process: ProcessInfo, repo_root: Path) -> bool:
+    """Whether ``process`` belongs to this checkout, by its working directory.
+
+    Fail-closed (#365): returns True only when the process cwd resolves inside
+    ``repo_root`` (already resolved by the caller). An unknown cwd — unreadable
+    ``/proc``, non-Linux, or a zombie that released its cwd — is treated as NOT
+    owned, so the guard can never kill or flag a neighbor checkout's live daemon.
+    cwd is an ownership heuristic, not cryptographic proof; ``resolve()`` collapses
+    symlinks so a symlinked checkout path still matches."""
+    if not process.cwd:
+        return False
+    try:
+        cwd = Path(process.cwd).resolve()
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return cwd == repo_root or repo_root in cwd.parents
 
 
 def is_browser_residue_command(command: str) -> bool:
@@ -121,8 +155,20 @@ def collect_descendant_pids(processes: list[ProcessInfo], root_pids: set[int]) -
     return descendants
 
 
-def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
-    daemons = [process for process in processes if is_agent_browser_daemon(process)]
+def inspect_runtime(processes: list[ProcessInfo], repo_root: Path) -> dict[str, object]:
+    # #365: scope every daemon/residue classification to THIS checkout, by the
+    # process cwd resolved under repo_root. agent-browser daemons are detached by
+    # design (PPID=1 from birth), so a machine-wide PPID-only scan matched — and
+    # --cleanup-orphans killed — a concurrent neighbor checkout's LIVE daemon.
+    # Ownership-scoping (fail-closed) keeps the cleanup useful for this checkout's
+    # own orphans while leaving a neighbor's daemon untouched. The descendant walk
+    # stays over ALL processes: a child of an owned orphan daemon belongs to the
+    # owned tree even if the child's own cwd differs.
+    repo_root = Path(repo_root).resolve()
+    daemons = [
+        process for process in processes
+        if is_agent_browser_daemon(process) and is_checkout_owned(process, repo_root)
+    ]
     orphan_daemons = [process for process in daemons if process.ppid == 1]
     orphan_root_pids = {process.pid for process in orphan_daemons}
     orphan_tree_pids = collect_descendant_pids(processes, orphan_root_pids) if orphan_root_pids else set()
@@ -133,7 +179,10 @@ def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
     # already gone, so they are not part of any orphan-daemon tree. Zombie residue:
     # <defunct> browser processes the host init has not reaped. Neither is reaped
     # here (that is the container init's job), but both must keep the runtime from
-    # being reported clean (#302).
+    # being reported clean (#302). Both are ownership-scoped (#365): a neighbor's
+    # residue is not this checkout's concern. A zombie has usually released its cwd,
+    # so an unattributable zombie is conservatively not flagged (fail-closed) —
+    # acceptable because the guard never reaps residue, only reports it.
     reparented_residue = [
         process
         for process in processes
@@ -141,9 +190,13 @@ def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
         and process.pid not in orphan_root_pids
         and is_browser_residue_command(process.command)
         and not is_defunct_command(process.command)
+        and is_checkout_owned(process, repo_root)
     ]
     zombie_residue = [
-        process for process in processes if is_defunct_command(process.command) and is_browser_residue_command(process.command)
+        process for process in processes
+        if is_defunct_command(process.command)
+        and is_browser_residue_command(process.command)
+        and is_checkout_owned(process, repo_root)
     ]
     return {
         "daemon_count": len(daemons),
@@ -190,7 +243,7 @@ def kill_pids(pids: list[int], sig: int) -> list[int]:
 
 def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
     processes = list_processes(repo_root)
-    runtime = inspect_runtime(processes)
+    runtime = inspect_runtime(processes, repo_root)
     target_pids = list(runtime["orphan_tree_pids"])
     if not execute:
         return {
@@ -207,7 +260,7 @@ def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
     remaining = sorted(process.pid for process in remaining_processes if process.pid in set(target_pids))
     forced = kill_pids(remaining, signal.SIGKILL)
     final_processes = list_processes(repo_root)
-    final_runtime = inspect_runtime(final_processes)
+    final_runtime = inspect_runtime(final_processes, repo_root)
     return {
         "preview_only": False,
         "target_pids": target_pids,
@@ -220,7 +273,7 @@ def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
 
 def inspect_payload(repo_root: Path) -> dict[str, object]:
     processes = list_processes(repo_root)
-    return {"runtime": inspect_runtime(processes)}
+    return {"runtime": inspect_runtime(processes, repo_root)}
 
 
 def runtime_residue_total(runtime: dict[str, object]) -> int:
@@ -250,7 +303,7 @@ def runtime_next_step(runtime: dict[str, object]) -> tuple[str | None, str | Non
 
 
 def assert_no_orphans_payload(repo_root: Path) -> dict[str, object]:
-    runtime = inspect_runtime(list_processes(repo_root))
+    runtime = inspect_runtime(list_processes(repo_root), repo_root)
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
     healthy = ignore_orphans or runtime_residue_total(runtime) == 0
     next_step, next_step_kind = (None, None) if healthy else runtime_next_step(runtime)
@@ -265,7 +318,7 @@ def assert_no_orphans_payload(repo_root: Path) -> dict[str, object]:
 
 def doctor_payload(repo_root: Path) -> dict[str, object]:
     helpcheck = run_help_check(repo_root)
-    runtime = inspect_runtime(list_processes(repo_root))
+    runtime = inspect_runtime(list_processes(repo_root), repo_root)
     ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
     healthy = helpcheck["ok"] and (ignore_orphans or runtime_residue_total(runtime) == 0)
     next_step, next_step_kind = (None, None) if healthy else runtime_next_step(runtime)

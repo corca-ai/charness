@@ -9,12 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Current slice intent: before activation. The reviewable-intent unit in progress
-  and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`.
+- Current slice: S2 — #363 close-keyword-leakage advisory (S1 complete).
+- Current slice intent: S1 (agent-browser orphan scoping, #365) landed and
+  verified (fix + tests + causal review + resolution critique), pending the
+  bundle commit/push. Now building S2 on the `slice_closeout_advisories` surface.
+  The reviewable-intent unit in progress and the commits it spans; critique and
+  broad proof do not re-fire within one unchanged intent — update it when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- Next action: commit S1, then build the S2 #363 advisory.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -180,7 +182,38 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Recorded:
+
+- Routing: session start ran `find-skills` once (capability map + agent-browser
+  integration healthy); goal operated under `achieve`. S1 routed to `issue`
+  (file #365 + bug-class resolution), `debug` (causal-review substrate
+  `charness-artifacts/debug/2026-06-14-issue-365-agent-browser-orphan-ownership.md`),
+  `impl` (the guard fix), and `critique` (causal review + resolution critique,
+  both fresh-eye subagents). S2/S3 are `impl` on the advisory surface; S4 is
+  `release`.
+- Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; the agent-browser
+  harm evidence is this session's transcript, preserved in issue #365.
+- Release: pending S4 — `publish_release.py --part minor --execute` (0.48.0),
+  operator pre-authorized this run; line bound at release proof.
+- Issue closeout: #365 (S1), #363 (S2), #364 (S3); carrier = direct-commit close
+  keywords on the direct-to-`main` bundle push at S4; `validate-closeout-draft`
+  before push and `verify-closeout --expect-state CLOSED` after push pending S4.
+
 ## Slice Log
+
+### Slice 1: S1 — agent-browser orphan scoping (bug-class, #365)
+
+- Objective: Scope agent_browser_runtime_guard orphan/residue detection + cleanup to this-checkout-owned daemons so a concurrent neighbor checkout's live daemon is never flagged or killed; file + resolve the new issue.
+- Why this approach: cwd (/proc/<pid>/cwd resolved under repo_root) is the checkout-specific ownership signal; daemon is detached-by-design (ppid==1) and does NOT chdir (empirically confirmed), so cwd is reliable. Fail-closed: unknown cwd never killed/flagged. Reused the existing guard module (no fork); scoped all three selectors uniformly.
+- Commits: S1 commit (this slice): scope agent-browser orphan detection to this checkout (#365)
+- What changed: scripts/agent_browser_runtime_guard.py (+ plugin mirror); tests/test_agent_browser_runtime_guard.py (pure ownership tests + real-process CLI neighbor-safety tests); charness-artifacts/debug/2026-06-14-issue-365-agent-browser-orphan-ownership.md (causal-review substrate); preserved prior debug latest pointer.
+- Alternatives rejected: (a) remove the orphan check — loses real cleanup value; (b) machine-wide allowlist file — brittle/host-specific; (c) AGENT_BROWSER_SESSION env marker — charness-wide not checkout-specific AND would need a launch-path change (out of scope).
+- Targeted verification: ruff + py_compile + check_python_lengths (790 files) green; 18/18 guard tests pass; REAL end-to-end: a live agent-browser daemon in a foreign checkout reported healthy (rc=0) by --assert-no-orphans and not a --cleanup-orphans target, neighbor stayed alive.
+- Test duplication pressure: New tests reuse existing fake-ps helpers; pure ownership tests (simulated cwd) are distinct from the real-process CLI tests (prove /proc wiring + neighbor safety) — no duplicate coverage; existing single-tenant tests converted to owned-marker form rather than duplicated.
+- Critique: Causal review (fresh-eye, parent-delegated): all three lenses PASS close-ledger; flagged zombie-cwd / cwd-heuristic / TOCTOU. Resolution critique (fresh-eye): committed-ready, no Act-Before-Ship; one Bundle-Anyway (path-prefix-collision assertion) folded in.
+- Off-goal findings: none
+- Lessons carried forward: ppid==1 is detached-by-design for agent-browser daemons (not 'abandoned'); machine-global signals need per-task ownership scoping; proactive plugin-mirror sync done before the commit gate (#364 habit).
+- Metrics:
 
 ## Context Sources
 
