@@ -3,12 +3,12 @@ Date: 2026-06-14
 
 ## Scope
 
-Advanced `charness` toward release `0.47.0` (tag `v0.47.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.48.0` (tag `v0.48.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.46.0`
-- target version: `0.47.0`
+- previous version: `0.47.0`
+- target version: `0.48.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.47.0` (tag `v0.47.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.47.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.48.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.46.0`
+- Previous release ref: `refs/tags/v0.47.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,7 +50,7 @@ Advanced `charness` toward release `0.47.0` (tag `v0.47.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
@@ -60,24 +59,24 @@ Advanced `charness` toward release `0.47.0` (tag `v0.47.0`) through the repo-own
 - Evaluated changed paths: 24.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-14-charness-0-47-0-release.md`
-  - `charness-artifacts/critique/2026-06-14-general-doc-authoring-preflight-362-resolution.md`
-  - `charness-artifacts/critique/2026-06-14-general-doc-authoring-preflight-disposition-review.md`
-  - `charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md`
+  - `charness-artifacts/critique/2026-06-14-charness-0-48-0-release.md`
+  - `charness-artifacts/debug/2026-06-11-issue-353-adapter-yaml-renderer-hygiene.md`
+  - `charness-artifacts/debug/2026-06-14-issue-365-agent-browser-orphan-ownership.md`
+  - `charness-artifacts/debug/latest.md`
+  - `charness-artifacts/debug/seam-risk-index.json`
+  - `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`
+  - `charness-artifacts/metrics/rca-ledger.jsonl`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight-host-log.md`
-  - `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/conventions/authoring-preflight.md`
-  - `docs/conventions/implementation-discipline.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/scripts/check_doc_authoring_preflight.py`
+  - `plugins/charness/scripts/agent_browser_runtime_guard.py`
   - `plugins/charness/scripts/run_slice_closeout.py`
   - `plugins/charness/scripts/slice_closeout_advisories.py`
-  - `scripts/check_doc_authoring_preflight.py`
+  - `plugins/charness/scripts/slice_closeout_commit_advisories.py`
+  - `scripts/agent_browser_runtime_guard.py`
+  - `scripts/run_slice_closeout.py`
+  - `scripts/slice_closeout_advisories.py`
   - ... 4 more
 
 ## Real-Host Verification
@@ -97,32 +96,11 @@ Advanced `charness` toward release `0.47.0` (tag `v0.47.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-14-charness-0-47-0-release.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.47.0`.
+- Review proof: `charness-artifacts/critique/2026-06-14-charness-0-48-0-release.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.46.0 -> 0.47.0
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.46.0 -> 0.47.0
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
@@ -133,10 +111,11 @@ CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code t
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.48.0 (minor release). Workflow + host-state hardening bundle (additive; no floor removed, no new blocking gate; resolves #365, #363, #364). (1) AGENT-BROWSER ORPHAN SCOPING (#365, bug-class) - `scripts/agent_browser_runtime_guard.py` now scopes orphan-daemon and reparented/zombie residue detection AND `--cleanup-orphans` to THIS checkout, by the process working directory (`/proc/<pid>/cwd`) resolved under `repo_root`, failing closed: a daemon whose cwd cannot be proven under `repo_root` is never flagged or killed. Root cause - agent-browser daemons are detached-by-design (always PPID=1), so the prior machine-wide PPID-only scan killed a concurrent neighbor checkout's LIVE daemon. OPERATOR IMPACT - the release fresh-checkout probe and the closeout agent-browser hygiene gate no longer false-fail (or kill) when an unrelated task's agent-browser daemon is alive on the host. BEHAVIOR CHANGE - on a non-Linux host or where `/proc/<pid>/cwd` is unreadable, the guard fails closed and will not auto-clean an orphan it cannot prove is this checkout's; follow the printed init-reap / fresh-container guidance instead. (2) #363 CLOSE-KEYWORD-LEAKAGE ADVISORY - new `advise_close_keyword_leakage` (in `scripts/slice_closeout_commit_advisories.py`, wired into `run_slice_closeout.py`) prints a NON-BLOCKING stderr advisory when an unpushed commit carries a GitHub close keyword (close/fix/resolve #N) but its changed paths are not a plausible fix (artifact-only goal-shaping commit), the trap that auto-closed #362 before its fix existed. (3) #364 DECAYING-HABIT ADVISORY - `advise_decaying_habits` (same module) prints NON-BLOCKING author-time advisories for a changed `scripts/*.py` with a stale plugin mirror and a changed test that subprocesses an import-safe `scripts/*.py`; both reuse the real packaging-mirror and boundary-bypass signals. OPERATOR/CONSUMER NOTE - all three are additive and backward-compatible; no githooks are shipped or wired by the installer, so the advisories never auto-fire on `charness update`. `run_slice_closeout.py` + `slice_closeout_commit_advisories.py` ARE byte-shipped in the plugin, so a consumer who VOLUNTARILY runs `run_slice_closeout.py` will see the new non-blocking stderr advisories (no `report["ok"]=False`). Rollback - reinstall or pin 0.47.0; no data migration needs undoing.
 - Run `charness update` to pull 0.47.0 (minor release). Aggregate author-time preflight for general doc/markdown surfaces (resolves #362; additive, no floor removed, no new blocking gate). (1) DOC-AUTHORING PREFLIGHT - new `scripts/check_doc_authoring_preflight.py` forecasts, in one pass for a target `docs/handoff.md` or `docs/*.md`, the markdownlint rules (MD004 list-marker style, wrapped inline-code spans), the `check_doc_links` pathy-ref/link form, and the handoff length cap, by REUSING the real validators (`check_doc_links`, `check_markdown_inline_code`, markdownlint-cli2, the handoff length constant) so the forecast cannot drift from what the gate enforces. It is a describe-first AFFORDANCE, not a new blocking floor - a doc still commits without it, and it is intentionally absent from the blocking commit-gate plan, guarded by a test. (2) SLICE-CLOSEOUT ADVISORY - `advise_doc_surface_preflight` (in `scripts/slice_closeout_advisories.py`, wired into `run_slice_closeout.py`) prints a NON-BLOCKING stderr pointer at the preflight when a slice edits a `docs/*.md` surface, mirroring the existing skill-surface advisory. (3) DISCOVERABILITY - `docs/conventions/authoring-preflight.md` and `implementation-discipline.md` gain a before-authoring-a-general-doc section/bullet. OPERATOR/CONSUMER NOTE - additive and backward-compatible; the advisory does NOT auto-fire on `charness update` (no githooks are shipped or wired by the installer). `run_slice_closeout.py` + `slice_closeout_advisories.py` ARE byte-shipped in the plugin, so a consumer who VOLUNTARILY runs `run_slice_closeout.py` on a `docs/*.md` edit will see the new stderr pointer - but it is purely a non-blocking advisory (no `report["ok"]=False`), and the preflight itself is an opt-in hand-run helper. Two follow-up issues were filed (#363 close-keyword-leakage guard, #364 recurring pre-commit-gate author-habit advisory). Rollback - reinstall or pin 0.46.0; no data migration needs undoing.
 - Run `charness update` to pull 0.46.0 (minor release). achieve-efficiency internal follow-ups (additive; no floor removed, no new blocking gate). (1) A2 GOAL-CONDITIONAL CLOSEOUT DESCRIBE - `describe_goal_closeout_shape.py` gains a `--goal-path <artifact>` mode that reads the in-progress goal and emits only the floors THAT goal triggers (and which are still missing), folding the previously-separate dry `check_goal_artifact.py` preview into one call; it reuses the live `check_complete_evidence`/`check_timebox_closeout` reports so it cannot drift from the gate, and the achieve After-phase (SKILL.md + lifecycle.md) now points at it. The static catalog path (no `--goal-path`) is UNCHANGED and the describe never blocks the flip. (2) FLOOR-ADDITION RESTRAINT NUDGE - `advise_floor_addition_restraint` (in `scripts/slice_closeout_advisories.py`, wired into `run_slice_closeout.py`) flags a NEW blocking floor (a new `report["ok"] = False` site / new `REQUIRED_*` member) added without a recorded restraint call, naming the implementation-discipline checklist; it is a conservative NON-BLOCKING stderr advisory (a blocking gate would be the exact reflex the rule guards against), resolving `follow-up:floor-addition-restraint-nudge`. OPERATOR/CONSUMER NOTE - both changes are additive and backward-compatible; the floor-addition nudge is non-blocking and only fires on charness's repo-root closeout (not shipped in the plugin), and `--goal-path` is an opt-in authoring affordance. A pursue-ready draft goal was filed for issue #362 (general doc/markdown authoring preflight) but ships NO consumer-visible code in this release. OPERATOR NOTE - additive; normal `charness update` is enough, no migration or renamed command surface. Rollback - reinstall or pin 0.45.0; no data migration needs undoing.
 - Run `charness update` to pull 0.45.0 (minor release). achieve-efficiency improvements from the 2026-06-13 operator-reported achieve-waste session (directions A/B/C/E/D). (1) DESCRIBE-FIRST CLOSEOUT (A) - the `achieve` After-phase now gets the full required closeout-evidence list up front via the describe-first preflight plus a dry `check_goal_artifact.py` pass, replacing draft-fail-fix churn with describe-fill-verify. (2) SLICE-CADENCE TEETH (B) - a `Current slice intent:` operating-frame field plus a non-blocking over-slice advisory (N consecutive charness-artifacts/-only commits; tune `CHARNESS_OVERSLICE_ARTIFACT_RUN`) curb per-commit premortem and over-slicing. (3) GATE-BASELINE-RUNTIME WASTE LENS (C) - a passing-but-slow gate run through `run_slice_closeout` is surfaced in the durable closeout payload against an adapter-overridable budget (`CHARNESS_GATE_RUNTIME_BUDGET_SECONDS`) and classified in the retro's new gate-baseline-runtime waste lens; the host pre-push hook's own runtime stays an explicit non-claim. (4) OBJECTIVE WASTE TELEMETRY (E) - charness's OWN closeout records gate-runtime/over-slice/slice-churn into a gitignored, on-by-default local `closeout-telemetry` stream (`CHARNESS_CLOSEOUT_TELEMETRY=off` to disable), and the weekly `retro` ships a miner (`mine_closeout_telemetry.py`) that routes recurring waste to a filed issue rather than the decaying recent-lessons digest. OPERATOR/CONSUMER NOTE - E is INTERNAL INSTRUMENTATION; the telemetry emitter is wired into charness's repo-root closeout and githooks, which are NOT shipped in the plugin, so an installed-plugin consumer does NOT start collecting telemetry on upgrade. Consumers inherit the SKILLS only (the weekly retro can READ a local stream if one exists; no cross-repo telemetry visibility). (5) FLOOR-ADDITION RESTRAINT (D) - a restraint checklist in implementation-discipline.md plus a closeout-floor audit; additive docs/policy. OPERATOR NOTE - additive; normal `charness update` is enough, no migration or renamed command surface, and installed-plugin consumers inherit no new blocking behavior. Rollback - reinstall or pin 0.44.1; no data migration needs undoing.
