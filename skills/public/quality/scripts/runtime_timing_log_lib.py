@@ -166,9 +166,18 @@ def evaluate_timing_log(
     """Derive a `commands`-shaped sample source from a repo-declared timing log.
 
     Inert ({} commands, no errors) when `command_timing_log` is absent/empty.
-    Config-shape problems are returned as `errors` so the caller can fail loud.
-    A configured-but-missing log file is soft (no samples, no error): the log may
-    simply not have been written yet, mirroring an absent `runtime-signals.json`.
+
+    Two failure boundaries, deliberately split:
+    - **config-shape** problems (bad path/field_map/elapsed_unit/recent_window)
+      are returned as `errors` so the caller can fail loud (they ride
+      `profile_config_errors` → `check_runtime_budget` exits non-zero).
+    - **data-shape** problems are soft (no samples, no error), mirroring an absent
+      `runtime-signals.json`: a configured-but-missing log file, a malformed/non-list
+      `json` payload, malformed `jsonl` lines, and records with a missing/non-string
+      label or missing/negative/non-numeric elapsed are dropped rather than failing
+      the run. The log may simply not have been written yet or carry a partial trailing
+      write; the render layer reports "no usable samples" so a green run is not silently
+      treated as a clean cost signal.
     """
     config = adapter_data.get("command_timing_log")
     if not config:
@@ -217,5 +226,6 @@ def evaluate_timing_log(
         "path": rel_path,
         "file_present": True,
         "samples_total": samples_total,
+        "recent_window": parsed["window"],
         "commands": commands,
     }

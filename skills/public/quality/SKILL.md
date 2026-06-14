@@ -116,7 +116,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - CLI/operator review uses `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`, flat help-list, multiple archetype schema namespaces, `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`, option-looking positional rejection, mutating command probes, and command-docs drift gate checks.
 - Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
 - Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
-- Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles, Pytest Economics, and bounded test-ratio posture.
+- Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles (or a repo-declared `command_timing_log` as the sample source), Pytest Economics, and bounded test-ratio posture. For local-gate-*speed* triage add `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py`, the counterweight that flags only the costly local gates CI fully re-runs as move-off-local candidates (the rest stay `keep-local`); see `references/ci-recoverable-gate-triage.md`.
 - Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, classify hidden broad-test compensation as a design smell rather than only a runtime smell, distinguish structural test cleanup (extract builders/wrappers/runners/shared assertions, keep intent in `.test.*`) from hiding test bodies in support files, and on duplicate/pressure-gate failure score candidates through `references/quality-signal-scorecard.md` and name the smallest next structural cleanup instead of only reporting the percentage.
 - Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`: `quality` owns the portable payload, no-increase, and exemption contract; consumer repos own stack-specific probes and DSLs.
 - Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
@@ -138,7 +138,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not treat a passing metric or green gate as the goal; name the structural simplification or ownership clarification.
 - Do not leave automatable rules as prose-only guidance.
-- Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`.
+- Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`. The CI-recoverability lens is the bounded counterweight (not a loophole): it proposes moving a gate off-local only when CI fully re-runs that proof; see `references/ci-recoverable-gate-triage.md`.
 - Do not give generic "add tests" or "improve security" advice without the seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared
   enforcement is the real gap.
@@ -161,6 +161,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/boundary-bypass-payload.example.json`
 - `references/cautilus-on-demand.md`
 - `references/behavior-testing.md`
+- `references/ci-recoverable-gate-triage.md`
 - `references/cli-ergonomics-smells.md`
 - `references/coverage-floor-exemptions.txt`
 - `references/coverage_floor_inventory.py`

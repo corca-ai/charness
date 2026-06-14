@@ -486,12 +486,15 @@
         "runs or names the existing repo-owned quality gates before proposing new ones",
         "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
         "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
+        "when the goal is local gate speed, cross-references costly local gates against CI proof (the CI-recoverability triage) and ranks by wall-clock, recommending only gates CI fully re-runs be moved off the local hot path while keeping the rest local, rather than only widening budgets or leaving every gate local",
+        "can ingest a repo-declared command-timing log as the wall-clock source when one exists, instead of reporting no samples until a hand-rolled bridge is built",
         "treats affected-test selection as structural testability before recommending caches, observation tools, or broader runtime budgets",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-06-02",
+      "reviewed_on": "2026-06-14",
       "observed_evidence": [
+        "Issue #367 (2026-06-14): the skill now ships the two gate-speed gaps this prompt exposed. (1) `inventory_ci_recoverable_gates.py` is the explicit counterweight to the local-proof guardrail — it cross-references costly local standing gates against CI workflow run-steps, ranks by wall-clock, and flags only the gates CI fully re-runs as move-off-local candidates (keeping the rest `keep-local`), so the skill drives the safe CI-backstopped reductions that previously depended on operator steering. (2) A `command_timing_log` adapter key lets `render_runtime_summary` / `check_runtime_budget` / the triage ingest a repo's existing structured timing log as the wall-clock source, so 'which gate dominates wall-clock' appears without a hand-rolled `runtime-signals.json` bridge. Both are advisory/inert-by-default (Floor-Addition Restraint), never weakening the local-proof discipline.",
         "Issue #223 (2026-05-27): the testability reference now distinguishes structural test cleanup (extract fixture builders, lifecycle wrappers, command runners, shared assertions while keeping behavioral intent in `.test.*`) from hiding test bodies in support files, and requires naming the smallest next structural cleanup on broad duplicate/pressure-gate failure instead of only reporting the percentage. A 3-angle + counterweight fresh-eye critique confirmed the boundary stays consumer-owned: the duplicate/length gate remains a repo-local deterministic gate, not a Charness-owned runner, consistent with `references/behavior-testing.md`.",
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",

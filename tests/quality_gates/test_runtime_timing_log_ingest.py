@@ -162,6 +162,38 @@ def test_config_error_when_not_a_mapping(tmp_path: Path) -> None:
     assert result["errors"] == ["command_timing_log must be a mapping"]
 
 
+def test_config_error_when_field_map_not_a_mapping(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path, [{"command": "pytest", "elapsed_ms": 100}])
+    data = {"command_timing_log": {"path": LOG_REL, "field_map": "label,elapsed"}}
+    result = timing_log_lib.evaluate_timing_log(tmp_path, data, "default")
+    assert result["commands"] == {}
+    assert any("field_map" in err for err in result["errors"])
+
+
+def test_json_whole_file_malformed_is_soft(tmp_path: Path) -> None:
+    # data-shape problems (unparseable file / non-list payload) are soft: no
+    # samples, no config error — only config-shape problems fail loud.
+    log_path = tmp_path / LOG_REL
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text('{"command": "pytest", "elapsed_ms": 100}', encoding="utf-8")  # object, not array
+    result = timing_log_lib.evaluate_timing_log(tmp_path, _adapter_data(format="json"), "default")
+    assert result["file_present"] is True
+    assert result["samples_total"] == 0
+    assert result["errors"] == []
+    assert result["commands"] == {}
+
+    log_path.write_text("definitely not json", encoding="utf-8")
+    corrupt = timing_log_lib.evaluate_timing_log(tmp_path, _adapter_data(format="json"), "default")
+    assert corrupt["samples_total"] == 0
+    assert corrupt["errors"] == []
+
+
+def test_recent_window_surfaced_in_report(tmp_path: Path) -> None:
+    _write_jsonl(tmp_path, [{"command": "pytest", "elapsed_ms": 100}])
+    result = timing_log_lib.evaluate_timing_log(tmp_path, _adapter_data(recent_window=7), "default")
+    assert result["recent_window"] == 7
+
+
 def test_negative_and_nonnumeric_elapsed_skipped(tmp_path: Path) -> None:
     _write_jsonl(
         tmp_path,

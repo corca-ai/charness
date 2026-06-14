@@ -96,6 +96,8 @@ EVIDENCE_OVERRIDES = {
         "runs or names the existing repo-owned quality gates before proposing new ones",
         "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
         "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
+        "when the goal is local gate speed, cross-references costly local gates against CI proof (the CI-recoverability triage) and ranks by wall-clock, recommending only gates CI fully re-runs be moved off the local hot path while keeping the rest local, rather than only widening budgets or leaving every gate local",
+        "can ingest a repo-declared command-timing log as the wall-clock source when one exists, instead of reporting no samples until a hand-rolled bridge is built",
         "treats affected-test selection as structural testability before recommending caches, observation tools, or broader runtime budgets",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior",
     ],

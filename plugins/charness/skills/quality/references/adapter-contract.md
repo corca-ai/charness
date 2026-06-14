@@ -54,6 +54,7 @@ Quality-specific fields:
 - `canonical_markdown_surfaces`
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
+- `command_timing_log`
 - `startup_probes`
 - `quality_phases`
 - `prompt_asset_roots`
@@ -179,6 +180,46 @@ runtime_budget_profiles:
 Do not derive hard pass/fail budgets from automatic CPU fingerprints by
 default. Hardware facts can be useful diagnostic metadata, but named profiles
 keep budget history from fragmenting across incidental runner details.
+
+`command_timing_log` optionally declares a repo's existing structured
+per-command timing log as a runtime sample source, so the gate hot-spot ranking
+(`render_runtime_summary.py`, `check_runtime_budget.py`, and the
+`inventory_ci_recoverable_gates.py` triage) lights up from that log without each
+repo hand-rolling a log→`.charness/quality/runtime-signals.json` bridge. It is
+**inert when absent** (stack-neutral opt-in) and only used as a fallback when
+`runtime-signals.json` has no samples for the selected profile — recorded signals
+stay authoritative. A misconfigured key fails loud: config-shape errors ride
+`profile_config_errors`, which `check_runtime_budget.py` turns into a non-zero
+exit. A configured-but-missing log file is soft (no samples, no error), like an
+absent `runtime-signals.json`.
+
+Fields:
+
+- `path` — repo-relative path to the timing log (required).
+- `format` — `jsonl` (default; one JSON object per line, blank/malformed lines
+  skipped) or `json` (a JSON array of objects).
+- `field_map` — maps the log's own field names to canonical fields. Required:
+  `label` (the command/gate label) and `elapsed` (the elapsed-time field).
+  Optional: `profile` (a per-record runner/profile field; when set, only records
+  matching the selected profile count — the literal machine-auto `default`
+  profile matches every record).
+- `elapsed_unit` — the unit of the `elapsed` field: `ms` (default), `s`, `us`,
+  or `ns` (and common long spellings). Values are converted to milliseconds.
+- `recent_window` — how many most-recent samples per label feed the
+  recent-median and max (default `10`); the latest sample is always the last in
+  log order.
+
+```yaml
+command_timing_log:
+  path: .charness/quality/command-timing.jsonl
+  format: jsonl
+  field_map:
+    label: command
+    elapsed: elapsed_ms
+    profile: runner   # optional
+  elapsed_unit: ms
+  recent_window: 10
+```
 
 Repo-owned quality artifacts may use runner-specific section labels or runtime
 signals such as `Pytest Economics` when that is the honest local seam. Keep the

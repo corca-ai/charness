@@ -54,6 +54,16 @@ skill_ergonomics_gate_rules:
 runtime_profile_default: default
 runtime_budgets: {}
 runtime_budget_profiles: {}
+# Optional: ingest an existing per-command timing log as a runtime sample source
+# (inert when omitted). See references/adapter-contract.md.
+# command_timing_log:
+#   path: .charness/quality/command-timing.jsonl
+#   format: jsonl
+#   field_map:
+#     label: command
+#     elapsed: elapsed_ms
+#   elapsed_unit: ms
+#   recent_window: 10
 startup_probes: []
 quality_phases: []
 concept_paths: []

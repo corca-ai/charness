@@ -182,6 +182,7 @@ def evaluate(
             "path": timing_log["path"],
             "file_present": timing_log["file_present"],
             "samples_total": timing_log["samples_total"],
+            "recent_window": timing_log.get("recent_window"),
             "source_used": commands_source == "command_timing_log",
         },
     }
