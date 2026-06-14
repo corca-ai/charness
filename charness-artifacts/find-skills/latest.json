@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-10T09:50:45Z",
+  "generated_at": "2026-06-14T07:15:44Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -507,6 +507,7 @@
           "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/behavior-testing.md",
           "skills/public/quality/references/inventory-consumer-fields.json",
+          "skills/public/quality/references/quality-signal-scorecard.md",
           "skills/public/quality/references/boundary-bypass-ratchet.md",
           "skills/public/quality/references/agent-production-runtime.md",
           "skills/shared/references/external-capability-proof-ladder.md",
@@ -1354,6 +1355,43 @@
         ],
         "recommendation_role": "validation",
         "path": "integrations/tools/nose.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "pry",
+        "kind": "external_binary",
+        "summary": "Static testability-surface analyzer that surfaces welded boundary calls (clock, subprocess, network, file I/O, randomness) with no seam to inject a failure — a deterministic, zero-LLM testability backlog, not a bug list; intended as an advisory input to the `quality` skill.",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [
+          "pry",
+          "testability",
+          "testability surface",
+          "injectability",
+          "welded boundary",
+          "welded-at-demand",
+          "seam",
+          "failure injection",
+          "boundary call",
+          "testability backlog",
+          "테스트 가능성",
+          "주입 가능성"
+        ],
+        "strong_intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/pry.json",
         "source": "local-integration",
         "layer": "external integration"
       },

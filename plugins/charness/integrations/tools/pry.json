@@ -1,0 +1,96 @@
+{
+  "schema_version": "1",
+  "tool_id": "pry",
+  "kind": "external_binary",
+  "display_name": "pry",
+  "summary": "Static testability-surface analyzer that surfaces welded boundary calls (clock, subprocess, network, file I/O, randomness) with no seam to inject a failure — a deterministic, zero-LLM testability backlog, not a bug list; intended as an advisory input to the `quality` skill.",
+  "upstream_repo": "corca-ai/pry",
+  "homepage": "https://github.com/corca-ai/pry",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "experimental",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/pry",
+      "notes": [
+        "pry has no published release yet (Layer-0 / Stage-1). Build from source in a sibling `pry` checkout: `cargo build --release` (Rust >= 1.85).",
+        "Point quality at the local build with `PRY_BIN=/abs/path/to/pry/target/release/pry`; this maintainer-local override is the supported delivery until a tagged release installer (cargo-dist, the nose model) lands.",
+        "Use `PRY_BIN` only as a maintainer-local override when testing a sibling checkout; a future release will install a `pry` binary on PATH."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/pry",
+      "notes": [
+        "Rebuild from the sibling checkout (`git pull && cargo build --release`) to update a source-built `pry`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "pry --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:pry"
+      ],
+      "failure_hint": "Build `pry` from source (`cargo build --release`) and put it on PATH or set `PRY_BIN`, before using the quality testability backlog."
+    },
+    "healthcheck": {
+      "commands": [
+        "pry map --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:risk ranking"
+      ],
+      "failure_hint": "The `pry` binary exists but its `map` surface is unavailable. Rebuild from a current source checkout."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a source build from a recent `pry` main; no tagged release yet.",
+    "detected_by": "stdout"
+  },
+  "supports_public_skills": [
+    "quality"
+  ],
+  "intent_triggers": [
+    "pry",
+    "testability",
+    "testability surface",
+    "injectability",
+    "welded boundary",
+    "welded-at-demand",
+    "seam",
+    "failure injection",
+    "boundary call",
+    "testability backlog",
+    "테스트 가능성",
+    "주입 가능성"
+  ],
+  "recommendation_role": "validation",
+  "doctor_policy": "advisory",
+  "degradation": {
+    "when_missing": [
+      "Quality keeps its deterministic gates authoritative and omits the welded-at-demand testability backlog.",
+      "Do not claim a testability or injectability review succeeded without a healthy `pry` binary."
+    ],
+    "when_version_mismatch": [
+      "Treat changes in welded/seamed classification, demand-subset ranking, or JSON output shape as advisory drift before promoting findings into gates."
+    ]
+  },
+  "host_notes": [
+    "`pry` is an advisory input to Charness `quality`: it proposes a testability backlog (welded boundary calls with no injection seam), not a bug list, and must never fail standing quality. This manifest makes `pry` discoverable and doctor-checkable; the `quality` invocation driver (the consuming skill) ships separately and is not yet wired.",
+    "pry analyzes TypeScript/JavaScript today — the validated surface (see pry `docs/precision-gate.md`). A Python frontend is out of scope: the author's Python is welded glue with no discrimination (pry `docs/kill-gate.md`).",
+    "Run `pry map <path>` for the full finding map, or `pry map <path> --summary-only` for the coverage summary; the `demand=true` substitution-demand subset is the ranked backlog."
+  ]
+}
