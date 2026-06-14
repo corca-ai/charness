@@ -154,6 +154,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "runtime_profile_default": "default",
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
+        "command_timing_log": {},
         "startup_probes": [],
         "quality_phases": [],
         "concept_paths": [],
@@ -180,6 +181,26 @@ def _apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors
         value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+
+def _apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    runtime_budgets = adapter_validators.runtime_budgets(data.get("runtime_budgets"), errors)
+    if runtime_budgets is not None:
+        validated["runtime_budgets"] = runtime_budgets
+    runtime_budget_profiles = adapter_validators.runtime_budget_profiles(
+        data.get("runtime_budget_profiles"), errors
+    )
+    if runtime_budget_profiles is not None:
+        validated["runtime_budget_profiles"] = runtime_budget_profiles
+    startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
+    if startup_probes is not None:
+        validated["startup_probes"] = startup_probes
+    command_timing_log = adapter_validators.command_timing_log(data.get("command_timing_log"), errors)
+    if command_timing_log is not None:
+        validated["command_timing_log"] = command_timing_log
+    quality_phases = adapter_validators.quality_phases(data.get("quality_phases"), errors)
+    if quality_phases is not None:
+        validated["quality_phases"] = quality_phases
 
 
 def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
@@ -231,20 +252,7 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if skill_ergonomics_gate_rules is not None:
         validated["skill_ergonomics_gate_rules"] = skill_ergonomics_gate_rules
 
-    runtime_budgets = adapter_validators.runtime_budgets(data.get("runtime_budgets"), errors)
-    if runtime_budgets is not None:
-        validated["runtime_budgets"] = runtime_budgets
-    runtime_budget_profiles = adapter_validators.runtime_budget_profiles(
-        data.get("runtime_budget_profiles"), errors
-    )
-    if runtime_budget_profiles is not None:
-        validated["runtime_budget_profiles"] = runtime_budget_profiles
-    startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
-    if startup_probes is not None:
-        validated["startup_probes"] = startup_probes
-    quality_phases = adapter_validators.quality_phases(data.get("quality_phases"), errors)
-    if quality_phases is not None:
-        validated["quality_phases"] = quality_phases
+    _apply_runtime_fields(data, validated, errors)
 
     domain_language_contract = data.get("domain_language_contract")
     if domain_language_contract is None:

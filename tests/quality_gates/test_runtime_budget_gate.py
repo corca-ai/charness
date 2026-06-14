@@ -558,7 +558,8 @@ def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Pat
 
     assert result.returncode == 0, result.stderr
     assert (
-        "- runtime source: not configured; add structured timing capture before reporting timing trends."
+        "- runtime source: not configured; add structured timing capture "
+        "(or a `command_timing_log` adapter key) before reporting timing trends."
         in result.stdout
     )
     assert "runtime_visibility_missing_startup_probes" in result.stdout

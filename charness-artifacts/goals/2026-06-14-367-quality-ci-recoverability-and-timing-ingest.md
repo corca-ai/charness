@@ -13,12 +13,14 @@ artifact-only draft.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Current slice intent: before activation. The reviewable-intent unit in progress
-  and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`.
+- Current slice: Slice 1 (command-timing-log ingest) implemented + locally proven;
+  committing. Next: Slice 2 (CI-recoverability triage lens).
+- Current slice intent: Slice 2 — a new advisory inventory that cross-references
+  costly local standing gates against CI workflow steps and flags CI-fully-rerun
+  gates as candidates to move off the local hot path, ranked by wall-clock from
+  the timing-log/runtime-signals ranking built in Slice 1.
+- Next action: implement Slice 2 (CI-recoverability lens) with TDD, then sync +
+  commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -179,6 +181,20 @@ and the floors below; `find-skills` owns *which* skill answers a boundary.
   push.
 
 ## Slice Log
+
+### Slice 1: Command-timing-log ingest (adapter key)
+
+- Objective: Let render_runtime_summary / check_runtime_budget ingest a repo-declared command-timing log via a new portable command_timing_log adapter key (path + field/schema mapping), as a sample source when runtime-signals.json has no samples; inert when unconfigured, fail-loud on misconfig. Files: NEW skills/public/quality/scripts/runtime_timing_log_lib.py; edited runtime_budget_lib.py (timing-log fallback + commands_source/timing_log report fields), render_runtime_summary.py (source line + json fields), adapter_validators.py (command_timing_log passthrough validator), scripts/quality_adapter_lib.py (default {} + _apply_runtime_fields helper). Mirror synced to plugins/charness.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 16 new unit+integration tests pass (tests/quality_gates/test_runtime_timing_log_ingest.py); existing runtime-budget tests green after one intentional message-wording update; ruff + check_python_lengths clean; adapter resolves command_timing_log:{} valid:true.
+- Test duplication pressure: added 1 new test file (16 cases); nose-clone inventory sample: 0 findings; no broad duplicate-pressure gate pushed toward threshold.
+- Critique: Skill-review decision (public-skill change): additive + inert-by-default (behavior unchanged when key absent; only altered user string is the 'not configured' hint, now naming the new key); existing docs/public-skill-dogfood.json quality case acceptance evidence stays satisfied; richer acceptance-evidence update deferred to slice 3 (docs). Cautilus run_mode=ask, next_action=none -> no evaluator run per repo policy; --ack-cautilus-skill-review used for the slice-boundary aggregate.
+- Off-goal findings:
+- Lessons carried forward: Slice 2 will consume render_runtime_summary's commands_source/hot-spot ranking for the CI-recoverability lens; reuse evaluate_timing_log output as the wall-clock source. Keep _apply_policy_fields complexity in mind when wiring further adapter keys.
+- Metrics:
 
 ## Context Sources
 

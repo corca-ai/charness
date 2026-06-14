@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
+from runtime_timing_log_lib import evaluate_timing_log
 from runtime_visibility_lib import runtime_visibility_findings
 
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
@@ -119,6 +120,16 @@ def evaluate(
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
     smoothing_commands = profile_commands(smoothing, selected_profile) if isinstance(smoothing, dict) else {}
 
+    # When runtime-signals.json has no samples for the selected profile, fall back
+    # to a repo-declared command-timing log (inert when unconfigured). Config-shape
+    # errors ride profile_config_errors so check_runtime_budget fails loud.
+    timing_log = evaluate_timing_log(repo_root, adapter_data, selected_profile)
+    profile_config_errors = list(profile_config_errors) + timing_log["errors"]
+    commands_source = "runtime_signals" if commands else "none"
+    if not commands and timing_log["commands"]:
+        commands = timing_log["commands"]
+        commands_source = "command_timing_log"
+
     checked: list[dict[str, Any]] = []
     violations: list[dict[str, Any]] = []
     latest_spikes: list[dict[str, Any]] = []
@@ -165,6 +176,14 @@ def evaluate(
         "missing_samples": missing_samples,
         "runtime_hotspots": _runtime_hotspots(commands, budgets, count=top_runtime_count),
         "runtime_visibility_findings": runtime_visibility_findings(adapter_data, budgets),
+        "commands_source": commands_source,
+        "timing_log": {
+            "configured": timing_log["configured"],
+            "path": timing_log["path"],
+            "file_present": timing_log["file_present"],
+            "samples_total": timing_log["samples_total"],
+            "source_used": commands_source == "command_timing_log",
+        },
     }
 
 

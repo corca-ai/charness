@@ -84,6 +84,11 @@ def _format_visibility(findings: list[dict[str, object]]) -> str:
     return f"- runtime visibility: weak due to {finding_types}; {actions}."
 
 
+def _timing_log_info(report: dict[str, object]) -> dict[str, object]:
+    info = report.get("timing_log")
+    return info if isinstance(info, dict) else {}
+
+
 def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals_present: bool) -> list[str]:
     profile = str(report["runtime_profile"])
     hotspots = report.get("runtime_hotspots")
@@ -93,30 +98,53 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
     if not isinstance(findings, list):
         findings = []
     visibility = _format_visibility(findings)
+    timing_log = _timing_log_info(report)
 
     if hotspots:
-        recorder = repo_root / "scripts" / "record_quality_runtime.py"
-        provenance = (
-            " via `scripts/record_quality_runtime.py`"
-            if recorder.is_file()
-            else ""
-        )
-        source = (
-            "- runtime source: structured metrics from "
-            f"`{RUNTIME_SIGNALS_PATH}` rendered by `render_runtime_summary.py`{provenance}; profile `{profile}`."
-        )
+        if report.get("commands_source") == "command_timing_log":
+            source = (
+                "- runtime source: repo-declared command-timing log "
+                f"`{timing_log.get('path')}` ingested via the `command_timing_log` adapter key "
+                f"({timing_log.get('samples_total')} samples); profile `{profile}`."
+            )
+        else:
+            recorder = repo_root / "scripts" / "record_quality_runtime.py"
+            provenance = (
+                " via `scripts/record_quality_runtime.py`"
+                if recorder.is_file()
+                else ""
+            )
+            source = (
+                "- runtime source: structured metrics from "
+                f"`{RUNTIME_SIGNALS_PATH}` rendered by `render_runtime_summary.py`{provenance}; profile `{profile}`."
+            )
         hot_spots = f"- runtime hot spots: {_format_hotspots(hotspots)}."
         return [source, hot_spots, visibility, _interpretation_line()]
 
-    if signals_present:
-        return [
+    # No hot spots: prefer the most specific source explanation available.
+    if timing_log.get("configured") and not timing_log.get("file_present"):
+        source_line = (
+            "- runtime source: command-timing log "
+            f"`{timing_log.get('path')}` declared but not found yet; "
+            f"`{RUNTIME_SIGNALS_PATH}` also has no samples for profile `{profile}`."
+        )
+    elif timing_log.get("configured"):
+        source_line = (
+            "- runtime source: command-timing log "
+            f"`{timing_log.get('path')}` has no usable samples for profile `{profile}`."
+        )
+    elif signals_present:
+        source_line = (
             "- runtime source: structured metrics file "
-            f"`{RUNTIME_SIGNALS_PATH}` has no samples for profile `{profile}`.",
-            "- runtime hot spots: unavailable until structured runtime metrics have samples.",
-            visibility,
-        ]
+            f"`{RUNTIME_SIGNALS_PATH}` has no samples for profile `{profile}`."
+        )
+    else:
+        source_line = (
+            "- runtime source: not configured; add structured timing capture "
+            "(or a `command_timing_log` adapter key) before reporting timing trends."
+        )
     return [
-        "- runtime source: not configured; add structured timing capture before reporting timing trends.",
+        source_line,
         "- runtime hot spots: unavailable until structured runtime metrics have samples.",
         visibility,
     ]
@@ -139,6 +167,8 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
         "runtime_hotspots": hotspots,
         "runtime_visibility_findings": report.get("runtime_visibility_findings", []),
         "missing_samples": report.get("missing_samples", []),
+        "commands_source": report.get("commands_source", "none"),
+        "timing_log": report.get("timing_log", {}),
         "markdown_lines": lines,
     }
     # Inference-layer self-declaration rides the hot-spot ranking only; absent when

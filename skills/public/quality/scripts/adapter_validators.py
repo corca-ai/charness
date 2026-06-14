@@ -113,6 +113,24 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
     return validated
 
 
+def command_timing_log(value: Any, errors: list[str]) -> dict[str, Any] | None:
+    """Pass-through structural check for the runtime command-timing-log source.
+
+    Only the top-level shape is validated here so a gross type error
+    (a non-mapping) marks the adapter invalid. The detailed field/schema
+    validation (path, field_map, elapsed_unit, recent_window) is owned by the
+    consumer `runtime_timing_log_lib`, which surfaces config errors through
+    `profile_config_errors` so `check_runtime_budget` fails loud at the runtime
+    gate rather than invalidating the whole adapter for a runtime-only field.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("command_timing_log must be a mapping")
+        return None
+    return dict(value)
+
+
 def skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
     return validate_skill_ergonomics_gate_rules(value, errors)
 
