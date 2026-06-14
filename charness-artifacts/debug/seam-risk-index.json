@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 63,
-  "indexed_artifact_count": 51,
+  "source_artifact_count": 65,
+  "indexed_artifact_count": 53,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
     "none": 9,
-    "operator-visible-recovery": 15,
+    "operator-visible-recovery": 17,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
-    "monitor": 48,
+    "monitor": 50,
     "none": 1
   },
   "entries": [
@@ -720,14 +720,42 @@
       "forced": true
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-06-11-issue-353-adapter-yaml-renderer-hygiene.md",
+      "is_current_pointer": false,
       "interrupt_id": "issue-353-adapter-yaml-renderer-hygiene",
       "risk_classes": [
         "none"
       ],
       "seam": "repo-owned adapter parser/renderer subset",
       "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-14-issue-365-agent-browser-orphan-ownership.md",
+      "is_current_pointer": false,
+      "interrupt_id": "agent-browser-orphan-ownership-365",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "OS process table + /proc host runtime; --cleanup-orphans is destructive to live processes",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "agent-browser-orphan-ownership-365",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "OS process table + /proc host runtime; --cleanup-orphans is destructive to live processes",
+      "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
