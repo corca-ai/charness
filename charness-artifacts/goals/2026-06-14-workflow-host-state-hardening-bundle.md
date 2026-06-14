@@ -1,0 +1,268 @@
+# Achieve Goal: Workflow + host-state hardening bundle: agent-browser orphan scoping, close-keyword guard (#363), decaying-habit advisory (#364), through push + release
+
+Status: draft
+Created: 2026-06-14
+Activation: `/goal @charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: before activation.
+- Current slice intent: before activation. The reviewable-intent unit in progress
+  and the commits it spans; critique and broad proof do not re-fire within one
+  unchanged intent — update it when the intent changes, not per commit
+  (meaningful-slice-cadence).
+- Next action: activate with `/goal @charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final/bundle proof records the verification lock and uses `--verification-lock`.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Land three additive, **non-blocking** workflow + host-state guards that harden
+charness against recurring traps this session exposed, each reusing an existing
+surface (no new blocking floor, per Floor-Addition Restraint), then push and cut
+a release:
+
+1. **agent-browser orphan scoping (bug-class).** `scripts/agent_browser_runtime_guard.py`
+   detects/cleans "orphan" agent-browser daemons **machine-wide and by PPID
+   alone**, so `--cleanup-orphans --execute` killed a *concurrent unrelated
+   task's* live browser sessions this session (a `parental-interaction-eval`
+   job in another checkout — its `agent-browser wait` hung). Scope orphan
+   detection + cleanup to **charness-owned / this-checkout** daemons so the guard
+   (and the doctor probe / release fresh-checkout gate that calls it) never flags
+   or kills a neighbor task's daemon. File the issue, then resolve it.
+2. **#363 close-keyword-leakage guard.** A non-blocking pre-commit/pre-push
+   advisory flagging a close keyword (`closes/fixes/resolves #N`) in a commit
+   whose changed paths are not a plausible fix for `#N` (the trap that
+   auto-closed #362 a day before its fix existed).
+3. **#364 decaying-habit advisory.** A non-blocking author-time advisory for the
+   recurring pre-commit-gate habits whose persisted lessons keep decaying and
+   re-violating (proactive plugin-mirror sync; in-process test default for
+   import-safe `scripts/*.py`).
+
+Then **push** the bundle and **cut release 0.48.0** (operator-approved this run).
+
+## Non-Goals
+
+- **No new blocking floors.** All three are non-blocking advisories or a scoping
+  bug-fix; the existing gates (commit gate, doctor, staged-mirror-drift,
+  boundary-bypass-ratchet) stay the enforcement. Per the Floor-Addition Restraint
+  checklist — two of these (#363, #364) have a *recorded* recurrence, so an
+  advisory (not a blocking gate) is the sanctioned escalation.
+- **Not re-implementing existing gates.** The #363/#364 advisories reuse the
+  `slice_closeout_advisories` surface and forecast the SAME constraints the real
+  gates enforce; the agent-browser fix reuses the existing runtime-guard module,
+  it does not fork it.
+- **Not a redesign of agent-browser.** Only the orphan-ownership *scoping* is in
+  scope — not the browser daemon lifecycle, not the gather/browser-automation
+  surface.
+- No cross-repo work; no prompt-behavior change requiring live Cautilus.
+
+## Boundaries
+
+- charness-internal only (repo-root `scripts/*.py` + the slice-closeout advisory
+  surface + the runtime guard); run the portability classification at closeout
+  for any new repo-root script.
+- **External side-effect scope (operator pre-authorized this run):** the bundle
+  boundary push to `origin/main` AND cutting **release 0.48.0** (version bump +
+  `publish_release.py` publish + GitHub release) are approved for THIS goal's
+  closeout. Per-slice pushes are NOT assumed — push/release batch at the final
+  bundle boundary. The approval is scoped to this goal and does not carry forward.
+- This goal **resolves tracked issues #363 and #364, plus a new agent-browser
+  issue filed in S1**; the issue-closeout floor applies to all three.
+- The agent-browser item is **bug-class** (real-world behavior diverged — the
+  guard killed a live concurrent task), so its resolution runs a `debug`-substrate
+  causal review before the fix and a resolution critique after, per `issue`.
+- agent-browser orphan-cleanup is **destructive to live processes**: any test or
+  verification must simulate concurrent daemons (fake PIDs / a temp marker), never
+  kill real machine daemons; the guard must default to NOT killing a daemon it
+  cannot prove is charness-owned.
+- Discuss before activation: resolved. The three consequential signals are
+  settled by the operator's explicit choices and the goal design: (1) **push +
+  release** were explicitly chosen by the operator ("Build through push +
+  release"), so cutting 0.48.0 is the goal's authorized closeout, not a surprise
+  side effect; (2) **multi-issue closeout** (#363 + #364 + the new agent-browser
+  issue) is the goal's explicit purpose (the operator chose "all"); (3) the
+  **bug-class causal review** for the agent-browser fix is the correct default
+  for a defect that caused real harm. No floor removal, no irreversible side
+  effect beyond the approved release.
+
+## User Acceptance
+
+- **agent-browser:** a simulated agent-browser daemon whose cwd/owner is a
+  DIFFERENT checkout is NOT reported as an orphan by
+  `agent_browser_runtime_guard.py` and is NOT targeted by `--cleanup-orphans`;
+  a genuine charness-owned orphan still is reported and cleaned. A run of the
+  charness release fresh-checkout probe does not fail merely because an unrelated
+  task's agent-browser daemon is alive on the machine.
+- **#363:** a commit whose body says `Resolves #999` but whose changed paths are
+  not a plausible fix for #999 (e.g. an artifact-only goal-shaping commit) emits
+  the advisory; a real fix commit for #999 stays silent. The commit still
+  succeeds either way (non-blocking).
+- **#364:** staging a `scripts/*.py` change without the plugin-mirror sync, or a
+  test that subprocesses an import-safe `scripts/*.py`, emits the advisory; a
+  clean change stays silent. Non-blocking.
+- **release:** `charness --version` (and the GitHub release page) shows 0.48.0
+  after the run; #363/#364/the new issue show CLOSED.
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- Unit tests per guard: agent-browser ownership scoping (foreign-cwd daemon not
+  flagged; charness-owned orphan flagged) with simulated PIDs/markers — never
+  real kills; #363 advisory fires on a leak fixture and is silent on a real fix;
+  #364 advisory fires on the mirror-skew / subprocess-test fixtures and is silent
+  when clean.
+- `ruff` / `py_compile` / `check_python_lengths` / `validate_attention_state_visibility`
+  / `check_doc_links` / `check-markdown` green for each slice; plugin mirror
+  synced for any `scripts/*.py` change.
+
+### High-Confidence Checks
+
+- The agent-browser fix verified against a real `--doctor-check` run with a
+  simulated foreign daemon present → guard reports healthy / does not target it.
+- `run_slice_closeout.py` bundle boundary green; the boundary-bypass ratchet and
+  staged-mirror-drift gates pass.
+- Per-issue resolution critique (fresh-eye) for each of the three; the
+  agent-browser bug also gets a causal review before the fix.
+
+### External Or Live Proof
+
+- **Release 0.48.0** (operator-approved): `publish_release.py --part minor
+  --execute` — push, tag `v0.48.0`, GitHub release verified, install refresh.
+  `issue_tool.py validate-closeout-draft` / `verify-closeout --expect-state
+  CLOSED` for #363/#364/the new issue. Release critique (fresh-eye) before
+  publish. No live Cautilus (no prompt-behavior change).
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| S1 | agent-browser orphan scoping (bug-class): file the issue, run a causal review, then scope orphan detection + cleanup to charness-owned/this-checkout daemons so a neighbor task's live daemon is never flagged/killed | highest-leverage + reduces active harm (it already killed a concurrent task); also unblocks the release fresh-checkout probe under concurrent browser activity | foreign-daemon-not-flagged + charness-orphan-flagged unit tests (simulated PIDs, no real kills); causal review + resolution critique; `verify-closeout` for the new issue | planned |
+| S2 | #363 close-keyword-leakage guard: a non-blocking pre-commit/pre-push advisory flagging a close keyword in a commit whose changed paths are not a plausible fix for #N | recorded recurrence (premature-closed #362); advisory-first per Floor-Addition Restraint | leak-fixture advisory + real-fix silence unit tests; non-blocking guard test; `verify-closeout` #363 | planned |
+| S3 | #364 decaying-habit advisory: a non-blocking author-time advisory for proactive mirror-sync + in-process-test default | recorded recurrence (re-violated this session); advisory-first | mirror-skew/subprocess-test fixtures fire; clean silence; non-blocking guard test; `verify-closeout` #364 | planned |
+| S4 | Bundle proof + push + release 0.48.0 | the operator-approved external lane; batch push/release at the bundle boundary | `run_slice_closeout` bundle green; release critique; `publish_release.py --execute`; GitHub release v0.48.0 verified; install refresh | planned |
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, deferred to `find-skills` (its
+`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
+engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
+and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
+during the run:
+
+- **Routing** — ask `find-skills` to recommend the skill for the current phase or
+  boundary, and record the route it returns. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
+- **Gather step** — when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a — <reason>` when no external context
+  applies.
+- **Release step** — when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
+
+## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+- [#363](https://github.com/corca-ai/charness/issues/363) — close-keyword-leakage
+  guard (filed this session after #362 was auto-closed prematurely).
+- [#364](https://github.com/corca-ai/charness/issues/364) — recurring
+  pre-commit-gate author habits decaying despite persisted lessons.
+- `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md` — the
+  retro whose Sibling Search + disposition review surfaced #363/#364.
+- The agent-browser harm evidence is in THIS session's transcript: the
+  `parental-interaction-eval` concurrent task whose `agent-browser wait` hung
+  after `agent_browser_runtime_guard.py --cleanup-orphans` killed its daemons.
+  The new S1 issue will preserve the concrete evidence.
+- `scripts/agent_browser_runtime_guard.py` — the runtime guard whose machine-wide
+  PPID-based orphan detection is the S1 fix target.
+- `scripts/slice_closeout_advisories.py` — the advisory surface S2/S3 extend
+  (mirrors `advise_doc_surface_preflight` / `advise_floor_addition_restraint`).
+
+## Interview Decisions
+
+- **Scope (which next-to-do):** operator chose **"all"** — bundle the
+  agent-browser orphan scoping + #363 + #364, over (a) one issue only or (b) the
+  agent-browser fix alone. Cohesive theme (non-blocking workflow/host-state
+  guards), so one goal with three slices, not three goals.
+- **Run autonomy:** operator chose **"Build through push + release"**, over
+  (a) local-closeout-only or (b) push-without-release. So 0.48.0 is cut at the
+  bundle boundary; the push/release approval is recorded in Boundaries.
+- **agent-browser fix shape:** scope orphan *ownership* (charness-owned vs
+  foreign), over (a) removing the orphan check (loses the real cleanup value) or
+  (b) a machine-wide allowlist file (brittle, host-specific). Ownership-scoping
+  keeps the cleanup useful while making it neighbor-safe.
+- **#363/#364 shape:** non-blocking advisories on the existing
+  `slice_closeout_advisories` surface, over new blocking floors (Floor-Addition
+  Restraint: recorded recurrence warrants an advisory, not teeth).
+
+## Plan Critique Findings
+
+Pre-activation premortem (additive, charness-internal, but with a destructive
+host-state surface). Worth stressing when it runs:
+
+- **(a) destructive-cleanup safety (S1).** The agent-browser fix touches a
+  process-killing path. Tests MUST use simulated PIDs / a temp marker and never
+  kill real daemons; the guard must FAIL SAFE (do not kill a daemon it cannot
+  prove charness-owned). This is the highest-risk slice — fresh-eye + causal
+  review required.
+- **(b) ownership signal robustness (S1).** "charness-owned" must be a reliable
+  signal (cwd of the launching process, a charness env marker, or the daemon's
+  working dir) — walk the string/PID-matching edge cases (a foreign daemon under
+  a path that contains "charness"; a charness daemon launched from an odd cwd).
+  Decide fail-open vs fail-closed deliberately (here: fail-closed = do not kill).
+- **(c) advisories stay non-blocking (S2/S3).** Each must be asserted
+  non-blocking by a test (a commit still succeeds), guarding against a future
+  hand converting an advisory into a precondition.
+- **(d) no-drift (S2/S3).** The #363 "plausible fix" heuristic and the #364
+  mirror/subprocess detection must reuse real signals (changed paths vs issue,
+  the staged-mirror-drift / boundary-bypass logic), not a hand copy that drifts.
+- **(e) release under concurrent browser activity.** S1's fix should make the
+  release fresh-checkout probe robust to a neighbor's agent-browser daemon — but
+  if a concurrent task is active at release time, confirm the probe passes
+  without killing anything (the whole point of S1).
+
+## Off-Goal Findings
+
+Issues or deferred findings discovered during the run.
+
+## Final Verification
+
+Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
+retro / host-log probe / disposition-review artifact) or an explicit
+`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
+`TODO` / `<path>` / `TBD` until you do.
+
+Retro: TODO — create or explicitly skip with an allowed reason before complete
+Host log probe: TODO — create or explicitly skip with an allowed reason before complete
+Disposition review: TODO — create or explicitly skip only when policy allows before complete
+
+## User Verification Instructions
+
+## Auto-Retro
+
+Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
