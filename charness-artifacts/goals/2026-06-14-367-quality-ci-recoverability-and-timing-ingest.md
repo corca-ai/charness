@@ -13,14 +13,16 @@ artifact-only draft.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1–3 complete (timing-log ingest, CI-recoverability lens,
-  docs/surface/dogfood + slice-1 review follow-ups), all committed + locally
-  proven. Next: Slice 4 (bundle closeout).
-- Current slice intent: Slice 4 — refresh the stale handoff, run the bundle broad
-  proof (verification-lock), final fresh-eye + disposition review, then push with
-  `Close #367` and run `release`. This is the single approved external lane.
-- Next action: commit slice 3, then run the bundle fresh-eye review + broad proof
-  before the push/close/release lane.
+- Current slice: Slice 4 closeout. Slices 1–3 done + committed; bundle broad proof
+  green (3033 passed); both fresh-eye reviews SHIP; retro + probe + follow-up
+  issue #368 + disposition review done. Remaining: carrier push (`Close #367`),
+  verify CI + #367 CLOSED, release, then flip to complete.
+- Current slice intent: Slice 4 — the operator-approved external lane (push +
+  close + release). Carrier commit staged with `Close #367`; release cut after
+  the carrier push; goal flips to complete once pushed-ci / issue-closed / release
+  are verified.
+- Next action: validate the closeout draft, commit the carrier with `Close #367`,
+  push, verify, release, then final flip.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -150,10 +152,10 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Command-timing-log ingest (adapter key) | Foundation: produces the real per-gate wall-clock the lens ranks by; most self-contained | New `command_timing_log` adapter field parsed into the runtime `commands` shape; `render_runtime_summary` reads it as a sample source; unit tests; inert when unconfigured; mirror synced | planned |
-| 2 | CI-recoverability triage lens | The core #367 ask; consumes the ranking + CI-step matching | New inventory script + lib cross-referencing standing gates vs CI steps, flagging CI-fully-rerun gates ranked by wall-clock, gated against non-recoverable proof; unit tests; mirror synced | planned |
-| 3 | Surface + docs + dogfood | Make both default `quality` output and document them; dogfood on this repo | SKILL.md + adapter-contract + references updated; this repo's adapter optionally wired; quality run shows the lens; skill validation green | planned |
-| 4 | Closeout: handoff refresh + push + close + release | Full end-to-end per operator choice | Handoff refreshed to live state; broad proof green; `Close #367` pushed; #367 `CLOSED`; release cut + verified; retro + disposition review | planned |
+| 1 | Command-timing-log ingest (adapter key) | Foundation: produces the real per-gate wall-clock the lens ranks by; most self-contained | New `command_timing_log` adapter field parsed into the runtime `commands` shape; `render_runtime_summary` reads it as a sample source; unit tests; inert when unconfigured; mirror synced | done |
+| 2 | CI-recoverability triage lens | The core #367 ask; consumes the ranking + CI-step matching | New inventory script + lib cross-referencing standing gates vs CI steps, flagging CI-fully-rerun gates ranked by wall-clock, gated against non-recoverable proof; unit tests; mirror synced | done |
+| 3 | Surface + docs + dogfood | Make both default `quality` output and document them; dogfood on this repo | SKILL.md + adapter-contract + references updated; this repo's adapter optionally wired; quality run shows the lens; skill validation green | done |
+| 4 | Closeout: handoff refresh + push + close + release | Full end-to-end per operator choice | Handoff refreshed to live state; broad proof green; `Close #367` pushed; #367 `CLOSED`; release cut + verified; retro + disposition review | in progress (carrier staged) |
 
 ## Coordination Cues
 
@@ -162,23 +164,19 @@ Phase-appropriate routing for this run, deferred to `find-skills` (its
 engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
 and the floors below; `find-skills` owns *which* skill answers a boundary.
 
-- **Routing** — session-start `find-skills` `--recommend-for-task` returned
-  `issue` (via the `github-gh` external binary) for #367 and `achieve` as the
-  goal operator. Per-phase: `impl` for slices 1–2 (code), `quality` for the
-  verification posture and the closeout broad gate, `issue` for the #367
-  direct-commit closeout, `release` for the version bump, `handoff` for the
-  handoff refresh. Each route confirmed against `find-skills` during the run and
-  recorded here.
-- **Gather step** — `Gather: n/a — issue #367 is read through the gh GitHub
-  backend (gh issue view), not an external web/Slack/Notion/Docs/Drive source, so
-  no gather asset applies.`
-- **Release step** — Release: (filled at closeout — the `release` skill proof:
-  version bump commit, tag, `charness-artifacts/release/latest.md`).
-- **Issue closeout step** — Issue closeout: #367 via `direct-commit` carrier
-  (`Close #367` on the fix/closeout commit), validated with
-  `issue_tool.py validate-closeout-draft --carrier direct-commit
-  --commit-message-file`, and verified `CLOSED` with `verify-closeout` after the
-  push.
+- Routing: `find-skills --recommend-for-task` routed `issue` (via the `github-gh`
+  external binary) for #367 and `achieve` as the goal operator; per-phase `impl`
+  for slices 1–2 (code), `quality` for the verification posture + closeout broad
+  gate, `issue` for the #367 direct-commit closeout, `release` for the version
+  bump, `handoff` for the refresh. Routes confirmed against `find-skills`.
+- Gather: n/a — #367 is read through the `gh` GitHub backend (`gh issue view`),
+  not an external web/Slack/Notion/Docs/Drive source, so no gather asset applies.
+- Release: charness 0.50.0 — version bump + tag + `charness-artifacts/release/latest.md`
+  via the `release` skill (proof recorded at the final flip after the carrier push).
+- Issue closeout: #367 via `direct-commit` carrier (`Close #367` on the closeout
+  commit), validated with `issue_tool.py validate-closeout-draft --carrier
+  direct-commit --commit-message-file`, verified `CLOSED` with `verify-closeout`
+  after the push.
 
 ## Slice Log
 
@@ -295,7 +293,11 @@ not folded, and reviewer provenance.
 
 ## Off-Goal Findings
 
-(none yet)
+- **#368** (filed) — the inference-interpretation surface-registration check is
+  enforced only by a broad-pytest test, not the commit-time structural sweep, so a
+  new advisory surface discovers its registration requirement at the slowest gate.
+  Proposes shifting the leak scan left + an authoring checklist. Retro disposition;
+  out of #367 scope (changes the shared commit-gate aggregate).
 
 ## Final Verification
 
@@ -304,15 +306,46 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Self-verification against the goal: both #367 gaps are closed and portable.
+(1) Command-timing-log ingest: `command_timing_log` adapter key feeds
+`render_runtime_summary` / `check_runtime_budget` / the new lens as a fallback
+sample source; inert when absent, fail-loud on misconfig, signals stay
+authoritative. (2) CI-recoverability lens: `inventory_ci_recoverable_gates.py`
+ranks costly local gates by wall-clock and flags only the gates CI fully re-runs
+as move-off-local candidates, keeping the rest `keep-local` — never recommending
+proof CI does not re-run. Both advisory/inert (no blocking floor; Floor-Addition
+Restraint honored); the local-proof guardrail is untouched.
+
+Local proof: broad pytest green over the bundle (`run_slice_closeout
+--base origin/main --verification-lock --refresh-broad-pytest-proof`,
+status `completed`, 3033 passed / 4 skipped / 26 deselected) plus the full
+commit-gate aggregate (ruff, lengths, attention-state, validate_skills,
+validate_public_skill_dogfood, validate_inference_interpretation, markdown,
+doc-links, mirror-drift). 75 targeted tests for the two surfaces. Two fresh-eye
+subagent reviews (slice 1; slices 2+3 bundle), both SHIP with zero blockers; the
+bundle review adversarially probed the safety gate and confirmed it is
+honest-by-construction.
+
+Closeout state reached at the carrier commit: `carrier` (validated direct-commit
+`Close #367`). External lane (operator-approved push + close + release):
+`pushed-ci`, `issue-closed`, and the release (`live` consumer surface) are
+verified after the carrier push and recorded at the final flip. Non-claims until
+then: no remote-CI/issue-closed/release proof is asserted before the push.
+
+Retro: charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md
+Host log probe: charness-artifacts/probe/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.json
+Disposition review: charness-artifacts/critique/2026-06-14-367-disposition-review.md
 
 ## User Verification Instructions
 
-(filled at closeout)
+- `gh issue view 367` shows `CLOSED`.
+- Run the lens on this repo: `python3 skills/public/quality/scripts/inventory_ci_recoverable_gates.py --repo-root .` — it flags `check-markdown` (CI re-runs it via the `local-gate-subset-mirror` workflow) and keeps `pytest`/`check-coverage`/`specdown` local.
+- Configure a `command_timing_log` adapter key at a JSONL log and run `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`; confirm hot spots come from the log (`commands_source: command_timing_log`). Omitting the key changes nothing.
+- Read `skills/public/quality/references/ci-recoverable-gate-triage.md` and the `command_timing_log` section of `references/adapter-contract.md`.
+- The release surface (`charness-artifacts/release/latest.md` + the published tag) ships these `quality` changes.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Disposition review: charness-artifacts/critique/2026-06-14-367-disposition-review.md
+Retro dispositions: issue #368 (recurs: a novel *instance* — the inference-interpretation surface registry — of an already-recurring *class*: "a cheap deterministic structural check enforced only at the broad/bundle gate, not the commit boundary." Lineage: #314 / #319 / #332 (all CLOSED), same-day sibling #366. The rung-2 disposition review (charness-artifacts/critique/2026-06-14-367-disposition-review.md) falsified the original `novel:` framing at the class grain; corrected here so #368 is solved as recurrence-conversion via the established #314 shift-left wiring, not re-discovered). Both retro Next Improvements (shift the inference-interpretation leak scan into the commit-time structural sweep; add an "adding-an-advisory-surface" authoring checklist) are bundled into #368 as one thread; not applied in-session because changing the shared commit-gate aggregate warrants its own critique outside #367 scope.
+Structural follow-up: issue #368 (recurs: the slow-gated inference-interpretation registry is the one sibling not yet shifted into the commit-time sweep — a recurrence of the #314/#319/#332 shift-left class, not a new pattern; resolve by extending the existing #314 per-slice `verify_commands` wiring, treated as recurrence-conversion — see the retro `## Sibling Search` and the rung-2 disposition review).

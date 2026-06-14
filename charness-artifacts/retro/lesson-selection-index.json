@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-14",
-  "source_artifact_count": 220,
-  "candidate_count": 1106,
+  "source_artifact_count": 221,
+  "candidate_count": 1113,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -415,6 +415,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6f2bcfe1b8bc",
+      "kind": "current_focus",
+      "lesson": "Achieve goal `charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`, resolving GitHub issue #367 end-to-end (operator chose push + close + release).",
+      "normalized_key": "achieve goal charness artifacts goals 2026 06 14 367 quality ci recoverability and timing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:54165be3e0ed",
       "kind": "current_focus",
       "lesson": "Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release.",
@@ -589,26 +609,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
-          "date": "2026-06-14",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:65fc3a902803",
-      "kind": "next_improvement",
-      "lesson": "**memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.)",
-      "normalized_key": "memory repo root scripts py mirror into plugins charness scripts not just skill surfaces",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
-      "latest_source_date": "2026-06-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1017,6 +1017,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6f2bcfe1b8bc",
+      "kind": "current_focus",
+      "lesson": "Achieve goal `charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`, resolving GitHub issue #367 end-to-end (operator chose push + close + release).",
+      "normalized_key": "achieve goal charness artifacts goals 2026 06 14 367 quality ci recoverability and timing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:54165be3e0ed",
       "kind": "current_focus",
       "lesson": "Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release.",
@@ -1191,6 +1211,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:48adfd92e114",
+      "kind": "next_improvement",
+      "lesson": "**memory/capability:** a short \"adding an advisory inventory/surface\" checklist (the 3 registries + the SKILL.md ≤200 budget) in the quality references, so the next author front-loads the registrations. → file as issue (same structural cluster as the first; keep one tracked thread).",
+      "normalized_key": "memory capability a short adding an advisory inventory surface checklist the 3 registries the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1417,6 +1457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:99208be7bf4f",
+      "kind": "next_improvement",
+      "lesson": "**workflow/capability:** add the inference-interpretation meta-validator's unregistered-declaration scan to the commit-time structural sweep (`run_slice_closeout` pre-commit aggregate), so a new 4-field `INTERPRETATION` declaration surfaces its registration requirement at commit instead of at the ~4-min broad pytest. Highest-value; larger than this goal's scope (changes the commit-gate aggregate) → file as issue.",
+      "normalized_key": "workflow capability add the inference interpretation meta validator s unregistered declaration scan to the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b9c242b5b204",
       "kind": "next_improvement",
       "lesson": "**workflow — stage explicit paths, not `git add -A`, when untracked/off-goal files may be present.** The closeout proof and commit should cover only the goal's own changed set; `git add -A` couples in concurrent WIP. (Transferable — see Sibling Search.)",
@@ -1453,6 +1513,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2ec4ed0024e7",
+      "kind": "repeat_trap",
+      "lesson": "`advisory-only` attention-state undeclared → blocked the slice-2 commit; fixed by declaring it. One round.",
+      "normalized_key": "advisory only attention state undeclared blocked the slice 2 commit fixed by declaring it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Waste"
         }
       ]
     },
@@ -1571,6 +1651,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f0416f37a7ed",
+      "kind": "repeat_trap",
+      "lesson": "SKILL.md hit its hard 200-line ceiling after prose was added → had to compress to terse pointers and fold the lens into an existing soft-wrapped bullet. Two iterations to land exactly at 200.",
+      "normalized_key": "skill md hit its hard 200 line ceiling after prose was added had to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c4f3204ddc4c",
+      "kind": "repeat_trap",
+      "lesson": "`skipped` in a docstring tripped the same attention-state gate as a false-positive (internal record-filtering prose, not a closeout state) → reworded to `dropped`. One round.",
+      "normalized_key": "skipped in a docstring tripped the same attention state gate as a false positive",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:38c2c24fd964",
+      "kind": "repeat_trap",
+      "lesson": "**The expensive one:** the new lens's 4-field `INTERPRETATION` dict is an inference-layer declaration that must be registered in `.agents/inference-interpretation-surfaces.json`. That requirement is enforced **only by a broad-pytest test** (`test_inference_interpretation_meta_validator`), not by the cheap commit-time structural sweep — so it cost a full ~4-minute broad-pytest run to surface, plus a second run after the count-assertion bump. Broad pytest ran three times: a cached-fingerprint block (needed `--refresh-broad-pytest-proof` — expected verification-lock behavior, not waste), the real inference-surface failure, then clean. Two of the three were necessary; the inference-surface re-run was avoidable waste a commit-time check would have removed.",
+      "normalized_key": "the expensive one the new lens s 4 field interpretation dict is an inference",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md",
           "date": "2026-06-14",
           "section": "Waste"
         }
