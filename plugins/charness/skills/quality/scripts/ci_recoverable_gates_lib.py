@@ -35,9 +35,10 @@ INTERPRETATION = {
     "proxy_for": "which costly local gates CI already backstops, so they are safe to move off the local hot path",
     "blind_spots": (
         "token-identity matching cannot prove two invocations exercise the *same* proof "
-        "(different flags/scope/inputs can diverge), and it cannot see a CI step gated behind "
-        "an `if:`/path filter that would skip the gate for the change in hand; a match is a "
-        "candidate to confirm, not a proven equivalence"
+        "(different flags/scope/inputs can diverge); it cannot see a CI step gated behind "
+        "an `if:`/path filter that would skip the gate for the change in hand; and it matches a "
+        "token that merely appears in non-executing text (an `echo`, a config read like `cat`, "
+        "or a comment). A match is a candidate to confirm, not a proven equivalence"
     ),
     "interpretation_question": (
         "does the matched CI step actually re-run THIS gate's full proof for the changes that "
@@ -55,6 +56,8 @@ def _label_stems(label: str) -> set[str]:
         base,
         base.replace("-", "_"),
         base.replace("_", "-"),
+        # the joined form (`ab-cd` -> `abcd`) is the widest net with no separator
+        # anchor; the >=4-char + GENERIC_STEMS guards below contain it.
         base.replace("-", "").replace("_", ""),
         # a tool+subcommand gate labelled `ruff-check` must match the CI command
         # `ruff check`; word-boundary matching keeps the space form precise.

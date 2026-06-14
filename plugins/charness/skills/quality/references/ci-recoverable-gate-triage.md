@@ -45,9 +45,12 @@ counterweight narrows the guardrail's blind spot; it does not weaken it.
 ## Honest limits (advisory-interpretation contract)
 
 Matching is token-identity, so it cannot prove two invocations exercise the same
-proof — different flags, scope, or inputs can diverge — and it cannot see a CI
-step gated behind an `if:`/path filter that would skip the gate for the change in
-hand. A match is a **candidate to confirm**, not a proven equivalence. Before
+proof — different flags, scope, or inputs can diverge — it cannot see a CI step
+gated behind an `if:`/path filter that would skip the gate for the change in
+hand, and it matches a token that merely appears in non-executing text (an
+`echo`, a config read like `cat pytest.ini`, or a comment) rather than a step
+that runs the proof. A match is a **candidate to confirm**, not a proven
+equivalence. Before
 moving a gate off the local hot path, answer the interpretation question the
 report prints: *does the matched CI step actually re-run THIS gate's full proof
 for the changes that reach main, so moving it loses no required signal?*

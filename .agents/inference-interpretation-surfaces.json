@@ -80,6 +80,15 @@
       "note": "Runtime hot-spot trend. Declaration rides only when hot spots exist."
     },
     {
+      "surface_id": "ci-recoverable-gate-triage",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/ci_recoverable_gates_lib.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/ci-recoverable-gate-triage.md",
+      "consumer_anchor": "does the matched CI step actually re-run THIS gate's full proof",
+      "note": "CI-recoverability triage. Token-identity match of a costly local gate against CI run-steps is an inference, not proof; the consumer reference forces the operator to confirm the CI step truly re-runs the gate's full proof before moving it off the local hot path. Emitted by inventory_ci_recoverable_gates.py, which only subscripts the imported dict, so it is not itself a declaration site."
+    },
+    {
       "surface_id": "quality-next-gates-ranking",
       "kind": "prose",
       "declaration_file": "skills/public/quality/references/gate-classification.md",
