@@ -1,6 +1,6 @@
 # Achieve Goal: Aggregate author-time preflight for general doc/markdown surfaces (resolve #362)
 
-Status: draft
+Status: active
 Created: 2026-06-14
 Activation: `/goal @charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md`
 
@@ -9,12 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation (pursue-ready draft).
-- Current slice intent: before activation. The reviewable-intent unit in progress
-  and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md`.
+- Current slice: S1 — build `scripts/check_doc_authoring_preflight.py`.
+- Current slice intent: aggregate the markdownlint + wrapped-inline-code +
+  doc-link + surface-length-cap constraints for one target doc into a single
+  forecast, reusing the real validators (no fork). The reviewable-intent unit in
+  progress and the commits it spans; critique and broad proof do not re-fire
+  within one unchanged intent — update it when the intent changes, not per
+  commit (meaningful-slice-cadence).
+- Next action: write the script + unit tests (broken-fixture all-classes,
+  clean-fixture silence, no-drift vs the real gates, non-blocking guard).
+- Routing: find-skills recommended the achieve goal lifecycle (it owns this
+  slot); impl owns slice build. Recorded per Coordination Cues.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -108,7 +113,7 @@ authoring-churn residual on the one surface class that still lacks it.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 | Build the aggregate doc-surface preflight: given a target `docs/*.md`/handoff path, forecast the markdownlint + doc-link + length/cap constraints in one report (reusing the real validators, not forking them) | the Problem-1 residual the session's handoff churn exposed (5+ serial rejections) | broken-fixture unit test (all violation classes surfaced) + clean-fixture silence; no-drift vs the real gates | planned |
+| S1 | Build the aggregate doc-surface preflight: given a target `docs/*.md`/handoff path, forecast the markdownlint + doc-link + length/cap constraints in one report (reusing the real validators, not forking them) | the Problem-1 residual the session's handoff churn exposed (5+ serial rejections) | broken-fixture unit test (all violation classes surfaced) + clean-fixture silence; no-drift vs the real gates | done |
 | S2 | Wire it into the authoring flow (implementation-discipline "before authoring into a gated surface" guidance; optionally a slice-closeout advisory) and stage the #362 closeout | makes the affordance discoverable at the point of edit; closes the tracked issue | grep wiring; first-try clean handoff edit; `issue_tool.py validate-closeout-draft`/`verify-closeout` for #362 | planned |
 
 ## Coordination Cues
@@ -138,6 +143,20 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: S1: aggregate doc-authoring preflight
+
+- Objective: Build scripts/check_doc_authoring_preflight.py: forecast markdownlint + wrapped-inline-code + doc-link + surface-length-cap constraints for one target doc in a single pass, reusing the real validators.
+- Why this approach: Mirror the #284 SKILL.md one-shot preflight and the A2 describe-first closeout preflight (reuse the live check, never fork) extended to the general-docs surface class neither covers.
+- Commits:
+- What changed: scripts/check_doc_authoring_preflight.py (new); tests/test_doc_authoring_preflight.py (new, 8 tests).
+- Alternatives rejected: Re-implementing the lint/link/length checks (rejected: drift risk, the A2 lesson is reuse the live check). A new blocking gate (rejected: Floor-Addition Restraint; this absorbs existing gates up front).
+- Targeted verification: 8/8 unit tests pass: broken-fixture all-4-classes, clean-fixture silence, no-drift vs real gates (check_doc_links/check_markdown_inline_code/markdownlint-cli2 verdicts), live-constant length cap, non-blocking-affordance guard. py_compile/ruff/check_python_lengths/validate_attention_state_visibility green.
+- Test duplication pressure: Low: the no-drift tests subprocess the real gates to assert forecast==gate verdict (a distinct property no existing test covers); they do not re-test the gates' internal logic. Mild boundary-bypass-candidate overlap with each gate's own test, accepted as the no-drift contract.
+- Critique: deferred to slice-boundary fresh-eye review (S1->S2 boundary).
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 
