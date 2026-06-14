@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Resolved goal `charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md` (#362): built `scripts/check_doc_authoring_preflight.py`, an aggregate author-time preflight that forecasts the markdownlint + wrapped-inline-code + doc-link + surface-length-cap constraints for one target doc in a single pass (reusing the real validators, no fork), then wired it into the authoring flow (authoring-preflight.md + implementation-discipline.md + a non-blocking slice-closeout advisory) and staged the #362 closeout. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **S1 (A2, `e6d1a59a`)** — made `describe_goal_closeout_shape.py` goal-aware via `--goal-path`: it reads the in-progress goal and emits only the floors *that* goal triggers (and which are missing), folding the dry `check_goal_artifact.py` preview into one call. Closes the residual Problem-1 churn the D closeout-floor audit named on the runtime-conditional `keep` floors a static catalog cannot. (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
-- **S2 (`c75de40f`)** — gave the prose Floor-Addition Restraint checklist non-blocking teeth: `advise_floor_addition_restraint` flags a new blocking floor (new `report["ok"] = False` site / new `REQUIRED_*` member) added without a recorded restraint call. Resolves `follow-up:floor-addition-restraint-nudge`. (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`; sources: 34)
-- Slice 2 briefly created superseded critique packet files before the final stable packet slug was regenerated. That did not affect committed state, but it added cleanup work. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
-- Slice 3 initially wrote a critique artifact that said no counterweight was spawned. The repo contract required the counterweight, so the artifact had to be corrected after spawning it. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
-- The final closeout first used `origin/main` as the base, which pulled unrelated older local commits into the proof range and created avoidable Cautilus/public-skill review noise. The correct goal base was `b300c8bf`. (source: `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`)
+- **First no-drift tests blocked by `check-boundary-bypass-ratchet`.** I wrote the gate cross-checks as `subprocess.run(["python3", "scripts/check_doc_links.py", ...])`; the ratchet flagged them as in-process-convertible candidates. Converted to in-process `main()` calls. The gate caught it; one round. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
+- **First S1 commit blocked by `staged-plugin-mirror-drift`.** I committed before running `sync_root_plugin_manifests.py`; `scripts/*.py` is part of the plugin install surface, so the new script needed mirroring into `plugins/charness/scripts/`. One blocked commit → sync → re-commit. The gate caught it; cost was one round, no escaped drift. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
+- **Process-trust cost (not this run's rework):** discovering the premature close of #362 meant the issue-closeout posture had to be re-derived (already CLOSED, fix unpushed) instead of the planned "stage a fresh close." (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`; sources: 34)
+- a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor). (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
-- **workflow — stage explicit paths, not `git add -A`, when untracked/off-goal files may be present.** The closeout proof and commit should cover only the goal's own changed set; `git add -A` couples in concurrent WIP. (Transferable — see Sibling Search.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
-- **workflow — the A2 `--goal-path` describe is now the right first closeout step**; it surfaced this goal's exact missing set first-try. Use it instead of the static catalog + separate dry check going forward (the SKILL.md/lifecycle wiring now points there). (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
+- the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 
 ## Selection Policy
 
@@ -54,7 +54,6 @@
 - `charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-12-quality-cadence-duplicate-followup.md`
 - `charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-42-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-12-v0-43-0-release-auto-retro.md`
@@ -63,3 +62,4 @@
 - `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`
+- `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`

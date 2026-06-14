@@ -134,6 +134,11 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     The same engine + ``.markdownlint-cli2.jsonc`` config the markdown gate uses
     (config is auto-discovered from ``repo_root``). markdownlint-cli2 writes the
     banner to stdout and per-violation lines to stderr; scan both for the target.
+
+    Single-file scope (``--no-globs rel``) is verdict-equivalent to the gate's
+    full-list lint because every markdownlint rule in the repo config is
+    per-file; a hypothetical cross-file rule (e.g. link-reciprocity) would need
+    this to widen to the linked set.
     """
     cmd = _resolve_markdownlint_cmd()
     if cmd is None:

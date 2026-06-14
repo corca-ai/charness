@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-14",
-  "source_artifact_count": 212,
-  "candidate_count": 1078,
+  "source_artifact_count": 214,
+  "candidate_count": 1085,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -385,6 +385,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d630b9b04be2",
+      "kind": "current_focus",
+      "lesson": "Resolved goal `charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md` (#362): built `scripts/check_doc_authoring_preflight.py`, an aggregate author-time preflight that forecasts the markdownlint + wrapped-inline-code + doc-link + surface-length-cap constraints for one target doc in a single pass (reusing the real validators, no fork), then wired it into the authoring flow (authoring-preflight.md + implementation-discipline.md + a non-blocking slice-closeout advisory) and staged the #362 closeout.",
+      "normalized_key": "resolved goal charness artifacts goals 2026 06 14 general doc authoring preflight md 362",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:a03a4b977c31",
       "kind": "current_focus",
       "lesson": "**S1 (A2, `e6d1a59a`)** — made `describe_goal_closeout_shape.py` goal-aware via `--goal-path`: it reads the in-progress goal and emits only the floors *that* goal triggers (and which are missing), folding the dry `check_goal_artifact.py` preview into one call. Closes the residual Problem-1 churn the D closeout-floor audit named on the runtime-conditional `keep` floors a static catalog cannot.",
@@ -425,6 +445,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b3ef3f50b34a",
+      "kind": "next_improvement",
+      "lesson": "a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor).",
+      "normalized_key": "a pre push pre commit advisory that flags a close keyword closes fixes resolves",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:65fc3a902803",
       "kind": "next_improvement",
       "lesson": "**memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.)",
@@ -439,6 +479,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c6278dd20926",
+      "kind": "next_improvement",
+      "lesson": "the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister.",
+      "normalized_key": "the premature close lesson and the in process seam before subprocess lesson are persisted",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:84986a96e7f9",
+      "kind": "next_improvement",
+      "lesson": "when authoring a draft/shaping/handoff commit that references a tracked issue, cite it as a bare `#N` or URL — never adjacent to a close/fix/resolve verb, which GitHub auto-applies on push to the default branch.",
+      "normalized_key": "when authoring a draft shaping handoff commit that references a tracked issue cite it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -485,102 +565,22 @@
       ]
     },
     {
-      "candidate_id": "current_focus:7a35a70291fd",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.44.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 44 1",
+      "candidate_id": "repeat_trap:169924021dc6",
+      "kind": "repeat_trap",
+      "lesson": "**First no-drift tests blocked by `check-boundary-bypass-ratchet`.** I wrote the gate cross-checks as `subprocess.run([\"python3\", \"scripts/check_doc_links.py\", ...])`; the ratchet flagged them as in-process-convertible candidates. Converted to in-process `main()` calls. The gate caught it; one round.",
+      "normalized_key": "first no drift tests blocked by check boundary bypass ratchet i wrote the gate",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-13",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:70f1be7bfc9c",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.45.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 45 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-13",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:8be36f6fcf86",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.46.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 46 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-13",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:cc71f2520abf",
-      "kind": "current_focus",
-      "lesson": "Operator-approved 8h autonomous goal (`charness-artifacts/goals/2026-06-12-autonomous-structural-quality-bundle.md`, proof base `c1f7b581`): two new quality gates (bootstrap-shim consistency, public-doc coupling), the clone-advisory structural-signal taxonomy, a log-backed contract-effectiveness cautilus fixture, second-machine release-proof retirement, plus a mid-run operator instruction to resolve the newly opened issues #356/#357 (meaningful-slice cadence and quality-signal scorecard references).",
-      "normalized_key": "operator approved 8h autonomous goal charness artifacts goals 2026 06 12 autonomous structural quality",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
-      "latest_source_date": "2026-06-12",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-autonomous-structural-quality-bundle.md",
-          "date": "2026-06-12",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b5124e217fad",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.41.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 41 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-12",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md",
-          "date": "2026-06-12",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Waste"
         }
       ]
     }
@@ -957,6 +957,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d630b9b04be2",
+      "kind": "current_focus",
+      "lesson": "Resolved goal `charness-artifacts/goals/2026-06-14-general-doc-authoring-preflight.md` (#362): built `scripts/check_doc_authoring_preflight.py`, an aggregate author-time preflight that forecasts the markdownlint + wrapped-inline-code + doc-link + surface-length-cap constraints for one target doc in a single pass (reusing the real validators, no fork), then wired it into the authoring flow (authoring-preflight.md + implementation-discipline.md + a non-blocking slice-closeout advisory) and staged the #362 closeout.",
+      "normalized_key": "resolved goal charness artifacts goals 2026 06 14 general doc authoring preflight md 362",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:a03a4b977c31",
       "kind": "current_focus",
       "lesson": "**S1 (A2, `e6d1a59a`)** — made `describe_goal_closeout_shape.py` goal-aware via `--goal-path`: it reads the in-progress goal and emits only the floors *that* goal triggers (and which are missing), folding the dry `check_goal_artifact.py` preview into one call. Closes the residual Problem-1 churn the D closeout-floor audit named on the runtime-conditional `keep` floors a static catalog cannot.",
@@ -997,6 +1017,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b3ef3f50b34a",
+      "kind": "next_improvement",
+      "lesson": "a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor).",
+      "normalized_key": "a pre push pre commit advisory that flags a close keyword closes fixes resolves",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:65fc3a902803",
       "kind": "next_improvement",
       "lesson": "**memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.)",
@@ -1011,6 +1051,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c6278dd20926",
+      "kind": "next_improvement",
+      "lesson": "the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister.",
+      "normalized_key": "the premature close lesson and the in process seam before subprocess lesson are persisted",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:84986a96e7f9",
+      "kind": "next_improvement",
+      "lesson": "when authoring a draft/shaping/handoff commit that references a tracked issue, cite it as a bare `#N` or URL — never adjacent to a close/fix/resolve verb, which GitHub auto-applies on push to the default branch.",
+      "normalized_key": "when authoring a draft shaping handoff commit that references a tracked issue cite it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1053,6 +1133,66 @@
           "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:169924021dc6",
+      "kind": "repeat_trap",
+      "lesson": "**First no-drift tests blocked by `check-boundary-bypass-ratchet`.** I wrote the gate cross-checks as `subprocess.run([\"python3\", \"scripts/check_doc_links.py\", ...])`; the ratchet flagged them as in-process-convertible candidates. Converted to in-process `main()` calls. The gate caught it; one round.",
+      "normalized_key": "first no drift tests blocked by check boundary bypass ratchet i wrote the gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d87dd8ee6993",
+      "kind": "repeat_trap",
+      "lesson": "**First S1 commit blocked by `staged-plugin-mirror-drift`.** I committed before running `sync_root_plugin_manifests.py`; `scripts/*.py` is part of the plugin install surface, so the new script needed mirroring into `plugins/charness/scripts/`. One blocked commit → sync → re-commit. The gate caught it; cost was one round, no escaped drift.",
+      "normalized_key": "first s1 commit blocked by staged plugin mirror drift i committed before running sync",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9accdc6b468b",
+      "kind": "repeat_trap",
+      "lesson": "**Process-trust cost (not this run's rework):** discovering the premature close of #362 meant the issue-closeout posture had to be re-derived (already CLOSED, fix unpushed) instead of the planned \"stage a fresh close.\"",
+      "normalized_key": "process trust cost not this run s rework discovering the premature close of 362",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Waste"
         }
       ]
     },
