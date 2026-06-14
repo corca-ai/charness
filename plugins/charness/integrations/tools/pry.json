@@ -13,19 +13,26 @@
   "status": "experimental",
   "lifecycle": {
     "install": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/corca-ai/pry/releases/latest/download/pry-installer.sh | sh"
+      ],
       "docs_url": "https://github.com/corca-ai/pry",
+      "install_url": "https://github.com/corca-ai/pry/releases/latest",
       "notes": [
-        "pry has no published release yet (Layer-0 / Stage-1). Build from source in a sibling `pry` checkout: `cargo build --release` (Rust >= 1.85).",
-        "Point quality at the local build with `PRY_BIN=/abs/path/to/pry/target/release/pry`; this maintainer-local override is the supported delivery until a tagged release installer (cargo-dist, the nose model) lands.",
-        "Use `PRY_BIN` only as a maintainer-local override when testing a sibling checkout; a future release will install a `pry` binary on PATH."
+        "Preferred path is the upstream release installer (cargo-dist, the nose model), which downloads a prebuilt `pry` binary onto PATH.",
+        "Homebrew is not yet available — shell installer only as of v0.1.0.",
+        "Use `PRY_BIN=/abs/path/to/pry/target/release/pry` only as a maintainer-local override when testing a sibling checkout."
       ]
     },
     "update": {
-      "mode": "manual",
-      "docs_url": "https://github.com/corca-ai/pry",
+      "mode": "script",
+      "commands": [
+        "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/corca-ai/pry/releases/latest/download/pry-installer.sh | sh"
+      ],
+      "docs_url": "https://github.com/corca-ai/pry/releases",
       "notes": [
-        "Rebuild from the sibling checkout (`git pull && cargo build --release`) to update a source-built `pry`."
+        "Rerun the release installer to update; it fetches the latest published binary."
       ]
     }
   },
@@ -38,7 +45,7 @@
         "exit_code:0",
         "stdout_contains:pry"
       ],
-      "failure_hint": "Build `pry` from source (`cargo build --release`) and put it on PATH or set `PRY_BIN`, before using the quality testability backlog."
+      "failure_hint": "Install `pry` via the release installer (see lifecycle.install) or set `PRY_BIN`, before using the quality testability backlog."
     },
     "healthcheck": {
       "commands": [
@@ -48,7 +55,7 @@
         "exit_code:0",
         "stdout_contains:risk ranking"
       ],
-      "failure_hint": "The `pry` binary exists but its `map` surface is unavailable. Rebuild from a current source checkout."
+      "failure_hint": "The `pry` binary exists but its `map` surface is unavailable. Reinstall or upgrade from the latest release."
     }
   },
   "access_modes": [
@@ -57,7 +64,7 @@
   ],
   "version_expectation": {
     "policy": "advisory",
-    "constraint": "Prefer a source build from a recent `pry` main; no tagged release yet.",
+    "constraint": "Prefer pry 0.1.0 or newer.",
     "detected_by": "stdout"
   },
   "supports_public_skills": [
