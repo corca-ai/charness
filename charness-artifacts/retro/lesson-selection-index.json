@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-14",
-  "source_artifact_count": 219,
-  "candidate_count": 1095,
+  "source_artifact_count": 220,
+  "candidate_count": 1106,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -555,6 +555,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cc00a143efbf",
+      "kind": "current_focus",
+      "lesson": "Wired `pry` into `quality` (advisory testability inventory + auto-run phase), tracked the upstream pry support skill via `support_skill_source`, fixed the two welded-boundary findings with a spawn seam, filed corca-ai/pry#1, and cut + published v0.49.0.",
+      "normalized_key": "wired pry into quality advisory testability inventory auto run phase tracked the upstream pry",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b3ef3f50b34a",
       "kind": "next_improvement",
       "lesson": "a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor).",
@@ -589,26 +609,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
-          "date": "2026-06-14",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:74c03665155c",
-      "kind": "next_improvement",
-      "lesson": "persisted here and rolled into recent-lessons by the persister.",
-      "normalized_key": "persisted here and rolled into recent lessons by the persister",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
-      "latest_source_date": "2026-06-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1157,6 +1157,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cc00a143efbf",
+      "kind": "current_focus",
+      "lesson": "Wired `pry` into `quality` (advisory testability inventory + auto-run phase), tracked the upstream pry support skill via `support_skill_source`, fixed the two welded-boundary findings with a spawn seam, filed corca-ai/pry#1, and cut + published v0.49.0.",
+      "normalized_key": "wired pry into quality advisory testability inventory auto run phase tracked the upstream pry",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b3ef3f50b34a",
       "kind": "next_improvement",
       "lesson": "a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor).",
@@ -1251,6 +1271,106 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:109ca153d47a",
+      "kind": "next_improvement",
+      "lesson": "**W1 — workflow:** before `publish_release.py --execute`, run the release-tier gate once (`./scripts/run-quality.sh` full/release scope incl. `release_only`) so all blockers surface together instead of one-per-abort. Disposition: none — workflow habit captured in recent-lessons; no new gate, the narrow pre-push scope is an intentional cost tradeoff (Floor-Addition Restraint).",
+      "normalized_key": "w1 workflow before publish release py execute run the release tier gate once scripts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e739cd5e6ebd",
+      "kind": "next_improvement",
+      "lesson": "**W2 — capability/memory:** a new `external_binary*` manifest with `update.mode: script` needs a matching `update all` release-test fake; pre-push will not catch the omission. Disposition: applied: make_fake_pry + pry support-sync fixture (99df6706); the generalized \"flag a tracked-tool manifest change with no matching update-all fake\" advisory stays deferred (reopen if it recurs).",
+      "normalized_key": "w2 capability memory a new external binary manifest with update mode script needs a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:14a5d0ff57d3",
+      "kind": "next_improvement",
+      "lesson": "**W3 — memory:** new mutation-pool `skills/public/*/scripts/*.py` get in-process tests (import + call), not only subprocess CLI tests; recurrence of a known class already enforced by `check-changed-line-mutation-coverage`. Disposition: applied: in-process tests + __main__ pragma (c9c2211e, 2f806fdc).",
+      "normalized_key": "w3 memory new mutation pool skills public scripts py get in process tests import",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:35b6342ed5d8",
+      "kind": "next_improvement",
+      "lesson": "**W4 — memory:** act on \"brushing/carried\" runtime-budget advisories when first flagged, not at the next release. Disposition: applied: check-coverage budget 45000->55000 with measured headroom (c9c2211e).",
+      "normalized_key": "w4 memory act on brushing carried runtime budget advisories when first flagged not at",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f06f4bc866ad",
+      "kind": "next_improvement",
+      "lesson": "**W5 — workflow/capability:** when a manifest's `upstream_repo` is known, check whether it ships a support skill (sibling checkout / upstream) before building consumption, per the Support Skill Reuse Rule; `find-skills` could probe a sibling `../<tool-id>` checkout when `upstream_repo` matches a local sibling. Disposition: applied: re-tracked via support_skill_source + external_binary_with_skill (cd4ac5bd); find-skills sibling-probe capability deferred (note, not filed).",
+      "normalized_key": "w5 workflow capability when a manifest s upstream repo is known check whether it",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1451,6 +1571,106 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:19ec6125a1fa",
+      "kind": "repeat_trap",
+      "lesson": "**W1 — Serial publish-abort cycles.** `publish --execute` ran the full release-tier quality gate and aborted on the first failure; I fixed, re-ran the whole gate, hit the next failure, fixed, re-ran. Three full gate runs (~2-3 min each) where one up-front full-gate run would have surfaced all failures together. Root: no local run of the *release-tier* gate (which includes `release_only` + `tests/charness_cli`) before `--execute`; pre-push/closeout use a narrower scope.",
+      "normalized_key": "w1 serial publish abort cycles publish execute ran the full release tier quality gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0c807739dbdd",
+      "kind": "repeat_trap",
+      "lesson": "**W2 — Pre-existing release-only breakage surfaced at my release.** The pry foundation commits (`754e82ba`, `d7ef98ee` — not this effort) added a script-installer manifest but no fake in the `update all` release tests, so `pry=failed` made two `release_only` `tests/charness_cli` tests fail. They sit outside the pre-push pytest scope, so the broken tests reached `main` and only failed at the release gate.",
+      "normalized_key": "w2 pre existing release only breakage surfaced at my release the pry foundation commits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8b016a8cd571",
+      "kind": "repeat_trap",
+      "lesson": "**W3 — New mutation-pool script tested subprocess-only.** `inventory_testability_surface.py` had CLI/subprocess tests only, so coverage instrumentation saw 0% and `check-changed-line-mutation-coverage` blocked. This is a recurrence of the known \"subprocess-invoked script isn't coverage/ratchet-visible\" class already in recent-lessons.",
+      "normalized_key": "w3 new mutation pool script tested subprocess only inventory testability surface py had cli",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:49a512b1349c",
+      "kind": "repeat_trap",
+      "lesson": "**W4 — Carried runtime-budget advisory crossed into a release blocker.** `check-coverage` was documented as \"keeps brushing its 45s budget\"; it crossed (median 45878ms) and blocked the release instead of being addressed when first flagged.",
+      "normalized_key": "w4 carried runtime budget advisory crossed into a release blocker check coverage was documented",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4a99fd6100e4",
+      "kind": "repeat_trap",
+      "lesson": "**W5 — Reimplemented the upstream skill before checking for it.** The first pry integration set `kind: external_binary` and partially reimplemented the upstream `rank_backlog.py` ranking, missing that `../pry` (the manifest's `upstream_repo`) ships a real support skill. The user had to point it out; rework to `external_binary_with_skill` + `support_skill_source`.",
+      "normalized_key": "w5 reimplemented the upstream skill before checking for it the first pry integration set",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-pry-quality-integration-session.md",
           "date": "2026-06-14",
           "section": "Waste"
         }
