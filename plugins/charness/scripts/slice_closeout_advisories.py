@@ -119,6 +119,27 @@ def advise_skill_surface_preflight(repo_root: Path, changed_paths: list[str]) ->
     )
 
 
+def advise_doc_surface_preflight(repo_root: Path, changed_paths: list[str]) -> None:
+    """When the slice edits a general doc surface (``docs/**/*.md``), point at the
+    aggregate doc-authoring preflight so the markdownlint + wrapped-inline-code +
+    doc-link + length-cap constraints surface in one pass instead of one
+    commit-time gate failure at a time. Non-blocking, like its skill-surface
+    sibling; the doc gates stay the enforcement."""
+    edited = [
+        path
+        for path in changed_paths
+        if path.startswith("docs/") and path.endswith(".md")
+    ]
+    if not edited:
+        return
+    print(
+        "ADVISORY: edited general doc surface(s); run the aggregate doc-authoring "
+        "preflight to surface markdownlint/doc-link/length findings at once: "
+        f"python3 scripts/check_doc_authoring_preflight.py --path {edited[0]}",
+        file=sys.stderr,
+    )
+
+
 def resolve_gate_runtime_budget_seconds() -> float:
     """Portable, override-able budget for a single closeout gate's baseline
     runtime. A gate that PASSES but exceeds this is gate-baseline / code-quality

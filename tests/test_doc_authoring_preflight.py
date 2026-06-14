@@ -24,6 +24,7 @@ _pf = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
+_advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
 
 _BROKEN_FIXTURE = (
     "# Demo Handoff\n"
@@ -192,3 +193,16 @@ def test_non_blocking_affordance_guard() -> None:
     )
     doc = (_pf.__doc__ or "").lower()
     assert "affordance" in doc and "not a gate" in doc
+
+
+def test_slice_advisory_fires_on_doc_edit_only(capsys) -> None:
+    # The S2 discoverability wiring: a slice that edits a general docs/**/*.md
+    # gets a non-blocking ADVISORY pointing at the preflight; an unrelated edit
+    # stays silent.
+    _advisories.advise_doc_surface_preflight(ROOT, ["docs/handoff.md", "scripts/foo.py"])
+    fired = capsys.readouterr().err
+    assert "check_doc_authoring_preflight.py --path docs/handoff.md" in fired
+    assert "ADVISORY" in fired
+
+    _advisories.advise_doc_surface_preflight(ROOT, ["scripts/foo.py", "skills/public/x/SKILL.md"])
+    assert capsys.readouterr().err == ""

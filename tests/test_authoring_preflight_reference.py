@@ -57,3 +57,14 @@ def test_authoring_preflight_points_at_one_shot_preflight_and_prose_pin() -> Non
     assert "--run-checks" in text
     assert "check_prose_pin.py" in text
     assert "prose and path pins" in text.lower()
+
+
+def test_authoring_preflight_names_general_doc_preflight() -> None:
+    # #362 drift guard: the reference (and the read-before-authoring discipline
+    # doc) must name the aggregate general-doc preflight, so an author editing a
+    # docs/*.md surface discovers it up front instead of failing the markdown /
+    # doc-link / length gates one at a time.
+    preflight_text = PREFLIGHT_DOC.read_text(encoding="utf-8")
+    discipline_text = DISCIPLINE_DOC.read_text(encoding="utf-8")
+    assert "check_doc_authoring_preflight.py" in preflight_text
+    assert "check_doc_authoring_preflight.py" in discipline_text

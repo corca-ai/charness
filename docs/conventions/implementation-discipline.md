@@ -79,6 +79,13 @@ the root instruction file but still apply to Charness maintenance work.
   `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <planned-lines>`;
   it reports SKILL.md total/core headroom plus markdown, doc-link, mirror-sync,
   and staged-index couplings before the broad gate.
+- Before authoring into a general doc surface (the handoff artifact or any
+  `docs/*.md`), run
+  `python3 scripts/check_doc_authoring_preflight.py --path <doc>`; it aggregates
+  the markdownlint, wrapped-inline-code, `check_doc_links`, and surface
+  length-cap constraints in one pass (reusing the real validators), so the doc
+  passes `check-markdown.sh` / `check_doc_links.py` first try instead of one
+  serial rejection at a time. Affordance only — the doc still commits without it.
 - When deleting a public symbol or named concept, run
   `python3 scripts/check_symbol_residue.py --repo-root .` before closeout. It is
   advisory by design (#259): it scans deleted Python symbols and common phrase

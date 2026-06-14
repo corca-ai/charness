@@ -9,17 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S1 — build `scripts/check_doc_authoring_preflight.py`.
-- Current slice intent: aggregate the markdownlint + wrapped-inline-code +
-  doc-link + surface-length-cap constraints for one target doc into a single
-  forecast, reusing the real validators (no fork). The reviewable-intent unit in
+- Current slice: S2 — wire the affordance into the authoring flow + stage #362
+  closeout. (S1 committed at ec69f594.)
+- Current slice intent: make the preflight discoverable at the point of edit
+  (authoring-preflight.md + implementation-discipline.md bullet, a non-blocking
+  slice-closeout `ADVISORY:` when a slice edits a general `docs/**/*.md`) and
+  stage the tracked-issue close through `issue`. The reviewable-intent unit in
   progress and the commits it spans; critique and broad proof do not re-fire
   within one unchanged intent — update it when the intent changes, not per
   commit (meaningful-slice-cadence).
-- Next action: write the script + unit tests (broken-fixture all-classes,
-  clean-fixture silence, no-drift vs the real gates, non-blocking guard).
+- Next action: add the advisory + docs wiring + drift-guard test; demo a real
+  docs/handoff.md edit passing first try; stage the #362 closeout via issue.
 - Routing: find-skills recommended the achieve goal lifecycle (it owns this
-  slot); impl owns slice build. Recorded per Coordination Cues.
+  slot); impl owns slice build, issue owns the #362 closeout. Per Coordination
+  Cues.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.

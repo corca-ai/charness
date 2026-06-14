@@ -142,6 +142,31 @@ owned at the achieve complete flip. Each shape is rendered live from the owning
 validator's constants by a `describe_*_shape.py` sibling, so it cannot drift from
 the gate.
 
+## General doc surfaces (docs/*.md)
+
+The skill-surface and artifact-shape preflights above cover `skills/**` and
+`charness-artifacts/**`. General docs — the handoff artifact and the rest of
+`docs/*.md` — are the remaining surface class: an author there discovers
+markdownlint rules (the `MD004` list-marker style, a wrapped inline-code span,
+trailing space), the
+[check_doc_links.py](../../scripts/check_doc_links.py) pathy-ref / link form,
+and the surface length cap (the handoff line cap) one commit-gate failure at a
+time. Forecast them all in one pass:
+
+```bash
+python3 scripts/check_doc_authoring_preflight.py --path docs/handoff.md
+```
+
+[check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
+reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,
+markdownlint-cli2 with the repo config, and the owning length constant — so the
+forecast cannot drift from what the gate enforces. Pass `--as-surface handoff`
+to forecast a capped surface's length floor on a draft path. It is an affordance,
+not a gate: a doc still commits without it, the existing gates stay the
+enforcement, and
+[run_slice_closeout.py](../../scripts/run_slice_closeout.py) prints an
+`ADVISORY:` pointer when a slice edits a `docs/*.md` surface.
+
 ## Portable skill packages
 
 A file under `skills/public/**` or `skills/support/**` ships as a *portable*
