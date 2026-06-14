@@ -12,10 +12,10 @@ import subprocess
 
 import pytest
 
-from scripts import slice_closeout_advisories as adv
-from scripts.slice_closeout_advisories import (
+from scripts import slice_closeout_commit_advisories as adv
+from scripts.slice_closeout_advisories import is_artifact_only_commit
+from scripts.slice_closeout_commit_advisories import (
     advise_close_keyword_leakage,
-    is_artifact_only_commit,
     parse_close_keyword_refs,
 )
 

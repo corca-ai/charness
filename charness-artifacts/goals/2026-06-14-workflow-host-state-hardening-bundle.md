@@ -9,16 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S3 — #364 decaying-habit advisory (S1, S2 complete).
-- Current slice intent: S1 (#365 agent-browser scoping) and S2 (#363
-  close-keyword advisory) landed and verified, each committed. Now building S3
-  (proactive-mirror-sync + in-process-test-default advisories) on the
-  `slice_closeout_advisories` surface, reusing the real mirror/boundary signals.
-  The reviewable-intent unit in progress and the commits it spans; critique and
-  broad proof do not re-fire within one unchanged intent — update it when the
-  intent changes, not per commit (meaningful-slice-cadence).
-- Next action: commit S2, then build the S3 #364 advisory; bundle proof + push +
-  release at S4.
+- Current slice: S4 — bundle proof + push + release 0.48.0 (S1, S2, S3 complete).
+- Current slice intent: all three guards landed, verified, and committed (S1
+  #365 agent-browser scoping; S2 #363 close-keyword advisory; S3 #364
+  decaying-habit advisory + module split). Now at the bundle boundary: broad
+  proof (run_slice_closeout --verification-lock), bundle resolution critique
+  (fresh-eye), then the operator-approved push to origin/main + release 0.48.0,
+  then verify-closeout for #363/#364/#365.
+- Next action: commit S3, run the bundle closeout + resolution critique, then
+  publish 0.48.0 and verify the three issue closeouts.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -229,6 +228,20 @@ Recorded:
 - Critique: Self-review: regex anchored with \b + [\s:]+ separator so in-word (prefix/affixes) and no-separator (fix#1) cases never match; bare #N (safe shaping form) explicitly silent; reuses shared signal (no drift). Slice-level critique deferred to bundle resolution critique at S4.
 - Off-goal findings: Fixed an incidental block: my own S1 debug artifact used Risk Class 'host-state' / prose Generalization Pressure, invalid for the stricter risk_interrupt parser, which blocked run_slice_closeout repo-wide; reclassified to operator-visible-recovery / monitor (non-forced). Not a new issue — a self-inflicted artifact enum error, fixed in this slice.
 - Lessons carried forward: The risk_interrupt parser enums (Risk Class, Generalization Pressure) are stricter than validate_debug_artifact; debug artifacts must use the risk_interrupt taxonomy or they block run_slice_closeout repo-wide.
+- Metrics:
+
+### Slice 3: S3 — #364 decaying-habit advisory
+
+- Objective: Non-blocking author-time advisory for the two recurring pre-commit-gate habits: (1) a changed scripts/*.py with a stale plugin mirror; (2) a changed test that subprocesses an import-safe scripts/*.py when an in-process main() exists. Fire BEFORE the blocking gates (staged-mirror-drift, boundary-bypass ratchet).
+- Why this approach: Reused the REAL signals (no drift): habit 1 maps the mirror path via packaging_lib.checked_in_plugin_root and compares working-tree bytes; habit 2 reuses inventory_boundary_bypass_lib.analyze_test_file + boundary_bypass_ratchet_lib exemptions. Both degrade silently when the manifest/probe can't load.
+- Commits: S3 commit (this slice): #364 decaying-habit advisory + module split
+- What changed: scripts/slice_closeout_commit_advisories.py (NEW: #363 + #364 advisories moved here to respect the file-length gate) + mirror; scripts/slice_closeout_advisories.py trimmed (kept shared is_artifact_only_commit) + mirror; scripts/run_slice_closeout.py rewired imports + mirror; tests/quality_gates/test_slice_closeout_decaying_habit_advisory.py; S2 test imports repointed to the new module; carried the S1 rca-ledger entry.
+- Alternatives rejected: (a) blocking gate — rejected (Floor-Addition Restraint; recorded recurrence -> advisory); (b) hand-rolled mirror-path / boundary detection — rejected (drift); reused packaging + boundary-bypass libs; (c) keep both advisories in slice_closeout_advisories — rejected (530 > 480 code-line gate), split into a cohesive slice_closeout_commit_advisories sibling.
+- Targeted verification: ruff + py_compile green; check_python_lengths exit 0 (both modules under 480 after split); 13 S3 tests (mirror drift match/stale/missing/non-scripts/degrade; boundary-bypass fire/in-process-silent/exempted/non-test; orchestration fire/silent/non-blocking/not-wired); 162-test affected sweep green incl. run_slice_closeout integration (subprocess, proves new-module wiring) + plan-only smoke (status=planned).
+- Test duplication pressure: Habit-1 tests fake only the packaging import (real temp-file byte compare); habit-2 tests use the real boundary-bypass libs against a seeded repo (no mock of the detection); orchestration tests monkeypatch the two private helpers — distinct layers, no duplicate coverage.
+- Critique: Self-review: both advisories reuse real gate signals (no drift); both asserted non-blocking + not-wired-into-staged_commit_gate_plan; module split keeps each file cohesive + under length gate. Slice-level critique deferred to the bundle resolution critique at S4.
+- Off-goal findings: Module split (slice_closeout_advisories 530>480 length gate) was forced by S3's additions — handled in-slice, not a deferral.
+- Lessons carried forward: Portability: all three guards ship via the plugin mirror (plugins/charness/scripts) -> skill-capability, inherited by consuming repos, already routed (not repo-local). Adding ~110 lines to a near-cap module trips the 480 code-line gate; split into a cohesive sibling early.
 - Metrics:
 
 ## Context Sources
