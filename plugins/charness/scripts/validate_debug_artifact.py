@@ -38,6 +38,16 @@ validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling
 is_trivial_short_circuit = _scripts_artifact_validator_module.is_trivial_short_circuit
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
+# Single source of truth for the Seam Risk taxonomy: reuse the enums the
+# downstream consumer (`risk_interrupt_lib.parse_debug_interrupt`, run via
+# `run_slice_closeout.py`) enforces instead of hand-copying them here, so the
+# author-time validator can never drift below the closeout consumer (#366).
+_scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
+ALLOWED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.ALLOWED_RISK_CLASSES
+FORCED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.FORCED_RISK_CLASSES
+ALLOWED_GENERALIZATION_PRESSURE = _scripts_risk_interrupt_lib_module.ALLOWED_GENERALIZATION_PRESSURE
+_parse_risk_classes = _scripts_risk_interrupt_lib_module._parse_risk_classes
+
 SIBLING_BOUNDARY_HEADINGS = (
     "## Seam Risk",
     "## Interrupt Decision",
@@ -73,24 +83,6 @@ CURRENT_INTERRUPT_SECTIONS = (
 OPTIONAL_SECTIONS = (
     "## Related Prior Incidents",
 )
-ALLOWED_RISK_CLASSES = frozenset(
-    {
-        "none",
-        "external-seam",
-        "host-disproves-local",
-        "repeated-symptom",
-        "operator-visible-recovery",
-        "contract-freeze-risk",
-    }
-)
-FORCED_RISK_CLASSES = frozenset(
-    {
-        "external-seam",
-        "host-disproves-local",
-        "repeated-symptom",
-    }
-)
-ALLOWED_GENERALIZATION_PRESSURE = frozenset({"none", "monitor", "factor-now"})
 
 
 def validate_candidate_causes(lines: list[str]) -> None:
@@ -242,6 +234,43 @@ def validate_cross_file_sibling_marker(lines: list[str]) -> None:
     )
 
 
+def validate_dated_seam_risk_enums(lines: list[str]) -> None:
+    """Enforce the `risk_interrupt_lib` Risk Class / Generalization Pressure
+    taxonomy on dated debug records that carry a `## Seam Risk` section.
+
+    `risk_interrupt_lib.parse_debug_interrupt` — consumed by `plan_risk_interrupt`
+    in `run_slice_closeout.py` via the current-pointer `latest.md` — rejects an
+    off-taxonomy `Risk Class` / `Generalization Pressure`. The dated author-time
+    path did not run that enum check, so an off-taxonomy value passed at write
+    time and only surfaced repo-wide at closeout, far from the artifact (#366).
+    This applies the same enums the consumer uses (imported, not hand-copied) at
+    author time.
+
+    Only the enum subset runs on dated records — forced-interrupt completeness
+    (`Critique Required` / `Next Step` / spec `Handoff Artifact`) stays a
+    `latest.md` concern — so the historical dated corpus, whose `## Seam Risk`
+    values are all in-taxonomy, is not retro-regressed. Records with no
+    `## Seam Risk` section (legacy shapes) are unaffected.
+    """
+    if "## Seam Risk" not in lines:
+        return
+    seam_lines = section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
+    seam_values = extract_prefixed_values(
+        seam_lines,
+        (
+            "- Risk Class: ",
+            "- Generalization Pressure: ",
+        ),
+    )
+    _parse_risk_classes(seam_values["- Risk Class: "])
+    generalization_pressure = seam_values["- Generalization Pressure: "]
+    if generalization_pressure not in ALLOWED_GENERALIZATION_PRESSURE:
+        raise ValidationError(
+            "`Generalization Pressure` must be one of "
+            + ", ".join(f"`{value}`" for value in sorted(ALLOWED_GENERALIZATION_PRESSURE))
+        )
+
+
 def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = read_lines(path)
     base_checks = (
@@ -279,6 +308,7 @@ def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
             lambda: validate_sibling_followups(
                 lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
             ),
+            lambda: validate_dated_seam_risk_enums(lines),
         )
     run_validation_checks(checks, collect_all=collect_all, artifact_label="debug artifact")
 

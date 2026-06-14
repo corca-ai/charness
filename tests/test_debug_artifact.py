@@ -561,3 +561,63 @@ def test_validate_debug_artifact_report_all_lists_every_violation(tmp_path: Path
     assert "rule violation(s)" in result.stderr
     assert "at least three plausible causes" in result.stderr
     assert "`Risk Class` contains unknown values" in result.stderr
+
+
+# --- #366: dated Seam Risk enum parity with the closeout consumer -------------
+
+
+def test_validate_debug_artifact_rejects_dated_off_taxonomy_risk_class(tmp_path: Path) -> None:
+    # #366: a DATED record with an off-taxonomy `Risk Class` (valid heading shape,
+    # value the `risk_interrupt_lib` consumer rejects) used to PASS the author-time
+    # validator, then block `run_slice_closeout.py` repo-wide via the current-pointer
+    # `latest.md`. It must now fail at write time, at the offending artifact.
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    dated = valid_current_artifact(risk_class="host-state")
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
+    assert "host-state" in result.stderr
+
+
+def test_validate_debug_artifact_rejects_dated_off_taxonomy_generalization_pressure(tmp_path: Path) -> None:
+    # #366: same gap for an off-taxonomy `Generalization Pressure` prose value.
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    dated = valid_current_artifact().replace("- Generalization Pressure: none", "- Generalization Pressure: vibes")
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
+    assert "Generalization Pressure" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_dated_in_taxonomy_seam_risk(tmp_path: Path) -> None:
+    # In-taxonomy Seam Risk values on a dated record still pass; the historical
+    # corpus (all in-taxonomy) is not retro-regressed.
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    dated = valid_current_artifact(risk_class="operator-visible-recovery")
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "Validated debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stdout
+
+
+def test_validate_debug_artifact_seam_risk_enums_are_single_source_of_truth() -> None:
+    # #366: the Seam Risk enums must be imported from risk_interrupt_lib (the
+    # closeout consumer), never a hand copy that can silently drift below it.
+    import importlib.util
+    import sys
+
+    scripts_dir = str(ROOT / "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    spec = importlib.util.spec_from_file_location(
+        "validate_debug_artifact_sst", ROOT / "scripts" / "validate_debug_artifact.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    consumer = module._scripts_risk_interrupt_lib_module
+    assert module.ALLOWED_RISK_CLASSES is consumer.ALLOWED_RISK_CLASSES
+    assert module.ALLOWED_GENERALIZATION_PRESSURE is consumer.ALLOWED_GENERALIZATION_PRESSURE
+    assert module.FORCED_RISK_CLASSES is consumer.FORCED_RISK_CLASSES
