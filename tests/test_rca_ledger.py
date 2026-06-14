@@ -857,3 +857,62 @@ def test_target_committed_ledger_payload_is_structurally_judged() -> None:
     assert target["status"] in {"no-live-events", "insufficient-n", "met", "not-met"}
     for entry in target["falsified_conversions"]:
         assert entry["converted_ts"] < entry["recurrence_ts"]
+
+
+# --- #361: kill the surviving record_rca_event.py main()/parse_args mutants ----
+
+
+def test_record_rejects_missing_source(tmp_path: Path) -> None:
+    # #361: `--source` is required. Kills record_rca_event.py:27 ReplaceTrueWithFalse
+    # on `required=True` — argparse exits 2 when it is omitted (the mutant would let
+    # a None source through to a schema rejection, returncode 1).
+    res = run_script(
+        "record_rca_event.py",
+        "--ledger", str(tmp_path / "ledger.jsonl"),
+        "--event-kind", "bug",
+        "--class-key", "k",
+        "--converted",
+        "--durable-kind", "gate",
+    )
+    assert res.returncode == 2
+    assert "--source" in res.stderr
+
+
+def test_record_conversion_upgrade_without_ref_rejection_json_uses_two_space_indent(tmp_path: Path) -> None:
+    # #361: the `--conversion-upgrade` without `--ref` rejection prints 2-space JSON.
+    # Kills record_rca_event.py:92 NumberReplacer on `indent=2` and :93 AddNot on the
+    # `if args.json` branch (every other assertion uses json.loads, indent-agnostic).
+    res = run_script(
+        "record_rca_event.py",
+        "--ledger", str(tmp_path / "ledger.jsonl"),
+        "--source", "issue",
+        "--event-kind", "bug",
+        "--class-key", "k",
+        "--conversion-upgrade",
+        "--json",
+    )
+    assert res.returncode == 1
+    payload = json.loads(res.stderr)
+    assert payload["status"] == "rejected"
+    assert res.stderr.rstrip("\n") == json.dumps(payload, indent=2)
+    assert '\n  "' in res.stderr  # a top-level key indented by exactly two spaces
+
+
+def test_record_schema_rejection_json_uses_two_space_indent(tmp_path: Path) -> None:
+    # #361: a schema-invalid record (bad RFC3339 timestamp) is refused with 2-space
+    # JSON. Kills record_rca_event.py:108 NumberReplacer on `indent=2` in the
+    # jsonschema-rejection path.
+    res = run_script(
+        "record_rca_event.py",
+        "--ledger", str(tmp_path / "ledger.jsonl"),
+        "--source", "retro",
+        "--event-kind", "weak_proof",
+        "--class-key", "k",
+        "--ts", "not-a-dateZ",
+        "--json",
+    )
+    assert res.returncode == 1
+    payload = json.loads(res.stderr)
+    assert payload["status"] == "rejected"
+    assert res.stderr.rstrip("\n") == json.dumps(payload, indent=2)
+    assert '\n  "' in res.stderr

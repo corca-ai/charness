@@ -471,3 +471,53 @@ def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(tmp_pa
     assert 'href="javascript:' not in html
     assert "querySelectorAll(\".card\")" in html
     assert "x&lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;" in html
+
+
+# --- #361: kill the surviving render_report.py main() mutants ------------------
+
+
+def test_render_report_output_uses_two_space_indent(tmp_path: Path) -> None:
+    # #361: the rendered queue JSON is printed with 2-space indent. Kills
+    # render_report.py:49 NumberReplacer on `indent=2` (every other assertion does
+    # json.loads on stdout, which is indent-agnostic).
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    packet = repo / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "session_id": "s",
+                "title": "T",
+                "agent_next_step": "Apply only explicit human decisions.",
+                "items": [
+                    {
+                        "id": "claim-1",
+                        "question": "q?",
+                        "why": "w",
+                        "suggested_decision": "approve",
+                        "evidence_links": [{"label": "R", "path": "r.md"}],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo), "--input", str(packet))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert result.stdout.rstrip("\n") == json.dumps(payload, ensure_ascii=False, indent=2)
+    assert '\n  "' in result.stdout  # a top-level key indented by exactly two spaces
+
+
+def test_render_report_requires_repo_root_and_input(tmp_path: Path) -> None:
+    # #361: `--repo-root` and `--input` are required. Kills render_report.py:30 and :31
+    # ReplaceTrueWithFalse on `required=True` — argparse exits 2 when either is omitted
+    # (the mutant would let a None path through to an uncaught crash, returncode 1).
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    packet = repo / "packet.json"
+    packet.write_text(json.dumps({"session_id": "s", "title": "T", "items": []}), encoding="utf-8")
+    missing_repo_root = run_script("skills/public/hitl/scripts/render_report.py", "--input", str(packet))
+    assert missing_repo_root.returncode == 2
+    missing_input = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo))
+    assert missing_input.returncode == 2

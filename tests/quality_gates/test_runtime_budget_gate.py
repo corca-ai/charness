@@ -118,6 +118,48 @@ def test_runtime_profile_selection_treats_literal_default_as_machine_auto(monkey
     assert selected != runtime_profile_lib.DEFAULT_RUNTIME_PROFILE
 
 
+# --- #361: kill the consistently-surviving runtime_profile_lib mutants --------
+
+
+def test_runtime_profile_selection_returns_configured_non_default(monkeypatch) -> None:
+    # #361: a configured non-default `runtime_profile_default` is returned verbatim,
+    # not the machine auto. Kills selected_runtime_profile (runtime_profile_lib.py:30)
+    # survivors AddNot and ReplaceComparisonOperator NotEq_Lt / NotEq_Gt: the two
+    # values straddle "default" lexically, so neither `<` nor `>` reproduces `!=`.
+    monkeypatch.delenv("CHARNESS_RUNTIME_PROFILE", raising=False)
+    assert runtime_profile_lib.selected_runtime_profile({"runtime_profile_default": "slow-ci"}, None) == "slow-ci"
+    assert runtime_profile_lib.selected_runtime_profile({"runtime_profile_default": "ci-fast"}, None) == "ci-fast"
+
+
+def test_runtime_profile_commands_named_profile_sorting_after_default() -> None:
+    # #361: a named profile that sorts AFTER "default" must still use its own profile
+    # commands, not the top-level default branch. Kills profile_commands
+    # (runtime_profile_lib.py:36) survivor ReplaceComparisonOperator Eq_GtE.
+    top = {"pytest": {"latest": {"elapsed_ms": 1}}}
+    named = {"pytest": {"latest": {"elapsed_ms": 2}}}
+    payload = {"commands": top, "profiles": {"slow": {"commands": named}}}
+    assert runtime_profile_lib.profile_commands(payload, "slow") == named
+
+
+def test_runtime_profile_budgets_named_profile_without_budget_profiles_falls_back() -> None:
+    # #361: with no `runtime_budget_profiles`, a named (non-default) profile still
+    # falls back to the top-level `runtime_budgets`. Kills profile_budgets
+    # (runtime_profile_lib.py:64 and :66) survivors AddNot on the fallback guard and
+    # on the dict-shape return.
+    adapter_data = {"runtime_budgets": {"pytest": 7000}}
+    assert runtime_profile_lib.profile_budgets(adapter_data, "slow-ci") == ({"pytest": 7000}, [])
+
+
+def test_machine_runtime_profile_uses_detected_system(monkeypatch) -> None:
+    # #361: when platform.system()/machine() are non-empty, the profile id uses the
+    # detected values, not the "unknown-*" fallbacks. Kills machine_runtime_profile
+    # (runtime_profile_lib.py:18) survivor ReplaceOrWithAnd.
+    monkeypatch.setattr(runtime_profile_lib.platform, "system", lambda: "TestOS")
+    monkeypatch.setattr(runtime_profile_lib.platform, "machine", lambda: "TestArch")
+    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 4)
+    assert runtime_profile_lib.machine_runtime_profile() == "local-testos-testarch-4cpu"
+
+
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, budgets=None, signals=None)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
