@@ -1,6 +1,6 @@
 # Achieve Goal: Resolve #367 — quality CI-recoverability triage lens + command-timing-log ingest
 
-Status: active
+Status: complete
 Created: 2026-06-14
 Activation: `/goal @charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`
 
@@ -13,16 +13,11 @@ artifact-only draft.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 closeout. Slices 1–3 done + committed; bundle broad proof
-  green (3033 passed); both fresh-eye reviews SHIP; retro + probe + follow-up
-  issue #368 + disposition review done. Remaining: carrier push (`Close #367`),
-  verify CI + #367 CLOSED, release, then flip to complete.
-- Current slice intent: Slice 4 — the operator-approved external lane (push +
-  close + release). Carrier commit staged with `Close #367`; release cut after
-  the carrier push; goal flips to complete once pushed-ci / issue-closed / release
-  are verified.
-- Next action: validate the closeout draft, commit the carrier with `Close #367`,
-  push, verify, release, then final flip.
+- Current slice: COMPLETE. All four slices landed on `main`; #367 verified CLOSED;
+  v0.50.0 published + verified; install auto-refreshed. Closeout-state `live`.
+- Current slice intent: none — goal complete. Follow-up #368 (shift-left
+  recurrence-conversion) is tracked for a future session, out of #367 scope.
+- Next action: none. The goal is closed; the next pickup is #368 per the handoff.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -164,19 +159,19 @@ Phase-appropriate routing for this run, deferred to `find-skills` (its
 engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
 and the floors below; `find-skills` owns *which* skill answers a boundary.
 
-- Routing: `find-skills --recommend-for-task` routed `issue` (via the `github-gh`
-  external binary) for #367 and `achieve` as the goal operator; per-phase `impl`
-  for slices 1–2 (code), `quality` for the verification posture + closeout broad
-  gate, `issue` for the #367 direct-commit closeout, `release` for the version
-  bump, `handoff` for the refresh. Routes confirmed against `find-skills`.
+- Routing: find-skills (--recommend-for-task) routed this run — impl for the code slices (1–2), quality for the verification posture + closeout broad gate, issue (via github-gh) for the #367 direct-commit closeout, release for the version bump, handoff for the refresh; each route confirmed against find-skills.
 - Gather: n/a — #367 is read through the `gh` GitHub backend (`gh issue view`),
   not an external web/Slack/Notion/Docs/Drive source, so no gather asset applies.
-- Release: charness 0.50.0 — version bump + tag + `charness-artifacts/release/latest.md`
-  via the `release` skill (proof recorded at the final flip after the carrier push).
-- Issue closeout: #367 via `direct-commit` carrier (`Close #367` on the closeout
-  commit), validated with `issue_tool.py validate-closeout-draft --carrier
-  direct-commit --commit-message-file`, verified `CLOSED` with `verify-closeout`
-  after the push.
+- Release: charness 0.50.0 PUBLISHED + VERIFIED via the `release` skill — tag
+  `v0.50.0` (https://github.com/corca-ai/charness/releases/tag/v0.50.0),
+  `public_release_verification: verified`, release commit `3ac858b8` + verification
+  `b466a916`, fresh-checkout probes ran, and the maintainer install auto-refreshed
+  0.49.0 → 0.50.0. Release record: `charness-artifacts/release/latest.md`; release
+  critique `charness-artifacts/critique/2026-06-14-release-0.50.0.md`.
+- Issue closeout: #367 via `direct-commit` carrier (`Close #367` on closeout commit
+  `4ec54792`), validated with `issue_tool.py validate-closeout-draft`, and verified
+  `CLOSED` with `verify-closeout` (ok: true) after the push. `gh issue view 367` →
+  CLOSED (COMPLETED).
 
 ## Slice Log
 
@@ -326,11 +321,13 @@ subagent reviews (slice 1; slices 2+3 bundle), both SHIP with zero blockers; the
 bundle review adversarially probed the safety gate and confirmed it is
 honest-by-construction.
 
-Closeout state reached at the carrier commit: `carrier` (validated direct-commit
-`Close #367`). External lane (operator-approved push + close + release):
-`pushed-ci`, `issue-closed`, and the release (`live` consumer surface) are
-verified after the carrier push and recorded at the final flip. Non-claims until
-then: no remote-CI/issue-closed/release proof is asserted before the push.
+Closeout state reached: **`live`** — the full operator-approved lane completed.
+`impl-local` (local proof above) → `carrier` (validated direct-commit `Close #367`,
+commit `4ec54792`) → `pushed-ci` (Quality Core CI `success` on the pushed HEAD
+`f09739bd`) → `issue-closed` (#367 verified CLOSED, `verify-closeout` ok: true) →
+`live` (v0.50.0 published + `public_release_verification: verified`, install
+auto-refreshed 0.49.0 → 0.50.0). No proof level was skipped or simulated; every
+external claim above is backed by a verified command result, not a local proxy.
 
 Retro: charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md
 Host log probe: charness-artifacts/probe/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.json
