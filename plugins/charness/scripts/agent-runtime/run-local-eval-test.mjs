@@ -520,7 +520,7 @@ function runFixtureEvaluation(evaluation, fixtureResults, outputDir, startedAt) 
 	return normalizeObservedResult(evaluation, fixtureObservedResult(evaluation, fixtureResults), artifactRefs, startedAt);
 }
 
-function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
+export function runCodexEvaluation(options, evaluation, outputDir, startedAt, spawn = spawnSync) {
 	const promptFile = join(outputDir, "prompt.md");
 	const schemaFile = join(outputDir, "schema.json");
 	const outputFile = join(outputDir, "result.json");
@@ -551,7 +551,7 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 
 	let result;
 	try {
-		result = spawnSync("codex", codexArgs(options, schemaFile, outputFile), {
+		result = spawn("codex", codexArgs(options, schemaFile, outputFile), {
 			cwd: options.workspace,
 			encoding: "utf-8",
 			env: runtime.env,
@@ -599,7 +599,7 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 	return normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, telemetry);
 }
 
-function runClaudeEvaluation(options, evaluation, outputDir, startedAt) {
+export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, spawn = spawnSync) {
 	const promptFile = join(outputDir, "prompt.md");
 	const outputFile = join(outputDir, "result.json");
 	const rawFile = join(outputDir, "result.raw");
@@ -608,7 +608,7 @@ function runClaudeEvaluation(options, evaluation, outputDir, startedAt) {
 	const prompt = renderClaudePrompt(evaluation, schema);
 	writeFileSync(promptFile, prompt);
 
-	const result = spawnSync("claude", claudeArgs(options), {
+	const result = spawn("claude", claudeArgs(options), {
 		cwd: options.workspace,
 		encoding: "utf-8",
 		env: {

@@ -181,6 +181,31 @@ Treat the ratchet as a structural guard, not as a cleanup claim. A passing
 ratchet proves only that the boundary-bypass surface did not grow beyond the
 baseline; it does not prove the existing backlog is healthy.
 
+## Welded-Boundary Testability Backlog (pry)
+
+When the repo has a TypeScript/JavaScript surface, `pry` is an advisory support
+binary (integration manifest `integrations/tools/pry.json`) that statically
+surfaces *welded boundary calls* — clock, subprocess, network, file I/O, or
+randomness calls with no seam to inject a substitute. Run it through
+`skills/public/quality/scripts/inventory_testability_surface.py --repo-root .`,
+which wraps `pry map`, degrades cleanly when the binary is absent, and reports
+the `demand=true` substitution-demand subset as the ranked backlog.
+
+Treat the result as a testability backlog, not a bug list, and never let it fail
+standing quality:
+
+- A welded-at-demand finding means the boundary has enough surrounding logic to
+  be worth testing, but no injection seam to test it without the real boundary.
+- The fix is Recommended Outcome 1-2: introduce an explicit seam (inject the
+  spawn/clock/fetch dependency, defaulting to the real one) so the orchestration
+  is reachable in-process, then add a test that exercises it. pry reclassifies
+  the finding from `welded` to `seamed` once the callee is parameter-injected.
+- Welded calls outside the demand subset are lower-priority context; do not
+  churn seams the surrounding logic does not need.
+
+pry analyzes TS/JS today; it is not a Python testability gate. Keep it advisory
+until the repo has confirmed the signal is low-noise on its own surface.
+
 ## Language Notes
 
 Keep language-specific details here or in sibling references, not in

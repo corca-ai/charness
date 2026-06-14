@@ -96,7 +96,7 @@
     ]
   },
   "host_notes": [
-    "`pry` is an advisory input to Charness `quality`: it proposes a testability backlog (welded boundary calls with no injection seam), not a bug list, and must never fail standing quality. This manifest makes `pry` discoverable and doctor-checkable; the `quality` invocation driver (the consuming skill) ships separately and is not yet wired.",
+    "`pry` is an advisory input to Charness `quality`: it proposes a testability backlog (welded boundary calls with no injection seam), not a bug list, and must never fail standing quality. This manifest makes `pry` discoverable and doctor-checkable; `quality` consumes it through `skills/public/quality/scripts/inventory_testability_surface.py` (wrapping `pry map`, degrading when absent), with the testability backlog contract in `skills/public/quality/references/testability-and-selection.md`.",
     "pry analyzes TypeScript/JavaScript today — the validated surface (see pry `docs/precision-gate.md`). A Python frontend is out of scope: the author's Python is welded glue with no discrimination (pry `docs/kill-gate.md`).",
     "Run `pry map <path>` for the full finding map, or `pry map <path> --summary-only` for the coverage summary; the `demand=true` substitution-demand subset is the ranked backlog."
   ]

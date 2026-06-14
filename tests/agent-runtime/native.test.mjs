@@ -27,6 +27,8 @@ import {
 import {
 	buildObservedInstructionSurfaceInput,
 	codexEnvironment,
+	runClaudeEvaluation,
+	runCodexEvaluation,
 } from "../../scripts/agent-runtime/run-local-eval-test.mjs";
 import { extractClaudeTelemetry } from "../../scripts/agent-runtime/skill-test-telemetry.mjs";
 
@@ -405,4 +407,138 @@ test("omits invalid Claude telemetry counters without fabricating totals", () =>
 			cost_usd: 0,
 		},
 	);
+});
+
+// The codex/claude subprocess boundaries take an injectable `spawn` seam (default
+// spawnSync) so the runner orchestration — success normalization, non-zero exit,
+// and timeout handling — is reachable without spawning a real agent CLI. pry's
+// welded-at-demand backlog flagged these two boundaries (exe-inline); the seam
+// reclassifies them to seamed and these tests exercise it.
+function evaluationFixture(workspace) {
+	return {
+		evaluationId: "eval-seam",
+		displayName: "Seam evaluation",
+		prompt: "route the request",
+		workspace,
+		requiredConcepts: [],
+		requiredInstructionFiles: [],
+		forbiddenInstructionFiles: [],
+		requiredSupportingFiles: [],
+		forbiddenSupportingFiles: [],
+	};
+}
+
+function observedFixture() {
+	return {
+		observationStatus: "observed",
+		blockerKind: "",
+		summary: "selected the quality skill",
+		entryFile: "",
+		loadedInstructionFiles: [],
+		loadedSupportingFiles: [],
+		routingDecision: {
+			selectedSkill: "quality",
+			bootstrapHelper: "find-skills",
+			workSkill: "quality",
+			selectedSupport: "none",
+			firstToolCall: "none",
+			reasonSummary: "instruction surface routed to quality",
+		},
+	};
+}
+
+const SEAM_STARTED_AT = "2026-01-01T00:00:00.000Z";
+
+function recordingSpawn(response) {
+	const calls = [];
+	const spawn = (command, args, spawnOptions) => {
+		calls.push({ command, args, spawnOptions });
+		return typeof response === "function" ? response(command, args, spawnOptions) : response;
+	};
+	return { calls, spawn };
+}
+
+test("claude runner success path is reachable through the injected spawn seam", () => {
+	withTempDir((dir) => {
+		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000, claudeModel: "claude-test" };
+		const stdout = JSON.stringify({ result: JSON.stringify(observedFixture()) });
+		const { calls, spawn } = recordingSpawn({ status: 0, stdout, stderr: "" });
+
+		const result = runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.equal(calls.length, 1);
+		assert.equal(calls[0].command, "claude");
+		assert.ok(calls[0].args.includes("-p"));
+		assert.equal(result.observationStatus, "observed");
+		assert.equal(result.summary, "selected the quality skill");
+		assert.equal(result.evaluationId, "eval-seam");
+		assert.equal(result.routingDecision.workSkill, "quality");
+	});
+});
+
+test("claude runner non-zero exit becomes a blocked result via the seam", () => {
+	withTempDir((dir) => {
+		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000 };
+		const { spawn } = recordingSpawn({ status: 2, stdout: "", stderr: "boom" });
+
+		const result = runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.equal(result.observationStatus, "blocked");
+		assert.match(result.summary, /exited with status 2/);
+	});
+});
+
+test("claude runner timeout becomes a blocked result via the seam", () => {
+	withTempDir((dir) => {
+		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000 };
+		const { spawn } = recordingSpawn({ error: { code: "ETIMEDOUT" }, stdout: "", stderr: "" });
+
+		const result = runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.equal(result.observationStatus, "blocked");
+		assert.match(result.summary, /timed out/);
+	});
+});
+
+test("codex runner success path is reachable through the injected spawn seam", () => {
+	withTempDir((dir) => {
+		const options = {
+			workspace: dir,
+			repoRoot: dir,
+			timeoutMs: 1000,
+			codexHomeMode: "inherit",
+			codexAuthMode: "inherit",
+			codexModel: "gpt-test",
+		};
+		const { calls, spawn } = recordingSpawn(() => {
+			writeJson(join(dir, "result.json"), observedFixture());
+			return { status: 0, stdout: "", stderr: "" };
+		});
+
+		const result = runCodexEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.equal(calls.length, 1);
+		assert.equal(calls[0].command, "codex");
+		assert.equal(result.observationStatus, "observed");
+		assert.equal(result.summary, "selected the quality skill");
+		assert.equal(result.evaluationId, "eval-seam");
+	});
+});
+
+test("codex runner non-zero exit becomes a blocked result via the seam", () => {
+	withTempDir((dir) => {
+		const options = {
+			workspace: dir,
+			repoRoot: dir,
+			timeoutMs: 1000,
+			codexHomeMode: "inherit",
+			codexAuthMode: "inherit",
+		};
+		const { spawn } = recordingSpawn({ status: 3, stdout: "", stderr: "exploded" });
+
+		const result = runCodexEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.equal(result.observationStatus, "blocked");
+		assert.match(result.summary, /exited with status 3/);
+	});
 });
