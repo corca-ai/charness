@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`; sources: 36)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md`; sources: 37)
 - **First no-drift tests blocked by `check-boundary-bypass-ratchet`.** I wrote the gate cross-checks as `subprocess.run(["python3", "scripts/check_doc_links.py", ...])`; the ratchet flagged them as in-process-convertible candidates. Converted to in-process `main()` calls. The gate caught it; one round. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **First S1 commit blocked by `staged-plugin-mirror-drift`.** I committed before running `sync_root_plugin_manifests.py`; `scripts/*.py` is part of the plugin install surface, so the new script needed mirroring into `plugins/charness/scripts/`. One blocked commit → sync → re-commit. The gate caught it; cost was one round, no escaped drift. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **Process-trust cost (not this run's rework):** discovering the premature close of #362 meant the issue-closeout posture had to be re-derived (already CLOSED, fix unpushed) instead of the planned "stage a fresh close." (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`; sources: 36)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md`; sources: 37)
 - a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor). (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
 - persisted here and rolled into recent-lessons by the persister. (source: `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`)
@@ -65,4 +65,5 @@
 - `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`
 - `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`
