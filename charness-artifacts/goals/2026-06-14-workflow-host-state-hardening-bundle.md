@@ -9,14 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S2 — #363 close-keyword-leakage advisory (S1 complete).
-- Current slice intent: S1 (agent-browser orphan scoping, #365) landed and
-  verified (fix + tests + causal review + resolution critique), pending the
-  bundle commit/push. Now building S2 on the `slice_closeout_advisories` surface.
+- Current slice: S3 — #364 decaying-habit advisory (S1, S2 complete).
+- Current slice intent: S1 (#365 agent-browser scoping) and S2 (#363
+  close-keyword advisory) landed and verified, each committed. Now building S3
+  (proactive-mirror-sync + in-process-test-default advisories) on the
+  `slice_closeout_advisories` surface, reusing the real mirror/boundary signals.
   The reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: commit S1, then build the S2 #363 advisory.
+- Next action: commit S2, then build the S3 #364 advisory; bundle proof + push +
+  release at S4.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -213,6 +215,20 @@ Recorded:
 - Critique: Causal review (fresh-eye, parent-delegated): all three lenses PASS close-ledger; flagged zombie-cwd / cwd-heuristic / TOCTOU. Resolution critique (fresh-eye): committed-ready, no Act-Before-Ship; one Bundle-Anyway (path-prefix-collision assertion) folded in.
 - Off-goal findings: none
 - Lessons carried forward: ppid==1 is detached-by-design for agent-browser daemons (not 'abandoned'); machine-global signals need per-task ownership scoping; proactive plugin-mirror sync done before the commit gate (#364 habit).
+- Metrics:
+
+### Slice 2: S2 — #363 close-keyword-leakage advisory
+
+- Objective: Non-blocking pre-push advisory flagging a GitHub close keyword (close/fix/resolve #N) in an unpushed commit whose changed paths are not a plausible fix for #N (artifact-only goal-shaping commit) — the trap that auto-closed #362 before its fix existed.
+- Why this approach: Reused the slice_closeout_advisories surface (mirrors advise_floor_addition_restraint / advise_over_slicing) and the SHARED is_artifact_only_commit signal (extracted so over-slice + close-keyword cannot drift). Scans origin/main..HEAD (the pre-push leak window); degrades silently off a git repo / unresolved base. Non-blocking stderr only.
+- Commits: S2 commit (this slice): #363 close-keyword-leakage advisory
+- What changed: scripts/slice_closeout_advisories.py (parse_close_keyword_refs + _unpushed_commits + advise_close_keyword_leakage + extracted is_artifact_only_commit) + mirror; scripts/run_slice_closeout.py wiring + mirror; tests/quality_gates/test_slice_closeout_close_keyword_advisory.py; debug-artifact risk-interrupt enum fix (operator-visible-recovery / monitor).
+- Alternatives rejected: (a) blocking gate — rejected per Floor-Addition Restraint (one recorded recurrence -> advisory); (b) fetch the issue via gh to check changed-paths-vs-issue — rejected (network dependency in a closeout advisory, heavier); (c) hand-rolled artifact-only check — rejected (drift); reused the shared signal instead.
+- Targeted verification: ruff + py_compile green; 14 S2 tests (pure keyword parsing incl. URL/owner-repo/dedup/bare-ref/in-word-negatives; artifact-only signal; monkeypatched fire/silent/non-blocking; real-git-repo positive + real-fix silence + unresolved-base degrade); 149-test affected sweep green incl. overslice (shared-helper refactor) + broad_gate + surface_obligations.
+- Test duplication pressure: is_artifact_only_commit extracted and reused (no duplicate artifact-only logic); pure parsing tests distinct from real-git-repo plumbing tests; non-blocking + not-wired-into-commit-gate assertions guard the Floor-Addition Restraint invariant.
+- Critique: Self-review: regex anchored with \b + [\s:]+ separator so in-word (prefix/affixes) and no-separator (fix#1) cases never match; bare #N (safe shaping form) explicitly silent; reuses shared signal (no drift). Slice-level critique deferred to bundle resolution critique at S4.
+- Off-goal findings: Fixed an incidental block: my own S1 debug artifact used Risk Class 'host-state' / prose Generalization Pressure, invalid for the stricter risk_interrupt parser, which blocked run_slice_closeout repo-wide; reclassified to operator-visible-recovery / monitor (non-forced). Not a new issue — a self-inflicted artifact enum error, fixed in this slice.
+- Lessons carried forward: The risk_interrupt parser enums (Risk Class, Generalization Pressure) are stricter than validate_debug_artifact; debug artifacts must use the risk_interrupt taxonomy or they block run_slice_closeout repo-wide.
 - Metrics:
 
 ## Context Sources

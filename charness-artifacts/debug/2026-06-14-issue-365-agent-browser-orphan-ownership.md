@@ -132,21 +132,17 @@ scoping.
 ## Seam Risk
 
 - Interrupt ID: agent-browser-orphan-ownership-365
-- Risk Class: host-state
-- Seam: OS process table + `/proc` (host runtime), destructive to live processes
-- Disproving Observation: a live in-use daemon has `ppid==1` (host disproved the
-  "ppid==1 == abandoned" local model)
-- What Local Reasoning Cannot Prove: that `/proc/<pid>/cwd` is readable and
-  checkout-specific on every host (non-Linux / restricted hosts) — handled by
-  fail-closed
-- Generalization Pressure: keep ownership scoping inside the guard module; do
-  not push a marker into the gather/browser-automation launch path (out of scope)
+- Risk Class: operator-visible-recovery
+- Seam: OS process table + /proc host runtime; --cleanup-orphans is destructive to live processes
+- Disproving Observation: a live in-use agent-browser daemon already has ppid==1 (host disproved the "ppid==1 means abandoned" local model), confirmed by direct observation and resolved this session
+- What Local Reasoning Cannot Prove: that /proc/<pid>/cwd is readable and checkout-specific on every host (non-Linux / restricted hosts); handled by fail-closed and recorded as a non-claim
+- Generalization Pressure: monitor
 
 ## Interrupt Decision
 
 - Critique Required: yes
 - Next Step: impl
-- Handoff Artifact: charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md
+- Handoff Artifact: none
 
 ## Prevention
 
