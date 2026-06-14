@@ -143,7 +143,12 @@ runtime_budget_profiles:
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1200
       pytest: 140000
-      check-coverage: 45000
+      # 2026-06-14: raised 45000 -> 55000. check-coverage was documented as
+      # "keeps brushing its 45s budget" and crossed it (median 45878ms, latest
+      # 49397ms this turn) as the instrumented suite grew; 55000 gives honest
+      # headroom over the observed median/latest while staying below the aarch64
+      # profile's 60000.
+      check-coverage: 55000
       check-doc-near-duplicates: 13000
       check-markdown: 11000
       check-secrets: 6000
