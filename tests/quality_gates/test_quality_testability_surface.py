@@ -228,6 +228,25 @@ def test_in_process_degraded_when_all_paths_error(monkeypatch, tmp_path: Path) -
     assert "exploded" in payload["reason"]
 
 
+def test_in_process_ok_with_partial_errors(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(mod, "_pry_binary", lambda: "pry")
+    monkeypatch.setattr(mod, "_pry_version", lambda binary: "pry 9.9.9")
+
+    def per_path(binary, repo_root, path):
+        if path == "broken":
+            raise RuntimeError(f"pry map {path} exploded")
+        return _stub_report()
+
+    monkeypatch.setattr(mod, "_run_pry_map", per_path)
+
+    payload = mod.inventory_testability_surface(tmp_path, paths=["ok", "broken"])
+
+    # One path scanned, one errored -> still ok, with partial_errors recorded.
+    assert payload["status"] == "ok"
+    assert payload["totals"]["welded_at_demand"] == 1
+    assert any("exploded" in err for err in payload["partial_errors"])
+
+
 def test_pry_binary_resolution(monkeypatch, tmp_path: Path) -> None:
     real = tmp_path / "pry"
     real.write_text("", encoding="utf-8")
