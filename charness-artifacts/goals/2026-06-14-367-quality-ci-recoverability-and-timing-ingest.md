@@ -13,14 +13,16 @@ artifact-only draft.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 (command-timing-log ingest) implemented + locally proven;
-  committing. Next: Slice 2 (CI-recoverability triage lens).
-- Current slice intent: Slice 2 — a new advisory inventory that cross-references
-  costly local standing gates against CI workflow steps and flags CI-fully-rerun
-  gates as candidates to move off the local hot path, ranked by wall-clock from
-  the timing-log/runtime-signals ranking built in Slice 1.
-- Next action: implement Slice 2 (CI-recoverability lens) with TDD, then sync +
-  commit.
+- Current slice: Slices 1 (timing-log ingest) + 2 (CI-recoverability lens)
+  implemented, locally proven, committed, dogfooded. Next: Slice 3 (surface +
+  docs + dogfood acceptance evidence).
+- Current slice intent: Slice 3 — document both surfaces in the `quality`
+  SKILL.md + adapter-contract + references, update the public-skill-dogfood
+  acceptance evidence, and run the public-skill validation review (ack the
+  cautilus skill-review). Then Slice 4: handoff refresh + bundle proof + push +
+  Close #367 + release.
+- Next action: implement Slice 3 docs/surface updates, then run the bundle
+  fresh-eye review + broad proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -194,6 +196,20 @@ and the floors below; `find-skills` owns *which* skill answers a boundary.
 - Critique: Skill-review decision (public-skill change): additive + inert-by-default (behavior unchanged when key absent; only altered user string is the 'not configured' hint, now naming the new key); existing docs/public-skill-dogfood.json quality case acceptance evidence stays satisfied; richer acceptance-evidence update deferred to slice 3 (docs). Cautilus run_mode=ask, next_action=none -> no evaluator run per repo policy; --ack-cautilus-skill-review used for the slice-boundary aggregate.
 - Off-goal findings:
 - Lessons carried forward: Slice 2 will consume render_runtime_summary's commands_source/hot-spot ranking for the CI-recoverability lens; reuse evaluate_timing_log output as the wall-clock source. Keep _apply_policy_fields complexity in mind when wiring further adapter keys.
+- Metrics:
+
+### Slice 2: CI-recoverability triage lens
+
+- Objective: Add the explicit counterweight to the local-proof guardrail: a lens that cross-references each cost-ranked local standing gate (wall-clock from slice-1 runtime ranking) against CI run-step commands, flags CI-fully-rerun gates as candidates to move off the local hot path (ranked by wall-clock), and never flags a gate CI does not re-run (keep-local). Files: NEW ci_recoverable_gates_lib.py (pure classify + word-boundary label/CI token match, gate-policy aware, advisory-interpretation contract) and inventory_ci_recoverable_gates.py (CLI, advisory-only, reuses ci_local_gate_parity_lib workflow discovery + runtime_budget_lib ranking).
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 11 new tests pass (tests/quality_gates/test_ci_recoverable_gates.py); ruff + check_python_lengths clean. Dogfood on this repo: 21 cost-ranked gates -> check-markdown (4.6s) flagged candidate (re-run by quality-core.yml local-gate-subset-mirror); check-coverage (46s)/pytest (22s)/specdown (3.6s) correctly keep-local. False-negatives (unmeasured gates absent) are the safe direction.
+- Test duplication pressure: added 1 new test file (11 cases); pure-function unit tests + 2 CLI integration tests; no broad duplicate-pressure gate pushed toward threshold.
+- Critique: Same public-skill-change skill-review decision as slice 1 (additive advisory lens, no blocking floor, Floor-Addition Restraint honored). Matching heuristic is token-identity with declared blind spots (cannot prove proof equivalence / if-gated CI steps); advisory-only, operator confirms. Gate against false positives: word boundaries + >=4-char stems + generic-word stoplist; verified node!=node-version.
+- Off-goal findings:
+- Lessons carried forward: Lens scope is the cost-ranked (measured) gate set by design ('costly standing gate'); gates without cost signals are out of scope and absent, which is the safe under-flagging direction. Slice 3 documents both surfaces in SKILL.md + adapter-contract and updates the dogfood acceptance evidence.
 - Metrics:
 
 ## Context Sources

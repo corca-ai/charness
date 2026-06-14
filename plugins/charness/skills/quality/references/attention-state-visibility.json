@@ -350,6 +350,12 @@
       "evidence_terms": ["advisory-only", "scope_classification"],
       "rationale": "CLI ergonomics inventory prints an advisory-only scope_classification (carried from cli_ergonomics_lib) so green output cannot be read as enforcement."
     },
+    "skills/public/quality/scripts/ci_recoverable_gates_lib.py": {
+      "states": ["advisory-only"],
+      "visibility": ["operator_summary", "stdout_attention"],
+      "evidence_terms": ["advisory-only", "keep-local"],
+      "rationale": "The CI-recoverability triage lens is advisory-only and always exit-zero (carried into inventory_ci_recoverable_gates.py): it classifies cost-ranked local gates into move-off-local candidates and keep-local. The keep-local list and the interpretation question are surfaced in the operator summary so a green run is never read as 'safe to move every gate off local' — moving a gate CI does not re-run is exactly what the lens refuses to recommend."
+    },
     "skills/public/quality/scripts/skill_ergonomics_lib.py": {
       "states": ["prose_review_status"],
       "visibility": ["structured_warning"],
