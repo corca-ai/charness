@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release. (source: `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`)
 - Release publish triggered a configured automatic session retro for `v0.47.0`. (source: `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.48.0`. (source: `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`; sources: 36)
 - a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor). (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
 - **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
-- the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
+- persisted here and rolled into recent-lessons by the persister. (source: `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`)
 
 ## Selection Policy
 
@@ -65,3 +65,4 @@
 - `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`
 - `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`

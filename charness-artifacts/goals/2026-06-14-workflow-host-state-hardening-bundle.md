@@ -1,6 +1,6 @@
 # Achieve Goal: Workflow + host-state hardening bundle: agent-browser orphan scoping, close-keyword guard (#363), decaying-habit advisory (#364), through push + release
 
-Status: draft
+Status: complete
 Created: 2026-06-14
 Activation: `/goal @charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`
 
@@ -9,15 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S4 — bundle proof + push + release 0.48.0 (S1, S2, S3 complete).
-- Current slice intent: all three guards landed, verified, and committed (S1
-  #365 agent-browser scoping; S2 #363 close-keyword advisory; S3 #364
-  decaying-habit advisory + module split). Now at the bundle boundary: broad
-  proof (run_slice_closeout --verification-lock), bundle resolution critique
-  (fresh-eye), then the operator-approved push to origin/main + release 0.48.0,
-  then verify-closeout for #363/#364/#365.
-- Next action: commit S3, run the bundle closeout + resolution critique, then
-  publish 0.48.0 and verify the three issue closeouts.
+- Current slice: COMPLETE — all four slices landed; release 0.48.0 published and
+  verified; #363/#364/#365 CLOSED.
+- Current slice intent: goal complete. S1 #365 agent-browser scoping, S2 #363
+  close-keyword advisory, S3 #364 decaying-habit advisory (+ module split) all
+  shipped in release 0.48.0; the three issues verified CLOSED; off-goal finding
+  #366 filed. Retro, host-log probe, and disposition review recorded below.
+- Next action: none — goal complete. (Off-goal follow-up #366 tracks the
+  author-time-validator-vs-downstream-closeout strictness gap.)
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -185,20 +184,26 @@ during the run:
 
 Recorded:
 
-- Routing: session start ran `find-skills` once (capability map + agent-browser
-  integration healthy); goal operated under `achieve`. S1 routed to `issue`
-  (file #365 + bug-class resolution), `debug` (causal-review substrate
+- Routing: find-skills (run once at session start) recommended the achieve goal lifecycle, with impl + debug + quality + issue + release as the routed phase skills.
+- Routing detail: S1 routed to `issue` (file #365 + bug-class resolution),
+  `debug` (causal-review substrate
   `charness-artifacts/debug/2026-06-14-issue-365-agent-browser-orphan-ownership.md`),
-  `impl` (the guard fix), and `critique` (causal review + resolution critique,
-  both fresh-eye subagents). S2/S3 are `impl` on the advisory surface; S4 is
-  `release`.
+  `impl` (the guard fix), and `critique` (causal + resolution critique, both
+  fresh-eye subagents); S2/S3 `impl` on the advisory surface; quality via the
+  closeout/run-quality gates; S4 `release`.
 - Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; the agent-browser
   harm evidence is this session's transcript, preserved in issue #365.
-- Release: pending S4 — `publish_release.py --part minor --execute` (0.48.0),
-  operator pre-authorized this run; line bound at release proof.
-- Issue closeout: #365 (S1), #363 (S2), #364 (S3); carrier = direct-commit close
-  keywords on the direct-to-`main` bundle push at S4; `validate-closeout-draft`
-  before push and `verify-closeout --expect-state CLOSED` after push pending S4.
+- Release: published 0.48.0 via `publish_release.py --part minor --execute`;
+  release verified (https://github.com/corca-ai/charness/releases/tag/v0.48.0),
+  `public_release_verification: verified`, `fresh_checkout_probe_status: passed`,
+  `install_refresh` 0.47.0->0.48.0 (`== repo`); proof
+  `charness-artifacts/release/latest.md` +
+  `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`.
+- Issue closeout: #365 (S1, bug), #363 (S2, feature), #364 (S3, feature);
+  carrier = direct-commit close keywords with full closeout ledgers in the slice
+  commits (c71cd4de / b757e40c / 8a43651e); `validate-closeout-draft`
+  draft_verified pre-push; `verify-closeout --expect-state CLOSED` = verified for
+  all three post-push. (#366 filed as an off-goal finding; NOT closed by this goal.)
 
 ## Slice Log
 
@@ -242,6 +247,20 @@ Recorded:
 - Critique: Self-review: both advisories reuse real gate signals (no drift); both asserted non-blocking + not-wired-into-staged_commit_gate_plan; module split keeps each file cohesive + under length gate. Slice-level critique deferred to the bundle resolution critique at S4.
 - Off-goal findings: Module split (slice_closeout_advisories 530>480 length gate) was forced by S3's additions — handled in-slice, not a deferral.
 - Lessons carried forward: Portability: all three guards ship via the plugin mirror (plugins/charness/scripts) -> skill-capability, inherited by consuming repos, already routed (not repo-local). Adding ~110 lines to a near-cap module trips the 480 code-line gate; split into a cohesive sibling early.
+- Metrics:
+
+### Slice 4: S4 — bundle proof + push + release 0.48.0
+
+- Objective: Prove the bundle at the boundary, push to origin/main, cut release 0.48.0, and close #363/#364/#365 (operator-approved external lane).
+- Why this approach: run-quality.sh --read-only is the authoritative push gate (superset of run_slice_closeout incl. broad pytest + boundary-bypass + plugin-export-drift); validated it green before publish. Reworded the slice commits to carry full closeout ledgers so direct-commit verify-closeout passes (the fix commit is the carrier).
+- Commits: S4: release-prep (3f70ea56), Release charness 0.48.0 (2a4378c3), Record release verification (3fe1d4ab); slice commits reworded to c71cd4de/b757e40c/8a43651e.
+- What changed: .agents/release-adapter.yaml (0.48.0 update_instructions); charness-artifacts/debug/seam-risk-index.json (rebuilt for #365 seam); charness-artifacts/critique/2026-06-14-charness-0-48-0-release.md; packaging + plugin version surfaces -> 0.48.0; charness-artifacts/release/latest.md + auto-retro (publish).
+- Alternatives rejected: (a) --close-issue on publish_release — rejected (the release commit would lack per-issue ledgers; the slice commits are the proper carriers); (b) rely on run_slice_closeout alone — used run-quality --read-only as the authoritative push gate instead.
+- Targeted verification: run-quality.sh --read-only: 75 passed, 0 failed (broad pytest included) after the seam-index rebuild; publish_release --execute: release v0.48.0 verified (public_release_verification: verified, fresh_checkout_probe_status: passed, install_refresh 0.47.0->0.48.0 == repo); verify-closeout --expect-state CLOSED verified for #363/#364/#365; charness --version = 0.48.0.
+- Test duplication pressure: n/a — S4 is proof + release, no new tests added (the bundle's tests were added in S1-S3).
+- Critique: Bundle release + #363/#364 resolution critique (fresh-eye): PUBLISH-WITH-NITS, no blockers (charness-artifacts/critique/2026-06-14-charness-0-48-0-release.md). S1/#365 causal + resolution critiques done in S1.
+- Off-goal findings: #366 filed (validate_debug_artifact vs risk_interrupt enum gap; the S2 detour).
+- Lessons carried forward: Direct-commit auto-close requires the full closeout ledger in the commit body; author it up front when resolving an issue. The push gate is run-quality.sh --read-only (run it to pre-validate before publish_release).
 - Metrics:
 
 ## Context Sources
@@ -309,7 +328,11 @@ host-state surface). Worth stressing when it runs:
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- [#366](https://github.com/corca-ai/charness/issues/366) — `validate_debug_artifact`
+  accepts `Risk Class` / `Generalization Pressure` values the stricter
+  `risk_interrupt_lib` parser rejects, so an off-taxonomy debug Seam Risk passes
+  the debug validator then blocks `run_slice_closeout` repo-wide at closeout (the
+  S2 detour). Filed, not closed by this goal; routed via `issue`.
 
 ## Final Verification
 
@@ -318,13 +341,26 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md
+Host log probe: charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-14-workflow-host-state-hardening-bundle-disposition-review.md
 
 ## User Verification Instructions
 
+- Confirm `charness --version` reports `0.48.0` (the installed surface was
+  auto-refreshed to `== repo` during publish).
+- Confirm the GitHub release page shows `v0.48.0`:
+  https://github.com/corca-ai/charness/releases/tag/v0.48.0
+- Confirm issues #363, #364, #365 show CLOSED on GitHub (auto-closed by the
+  slice-commit keywords; `verify-closeout` reported CLOSED for all three).
+- Optional (agent-browser fix): with an agent-browser daemon alive in a
+  different checkout, run
+  `python3 scripts/agent_browser_runtime_guard.py --repo-root . --assert-no-orphans`
+  from this checkout and confirm it reports healthy (rc 0) and does not target
+  the neighbor daemon.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #366 (novel: no prior retro records the validate_debug_artifact-vs-risk_interrupt_lib enum gap) — debug Seam Risk write-time hygiene: an off-taxonomy Risk Class / Generalization Pressure passes the debug validator then blocks run_slice_closeout repo-wide at closeout (covers the seam-risk-index proactive-rebuild miss too).
+Retro dispositions: issue #366 (recurs: sibling of the 2026-06-01 release-issue-closeout-miss carrier-ledger lesson, re-surfaced this run as a release-time reword) — author the fix commit with its full closeout ledger up front; same author-time-validator-vs-downstream pattern as #366 (the commit-msg hook under-constrains the ledger validate-closeout-draft requires), noted as a sibling on #366.
+Structural follow-up: issue #366 (novel: cross-validator strictness gap — an author-time validator under-constrains a field the downstream closeout parser rejects, surfacing only as a repo-wide block; instances: validate_debug_artifact vs risk_interrupt_lib, and commit-msg hook vs validate-closeout-draft)

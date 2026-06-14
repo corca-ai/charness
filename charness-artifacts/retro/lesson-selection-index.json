@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-14",
-  "source_artifact_count": 216,
-  "candidate_count": 1087,
+  "source_artifact_count": 218,
+  "candidate_count": 1094,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -405,6 +405,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:54165be3e0ed",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release.",
+      "normalized_key": "closeout retro for goal charness artifacts goals 2026 06 14 workflow host state hardening",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:333ecb035fe9",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.47.0`.",
@@ -545,6 +565,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:74c03665155c",
+      "kind": "next_improvement",
+      "lesson": "persisted here and rolled into recent-lessons by the persister.",
+      "normalized_key": "persisted here and rolled into recent lessons by the persister",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c6278dd20926",
       "kind": "next_improvement",
       "lesson": "the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister.",
@@ -559,46 +599,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
-          "date": "2026-06-14",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:84986a96e7f9",
-      "kind": "next_improvement",
-      "lesson": "when authoring a draft/shaping/handoff commit that references a tracked issue, cite it as a bare `#N` or URL — never adjacent to a close/fix/resolve verb, which GitHub auto-applies on push to the default branch.",
-      "normalized_key": "when authoring a draft shaping handoff commit that references a tracked issue cite it",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
-      "latest_source_date": "2026-06-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
-          "date": "2026-06-14",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b9c242b5b204",
-      "kind": "next_improvement",
-      "lesson": "**workflow — stage explicit paths, not `git add -A`, when untracked/off-goal files may be present.** The closeout proof and commit should cover only the goal's own changed set; `git add -A` couples in concurrent WIP. (Transferable — see Sibling Search.)",
-      "normalized_key": "workflow stage explicit paths not git add a when untracked off goal files may",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
-      "latest_source_date": "2026-06-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -997,6 +997,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:54165be3e0ed",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release.",
+      "normalized_key": "closeout retro for goal charness artifacts goals 2026 06 14 workflow host state hardening",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:333ecb035fe9",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.47.0`.",
@@ -1137,6 +1157,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:74c03665155c",
+      "kind": "next_improvement",
+      "lesson": "persisted here and rolled into recent-lessons by the persister.",
+      "normalized_key": "persisted here and rolled into recent lessons by the persister",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c6278dd20926",
       "kind": "next_improvement",
       "lesson": "the premature-close lesson and the in-process-seam-before-subprocess lesson are persisted here and rolled into recent-lessons by the retro persister.",
@@ -1151,6 +1191,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:94a9e3b2c3bd",
+      "kind": "next_improvement",
+      "lesson": "`validate_debug_artifact.py` should enforce the `risk_interrupt_lib` enums (reusing `ALLOWED_RISK_CLASSES` / `ALLOWED_GENERALIZATION_PRESSURE`) so an off-taxonomy value fails at write time, not as a repo-wide closeout block — #366.",
+      "normalized_key": "validate debug artifact py should enforce the risk interrupt lib enums reusing allowed risk",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:038c9315d084",
+      "kind": "next_improvement",
+      "lesson": "when authoring a debug `## Seam Risk` section, use the `risk_interrupt_lib` taxonomy (`Risk Class` ∈ external-seam / host-disproves- local / repeated-symptom / operator-visible-recovery / contract-freeze-risk / none; `Generalization Pressure` ∈ none / monitor / factor-now) AND run `build_debug_seam_risk_index.py --write` before closeout; when resolving a tracked issue, author the fix commit body with the full closeout ledger so no release-time reword is needed.",
+      "normalized_key": "when authoring a debug seam risk section use the risk interrupt lib taxonomy risk",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
           "date": "2026-06-14",
           "section": "Next Improvements"
         }
@@ -1271,6 +1351,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e0e8e3a8687e",
+      "kind": "repeat_trap",
+      "lesson": "**Reword-dispatcher process error (mine, not repo).** My first commit-reword rebase used a grep dispatcher that mis-assigned messages; aborted to a backup branch and redid it with a robust position-based `exec git commit --amend -F`. One extra round; the backup branch made the abort safe.",
+      "normalized_key": "reword dispatcher process error mine not repo my first commit reword rebase used a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:db3fbb25d47d",
+      "kind": "repeat_trap",
+      "lesson": "**S2 detour — my own debug artifact blocked closeout repo-wide.** I wrote the #365 debug artifact's `## Seam Risk` with `Risk Class: host-state` + a prose `Generalization Pressure`. `validate_debug_artifact` accepted it, but the stricter `risk_interrupt_lib` parser rejected it, so `plan_risk_interrupt` returned `blocked` unconditionally and EVERY `run_slice_closeout` failed. Cost: a debugging detour to reverse-map the failure → reclassified to `operator-visible-recovery` / `monitor`. Filed as #366.",
+      "normalized_key": "s2 detour my own debug artifact blocked closeout repo wide i wrote the 365",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+          "date": "2026-06-14",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1242c2d32e93",
+      "kind": "repeat_trap",
+      "lesson": "**Seam-risk index not rebuilt in S1.** Adding a debug `## Seam Risk` section requires `build_debug_seam_risk_index.py --write`; I missed it and the `validate-debug-seam-index` gate caught it at the bundle boundary (one round, no escaped drift).",
+      "normalized_key": "seam risk index not rebuilt in s1 adding a debug seam risk section requires",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
+      "latest_source_date": "2026-06-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md",
           "date": "2026-06-14",
           "section": "Waste"
         }
