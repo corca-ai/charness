@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
   "tool_id": "pry",
-  "kind": "external_binary",
+  "kind": "external_binary_with_skill",
   "display_name": "pry",
   "summary": "Static testability-surface analyzer that surfaces welded boundary calls (clock, subprocess, network, file I/O, randomness) with no seam to inject a failure — a deterministic, zero-LLM testability backlog, not a bug list; intended as an advisory input to the `quality` skill.",
   "upstream_repo": "corca-ai/pry",
@@ -95,8 +95,17 @@
       "Treat changes in welded/seamed classification, demand-subset ranking, or JSON output shape as advisory drift before promoting findings into gates."
     ]
   },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "skills/pry",
+    "ref": "main",
+    "notes": [
+      "Prefer the upstream pry support skill (the intelligence layer that runs the binary, ranks the welded-at-demand backlog, and labels each finding GENUINE/FALSE-WELD/COSMETIC/AMBIGUOUS) instead of reimplementing that labeling in charness.",
+      "The installed Charness plugin materializes this skill under `support/pry/` during update or support sync; charness still owns the discover/install/doctor manifest plus the exit-0 advisory inventory wrapper so the testability backlog never fails standing quality."
+    ]
+  },
   "host_notes": [
-    "`pry` is an advisory input to Charness `quality`: it proposes a testability backlog (welded boundary calls with no injection seam), not a bug list, and must never fail standing quality. This manifest makes `pry` discoverable and doctor-checkable; `quality` consumes it through `skills/public/quality/scripts/inventory_testability_surface.py` (wrapping `pry map`, degrading when absent), with the testability backlog contract in `skills/public/quality/references/testability-and-selection.md`.",
+    "`pry` is an advisory input to Charness `quality`: it proposes a testability backlog (welded boundary calls with no injection seam), not a bug list, and must never fail standing quality. This manifest makes `pry` discoverable and doctor-checkable; `quality` auto-runs it as the advisory `inventory-testability-surface` phase in `scripts/run-quality.sh` (via `skills/public/quality/scripts/inventory_testability_surface.py`, wrapping `pry map` and degrading when absent). The testability backlog contract is in `skills/public/quality/references/testability-and-selection.md`; the synced `support/pry` skill owns per-finding labeling.",
     "pry analyzes TypeScript/JavaScript today — the validated surface (see pry `docs/precision-gate.md`). A Python frontend is out of scope: the author's Python is welded glue with no discrimination (pry `docs/kill-gate.md`).",
     "Run `pry map <path>` for the full finding map, or `pry map <path> --summary-only` for the coverage summary; the `demand=true` substitution-demand subset is the ranked backlog."
   ]

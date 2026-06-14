@@ -30,12 +30,22 @@ STUB_MAP_JSON = json.dumps(
                 "line": 7,
                 "reason": "fs-global",
             },
+            {
+                # demand=true but already seamed -> testable, must NOT be backlog
+                "class": "seamed",
+                "col": 17,
+                "demand": True,
+                "file": "runner.mjs",
+                "kind": "subprocess",
+                "line": 99,
+                "reason": "callee-param-injected",
+            },
         ],
         "summary": {
             "files_scanned": 1,
             "welded": 2,
-            "seamed": 0,
-            "substitution_demand_subset": {"total": 1, "welded": 1, "seamed": 0},
+            "seamed": 1,
+            "substitution_demand_subset": {"total": 2, "welded": 1, "seamed": 1},
         },
     }
 )
@@ -107,9 +117,12 @@ def test_testability_surface_parses_welded_at_demand_backlog(tmp_path: Path) -> 
     assert payload["totals"] == {
         "files_scanned": 1,
         "welded": 2,
-        "seamed": 0,
-        "demand_total": 1,
+        "seamed": 1,
+        "demand_total": 2,
+        "welded_at_demand": 1,
     }
+    # demand_total counts both demand findings, but the backlog excludes the
+    # already-seamed one (line 99) — only the welded-at-demand finding remains.
     assert payload["demand_backlog"] == [
         {
             "path": ".",
@@ -139,5 +152,9 @@ def test_testability_surface_human_output_lists_backlog(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    # A non-empty backlog leads with ADVISORY so run-quality.sh surfaces it.
+    assert result.stdout.startswith("ADVISORY: ")
     assert "welded-at-demand backlog" in result.stdout
     assert "runner.mjs:42 subprocess (exe-inline)" in result.stdout
+    # The already-seamed demand finding (line 99) is testable, not backlog.
+    assert "runner.mjs:99" not in result.stdout

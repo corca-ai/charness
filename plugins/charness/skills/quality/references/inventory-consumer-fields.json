@@ -28,6 +28,14 @@
         "numbered_procedure_count"
       ]
     },
+    "inventory_testability_surface.py": {
+      "non_headline_fields": [
+        "demand_backlog",
+        "scanned",
+        "totals",
+        "pry_version"
+      ]
+    },
     "inventory_standing_test_economics.py": {
       "non_headline_fields": [
         "test_file_count",

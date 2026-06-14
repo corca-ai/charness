@@ -183,13 +183,18 @@ baseline; it does not prove the existing backlog is healthy.
 
 ## Welded-Boundary Testability Backlog (pry)
 
-When the repo has a TypeScript/JavaScript surface, `pry` is an advisory support
-binary (integration manifest `integrations/tools/pry.json`) that statically
-surfaces *welded boundary calls* — clock, subprocess, network, file I/O, or
-randomness calls with no seam to inject a substitute. Run it through
-`skills/public/quality/scripts/inventory_testability_surface.py --repo-root .`,
-which wraps `pry map`, degrades cleanly when the binary is absent, and reports
-the `demand=true` substitution-demand subset as the ranked backlog.
+When the repo has a TypeScript/JavaScript surface, `pry` is an advisory external
+tool (integration manifest `integrations/tools/pry.json`, kind
+`external_binary_with_skill`) that statically surfaces *welded boundary calls* —
+clock, subprocess, network, file I/O, or randomness calls with no seam to inject
+a substitute. `quality` auto-runs it as the advisory `inventory-testability-surface`
+quality phase, via `scripts/inventory_testability_surface.py`, which wraps
+`pry map`, degrades cleanly (exit 0) when the binary is absent, and reports the
+welded-at-demand backlog (`demand=true` and `class="welded"`) — a demand finding
+already classed `seamed` is testable, so it is not backlog. The upstream
+`support/pry` skill (materialized by `charness tool sync-support`) is the
+intelligence layer that labels each finding GENUINE / FALSE-WELD / COSMETIC /
+AMBIGUOUS; charness does not reimplement that labeling.
 
 Treat the result as a testability backlog, not a bug list, and never let it fail
 standing quality:

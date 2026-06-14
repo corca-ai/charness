@@ -106,14 +106,14 @@ def inventory_testability_surface(repo_root: Path, *, paths: list[str]) -> dict:
             pry_version=None,
             scanned={},
             demand_backlog=[],
-            totals={"files_scanned": 0, "welded": 0, "seamed": 0, "demand_total": 0},
+            totals={"files_scanned": 0, "welded": 0, "seamed": 0, "demand_total": 0, "welded_at_demand": 0},
         )
         return payload
 
     version = _pry_version(binary)
     scanned: dict[str, dict] = {}
     demand_backlog: list[dict] = []
-    totals = {"files_scanned": 0, "welded": 0, "seamed": 0, "demand_total": 0}
+    totals = {"files_scanned": 0, "welded": 0, "seamed": 0, "demand_total": 0, "welded_at_demand": 0}
     errors: list[str] = []
     for path in paths:
         try:
@@ -136,8 +136,12 @@ def inventory_testability_surface(repo_root: Path, *, paths: list[str]) -> dict:
         totals["seamed"] += summary.get("seamed", 0)
         totals["demand_total"] += demand.get("total", 0)
         for finding in report.get("findings", []):
-            if finding.get("demand"):
+            # The actionable backlog is welded-AT-demand: a high-demand boundary
+            # with no injection seam. A demand finding already classed `seamed`
+            # is testable, so it is not backlog.
+            if finding.get("demand") and finding.get("class") == "welded":
                 demand_backlog.append(_backlog_entry(path, finding))
+    totals["welded_at_demand"] = len(demand_backlog)
 
     if errors and not scanned:
         payload.update(
@@ -201,9 +205,10 @@ def main() -> int:
             print(f"Testability surface: degraded ({payload['reason']})")
         else:
             totals = payload["totals"]
+            prefix = "ADVISORY: " if totals["welded_at_demand"] else ""
             print(
-                f"Testability surface: {totals['demand_total']} welded-at-demand backlog "
-                f"item(s) of {totals['welded']} welded boundary call(s) across "
+                f"{prefix}Testability surface: {totals['welded_at_demand']} welded-at-demand "
+                f"backlog item(s) of {totals['welded']} welded boundary call(s) across "
                 f"{totals['files_scanned']} file(s) ({payload['pry_version']})"
             )
             for entry in payload["demand_backlog"]:
