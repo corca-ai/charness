@@ -1,6 +1,6 @@
 # Achieve Goal: Nose findings, issues 371-373, and test runtime reduction
 
-Status: active
+Status: complete
 Created: 2026-06-15
 Activation: `/goal @charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md`
 
@@ -15,11 +15,11 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: 6 - bundle closeout.
+- Current slice: complete.
 - Current slice intent: prove the whole goal, reconcile issue states and
   non-claims, and run the final verification lock.
-- Next action: run bundle/final proof, record final verification and residual
-  risks, then publish/close only the locally verified issue carriers.
+- Next action: none for this goal; #372/#373 are closed on GitHub and #371 has
+  the recorded upstream-split non-closure comment.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -134,13 +134,20 @@ The user can verify completion by checking:
 | 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | completed |
 | 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | completed |
 | 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | completed |
-| 6 | Bundle closeout | Prove the whole goal and record non-claims | broad pytest; closeout gates; critique; retro; issue states; final verification | pending |
+| 6 | Bundle closeout | Prove the whole goal and record non-claims | broad pytest; closeout gates; critique; retro; issue states; final verification | completed |
 
 ## Coordination Cues
 
 Phase-appropriate routing for this run is deferred to `find-skills` (its
 `--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
 engine), not hard-coded here.
+
+Routing: find-skills routed `quality` for runtime/nose proof.
+Routing: find-skills routed `issue` for #371-#373 closeout.
+Routing: find-skills routed `debug` for bug-class causal review.
+Routing: find-skills routed `impl` for scoped code/artifact edits.
+Routing: find-skills routed `critique` for fresh-eye slice and closeout review.
+Routing: find-skills routed `retro` for after-action learning.
 
 - Routing: initial recommendation probe selected `quality` for runtime/nose
   work, `issue` via `github-gh` for #371-#373, and `achieve` as the goal
@@ -284,12 +291,13 @@ Final local proof passed before publication:
 - Slice closeout for the nose helper extraction passed all changed-surface gates
   with broad pytest intentionally skipped under the pre-lock policy before the
   final direct broad run.
-- #372 and #373 have direct-commit closeout carriers with `Close #372` and
-  `Close #373` in their committed bodies; remote closure is pending push of this
-  branch to `origin/main`.
+- Published `origin/main` at `6799b209`; #372 and #373 are closed on GitHub via
+  the direct-commit closeout carriers containing `Close #372` and `Close #373`.
 - #371 is deliberately not closed. Local disposition is the checked-in upstream
-  split record and issue comment to be posted after push, because Charness does
-  not own invocation-bound `agent-browser` Chrome/profile teardown proof.
+  split record and the posted non-closure comment:
+  `https://github.com/corca-ai/charness/issues/371#issuecomment-4707944037`.
+  Charness does not own invocation-bound `agent-browser` Chrome/profile teardown
+  proof.
 - Runtime evidence retained from slice 1: read-only quality went from 73.6s
   failed with baseline regressions to 65.7s passing; current-pointer scanner
   went from 15.2s to 7.8s.
@@ -298,6 +306,10 @@ Final local proof passed before publication:
   families, and 2002 duplicate lines. This is scanner-version-local advisory
   evidence, not a total-debt or cross-version trend claim.
 
+Retro: charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host transcript or metric window is exposed in this runtime; final host pressure was reviewed in the retro waste section instead.
+Disposition review: charness-artifacts/critique/2026-06-15-nose-issues-runtime-goal-disposition-review.md
+
 ## Auto-Retro
 
 - Retro artifact: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`.
@@ -305,7 +317,12 @@ Final local proof passed before publication:
 - Lesson-selection index refreshed:
   `charness-artifacts/retro/lesson-selection-index.json`.
 - Persisted: yes.
-Disposition review: skipped: host-blocked-subagent: not applicable until final auto-retro has findings to disposition.
+
+Retro: charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host transcript or
+metric window is exposed in this runtime; final host pressure was reviewed in
+the retro waste section instead.
+Disposition review: charness-artifacts/critique/2026-06-15-nose-issues-runtime-goal-disposition-review.md
 
 ## User Verification Instructions
 
@@ -318,7 +335,17 @@ After activation and completion, verify:
    family dispositions.
 4. Review final non-claims for any issue not closed or any runtime proof skipped.
 
-## Auto-Retro
+## Final Disposition
 
-Retro dispositions: pending final retro; no improvements surfaced during draft shaping.
-Structural follow-up: none — draft shaping has not produced transferable waste beyond the in-scope #373 ordering issue.
+Goal complete. Retro lessons were persisted in the linked retro artifact and
+recent-lessons summary; no additional untracked structural follow-up remains.
+Disposition review: charness-artifacts/critique/2026-06-15-nose-issues-runtime-goal-disposition-review.md
+Retro dispositions: applied — workflow clean-closeout no-op handling is recorded
+in final verification and recent lessons; memory for #371 lifecycle ownership is
+recorded in the goal, issue comment, integration manifest, and recent lessons;
+capability no-new-gate claim was accepted by the disposition review because the
+existing fresh-eye, focused-test, and slice-closeout loops caught the observed
+misses before commit.
+Structural follow-up: none — the fresh-eye disposition review found the three
+retro improvements genuinely handled by existing artifacts and did not identify
+a new gate, issue, or doc change needed before ship.

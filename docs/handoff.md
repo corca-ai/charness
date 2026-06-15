@@ -13,14 +13,15 @@
 
 ## Current State
 
-- **Local goal bundle complete, publication pending (2026-06-15):**
+- **Nose/issues/runtime goal published (2026-06-15):**
   [nose/issues/runtime goal](../charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md)
-  reduced current-pointer scan runtime, locally resolved #373 and #372 via
-  direct-commit closeout carriers, recorded #371 as an upstream
-  `agent-browser` lifecycle split, and reduced selected nose 0.10.0 adapter
-  helper duplication. Broad pytest passed locally (3056 passed, 26 deselected).
-  Push `main` to publish the `Close #372` / `Close #373` commits, then add the
-  prepared #371 upstream-split comment if not already posted.
+  reduced current-pointer scan runtime, closed #373 and #372 via direct-commit
+  closeout carriers on `origin/main`, recorded #371 as an upstream
+  `agent-browser` lifecycle split with a non-closure issue comment, and reduced
+  selected nose 0.10.0 adapter helper duplication. Broad pytest passed locally
+  (3056 passed, 26 deselected). `origin/main` was published at `6799b209`; #371
+  remains open pending controlled invocation-bound process/profile teardown
+  proof or an upstream/host lifecycle fix.
 - **#367 resolved end-to-end and shipped in v0.50.0.** The `quality` skill gained
   two portable gate-speed capabilities
   ([goal](../charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md)):
