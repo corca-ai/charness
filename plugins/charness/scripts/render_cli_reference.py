@@ -33,6 +33,7 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness goal check", ("./charness", "goal", "check", "--help")),
     ("charness tool", ("./charness", "tool", "--help")),
     ("charness tool doctor", ("./charness", "tool", "doctor", "--help")),
+    ("charness tool repair", ("./charness", "tool", "repair", "--help")),
     ("charness tool sync-support", ("./charness", "tool", "sync-support", "--help")),
     ("charness tool install", ("./charness", "tool", "install", "--help")),
     ("charness tool update", ("./charness", "tool", "update", "--help")),

@@ -3060,6 +3060,49 @@ def _doctor_not_ready_next_step(tool_id: str, doctor_result: dict[str, object]) 
     return f"`{tool_id}` is installed but not ready for its consuming workflow.{check_text}{hint_text}".strip()
 
 
+def _healthcheck_runtime_next_step(doctor_result: dict[str, object]) -> tuple[str | None, str | None]:
+    healthcheck = doctor_result.get("healthcheck")
+    if not isinstance(healthcheck, dict):
+        return None, None
+    results = healthcheck.get("results")
+    if not isinstance(results, list):
+        return None, None
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        stdout = item.get("stdout")
+        if not isinstance(stdout, str) or not stdout.strip().startswith("{"):
+            continue
+        try:
+            payload = json.loads(stdout)
+        except json.JSONDecodeError:
+            continue
+        next_step = payload.get("next_step")
+        next_step_kind = payload.get("next_step_kind")
+        if isinstance(next_step, str) and next_step:
+            return next_step, next_step_kind if isinstance(next_step_kind, str) else None
+    return None, None
+
+
+def _doctor_unhealthy_next_step(tool_id: str, doctor_result: dict[str, object]) -> str | None:
+    if doctor_result.get("doctor_status") != "unhealthy":
+        return None
+    runtime_next_step, runtime_next_step_kind = _healthcheck_runtime_next_step(doctor_result)
+    if tool_id == "agent-browser" and runtime_next_step_kind == "cleanup_command":
+        return (
+            "`agent-browser` is installed but its runtime healthcheck found owned orphan "
+            "daemon trees. Run `charness tool repair --execute agent-browser` to run "
+            "the cleanup and post-doctor verification."
+        )
+    if isinstance(runtime_next_step, str) and runtime_next_step:
+        return f"`{tool_id}` is installed but its healthcheck failed. {runtime_next_step}"
+    healthcheck = doctor_result.get("healthcheck")
+    hint = healthcheck.get("failure_hint") if isinstance(healthcheck, dict) else None
+    if isinstance(hint, str) and hint:
+        return f"`{tool_id}` is installed but its healthcheck failed. {hint}"
+    return f"`{tool_id}` is installed but its healthcheck failed. Inspect the structured doctor result."
+
+
 def _support_only_next_step(
     tool_id: str,
     support_result: dict[str, object] | None,
@@ -3083,9 +3126,12 @@ def tool_next_step(
 ) -> str:
     release_suffix = _tool_release_suffix(action_result, doctor_result, support_result)
     if isinstance(doctor_result, dict):
-        not_ready_message = _doctor_not_ready_next_step(tool_id, doctor_result)
-        if not_ready_message is not None:
-            return _with_release_suffix(not_ready_message, release_suffix)
+        for message in (
+            _doctor_unhealthy_next_step(tool_id, doctor_result),
+            _doctor_not_ready_next_step(tool_id, doctor_result),
+        ):
+            if message is not None:
+                return _with_release_suffix(message, release_suffix)
     if isinstance(action_result, dict) and action_result.get("status") == "manual":
         return _with_release_suffix(_manual_tool_next_step(tool_id, action_result, doctor_result), release_suffix)
     if isinstance(action_result, dict):
@@ -3118,6 +3164,12 @@ def _tool_release_result(*candidates: object) -> dict[str, object] | None:
 
 def _print_tool_result_block(tool_id: str, result: dict[str, object]) -> None:
     print(f"{tool_id}:")
+    repair_result = result.get("repair")
+    if isinstance(repair_result, dict):
+        print(
+            f"  REPAIR: {repair_result.get('status')} "
+            f"({'execute' if repair_result.get('execute') else 'preview'})"
+        )
     install_result = result.get("install")
     if isinstance(install_result, dict):
         print(f"  INSTALL: {install_result.get('status')} ({install_result.get('mode')})")
@@ -3855,6 +3907,123 @@ def cmd_tool_doctor(args: argparse.Namespace) -> int:
     if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in doctor_map.values()):
         return 1
     return 0
+
+
+REPAIRABLE_TOOL_IDS = {"agent-browser"}
+AGENT_BROWSER_REPAIR_CAVEAT = (
+    "Runtime repair is post-hoc mitigation only; invocation-bound "
+    "agent-browser Chrome/profile teardown remains upstream/unproven."
+)
+
+
+def _run_repo_json_command(repo_root: Path, command: list[str]) -> tuple[object | None, int, str]:
+    result = run(command, cwd=repo_root)
+    stdout = result.stdout.strip()
+    payload: object | None = None
+    if stdout:
+        try:
+            payload = json.loads(stdout)
+        except json.JSONDecodeError as exc:
+            raise CharnessError(
+                f"`{' '.join(command)}` in `{repo_root}` did not return valid JSON\n"
+                f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+            ) from exc
+    return payload, result.returncode, result.stderr
+
+
+def _repair_agent_browser(repo_root: Path, plugin_root: Path, *, execute: bool) -> dict[str, object]:
+    python_executable = resolve_repo_python(repo_root)
+    repair_command = [
+        python_executable,
+        "scripts/agent_browser_runtime_guard.py",
+        "--repo-root",
+        str(repo_root),
+        "--cleanup-orphans",
+        "--json",
+    ]
+    if execute:
+        repair_command.append("--execute")
+    repair_payload, repair_rc, repair_stderr = _run_repo_json_command(repo_root, repair_command)
+    doctor_args = [
+        "--repo-root",
+        str(repo_root),
+        "--plugin-root",
+        str(plugin_root),
+        "--json",
+        "--tool-id",
+        "agent-browser",
+    ]
+    if execute:
+        doctor_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
+    doctor_result = tool_result_map(doctor_results).get("agent-browser")
+    doctor_disposition = doctor_result.get("doctor_disposition") if isinstance(doctor_result, dict) else None
+    repair_status = "executed" if execute else "preview"
+    if execute and (repair_rc != 0 or doctor_disposition in BLOCKING_DOCTOR_DISPOSITIONS):
+        repair_status = "failed"
+    elif not execute and isinstance(repair_payload, dict) and repair_payload.get("target_pids"):
+        repair_status = "would-repair"
+    next_step = (
+        f"Repair executed and post-doctor verification reports `agent-browser` ready. {AGENT_BROWSER_REPAIR_CAVEAT}"
+        if execute and repair_status == "executed"
+        else (
+            "Run `charness tool repair --execute agent-browser` to remove owned "
+            f"orphan daemon trees and refresh doctor state. {AGENT_BROWSER_REPAIR_CAVEAT}"
+        )
+        if not execute and repair_status == "would-repair"
+        else f"{tool_next_step('agent-browser', None, doctor_result, None)} {AGENT_BROWSER_REPAIR_CAVEAT}"
+        if isinstance(doctor_result, dict)
+        else f"Inspect the repair payload and rerun `charness tool doctor agent-browser`. {AGENT_BROWSER_REPAIR_CAVEAT}"
+    )
+    return {
+        "repair": {
+            "status": repair_status,
+            "execute": execute,
+            "caveat": AGENT_BROWSER_REPAIR_CAVEAT,
+            "command": " ".join(repair_command),
+            "exit_code": repair_rc,
+            "stderr": repair_stderr.strip(),
+            "cleanup": repair_payload,
+        },
+        "doctor": doctor_result,
+        "next_step": next_step,
+    }
+
+
+def cmd_tool_repair(args: argparse.Namespace) -> int:
+    repo_root, managed_checkout = resolve_tool_repo_root(args)
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
+    selected_tool_ids = tool_ids_from_args(args) or sorted(REPAIRABLE_TOOL_IDS)
+    results: dict[str, dict[str, object]] = {}
+    failed = False
+    for tool_id in selected_tool_ids:
+        if tool_id not in REPAIRABLE_TOOL_IDS:
+            failed = True
+            results[tool_id] = {
+                "repair": {
+                    "status": "unsupported",
+                    "execute": args.execute,
+                    "cleanup": None,
+                },
+                "next_step": f"No repo-owned repair action is declared for `{tool_id}`. Run `charness tool doctor {tool_id}`.",
+            }
+            continue
+        results[tool_id] = _repair_agent_browser(repo_root, plugin_root, execute=args.execute)
+        repair = results[tool_id].get("repair")
+        if isinstance(repair, dict) and repair.get("status") == "failed":
+            failed = True
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": selected_tool_ids,
+        "execute": args.execute,
+        "results": results,
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_tool_human_summary(payload)
+    return 1 if failed else 0
 
 
 def cmd_tool_sync_support(args: argparse.Namespace) -> int:
@@ -4628,6 +4797,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip updating integrations/locks/*.json when you only want a read-only probe.",
     )
     tool_doctor_parser.set_defaults(func=cmd_tool_doctor)
+
+    tool_repair_parser = tool_subparsers.add_parser(
+        "repair",
+        help="Run post-hoc repair actions for external tool runtime drift, then refresh doctor state.",
+        description=(
+            "Run repo-owned post-hoc repair actions for external tool runtime drift, "
+            "then refresh doctor state. For agent-browser this is mitigation only; "
+            "invocation-bound Chrome/profile teardown remains upstream/unproven."
+        ),
+    )
+    add_common_tool_args(tool_repair_parser)
+    tool_repair_parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="Execute the repair. Defaults to a dry-run preview.",
+    )
+    tool_repair_parser.set_defaults(func=cmd_tool_repair)
 
     tool_sync_support_parser = tool_subparsers.add_parser(
         "sync-support",

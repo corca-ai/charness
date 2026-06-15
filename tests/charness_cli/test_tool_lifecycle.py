@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.machinery
+import importlib.util
 import json
 import os
 import subprocess
@@ -25,6 +27,15 @@ from .tool_fakes import make_fake_cautilus
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.release_only
+
+
+def load_charness_module(module_name: str = "charness_tool_lifecycle_under_test"):
+    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "charness"))
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def enable_cautilus_adapter(repo_root: Path) -> None:
@@ -440,6 +451,90 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     assert doctor["provenance"]["install_method"] == "go"
     assert doctor["provenance"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
     assert doctor["release"]["latest_tag"] == "v0.47.2"
+
+
+def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    cleanup_agent_browser_orphans()
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    home_root = tmp_path / "home"
+    fake_agent_browser = make_fake_agent_browser(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path(fake_agent_browser.parent)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    preview = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
+    assert preview.returncode == 0, preview.stderr
+    preview_payload = json.loads(preview.stdout)
+    preview_browser = preview_payload["results"]["agent-browser"]
+    assert preview_browser["repair"]["status"] == "preview"
+    assert preview_browser["repair"]["execute"] is False
+    assert "post-hoc mitigation only" in preview_browser["repair"]["caveat"]
+    assert preview_browser["repair"]["cleanup"]["preview_only"] is True
+    assert preview_browser["doctor"]["doctor_status"] == "ok"
+    assert "upstream/unproven" in preview_browser["next_step"]
+
+    executed = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "repair",
+        "--repo-root",
+        str(repo_root),
+        "--execute",
+        "--json",
+        "agent-browser",
+        env=env,
+    )
+    assert executed.returncode == 0, executed.stderr
+    executed_payload = json.loads(executed.stdout)
+    executed_browser = executed_payload["results"]["agent-browser"]
+    assert executed_browser["repair"]["status"] == "executed"
+    assert executed_browser["repair"]["execute"] is True
+    assert executed_browser["repair"]["cleanup"]["preview_only"] is False
+    assert executed_browser["doctor"]["doctor_status"] == "ok"
+    assert "post-doctor verification" in executed_browser["next_step"]
+    assert "post-hoc mitigation only" in executed_browser["repair"]["caveat"]
+    assert "upstream/unproven" in executed_browser["next_step"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
+    assert lock_payload["doctor"]["doctor_status"] == "ok"
+
+
+def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    env = os.environ.copy()
+    env["PATH"] = build_test_path()
+
+    result = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "specdown", env=env)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    specdown = payload["results"]["specdown"]
+    assert specdown["repair"]["status"] == "unsupported"
+    assert "No repo-owned repair action is declared" in specdown["next_step"]
+
+
+def test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift() -> None:
+    module = load_charness_module("charness_tool_repair_next_step_under_test")
+    doctor_result = {
+        "doctor_status": "unhealthy",
+        "healthcheck": {
+            "results": [
+                {
+                    "stdout": json.dumps(
+                        {
+                            "next_step": "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute",
+                            "next_step_kind": "cleanup_command",
+                        }
+                    ),
+                }
+            ]
+        },
+    }
+
+    next_step = module.tool_next_step("agent-browser", None, doctor_result, None)
+
+    assert "charness tool repair --execute agent-browser" in next_step
 
 
 def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path: Path, seeded_charness_repo: Path) -> None:

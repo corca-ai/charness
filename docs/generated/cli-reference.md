@@ -480,12 +480,14 @@ options:
 ## `charness tool`
 
 ```text
-usage: charness tool [-h] {doctor,sync-support,install,update} ...
+usage: charness tool [-h] {doctor,repair,sync-support,install,update} ...
 
 positional arguments:
-  {doctor,sync-support,install,update}
+  {doctor,repair,sync-support,install,update}
     doctor              Write machine-readable doctor state for one or more
                         external tools.
+    repair              Run post-hoc repair actions for external tool runtime
+                        drift, then refresh doctor state.
     sync-support        Refresh cache-backed support skill materialization for
                         one or more external tools.
     install             Attempt tool installation where the manifest allows
@@ -524,6 +526,35 @@ options:
   --json
   --no-write-locks      Skip updating integrations/locks/*.json when you only
                         want a read-only probe.
+```
+
+## `charness tool repair`
+
+```text
+usage: charness tool repair [-h] [--home-root HOME_ROOT]
+                            [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+                            [--plugin-root PLUGIN_ROOT] [--json] [--execute]
+                            [tool_ids ...]
+
+Run repo-owned post-hoc repair actions for external tool runtime drift, then
+refresh doctor state. For agent-browser this is mitigation only; invocation-
+bound Chrome/profile teardown remains upstream/unproven.
+
+positional arguments:
+  tool_ids
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit existing source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --plugin-root PLUGIN_ROOT
+                        Installed plugin root where upstream support skills
+                        are materialized.
+  --json
+  --execute             Execute the repair. Defaults to a dry-run preview.
 ```
 
 ## `charness tool sync-support`
