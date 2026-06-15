@@ -15,11 +15,13 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: 2 - resolve #373 producer-before-validator regressions.
-- Current slice intent: enforce producer/scaffold-before-validator ordering for
-  template-producing skills that also expose validators or readiness checks.
-- Next action: start the #373 slice with a compact causal review, audit
-  template+validator producers, then add the ordering invariant and tests.
+- Current slice: 3 - resolve #372 disconfirmer-first debug rule.
+- Current slice intent: add or sharpen the debug rule that absence,
+  attribution, liveness, and frequency claims must seek disconfirming evidence
+  before accepting convenient explanations.
+- Next action: start the #372 slice with a compact causal review, inspect the
+  debug reference surface, and add a deterministic guard or dogfood proof where
+  the rule can regress.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -130,7 +132,7 @@ The user can verify completion by checking:
 | --- | --- | --- | --- | --- |
 | 0 | Activation inventory and baselines | Establish exact starting state before optimizing or closing issues | current issue snapshots; nose 0.10.0 inventory; timing baseline; changed-surface map | completed |
 | 1 | Reduce validation/test runtime first | Every later slice pays verification cost; speed wins compound | runtime summary; CI-recoverable triage; removed/merged/demoted stale tests or justified no-op; before/after timing | completed |
-| 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | pending |
+| 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | completed |
 | 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | pending |
 | 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | pending |
 | 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | pending |
@@ -158,7 +160,7 @@ engine), not hard-coded here.
 
 - Objective: Capture live baseline evidence, restore inherited baseline failures to green, and reduce one standing validation hot spot without weakening source-owned proof.
 - Why this approach: Runtime reduction first lowers every later slice's proof cost; current-pointer scanning was a measured 15.2s hot spot caused by duplicate parsing of generated plugin mirrors.
-- Commits: pending slice commit.
+- Commits: `e7912196 quality: reduce current-pointer scan runtime`.
 - What changed: Recorded issue states #371/#372/#373 as open; captured nose 0.10.0 inventory at 20 shown families / 2036 duplicated lines / 559 total ranked families; updated the current-pointer scanner to scan source-owned roots only; added a generated-plugin mirror skip regression; restored specdown and coverage baseline failures; synced plugin mirrors; recorded attention-state declaration for skipped healthcheck coverage.
 - Alternatives rejected: Rejected moving coverage, pytest, duplicates, or test-completeness off local because the CI-recoverability lens kept those gates local; rejected broad current-pointer taint analysis as an existing deferred design question, not needed for this runtime slice.
 - Targeted verification: Before: run-quality-read-only failed in 73.6s with check-coverage and specdown failures; check-current-pointer-writes latest sample was 15.2s. After: final ./scripts/run-quality.sh --read-only passed 78 phases in 65.7s; check-current-pointer-writes passed in 7.826s standalone and 7.8s in the final gate; python3 scripts/check_coverage.py --repo-root . --json passed; specdown run -quiet -no-report passed; pytest focused checks passed (17 current-pointer tests, 2 tool lifecycle/update tests, 3 prior failure nodes); validate_attention_state_visibility passed for 82 files.
@@ -167,6 +169,19 @@ engine), not hard-coded here.
 - Off-goal findings: Specdown lock historical healthcheck data may be stale but is deferred unless a validator treats it as live truth; full issue #371-#373 closure remains planned for later slices.
 - Lessons carried forward: For runtime claims, cite explicit samples when rolling medians still include pre-change data; generated mirrors should usually be protected by source scan plus packaging/mirror validation rather than duplicate semantic scans.
 - Metrics: runtime profile local-linux-x86_64-36cpu; aggregate read-only quality 73.6s failed -> 65.7s passed; current-pointer scanner 15.2s -> 7.8s.
+
+### Slice 2: Issue #373 producer-before-validator ordering
+
+- Objective: Resolve #373 by ensuring public artifact-producing skill bootstraps show producers/scaffolds before validators/readiness checks, and by adding a regression gate over that instruction surface.
+- Why this approach: The issue was an operator-instruction regression, not a runtime helper bug; the smallest durable prevention is a source-skill wording fix plus a quality-gate test over the public bootstrap examples.
+- Commits: this slice commit (`fix(achieve): enforce scaffold before goal validation`).
+- What changed: `achieve` now runs `upsert_goal.py` before `check_goal_artifact.py` in Bootstrap and explicitly describes `check_goal_artifact.py` as a post-scaffold gate; plugin mirror synced; added `tests/quality_gates/test_artifact_producer_order.py`; recorded debug, seam-risk index, critique, and issue closeout artifacts.
+- Alternatives rejected: Deferred deriving producer/validator pairs from `scripts/check_artifact_surface_preflight.py` because an explicit table covers the #373 close boundary; rejected scaffold-output roundtrip testing for every producer because the reported failure is command ordering in public instructions.
+- Targeted verification: `pytest -q tests/quality_gates/test_artifact_producer_order.py tests/quality_gates/test_goal_artifact_producers.py` passed; `validate_skills`, packaging, docs/markdown/secrets, deterministic prompt-proof validation, public-skill validation/dogfood, debug artifact/index validation, critique artifact validation, integration validation, ruff, Python lengths, attention visibility, test-repo-copy invariants, and boundary-bypass ratchet passed locally.
+- Test duplication pressure: Added one table-driven quality-gate test covering known public producer/validator pairs, including the `hitl` same-script sync-vs-`--check` mode pair found by fresh-eye critique.
+- Critique: Causal review accepted the bug classification and invariant proof; resolution critique initially found a blocking `hitl` coverage hole, which was fixed before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-373-producer-before-validator-resolution.md`. Public-skill dogfood decision: `suggest_public_skill_dogfood.py --skill-id achieve --json` and slice closeout both returned the existing `achieve` case as `hitl-recommended`; the fresh-eye review and unchanged dogfood registry are the scenario review for this slice.
+- Off-goal findings: Auto-deriving the ordering table from an owning registry could reduce future drift, but is deferred outside this slice.
+- Lessons carried forward: Same-script producer/check modes need command-token coverage, not filename-only checks; validator commands belong in post-scaffold/post-shape language unless they explicitly advertise a non-mutating discovery mode.
 
 ## Context Sources
 

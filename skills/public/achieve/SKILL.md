@@ -27,9 +27,9 @@ git log --oneline -10
 # 2. any active goal already on disk
 ls charness-artifacts/goals/ 2>/dev/null || true
 
-# 3. inspect or scaffold the goal artifact (helpers preserve manual content)
-python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . --slug <slug> --date <yyyy-mm-dd>
+# 3. scaffold or locate first, then validate post-scaffold (helpers preserve manual content)
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug> --title "<title>"
+python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . --slug <slug> --date <yyyy-mm-dd>
 ```
 
 If a goal artifact for this work already exists, read it first and continue its
