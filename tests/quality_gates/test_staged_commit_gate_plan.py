@@ -360,6 +360,17 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "check-title-slug-drift",
     ]
 
+    plugin_json_result = run_script(
+        "plugins/charness/scripts/staged_commit_gate_plan.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "README.md",
+        "--json",
+    )
+    assert plugin_json_result.returncode == 0, plugin_json_result.stderr
+    assert json.loads(plugin_json_result.stdout) == json.loads(json_result.stdout)
+
     text_result = run_script(
         "scripts/staged_commit_gate_plan.py",
         "--repo-root",

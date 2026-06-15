@@ -6,15 +6,21 @@ import argparse
 import json
 import shlex
 import shutil
-import subprocess
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
-_artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
+_plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
+
+GateCommand = _plan_helpers.GateCommand
+collect_staged_paths = _plan_helpers.collect_staged_paths
+_any_starts = _plan_helpers.any_starts
+_artifact_shape_gates = _plan_helpers.artifact_shape_gates
+_mirror_drift_gates = _plan_helpers.mirror_drift_gates
+_skill_core_headroom_gates = _plan_helpers.skill_core_headroom_gates
+_timing_pull_gate = _plan_helpers.timing_pull_gate
 
 # Single source of truth (#314) for the fast structural checkers that must run
 # in BOTH the per-slice aggregate (run_slice_closeout) and the literal git
@@ -26,25 +32,6 @@ FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
     "python3 scripts/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
     "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .": "check-boundary-bypass-ratchet",
 }
-
-
-@dataclass(frozen=True)
-class GateCommand:
-    label: str
-    argv: tuple[str, ...]
-
-    def as_dict(self) -> dict[str, object]:
-        return {"label": self.label, "argv": list(self.argv)}
-
-
-def _timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
-    """A timing-layer pulled guard (docs/conventions/validator-timing-layers.md),
-    degrading to no gate when the repo does not own the validator script — a
-    seeded tmp repo or a consumer repo sharing this plan inherits nothing new;
-    the broad gate stays the enforcement floor where the validator exists."""
-    if not (repo_root / script).is_file():
-        return []
-    return [GateCommand(label, ("python3", script, *args))]
 
 
 def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
@@ -108,23 +95,6 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     return gates
 
 
-def collect_staged_paths(repo_root: Path) -> list[str]:
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or "failed to list staged paths")
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-
-def _any_starts(paths: list[str], prefix: str) -> bool:
-    return any(path.startswith(prefix) for path in paths)
-
-
 def fast_surface_verify_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     """Fast structural checkers from matched surface verify_commands (#314).
 
@@ -152,99 +122,6 @@ def fast_surface_verify_gates(repo_root: Path, paths: list[str]) -> list[GateCom
         seen.add(label)
         gates.append(GateCommand(label, tuple(shlex.split(command))))
     return gates
-
-
-_MIRROR_PREFIXES = (
-    "scripts/",
-    "skills/",
-    "profiles/",
-    "presets/",
-    "integrations/",
-    "plugins/",
-    ".claude-plugin/",
-    ".codex-plugin/",
-    ".agents/plugins/",
-)
-
-
-def _mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
-    touches_mirror = any(
-        path.startswith(_MIRROR_PREFIXES)
-        or path == "README.md"
-        or path in {"runtime_bootstrap.py", "skill_runtime_bootstrap.py"}
-        for path in paths
-    )
-    if not touches_mirror:
-        return []
-    return [
-        GateCommand(
-            "staged-plugin-mirror-drift",
-            ("python3", "scripts/check_staged_mirror_drift.py", "--repo-root", str(repo_root)),
-        )
-    ]
-
-
-def _skill_core_headroom_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
-    """#319: gate changed public/support SKILL.md cores against the core_nonempty
-    >=4 headroom buffer at the commit boundary (a ratchet that grandfathers
-    existing under-buffer skills), so authoring to the 160 hard limit no longer
-    passes the per-slice gate and fails only the broad core-headroom test.
-    """
-    staged_skill_md = [
-        path
-        for path in paths
-        if path.startswith(("skills/public/", "skills/support/"))
-        and path.endswith("/SKILL.md")
-        and path.count("/") == 3
-    ]
-    if not staged_skill_md:
-        return []
-    return [
-        GateCommand(
-            "check-skill-core-headroom (staged)",
-            (
-                "python3",
-                "scripts/check_skill_surface_preflight.py",
-                "--repo-root",
-                str(repo_root),
-                "--changed-skill-md",
-                *staged_skill_md,
-            ),
-        )
-    ]
-
-
-def _artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
-    """Relocate the artifact-shape validators' verdicts to the commit boundary.
-
-    Generalizes the skill-surface preflight to the hand-authored artifact family
-    (#284 -> #334): when a commit touches a prefix-mapped `charness-artifacts/**`
-    artifact (critique/ideation/retro), run its owning validator early so an
-    author learns the required shape here, not by a late broad-gate failure. The
-    dispatcher's registry owns surface->validator mapping; same validator, same
-    verdict, only earlier (no new shape requirement).
-    """
-    matched = [
-        path
-        for path in paths
-        if (surface := _artifact_preflight.surface_for_path(Path(path).as_posix())) is not None
-        and surface.commit_boundary
-    ]
-    if not matched:
-        return []
-    return [
-        GateCommand(
-            "check-artifact-shape (staged)",
-            (
-                "python3",
-                "scripts/check_artifact_surface_preflight.py",
-                "--repo-root",
-                str(repo_root),
-                "--changed-artifacts",
-                *matched,
-            ),
-        )
-    ]
 
 
 # #368: the inference-interpretation leak scan validates every git-tracked *.py
