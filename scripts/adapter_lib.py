@@ -279,6 +279,24 @@ def optional_string_list(value: Any, field: str, errors: list[str]) -> list[str]
     return list(value)
 
 
+def optional_bool(value: Any, field: str, errors: list[str]) -> bool | None:
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        errors.append(f"{field} must be a boolean")
+        return None
+    return value
+
+
+def list_field_state(data: dict[str, Any], field: str) -> str:
+    if field not in data:
+        return "unset"
+    value = data.get(field)
+    if isinstance(value, list) and len(value) == 0:
+        return "explicit-empty"
+    return "configured"
+
+
 def _yaml_scalar(value: Any) -> str:
     if value is None:
         return "null"

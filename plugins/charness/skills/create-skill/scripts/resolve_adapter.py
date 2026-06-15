@@ -22,6 +22,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
+list_field_state = _adapter_lib.list_field_state
 optional_string = _adapter_lib.optional_string
 optional_string_list = _adapter_lib.optional_string_list
 
@@ -57,15 +58,6 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "topology_verification_hints": [],
         HOST_EXTENSION_FIELD: {},
     }
-
-
-def _list_field_state(data: dict[str, Any], field: str) -> str:
-    if field not in data:
-        return "unset"
-    value = data.get(field)
-    if isinstance(value, list) and not value:
-        return "explicit-empty"
-    return "configured"
 
 
 def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -120,7 +112,7 @@ def find_adapter(repo_root: Path) -> Path | None:
 
 
 def _field_state(data: dict[str, Any]) -> dict[str, str]:
-    state = {field: _list_field_state(data, field) for field in STRING_LIST_FIELDS}
+    state = {field: list_field_state(data, field) for field in STRING_LIST_FIELDS}
     if HOST_EXTENSION_FIELD in data:
         state[HOST_EXTENSION_FIELD] = "explicit-empty" if data.get(HOST_EXTENSION_FIELD) == {} else "configured"
     else:

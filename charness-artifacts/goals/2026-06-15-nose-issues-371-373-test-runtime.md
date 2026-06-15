@@ -15,12 +15,11 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: 5 - fix selected nose 0.10.0 clone findings.
-- Current slice intent: reduce the highest-value clone families that are
-  genuinely extractable without weakening portability or broadening unrelated
-  behavior.
-- Next action: refresh the nose 0.10.0 inventory, pick the smallest
-  high-confidence family, and record before/after duplicate evidence.
+- Current slice: 6 - bundle closeout.
+- Current slice intent: prove the whole goal, reconcile issue states and
+  non-claims, and run the final verification lock.
+- Next action: run bundle/final proof, record final verification and residual
+  risks, then publish/close only the locally verified issue carriers.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -134,7 +133,7 @@ The user can verify completion by checking:
 | 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | completed |
 | 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | completed |
 | 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | completed |
-| 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | pending |
+| 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | completed |
 | 6 | Bundle closeout | Prove the whole goal and record non-claims | broad pytest; closeout gates; critique; retro; issue states; final verification | pending |
 
 ## Coordination Cues
@@ -207,6 +206,20 @@ engine), not hard-coded here.
 - Critique: Fresh-eye causal review classified #371 as a bug but not locally fixed, accepted the upstream split, and found one Act Before Ship wording loophole that allowed closure without teardown proof. The wording was tightened before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-371-agent-browser-lifecycle-split.md`.
 - Off-goal findings: Upstream `vercel-labs/agent-browser#1334` is the closest tracker for interrupted/killed/timed-out Chrome helper and temp-profile leaks; `#1401` covers Linux launch zombies; `#1371` covers high-CPU helpers under temp profiles. This token has read-only permission on the upstream repo, so no new upstream issue was filed.
 - Lessons carried forward: For external binaries, healthcheck/reaper surfaces must be named as drift mitigation unless the repo holds an invocation lifecycle handle and can prove process/profile teardown at the final boundary.
+
+### Slice 5: Nose 0.10.0 adapter helper extraction
+
+- Objective: Reduce selected, genuinely extractable nose clone findings without chasing intentional per-skill portability boilerplate.
+- Why this approach: The highest-value clone list was dominated by resolver/import/init/main boilerplate that is intentionally portable. The smallest defensible extraction was identical adapter field validation and field-state helpers already adjacent to `scripts/adapter_lib.py`.
+- Commits: this slice commit (`refactor: share adapter field helpers`).
+- What changed: Added `optional_bool` and `list_field_state` to `scripts/adapter_lib.py`; replaced identical optional string/list/bool/list-field-state helpers across announcement, achieve, create-skill, debug, find-skills, gather, hitl, hotl, impl, release, and retro adapter paths; synced checked-in plugin mirrors; added `tests/test_adapter_lib.py`.
+- Alternatives rejected: Rejected extracting bootstrap/runtime-import/main boilerplate because the goal explicitly treats per-skill portability boilerplate as non-goal; rejected broader `validate_adapter_data` consolidation because that is field-spec design work already recognized as larger adapter framework debt.
+- Targeted verification: Focused adapter suite passed (`62 passed`); `py_compile`, `validate_skills`, packaging, public-skill validation/dogfood, adapter validation, integration validation, ruff, Python length, attention visibility, test-repo-copy, boundary ratchet, scan hygiene, `sync_support`, and `update_tools` passed locally before closeout. Public-skill dogfood recommendations were reviewed for the ten touched public skills; no scenario registry or dogfood registry change was needed because the public routing/artifact contracts did not change.
+- Nose evidence: nose 0.10.0 before this slice reported 20 shown families, 559 ranked families, and 2036 duplicate lines. After the extraction it reports 20 shown families, 551 ranked families, and 2002 duplicate lines. This is a scanner-version-local advisory comparison, not a cross-version quality trend or total-debt claim.
+- Test duplication pressure: Added a direct helper test instead of more resolver-specific copies; the remaining duplicated resolver/import/main shapes are explicitly left as portability boilerplate.
+- Critique: Fresh-eye critique found no Act Before Ship issues and recommended one cheap helper test, which was bundled. Artifact: `charness-artifacts/critique/2026-06-15-nose-adapter-helper-extraction.md`.
+- Off-goal findings: A standalone copied `achieve` skill without root `scripts/adapter_lib.py` would fail earlier after this refactor, but that is not a supported Charness packaging boundary; checked-in plugin packaging includes the shared helper.
+- Lessons carried forward: Nose findings need structural disposition, not line-total chasing. Extract identical helpers only where a shared owner already exists and preserve portability boilerplate unless a packaging contract changes.
 
 ## Context Sources
 

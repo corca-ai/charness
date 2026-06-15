@@ -21,6 +21,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
+optional_bool = _scripts_adapter_lib_module.optional_bool
+optional_string = _scripts_adapter_lib_module.optional_string
+optional_string_list = _scripts_adapter_lib_module.optional_string_list
 _scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
 RECORD_PATTERN = _scripts_artifact_naming_lib_module.RECORD_PATTERN
 
@@ -36,33 +39,6 @@ STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version"
 BOOLEAN_FIELDS = ("prefer_local_first", "allow_external_registry")
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "current"
-
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
-
-
-def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
-    if value is None:
-        return None
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        errors.append(f"{field} must be a list of strings")
-        return None
-    return list(value)
-
-
-def _boolean(value: Any, field: str, errors: list[str]) -> bool | None:
-    if value is None:
-        return None
-    if not isinstance(value, bool):
-        errors.append(f"{field} must be a boolean")
-        return None
-    return value
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -91,12 +67,12 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
             errors.append("version must be an integer")
 
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 
-    trusted_roots = _string_list(data.get("trusted_skill_roots"), "trusted_skill_roots", errors)
-    legacy_roots = _string_list(data.get("official_skill_roots"), "official_skill_roots", errors)
+    trusted_roots = optional_string_list(data.get("trusted_skill_roots"), "trusted_skill_roots", errors)
+    legacy_roots = optional_string_list(data.get("official_skill_roots"), "official_skill_roots", errors)
     if trusted_roots is not None:
         validated["trusted_skill_roots"] = trusted_roots
         if legacy_roots is not None and legacy_roots != trusted_roots:
@@ -106,7 +82,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         warnings.append("official_skill_roots is deprecated; rename it to trusted_skill_roots.")
 
     for field in BOOLEAN_FIELDS:
-        value = _boolean(data.get(field), field, errors)
+        value = optional_bool(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 

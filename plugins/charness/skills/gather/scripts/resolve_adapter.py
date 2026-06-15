@@ -29,6 +29,8 @@ _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_s
     __file__, "scripts.simple_skill_adapter_lib"
 )
 load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
+_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+optional_string = _scripts_adapter_lib_module.optional_string
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 ARTIFACT_FILENAME = "latest.md"
@@ -37,15 +39,6 @@ ARTIFACT_CLASS = "history"
 GATHER_PROVIDER_SOURCES = ("github", "google_workspace", "slack", "notion")
 GATHER_PROVIDER_MODES = ("direct-cli", "host-mediated", "none")
 DEFAULT_GATHER_PROVIDER_MODE = "direct-cli"
-
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
 
 
 def default_gather_provider() -> dict[str, dict[str, str]]:
@@ -104,7 +97,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
             errors.append("version must be an integer")
 
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 

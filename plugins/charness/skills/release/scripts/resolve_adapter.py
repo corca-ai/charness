@@ -22,6 +22,9 @@ _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_s
     __file__, "scripts.simple_skill_adapter_lib"
 )
 load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
+_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+optional_string = _scripts_adapter_lib_module.optional_string
+optional_string_list = _scripts_adapter_lib_module.optional_string_list
 
 STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
@@ -35,24 +38,6 @@ LIST_FIELDS = (
     "cli_skill_surface_change_globs", "fresh_checkout_probes",
 )
 ARTIFACT_FILENAME = "latest.md"
-
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
-
-
-def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
-    if value is None:
-        return None
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        errors.append(f"{field} must be a list of strings")
-        return None
-    return list(value)
-
 
 _release_backend_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_backend")
 default_release_backend = _release_backend_module.default_release_backend
@@ -108,12 +93,12 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
             errors.append("version must be an integer")
 
     for field in STRING_FIELDS:
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 
     for field in LIST_FIELDS:
-        value = _string_list(data.get(field), field, errors)
+        value = optional_string_list(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 

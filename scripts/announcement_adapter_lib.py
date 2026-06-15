@@ -6,7 +6,12 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
+from scripts.adapter_lib import (
+    list_field_state,
+    load_yaml_file,
+    optional_string,
+    optional_string_list,
+)
 from scripts.artifact_naming_lib import RECORD_PATTERN
 
 KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -42,15 +47,6 @@ ARTIFACT_CLASS = "history"
 RECORD_FILENAME = "announcements.jsonl"
 
 VALID_DELIVERY_ROLES = {"single", "parent", "thread_reply"}
-
-
-def _list_field_state(data: dict[str, Any], field: str) -> str:
-    if field not in data:
-        return "unset"
-    value = data.get(field)
-    if isinstance(value, list) and len(value) == 0:
-        return "explicit-empty"
-    return "configured"
 
 
 def _validate_outputs(value: Any, errors: list[str]) -> list[dict[str, Any]] | None:
@@ -161,10 +157,10 @@ def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
 
 def _field_state_map(raw_data: dict[str, Any]) -> dict[str, str]:
     return {
-        "audience_tags": _list_field_state(raw_data, "audience_tags"),
-        "omission_lenses": _list_field_state(raw_data, "omission_lenses"),
-        "outputs": _list_field_state(raw_data, "outputs"),
-        "in_progress_sources": _list_field_state(raw_data, "in_progress_sources"),
+        "audience_tags": list_field_state(raw_data, "audience_tags"),
+        "omission_lenses": list_field_state(raw_data, "omission_lenses"),
+        "outputs": list_field_state(raw_data, "outputs"),
+        "in_progress_sources": list_field_state(raw_data, "in_progress_sources"),
     }
 
 

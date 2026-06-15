@@ -24,7 +24,13 @@ DISPOSITION_FLOORS = frozenset({"review-required", "deterministic-only"})
 VALID_DISPOSITIONS = frozenset({"applied", "issue"})
 
 
+_ADAPTER_LIB = None
+
+
 def _load_adapter_lib():
+    global _ADAPTER_LIB
+    if _ADAPTER_LIB is not None:
+        return _ADAPTER_LIB
     here = Path(__file__).resolve()
     for ancestor in here.parents:
         candidate = ancestor / "scripts" / "adapter_lib.py"
@@ -34,8 +40,15 @@ def _load_adapter_lib():
                 continue
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
+            _ADAPTER_LIB = module
             return module
     raise ImportError("scripts/adapter_lib.py not found")
+
+
+_adapter_lib = _load_adapter_lib()
+optional_bool = _adapter_lib.optional_bool
+optional_string = _adapter_lib.optional_string
+optional_string_list = _adapter_lib.optional_string_list
 
 
 def _defaults(repo_root: Path) -> dict[str, Any]:
@@ -61,33 +74,6 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _string(value: Any, field: str, errors: list[str]) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        errors.append(f"{field} must be a string")
-        return None
-    return value
-
-
-def _bool(value: Any, field: str, errors: list[str]) -> bool | None:
-    if value is None:
-        return None
-    if not isinstance(value, bool):
-        errors.append(f"{field} must be a boolean")
-        return None
-    return value
-
-
-def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
-    if value is None:
-        return None
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        errors.append(f"{field} must be a list of strings")
-        return None
-    return list(value)
-
-
 def _mapping(value: Any, field: str, errors: list[str]) -> dict[str, Any]:
     if value is None:
         return {}
@@ -100,7 +86,7 @@ def _mapping(value: Any, field: str, errors: list[str]) -> dict[str, Any]:
 def _validate_closeout_publication(data: dict[str, Any], defaults: dict[str, Any], errors: list[str]) -> dict[str, Any]:
     policy = dict(defaults["closeout_publication"])
     closeout = _mapping(data.get("closeout_publication"), "closeout_publication", errors)
-    mode = _string(closeout.get("default_mode"), "closeout_publication.default_mode", errors)
+    mode = optional_string(closeout.get("default_mode"), "closeout_publication.default_mode", errors)
     if mode is not None:
         if mode not in PUBLICATION_MODES:
             errors.append(
@@ -109,7 +95,7 @@ def _validate_closeout_publication(data: dict[str, Any], defaults: dict[str, Any
             )
         else:
             policy["default_mode"] = mode
-    carrier = _string(closeout.get("issue_closeout_carrier"), "closeout_publication.issue_closeout_carrier", errors)
+    carrier = optional_string(closeout.get("issue_closeout_carrier"), "closeout_publication.issue_closeout_carrier", errors)
     if carrier is not None:
         if carrier not in ISSUE_CLOSEOUT_CARRIERS:
             errors.append(
@@ -119,10 +105,10 @@ def _validate_closeout_publication(data: dict[str, Any], defaults: dict[str, Any
         else:
             policy["issue_closeout_carrier"] = carrier
     for field in ("require_draft_validation", "require_post_publication_verify", "publish_requires_user_confirmation"):
-        value = _bool(closeout.get(field), f"closeout_publication.{field}", errors)
+        value = optional_bool(closeout.get(field), f"closeout_publication.{field}", errors)
         if value is not None:
             policy[field] = value
-    template = _string(
+    template = optional_string(
         closeout.get("draft_validation_command_template"),
         "closeout_publication.draft_validation_command_template",
         errors,
@@ -143,17 +129,17 @@ def _validate_closeout_publication(data: dict[str, Any], defaults: dict[str, Any
 def _validate_auto_retro(data: dict[str, Any], defaults: dict[str, Any], errors: list[str]) -> dict[str, Any]:
     policy = dict(defaults["auto_retro"])
     auto = _mapping(data.get("auto_retro"), "auto_retro", errors)
-    floor = _string(auto.get("disposition_floor"), "auto_retro.disposition_floor", errors)
+    floor = optional_string(auto.get("disposition_floor"), "auto_retro.disposition_floor", errors)
     if floor is not None:
         if floor not in DISPOSITION_FLOORS:
             errors.append("auto_retro.disposition_floor must be one of: " + ", ".join(sorted(DISPOSITION_FLOORS)))
         else:
             policy["disposition_floor"] = floor
     for field in ("allow_host_blocked_disposition_review_skip", "allow_none_optout"):
-        value = _bool(auto.get(field), f"auto_retro.{field}", errors)
+        value = optional_bool(auto.get(field), f"auto_retro.{field}", errors)
         if value is not None:
             policy[field] = value
-    dispositions = _string_list(auto.get("valid_dispositions"), "auto_retro.valid_dispositions", errors)
+    dispositions = optional_string_list(auto.get("valid_dispositions"), "auto_retro.valid_dispositions", errors)
     if dispositions is not None:
         unknown = sorted(set(dispositions) - VALID_DISPOSITIONS)
         if unknown:
@@ -176,7 +162,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         else:
             errors.append("version must be an integer")
     for field in ("repo", "language", "artifact_dir"):
-        value = _string(data.get(field), field, errors)
+        value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
@@ -213,8 +199,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             ],
             "searched_paths": searched_paths,
         }
-    adapter_lib = _load_adapter_lib()
-    raw = adapter_lib.load_yaml_file(adapter_path)
+    raw = _adapter_lib.load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
     canonical = repo_root / ".agents" / "achieve-adapter.yaml"
