@@ -132,6 +132,7 @@
   "host_notes": [
     "Hosts may need a separate Chromium or Chrome installation if they do not use `agent-browser install`.",
     "Local desktop profile reuse is not equivalent to a remote or CI-like Linux runner; some flows require a one-time manual or headed bootstrap before later headless reuse is honest.",
-    "Long-lived orphan `agent-browser` daemons are treated as runtime drift, not as a healthy installed state."
+    "Long-lived orphan `agent-browser` daemons are treated as runtime drift, not as a healthy installed state.",
+    "Invocation-bound Chrome process/profile teardown is upstream `agent-browser` lifecycle ownership; Charness' runtime guard is downstream drift detection and owned orphan daemon-tree cleanup after residue already exists. Track upstream `vercel-labs/agent-browser#1334` for the broader interrupted-session leak, with adjacent Linux launch-zombie coverage in `#1401` and high-CPU temp-profile residue in `#1371`."
   ]
 }

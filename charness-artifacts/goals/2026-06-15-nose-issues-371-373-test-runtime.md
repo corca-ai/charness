@@ -15,13 +15,12 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: 4 - resolve #371 agent-browser orphan lifecycle.
-- Current slice intent: prove and fix, or honestly split, the agent-browser
-  chromium/profile-dir lifecycle so closure is not based on reaper-only
-  mitigation.
-- Next action: start #371 with root-cause review, inspect current
-  agent-browser runtime guard/cleanup behavior, and build controlled lifecycle
-  proof before claiming issue closure.
+- Current slice: 5 - fix selected nose 0.10.0 clone findings.
+- Current slice intent: reduce the highest-value clone families that are
+  genuinely extractable without weakening portability or broadening unrelated
+  behavior.
+- Next action: refresh the nose 0.10.0 inventory, pick the smallest
+  high-confidence family, and record before/after duplicate evidence.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -134,7 +133,7 @@ The user can verify completion by checking:
 | 1 | Reduce validation/test runtime first | Every later slice pays verification cost; speed wins compound | runtime summary; CI-recoverable triage; removed/merged/demoted stale tests or justified no-op; before/after timing | completed |
 | 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | completed |
 | 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | completed |
-| 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | pending |
+| 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | completed |
 | 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | pending |
 | 6 | Bundle closeout | Prove the whole goal and record non-claims | broad pytest; closeout gates; critique; retro; issue states; final verification | pending |
 
@@ -195,6 +194,19 @@ engine), not hard-coded here.
 - Critique: Causal review accepted the bug classification and invariant proof; resolution critique found an Act Before Ship gap in issue causal-review substrate cites, fixed before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-372-disconfirmer-first-resolution.md`. Public-skill dogfood decision: `suggest_public_skill_dogfood.py --skill-id debug --json` and `--skill-id issue --json` returned `evaluator-required`; scenario-registry review inspected `evals/cautilus/scenarios.json` and kept existing `debug-adapter-bootstrap`, `issue-sibling-search-concept-fixtures`, and `representative-skill-contracts` unchanged because routing/bootstrap behavior did not change. The scenario review is recorded in `docs/public-skill-dogfood.json`; `validate_cautilus_proof.py` reported deterministic validation owns this closeout because no live proof artifact changed and no log-backed behavior proof was requested.
 - Off-goal findings: Stronger evaluator coverage for the quality of selected falsifiers is valid future work but outside this slice.
 - Lessons carried forward: If a rule is placed in debug substrate, bug-class issue causal review must cite it explicitly or recurrence can bypass the new diagnosis guard.
+
+### Slice 4: Issue #371 agent-browser lifecycle split
+
+- Objective: Resolve or honestly disposition #371 without treating post-hoc runtime cleanup as invocation-bound process/profile teardown.
+- Why this approach: #371 requires proof that normal completion, cancellation, provider failure, and timeout tear down both the browser process tree and `agent-browser-chrome-*` profile directory. Charness owns only downstream runtime drift detection and owned orphan daemon-tree cleanup after residue already exists; the upstream `agent-browser` daemon/profile lifecycle is not locally owned.
+- Commits: this slice commit (`issue: record agent-browser lifecycle upstream split`).
+- What changed: Added a debug artifact and issue split draft documenting the non-closure; updated the agent-browser integration manifest and checked-in plugin mirror to state that invocation-bound Chrome process/profile teardown is upstream lifecycle ownership and Charness' guard is downstream drift detection/owned orphan daemon-tree cleanup; refreshed the debug seam-risk index; recorded fresh-eye critique.
+- Alternatives rejected: Rejected expanding the local runtime guard into a broader reaper because it would still run after residue exists and would not prove invocation-end profile/process teardown. Rejected closing #371 because no controlled teardown proof exists.
+- Targeted verification: `gh issue view 371 --repo corca-ai/charness` confirmed the local issue is open and asks for lifecycle teardown; `gh issue view 1334/1401/1371 --repo vercel-labs/agent-browser` confirmed open upstream coverage for the same or adjacent external lifecycle class; `validate_debug_artifact`, debug seam-risk index check, `validate_critique_artifacts`, `validate_integrations`, packaging validators, markdown/link/secret checks, `sync_support`, and `update_tools` passed locally.
+- Test duplication pressure: No runtime tests added; this slice intentionally records a split/non-closure rather than changing behavior or adding post-hoc cleanup that could be mistaken for teardown proof.
+- Critique: Fresh-eye causal review classified #371 as a bug but not locally fixed, accepted the upstream split, and found one Act Before Ship wording loophole that allowed closure without teardown proof. The wording was tightened before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-371-agent-browser-lifecycle-split.md`.
+- Off-goal findings: Upstream `vercel-labs/agent-browser#1334` is the closest tracker for interrupted/killed/timed-out Chrome helper and temp-profile leaks; `#1401` covers Linux launch zombies; `#1371` covers high-CPU helpers under temp profiles. This token has read-only permission on the upstream repo, so no new upstream issue was filed.
+- Lessons carried forward: For external binaries, healthcheck/reaper surfaces must be named as drift mitigation unless the repo holds an invocation lifecycle handle and can prove process/profile teardown at the final boundary.
 
 ## Context Sources
 
