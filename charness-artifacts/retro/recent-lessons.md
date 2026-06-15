@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v0.50.1`. (source: `charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md`)
 - This retro covers the active goal `charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md`: runtime reduction, issue #373/#372/#371 disposition, and selected nose 0.10.0 clone reduction. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
-- Achieve goal `charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`, resolving GitHub issue #367 end-to-end (operator chose push + close + release). (source: `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`; sources: 38)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md`; sources: 39)
 - Final verification-lock closeout no-oped on a clean worktree, so broad pytest had to be run directly. This is acceptable but worth remembering for clean bundle closeouts. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - The first #371 wording allowed a closure path without process/profile teardown proof; fresh-eye review caught it before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - The nose helper extraction initially missed one `hotl` optional-path call site. Focused adapter tests caught the miss, and a direct helper test now pins the shared API. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`; sources: 38)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md`; sources: 39)
 - Keep the #371 lesson visible: a healthcheck/reaper is drift mitigation unless the repo owns and proves the final lifecycle boundary. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - No new gate is needed. Existing fresh-eye review, focused tests, and slice closeout caught the issues before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - When a final verification-lock closeout no-ops because the worktree is clean, run and record the broad pytest command directly rather than trying to force a fake diff. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
@@ -61,9 +61,9 @@
 - `charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`
 - `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`
+- `charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md`
