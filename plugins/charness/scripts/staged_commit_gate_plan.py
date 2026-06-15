@@ -74,6 +74,11 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         # A broken surfaces manifest degrades every surface-driven gate, so it
         # fails earliest.
         gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
+    if any(path in ("scripts/run-quality.sh", "docs/conventions/validator-timing-layers.md") for path in paths):
+        # #368 meta-gate: a new run-quality validator (or a timing-doc edit) must keep
+        # the classification table exhaustive, so the shift-left class cannot recur via
+        # an unclassified broad-only check. Flips only on these two files.
+        gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
     if any(path.endswith(".md") for path in paths):
         gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py", "--strict"))
     if any(path == "docs/handoff.md" for path in paths):
@@ -242,6 +247,57 @@ def _artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand
     ]
 
 
+# #368: the inference-interpretation leak scan validates every git-tracked *.py
+# OUTSIDE these registry-declared exclude prefixes (.agents/inference-interpretation-
+# surfaces.json `leak_scan.exclude_prefixes`). The commit trigger must cover that
+# SAME domain -- not just scripts/|skills/ -- or a 4-field declaration authored in a
+# root module (e.g. runtime_bootstrap.py) is scanned by the validator yet escapes the
+# commit gate, reintroducing the silent-disarm this issue closes. Kept in sync with
+# the registry by hand; if the registry drifts the broad gate is still the floor.
+_INFERENCE_LEAK_SCAN_EXCLUDE: tuple[str, ...] = ("plugins/", "mutants/", "tests/")
+
+
+def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+    """#368: pull the changed-scoped *leak scan* of cheap, offline registry/shim
+    meta-validators to the commit boundary -- the recurring shift-left class
+    (#314/#319/#332/#366). Each flips ONLY when a staged file adds a new entrant (a
+    4-field `interpretation` dict / a new `inventory_*.py`) or drifts a duplicated
+    bootstrap shim, so it is changed-scoped exactly like
+    `validate-attention-state-visibility` -- not the validate-all sweep its full pass
+    also performs. The 2026-06-10 timing audit bundled the cheap scan with the heavy
+    sweep under one "stays / not changed-scoped" verdict, which is what let a new
+    declaration's missing registration reach only the ~4-min broad gate (#367). The
+    same offline command runs here (the heavier live-count work is the broad gate's
+    pytest, not these commands), so the cheap verdict precedes it. Each degrades to no
+    gate when the validator is absent (seeded tmp repo / consumer repo)."""
+    gates: list[GateCommand] = []
+    if any(path.endswith(".py") and not path.startswith(_INFERENCE_LEAK_SCAN_EXCLUDE) for path in paths):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "validate-inference-interpretation",
+                "scripts/validate_inference_interpretation.py",
+                "--repo-root", str(repo_root), "--require-git-file-listing",
+            )
+        )
+    if any(path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/")) for path in paths):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "check-bootstrap-shim-consistency",
+                "scripts/check_bootstrap_shim_consistency.py",
+                "--repo-root", str(repo_root), "--require-git-file-listing",
+            )
+        )
+    if any(path.startswith("skills/public/quality/scripts/inventory_") and path.endswith(".py") for path in paths):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "check-inventory-declaration-coverage",
+                "scripts/check_inventory_declaration_coverage.py",
+                "--repo-root", str(repo_root),
+            )
+        )
+    return gates
+
+
 def staged_commit_gate_plan(
     repo_root: Path,
     staged_paths: list[str] | None = None,
@@ -319,6 +375,7 @@ def staged_commit_gate_plan(
     plan.extend(_skill_core_headroom_gates(repo_root, paths))
     plan.extend(_artifact_shape_gates(repo_root, paths))
     plan.extend(_timing_layer_gates(repo_root, paths))
+    plan.extend(_leak_scan_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
     # agrees with the per-slice aggregate on the cheap structural subset.
@@ -332,16 +389,24 @@ def staged_commit_gate_plan(
 # gate (the recurring #308/#325/#329 class). Selected by label from
 # staged_commit_gate_plan so the plan stays the single source of truth (no
 # parallel gate list): ergonomics (skill packages), attention-state visibility
-# (scripts/**+skills/** *.py), and the SKILL.md authoring preflight. The full
-# run_slice_closeout path runs this subset FIRST, fail-fast, so the cheap verdict
-# precedes surface-match / cautilus / broad pytest -- reconciling the broad path
-# with the --predict-commit boundary instead of reaching the gates only late.
+# (scripts/**+skills/** *.py), the SKILL.md authoring preflight, and (#368) the
+# inference-interpretation / inventory-declaration registry leak scans plus the
+# bootstrap-shim consistency check -- the cheap, offline, changed-scoped checks that
+# were previously enforced only at the ~4-min broad gate. The full
+# run_slice_closeout path runs this subset FIRST, fail-fast,
+# so the cheap verdict precedes surface-match / cautilus / broad pytest --
+# reconciling the broad path with the --predict-commit boundary instead of
+# reaching the gates only late.
 STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
     {
         "validate-attention-state-visibility",
         "validate-skill-ergonomics",
         "check-skill-core-headroom (staged)",
         "check-artifact-shape (staged)",
+        "validate-inference-interpretation",
+        "check-bootstrap-shim-consistency",
+        "check-inventory-declaration-coverage",
+        "check-timing-layer-completeness",
     }
 )
 

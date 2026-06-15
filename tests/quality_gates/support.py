@@ -135,6 +135,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),
     ("validate-inventory-consumption-declaration", "validate_inventory_consumption_declaration.py"),
     ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
+    ("check-timing-layer-completeness", "check_timing_layer_completeness.py"),
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
     ("validate-ideation-artifact", "validate_ideation_artifact.py"),

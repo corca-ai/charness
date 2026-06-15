@@ -245,6 +245,85 @@ def test_handoff_trigger_path_matches_validator_resolved_target() -> None:
     assert Path(adapter["artifact_path"]).as_posix() == "docs/handoff.md"
 
 
+def test_leak_scan_inference_interpretation_fires_across_full_scan_domain() -> None:
+    # #368: a new 4-field interpretation declaration can appear in ANY *.py the
+    # validator scans (every git-tracked *.py outside plugins/|mutants/|tests/), so
+    # the commit trigger must cover that whole domain — not just scripts/|skills/ —
+    # else a declaration in a root module (runtime_bootstrap.py) escapes the commit
+    # gate. Runs the EXACT broad-gate command (single source).
+    plan = staged_commit_gate_plan(ROOT, ["scripts/new_helper.py"], ruff_path="")
+    gate = next((c for c in plan if c.label == "validate-inference-interpretation"), None)
+    assert gate is not None
+    assert gate.argv == (
+        "python3",
+        "scripts/validate_inference_interpretation.py",
+        "--repo-root",
+        str(ROOT),
+        "--require-git-file-listing",
+    )
+    assert "validate-inference-interpretation" in _labels(["skills/public/demo/scripts/lib.py"])
+    # the closed hole: a root module in the validator's scan domain now triggers
+    assert "validate-inference-interpretation" in _labels(["runtime_bootstrap.py"])
+    # excluded prefixes (validator skips them) do not pay the gate, nor do non-.py
+    assert "validate-inference-interpretation" not in _labels(["tests/quality_gates/test_x.py"])
+    assert "validate-inference-interpretation" not in _labels(["plugins/charness/scripts/x.py"])
+    assert "validate-inference-interpretation" not in _labels(["docs/usage.md"])
+    assert "validate-inference-interpretation" not in _labels([".agents/surfaces.json"])
+    # blocking structural-sweep member (the #368 shift-left), not advisory
+    assert "validate-inference-interpretation" in STRUCTURAL_SWEEP_LABELS
+    assert "validate-inference-interpretation" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
+
+
+def test_leak_scan_bootstrap_shim_consistency_fires_for_scripts_or_skills_python_only() -> None:
+    # #368 general-leak sibling: the bootstrap-shim consistency check (scan domain
+    # scripts/**+skills/** *.py) is a cheap offline blocking structural check that was
+    # broad-only; pulled to the commit boundary on its scan-domain trigger.
+    assert "check-bootstrap-shim-consistency" in _labels(["scripts/new_helper.py"])
+    assert "check-bootstrap-shim-consistency" in _labels(["skills/public/demo/scripts/lib.py"])
+    assert "check-bootstrap-shim-consistency" not in _labels(["docs/usage.md"])
+    assert "check-bootstrap-shim-consistency" not in _labels(["runtime_bootstrap.py"])
+    assert "check-bootstrap-shim-consistency" in STRUCTURAL_SWEEP_LABELS
+    assert "check-bootstrap-shim-consistency" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
+
+
+def test_leak_scan_inventory_declaration_coverage_fires_for_inventory_python_only() -> None:
+    # #368 sibling (#145 family): a new inventory_*.py under skills/public/quality/
+    # scripts/ pulls the cheap declaration-coverage scan; a non-inventory scripts/.py
+    # or a non-inventory quality script does not.
+    assert "check-inventory-declaration-coverage" in _labels(["skills/public/quality/scripts/inventory_new.py"])
+    assert "check-inventory-declaration-coverage" not in _labels(["scripts/new_helper.py"])
+    assert "check-inventory-declaration-coverage" not in _labels(["skills/public/quality/scripts/render_runtime_summary.py"])
+    assert "check-inventory-declaration-coverage" in STRUCTURAL_SWEEP_LABELS
+    assert "check-inventory-declaration-coverage" in {
+        g.label for g in structural_sweep_gates(ROOT, ["skills/public/quality/scripts/inventory_new.py"])
+    }
+
+
+def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_only() -> None:
+    # #368 meta-gate: flips only when scripts/run-quality.sh or the timing doc
+    # changes, so a newly added validator cannot sit unclassified.
+    assert "check-timing-layer-completeness" in _labels(["scripts/run-quality.sh"])
+    assert "check-timing-layer-completeness" in _labels(["docs/conventions/validator-timing-layers.md"])
+    assert "check-timing-layer-completeness" not in _labels(["scripts/new_helper.py"])
+    assert "check-timing-layer-completeness" not in _labels(["docs/usage.md"])
+    assert "check-timing-layer-completeness" in STRUCTURAL_SWEEP_LABELS
+    assert "check-timing-layer-completeness" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/run-quality.sh"])}
+
+
+def test_leak_scan_gates_degrade_when_validator_absent(tmp_path: Path) -> None:
+    # In a repo without the validator scripts (seeded tmp / consumer repo), the
+    # leak-scan pulls degrade to no gate rather than planning a missing command —
+    # the same _timing_pull_gate contract the other pulls use.
+    labels = [c.label for c in staged_commit_gate_plan(tmp_path, ["scripts/new_helper.py"], ruff_path="")]
+    assert "validate-inference-interpretation" not in labels
+    assert "check-bootstrap-shim-consistency" not in labels
+    inv_labels = [
+        c.label
+        for c in staged_commit_gate_plan(tmp_path, ["skills/public/quality/scripts/inventory_x.py"], ruff_path="")
+    ]
+    assert "check-inventory-declaration-coverage" not in inv_labels
+
+
 def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
     result = run_script(
         "scripts/run_slice_closeout.py",

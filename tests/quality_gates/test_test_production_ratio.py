@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
-import shutil
+import os
 from pathlib import Path
 
 import pytest
@@ -44,22 +44,29 @@ def test_summarize_rejects_unknown_engine() -> None:
         RATIO.summarize(ROOT, engine="cloc")
 
 
-def test_summarize_tokei_engine_raises_when_binary_missing() -> None:
-    if shutil.which("tokei") is not None:
-        pytest.skip("tokei is installed; degraded path is not exercised in this env")
+def test_summarize_tokei_engine_raises_when_binary_missing(tmp_path: Path, monkeypatch) -> None:
+    # Force the missing-binary path deterministically by pointing PATH at an empty
+    # dir. tokei is installed locally AND in CI, so the old `skip` guard meant this
+    # degraded-path assertion never ran in any standard environment (#368
+    # test-quality fix). The tokei engine checks `shutil.which` before any file/git
+    # work, so an empty PATH is safe.
+    monkeypatch.setenv("PATH", str(tmp_path))
     with pytest.raises(RATIO.TokeiUnavailableError):
         RATIO.summarize(ROOT, engine="tokei")
 
 
-def test_cli_tokei_engine_returns_two_when_binary_missing() -> None:
-    if shutil.which("tokei") is not None:
-        pytest.skip("tokei is installed; degraded CLI path is not exercised in this env")
+def test_cli_tokei_engine_returns_two_when_binary_missing(tmp_path: Path) -> None:
+    # Same #368 fix for the CLI surface: force the degraded path via an empty PATH
+    # instead of skipping when tokei is present.
+    nobin = tmp_path / "nobin"
+    nobin.mkdir()
     result = run_script(
         "scripts/check_test_production_ratio.py",
         "--repo-root",
         str(ROOT),
         "--engine",
         "tokei",
+        env={**os.environ, "PATH": str(nobin)},
     )
 
     assert result.returncode == 2

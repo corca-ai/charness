@@ -119,3 +119,33 @@ inference-layer surface, not a banner repeated per invocation):
 - `render_runtime_summary.py` (runtime hot-spot trend): is a hot spot a real
   standing cost THIS repo should budget or optimize, or transient machine noise /
   a cost that already buys necessary proof?
+
+## Adding an advisory inventory or interpretation surface
+
+When you add a new advisory inventory (`inventory_*.py`) or a new inference-layer
+output, front-load these registrations so the requirement does not surface only
+at the slow broad gate. Each is enforced by a deterministic gate; the first three
+now run at the **commit boundary** (the cheap structural sweep), so a miss fails
+in ~1s, not after a ~4-min broad-pytest run.
+
+- **A 4-field `interpretation` self-declaration?** Register the declaration file +
+  paired consumer line in `<repo-root>/.agents/inference-interpretation-surfaces.json`
+  per the
+  [advisory-interpretation contract](../../../shared/references/advisory-interpretation-contract.md).
+  An unregistered 4-field dict is a `LEAK` failure
+  (`validate-inference-interpretation`, commit-boundary).
+- **A new `inventory_*.py` under `skills/public/quality/scripts/`?** Declare it in
+  [`inventory-consumer-fields.json`](./inventory-consumer-fields.json) (≥2
+  non-headline fields, or a non-empty `opt_out_reason`)
+  (`check-inventory-declaration-coverage`, commit-boundary).
+- **An exit-zero / advisory / skipped attention state?** Make it visible in
+  [`attention-state-visibility.json`](./attention-state-visibility.json)
+  (`validate-attention-state-visibility`, commit-boundary).
+- **A public-skill behavior worth dogfooding?** Update the dogfood
+  `EVIDENCE_OVERRIDES` scaffold per the authoring-repo-internal
+  `docs/public-skill-dogfood.md`.
+- **Touching a `SKILL.md`?** Keep it inside the ≤200-line core budget (the
+  `check-skill-core-headroom` ratchet) — push depth into `references/`.
+
+If you add a new commit-boundary structural check, record its timing verdict in
+the authoring-repo-internal `docs/conventions/validator-timing-layers.md`.
