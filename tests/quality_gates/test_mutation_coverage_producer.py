@@ -51,12 +51,24 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     out2 = instrument_broad_command("python3 -m pytest tests", data_file)
     assert "coverage run" in out2 and out2.endswith("-m pytest tests")
 
+    runner = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+    out3 = instrument_broad_command(runner, data_file)
+    assert "coverage run" in out3
+    assert out3.endswith("scripts/run_standing_pytest.py --repo-root . --mode read-only")
+
 
 def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
-    from scripts.mutation_coverage_producer import instrument_broad_command
+    from scripts.mutation_coverage_producer import (
+        instrument_broad_command,
+        is_instrumentable_pytest_command,
+    )
 
     with pytest.raises(ValueError):
         instrument_broad_command("ruff check .", tmp_path / ".data")
+    helper = "python3 scripts/run_standing_pytest.py --repo-root . --print-targets"
+    assert not is_instrumentable_pytest_command(helper)
+    with pytest.raises(ValueError):
+        instrument_broad_command(helper, tmp_path / ".data")
 
 
 def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:
@@ -155,7 +167,7 @@ def test_produce_broad_coverage_skips_emit_on_failure(tmp_path: Path, monkeypatc
 def test_execute_command_plan_routes_broad_to_producer(tmp_path: Path, monkeypatch) -> None:
     from scripts import slice_closeout_command_executor as ex
 
-    broad = "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
+    broad = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
     plan = [("verify", "ruff check ."), ("verify", broad)]
     payload: dict = {"executed_commands": []}
     ran: list[str] = []

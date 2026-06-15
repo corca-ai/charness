@@ -5,13 +5,17 @@ import subprocess
 
 from .support import ROOT, run_script
 
+STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+
 
 def test_broad_pytest_detector_matches_repo_python_closeout_command() -> None:
     from scripts.slice_closeout_broad_gate import is_broad_pytest_command
 
-    assert is_broad_pytest_command(
-        "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
-    )
+    assert is_broad_pytest_command(STANDING_PYTEST)
+    assert is_broad_pytest_command("pytest -q -m 'not release_only' tests/quality_gates tests/control_plane")
+    assert not is_broad_pytest_command("python3 scripts/run_standing_pytest.py --print-targets")
+    assert not is_broad_pytest_command("python3 scripts/run_standing_pytest.py --print-expanded-targets")
+    assert not is_broad_pytest_command("python3 scripts/run_standing_pytest.py --print-temp-root")
     assert not is_broad_pytest_command("pytest -q tests/quality_gates/test_goal_artifact_lib.py")
 
 
@@ -102,7 +106,7 @@ def test_run_slice_closeout_skip_broad_pytest_text_names_skipped_command() -> No
     assert "mode: pre-lock-rehearsal" in result.stdout
     assert "focused current-diff proof" in result.stdout
     assert "Skipped broad pytest commands:" in result.stdout
-    assert "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane" in result.stdout
+    assert STANDING_PYTEST in result.stdout
 
 
 def test_run_slice_closeout_lock_required_text_names_policy() -> None:
@@ -143,10 +147,7 @@ def test_run_slice_closeout_verification_lock_keeps_broad_pytest_in_plan() -> No
     assert "broad_pytest_cost_warning" not in payload
     assert "verification_lock_required" not in payload
     planned = [item["command"] for item in payload["planned_commands"]]
-    assert any(
-        command.startswith("pytest -q -m 'not release_only' tests/quality_gates tests/control_plane")
-        for command in planned
-    )
+    assert STANDING_PYTEST in planned
 
 
 def test_broad_pytest_cache_reuses_matching_fingerprint(tmp_path) -> None:
@@ -166,7 +167,7 @@ def test_broad_pytest_cache_reuses_matching_fingerprint(tmp_path) -> None:
         capture_output=True,
     )
     (tmp_path / "f.txt").write_text("two\n", encoding="utf-8")
-    command = "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
+    command = STANDING_PYTEST
     fingerprint = broad_pytest_fingerprint(tmp_path, ["f.txt"])
 
     assert broad_pytest_cache_report(tmp_path, command=command, fingerprint=fingerprint)["status"] == "missing"

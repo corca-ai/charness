@@ -26,6 +26,12 @@ _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_li
 
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
+_STANDING_RUNNER_HELPER_FLAGS = (
+    "--print-targets",
+    "--print-expanded-targets",
+    "--print-temp-root",
+    "--print-command",
+)
 PRODUCE_REQUIRES_LOCK_ERROR = (
     "--produce-mutation-coverage requires --verification-lock and is incompatible "
     "with --skip-broad-pytest (the locked closeout proof anchors the coverage marker)"
@@ -34,8 +40,20 @@ FOCUSED_REQUIRES_PRODUCE_ERROR = (
     "--mutation-coverage-command requires --produce-mutation-coverage"
 )
 FOCUSED_REQUIRES_PYTEST_ERROR = (
-    "--mutation-coverage-command must start with 'pytest ' or 'python3 -m pytest '"
+    "--mutation-coverage-command must start with 'pytest ', 'python3 -m pytest ', "
+    "or the standing pytest runner"
 )
+
+
+def is_standing_pytest_runner_command(command: str) -> bool:
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        tokens = command.split()
+    token_set = set(tokens)
+    return any(Path(token).name == "run_standing_pytest.py" for token in tokens) and not (
+        token_set & set(_STANDING_RUNNER_HELPER_FLAGS)
+    )
 
 
 def instrument_broad_command(command: str, data_file: Path) -> str:
@@ -46,11 +64,19 @@ def instrument_broad_command(command: str, data_file: Path) -> str:
     for pytest_prefix in ("python3 -m pytest ", "pytest "):
         if command.startswith(pytest_prefix):
             return coverage_prefix + command[len(pytest_prefix):]
+    if is_standing_pytest_runner_command(command):
+        tokens = shlex.split(command)
+        if tokens and Path(tokens[0]).name == "python3":
+            tokens = tokens[1:]
+        return (
+            f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} "
+            + shlex.join(tokens)
+        )
     raise ValueError(f"not an instrumentable pytest command: {command!r}")
 
 
 def is_instrumentable_pytest_command(command: str) -> bool:
-    return command.startswith(("python3 -m pytest ", "pytest "))
+    return command.startswith(("python3 -m pytest ", "pytest ")) or is_standing_pytest_runner_command(command)
 
 
 def _with_coverage_env(env: dict[str, str], command: str) -> str:

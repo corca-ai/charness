@@ -46,6 +46,7 @@ _GITIGNORE_SCAN = (
 )
 _RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
 _BOUNDARY_RATCHET = "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ."
+_STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
 
 
 def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
@@ -108,7 +109,7 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
     assert "repo-python" in {surface["surface_id"] for surface in payload["matched_surfaces"]}
     verify = payload["verify_commands"]
     assert _BOUNDARY_RATCHET in verify
-    assert any(command.startswith("pytest ") for command in verify)
+    assert _STANDING_PYTEST in verify
 
 
 def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:
@@ -424,13 +425,12 @@ def test_repo_python_surface_runs_fast_repo_copy_checker_before_broad_pytest() -
     surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
+    from scripts.slice_closeout_broad_gate import is_broad_pytest_command
+
     checker_idx = next(
         (i for i, cmd in enumerate(verify) if "check_test_repo_copy_invariants.py" in cmd), None
     )
-    broad_idx = next(
-        (i for i, cmd in enumerate(verify) if cmd.startswith("pytest") and "tests/quality_gates" in cmd),
-        None,
-    )
+    broad_idx = next((i for i, cmd in enumerate(verify) if is_broad_pytest_command(cmd)), None)
     assert checker_idx is not None, verify
     assert broad_idx is not None, verify
     # It must precede the broad pytest so fixture drift fails fast, not 172s deep.

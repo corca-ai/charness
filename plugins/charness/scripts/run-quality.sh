@@ -4,12 +4,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-STANDING_PYTEST_TARGETS=(
-  tests/quality_gates
-  tests/control_plane
-  tests/test_*.py
-  tests/charness_cli
-)
+STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
+mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
@@ -59,6 +55,8 @@ RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
 RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
 RUN_QUALITY_START_NS="$(date +%s%N)"
+PYTEST_DEBUG_TEMPROOT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-temp-root)"
+export PYTEST_DEBUG_TEMPROOT
 
 if [[ "$RUN_QUALITY_REVIEW" == "1" ]]; then
   RUN_QUALITY_VERBOSE=1
@@ -428,26 +426,6 @@ queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
-REPO_TMP_KEY="$(python3 -c 'import hashlib, sys; print(hashlib.sha256(sys.argv[1].encode()).hexdigest()[:12])' "$REPO_ROOT")"
-# Fall back to the XDG cache dir (`$HOME/.cache`), never bare `$HOME`: when the
-# repo itself lives at `$HOME/charness`, a bare-`$HOME` root would place the
-# pytest basetemp *inside* the repo, breaking outside-git/external-worktree
-# fixtures and racing repo-tree copytree probes under xdist. See issue #225.
-PYTEST_TEMPROOT="${PYTEST_DEBUG_TEMPROOT:-${XDG_CACHE_HOME:-${HOME:-/tmp}/.cache}/charness/pytest-tmp/$REPO_TMP_KEY}"
-# Fail loud if the temp root ever resolves inside the repo (regressed fallback,
-# or an XDG_CACHE_HOME/PYTEST_DEBUG_TEMPROOT pointed into the tree): an in-repo
-# basetemp silently re-breaks the outside-repo fixtures. See issue #225.
-case "$PYTEST_TEMPROOT/" in
-  "$REPO_ROOT"/*)
-    echo "run-quality: pytest temp root '$PYTEST_TEMPROOT' is inside the repo '$REPO_ROOT'; point XDG_CACHE_HOME or PYTEST_DEBUG_TEMPROOT outside the repo" >&2
-    exit 1
-    ;;
-esac
-export PYTEST_DEBUG_TEMPROOT="$PYTEST_TEMPROOT"
-PYTEST_TMP_USER="$(id -un 2>/dev/null || printf unknown)"
-PYTEST_BASETEMP="$PYTEST_TEMPROOT/pytest-of-$PYTEST_TMP_USER/pytest-$RUN_QUALITY_START_NS"
-mkdir -p "$(dirname "$PYTEST_BASETEMP")"
-PYTEST_TEMP_FLAGS=(--basetemp "$PYTEST_BASETEMP")
 queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py --strict
 queue_selected "check-markdown" ./scripts/check-markdown.sh
@@ -473,27 +451,11 @@ queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
-PYTEST_CMD=(pytest)
-if python3 -m pytest --version >/dev/null 2>&1; then
-  PYTEST_CMD=(python3 -m pytest)
+PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+  PYTEST_FLAGS+=(--include-release-only)
 fi
-
-PYTEST_PARALLEL_FLAGS=()
-PYTEST_HELP="$("${PYTEST_CMD[@]}" --help 2>/dev/null || true)"
-if grep -q -- "--numprocesses" <<<"$PYTEST_HELP"; then
-  PYTEST_PARALLEL_FLAGS=(-n auto)
-else
-  echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
-fi
-PYTEST_MARKER_FLAGS=()
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" != "1" ]]; then
-  PYTEST_MARKER_FLAGS=(-m "not release_only")
-fi
-if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_TEMP_FLAGS[@]}" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
-else
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_TEMP_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
-fi
+queue_selected "pytest" python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
@@ -573,9 +535,6 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     OVERALL_RC=$?
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
-fi
-if [[ "$OVERALL_RC" == "0" && -n "${PYTEST_BASETEMP:-}" ]]; then
-  rm -rf "$PYTEST_BASETEMP"
 fi
 print_final_summary
 exit "$OVERALL_RC"

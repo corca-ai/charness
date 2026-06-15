@@ -222,6 +222,9 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     assert "/charness/pytest-tmp/" in payload["temproot"]
     assert "--basetemp" in payload["args"]
+    assert "-n" in payload["args"]
+    assert "auto" in payload["args"]
+    assert "tests/charness_cli" in payload["args"]
     basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
     assert basetemp.startswith(payload["temproot"] + "/pytest-of-")
     assert Path(basetemp).name.startswith("pytest-")
@@ -252,6 +255,37 @@ def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
 
     assert result.returncode == 0, result.stderr
     assert "/charness/pytest-tmp/" in log_path.read_text(encoding="utf-8")
+
+
+def test_run_quality_passes_expanded_targets_to_test_completeness(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "tests").mkdir()
+    (repo / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
+    log_path = repo / "test-completeness-targets.json"
+    write_executable(
+        repo / "scripts" / "check_test_completeness.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json",
+                "import sys",
+                "from pathlib import Path",
+                f"Path({str(log_path)!r}).write_text(json.dumps(sys.argv[1:]) + '\\n', encoding='utf-8')",
+                "print('quality success output from check-test-completeness')",
+                "",
+            ]
+        ),
+    )
+    env["CHARNESS_QUALITY_LABELS"] = "check-test-completeness"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    args = json.loads(log_path.read_text(encoding="utf-8"))
+    assert "tests/test_alpha.py" in args
+    assert "tests/test_*.py" not in args
 
 
 def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -791,7 +825,8 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
     stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
-    missing = sorted(queued - stubbed)
+    copied_real_scripts = {"run_standing_pytest.py"}
+    missing = sorted(queued - stubbed - copied_real_scripts)
     assert missing == [], (
         "run-quality.sh queues repo-script gates with no seeded harness stub; "
         f"add them to QUALITY_PYTHON_STUBS in tests/quality_gates/support.py: {missing}"

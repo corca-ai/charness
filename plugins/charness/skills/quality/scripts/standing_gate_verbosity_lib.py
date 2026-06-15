@@ -42,10 +42,18 @@ def _quiet_status(findings: list[dict[str, Any]], quiet_state: str = "quiet") ->
     return "not_applicable" if not findings else ("healthy" if all(item["state"] == quiet_state for item in findings) else "weak")
 
 
+def _is_pytest_runner(snippet: str) -> bool:
+    return bool(re.search(r"\bpytest\b", snippet)) or "run_standing_pytest.py" in snippet
+
+
+def _is_quiet_pytest_runner(snippet: str) -> bool:
+    return "run_standing_pytest.py" in snippet or bool(re.search(r"(^|\s)(-q|--quiet)(\s|$)", snippet))
+
+
 def _runner_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
     findings, specs = [], [
         ("node --test", lambda s: "node" in s and "--test" in s, lambda s: "--test-reporter=dot" in s and "--test-reporter-destination=stdout" in s, "Pin `node --test --test-reporter=dot --test-reporter-destination=stdout` for standing gates."),
-        ("pytest", lambda s: bool(re.search(r"\bpytest\b", s)), lambda s: bool(re.search(r"(^|\s)(-q|--quiet)(\s|$)", s)), "Use `pytest -q` for standing-gate runs; add `--tb=short` if traceback bulk dominates."),
+        ("pytest", _is_pytest_runner, _is_quiet_pytest_runner, "Use `pytest -q` for standing-gate runs; add `--tb=short` if traceback bulk dominates."),
         ("jest", lambda s: bool(re.search(r"\bjest\b", s)), lambda s: "--reporter=dot" in s or "--reporters=dot" in s, "Prefer `jest --reporter=dot` in standing gates."),
         ("vitest", lambda s: bool(re.search(r"\bvitest\b", s)), lambda s: "--reporter=dot" in s, "Prefer `vitest --reporter=dot` in standing gates."),
         ("go test", lambda s: bool(re.search(r"\bgo\s+test\b", s)), lambda s: not bool(re.search(r"(^|\s)-v(\s|$)", s)), "Drop `go test -v` from the standing gate unless the extra stream is required."),

@@ -534,13 +534,12 @@ def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pyte
     surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
+    from scripts.slice_closeout_broad_gate import is_broad_pytest_command
+
     ratchet_idx = next(
         (i for i, cmd in enumerate(verify) if "check_boundary_bypass_ratchet.py" in cmd), None
     )
-    broad_idx = next(
-        (i for i, cmd in enumerate(verify) if cmd.startswith("pytest") and "tests/quality_gates" in cmd),
-        None,
-    )
+    broad_idx = next((i for i, cmd in enumerate(verify) if is_broad_pytest_command(cmd)), None)
     assert ratchet_idx is not None, verify
     assert broad_idx is not None, verify
     assert ratchet_idx < broad_idx, verify

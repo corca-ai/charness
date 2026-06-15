@@ -620,7 +620,7 @@
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
         "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .",
-        "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
+        "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
       ],
       "notes": [
         "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",

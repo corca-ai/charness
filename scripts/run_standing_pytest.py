@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""Canonical runner for the repo's standing pytest gate."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import os
+import shlex
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+STANDING_PYTEST_TARGETS = (
+    "tests/quality_gates",
+    "tests/control_plane",
+    "tests/test_*.py",
+    "tests/charness_cli",
+)
+
+
+def repo_tmp_key(repo_root: Path) -> str:
+    return hashlib.sha256(str(repo_root).encode()).hexdigest()[:12]
+
+
+def default_temp_root(repo_root: Path, env: dict[str, str] | None = None) -> Path:
+    env = env or os.environ
+    if env.get("PYTEST_DEBUG_TEMPROOT"):
+        return Path(env["PYTEST_DEBUG_TEMPROOT"])
+    cache_root = Path(env.get("XDG_CACHE_HOME") or Path(env.get("HOME", "/tmp")) / ".cache")
+    return cache_root / "charness" / "pytest-tmp" / repo_tmp_key(repo_root)
+
+
+def ensure_external_temp_root(repo_root: Path, temp_root: Path) -> None:
+    resolved_repo = repo_root.resolve()
+    resolved_temp = temp_root.resolve()
+    try:
+        resolved_temp.relative_to(resolved_repo)
+    except ValueError:
+        return
+    raise SystemExit(
+        "standing-pytest: pytest temp root "
+        f"{str(temp_root)!r} is inside the repo {str(repo_root)!r}; point "
+        "XDG_CACHE_HOME or PYTEST_DEBUG_TEMPROOT outside the repo"
+    )
+
+
+def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path:
+    temp_root = default_temp_root(repo_root, env)
+    ensure_external_temp_root(repo_root, temp_root)
+    user = subprocess.run(
+        ["id", "-un"],
+        check=False,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() or "unknown"
+    return temp_root / f"pytest-of-{user}" / f"pytest-{time.time_ns()}"
+
+
+def choose_pytest_command() -> list[str]:
+    probe = subprocess.run(
+        ["python3", "-m", "pytest", "--version"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if probe.returncode == 0:
+        return ["python3", "-m", "pytest"]
+    return ["pytest"]
+
+
+def has_xdist(pytest_command: list[str]) -> bool:
+    help_result = subprocess.run(
+        [*pytest_command, "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return "--numprocesses" in (help_result.stdout + help_result.stderr)
+
+
+def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS) -> list[str]:
+    expanded: list[str] = []
+    for target in targets:
+        if any(char in target for char in "*?["):
+            matches = sorted(str(path.relative_to(repo_root)) for path in repo_root.glob(target))
+            expanded.extend(matches or [target])
+        else:
+            expanded.append(target)
+    return expanded
+
+
+def build_pytest_command(
+    repo_root: Path,
+    *,
+    basetemp: Path,
+    include_release_only: bool,
+) -> list[str]:
+    command = [*choose_pytest_command(), "-q"]
+    if not include_release_only:
+        command.extend(["-m", "not release_only"])
+    command.extend(["--basetemp", str(basetemp)])
+    if has_xdist(command[:3] if command[:3] == ["python3", "-m", "pytest"] else command[:1]):
+        command.extend(["-n", "auto"])
+    else:
+        print(
+            "standing-pytest: pytest-xdist not installed; pytest will run serially "
+            "and may exceed runtime budgets. Install with: pip install pytest-xdist",
+            file=sys.stderr,
+        )
+    command.extend(expand_targets(repo_root))
+    return command
+
+
+def run_standing_pytest(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root.resolve()
+    basetemp = args.basetemp or default_basetemp(repo_root)
+    ensure_external_temp_root(repo_root, basetemp)
+    basetemp.parent.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["CHARNESS_QUALITY_MODE"] = args.mode
+    env["PYTEST_DEBUG_TEMPROOT"] = str(default_temp_root(repo_root, env))
+    command = build_pytest_command(
+        repo_root,
+        basetemp=basetemp,
+        include_release_only=args.include_release_only,
+    )
+    if args.print_command:
+        print(shlex.join(command))
+        return 0
+    result = subprocess.run(command, cwd=repo_root, env=env, check=False)
+    if result.returncode == 0 and not args.keep_basetemp:
+        shutil.rmtree(basetemp, ignore_errors=True)
+    return result.returncode
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument("--mode", choices=("full", "read-only"), default=os.environ.get("CHARNESS_QUALITY_MODE", "full"))
+    parser.add_argument("--basetemp", type=Path)
+    parser.add_argument("--include-release-only", action="store_true")
+    parser.add_argument("--keep-basetemp", action="store_true")
+    parser.add_argument("--print-targets", action="store_true")
+    parser.add_argument("--print-expanded-targets", action="store_true")
+    parser.add_argument("--print-temp-root", action="store_true")
+    parser.add_argument("--print-command", action="store_true")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv or sys.argv[1:])
+    if args.print_targets:
+        print("\n".join(STANDING_PYTEST_TARGETS))
+        return 0
+    if args.print_expanded_targets:
+        print("\n".join(expand_targets(args.repo_root.resolve())))
+        return 0
+    if args.print_temp_root:
+        temp_root = default_temp_root(args.repo_root.resolve())
+        ensure_external_temp_root(args.repo_root.resolve(), temp_root)
+        print(temp_root)
+        return 0
+    return run_standing_pytest(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

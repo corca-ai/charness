@@ -335,6 +335,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
 
     shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
     (scripts_dir / "run-quality.sh").chmod(0o755)
+    shutil.copy2(
+        ROOT / "scripts" / "run_standing_pytest.py",
+        scripts_dir / "run_standing_pytest.py",
+    )
+    (scripts_dir / "run_standing_pytest.py").chmod(0o755)
     seed_quality_python_stubs(scripts_dir, QUALITY_PYTHON_STUBS)
     seed_quality_python_stubs(quality_scripts_dir, QUALITY_RUNTIME_STUBS)
     seed_quality_runtime_recorder(scripts_dir)

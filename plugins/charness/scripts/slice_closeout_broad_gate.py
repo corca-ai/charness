@@ -37,6 +37,12 @@ VERIFICATION_LOCK_RECOMMENDATION = (
     "Broad pytest remains in the plan because this run declares the final verification lock."
 )
 BROAD_PYTEST_CACHE_RELATIVE = Path(".charness/closeout/broad-pytest-proof.json")
+STANDING_PYTEST_RUNNER_HELPER_FLAGS = {
+    "--print-targets",
+    "--print-expanded-targets",
+    "--print-temp-root",
+    "--print-command",
+}
 
 
 def is_broad_pytest_command(command: str) -> bool:
@@ -46,6 +52,9 @@ def is_broad_pytest_command(command: str) -> bool:
         tokens = command.split()
     if not tokens:
         return False
+    if any(Path(token).name == "run_standing_pytest.py" for token in tokens):
+        token_set = set(tokens)
+        return not STANDING_PYTEST_RUNNER_HELPER_FLAGS & token_set
     has_pytest = "pytest" in tokens or (
         len(tokens) >= 3 and tokens[0].endswith("python3") and tokens[1:3] == ["-m", "pytest"]
     )
