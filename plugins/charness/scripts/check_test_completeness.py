@@ -1,32 +1,24 @@
 #!/usr/bin/env python3
-"""Check that standing pytest targets cover all discoverable tests.
+"""Check that standing pytest targets cover all discoverable test files.
 
 Portable across repos: takes --repo-root and the standing targets as
-positional arguments. Runs pytest --collect-only twice (full test root
-vs targets) and reports any tests missing from the standing targets.
+positional arguments. The gate is intentionally file-target based: if a pytest
+target includes a test file, every nodeid in that file is covered by the
+standing run. That preserves the coverage contract without paying for duplicate
+pytest collection during the quality gate.
 """
 
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
 
-def collect_test_ids(repo_root: Path, targets: list[str]) -> set[str]:
-    result = subprocess.run(
-        ["python3", "-m", "pytest", "--collect-only", "-q", *targets],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
+def is_pytest_file(path: Path) -> bool:
+    return path.suffix == ".py" and (
+        path.name.startswith("test_") or path.name.endswith("_test.py")
     )
-    ids: set[str] = set()
-    for line in result.stdout.splitlines():
-        line = line.strip()
-        if line and "::" in line and not line.startswith(("=", "-", " ")):
-            ids.add(line)
-    return ids
 
 
 def find_test_root(repo_root: Path) -> str | None:
@@ -34,6 +26,31 @@ def find_test_root(repo_root: Path) -> str | None:
         if (repo_root / candidate).is_dir():
             return candidate
     return None
+
+
+def relative_test_files(repo_root: Path, root: Path) -> set[str]:
+    if not root.exists():
+        return set()
+    if root.is_file():
+        return {root.relative_to(repo_root).as_posix()} if is_pytest_file(root) else set()
+    return {
+        path.relative_to(repo_root).as_posix()
+        for path in root.rglob("*.py")
+        if path.is_file() and is_pytest_file(path)
+    }
+
+
+def target_files(repo_root: Path, targets: list[str]) -> set[str]:
+    files: set[str] = set()
+    for raw_target in targets:
+        matches = (
+            list(repo_root.glob(raw_target))
+            if any(char in raw_target for char in "*?[")
+            else [repo_root / raw_target]
+        )
+        for match in matches:
+            files.update(relative_test_files(repo_root, match))
+    return files
 
 
 def main() -> int:
@@ -47,7 +64,7 @@ def main() -> int:
     if test_root is None:
         return 0
 
-    all_tests = collect_test_ids(repo_root, [test_root])
+    all_tests = relative_test_files(repo_root, repo_root / test_root)
     if not all_tests:
         return 0
 
@@ -55,19 +72,17 @@ def main() -> int:
         print("no standing targets provided; skipping completeness check", file=sys.stderr)
         return 0
 
-    targeted_tests = collect_test_ids(repo_root, args.targets)
+    targeted_tests = target_files(repo_root, args.targets)
     missing = all_tests - targeted_tests
     if not missing:
         return 0
 
-    missing_files = sorted({tid.split("::")[0] for tid in missing})
     print(
-        f"{len(missing)} test(s) in {len(missing_files)} file(s) not covered by standing pytest targets:",
+        f"{len(missing)} test file(s) not covered by standing pytest targets:",
         file=sys.stderr,
     )
-    for path in missing_files:
-        count = sum(1 for tid in missing if tid.startswith(path + "::"))
-        print(f"  {path} ({count})", file=sys.stderr)
+    for path in sorted(missing):
+        print(f"  {path}", file=sys.stderr)
     return 1
 
 

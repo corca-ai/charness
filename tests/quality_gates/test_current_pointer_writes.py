@@ -418,3 +418,83 @@ def test_current_pointer_write_scanner_constant_helpers_ignore_non_name_targets(
     assert SCANNER._resolved_string_constants(tree) == {"CURRENT": "latest.md"}
     assert SCANNER._scope_assigned_names(first_assign) == set()
     assert SCANNER._pointer_names_in_resolved(tree.body[2].value, {"CURRENT": "latest.md"}, set()) == {"latest.md"}
+
+
+def test_current_pointer_write_scanner_prefilters_non_candidate_files(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    (script_dir / "ordinary_writer.py").write_text(
+        "from pathlib import Path\nPath('notes.md').write_text('ok')\n",
+        encoding="utf-8",
+    )
+    candidate = script_dir / "candidate_writer.py"
+    candidate.write_text(
+        "from pathlib import Path\n"
+        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(
+        repo,
+        ".gitignore",
+        "scripts/ordinary_writer.py",
+        "scripts/candidate_writer.py",
+    )
+
+    scanned: list[str] = []
+
+    def fake_scan(repo_root: Path, path: Path, text: str) -> list[object]:
+        del text
+        scanned.append(path.relative_to(repo_root).as_posix())
+        return []
+
+    monkeypatch.setattr(SCANNER, "_scan_text", fake_scan)
+
+    assert SCANNER.scan_repo(repo) == []
+    assert scanned == ["scripts/candidate_writer.py"]
+
+
+def test_current_pointer_write_scanner_skips_helper_during_repo_scan(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    (script_dir / "current_pointer_writer_lib.py").write_text(
+        "from pathlib import Path\n"
+        "(Path('charness-artifacts/demo') / 'latest.md').write_text('helper')\n",
+        encoding="utf-8",
+    )
+    (script_dir / "candidate_writer.py").write_text(
+        "from pathlib import Path\n"
+        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(
+        repo,
+        ".gitignore",
+        "scripts/current_pointer_writer_lib.py",
+        "scripts/candidate_writer.py",
+    )
+
+    scanned: list[str] = []
+
+    def fake_scan(repo_root: Path, path: Path, text: str) -> list[object]:
+        del text
+        scanned.append(path.relative_to(repo_root).as_posix())
+        return []
+
+    monkeypatch.setattr(SCANNER, "_scan_text", fake_scan)
+
+    assert SCANNER.scan_repo(repo) == []
+    assert scanned == ["scripts/candidate_writer.py"]
+
+
+def test_current_pointer_write_scanner_prefilter_allows_spaced_open_call() -> None:
+    assert SCANNER._could_write_current_pointer("target = 'latest.md'\npath.open ('w')\n")

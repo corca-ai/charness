@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 CURRENT_POINTER_NAMES = {"latest.md", "latest.json"}
+WRITE_CALL_TOKENS = ("write_text", "write_bytes", "open")
 HELPER_FILES = {
     Path("scripts/current_pointer_writer_lib.py"),
 }
@@ -48,6 +49,12 @@ def _git_visible_python_files(repo_root: Path) -> list[Path]:
         if scan_root.is_dir():
             fallback.extend(path for path in scan_root.rglob("*.py") if path.is_file())
     return sorted(fallback)
+
+
+def _could_write_current_pointer(text: str) -> bool:
+    return any(name in text for name in CURRENT_POINTER_NAMES) and any(
+        token in text for token in WRITE_CALL_TOKENS
+    )
 
 
 def _string_constants(node: ast.AST) -> set[str]:
@@ -151,11 +158,10 @@ def _call_target_name(call: ast.Call, assigned: dict[str, str], constants: dict[
     return None
 
 
-def scan_path(repo_root: Path, path: Path) -> list[Finding]:
+def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
     relative = path.relative_to(repo_root)
     if relative in HELPER_FILES:
         return []
-    text = path.read_text(encoding="utf-8")
     try:
         tree = ast.parse(text, filename=str(relative))
     except SyntaxError:
@@ -181,10 +187,24 @@ def scan_path(repo_root: Path, path: Path) -> list[Finding]:
     return findings
 
 
+def scan_path(repo_root: Path, path: Path) -> list[Finding]:
+    relative = path.relative_to(repo_root)
+    if relative in HELPER_FILES:
+        return []
+    text = path.read_text(encoding="utf-8")
+    return _scan_text(repo_root, path, text)
+
+
 def scan_repo(repo_root: Path) -> list[Finding]:
     findings: list[Finding] = []
     for path in _git_visible_python_files(repo_root):
-        findings.extend(scan_path(repo_root, path))
+        relative = path.relative_to(repo_root)
+        if relative in HELPER_FILES:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not _could_write_current_pointer(text):
+            continue
+        findings.extend(_scan_text(repo_root, path, text))
     return sorted(findings, key=lambda item: (item.path, item.line, item.target))
 
 
