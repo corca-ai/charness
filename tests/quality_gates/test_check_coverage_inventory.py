@@ -87,3 +87,75 @@ def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch,
 
     assert captured
     assert all(item["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] == "1" for item in captured)
+
+
+def test_check_coverage_tracer_ignores_python_runtime_dirs(monkeypatch, tmp_path) -> None:
+    captured: dict[str, tuple[str, ...]] = {}
+
+    class FakeResults:
+        counts: dict[tuple[str, int], int] = {}
+
+    class FakeTrace:
+        def __init__(self, **kwargs):
+            captured["ignoredirs"] = tuple(kwargs.get("ignoredirs") or ())
+
+        def results(self) -> FakeResults:
+            return FakeResults()
+
+    monkeypatch.setattr(CHECK_COVERAGE, "python_runtime_ignoredirs", lambda _repo_root: ("/python/runtime",))
+    monkeypatch.setattr(CHECK_COVERAGE.trace, "Trace", FakeTrace)
+    monkeypatch.setattr(CHECK_COVERAGE, "run_traced_entry", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(CHECK_COVERAGE, "run_traced_function", lambda *_args, **_kwargs: None)
+
+    CHECK_COVERAGE.collect_counts(tmp_path)
+
+    assert captured["ignoredirs"] == ("/python/runtime",)
+
+
+def test_python_runtime_ignoredirs_collects_runtime_dirs(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(
+        CHECK_COVERAGE.sysconfig,
+        "get_paths",
+        lambda: {
+            "stdlib": "/python/stdlib",
+            "platstdlib": "/python/stdlib",
+            "purelib": "/python/site-packages",
+            "platlib": "",
+        },
+    )
+    monkeypatch.setattr(CHECK_COVERAGE.site, "getusersitepackages", lambda: "/python/user-site")
+    monkeypatch.setattr(CHECK_COVERAGE.site, "getsitepackages", lambda: ["/python/global-site"])
+
+    assert CHECK_COVERAGE.python_runtime_ignoredirs(tmp_path) == (
+        "/python/global-site",
+        "/python/site-packages",
+        "/python/stdlib",
+        "/python/user-site",
+    )
+
+
+def test_python_runtime_ignoredirs_skips_repo_parent_runtime_dir(monkeypatch, tmp_path) -> None:
+    repo = tmp_path / "runtime" / "repo"
+    repo.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        CHECK_COVERAGE.sysconfig,
+        "get_paths",
+        lambda: {
+            "stdlib": str(tmp_path / "runtime"),
+            "platstdlib": "/python/platstdlib",
+            "purelib": "",
+            "platlib": "",
+        },
+    )
+    monkeypatch.setattr(
+        CHECK_COVERAGE.site,
+        "getusersitepackages",
+        lambda: (_ for _ in ()).throw(RuntimeError("site unavailable")),
+    )
+    monkeypatch.setattr(CHECK_COVERAGE.site, "getsitepackages", lambda: "/python/site")
+
+    assert CHECK_COVERAGE.python_runtime_ignoredirs(repo) == (
+        "/python/platstdlib",
+        "/python/site",
+    )

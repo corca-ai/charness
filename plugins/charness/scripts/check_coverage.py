@@ -10,7 +10,9 @@ import json
 import os
 import runpy
 import shutil
+import site
 import sys
+import sysconfig
 import tempfile
 import trace
 from pathlib import Path
@@ -66,6 +68,7 @@ COPY_IGNORE_NAMES = (
     ".charness",
     ".venv",
     "node_modules",
+    "reports",
     "history",
 )
 COPY_IGNORE = shutil.ignore_patterns(*COPY_IGNORE_NAMES)
@@ -73,6 +76,31 @@ COPY_IGNORE = shutil.ignore_patterns(*COPY_IGNORE_NAMES)
 
 class CoverageError(Exception):
     pass
+
+
+def python_runtime_ignoredirs(repo_root: Path | None = None) -> tuple[str, ...]:
+    paths: set[str] = set()
+    for key in ("stdlib", "platstdlib", "purelib", "platlib"):
+        raw = sysconfig.get_paths().get(key)
+        if raw:
+            paths.add(os.path.normpath(raw))
+    for getter in (site.getusersitepackages, site.getsitepackages):
+        try:
+            raw = getter()
+        except Exception:
+            continue
+        if isinstance(raw, str):
+            paths.add(os.path.normpath(raw))
+        else:
+            paths.update(os.path.normpath(path) for path in raw)
+    if repo_root is not None:
+        resolved_repo_root = repo_root.resolve()
+        paths = {
+            path
+            for path in paths
+            if os.path.commonpath((path, str(resolved_repo_root))) != path
+        }
+    return tuple(sorted(paths))
 
 
 def executable_lines(path: Path) -> set[int]:
@@ -243,7 +271,12 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
             "CHARNESS_SUPPORT_SYNC_FIXTURES": str(support_fixture),
             "CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS": "1",
         }
-        tracer = trace.Trace(count=True, trace=False, ignoremods=("importlib", "encodings"))
+        tracer = trace.Trace(
+            count=True,
+            trace=False,
+            ignoremods=("importlib", "encodings"),
+            ignoredirs=python_runtime_ignoredirs(repo_root),
+        )
         entries = (
             (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "--json", "agent-browser"]),
             (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "agent-browser"]),

@@ -19,6 +19,7 @@ REPO_COPY_EXCLUDE_NAMES = (
     ".charness",
     ".venv",
     "node_modules",
+    "reports",
     "history",
 )
 REPO_COPY_IGNORE = shutil.ignore_patterns(*REPO_COPY_EXCLUDE_NAMES)

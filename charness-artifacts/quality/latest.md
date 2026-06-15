@@ -1,119 +1,137 @@
 # Quality Review
-Date: 2026-06-15
+Date: 2026-06-16
 
 ## Scope
 
-Operator-requested `charness:quality` pass with autonomous repair. Routing:
-`find-skills` -> `quality`. Scope covered current gates, skill/docs/runtime/test
-economics inventories, maintainer-local enforcement, CI/local parity, plugin
-mirror sync, and one repo-owned structural fix. The implemented slice preserves
-the public planner module API while moving private helper families to
-`scripts/staged_commit_gate_plan_helpers.py`.
+Operator-requested test-speed-first repair. Routing: `find-skills` -> `quality`
+with implementation through the existing repo gate surface. Scope stayed on the
+standing local test/runtime hot spot, especially `check-coverage`.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh --read-only`: **77 passed, 0 failed, 45.8s**.
-- Focused repair proof: `pytest -q tests/quality_gates/test_staged_commit_gate_plan.py
-  tests/quality_gates/test_closeout_headroom_and_mirror_gate.py`: **53 passed**.
-- Packaging/export sync: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-  reported `plugins/charness` plus marketplace paths; only mirror copies remain
-  in the diff.
+- Focused proof: `pytest -q tests/quality_gates/test_check_coverage_inventory.py
+  tests/quality_gates/test_repo_copy_invariants.py`: **17 passed**.
+- Lint proof: `ruff check scripts/check_coverage.py
+  tests/quality_gates/test_check_coverage_inventory.py
+  tests/quality_gates/test_repo_copy_invariants.py tests/repo_copy.py`:
+  **passed**.
+- `CHARNESS_QUALITY_LABELS=check-coverage ./scripts/run-quality.sh --read-only`:
+  **1 passed, 0 failed, `check-coverage` 16.7s**.
+- Full `./scripts/run-quality.sh --read-only` after mirror sync and artifact
+  fixes: **78 passed, 0 failed, total 45.0s**.
+- Locked closeout producer:
+  `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock
+  --produce-mutation-coverage`: **completed**; broad pytest under coverage
+  passed in **462.9s** and refreshed `reports/mutation/test-coverage.json` <!-- reproduction-source -->
+  plus its freshness marker.
+- Earlier full run before mirror sync/ruff fix: **75 passed, 3 failed, total
+  45.1s**; failures were expected drift/formatting from the live diff and were
+  fixed before final full gate.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `run-quality-read-only` 65.7s latest / 66.6s median;
-  `check-coverage` 47.1s / 46.6s vs 55.0s; `pytest` 22.5s / 22.1s vs 140.0s;
-  `check-duplicates` 10.0s / 11.9s.
-- coverage gate: read-only quality pass ran green; no coverage-floor failure.
+- runtime hot spots: `run-quality-read-only` 65.7s latest / 66.6s
+  median; `check-coverage` 47.1s latest / 46.6s median; `pytest` 23.0s latest /
+  22.2s median.
+- coverage gate: `check-coverage` passed after repair in 16.7s through a focused
+  `run-quality` label run and 20.0s inside the final full read-only gate;
+  coverage JSON diff against the pre-`ignoredirs` run was empty.
 - evaluator depth: deterministic gates only; no log-backed behavior failure or
   Cautilus planner-triggering request was present.
+- direct baseline during repair: `python3 scripts/check_coverage.py --repo-root .
+  --json` was **38.2s** after the `reports` copy-ignore change alone.
+- implemented repair: exclude generated `reports/` from repo-copy fixtures and
+  pass Python runtime stdlib/site-package directories as `trace.Trace`
+  `ignoredirs`, while filtering out any runtime dir that would contain the repo
+  root.
+- direct proof after repair: `python3 scripts/check_coverage.py --repo-root .
+  --json` was **16.6s**; JSON diff against the pre-`ignoredirs` run was empty.
+- label proof after repair: `check-coverage` passed through `run-quality` in
+  **16.7s**.
+
+## Standing Test Economics
+
+- `inventory_standing_test_economics.py --json`: `test_file_count=309`,
+  `nested_cli_file_count=136`, and 6.4GB allocated pytest temp retention across
+  2 retained sessions.
+- `runner_snippets` showed the standing `run-quality` pytest command still uses
+  the fixed broad target set, so this slice avoided pruning tests or changing
+  selection semantics.
+- The selected repair avoided pruning tests or weakening proof. It reduces
+  tracer overhead inside the existing control-plane coverage gate.
 
 ## Healthy
 
-- All standing read-only quality phases passed.
-- CLI ergonomics, CLI side-effect probe contracts, CI/local parity, attention
-  visibility, usage episode validation, public spec inventory, and package sync
-  checks were healthy.
-- Maintainer-local enforcement is present through checked-in `.githooks/pre-push`
-  plus the `run-quality --read-only` policy in `docs/conventions/operating-contract.md`.
-- `check_changed_surfaces.py` mapped this slice to repo-python, checked-in plugin
-  export, integrations/control-plane, and python-scan-hygiene surfaces; planned
-  sync/verify commands were followed.
+- The coverage summary output stayed identical across the tracer narrowing.
+- Fresh-eye code critique found no `Act Before Ship` concerns.
+- The plugin mirror was refreshed with
+  `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 
 ## Weak
 
-- `report_usage_episodes.py`: usage episodes remain engineering signal only:
-  feedback coverage 0.0%, no satisfaction signal, single emitter, single trigger
-  type, and explicit request only.
-- `inventory_skill_ergonomics.py --json`: gate-clean but 17 advisory findings,
-  mostly host-surface references; explicit prose review remains required.
-- `inventory_standing_test_economics.py --json`: 309 pytest files, 136 nested
-  CLI-spawning test files, and 6.4GB allocated pytest temp retention across 2
-  retained sessions; no pruning was safe without a scorecard.
+- Full read-only closeout must be rerun after sync/critique artifact updates; the
+  first full run intentionally exposed the unsynced plugin mirror.
+- The coverage gate still performs broad scripted scenarios; this slice reduces
+  tracer overhead but does not restructure duplicated proof inside the scenario
+  set.
 
 ## Missing
 
-- No missing repo-local enforcement was found in this pass.
-- `update_tools.py --json` found `defuddle` absent on this machine; that is an
-  external-tool readiness advisory, not a repo-local gate failure.
+- No missing repo-local enforcement was found for this slice.
 
 ## Deferred
 
-- Product-success instrumentation remains outside this code slice.
-- Runtime/test-economics cleanup needs candidate scorecards before edits.
-- Broad skill-portability prose review remains a quality follow-up, not a
-  deterministic repair.
+- Centralizing duplicate repo-copy ignore lists is valid but deferred; this slice
+  only added `reports` to the existing surfaces and pinned behavior with tests.
+- A future intentional checked-in `reports/` fixture would need an explicit
+  exemption or fixture shape change.
 
 ## Advisory
 
-- `check_python_lengths.py --headroom`: `scripts/staged_commit_gate_plan.py`
-  started at 475/480 code lines and was the only clear `AUTO_CANDIDATE`.
-- `inventory_ci_recoverable_gates.py --json`: only `check-markdown` matched a
-  CI-backed move-off-local candidate, but at 4.6s it is not worth changing.
-- `inventory_public_spec_quality.py --json`: 4 specs, no source-guard pressure,
-  no duplicate command examples, one smoke path, and one E2E path for review.
-- `inventory_nose_clones.py` in the quality gate reported 20 displayed clone
-  families / 2002 duplicated lines under nose 0.10.0; interpretation remains
-  per-family, not a metric target.
-- `inventory_lint_ignores.py --json`: 160 narrow inline `noqa` sites, no blanket
-  or file-level ignores; advisory inventory only.
+- `inventory_ci_recoverable_gates.py --json`: `check-coverage` remains
+  `keep-local`; CI does not fully backstop this proof.
+- `check-changed-line-mutation-coverage`: warned that uncommitted eligible
+  Python changes are not analyzed before commit. Final closeout must refresh
+  mutation coverage for the locked diff if the slice remains mutation-pool
+  eligible.
+- `run_slice_closeout.py`: emitted a gate-baseline runtime advisory because the
+  instrumented broad pytest producer took 462.9s; this is accepted for the locked
+  producer path, not as a new local speed win.
 
 ## Delegated Review
 
-- Delegated Review: executed. Bounded fresh-eye reviewer `Herschel`, requested
-  high-leverage tier, parent-delegated, read-only shared worktree. Verdict:
-  the `staged_commit_gate_plan.py` split was the highest-confidence autonomous
-  fix; no smaller safer automatable fix had comparable confidence.
-- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
-  not re-delegated; slow-gate signals were advisory and not edited.
+- Delegated Review: executed. Bounded fresh-eye code critique used three angle
+  reviewers plus one counterweight reviewer through the repo-authorized
+  subagent path. Reviewer tier requested: `high-leverage`; requested spawn
+  fields sent: `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`;
+  host exposure state: `requested_fields_sent`; application state:
+  `unverified-by-host`.
+- Findings: no `Act Before Ship`; helper tests and repo-under-runtime guard were
+  bundled and implemented; duplicate ignore-list centralization deferred.
+- Slow-gate lenses named for this runtime/test review: fixture-economics,
+  parallel-critical-path, duplicated-proof.
 
 ## Commands Run
 
-- `python3 skills/public/quality/scripts/resolve_adapter.py --repo-root .`;
-  `bootstrap_adapter.py`; `resolve_quality_artifact.py`; `rg --files .`;
-  `git status --short --branch`.
-- `./scripts/run-quality.sh --read-only`; `validate_usage_episodes.py`;
-  `report_usage_episodes.py`; `validate_attention_state_visibility.py`;
-  `render_runtime_summary.py`.
-- Inventories: skill ergonomics, CLI ergonomics, entrypoint-doc ergonomics,
-  standing-gate verbosity, standing-test economics, CI/local parity,
-  CI-recoverable gates, CLI side-effect probes, public spec quality, lint ignores.
-- Repair proof: `py_compile`, `ruff check`, focused pytest, headroom check,
-  `check_changed_surfaces.py`, `sync_support.py --json`, `update_tools.py --json`,
-  `sync_root_plugin_manifests.py`.
+- `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.50.1/skills/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "테스트 속도 개선" --summary`.
+- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root .
+  --json`; `inventory_standing_test_economics.py --json`;
+  `inventory_ci_recoverable_gates.py --json`.
+- `python3 scripts/check_coverage.py --repo-root . --json` before and after the
+  tracer narrowing; JSON diff was empty.
+- Focused pytest, touched-file ruff, `CHARNESS_QUALITY_LABELS=check-coverage
+  ./scripts/run-quality.sh --read-only`, full `./scripts/run-quality.sh
+  --read-only`, `python3 scripts/run_slice_closeout.py --repo-root .
+  --verification-lock --produce-mutation-coverage`, and
+  `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 
 ## Recommended Next Gates
 
-- active none — the clear repo-owned deterministic repair was implemented in
-  this slice.
-- passive test-economics consolidation because nested CLI fanout needs a
-  candidate scorecard before production/test edits.
-- passive skill-portability prose review because host-surface references are
-  advisory heuristics, not automatic debt.
-- passive product-success instrumentation because usage episodes still do not
-  prove satisfaction or feedback.
+- active none — the immediate deterministic speed repair is implemented.
+- passive rerun full read-only closeout after artifacts/mirror changes lock because the first full run intentionally caught pre-sync drift.
+- passive evaluate deeper test-economics cleanup with a candidate scorecard before pruning nested CLI tests because nested CLI fanout is advisory evidence, not proof that any specific test is waste.
 
 ## History
 
