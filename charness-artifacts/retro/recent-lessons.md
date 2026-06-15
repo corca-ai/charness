@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This retro covers the active goal `charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md`: runtime reduction, issue #373/#372/#371 disposition, and selected nose 0.10.0 clone reduction. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - Achieve goal `charness-artifacts/goals/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`, resolving GitHub issue #367 end-to-end (operator chose push + close + release). (source: `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`)
-- Closeout retro for goal `charness-artifacts/goals/2026-06-14-workflow-host-state-hardening-bundle.md`: three non-blocking workflow/host-state guards landed and released as 0.48.0 — S1 agent-browser orphan scoping (bug-class #365), S2 #363 close-keyword-leakage advisory, S3 #364 decaying-habit advisory — each reusing an existing surface (no new blocking floor, per Floor-Addition Restraint), through push + release. (source: `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`; sources: 38)
-- `advisory-only` attention-state undeclared → blocked the slice-2 commit; fixed by declaring it. One round. (source: `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`)
-- **First no-drift tests blocked by `check-boundary-bypass-ratchet`.** I wrote the gate cross-checks as `subprocess.run(["python3", "scripts/check_doc_links.py", ...])`; the ratchet flagged them as in-process-convertible candidates. Converted to in-process `main()` calls. The gate caught it; one round. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
-- **First S1 commit blocked by `staged-plugin-mirror-drift`.** I committed before running `sync_root_plugin_manifests.py`; `scripts/*.py` is part of the plugin install surface, so the new script needed mirroring into `plugins/charness/scripts/`. One blocked commit → sync → re-commit. The gate caught it; cost was one round, no escaped drift. (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
+- Final verification-lock closeout no-oped on a clean worktree, so broad pytest had to be run directly. This is acceptable but worth remembering for clean bundle closeouts. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
+- The first #371 wording allowed a closure path without process/profile teardown proof; fresh-eye review caught it before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
+- The nose helper extraction initially missed one `hotl` optional-path call site. Focused adapter tests caught the miss, and a direct helper test now pins the shared API. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`; sources: 38)
-- a pre-push/pre-commit advisory that flags a close keyword (`closes/fixes/resolves #N`) in a commit whose changed paths are not a plausible fix for #N (e.g. an artifact-only goal-shaping commit) — surfaced as a non-blocking advisory, per Floor-Addition Restraint. Filed as https://github.com/corca-ai/charness/issues/363 (one recorded instance; advisory before any blocking floor). (source: `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`)
-- **memory/capability:** a short "adding an advisory inventory/surface" checklist (the 3 registries + the SKILL.md ≤200 budget) in the quality references, so the next author front-loads the registrations. → file as issue (same structural cluster as the first; keep one tracked thread). (source: `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`)
-- **memory — repo-root `scripts/*.py` mirror into `plugins/charness/scripts/`**, not just skill surfaces; sync before the commit gate, not after a rejection. (The staged-mirror-drift gate already enforces this deterministically; the lesson is to sync proactively.) (source: `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`)
+- Keep the #371 lesson visible: a healthcheck/reaper is drift mitigation unless the repo owns and proves the final lifecycle boundary. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
+- No new gate is needed. Existing fresh-eye review, focused tests, and slice closeout caught the issues before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
+- When a final verification-lock closeout no-ops because the worktree is clean, run and record the broad pytest command directly rather than trying to force a fake diff. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 
 ## Selection Policy
 
@@ -62,10 +62,8 @@
 - `charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-367-quality-ci-recoverability-and-timing-ingest.md`
-- `charness-artifacts/retro/2026-06-14-achieve-efficiency-internal-followups.md`
-- `charness-artifacts/retro/2026-06-14-general-doc-authoring-preflight.md`
 - `charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-14-workflow-host-state-hardening-bundle.md`
+- `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`

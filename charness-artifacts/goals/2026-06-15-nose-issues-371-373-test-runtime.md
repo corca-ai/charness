@@ -274,10 +274,37 @@ None yet.
 
 ## Final Verification
 
-Pending until the goal is active and slices are complete.
+Final local proof passed before publication:
 
-Retro: skipped: host-blocked-subagent: not run during draft shaping; required at final closeout.
-Host log probe: skipped: host-log-not-exposed: draft shaping has no active goal window yet.
+- `pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py`
+  passed: 3056 passed, 26 deselected in 244.91s.
+- Final clean-worktree `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --ack-cautilus-skill-review`
+  returned `Closeout status: noop` because all slice commits were already cleanly
+  committed; broad pytest was therefore run directly against committed HEAD.
+- Slice closeout for the nose helper extraction passed all changed-surface gates
+  with broad pytest intentionally skipped under the pre-lock policy before the
+  final direct broad run.
+- #372 and #373 have direct-commit closeout carriers with `Close #372` and
+  `Close #373` in their committed bodies; remote closure is pending push of this
+  branch to `origin/main`.
+- #371 is deliberately not closed. Local disposition is the checked-in upstream
+  split record and issue comment to be posted after push, because Charness does
+  not own invocation-bound `agent-browser` Chrome/profile teardown proof.
+- Runtime evidence retained from slice 1: read-only quality went from 73.6s
+  failed with baseline regressions to 65.7s passing; current-pointer scanner
+  went from 15.2s to 7.8s.
+- Nose evidence retained from slice 5: nose 0.10.0 moved from 20 shown families,
+  559 ranked families, and 2036 duplicate lines to 20 shown families, 551 ranked
+  families, and 2002 duplicate lines. This is scanner-version-local advisory
+  evidence, not a total-debt or cross-version trend claim.
+
+## Auto-Retro
+
+- Retro artifact: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`.
+- Summary refreshed: `charness-artifacts/retro/recent-lessons.md`.
+- Lesson-selection index refreshed:
+  `charness-artifacts/retro/lesson-selection-index.json`.
+- Persisted: yes.
 Disposition review: skipped: host-blocked-subagent: not applicable until final auto-retro has findings to disposition.
 
 ## User Verification Instructions
