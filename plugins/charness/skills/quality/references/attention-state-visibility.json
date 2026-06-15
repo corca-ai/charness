@@ -75,10 +75,10 @@
       "rationale": "Coverage helper tests and payloads keep disabled Cautilus policy explicit rather than silent."
     },
     "scripts/check_coverage_lib.py": {
-      "states": ["disabled"],
+      "states": ["disabled", "skipped"],
       "visibility": ["terminal_payload"],
-      "evidence_terms": ["disabled_check_payload"],
-      "rationale": "Coverage library preserves disabled tool state through the shared lifecycle payload."
+      "evidence_terms": ["disabled_check_payload", "skipped_healthcheck"],
+      "rationale": "Coverage library preserves disabled tool state and skipped healthcheck state through shared lifecycle payloads."
     },
     "scripts/check_seed_fixture_budget.py": {
       "states": ["advisory-only"],

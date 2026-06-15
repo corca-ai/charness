@@ -1,13 +1,13 @@
 # Find Skills Inventory
 Date: 2026-06-15
-Updated: 2026-06-15T10:38:22Z
+Updated: 2026-06-15T11:12:47Z
 
 ## Summary
 - public skills: 20
-- support skills: 4
+- support skills: 8
 - synced support skills: 0
 - support capabilities: 4
-- integrations: 12
+- integrations: 13
 - workflow integrations: 2
 - trusted skills: 0
 
@@ -38,6 +38,10 @@ Updated: 2026-06-15T10:38:22Z
 - `gather-slack` (support skill): Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.
 - `markdown-preview` (support skill): Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.
 - `web-fetch` (support skill): Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.
+- `agent-browser` (support skill): Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to "open a website", "fill out a form", "click a button", "take a screenshot", "scrape data from a page", "test this web app", "login to a site", "automate browser actions", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.
+- `cautilus` (support skill): Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.
+- `pry` (support skill): Use when reviewing the testability/injectability of TypeScript/JavaScript code, or when `quality` wants pry's testability backlog. Runs the pry static analyzer (honoring PRY_BIN), ranks the welded-at-demand findings (boundary calls with no seam to inject a failure), and labels each GENUINE / FALSE-WELD / COSMETIC / AMBIGUOUS. Emits a risk ranking, not a bug list. TS/JS only — Python is a recorded KILL.
+- `specdown` (support skill): Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.
 
 ## Support Capabilities
 - `gather-notion`: charness-owned published Notion gather runtime used by the public gather skill. Supports `gather`.
@@ -58,6 +62,7 @@ Updated: 2026-06-15T10:38:22Z
 - `specdown` (external_binary, upstream-consumed): access modes `binary, human-only, degraded`
 - `tokei` (external_binary, integration-only): access modes `binary, degraded`
 - `vulture` (external_binary, integration-only): access modes `binary, degraded`
+- `google-workspace-worker` (external capability, integration-only): access modes `binary, human-only, degraded`
 
 ## Workflow Integrations
 - `worktree-create`: Create and prepare git worktrees through the Charness worktree CLI. Path `integrations/worktree/adapter.example.yaml`. Next: Use `charness worktree create --prepare --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when the operator wants adapter-declared setup to run immediately.

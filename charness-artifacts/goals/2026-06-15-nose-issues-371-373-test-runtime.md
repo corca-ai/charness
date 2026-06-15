@@ -1,6 +1,6 @@
 # Achieve Goal: Nose findings, issues 371-373, and test runtime reduction
 
-Status: draft
+Status: active
 Created: 2026-06-15
 Activation: `/goal @charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md`
 
@@ -15,12 +15,11 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Current slice intent: before activation. The reviewable-intent unit is the
-  full bundle: measured validation-speed reduction, #373 producer-before-validator
-  ordering, #372 debug disconfirmer-first rule, #371 agent-browser teardown, and
-  selected nose 0.10.0 clone-family fixes.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-15-nose-issues-371-373-test-runtime.md`.
+- Current slice: 2 - resolve #373 producer-before-validator regressions.
+- Current slice intent: enforce producer/scaffold-before-validator ordering for
+  template-producing skills that also expose validators or readiness checks.
+- Next action: start the #373 slice with a compact causal review, audit
+  template+validator producers, then add the ordering invariant and tests.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -129,8 +128,8 @@ The user can verify completion by checking:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Activation inventory and baselines | Establish exact starting state before optimizing or closing issues | current issue snapshots; nose 0.10.0 inventory; timing baseline; changed-surface map | pending |
-| 1 | Reduce validation/test runtime first | Every later slice pays verification cost; speed wins compound | runtime summary; CI-recoverable triage; removed/merged/demoted stale tests or justified no-op; before/after timing | pending |
+| 0 | Activation inventory and baselines | Establish exact starting state before optimizing or closing issues | current issue snapshots; nose 0.10.0 inventory; timing baseline; changed-surface map | completed |
+| 1 | Reduce validation/test runtime first | Every later slice pays verification cost; speed wins compound | runtime summary; CI-recoverable triage; removed/merged/demoted stale tests or justified no-op; before/after timing | completed |
 | 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | pending |
 | 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | pending |
 | 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | pending |
@@ -155,7 +154,19 @@ engine), not hard-coded here.
 
 ## Slice Log
 
-Pending activation.
+### Slice 1: Activation inventory and runtime hot-spot reduction
+
+- Objective: Capture live baseline evidence, restore inherited baseline failures to green, and reduce one standing validation hot spot without weakening source-owned proof.
+- Why this approach: Runtime reduction first lowers every later slice's proof cost; current-pointer scanning was a measured 15.2s hot spot caused by duplicate parsing of generated plugin mirrors.
+- Commits: pending slice commit.
+- What changed: Recorded issue states #371/#372/#373 as open; captured nose 0.10.0 inventory at 20 shown families / 2036 duplicated lines / 559 total ranked families; updated the current-pointer scanner to scan source-owned roots only; added a generated-plugin mirror skip regression; restored specdown and coverage baseline failures; synced plugin mirrors; recorded attention-state declaration for skipped healthcheck coverage.
+- Alternatives rejected: Rejected moving coverage, pytest, duplicates, or test-completeness off local because the CI-recoverability lens kept those gates local; rejected broad current-pointer taint analysis as an existing deferred design question, not needed for this runtime slice.
+- Targeted verification: Before: run-quality-read-only failed in 73.6s with check-coverage and specdown failures; check-current-pointer-writes latest sample was 15.2s. After: final ./scripts/run-quality.sh --read-only passed 78 phases in 65.7s; check-current-pointer-writes passed in 7.826s standalone and 7.8s in the final gate; python3 scripts/check_coverage.py --repo-root . --json passed; specdown run -quiet -no-report passed; pytest focused checks passed (17 current-pointer tests, 2 tool lifecycle/update tests, 3 prior failure nodes); validate_attention_state_visibility passed for 82 files.
+- Test duplication pressure: Added one current-pointer scanner regression test; nose inventory remained 20 shown families / 2036 duplicated lines in reported families; no broad duplicate-pressure gate claim beyond the final read-only quality run.
+- Critique: Fresh-eye critique recorded at charness-artifacts/critique/2026-06-15-slice-0-runtime-baseline-and-current-pointer-scanner-reduction.md; Act Before Ship was artifact honesty only and is folded here; no blocking code defect found. Public-skill review decision: `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json` returned the existing quality dogfood case as `hitl-recommended`; this slice did not change quality routing semantics, only the attention-state declaration for an already-visible skipped healthcheck state. The one-shot skill-surface preflight advisory was attempted, but `check_skill_surface_preflight.py` rejected `skills/public/quality/references/attention-state-visibility.json` because it only accepts `SKILL.md` or `references/*.md`, so the applicable deterministic checks are the attention-state validator, dogfood validator, and slice closeout acknowledgment.
+- Off-goal findings: Specdown lock historical healthcheck data may be stale but is deferred unless a validator treats it as live truth; full issue #371-#373 closure remains planned for later slices.
+- Lessons carried forward: For runtime claims, cite explicit samples when rolling medians still include pre-change data; generated mirrors should usually be protected by source scan plus packaging/mirror validation rather than duplicate semantic scans.
+- Metrics: runtime profile local-linux-x86_64-36cpu; aggregate read-only quality 73.6s failed -> 65.7s passed; current-pointer scanner 15.2s -> 7.8s.
 
 ## Context Sources
 

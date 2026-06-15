@@ -109,7 +109,10 @@ def exercise_control_plane_scenarios() -> None:
         ],
     )
     manifest = _basic_manifest()
+    manifest_without_healthcheck = {**manifest, "checks": {"detect": manifest["checks"]["detect"]}}
     lifecycle.failed_healthcheck(manifest, reason="detect failed")
+    lifecycle.failed_healthcheck({**manifest, "checks": {"healthcheck": "invalid"}}, reason="detect failed")
+    lifecycle.skipped_healthcheck(manifest_without_healthcheck)
     lifecycle.attach_release_metadata({}, provenance={"status": "detected"}, release={"status": "ok"})
     lifecycle.render_repo_followup(Path("."), {})
     lifecycle.render_repo_followup(Path("."), {"repo_followup": {"command_template": ""}})
@@ -119,9 +122,15 @@ def exercise_control_plane_scenarios() -> None:
     )
     selected = lifecycle.select_by_tool_id([manifest, _basic_manifest("other")], ["demo"])
     lifecycle.print_tool_statuses([{"tool_id": "demo", "status": "ok"}])
+    lifecycle.print_tool_statuses(
+        [{"tool_id": "demo", "status": "ok", "healthcheck": {"status": "not-configured"}}]
+    )
+    lifecycle.healthcheck_attention_suffix({"healthcheck": {"skipped": True}})
     lifecycle.has_any_status(selected, status_key="tool_id", statuses={"demo"})
     with mock.patch.object(lifecycle, "run_check", return_value={"ok": False}):
         lifecycle.detect_and_healthcheck(Path("."), manifest, failure_reason="detect failed")
+    with mock.patch.object(lifecycle, "run_check", return_value={"ok": True}):
+        lifecycle.detect_and_healthcheck(Path("."), manifest_without_healthcheck, failure_reason="detect failed")
     with mock.patch.object(lifecycle, "run_shell", return_value=result):
         lifecycle.run_command_payloads(["demo"], Path("."))
     control.evaluate_version(manifest, {"results": [{"stdout": "demo 1.2.0"}]})

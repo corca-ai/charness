@@ -21,7 +21,7 @@ as upstream-consumed until sync materializes the installed plugin support
 surface.
 
 ```run:shell
-python3 ./charness tool doctor --repo-root . --json specdown | python3 -c "import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'"
+python3 ./charness tool doctor --repo-root . --json specdown | python3 -c "import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True"
 ```
 
 The repo-local task envelope should provide the sah-inspired claim, submit, and

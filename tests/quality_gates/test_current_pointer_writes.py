@@ -268,6 +268,24 @@ def test_current_pointer_write_scanner_fallback_file_listing(
     assert SCANNER._git_visible_python_files(repo) == [target]
 
 
+def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    plugin_script_dir = repo / "plugins" / "charness" / "scripts"
+    plugin_script_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("\n", encoding="utf-8")
+    mirrored = plugin_script_dir / "mirrored_writer.py"
+    mirrored.write_text(
+        "from pathlib import Path\n"
+        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "plugins/charness/scripts/mirrored_writer.py")
+
+    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+
+    assert result.returncode == 0
+
+
 def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"

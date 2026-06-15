@@ -11,14 +11,11 @@ from pathlib import Path
 CURRENT_POINTER_NAMES = {"latest.md", "latest.json"}
 HELPER_FILES = {
     Path("scripts/current_pointer_writer_lib.py"),
-    Path("plugins/charness/scripts/current_pointer_writer_lib.py"),
 }
 SCAN_ROOTS = (
     Path("scripts"),
     Path("skills/public"),
     Path("skills/support"),
-    Path("plugins/charness/scripts"),
-    Path("plugins/charness/skills"),
 )
 
 
