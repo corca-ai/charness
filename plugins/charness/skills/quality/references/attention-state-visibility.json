@@ -105,10 +105,10 @@
       "rationale": "Skipped upstream checks are surfaced as per-record errors in the drift report."
     },
     "scripts/control_plane_lifecycle_lib.py": {
-      "states": ["disabled"],
+      "states": ["disabled", "skipped"],
       "visibility": ["terminal_payload"],
-      "evidence_terms": ["disabled by repo adapter"],
-      "rationale": "Tool lifecycle disabled states share one explicit payload for detect and healthcheck output."
+      "evidence_terms": ["disabled by repo adapter", "not-configured", "skipped"],
+      "rationale": "Tool lifecycle disabled states and intentionally absent optional healthchecks share explicit payloads for detect and healthcheck output."
     },
     "scripts/doctor.py": {
       "states": ["disabled", "skipped"],

@@ -224,26 +224,6 @@ def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp
     assert doctor_payload[0]["doctor_status"] == "missing"
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
 
-    cli_env = os.environ.copy()
-    cli_env["PATH"] = "/usr/bin:/bin"
-    cli_env["CHARNESS_RELEASE_PROBE_NO_GH"] = "1"
-    cli_doctor = run_script(
-        "charness",
-        "tool",
-        "doctor",
-        "--repo-root",
-        str(ROOT),
-        "--json",
-        "--no-write-locks",
-        "gws-cli",
-        env=cli_env,
-    )
-    assert cli_doctor.returncode == 0, cli_doctor.stderr
-    cli_payload = json.loads(cli_doctor.stdout)
-    gws_doctor = cli_payload["results"]["gws-cli"]["doctor"]
-    assert gws_doctor["doctor_status"] == "missing"
-    assert gws_doctor["doctor_disposition"] == "advisory-install-needed"
-
 
 def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
@@ -260,6 +240,32 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
+
+
+def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["checks"].pop("healthcheck")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    validate = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+    assert validate.returncode == 0, validate.stderr
+
+    env = os.environ.copy()
+    env["PATH"] = f"{repo / 'bin'}:{env.get('PATH', '')}"
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe", env=env)
+    assert doctor.returncode == 0, doctor.stderr
+    payload = json.loads(doctor.stdout)[0]
+    assert payload["doctor_status"] == "ok"
+    assert payload["healthcheck"]["ok"] is True
+    assert payload["healthcheck"]["status"] == "not-configured"
+    assert payload["healthcheck"]["skipped"] is True
+
+    human_doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--skip-release-probe", env=env)
+    assert human_doctor.returncode == 0, human_doctor.stderr
+    assert "demo-tool: ok" in human_doctor.stdout
+    assert "healthcheck=not-configured" in human_doctor.stdout
 
 
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:

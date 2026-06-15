@@ -112,12 +112,6 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
                     "published_at": "2026-04-09T20:31:45Z",
                     "assets": [{"name": "glow_2.1.2_Linux_arm64.tar.gz"}],
                 },
-                "googleworkspace/cli": {
-                    "tag_name": "v0.22.5",
-                    "html_url": "https://github.com/googleworkspace/cli/releases/tag/v0.22.5",
-                    "published_at": "2026-03-31T18:53:24Z",
-                    "assets": [{"name": "google-workspace-cli-x86_64-unknown-linux-gnu.tar.gz"}],
-                },
             },
             ensure_ascii=False,
             indent=2,
@@ -547,63 +541,3 @@ def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:
     )
     specdown_script.chmod(0o755)
     return go_script, specdown_script
-def make_fake_npm_gws(tmp_path: Path, *, auth_ready: bool = True) -> tuple[Path, Path]:
-    npm_prefix = tmp_path / "npm-global"
-    bin_dir = npm_prefix / "bin"
-    package_bin = npm_prefix / "lib" / "node_modules" / "@googleworkspace" / "cli"
-    bin_dir.mkdir(parents=True, exist_ok=True)
-    package_bin.mkdir(parents=True, exist_ok=True)
-    npm_script = tmp_path / "bin" / "npm"
-    npm_script.parent.mkdir(parents=True, exist_ok=True)
-    npm_script.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["prefix", "-g"]:
-                print({str(npm_prefix)!r})
-                raise SystemExit(0)
-            if args == ["install", "-g", "@googleworkspace/cli@latest"]:
-                print("updated @googleworkspace/cli")
-                raise SystemExit(0)
-            if args == ["install", "-g", "agent-browser@latest"]:
-                print("updated agent-browser")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
-        encoding="utf-8",
-    )
-    npm_script.chmod(0o755)
-    gws_impl = package_bin / "run-gws.js"
-    auth_status_exit = 0 if auth_ready else 1
-    auth_status_payload = '{"token_valid": true}' if auth_ready else '{"token_valid": false}'
-    gws_impl.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import json
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("gws 0.18.1")
-                print("This is not an officially supported Google product.")
-                raise SystemExit(0)
-            if args == ["auth", "--help"]:
-                print("login")
-                raise SystemExit(0)
-            if args == ["auth", "status"]:
-                print({auth_status_payload!r})
-                raise SystemExit({auth_status_exit})
-            raise SystemExit(1)
-            """
-        ),
-        encoding="utf-8",
-    )
-    gws_impl.chmod(0o755)
-    gws_link = bin_dir / "gws"
-    gws_link.symlink_to(gws_impl)
-    return npm_script, gws_link

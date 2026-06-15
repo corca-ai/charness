@@ -89,9 +89,9 @@ intent, and keep support binaries and deeper contracts in their owner sections.
   second install manual.
 - Claim: support tools and upstream-owned capabilities are now placed in a more
   honest part of the README.
-  Evidence: `cautilus`, `agent-browser`, `specdown`, and `gws-cli` are
-  introduced under support skills and integrations rather than as top-level
-  product contrast.
+  Evidence: `cautilus`, `agent-browser`, `specdown`, and Google Workspace's
+  host/export/browser-mediated gather path are introduced under support skills
+  and integrations rather than as top-level product contrast.
 
 ## Compression
 

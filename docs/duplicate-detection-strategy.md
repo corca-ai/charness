@@ -119,7 +119,8 @@ Recommended integration shape:
   [`integrations/tools/dependencies.json`](../integrations/tools/dependencies.json)
   when Charness itself depends on it
 - detect with `nose --version`
-- health-check with a stable help or scan surface such as `nose scan --help`
+- do not require a separate help-prose healthcheck; let `detect` prove the
+  binary and the quality inventory prove the read-only consumer surface
 - allow `NOSE_BIN` only as a maintainer-local override for development
 - consume it from `quality` as an advisory inventory phase, for example
   `inventory-nose-clones`

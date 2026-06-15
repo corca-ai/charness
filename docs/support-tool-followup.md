@@ -269,7 +269,8 @@ Status:
   - `supports_public_skills`
   - `recommendation_role` (`runtime` or `validation`)
 - Current dogfood proof in `charness`:
-  - `gather` surfaces `gws-cli` as `runtime`
+  - `gather` surfaces concrete runtime integrations such as `agent-browser` as
+    `runtime`
   - `find-skills` can now surface blocking validation tools directly through the
     shared `recommendation_role` query path
   - `impl` and `spec` surface `cautilus` as a checked validation route

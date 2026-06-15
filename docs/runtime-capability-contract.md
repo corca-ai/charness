@@ -139,8 +139,8 @@ many capability providers.
 Example provider classes:
 
 - GitHub via `grant` or authenticated `gh`
-- Google Workspace via `grant`, `gws`-style binary, or explicit env-backed
-  wrapper
+- Google Workspace via `grant`, operator-provided export, or browser-mediated
+  private-source path
 - Slack via granted connector access or bot-token-backed integration
 - Notion via granted connector access, token-backed fetcher, or published-page
   fallback

@@ -552,11 +552,11 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
     (tmp_path / "integrations" / "tools").mkdir(parents=True)
     _write_executable(
         tmp_path,
-        "gws",
+        "workspace-tool",
         [
             "#!/bin/sh",
             "if [ \"$1\" = \"--version\" ]; then",
-            "  echo 'gws 1.2.3'",
+            "  echo 'workspace-tool 1.2.3'",
             "  exit 0",
             "fi",
             "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"--help\" ]; then",
@@ -569,30 +569,30 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
             "exit 1",
         ],
     )
-    (tmp_path / "integrations" / "tools" / "gws-cli.json").write_text(
+    (tmp_path / "integrations" / "tools" / "workspace-cli.json").write_text(
         json.dumps(
             {
                 "schema_version": "1",
-                "tool_id": "gws-cli",
+                "tool_id": "workspace-cli",
                 "kind": "external_binary",
-                "display_name": "Google Workspace CLI (gws)",
-                "summary": "Private Google Workspace gather provider.",
-                "upstream_repo": "googleworkspace/cli",
-                "homepage": "https://github.com/googleworkspace/cli",
+                "display_name": "Workspace CLI",
+                "summary": "Private workspace gather provider.",
+                "upstream_repo": "example/workspace-cli",
+                "homepage": "https://example.com/workspace-cli",
                 "lifecycle": {
-                    "install": {"mode": "manual", "docs_url": "https://github.com/googleworkspace/cli", "notes": ["Install gws."]},
-                    "update": {"mode": "manual", "docs_url": "https://github.com/googleworkspace/cli/releases", "notes": ["Update gws."]},
+                    "install": {"mode": "manual", "docs_url": "https://example.com/workspace-cli", "notes": ["Install workspace-cli."]},
+                    "update": {"mode": "manual", "docs_url": "https://example.com/workspace-cli/releases", "notes": ["Update workspace-cli."]},
                 },
                 "checks": {
-                    "detect": {"commands": ["gws --version"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["gws auth --help"], "success_criteria": ["exit_code:0", "stdout_contains:login"]},
+                    "detect": {"commands": ["workspace-tool --version"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["workspace-tool auth --help"], "success_criteria": ["exit_code:0", "stdout_contains:login"]},
                 },
                 "access_modes": ["binary", "degraded"],
                 "readiness_checks": [
                     {
-                        "check_id": "gws-auth-ready",
-                        "summary": "Google Workspace auth is ready.",
-                        "commands": ["gws auth status"],
+                        "check_id": "workspace-auth-ready",
+                        "summary": "Workspace auth is ready.",
+                        "commands": ["workspace-tool auth status"],
                         "success_criteria": ["exit_code:0"],
                     }
                 ],
@@ -615,10 +615,10 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
     )
     assert payload["tool_recommendations"] == [
         {
-            "tool_id": "gws-cli",
-            "display_name": "Google Workspace CLI (gws)",
+            "tool_id": "workspace-cli",
+            "display_name": "Workspace CLI",
             "kind": "external_binary",
-            "summary": "Private Google Workspace gather provider.",
+            "summary": "Private workspace gather provider.",
             "why_recommended": "Recommended because `gather` can use this tool as a supported runtime path.",
             "supports_public_skills": ["gather"],
             "recommendation_role": "runtime",
@@ -632,11 +632,11 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
             "install": {
                 "mode": "manual",
                 "commands": [],
-                "docs_url": "https://github.com/googleworkspace/cli",
+                "docs_url": "https://example.com/workspace-cli",
                 "install_url": None,
-                "notes": ["Install gws."],
+                "notes": ["Install workspace-cli."],
             },
-            "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli",
+            "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id workspace-cli",
             "next_skill_id": "gather",
             "manifest_origin": "user-repo",
             "staged": None,

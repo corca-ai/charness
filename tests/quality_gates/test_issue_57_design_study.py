@@ -45,11 +45,11 @@ def _write_inventory(repo: Path) -> None:
                     ],
                     "integrations": [
                         {
-                            "id": "gws-cli",
+                            "id": "agent-browser",
                             "layer": "external integration",
                             "source": "local-integration",
-                            "kind": "external_binary",
-                            "access_modes": ["binary", "env", "degraded"],
+                            "kind": "external_binary_with_skill",
+                            "access_modes": ["binary", "human-only", "degraded"],
                             "supports_public_skills": ["gather"],
                             "recommendation_role": "runtime",
                         }
@@ -93,11 +93,11 @@ def test_issue_57_renderer_writes_capability_spectrum_markdown(tmp_path: Path) -
     assert "| gather | workflow/native | public skill | local-public | - | - | - |" in rendered
     assert "| web-fetch | runtime/native | support capability | local-support-capability | public, degraded | gather | - |" in rendered
     assert "| cautilus | tool/synced-external | synced support skill | synced-support | binary, degraded | impl, quality | validation |" in rendered
-    assert "| gws-cli | runtime/external | external integration | local-integration | binary, env, degraded | gather | runtime |" in rendered
+    assert "| agent-browser | runtime/external | external integration | local-integration | binary, human-only, degraded | gather | runtime |" in rendered
     assert "## Access Legend" in rendered
     assert "- `env`: environment-backed configuration or credentials may be required." in rendered
     assert "## Readiness Threshold Examples" in rendered
-    assert "| `gws-cli` runtime provider | integration boundary exists | `gws` binary exists | auth surface responds | auth/env readiness is satisfied | gather must stop or use a non-private fallback |" in rendered
+    assert "| Google Workspace host/export path | source boundary exists | host capability or exported artifact exists | provider path is selected | access is sufficient for the requested source | gather must stop or use browser-mediated fallback honestly |" in rendered
     assert "They do not report current" in rendered
     assert "live doctor payload ingestion" in rendered
 

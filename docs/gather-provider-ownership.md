@@ -39,7 +39,6 @@ Examples:
   - `agent-browser`
   - `specdown`
   - `gh`
-  - future `gws-cli`
   - `defuddle`
 - `charness`-owned gather provider runtime:
   - Slack thread export logic used by `gather`
@@ -82,8 +81,8 @@ The corrected direction is:
 - `claude-plugins` may remain a provenance or design reference, not a required
   runtime dependency
 - Google should not use a `google-public-export` helper path in `charness`;
-  Google gather should instead flow through a real external binary integration
-  such as `gws-cli`
+  Google gather should instead flow through a host-mediated capability,
+  operator-provided export, or browser-mediated private-source path
 
 ## Consumer Contract
 
@@ -96,8 +95,9 @@ When a consumer wants provider-backed gather:
   - provide the approved publication or access path
   - do not reimplement Notion export helpers in the consumer repo
 - Google:
-  - install the approved external runtime such as `gws-cli`
-  - let `charness` consume that binary through an integration manifest
+  - prefer a host-mediated capability when one exists
+  - otherwise ask for an operator-provided export or use the browser-mediated
+    private-source ladder when appropriate
 - browser-mediated private SaaS:
   - let `gather` own the official-path-first and degradation policy
   - let `agent-browser` stay the external browser runtime boundary
@@ -140,8 +140,8 @@ When a consumer wants provider-backed gather:
 
 ## Near-Term Follow-Up
 
-1. Keep Google on the external-runtime path and add `gws-cli` when its
-   contract is ready.
+1. Keep Google on a host/export/browser-mediated path until a concrete runtime
+   contract is stable enough to consume.
 2. Treat Slack and Notion as `charness`-owned provider runtime, not external
    plugin dependencies.
 3. Keep capability metadata honest while the support/runtime home lands under

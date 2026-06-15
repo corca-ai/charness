@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-14T07:15:44Z",
+  "generated_at": "2026-06-15T10:38:22Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -255,7 +255,7 @@
           "skills/public/gather/references/source-priority.md",
           "skills/public/gather/references/document-seams.md",
           "skills/public/gather/references/capability-contract.md",
-          "skills/public/gather/references/google-workspace-via-gws.md",
+          "skills/public/gather/references/google-workspace-access.md",
           "skills/public/gather/scripts/write_record.py"
         ],
         "source": "local-public",
@@ -507,6 +507,7 @@
           "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/behavior-testing.md",
           "skills/public/quality/references/inventory-consumer-fields.json",
+          "skills/public/quality/references/ci-recoverable-gate-triage.md",
           "skills/public/quality/references/quality-signal-scorecard.md",
           "skills/public/quality/references/boundary-bypass-ratchet.md",
           "skills/public/quality/references/agent-production-runtime.md",
@@ -1265,65 +1266,6 @@
         "layer": "external integration"
       },
       {
-        "id": "google-workspace-worker",
-        "kind": "external capability",
-        "summary": "Authenticated Google Workspace CLI provider for Docs, Drive, Sheets, Slides, Gmail, Calendar, and adjacent Workspace gather flows.",
-        "access_modes": [
-          "binary",
-          "human-only",
-          "degraded"
-        ],
-        "support_state": "integration-only",
-        "support_skill_path": null,
-        "discovery_stub_path": null,
-        "capability_requirements": {
-          "permission_scopes": [
-            "google-workspace-scope:drive.readonly",
-            "google-workspace-scope:documents.readonly",
-            "google-workspace-scope:spreadsheets.readonly",
-            "google-workspace-scope:presentations.readonly"
-          ]
-        },
-        "intent_triggers": [
-          "google docs",
-          "google drive",
-          "google sheets",
-          "google slides",
-          "gmail api",
-          "gmail message",
-          "google calendar",
-          "google workspace",
-          "workspace gather",
-          "workspace gather"
-        ],
-        "strong_intent_triggers": [],
-        "config_layers": [
-          {
-            "layer_id": "authenticated-google-workspace-worker",
-            "layer_type": "authenticated-binary",
-            "summary": "Prefer an already host-mediated Google Workspace credential session for private Google Workspace gather."
-          },
-          {
-            "layer_id": "gws-auth-operator-step",
-            "layer_type": "operator-step",
-            "summary": "When no auth state exists yet, the operator may need `Google Workspace credential setup setup --login` or `Google Workspace credential setup login` before gather can proceed. This is a human-driven step and is not advertised as an agent-runtime fallback path."
-          }
-        ],
-        "readiness_checks": [
-          {
-            "check_id": "gws-auth-ready",
-            "summary": "Google Workspace CLI has an authenticated configuration available."
-          }
-        ],
-        "supports_public_skills": [
-          "gather"
-        ],
-        "recommendation_role": "runtime",
-        "path": "integrations/tools/google-workspace-worker.json",
-        "source": "local-integration",
-        "layer": "external integration"
-      },
-      {
         "id": "nose",
         "kind": "external_binary",
         "summary": "Advisory code clone-family scanner used by `quality` to surface refactoring candidates beyond exact document near-copy checks.",
@@ -1360,13 +1302,13 @@
       },
       {
         "id": "pry",
-        "kind": "external_binary",
+        "kind": "external_binary_with_skill",
         "summary": "Static testability-surface analyzer that surfaces welded boundary calls (clock, subprocess, network, file I/O, randomness) with no seam to inject a failure — a deterministic, zero-LLM testability backlog, not a bug list; intended as an advisory input to the `quality` skill.",
         "access_modes": [
           "binary",
           "degraded"
         ],
-        "support_state": "integration-only",
+        "support_state": "upstream-consumed",
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},

@@ -34,18 +34,33 @@ def disabled_check_payload(disabled: dict[str, Any]) -> dict[str, Any]:
 
 
 def failed_healthcheck(manifest: dict[str, Any], *, reason: str) -> dict[str, Any]:
+    healthcheck = manifest.get("checks", {}).get("healthcheck", {})
     return {
         "ok": False,
         "results": [],
         "failure_details": [reason],
-        "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
+        "failure_hint": healthcheck.get("failure_hint") if isinstance(healthcheck, dict) else None,
+    }
+
+
+def skipped_healthcheck(manifest: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "status": "not-configured",
+        "skipped": True,
+        "results": [],
+        "failure_details": [],
+        "failure_hint": None,
     }
 
 
 def detect_and_healthcheck(repo_root: Path, manifest: dict[str, Any], *, failure_reason: str) -> tuple[dict[str, Any], dict[str, Any]]:
     detect_result = run_check(manifest["checks"]["detect"], repo_root)
+    healthcheck = manifest.get("checks", {}).get("healthcheck")
     healthcheck_result = (
-        run_check(manifest["checks"]["healthcheck"], repo_root)
+        run_check(healthcheck, repo_root)
+        if detect_result["ok"] and isinstance(healthcheck, dict)
+        else skipped_healthcheck(manifest)
         if detect_result["ok"]
         else failed_healthcheck(manifest, reason=failure_reason)
     )
@@ -101,9 +116,21 @@ def select_by_tool_id(items: list[dict[str, Any]], tool_ids: list[str]) -> list[
     return [item for item in items if item["tool_id"] in requested]
 
 
+def healthcheck_attention_suffix(payload: dict[str, Any]) -> str:
+    healthcheck = payload.get("healthcheck")
+    if not isinstance(healthcheck, dict):
+        return ""
+    status = healthcheck.get("status")
+    if isinstance(status, str) and status:
+        return f" healthcheck={status}"
+    if healthcheck.get("skipped") is True:
+        return " healthcheck=skipped"
+    return ""
+
+
 def print_tool_statuses(results: list[dict[str, Any]], *, status_key: str = "status") -> None:
     for result in results:
-        print(f"{result['tool_id']}: {result[status_key]}")
+        print(f"{result['tool_id']}: {result[status_key]}{healthcheck_attention_suffix(result)}")
 
 
 def has_any_status(results: list[dict[str, Any]], *, status_key: str, statuses: set[str]) -> bool:

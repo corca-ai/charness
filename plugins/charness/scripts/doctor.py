@@ -20,6 +20,8 @@ now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 _scripts_doctor_lib_module = import_repo_module(__file__, "scripts.doctor_lib")
 inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+healthcheck_attention_suffix = _scripts_control_plane_lifecycle_lib_module.healthcheck_attention_suffix
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
@@ -158,7 +160,10 @@ def main() -> int:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
         for result in results:
-            print(f"{result['tool_id']}: {result['doctor_status']} ({result['support_state']})")
+            print(
+                f"{result['tool_id']}: {result['doctor_status']} "
+                f"({result['support_state']}){healthcheck_attention_suffix(result)}"
+            )
 
     if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in results):
         return 1

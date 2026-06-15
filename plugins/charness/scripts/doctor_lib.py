@@ -11,6 +11,7 @@ from scripts.control_plane_lifecycle_lib import (
     disabled_check_payload,
     evaluate_readiness,
     render_repo_followup,
+    skipped_healthcheck,
 )
 from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
@@ -193,12 +194,19 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any], *, plu
         }
 
     detect_result = run_check(capability["checks"]["detect"], repo_root)
-    healthcheck_result = run_check(capability["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
-        "ok": False,
-        "results": [],
-        "failure_details": ["detect failed; healthcheck skipped"],
-        "failure_hint": capability["checks"]["healthcheck"].get("failure_hint"),
-    }
+    healthcheck = capability.get("checks", {}).get("healthcheck")
+    healthcheck_result = (
+        run_check(healthcheck, repo_root)
+        if detect_result["ok"] and isinstance(healthcheck, dict)
+        else skipped_healthcheck(capability)
+        if detect_result["ok"]
+        else {
+            "ok": False,
+            "results": [],
+            "failure_details": ["detect failed; healthcheck skipped"],
+            "failure_hint": healthcheck.get("failure_hint") if isinstance(healthcheck, dict) else None,
+        }
+    )
     readiness_result = evaluate_readiness(capability, repo_root)
     version_result = evaluate_version(capability, detect_result)
     previous_lock, support_state, support_sync, support_discovery, next_steps = inspect_support_state(

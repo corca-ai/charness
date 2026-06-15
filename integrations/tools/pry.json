@@ -46,16 +46,6 @@
         "stdout_contains:pry"
       ],
       "failure_hint": "Install `pry` via the release installer (see lifecycle.install) or set `PRY_BIN`, before using the quality testability backlog."
-    },
-    "healthcheck": {
-      "commands": [
-        "pry map --help"
-      ],
-      "success_criteria": [
-        "exit_code:0",
-        "stdout_contains:risk ranking"
-      ],
-      "failure_hint": "The `pry` binary exists but its `map` surface is unavailable. Reinstall or upgrade from the latest release."
     }
   },
   "access_modes": [

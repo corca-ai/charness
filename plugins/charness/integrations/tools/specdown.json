@@ -38,16 +38,6 @@
         "exit_code:0"
       ],
       "failure_hint": "Install specdown from the upstream repo or releases page."
-    },
-    "healthcheck": {
-      "commands": [
-        "specdown run -help"
-      ],
-      "success_criteria": [
-        "exit_code:0",
-        "stderr_contains:Usage: specdown run"
-      ],
-      "failure_hint": "The binary exists but the CLI surface looks broken. Reinstall from a clean upstream release."
     }
   },
   "access_modes": [

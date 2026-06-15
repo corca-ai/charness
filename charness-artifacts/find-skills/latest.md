@@ -1,13 +1,13 @@
 # Find Skills Inventory
-Date: 2026-06-14
-Updated: 2026-06-14T07:15:44Z
+Date: 2026-06-15
+Updated: 2026-06-15T10:38:22Z
 
 ## Summary
 - public skills: 20
 - support skills: 4
 - synced support skills: 0
 - support capabilities: 4
-- integrations: 13
+- integrations: 12
 - workflow integrations: 2
 - trusted skills: 0
 
@@ -52,9 +52,8 @@ Updated: 2026-06-14T07:15:44Z
 - `github-worker` (external capability, integration-only): access modes `binary, public, degraded`
 - `gitleaks` (external_binary, integration-only): access modes `binary, degraded`
 - `glow` (external_binary, integration-only): access modes `binary, degraded`
-- `google-workspace-worker` (external capability, integration-only): access modes `binary, human-only, degraded`
 - `nose` (external_binary, integration-only): access modes `binary, degraded`
-- `pry` (external_binary, integration-only): access modes `binary, degraded`
+- `pry` (external_binary_with_skill, upstream-consumed): access modes `binary, degraded`
 - `ruff` (external_binary, integration-only): access modes `binary`
 - `specdown` (external_binary, upstream-consumed): access modes `binary, human-only, degraded`
 - `tokei` (external_binary, integration-only): access modes `binary, degraded`

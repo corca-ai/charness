@@ -114,6 +114,13 @@
         "ok": {
           "type": "boolean"
         },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skipped": {
+          "type": "boolean"
+        },
         "results": {
           "type": "array",
           "items": {

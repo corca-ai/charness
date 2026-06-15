@@ -155,8 +155,8 @@ Rules:
   manager route, update may promote `manual` into an explicit
   `package_manager` execution path
 - executable update modes may only run commands declared in the manifest
-- every successful update must rerun detect and healthcheck before the lock is
-  refreshed
+- every successful update must rerun detect and any configured healthcheck
+  before the lock is refreshed
 - tools with `kind = external_skill` are skipped unless they also declare a
   binary lifecycle
 
@@ -170,7 +170,9 @@ Checks:
 
 - detect command succeeds
 - observed version satisfies `version_expectation`
-- healthcheck command returns the expected signal
+- configured healthcheck command returns the expected signal, or the manifest
+  intentionally omits healthcheck because detect/readiness/consumer probes own
+  the boundary
 - optional manifest-declared `readiness_checks` succeed
 - declared repo-local support symlink still resolves
 
@@ -215,7 +217,6 @@ The first manifest wave should cover:
 
 - `agent-browser`
 - `specdown`
-- `gws-cli`
 - `cautilus`
 
 These are now concrete manifest instances. The evaluator boundary is no longer

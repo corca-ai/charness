@@ -48,16 +48,6 @@
         "stdout_contains:nose"
       ],
       "failure_hint": "Install `nose` before using the quality clone-family advisory inventory."
-    },
-    "healthcheck": {
-      "commands": [
-        "nose scan --help"
-      ],
-      "success_criteria": [
-        "exit_code:0",
-        "stdout_contains:Find duplicated code"
-      ],
-      "failure_hint": "The `nose` binary exists but its scan surface is unavailable. Reinstall or upgrade from the upstream release."
     }
   },
   "access_modes": [

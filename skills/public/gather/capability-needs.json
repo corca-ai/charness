@@ -13,7 +13,7 @@
       "when": "when gather needs private Slack thread access"
     },
     {
-      "logical_id": "gws.default",
+      "logical_id": "google-workspace.default",
       "summary": "Private Google Workspace gather through an authenticated provider path.",
       "when": "when gather needs private Docs, Drive, Sheets, or Slides access"
     },

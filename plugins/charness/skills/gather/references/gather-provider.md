@@ -15,7 +15,7 @@ gather_provider:
   github:
     mode: direct-cli
   google_workspace:
-    mode: direct-cli
+    mode: none
   slack:
     mode: direct-cli
   notion:
@@ -24,9 +24,9 @@ gather_provider:
 
 `mode` accepts:
 
-- `direct-cli` (default): use the maintainer-local CLI or token-backed
-  integration (`gh`, `gws`, Slack bot token, Notion token). This matches
-  prior behavior in maintainer-local repos.
+- `direct-cli` (default): use the maintainer-local CLI or checked-in support
+  runtime when one exists (`gh`, Slack bot token, Notion token). Google
+  Workspace intentionally has no repo-owned direct CLI provider.
 - `host-mediated`: the host advertises a `<provider>` capability command;
   the skill instructs the agent to use the host's shape rather than
   invoking the direct CLI/token path.
@@ -54,9 +54,9 @@ for a direct CLI under a worker runtime.
   private-source fallbacks. When the mode is `host-mediated` or `none`, it
   returns the corresponding operator prompt without invoking the wrapper.
 - `scripts/advise_google_workspace_path.py` reads
-  `gather_provider.google_workspace.mode`. When the mode is `host-mediated`
-  or `none`, the script returns the corresponding operator prompt without
-  invoking `doctor` for `gws-cli`.
+  `gather_provider.google_workspace.mode`. The script returns host-mediated,
+  none, or missing-direct-provider guidance without invoking a local Google
+  Workspace CLI.
 - Support skills (`gather-slack`, `gather-notion`) are only invoked by the
   public `gather` skill when the matching `gather_provider.<source>.mode`
   is `direct-cli`. Under `host-mediated` or `none`, the gather body
@@ -67,8 +67,8 @@ for a direct CLI under a worker runtime.
 
 ## Why Adapter-Driven
 
-In maintainer-local repos the default `direct-cli` preserves the prior
-authenticated `gh`/`gws`/Slack/Notion paths. In worker-runtime hosts that
+In maintainer-local repos the default `direct-cli` preserves authenticated
+`gh` plus Slack/Notion support paths. In worker-runtime hosts that
 gate provider access behind a host-mediated capability surface (such as
 `ceal github`), the adapter declares the relevant sources as
 `host-mediated` (or `none`) and the public `gather` skill stops teaching

@@ -16,7 +16,6 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- `gws-cli`
 - `cautilus`
 
 ## Ownership Model
@@ -36,7 +35,8 @@ Examples:
 - which access modes are supported (`grant`, `binary`, `env`, `public`,
   `human-only`, `degraded`)
 - which version range is expected
-- how to health-check it
+- whether a separate healthcheck is meaningful, and if so how to probe the
+  smallest read-only consumer contract
 - runtime hygiene for long-lived helper processes or daemons that `charness`
   may start, reuse, or depend on
 - how hosts should install or update it
@@ -56,8 +56,9 @@ That means:
 
 - Slack gather helper logic belongs in `charness`
 - published Notion gather helper logic belongs in `charness`
-- Google Workspace access should be modeled through a real external runtime
-  such as `gws-cli`, not through a borrowed public-export implementation
+- Google Workspace access should be modeled through a host-mediated capability,
+  operator-provided export, or browser-mediated private-source path, not through
+  a borrowed public-export implementation
 
 Current `charness` support homes:
 
@@ -146,7 +147,10 @@ Expected fields:
 - `detect`
   - command and success criteria
 - `healthcheck`
-  - command and expected signal
+  - optional command and expected signal; omit it when `detect`, readiness, or a
+    public-skill consumer probe is the honest boundary
+  - prefer repo-owned probes or machine-readable read-only consumer commands
+    over help prose or fragile descriptive strings
 - `access_modes`
   - ordered supported access modes such as `grant`, `binary`, `env`, or
     `public`
@@ -230,8 +234,7 @@ The current external-tool command surface is nested under `charness tool`:
 
 ## Current Exclusions
 
-- `gws-cli` is intentionally excluded from support skill scope because it is an
-  external binary boundary, not a `charness` support skill. It now belongs in
-  the external integration surface via
-  [`integrations/tools/gws-cli.json`](../integrations/tools/gws-cli.json).
+- Google Workspace is intentionally excluded from support skill scope until the
+  repo owns a concrete runtime. Do not add a support skill wrapper around an
+  untracked local CLI.
 - a reference implementation repo is not, by itself, an integration contract.

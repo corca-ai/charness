@@ -164,7 +164,7 @@ def render_markdown(summary: dict[str, Any], *, inventory_path: Path) -> str:
         "",
         "| example | defined | detected | healthy | ready | degraded meaning |",
         "| --- | --- | --- | --- | --- | --- |",
-        "| `gws-cli` runtime provider | integration boundary exists | `gws` binary exists | auth surface responds | auth/env readiness is satisfied | gather must stop or use a non-private fallback |",
+        "| Google Workspace host/export path | source boundary exists | host capability or exported artifact exists | provider path is selected | access is sufficient for the requested source | gather must stop or use browser-mediated fallback honestly |",
         "| `cautilus` validation provider | validation boundary exists | `cautilus` binary exists | evaluator doctor surface responds | required support surface is materialized when needed | deterministic local gates remain authoritative |",
         "",
     ]

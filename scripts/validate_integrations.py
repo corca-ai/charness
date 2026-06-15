@@ -55,6 +55,7 @@ CAUTILUS_SPECIFIC_INTENT_RE = re.compile(
     r"compare|operator reading|cautilus|프롬프트|동작)",
     re.IGNORECASE,
 )
+HELP_COMMAND_RE = re.compile(r"(^|\s)(--help|-help|help)(\s|$)")
 
 
 def validate_access_mode_order(manifest: dict[str, object], path: Path) -> None:
@@ -180,6 +181,34 @@ def validate_agent_browser_check_commands(manifest: dict[str, object], path: Pat
             )
 
 
+def detect_help_prose_healthcheck(manifest: dict[str, object], path: Path) -> str | None:
+    healthcheck = manifest.get("checks", {}).get("healthcheck")
+    if not isinstance(healthcheck, dict):
+        return None
+    commands = healthcheck.get("commands")
+    criteria = healthcheck.get("success_criteria")
+    if not isinstance(commands, list) or not any(isinstance(command, str) and HELP_COMMAND_RE.search(command) for command in commands):
+        return None
+    if not isinstance(criteria, list):
+        return None
+    prose_criteria = []
+    for criterion in criteria:
+        if not isinstance(criterion, str):
+            continue
+        if not (criterion.startswith("stdout_contains:") or criterion.startswith("stderr_contains:")):
+            continue
+        expected = criterion.split(":", 1)[1].strip()
+        if " " in expected and len(expected) > 10:
+            prose_criteria.append(criterion)
+    if not prose_criteria:
+        return None
+    rendered = ", ".join(f"`{criterion}`" for criterion in prose_criteria)
+    return (
+        f"{path}: checks.healthcheck is coupled to help prose ({rendered}). "
+        "Prefer no healthcheck, a repo-owned probe, or a machine-readable read-only consumer probe."
+    )
+
+
 def validate_agent_browser_readiness_commands(capability: dict[str, object], path: Path) -> None:
     checks = capability.get("readiness_checks")
     if not isinstance(checks, list):
@@ -221,6 +250,9 @@ def main() -> int:
             validate_support_install_entrypoint(manifest, manifest_path)
             validate_cautilus_trigger_specificity(manifest, manifest_path)
             validate_agent_browser_check_commands(manifest, manifest_path)
+            advisory = detect_help_prose_healthcheck(manifest, manifest_path)
+            if advisory is not None:
+                advisories.append(advisory)
             advisory = detect_missing_intent_triggers_for_external_binary_with_skill(manifest, manifest_path)
             if advisory is not None:
                 advisories.append(advisory)

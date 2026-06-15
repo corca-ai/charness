@@ -17,7 +17,6 @@ from .support import (
     make_fake_claude,
     make_fake_go_specdown,
     make_fake_npm_agent_browser,
-    make_fake_npm_gws,
     make_release_fixture,
     make_support_sync_fixture,
     run_cli,
@@ -49,7 +48,6 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
 
     _fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
-    fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     fake_curl, fake_nose = make_fake_nose(tmp_path)
     fake_pry = make_fake_pry(tmp_path)
@@ -63,8 +61,6 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
             str(fake_agent_browser.parent),
             str(fake_go.parent),
             str(specdown_bin.parent),
-            str(fake_npm.parent),
-            str(fake_gws.parent),
             str(fake_cautilus.parent),
             env["PATH"],
         ]
@@ -106,8 +102,6 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["nose"]["doctor"]["doctor_status"] == "ok"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
     assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
-    assert tool_update["results"]["gws-cli"]["update"]["status"] == "updated"
-    assert tool_update["results"]["gws-cli"]["update"]["package_manager"] == "npm"
 
     assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
     assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
@@ -120,9 +114,6 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert json.loads((managed_repo / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))["update"][
         "package_manager"
     ] == "go"
-    assert json.loads((managed_repo / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))["update"][
-        "package_manager"
-    ] == "npm"
 
 
 def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:

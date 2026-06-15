@@ -367,17 +367,13 @@ def scenario_find_skills_split_package_surface(root: Path) -> None:
             f"got {len(inventory['support_capabilities'])}"
         )
     integration_ids = {entry["id"] for entry in inventory["integrations"]}
-    for expected in ("github-worker", "google-workspace-worker"):
+    for expected in ("github-worker",):
         if expected not in integration_ids:
             raise EvalError(f"find-skills split package surface: missing integration {expected}")
     for forbidden in (
         "github-gh",
-        "gws-cli",
         "SLACK" + "_BOT_TOKEN",
         "authenticated `gh`",
-        "authenticated `gws`",
-        "gws" + " auth",
-        "gws" + " gather",
         "www.googleapis" + ".com",
     ):
         if forbidden in raw_output:

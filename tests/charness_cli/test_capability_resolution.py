@@ -138,8 +138,12 @@ def test_capability_init_scaffolds_repo_local_config_and_updates_gitignore(tmp_p
     assert local_path.is_file()
     assert example_path.is_file()
     local_data = json.loads(local_path.read_text(encoding="utf-8"))
-    assert "slack.default" in local_data["bindings"]
-    assert "slack.change-me" in local_data["profiles"]
+    assert local_data["bindings"] == {
+        "slack.default": "slack.change-me",
+        "github.default": "github.change-me",
+    }
+    assert set(local_data["profiles"]) == {"slack.change-me", "github.change-me"}
+    assert "gws-cli" not in local_path.read_text(encoding="utf-8")
     example_data = json.loads(example_path.read_text(encoding="utf-8"))
     assert "bindings" in example_data
     assert "profiles" in example_data
@@ -237,7 +241,7 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
     assert {need["logical_id"] for need in gather_payload["capability_needs"]} == {
         "github.default",
         "slack.default",
-        "gws.default",
+        "google-workspace.default",
         "agent-browser.default",
     }
 

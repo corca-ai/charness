@@ -562,7 +562,6 @@ def capability_local_template() -> dict[str, object]:
         "bindings": {
             "slack.default": "slack.change-me",
             "github.default": "github.change-me",
-            "gws.default": "gws.change-me",
         },
         "profiles": {
             "slack.change-me": {
@@ -575,11 +574,6 @@ def capability_local_template() -> dict[str, object]:
             "github.change-me": {
                 "provider": "github-gh",
                 "access_mode_preference": ["binary", "public"],
-                "env_bindings": {},
-            },
-            "gws.change-me": {
-                "provider": "gws-cli",
-                "access_mode_preference": ["binary"],
                 "env_bindings": {},
             },
         },
@@ -2342,8 +2336,25 @@ def _tool_update_summary(payload: dict[str, object]) -> str | None:
         support = result.get("support")
         if status is None and isinstance(support, dict) and isinstance(support.get("status"), str):
             status = support["status"]
-        parts.append(f"{tool_id}={status or 'unknown'}")
+        healthcheck_suffix = ""
+        if isinstance(update, dict):
+            healthcheck_suffix = _healthcheck_attention_suffix(update)
+        if not healthcheck_suffix and isinstance(doctor, dict):
+            healthcheck_suffix = _healthcheck_attention_suffix(doctor)
+        parts.append(f"{tool_id}={status or 'unknown'}{healthcheck_suffix}")
     return ", ".join(parts) if parts else None
+
+
+def _healthcheck_attention_suffix(payload: dict[str, object]) -> str:
+    healthcheck = payload.get("healthcheck")
+    if not isinstance(healthcheck, dict):
+        return ""
+    status = healthcheck.get("status")
+    if isinstance(status, str) and status:
+        return f" healthcheck={status}"
+    if healthcheck.get("skipped") is True:
+        return " healthcheck=skipped"
+    return ""
 
 
 def print_update_human_summary(payload: dict[str, object]) -> None:
@@ -3119,7 +3130,10 @@ def _print_tool_result_block(tool_id: str, result: dict[str, object]) -> None:
             )
     update_result = result.get("update")
     if isinstance(update_result, dict):
-        print(f"  UPDATE: {update_result.get('status')} ({update_result.get('mode')})")
+        print(
+            f"  UPDATE: {update_result.get('status')} "
+            f"({update_result.get('mode')}){_healthcheck_attention_suffix(update_result)}"
+        )
         package_manager = update_result.get("package_manager")
         package_name = update_result.get("package_name")
         if isinstance(package_manager, str) and package_manager:
@@ -3129,7 +3143,10 @@ def _print_tool_result_block(tool_id: str, result: dict[str, object]) -> None:
         print(f"  SUPPORT: {support_result.get('status')}")
     doctor_result = result.get("doctor")
     if isinstance(doctor_result, dict):
-        print(f"  DOCTOR: {doctor_result.get('doctor_status')} ({doctor_result.get('support_state')})")
+        print(
+            f"  DOCTOR: {doctor_result.get('doctor_status')} "
+            f"({doctor_result.get('support_state')}){_healthcheck_attention_suffix(doctor_result)}"
+        )
         provenance = doctor_result.get("provenance")
         if isinstance(provenance, dict):
             print(

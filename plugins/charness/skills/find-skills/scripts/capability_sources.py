@@ -10,20 +10,14 @@ from scripts.support_sync_lib import support_link_name, support_state_for_manife
 
 PROVIDER_ID_ALIASES = {
     "github-gh": "github-worker",
-    "gws-cli": "google-workspace-worker",
 }
 
 TEXT_REPLACEMENTS = {
     "github-gh": "github-worker",
-    "gws-cli": "google-workspace-worker",
     "SLACK" + "_BOT_TOKEN": "Slack credential grant",
     "authenticated or installed binaries such as `gh`, `yt-dlp`, `defuddle`, or `agent-browser`": "host-mediated fetch helpers",
     "authenticated `gh`": "host-mediated GitHub credential",
     "`gh`": "GitHub worker",
-    "gws" + " auth": "Google Workspace credential setup",
-    "gws" + " gather": "workspace gather",
-    "authenticated `gws`": "host-mediated Google Workspace credential",
-    "`gws`": "Google Workspace worker",
     "https://www.googleapis" + ".com/auth/": "google-workspace-scope:",
 }
 

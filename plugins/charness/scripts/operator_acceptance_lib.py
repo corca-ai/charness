@@ -9,7 +9,7 @@ FUNCTIONAL_HEADING_RE = re.compile(r"^#{2,6}\s+.*functional check", re.IGNORECAS
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 FENCE_RE = re.compile(r"^```([A-Za-z0-9_-]+)?\s*$")
 EXTERNAL_HINT_RE = re.compile(
-    r"\b(gh|gws|slack|curl|wget|docker|podman|ssh|scp|codex|claude|cautilus|openai)\b|https?://"
+    r"\b(gh|slack|curl|wget|docker|podman|ssh|scp|codex|claude|cautilus|openai)\b|https?://"
 )
 RUNTIME_SIGNALS = (
     ("python", ("pyproject.toml", "requirements.txt", "uv.lock", "poetry.lock")),
@@ -111,7 +111,7 @@ def _detect_environment_prerequisites(repo_root: Path, checks: list[dict[str, An
         {
             tool
             for item in checks
-            for tool in ("gh", "gws", "slack", "curl", "docker", "codex", "claude", "cautilus")
+            for tool in ("gh", "slack", "curl", "docker", "codex", "claude", "cautilus")
             if tool in item["commands"]
         }
     )

@@ -89,8 +89,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "detect",
-        "healthcheck"
+        "detect"
       ],
       "properties": {
         "detect": {

@@ -12,7 +12,6 @@ from tests.repo_copy import clone_seeded_charness_repo
 from .support import (
     make_fake_go_specdown,
     make_fake_npm_agent_browser,
-    make_fake_npm_gws,
     make_release_fixture,
     make_support_sync_fixture,
 )
@@ -30,7 +29,6 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
 
     _fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
-    fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     fake_curl, fake_nose = make_fake_nose(tmp_path)
     fake_pry = make_fake_pry(tmp_path)
@@ -44,8 +42,6 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
             str(fake_agent_browser.parent),
             str(fake_go.parent),
             str(specdown_bin.parent),
-            str(fake_npm.parent),
-            str(fake_gws.parent),
             str(fake_cautilus.parent),
             env["PATH"],
         ]
@@ -75,4 +71,4 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "TOOLS:" in update_result.stdout
     assert "agent-browser=updated" in update_result.stdout
     assert "cautilus=manual" in update_result.stdout
-    assert "nose=updated" in update_result.stdout
+    assert "nose=updated healthcheck=not-configured" in update_result.stdout

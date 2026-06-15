@@ -12,4 +12,5 @@ Local adjustments from the reference implementation:
 - the wrapper lives in `<repo-root>/scripts/export_page.py`
 - `charness` treats this as a published-page capability only
 - Google Workspace access is intentionally separate and should flow through a
-  real external runtime such as `gws-cli`
+  host-mediated capability, operator export, or browser-mediated private-source
+  path

@@ -17,7 +17,8 @@ belong in support and integration layers, not in the public skill definition.
 Provider routing is adapter-driven. Each gather source (`github`,
 `google_workspace`, `slack`, `notion`) reads
 `gather_provider.<source>.mode` from `.agents/gather-adapter.yaml`:
-`direct-cli` (default, maintainer-local CLIs such as `gh`/`gws`),
+`direct-cli` (default, maintainer-local CLIs or checked-in support runtimes such
+as `gh`, Slack, and Notion),
 `host-mediated` (the host's `<provider>` capability command), or `none`
 (stop with a missing-capability explanation). Skill scripts and support
 skills only invoke the path the adapter selected.
@@ -93,8 +94,9 @@ the adapter selected; never substitute direct CLIs/tokens under
 
 - GitHub: runtime grant or authenticated `gh` (direct-cli); host capability
   command (host-mediated); stop with missing-capability (none)
-- Google Workspace: authenticated `gws` (direct-cli); host capability
-  command (host-mediated); stop with missing-capability (none)
+- Google Workspace: host capability command (host-mediated), operator-provided
+  export, or browser-mediated private-source fallback when appropriate; the
+  repo no longer ships a direct Google Workspace CLI provider
 - Slack: `support/gather-slack/scripts/export-thread.sh` via
   `advise_slack_path.py` (direct-cli); host capability command
   (host-mediated); stop with missing-capability (none)
@@ -191,7 +193,7 @@ The result should usually include:
 - `references/document-seams.md`
 - `references/capability-contract.md`
 - `references/browser-mediated-private-sources.md`
-- `references/google-workspace-via-gws.md`
+- `references/google-workspace-access.md`
 - `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/advise_google_workspace_path.py`
 - `<repo-root>/scripts/refresh_current_pointer.py`
