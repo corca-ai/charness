@@ -37,7 +37,8 @@ The subagent's prompt must:
 - include the invariant-first overlay when the issue crosses producer/final
   consumer workflow boundaries
 - include the substrate cites
-  (`../../debug/references/five-whys-causal-chain.md`,
+  (`../../debug/references/disconfirmer-first.md`,
+  `../../debug/references/five-whys-causal-chain.md`,
   `../../debug/references/invariant-first-review.md`,
   `../../debug/references/detection-gap.md`,
   `../../debug/references/sibling-search.md`) and the
@@ -74,14 +75,14 @@ return `Causal review: substrate incomplete`.
 ### Lens 1 — Root cause (close-ledger triage)
 
 Consume the `debug` skill substrate
-(`../../debug/references/five-whys-causal-chain.md`) and triage the resulting
-structural cause through the close-ledger lens: does the named bottom map to
-the issue body and the reporter's JTBD, and is the prevention surface (guard,
-test, doc, tool) in scope for the close comment? **Do not re-derive the RCA
-body in causal review.** If the substrate's chain is missing, weak, or
-contradicts the issue body, return that as a
-`Causal review: substrate incomplete` block instead of regrowing it inside
-this lens.
+(`../../debug/references/disconfirmer-first.md` and
+`../../debug/references/five-whys-causal-chain.md`) and triage candidate-claim
+checks plus structural cause through the close-ledger lens: did absence,
+attribution, liveness, or frequency claims run their cheapest falsifier before
+confirmation, does the named bottom map to the issue body and reporter's JTBD,
+and is the prevention surface in scope for the close comment? **Do not
+re-derive the RCA body in causal review.** If claim checks or the chain are
+missing, weak, or contradictory, return `Causal review: substrate incomplete`.
 
 ### Lens 2 — Detection gap (close-ledger triage)
 

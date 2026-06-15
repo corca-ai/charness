@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 66,
-  "indexed_artifact_count": 54,
+  "source_artifact_count": 67,
+  "indexed_artifact_count": 55,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 10,
+    "none": 11,
     "operator-visible-recovery": 17,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
-    "monitor": 51,
+    "monitor": 52,
     "none": 1
   },
   "entries": [
@@ -741,6 +741,20 @@
         "operator-visible-recovery"
       ],
       "seam": "OS process table + /proc host runtime; --cleanup-orphans is destructive to live processes",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-15-issue-372-disconfirmer-first-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "disconfirmer-first-372",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "diagnostic workflow instructions and debug reference tests",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

@@ -15,13 +15,13 @@ control, split/file the upstream/host gap and record the non-closure honestly.
 
 ## Active Operating Frame
 
-- Current slice: 3 - resolve #372 disconfirmer-first debug rule.
-- Current slice intent: add or sharpen the debug rule that absence,
-  attribution, liveness, and frequency claims must seek disconfirming evidence
-  before accepting convenient explanations.
-- Next action: start the #372 slice with a compact causal review, inspect the
-  debug reference surface, and add a deterministic guard or dogfood proof where
-  the rule can regress.
+- Current slice: 4 - resolve #371 agent-browser orphan lifecycle.
+- Current slice intent: prove and fix, or honestly split, the agent-browser
+  chromium/profile-dir lifecycle so closure is not based on reaper-only
+  mitigation.
+- Next action: start #371 with root-cause review, inspect current
+  agent-browser runtime guard/cleanup behavior, and build controlled lifecycle
+  proof before claiming issue closure.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused tests and fresh-eye critique at slice boundaries; broad pytest and
   closeout gates only at bundle/final proof unless a slice changes shared test
@@ -133,7 +133,7 @@ The user can verify completion by checking:
 | 0 | Activation inventory and baselines | Establish exact starting state before optimizing or closing issues | current issue snapshots; nose 0.10.0 inventory; timing baseline; changed-surface map | completed |
 | 1 | Reduce validation/test runtime first | Every later slice pays verification cost; speed wins compound | runtime summary; CI-recoverable triage; removed/merged/demoted stale tests or justified no-op; before/after timing | completed |
 | 2 | Resolve #373 producer-before-validator regressions | It affects `achieve` itself and prevents repeated scaffold/validator waste during this goal | producer-first invariant; tests scanning scaffold/check order; issue closeout proof | completed |
-| 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | pending |
+| 3 | Resolve #372 disconfirmer-first debug rule | This improves the causal discipline needed before #371's runtime bug work | debug reference update; tests/dogfood/gate if appropriate; issue closeout proof | completed |
 | 4 | Resolve #371 agent-browser orphan lifecycle | Highest operational-risk issue, but benefits from #372's diagnosis rule and faster gates | root-cause note; teardown implementation or honest split; live/local lifecycle proof; issue closeout proof | pending |
 | 5 | Fix selected nose 0.10.0 clone findings | Broadest refactor blast radius; safer after speed and issue-critical work | before/after nose inventory; targeted helper extraction; focused + broad proof; disposition of left-behind families | pending |
 | 6 | Bundle closeout | Prove the whole goal and record non-claims | broad pytest; closeout gates; critique; retro; issue states; final verification | pending |
@@ -182,6 +182,19 @@ engine), not hard-coded here.
 - Critique: Causal review accepted the bug classification and invariant proof; resolution critique initially found a blocking `hitl` coverage hole, which was fixed before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-373-producer-before-validator-resolution.md`. Public-skill dogfood decision: `suggest_public_skill_dogfood.py --skill-id achieve --json` and slice closeout both returned the existing `achieve` case as `hitl-recommended`; the fresh-eye review and unchanged dogfood registry are the scenario review for this slice.
 - Off-goal findings: Auto-deriving the ordering table from an owning registry could reduce future drift, but is deferred outside this slice.
 - Lessons carried forward: Same-script producer/check modes need command-token coverage, not filename-only checks; validator commands belong in post-scaffold/post-shape language unless they explicitly advertise a non-mutating discovery mode.
+
+### Slice 3: Issue #372 disconfirmer-first debug rule
+
+- Objective: Resolve #372 by adding a debug workflow rung that requires absence, attribution, liveness, and frequency claims to run their cheapest falsifier before being treated as confirmed.
+- Why this approach: The issue names a diagnosis-contract gap, so the durable home is a debug reference plus the issue causal-review substrate that consumes debug during bug-class issue resolution.
+- Commits: this slice commit (`fix(debug): require disconfirmers before diagnosis claims`).
+- What changed: Added `skills/public/debug/references/disconfirmer-first.md`; linked it from `skills/public/debug/SKILL.md`; added the same substrate to `skills/public/issue/references/causal-review.md`; synced plugin mirrors; expanded `tests/quality_gates/test_debug_rca_reference_cite_chain.py`; recorded debug, critique, seam-risk index, and issue closeout artifacts.
+- Alternatives rejected: Rejected broad public-skill adoption in this slice because issue causal review already consumes debug substrate for bug-class RCA; rejected evaluator work for falsifier quality because the rule is now explicit and auditable, while live choice quality is broader future work.
+- Targeted verification: `pytest -q tests/quality_gates/test_debug_rca_reference_cite_chain.py` passed; debug artifact/index and critique artifact validators passed; skill/package/docs/markdown/secrets/deterministic prompt-proof/public-skill validation gates passed locally; public-skill dogfood registry validates after scenario-review notes for `debug` and `issue`.
+- Test duplication pressure: Added focused assertions to an existing debug-reference suite rather than a new parallel test file.
+- Critique: Causal review accepted the bug classification and invariant proof; resolution critique found an Act Before Ship gap in issue causal-review substrate cites, fixed before commit. Artifact: `charness-artifacts/critique/2026-06-15-issue-372-disconfirmer-first-resolution.md`. Public-skill dogfood decision: `suggest_public_skill_dogfood.py --skill-id debug --json` and `--skill-id issue --json` returned `evaluator-required`; scenario-registry review inspected `evals/cautilus/scenarios.json` and kept existing `debug-adapter-bootstrap`, `issue-sibling-search-concept-fixtures`, and `representative-skill-contracts` unchanged because routing/bootstrap behavior did not change. The scenario review is recorded in `docs/public-skill-dogfood.json`; `validate_cautilus_proof.py` reported deterministic validation owns this closeout because no live proof artifact changed and no log-backed behavior proof was requested.
+- Off-goal findings: Stronger evaluator coverage for the quality of selected falsifiers is valid future work but outside this slice.
+- Lessons carried forward: If a rule is placed in debug substrate, bug-class issue causal review must cite it explicitly or recurrence can bypass the new diagnosis guard.
 
 ## Context Sources
 

@@ -7,6 +7,7 @@ from .support import ROOT
 REFERENCE_PATH = ROOT / "skills" / "public" / "debug" / "references" / "five-whys-causal-chain.md"
 INVARIANT_FIRST = ROOT / "skills" / "public" / "debug" / "references" / "invariant-first-review.md"
 SIBLING_SEARCH = ROOT / "skills" / "public" / "debug" / "references" / "sibling-search.md"
+DISCONFIRMER_FIRST = ROOT / "skills" / "public" / "debug" / "references" / "disconfirmer-first.md"
 DEBUG_SKILL = ROOT / "skills" / "public" / "debug" / "SKILL.md"
 CAUSAL_REVIEW = ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md"
 ISSUE_SKILL = ROOT / "skills" / "public" / "issue" / "SKILL.md"
@@ -60,6 +61,26 @@ def test_debug_invariant_first_reference_requires_both_ends() -> None:
 def test_debug_skill_cites_five_whys_causal_chain() -> None:
     text = DEBUG_SKILL.read_text(encoding="utf-8")
     assert "five-whys-causal-chain" in text, "debug/SKILL.md must cite five-whys-causal-chain reference"
+
+
+def test_debug_skill_invokes_disconfirmer_first_claim_rung() -> None:
+    text = DEBUG_SKILL.read_text(encoding="utf-8")
+    assert "disconfirmer-first.md" in text
+    assert "absence, attribution, liveness, or frequency claims" in text
+    assert "cheapest falsifier first" in text
+
+
+def test_disconfirmer_first_reference_names_claim_types_and_runtime_preference() -> None:
+    text = DISCONFIRMER_FIRST.read_text(encoding="utf-8")
+    for claim_type in ("absence", "attribution", "liveness", "frequency"):
+        assert f"- {claim_type}:" in text, f"missing claim trigger `{claim_type}`"
+    assert "single cheapest check" in text
+    assert "label the statement `candidate`" in text
+    assert "prefer runtime" in text
+    assert "source inference" in text
+    assert "`Claim type:`" in text
+    assert "`Cheapest falsifier:`" in text
+    assert "`Result: confirmed | disconfirmed | still-candidate`" in text
 
 
 def test_causal_review_cites_five_whys_causal_chain() -> None:
@@ -121,6 +142,22 @@ def test_causal_review_subagent_prompt_must_include_substrate_cite() -> None:
         "subagent prompt contract must require including the substrate cite "
         "so the spawned reviewer triages instead of regrowing the chain"
     )
+    assert "disconfirmer-first" in contract, (
+        "subagent prompt contract must require the disconfirmer-first substrate "
+        "so issue causal review does not confirm candidate diagnosis claims first"
+    )
+
+
+def test_causal_review_lens_1_consumes_disconfirmer_first_substrate() -> None:
+    text = CAUSAL_REVIEW.read_text(encoding="utf-8")
+    match = re.search(r"### Lens 1[^\n]*\n(.*?)\n### Lens 2", text, re.DOTALL)
+    assert match, "could not locate Lens 1 section between headings"
+    body = match.group(1)
+    assert "disconfirmer-first.md" in body
+    for claim_type in ("absence", "attribution", "liveness", "frequency"):
+        assert claim_type in body
+    assert "claims" in body
+    assert "cheapest falsifier" in body
 
 
 def test_debug_sibling_search_requires_decision_taxonomy_and_proof_levels() -> None:
