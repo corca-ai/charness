@@ -58,6 +58,8 @@ _slice_closeout_reporting = import_repo_module(__file__, "scripts.slice_closeout
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
 should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad_pytest_policy
 closeout_producer_or_error = _mutation_coverage_producer.closeout_producer_or_error
+closeout_producer_validation_error = _mutation_coverage_producer.closeout_producer_validation_error
+run_focused_closeout_coverage = _mutation_coverage_producer.run_focused_closeout_coverage
 print_text = _slice_closeout_reporting.print_text
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_SECONDS = 30.0
@@ -180,6 +182,13 @@ def _unsafe_command_blockers(command_plan: list[tuple[str, str]]) -> list[str]:
     return blockers
 
 
+def _unsafe_blocker_command_plan(command_plan: list[tuple[str, str]], args) -> list[tuple[str, str]]:
+    command = getattr(args, "mutation_coverage_command", None)
+    if getattr(args, "produce_mutation_coverage", False) and command:
+        return command_plan + [("verify", command)]
+    return command_plan
+
+
 def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bool, as_json: bool) -> int | None:
     if not payload["unmatched_paths"] or allow_unmatched:
         return None
@@ -293,10 +302,19 @@ def _build_parser() -> argparse.ArgumentParser:
         "--produce-mutation-coverage",
         action="store_true",
         help=(
-            "At the verification-lock broad pytest, run it under plain coverage "
-            "(one instrumented run, no double-run) and emit reports/mutation/"
-            "test-coverage.json plus a freshness fingerprint marker for the pre-push "
-            "changed-line gate. Requires --verification-lock."
+            "Emit reports/mutation/test-coverage.json plus a freshness fingerprint "
+            "marker for the pre-push changed-line gate. By default this instruments "
+            "the verification-lock broad pytest. With --mutation-coverage-command, "
+            "the broad pytest proof stays on the normal closeout/cache path and the "
+            "explicit command is instrumented separately. Requires --verification-lock."
+        ),
+    )
+    parser.add_argument(
+        "--mutation-coverage-command",
+        help=(
+            "Explicit pytest command to instrument for the changed-line mutation "
+            "coverage producer, e.g. a focused test file or nodeid set. Requires "
+            "--produce-mutation-coverage and --verification-lock."
         ),
     )
     parser.add_argument(
@@ -333,6 +351,25 @@ def _resolve_changed_paths(repo_root: Path, args) -> list[str]:
     return collect_changed_paths(repo_root)
 
 
+def _planned_commands(
+    repo_root: Path,
+    changed_paths: list[str],
+    command_plan: list[tuple[str, str]],
+    args,
+) -> list[dict[str, object]]:
+    planned = structural_sweep_planned_commands(repo_root, changed_paths)
+    planned += [{"phase": phase, "command": command} for phase, command in command_plan]
+    if args.produce_mutation_coverage and args.mutation_coverage_command:
+        planned.append(
+            {
+                "phase": "verify",
+                "command": args.mutation_coverage_command,
+                "coverage_producer": True,
+            }
+        )
+    return planned
+
+
 def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
@@ -348,6 +385,12 @@ def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) 
     )
     if blocked is not None:
         return blocked
+
+    producer_error = closeout_producer_validation_error(args)
+    if producer_error:
+        payload["status"] = "blocked"
+        payload["error"] = producer_error
+        return _emit_payload(payload, as_json=args.json, stderr_message=producer_error)
 
     advise_prose_pin(repo_root, payload["changed_paths"])
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
@@ -436,12 +479,12 @@ def main() -> int:
 
     if args.plan_only:
         payload["status"] = "planned"
-        payload["planned_commands"] = structural_sweep_planned_commands(
-            repo_root, list(payload["changed_paths"])
-        ) + [{"phase": phase, "command": command} for phase, command in command_plan]
+        payload["planned_commands"] = _planned_commands(
+            repo_root, list(payload["changed_paths"]), command_plan, args
+        )
         return _emit_payload(payload, as_json=args.json)
 
-    unsafe_blockers = _unsafe_command_blockers(command_plan)
+    unsafe_blockers = _unsafe_command_blockers(_unsafe_blocker_command_plan(command_plan, args))
     if unsafe_blockers:
         payload["status"] = "blocked"
         payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
@@ -458,6 +501,8 @@ def main() -> int:
         refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
         broad_pytest_producer=broad_pytest_producer,
     )
+    if not should_stop:
+        should_stop = run_focused_closeout_coverage(args, repo_root, payload, run_command)
 
     # Gate-baseline runtime advisory (spec achieve-efficiency-improvements C):
     # a gate that PASSES but is slow by design is code-quality debt. Runs

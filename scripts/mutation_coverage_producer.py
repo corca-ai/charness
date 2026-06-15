@@ -1,9 +1,10 @@
 """Closeout producer for the changed-line mutation-coverage pre-push gate.
 
 Lever A+B (decided 2026-06-07): instead of a dedicated slow `dynamic_context`
-probe, the closeout's broad pytest run is *itself* instrumented with plain
-coverage (one run, no double-run), then exported small and stamped with a
-freshness fingerprint. The pre-push consumer
+probe, closeout can either instrument the broad pytest run itself or instrument
+an explicit focused pytest command while broad pytest stays on the normal
+proof/cache path. The producer exports small coverage JSON and stamps a freshness
+fingerprint. The pre-push consumer
 (`check_changed_line_mutation_coverage.py --require-fresh-coverage`) trusts that
 coverage when its `.fingerprint` marker matches the current changed-pool content.
 
@@ -27,7 +28,13 @@ DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
 PRODUCE_REQUIRES_LOCK_ERROR = (
     "--produce-mutation-coverage requires --verification-lock and is incompatible "
-    "with --skip-broad-pytest (it instruments the locked broad pytest)"
+    "with --skip-broad-pytest (the locked closeout proof anchors the coverage marker)"
+)
+FOCUSED_REQUIRES_PRODUCE_ERROR = (
+    "--mutation-coverage-command requires --produce-mutation-coverage"
+)
+FOCUSED_REQUIRES_PYTEST_ERROR = (
+    "--mutation-coverage-command must start with 'pytest ' or 'python3 -m pytest '"
 )
 
 
@@ -42,12 +49,16 @@ def instrument_broad_command(command: str, data_file: Path) -> str:
     raise ValueError(f"not an instrumentable pytest command: {command!r}")
 
 
+def is_instrumentable_pytest_command(command: str) -> bool:
+    return command.startswith(("python3 -m pytest ", "pytest "))
+
+
 def _with_coverage_env(env: dict[str, str], command: str) -> str:
     exports = "; ".join(f"export {key}={shlex.quote(env[key])}" for key in _COVERAGE_ENV_KEYS)
     return f"{exports}; {command}"
 
 
-def produce_broad_coverage(
+def produce_command_coverage(
     repo_root: Path,
     command: str,
     *,
@@ -56,10 +67,7 @@ def produce_broad_coverage(
     run_command: Callable[[Path, str, str], dict[str, object]],
     phase: str = "verify",
 ) -> dict[str, object]:
-    """Run the broad pytest command under plain coverage and, on success, export
-    a small coverage JSON plus the freshness fingerprint marker the consumer
-    trusts. Returns a ``run_command``-shaped result dict (the original command is
-    preserved so the broad-pytest proof cache keys still match)."""
+    """Run a pytest command under plain coverage and stamp the freshness marker."""
     data_file, rcfile, env = _sampling.prepare_plain_coverage(repo_root, coverage_json)
     instrumented = _with_coverage_env(env, instrument_broad_command(command, data_file))
     result = dict(run_command(repo_root, instrumented, phase))
@@ -76,6 +84,29 @@ def produce_broad_coverage(
         result["mutation_coverage_json"] = str(coverage_json)
         result["mutation_coverage_fingerprint"] = fingerprint
     return result
+
+
+def produce_broad_coverage(
+    repo_root: Path,
+    command: str,
+    *,
+    base_sha: str,
+    coverage_json: Path,
+    run_command: Callable[[Path, str, str], dict[str, object]],
+    phase: str = "verify",
+) -> dict[str, object]:
+    """Run the broad pytest command under plain coverage and, on success, export
+    a small coverage JSON plus the freshness fingerprint marker the consumer
+    trusts. Returns a ``run_command``-shaped result dict (the original command is
+    preserved so the broad-pytest proof cache keys still match)."""
+    return produce_command_coverage(
+        repo_root,
+        command,
+        base_sha=base_sha,
+        coverage_json=coverage_json,
+        run_command=run_command,
+        phase=phase,
+    )
 
 
 def default_mutation_base_sha(repo_root: Path) -> str:
@@ -109,6 +140,50 @@ def make_closeout_producer(
     return producer
 
 
+def closeout_producer_validation_error(args: object) -> str | None:
+    focused_command = getattr(args, "mutation_coverage_command", None)
+    if focused_command and not getattr(args, "produce_mutation_coverage", False):
+        return FOCUSED_REQUIRES_PRODUCE_ERROR
+    if focused_command and not is_instrumentable_pytest_command(focused_command):
+        return FOCUSED_REQUIRES_PYTEST_ERROR
+    if not getattr(args, "produce_mutation_coverage", False):
+        return None
+    if not getattr(args, "verification_lock", False) or getattr(args, "skip_broad_pytest", False):
+        return PRODUCE_REQUIRES_LOCK_ERROR
+    return None
+
+
+def run_focused_closeout_coverage(
+    args: object,
+    repo_root: Path,
+    payload: dict[str, object],
+    run_command: Callable[[Path, str, str], dict[str, object]],
+) -> bool:
+    """Run an explicit narrow pytest coverage producer after closeout commands.
+
+    The broad pytest proof remains owned by the normal closeout command plan and
+    cache. This focused producer only refreshes the changed-line mutation coverage
+    JSON/fingerprint when the operator supplied a command that covers the changed
+    pool lines.
+    """
+    command = getattr(args, "mutation_coverage_command", None)
+    if not getattr(args, "produce_mutation_coverage", False) or not command:
+        return False
+    result = produce_command_coverage(
+        repo_root,
+        command,
+        base_sha=default_mutation_base_sha(repo_root),
+        coverage_json=repo_root / DEFAULT_COVERAGE_JSON,
+        run_command=run_command,
+        phase="verify",
+    )
+    payload["executed_commands"].append(result)
+    if result["returncode"] != 0:
+        payload["status"] = "failed"
+        return True
+    return False
+
+
 def closeout_producer_or_error(
     args: object,
     repo_root: Path,
@@ -121,8 +196,12 @@ def closeout_producer_or_error(
     --skip-broad-pytest so there is no broad run to instrument), and
     ``(None, None)`` when producing is not requested.
     """
+    validation_error = closeout_producer_validation_error(args)
+    if validation_error:
+        return None, validation_error
     if not getattr(args, "produce_mutation_coverage", False):
         return None, None
-    if not getattr(args, "verification_lock", False) or getattr(args, "skip_broad_pytest", False):
-        return None, PRODUCE_REQUIRES_LOCK_ERROR
+    focused_command = getattr(args, "mutation_coverage_command", None)
+    if focused_command:
+        return None, None
     return make_closeout_producer(repo_root, run_command), None

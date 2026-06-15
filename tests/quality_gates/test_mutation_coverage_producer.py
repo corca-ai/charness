@@ -12,8 +12,6 @@ from types import SimpleNamespace
 
 import pytest
 
-from .support import ROOT
-
 
 def _git(repo: Path, *args: str) -> str:
     return subprocess.run(
@@ -91,6 +89,41 @@ def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatc
     assert result["command"] == "pytest -q tests"  # original preserved for the proof cache
     marker = cov.with_name(cov.name + ".fingerprint")
     assert marker.is_file()
+    assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
+
+
+def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+    from scripts.mutation_changed_files_lib import changed_pool_fingerprint
+
+    repo, base = _seed_repo(tmp_path)
+    cov = repo / "reports" / "mutation" / "test-coverage.json"
+    captured: dict = {}
+
+    def fake_run(repo_root, command, phase):
+        captured["command"] = command
+        captured["phase"] = phase
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, *, show_contexts):
+        captured["show_contexts"] = show_contexts
+        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+
+    result = prod.produce_command_coverage(
+        repo,
+        "python3 -m pytest -q tests/quality_gates/test_mutation_coverage_producer.py",
+        base_sha=base,
+        coverage_json=cov,
+        run_command=fake_run,
+    )
+
+    assert "python3 -m coverage run" in captured["command"]
+    assert "tests/quality_gates/test_mutation_coverage_producer.py" in captured["command"]
+    assert captured["show_contexts"] is False
+    assert result["produced_mutation_coverage"] is True
+    marker = cov.with_name(cov.name + ".fingerprint")
     assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
 
 
@@ -233,6 +266,8 @@ def test_make_closeout_producer_binds_base_and_produces(tmp_path: Path, monkeypa
 
 def test_closeout_producer_or_error_branches(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import (
+        FOCUSED_REQUIRES_PRODUCE_ERROR,
+        FOCUSED_REQUIRES_PYTEST_ERROR,
         PRODUCE_REQUIRES_LOCK_ERROR,
         closeout_producer_or_error,
     )
@@ -246,52 +281,155 @@ def test_closeout_producer_or_error_branches(tmp_path: Path) -> None:
     )
     assert producer is None and error is None
 
+    # focused command without producer mode -> error
+    producer, error = closeout_producer_or_error(
+        SimpleNamespace(
+            produce_mutation_coverage=False,
+            mutation_coverage_command="pytest -q tests/test_demo.py",
+        ),
+        tmp_path,
+        run_command,
+    )
+    assert producer is None and error == FOCUSED_REQUIRES_PRODUCE_ERROR
+
+    # focused command must be an instrumentable pytest command
+    producer, error = closeout_producer_or_error(
+        SimpleNamespace(
+            produce_mutation_coverage=True,
+            verification_lock=True,
+            skip_broad_pytest=False,
+            mutation_coverage_command="python3 scripts/not_pytest.py",
+        ),
+        tmp_path,
+        run_command,
+    )
+    assert producer is None and error == FOCUSED_REQUIRES_PYTEST_ERROR
+
     # requested without the verification lock -> error
     producer, error = closeout_producer_or_error(
-        SimpleNamespace(produce_mutation_coverage=True, verification_lock=False, skip_broad_pytest=False),
+        SimpleNamespace(
+            produce_mutation_coverage=True,
+            verification_lock=False,
+            skip_broad_pytest=False,
+            mutation_coverage_command=None,
+        ),
         tmp_path, run_command,
     )
     assert producer is None and error == PRODUCE_REQUIRES_LOCK_ERROR
 
     # requested with --skip-broad-pytest (no broad run to instrument) -> error
     producer, error = closeout_producer_or_error(
-        SimpleNamespace(produce_mutation_coverage=True, verification_lock=True, skip_broad_pytest=True),
+        SimpleNamespace(
+            produce_mutation_coverage=True,
+            verification_lock=True,
+            skip_broad_pytest=True,
+            mutation_coverage_command=None,
+        ),
         tmp_path, run_command,
     )
     assert producer is None and error == PRODUCE_REQUIRES_LOCK_ERROR
 
     # requested and valid -> a callable producer, no error
     producer, error = closeout_producer_or_error(
-        SimpleNamespace(produce_mutation_coverage=True, verification_lock=True, skip_broad_pytest=False),
+        SimpleNamespace(
+            produce_mutation_coverage=True,
+            verification_lock=True,
+            skip_broad_pytest=False,
+            mutation_coverage_command=None,
+        ),
         tmp_path, run_command,
     )
     assert callable(producer) and error is None
 
-
-def test_resolve_broad_producer_raises_on_misuse() -> None:
-    # In-process (no subprocess boundary): the closeout misuse guard raises
-    # SurfaceError, which the entrypoint reports + exits non-zero on.
-    import scripts.run_slice_closeout as rsc
-
-    args = SimpleNamespace(
-        produce_mutation_coverage=True, verification_lock=False, skip_broad_pytest=False
+    # focused producer keeps broad pytest on the ordinary closeout/cache path
+    producer, error = closeout_producer_or_error(
+        SimpleNamespace(
+            produce_mutation_coverage=True,
+            verification_lock=True,
+            skip_broad_pytest=False,
+            mutation_coverage_command="pytest -q tests/test_demo.py",
+        ),
+        tmp_path,
+        run_command,
     )
-    with pytest.raises(rsc.SurfaceError, match="requires --verification-lock"):
-        rsc._resolve_broad_producer(args, ROOT, run_command=lambda *a, **k: None)
+    assert producer is None and error is None
 
 
-def test_resolve_broad_producer_none_when_not_producing() -> None:
-    import scripts.run_slice_closeout as rsc
+def test_run_focused_closeout_coverage_appends_result(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
 
-    args = SimpleNamespace(produce_mutation_coverage=False)
-    assert rsc._resolve_broad_producer(args, ROOT, run_command=lambda *a, **k: None) is None
-
-
-def test_resolve_broad_producer_returns_callable_when_valid() -> None:
-    import scripts.run_slice_closeout as rsc
-
+    payload = {"executed_commands": []}
     args = SimpleNamespace(
-        produce_mutation_coverage=True, verification_lock=True, skip_broad_pytest=False
+        produce_mutation_coverage=True,
+        mutation_coverage_command="pytest -q tests/test_demo.py",
     )
-    producer = rsc._resolve_broad_producer(args, ROOT, run_command=lambda *a, **k: None)
-    assert callable(producer)
+    captured: dict = {}
+
+    def fake_produce(repo_root, command, *, base_sha, coverage_json, run_command, phase):
+        captured.update(
+            {
+                "repo_root": repo_root,
+                "command": command,
+                "base_sha": base_sha,
+                "coverage_json": coverage_json,
+                "phase": phase,
+            }
+        )
+        return {
+            "phase": phase,
+            "command": command,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "produced_mutation_coverage": True,
+        }
+
+    monkeypatch.setattr(prod, "default_mutation_base_sha", lambda repo_root: "base")
+    monkeypatch.setattr(prod, "produce_command_coverage", fake_produce)
+
+    should_stop = prod.run_focused_closeout_coverage(
+        args,
+        tmp_path,
+        payload,
+        run_command=lambda *args, **kwargs: None,
+    )
+
+    assert should_stop is False
+    assert captured["command"] == "pytest -q tests/test_demo.py"
+    assert captured["base_sha"] == "base"
+    assert captured["coverage_json"] == tmp_path / "reports" / "mutation" / "test-coverage.json"
+    assert payload["executed_commands"][-1]["produced_mutation_coverage"] is True
+
+
+def test_run_focused_closeout_coverage_marks_failed_payload(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    payload = {"executed_commands": []}
+    args = SimpleNamespace(
+        produce_mutation_coverage=True,
+        mutation_coverage_command="pytest -q tests/test_demo.py",
+    )
+
+    def fake_produce(repo_root, command, *, base_sha, coverage_json, run_command, phase):
+        return {
+            "phase": phase,
+            "command": command,
+            "returncode": 1,
+            "stdout": "",
+            "stderr": "failed",
+            "produced_mutation_coverage": False,
+        }
+
+    monkeypatch.setattr(prod, "default_mutation_base_sha", lambda repo_root: "base")
+    monkeypatch.setattr(prod, "produce_command_coverage", fake_produce)
+
+    should_stop = prod.run_focused_closeout_coverage(
+        args,
+        tmp_path,
+        payload,
+        run_command=lambda *args, **kwargs: None,
+    )
+
+    assert should_stop is True
+    assert payload["status"] == "failed"
+    assert payload["executed_commands"][-1]["returncode"] == 1

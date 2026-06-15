@@ -26,22 +26,28 @@ the root instruction file but still apply to Charness maintenance work.
   `--refresh-broad-pytest-proof`. Record focused current-diff proof for pre-lock
   slices rather than treating the skipped broad run as final evidence.
 - When a slice changes eligible mutation-pool Python files, add
-  `--produce-mutation-coverage` to the final `--verification-lock` closeout: it
-  instruments that one broad pytest run with plain coverage (no double run) and
-  emits `reports/mutation/test-coverage.json` plus the `.fingerprint` freshness
-  marker the pre-push changed-line gate (`check-changed-line-mutation-coverage`)
-  reuses. Without a fresh producer run the gate skips non-blocking, so run the
-  producer before a pool-touching push to keep the gate active. To check your own
-  uncommitted slice early, run the producer (it stamps the marker over
-  base->worktree) then the consumer, or run the consumer over a head that
-  includes the worktree — a manual `--head-sha HEAD` dry-run **before commit** is
-  a false green (HEAD is the parent, so `base..HEAD` excludes your changes and
-  they are judged only post-commit). The consumer now **warns** (non-blocking
-  `warning` field + stderr) when the analyzed head resolves to `HEAD` and an
-  eligible mutation-pool file has uncommitted worktree changes, so this trap is
-  surfaced instead of silently passing (handoff-4). Also run the cheap doc gates the broad
-  pytest enforces (e.g. `python3 scripts/check_spec_evidence_durability.py`)
-  before paying for the producer run (see the
+  `--produce-mutation-coverage` to the final `--verification-lock` closeout. By
+  default, it instruments that one broad pytest run with plain coverage (no
+  double run) and emits `reports/mutation/test-coverage.json` plus the
+  `.fingerprint` freshness marker the pre-push changed-line gate
+  (`check-changed-line-mutation-coverage`) reuses. When the changed pool has an
+  honest focused pytest proof, prefer a focused producer command alongside
+  `--produce-mutation-coverage`; for example,
+  `--mutation-coverage-command "python3 -m pytest -q tests/quality_gates/test_x.py"`.
+  The broad pytest proof stays on the normal closeout/cache path, and only the
+  focused command is instrumented for the freshness marker. Without a fresh
+  producer run the gate skips non-blocking, so run the producer before a
+  pool-touching push to keep the gate active. To check your own uncommitted slice
+  early, run the producer (it stamps the marker over base->worktree) then the
+  consumer, or run the consumer over a head that includes the worktree — a manual
+  `--head-sha HEAD` dry-run **before commit** is a false green (HEAD is the
+  parent, so `base..HEAD` excludes your changes and they are judged only
+  post-commit). The consumer now **warns** (non-blocking `warning` field +
+  stderr) when the analyzed head resolves to `HEAD` and an eligible mutation-pool
+  file has uncommitted worktree changes, so this trap is surfaced instead of
+  silently passing (handoff-4). Also run the cheap doc gates the broad pytest
+  enforces, such as `python3 scripts/check_spec_evidence_durability.py`, before
+  paying for the producer run (see the
   [producer-rerun retro](../../charness-artifacts/retro/2026-06-07-producer-rerun-waste.md)).
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for

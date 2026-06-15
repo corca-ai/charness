@@ -145,6 +145,81 @@ def test_run_slice_closeout_blocks_unsafe_agent_browser_surface_commands(tmp_pat
     assert "unsafe agent-browser probe" in "\n".join(payload["blockers"])
 
 
+def test_run_slice_closeout_plan_only_blocks_invalid_focused_coverage_command() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/mutation_coverage_producer.py",
+        "--skip-sync",
+        "--verification-lock",
+        "--produce-mutation-coverage",
+        "--mutation-coverage-command",
+        "python3 scripts/not_pytest.py",
+        "--plan-only",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "must start with" in payload["error"]
+
+
+def test_run_slice_closeout_plan_only_lists_focused_coverage_command() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/mutation_coverage_producer.py",
+        "--skip-sync",
+        "--verification-lock",
+        "--produce-mutation-coverage",
+        "--mutation-coverage-command",
+        "python3 -m pytest -q tests/quality_gates/test_mutation_coverage_producer.py",
+        "--plan-only",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    planned = payload["planned_commands"]
+    assert planned[-1] == {
+        "phase": "verify",
+        "command": "python3 -m pytest -q tests/quality_gates/test_mutation_coverage_producer.py",
+        "coverage_producer": True,
+    }
+
+
+def test_run_slice_closeout_blocks_unsafe_focused_coverage_command(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    write_surface_manifest(repo, demo_surface())
+
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "README.md",
+        "--skip-sync",
+        "--skip-verify",
+        "--verification-lock",
+        "--produce-mutation-coverage",
+        "--mutation-coverage-command",
+        "pytest -q tests/test_demo.py; agent-browser open https://example.com",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "unsafe agent-browser probe" in "\n".join(payload["blockers"])
+
+
 def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

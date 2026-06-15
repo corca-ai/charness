@@ -349,13 +349,18 @@ The cheap producer is wired. Lever A+B as decided:
   **Subprocess capture (`COVERAGE_PROCESS_START`) is retained**, so plain `--cov`
   gains no new subprocess blind spot — strictly better than the assumed plain
   `--cov`, while still small.
-- **Lever B — piggyback, no double-run.** `run_slice_closeout.py
-  --produce-mutation-coverage` (requires `--verification-lock`) instruments the
-  **closeout broad pytest itself** under plain coverage (one run), then exports
-  `reports/mutation/test-coverage.json` and stamps the freshness marker. New <!-- reproduction-source -->
-  module `scripts/mutation_coverage_producer.py` + executor routing
+- **Lever B — piggyback by default, focused producer when known.**
+  `run_slice_closeout.py --produce-mutation-coverage` (requires
+  `--verification-lock`) instruments the **closeout broad pytest itself** under
+  plain coverage by default, then exports `reports/mutation/test-coverage.json` <!-- reproduction-source -->
+  and stamps the freshness marker. New module
+  `scripts/mutation_coverage_producer.py` + executor routing
   (`broad_pytest_producer` bypasses proof-reuse so the producing run always
-  executes). `reports/mutation/` is gitignored → AC-CLEAN preserved.
+  executes). For slices with an honest focused pytest proof,
+  `--mutation-coverage-command "<python3 -m pytest ...>"` keeps broad pytest on
+  the normal closeout/cache path and instruments only the explicit focused
+  command for the freshness marker. `reports/mutation/` is gitignored → AC-CLEAN
+  preserved.
 
 **Freshness identity changed from commit-SHA → content fingerprint (supersedes
 slice 1's `.head` marker).** Closeout runs **pre-commit** (verify → commit), so a
