@@ -45,6 +45,19 @@ follows.
 - F4 | bin: bundle-anyway | evidence: strong | ref: tests/charness_cli/{test_tool_lifecycle.py,tool_fakes.py,support.py,test_update_output.py,test_managed_install_extended.py} | action: fix | note: pry removed from the validation-role tool-set assertions, the `make_fake_pry` fixture, and the support-sync mapping; focused + release_only install/update tests pass
 - F5 | bin: over-worry | evidence: strong | ref: skills/public/quality/references/testability-and-selection.md:184 | action: document | note: only the `## Welded-Boundary Testability Backlog (pry)` section removed; all non-pry structural-testability guidance preserved
 
+## Release Decision
+
+- Bump: patch (0.51.0 -> 0.51.1). The version policy lists "removed install
+  surfaces" under major, but that clause targets breaking a surface callers
+  depend on. pry was `status: experimental`, advisory-only (exit 0, silent
+  degrade), two days old (added in 0.49.0), carried no consumer-contract
+  dependency, and needs no migration. The sibling `gws-cli` tool removal shipped
+  as a patch (v0.50.1). Withdrawing pry preserves the public shape, so patch is
+  the honest level.
+- Operator risk: `charness tool install pry` stops resolving; anyone who
+  installed pry simply stops getting an advisory `quality` phase that already
+  degraded silently. No automation that should exist breaks.
+
 ## Fresh-Eye Satisfaction
 
 Bounded fresh-eye reviewer spawned in the shared parent worktree (read-only,
