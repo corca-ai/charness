@@ -1,7 +1,8 @@
 # HOTL Proof Packet: Open issue HOTL closeout
 
-Status: draft
+Status: active-audit; proof incomplete
 Created: 2026-06-16
+Last audited: 2026-06-16
 Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 
 ## Loop Inventory
@@ -9,9 +10,15 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Surface class: mixed local guard / repo artifact / GitHub issue state /
   external runtime lifecycle.
 - Related issues: #378, #377, #376, #375, #371.
-- Applied/live state at shaping: no active-run mutation has been executed.
+- Applied/live state at shaping: no active-run mutation had been executed.
+- Applied/live state at latest audit: no issue-closeout mutation was executed by
+  this packet audit; all issue readbacks below were read-only.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
+- Issue backend: `issue_tool.py preflight --repo-root . --json` selected the
+  authenticated `gh` backend.
+- GitHub source-of-truth readback on 2026-06-16: #378, #377, #376, #375, and
+  #371 all remained `OPEN`; per-issue reads returned `comments_read: true`.
 
 ## Success Criteria
 
@@ -68,6 +75,35 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   daemon/profile lifecycle.
 - A closed GitHub issue proves tracker state only; it does not by itself prove
   release availability or consumer update.
+- This audit does not prove any implementation acceptance for #378, #377, #376,
+  or #375; it only proves the GitHub issue state and comments were read.
+- This audit does not claim #371 is closeable today. The latest #371 comments
+  state that it should remain open unless controlled invocation-end lifecycle
+  proof exists, which is stricter than the goal's draft local-close path.
+
+## Read-Only Issue Audit
+
+| Issue | GitHub state | Comments read | Current proof state | Evidence |
+| --- | --- | --- | --- | --- |
+| #378 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the advisory inventory is still requested; no closeout carrier or closed-state proof exists. |
+| #377 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the current-pointer audit/tightening remains open; no closeout carrier or closed-state proof exists. |
+| #376 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says deterministic-helper re-judgment guidance remains open; no closeout carrier or closed-state proof exists. |
+| #375 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says achieve scaffold adapter control remains open; no closeout carrier or closed-state proof exists. |
+| #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
+
+## Staleness Findings
+
+- `docs/handoff.md` now reports the repository at `origin/main` after the
+  v0.50.2 release, while this goal artifact still carries older draft-time
+  branch-state language. Treat the Git refs and GitHub issue readback as newer
+  authority.
+- The goal artifact's #371 closure allowance is stale against the issue's own
+  latest comments unless the active run either obtains controlled lifecycle
+  proof or records a new operator decision that explicitly supersedes the
+  current open-issue disposition.
+- No `charness-artifacts/hotl/latest.md` ledger exists yet, so this proof packet
+  is the current durable HOTL state for the loop until a ledger/current pointer
+  is added.
 
 ## Ledger Draft
 
@@ -78,3 +114,13 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #376 | planned | Re-judgment contract proof plus GitHub before/after closeout readback |
 | #375 | planned | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
 | #371 | planned close | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim; verify local GitHub issue closed |
+
+## Next Action
+
+- Do not close or comment on the issues from this audit alone.
+- If another agent is implementing the open-issue queue, use this packet as the
+  current HOTL readback baseline and require before/after GitHub state proof for
+  any later closeout carrier.
+- Before any #371 close attempt, reconcile the stale goal wording with the live
+  issue comments; without controlled lifecycle proof, keep #371 as `issue`
+  disposition rather than `verified`.
