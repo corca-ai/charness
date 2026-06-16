@@ -15,6 +15,9 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   executed by this packet audit; all issue readbacks below were read-only.
 - Local implementation state: #375, #378, #377, and #376 have local implementation
   proof; no GitHub closeout carrier has been published.
+- Branch-wide local gate state: the `origin/main..HEAD` changed-line mutation
+  coverage consumer is green for the local proof bundle; this does not publish
+  or close any issue.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
 - Issue backend: `issue_tool.py preflight --repo-root . --json` selected the
@@ -279,6 +282,33 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Non-claim: this local proof does not close #376. Final issue closeout still
   requires a carrier with close keywords or approved fallback and GitHub
   `CLOSED` readback.
+
+## Branch-Wide Local Gate Proof
+
+- Scope: committed local proof bundle on `main`, `origin/main..HEAD`, covering
+  the #375, #376, #377, and #378 implementation slices plus this HOTL audit
+  packet.
+- Coverage producer: `python3 scripts/run_slice_closeout.py --repo-root .
+  --base --verification-lock --refresh-broad-pytest-proof
+  --produce-mutation-coverage --mutation-coverage-command "<focused pytest
+  bundle for achieve, handoff, quality, artifact/current-pointer tests>"
+  --ack-cautilus-skill-review` completed.
+- Included closeout proof: packaging validation, docs/command/markdown/secrets
+  checks, Cautilus provenance validation, skill validation, public skill
+  validation/dogfood, critique artifact validation, integration validation,
+  support/tool sync checks, Ruff, py_compile, Python length checks,
+  attention-state visibility, repo-copy invariant check, boundary-bypass
+  ratchet, broad standing pytest, inference interpretation validation,
+  gitignore scan hygiene, agent-browser runtime orphan guard, and the focused
+  coverage-producing pytest bundle.
+- Changed-line consumer: `python3
+  scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha
+  "$(git merge-base origin/main HEAD)" --reuse-coverage
+  --require-fresh-coverage` returned `"ok": true`, `"blocking": []`, and no
+  `blocking_targets` for the 15 changed mutation-pool files.
+- Non-claim: this branch-wide green local gate is not GitHub closeout proof.
+  The five tracked GitHub issues remain open until an approved carrier lands
+  and `CLOSED` readback is recorded.
 
 ## Next Action
 
