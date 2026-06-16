@@ -15,9 +15,8 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 
 ## Success Criteria
 
-- Every shaped issue is either verified closed through GitHub readback or has
-  one explicit HOTL disposition with owner, reason, decided-at, and revisit
-  trigger.
+- Every shaped issue (#378, #377, #376, #375, #371) is verified `CLOSED`
+  through GitHub readback after the implementation carrier lands.
 - Any GitHub issue closure carries before/after provider readback.
 - #371 closeout is acceptable from the Charness side if local mitigation and
   ownership transfer are proven, upstream lifecycle ownership is linked, and the
@@ -48,9 +47,9 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - #375: feasible through `achieve` adapter/scaffold changes and tests proving
   idempotent draft-frame customization.
 - #371: feasible as Charness-local closeout if the active run records verified
-  mitigation/readback plus residual upstream issue disposition. Not feasible as
-  upstream lifecycle verification without a lifecycle proof command or provider
-  proof path.
+  mitigation/readback plus residual upstream issue disposition. The local issue
+  can close without upstream lifecycle verification, as long as the closeout
+  explicitly does not claim that upstream teardown was fixed.
 
 ## Human Intervention
 
@@ -78,4 +77,4 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #377 | planned | Audit/change proof plus GitHub before/after closeout readback |
 | #376 | planned | Re-judgment contract proof plus GitHub before/after closeout readback |
 | #375 | planned | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
-| #371 | planned-disposition | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim |
+| #371 | planned close | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim; verify local GitHub issue closed |
