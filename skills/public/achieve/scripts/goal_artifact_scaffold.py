@@ -16,7 +16,8 @@ DEFAULT_DRAFT_ACTIVE_FRAME_LINES = (
     "  files and owning/generated surfaces, expected invariants, tests/proof,",
     "  non-claims, out-of-scope lines, and reviewer questions.",
     "- History boundary: keep this frame current; move completed detail to",
-    "  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.",
+    "  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`,",
+    "  and `## Auto-Retro`.",
 )
 
 

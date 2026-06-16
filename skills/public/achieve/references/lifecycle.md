@@ -459,6 +459,9 @@ At completion the goal artifact should contain:
   narrate each one inline.
   Narration itself stays a prose contract (a hard transcript gate would
   over-fire); the list is the affordance, not a blocker.
+- an `Operator Decision Queue:` line in the user-facing final report, with each
+  queued operator-only decision or `none — <reason>`. Decision-needed items must
+  not be collapsed into generic residual-risk prose.
 
 Run `check_goal_artifact.py` before declaring completion so the required
 sections, status, and activation line are all present. Flip the status to

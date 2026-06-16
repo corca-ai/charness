@@ -44,6 +44,20 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
+
 ## Coordination Cues
 
 Phase-appropriate routing for this run, deferred to `find-skills` (its

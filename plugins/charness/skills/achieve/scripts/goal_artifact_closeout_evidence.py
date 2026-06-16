@@ -226,6 +226,7 @@ _closeout_delegation = _load_sibling_closeout_delegation()
 apply_closeout_delegation = _closeout_delegation.apply_closeout_delegation
 
 _section_placeholders = _load_local_module("goal_artifact_section_placeholders")
+_operator_queue = _load_local_module("goal_artifact_operator_queue")
 
 _metric_window = _load_sibling_metric_window()
 metric_window_attention = _metric_window.metric_window_attention
@@ -348,6 +349,10 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # Final-status placeholder floor: a complete goal cannot carry a section
     # whose first real body line still says it is pending/TODO/TBD.
     _section_placeholders.apply_final_status_placeholder_floor(report, text)
+
+    # Created-gated queue floor: new goals must either render queued
+    # operator-only decisions or record an explicit empty-queue reason.
+    _operator_queue.apply_operator_queue_floor(report, text)
 
     # Metric-window affordance: surface whether a goal-scoped `Host metric window:` line
     # was recorded so an absent window is visible at flip-to-complete rather than

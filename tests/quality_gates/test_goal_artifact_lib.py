@@ -48,6 +48,8 @@ def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     assert "changed\n  files and owning/generated surfaces" in text
     assert "out-of-scope lines" in text
     assert "History boundary: keep this frame current" in text
+    assert "## Operator Decision Queue" in text
+    assert "Decision: operator-only decision or confirmation needed" in text
 
     bad = gal.check_goal("# Achieve Goal: T\n\nStatus: bogus\n\n## Goal\n")
     assert bad["ok"] is False
@@ -332,7 +334,8 @@ def test_unbalanced_fence_fails_open_and_still_sees_sections() -> None:
         "## Active Operating Frame\n"
         "## Goal\n```python\nprint(1)\n"  # fence never closed
         "## Non-Goals\n## Boundaries\n## User Acceptance\n## Agent Verification Plan\n"
-        "## Slice Plan\n## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
+        "## Slice Plan\n## Operator Decision Queue\n## Slice Log\n"
+        "## Off-Goal Findings\n## Final Verification\n"
         "## User Verification Instructions\n## Auto-Retro\n"
     )
     result = gal.check_goal(doc)
@@ -349,6 +352,19 @@ def test_check_goal_does_not_count_fenced_sections() -> None:
     assert "Goal" in result["missing_sections"]
 
 
+def test_operator_decision_queue_is_not_global_required_section() -> None:
+    body = (
+        _GOAL_HEAD
+        + "## Active Operating Frame\n## Goal\n## Non-Goals\n## Boundaries\n"
+        "## User Acceptance\n## Agent Verification Plan\n## Slice Plan\n"
+        "## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
+        "## User Verification Instructions\n## Auto-Retro\n"
+        + _PORTABILITY_BODY
+    )
+    result = gal.check_goal(body)
+    assert "Operator Decision Queue" not in result["missing_sections"]
+
+
 # --- Portability self-test fixtures (#230 + #229 goal, slice 2) -----------
 
 
@@ -357,7 +373,7 @@ _REQUIRED_BODY = (
     "## Agent Verification Plan\n"
 )
 _TAIL_SECTIONS = (
-    "## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
+    "## Operator Decision Queue\n## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
     "## User Verification Instructions\n## Auto-Retro\n"
 )
 _PORTABILITY_BODY = (
@@ -618,6 +634,75 @@ def test_upsert_allows_flip_to_complete_with_valid_skips(tmp_path: Path) -> None
     assert result["action"] in ("updated", "unchanged")
     assert result["status"] == "complete"
     assert "Status: complete" in _goal_text(tmp_path, date="2026-05-28")
+
+
+def _complete_evidence_for_new_goal(tmp_path: Path, *, queue_body: str) -> str:
+    date = "2026-06-17"
+    slug = "operator-queue"
+    gal.upsert_goal(tmp_path, date=date, slug=slug, title="T")
+    retro = _seed_named(
+        tmp_path,
+        f"charness-artifacts/retro/{date}-{slug}.md",
+        f"# Retro\n\n{slug}\n",
+    )
+    probe = _seed_named(
+        tmp_path,
+        f"charness-artifacts/probe/{date}-{slug}.json",
+        '{"host":"claude-code"}\n',
+    )
+    review = _seed_named(
+        tmp_path,
+        f"charness-artifacts/critique/{date}-{slug}-disposition.md",
+        f"# Disposition review for {slug}\n",
+    )
+    text = _goal_text(tmp_path, slug=slug, date=date)
+    start = text.index("\n## Operator Decision Queue") + 1
+    end = text.index("## Coordination Cues")
+    text = text[:start] + f"## Operator Decision Queue\n\n{queue_body}\n\n" + text[end:]
+    text = text.replace(
+        "## Coordination Cues\n",
+        (
+            "## Coordination Cues\n\n"
+            "Routing: n/a — synthetic operator queue fixture recorded no implementation, "
+            "debug, quality, or issue phase work.\n"
+        ),
+        1,
+    )
+    text = _append_evidence_lines(
+        text,
+        retro_value=str(retro.relative_to(tmp_path)),
+        probe_value=str(probe.relative_to(tmp_path)),
+    )
+    text = text.replace(
+        f"Host log probe: {probe.relative_to(tmp_path)}\n",
+        f"Host log probe: {probe.relative_to(tmp_path)}\n"
+        f"Disposition review: {review.relative_to(tmp_path)}\n",
+        1,
+    )
+    return _fill_auto_retro_first_line(text)
+
+
+def test_new_complete_goal_requires_operator_queue_disposition(tmp_path: Path) -> None:
+    text = _complete_evidence_for_new_goal(
+        tmp_path,
+        queue_body=(
+            "Record decisions, confirmations, credential actions, manual proof steps, "
+            "and external-boundary approvals discovered during the run."
+        ),
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is False
+    assert report["operator_decision_queue"]["reason"] == "queue still contains scaffold instructions"
+
+
+def test_new_complete_goal_allows_empty_operator_queue_optout(tmp_path: Path) -> None:
+    text = _complete_evidence_for_new_goal(
+        tmp_path,
+        queue_body="none — no operator-only decisions were discovered during this goal run",
+    )
+    report = gal.check_complete_evidence(tmp_path, text)
+    assert report["ok"] is True
+    assert report["operator_decision_queue"]["ok"] is True
 
 
 def test_upsert_refuses_flip_to_complete_with_invalid_skip(tmp_path: Path) -> None:

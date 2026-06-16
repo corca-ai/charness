@@ -26,6 +26,7 @@ def _assert_goal_shape(text: str) -> None:
     for section in goal_lib.PORTABILITY_SECTIONS:
         assert f"## {section}" in text, section
     assert "Activation: `/goal @" in text
+    assert "## Operator Decision Queue" in text
 
 
 def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
@@ -45,6 +46,7 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
         "Host log probe: TODO",
         "Disposition review: TODO",
         "Retro dispositions: TODO",
+        "Decision: operator-only decision or confirmation needed",
     ):
         assert placeholder in achieve_text, placeholder
 

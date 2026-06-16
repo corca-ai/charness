@@ -87,6 +87,8 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
      demands re-proof, narrower refs, or an explicit disposition
    - final non-verified statuses carry disposition owner, reason, decided-at,
      and revisit trigger
+   - queue deferrable operator-only decisions in the active goal's
+     `## Operator Decision Queue`; stop only when they block all safe next work
    - completion audits block while a linked entry is neither verified nor
      explicitly dispositioned
 

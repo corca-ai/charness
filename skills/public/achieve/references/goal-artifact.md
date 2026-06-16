@@ -46,7 +46,8 @@ runs the activation command.
   files and owning/generated surfaces, expected invariants, tests/proof,
   non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to
-  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and
+  `## Auto-Retro`.
 
 ## Goal
 
@@ -70,6 +71,20 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
+
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
 
 ## Coordination Cues
 
@@ -149,7 +164,15 @@ The `Active Operating Frame` is the current-state control panel, not another
 archive. Update it at activation and before/after substantial slices so a
 compacted session can continue from the top of the file without rereading the
 entire historical log. Completed detail belongs in the Slice Log, Final
-Verification, and Auto-Retro sections.
+Verification, Operator Decision Queue, and Auto-Retro sections.
+
+The `Operator Decision Queue` is the standard place to keep operator-only
+decisions visible without interrupting safe local work. Add an item when a run
+discovers a decision, confirmation, credential action, manual proof step, or
+external-boundary approval that only the operator can provide, but that does not
+block the current safe slice. Stop only when the decision blocks all safe next
+slices. At closeout, render the queue in the final report or record
+`none — <reason>` in the section.
 
 ## Timebox Fields
 

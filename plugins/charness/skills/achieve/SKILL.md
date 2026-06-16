@@ -103,9 +103,9 @@ lifecycle instead of starting a new one.
      separately; cached input alone is not waste (see `references/goal-artifact.md`)
    - disposition every surfaced improvement in Auto-Retro: either
      `applied: <what>` (a gate, hook, validator, test, or code change committed
-     this run) or `issue #N`; prose-only memory is invalid. If there is nothing
+     this run) or `tracked issue`; prose-only memory is invalid. If there is nothing
      actionable, record one per-goal `Retro dispositions: none — <reason>` line.
-   - when a disposition routes to `issue #N`, the issue carries the generalized
+   - when a disposition routes to a tracked issue, it carries the generalized
      `Structural pattern:`+`Triggering instance(s):` and a resolved `Destination:`
      per `../../shared/references/retro-issue-destination-split.md`.
    - **disposition gate, for goals created after the rule landed:** block blank
@@ -140,12 +140,13 @@ lifecycle instead of starting a new one.
 - a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with
   `## Active Operating Frame` plus the audit sections in
   `references/goal-artifact.md`
+- a `## Operator Decision Queue` section for deferrable operator-only decisions
 - `Status` is one of draft / active / blocked / complete
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
-  verification, residual risk, and non-claims
+  verification, residual risk, non-claims, and the operator decision queue
 - at completion, an explicit disposition for each surfaced improvement
-  (`applied: <what>` or `issue #N`) — never prose-only memory
+  (`applied: <what>` or `tracked issue`) — never prose-only memory
 - a `## Coordination Cues` section that defers phase routing to `find-skills`
   (never an inline phase→skill map) and, at completion, `Routing:` / `Gather:`
   / `Release:` / `Issue closeout:` evidence (or an `n/a — <reason>` opt-out)

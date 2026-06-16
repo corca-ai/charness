@@ -55,6 +55,22 @@ Every final non-verified status carries:
 - `disposition.decided_at`: when
 - `disposition.revisit_trigger`: the event or date that reopens the entry
 
+When a non-verified status depends on an operator-only decision, confirmation,
+credential action, manual proof step, or external-boundary approval, carry the
+same information into the active goal's `## Operator Decision Queue` when one
+exists:
+
+- `Decision`: the exact operator-only decision or confirmation needed
+- `Owner`: the operator or named human owner
+- `Why deferred`: why the HOTL run did not stop immediately
+- `Unblock action`: the exact action or answer needed
+- `Revisit trigger`: the event, date, or proof boundary that reopens the item
+
+Use `blocked-needs-operator` when proof cannot proceed without that action. Use
+`deferred-by-operator` when the operator explicitly postpones proof. Safe local
+work may continue while the item is deferred; stop only when it blocks every
+safe next proof or implementation step.
+
 ## Completion audits
 
 Before closing a goal, feature, or issue whose acceptance includes applied live

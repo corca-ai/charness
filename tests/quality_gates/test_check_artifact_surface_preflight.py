@@ -586,6 +586,10 @@ Run the actual `check_goal_artifact.py` complete-state validator.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Operator Decision Queue
+
+none — synthetic closeout fixture has no operator-only decisions.
+
 ## Coordination Cues
 
 Routing: n/a — synthetic closeout fixture recorded no implementation, debug, quality, or issue phase work.

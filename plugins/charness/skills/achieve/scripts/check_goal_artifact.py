@@ -103,6 +103,11 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
                 for entry in evidence_report["section_placeholders"]
             )
         )
+    if evidence_report.get("operator_decision_queue", {}).get("reason"):
+        bits.append(
+            "operator-decision-queue floor: "
+            + evidence_report["operator_decision_queue"]["reason"]
+        )
     return bits
 
 

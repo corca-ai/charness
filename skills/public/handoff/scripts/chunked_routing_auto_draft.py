@@ -58,8 +58,8 @@ runs the activation command.
 - Verification cadence: to be filled by the achieve Before-phase interview.
 - Slice review packet: to be filled by the achieve Before-phase interview.
 - History boundary: keep this frame current during the active run; move
-  completed detail to `## Slice Log`, `## Final Verification`, and
-  `## Auto-Retro`.
+  completed detail to `## Slice Log`, `## Operator Decision Queue`,
+  `## Final Verification`, and `## Auto-Retro`.
 
 ## Goal
 
@@ -85,6 +85,20 @@ runs the activation command.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
+
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
 
 ## Slice Log
 
