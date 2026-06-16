@@ -3,12 +3,12 @@ Date: 2026-06-16
 
 ## Scope
 
-Advanced `charness` toward release `0.50.2` (tag `v0.50.2`) through the repo-owned release helper.
+Advanced `charness` toward release `0.51.0` (tag `v0.51.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.50.1`
-- target version: `0.50.2`
+- previous version: `0.50.2`
+- target version: `0.51.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.50.2` (tag `v0.50.2`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.50.2`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.51.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.50.1`
+- Previous release ref: `refs/tags/v0.50.2`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,34 +50,34 @@ Advanced `charness` toward release `0.50.2` (tag `v0.50.2`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-16-v0-50-2-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-16-v0-51-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 58.
+- Evaluated changed paths: 76.
+  - `.agents/inference-interpretation-surfaces.json`
   - `.agents/release-adapter.yaml`
-  - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-15-133555-packet.json`
-  - `charness-artifacts/critique/2026-06-15-133555-packet.md`
-  - `charness-artifacts/critique/2026-06-15-203922-packet.json`
-  - `charness-artifacts/critique/2026-06-15-203922-packet.md`
-  - `charness-artifacts/critique/2026-06-15-213551-packet.json`
-  - `charness-artifacts/critique/2026-06-15-213551-packet.md`
-  - `charness-artifacts/critique/2026-06-15-staged-commit-gate-plan-split.md`
-  - `charness-artifacts/critique/2026-06-16-check-coverage-runtime-reduction.md`
-  - `charness-artifacts/critique/2026-06-16-focused-mutation-coverage-producer.md`
-  - `charness-artifacts/critique/2026-06-16-release-v0.50.2-critique.md`
-  - `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
+  - `charness-artifacts/audit/2026-06-16-helper-output-rejudgment.md`
+  - `charness-artifacts/critique/2026-06-16-004228-packet.json`
+  - `charness-artifacts/critique/2026-06-16-004228-packet.md`
+  - `charness-artifacts/critique/2026-06-16-issue-375-achieve-scaffold-adapter.md`
+  - `charness-artifacts/critique/2026-06-16-issue-376-helper-rejudgment.md`
+  - `charness-artifacts/critique/2026-06-16-issue-377-current-pointer-audit.md`
+  - `charness-artifacts/critique/2026-06-16-issue-378-quality-structural-waste.md`
+  - `charness-artifacts/critique/2026-06-16-release-v0.51.0-critique.md`
+  - `charness-artifacts/hotl/2026-06-16-issues-375-378-closeout-carrier-draft.md`
   - `charness-artifacts/hotl/2026-06-16-open-issue-hotl-closeout-proof-packet.md`
-  - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/hotl/latest.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/spec/mutation-changed-line-premerge-gate.md`
-  - `docs/conventions/implementation-discipline.md`
+  - `docs/artifact-policy.md`
+  - `docs/handoff-chunked-routing.md`
   - `docs/handoff.md`
-  - ... 38 more
+  - `docs/public-skill-dogfood.json`
+  - `packaging/charness.json`
+  - ... 56 more
 
 ## Real-Host Verification
 
@@ -97,32 +96,11 @@ Advanced `charness` toward release `0.50.2` (tag `v0.50.2`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-16-release-v0.50.2-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.50.2`.
+- Review proof: `charness-artifacts/critique/2026-06-16-release-v0.51.0-critique.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.50.1 -> 0.50.2
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.50.1 -> 0.50.2
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
@@ -133,10 +111,11 @@ CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code t
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.51.0 (minor release). Open-issue HOTL closeout bundle for #375, #376, #377, and #378. (1) ACHIEVE ADAPTER-CONTROLLED DRAFT FRAME - `achieve` goal scaffolding can now use adapter-defined draft Active Operating Frame lines while preserving existing-artifact idempotence. (2) HANDOFF AGENTIC RE-JUDGMENT - handoff chunked-routing package output now requires visible `judgment_summary` fields so deterministic merge/package helpers remain inputs to agent judgment, not final judgment. (3) CURRENT-POINTER AUDIT - artifact resolvers expose `artifact_path`, and a repo-wide current-pointer layout inventory makes regular vs symlink current pointers auditable. (4) QUALITY STRUCTURAL-WASTE ADVISORY - `quality` can now report duplicate broad discovery/collection and broad source-scanner prefilter waste as advisory signals, not blocking gates. OPERATOR/CONSUMER NOTE - additive and backward-compatible; normal `charness update` is enough, no migration or renamed command surface, and no new consumer blocking gate is introduced. #371 remains open: this release does not prove invocation-bound `agent-browser` process/profile teardown. Rollback - reinstall or pin 0.50.2; no data migration needs undoing.
 - Run `charness update` to pull 0.50.2 (patch release). Quality/runtime gate speed and release-lane proof hardening. (1) QUALITY RUNTIME SPEED - `check-test-completeness` now reuses explicit test targets instead of paying a duplicate pytest collection, and `check-current-pointer-writes` cheaply prefilters candidate files before AST parsing; recent dogfood moved `run-quality --read-only` from the prior 65.7s record to roughly 38s on this machine. (2) STANDING PYTEST + MUTATION COVERAGE PRODUCER - the repo now routes standing pytest through `scripts/run_standing_pytest.py`, keeps pytest temp roots outside the repo, and refreshes changed-line mutation coverage through the closeout producer without the old broad duplicate work; changed-line mutation blockers for this release range are covered and green. (3) QUALITY FOLLOW-UP - #378 tracks making duplicate-discovery and broad-scanner waste visible as an advisory quality signal so consumer repos can catch the same pattern earlier. OPERATOR/CONSUMER NOTE - additive; normal `charness update` is enough, no migration or renamed command surface, and no new consumer blocking gate is introduced. Rollback - reinstall or pin 0.50.1; no data migration needs undoing.
 - Run `charness update` to pull 0.50.1 (patch release). Adds explicit agent-browser runtime repair UX. `charness tool repair agent-browser` previews checkout-owned orphan daemon cleanup, and `charness tool repair --execute agent-browser` runs the owned cleanup plus post-doctor verification. `charness tool doctor agent-browser` now routes cleanup-command runtime drift to this repair command. OPERATOR/CONSUMER NOTE - this is post-hoc mitigation only, not #371 closure proof; invocation-bound Chrome/process profile teardown remains upstream/unproven and #371 stays open. Rollback - reinstall or pin 0.50.0; no data migration needs undoing.
 - Run `charness update` to pull 0.50.0 (minor release). quality CI-recoverability triage lens + command_timing_log ingest (resolves #367; additive, no floor removed, no new blocking gate). (1) CI-RECOVERABILITY LENS - new `skills/public/quality/scripts/inventory_ci_recoverable_gates.py`, the explicit counterweight to the local-proof guardrail. When the goal is local gate SPEED, it ranks costly local standing gates by measured wall-clock and flags ONLY the gates whose proof CI fully re-runs as candidates to move off the local hot path, keeping the rest `keep-local`; it never recommends moving proof CI does not re-run. Advisory-only (always exit 0, no blocking floor); a declared inference-layer surface with explicit blind spots. (2) COMMAND_TIMING_LOG INGEST - a new optional `command_timing_log` quality-adapter key (path + field/schema mapping, with elapsed_unit and recent_window) lets `render_runtime_summary` / `check_runtime_budget` / the new lens ingest a repo EXISTING structured timing log as a wall-clock sample source when the recorded runtime signals have no samples for the profile; inert when the key is absent, fail-loud on misconfig, and recorded signals stay authoritative. (3) DOCS - `references/ci-recoverable-gate-triage.md` plus the `command_timing_log` section of `references/adapter-contract.md`; the `quality` dogfood acceptance evidence now asserts the gate-speed behaviors. OPERATOR/CONSUMER NOTE - additive and backward-compatible; both surfaces are advisory/inert-by-default, ship no new githooks, and never run unless invoked (`inventory_ci_recoverable_gates.py`) or configured (`command_timing_log`). Follow-up #368 tracks shifting the inference-interpretation registration check into the commit-time sweep. Rollback - reinstall or pin 0.49.0; no data migration needs undoing.
