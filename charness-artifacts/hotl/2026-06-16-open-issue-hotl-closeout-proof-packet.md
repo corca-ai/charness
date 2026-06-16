@@ -24,6 +24,9 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   authenticated `gh` backend.
 - GitHub source-of-truth readback on 2026-06-16: #378, #377, #376, #375, and
   #371 all remained `OPEN`; per-issue reads returned `comments_read: true`.
+- Carrier readiness state: #375, #376, #377, and #378 have a checked-in
+  PR-body draft validated by `issue_tool.py validate-closeout-draft`; #371 is
+  deliberately excluded from that draft.
 
 ## Success Criteria
 
@@ -95,6 +98,16 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #376 | `OPEN` | yes | local implementation proof present; carrier missing | Handoff chunked routing now requires agentic package `judgment_summary` fields and carries them into operator-facing package candidates. GitHub closeout carrier and closed-state proof still do not exist. |
 | #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
 | #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
+
+## Current HOTL Dispositions
+
+| Entry | HOTL status | Owner | Reason | Revisit trigger |
+| --- | --- | --- | --- | --- |
+| #375 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
+| #376 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
+| #377 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
+| #378 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
+| #371 | `issue` | upstream `agent-browser` lifecycle owner plus Charness maintainer for downstream mitigation | Charness local repair mitigates residue after it exists, but no adapter-declared live proof command or controlled provider proof shows invocation-end process/profile teardown. | Upstream/host lifecycle fix lands, or controlled proof covers normal completion, cancellation, provider failure, and timeout teardown. |
 
 ## Staleness Findings
 
@@ -309,6 +322,25 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Non-claim: this branch-wide green local gate is not GitHub closeout proof.
   The five tracked GitHub issues remain open until an approved carrier lands
   and `CLOSED` readback is recorded.
+
+## Carrier Readiness: #375-#378
+
+- Draft artifact:
+  `charness-artifacts/hotl/2026-06-16-issues-375-378-closeout-carrier-draft.md`.
+- Carrier class: PR body draft for a feature-class bundle covering #375, #376,
+  #377, and #378 only.
+- Validation command: `python3 skills/public/issue/scripts/issue_tool.py
+  validate-closeout-draft --repo corca-ai/charness --number 375 --number 376
+  --number 377 --number 378 --classification feature --carrier pr-body
+  --body-file
+  charness-artifacts/hotl/2026-06-16-issues-375-378-closeout-carrier-draft.md
+  --repo-root .`.
+- Validation result: `"ok": true`, `"status": "draft_verified"`,
+  `"publication_status": "ready_to_publish"`, with no missing close keywords,
+  no missing fields, no missing issue-critique bindings, and no state
+  mismatches.
+- Non-claim: this validates carrier shape only. It does not push, open or merge
+  a PR, close issues, or verify GitHub `CLOSED` state.
 
 ## Next Action
 
