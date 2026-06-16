@@ -1,6 +1,6 @@
 # HOTL Proof Packet: Open issue HOTL closeout
 
-Status: active-audit; proof incomplete
+Status: closed with #371 issue disposition
 Created: 2026-06-16
 Last audited: 2026-06-16
 Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
@@ -11,10 +11,11 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   external runtime lifecycle.
 - Related issues: #378, #377, #376, #375, #371.
 - Applied/live state at shaping: no active-run mutation had been executed.
-- Applied/live state at latest audit: no issue-closeout mutation has been
-  executed by this packet audit; all issue readbacks below were read-only.
+- Applied/live state at latest audit: release `v0.51.0` was published through
+  the repo-owned release helper; #375, #376, #377, and #378 closed through the
+  direct release commit body carrier. #371 remains open by explicit disposition.
 - Local implementation state: #375, #378, #377, and #376 have local implementation
-  proof; no GitHub closeout carrier has been published.
+  proof and published release closeout proof.
 - Branch-wide local gate state: the `origin/main..HEAD` changed-line mutation
   coverage consumer is green for the local proof bundle; this does not publish
   or close any issue.
@@ -22,20 +23,23 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   undeclared.
 - Issue backend: `issue_tool.py preflight --repo-root . --json` selected the
   authenticated `gh` backend.
-- GitHub source-of-truth readback on 2026-06-16: #378, #377, #376, #375, and
-  #371 all remained `OPEN`; per-issue reads returned `comments_read: true`.
-- Carrier readiness state: #375, #376, #377, and #378 have a checked-in
-  PR-body draft validated by `issue_tool.py validate-closeout-draft`; #371 is
-  deliberately excluded from that draft.
+- GitHub source-of-truth readback on 2026-06-16 after release: #375, #376, #377,
+  and #378 are `CLOSED`; #371 remains `OPEN`.
+- Release carrier: `v0.51.0` at
+  `https://github.com/corca-ai/charness/releases/tag/v0.51.0`; release commit
+  `7e3ecbb241991ce858dfeae9183f5a8eacf52f0b`; post-publish issue closeout
+  artifact commit `d444f00d10f11ed7ae523779efe9dfef3efafe22`.
 
 ## Success Criteria
 
-- Every shaped issue (#378, #377, #376, #375, #371) is verified `CLOSED`
-  through GitHub readback after the implementation carrier lands.
+- Every implementation-shaped issue (#378, #377, #376, #375) is verified
+  `CLOSED` through GitHub readback after the release carrier lands.
 - Any GitHub issue closure carries before/after provider readback.
 - #371 closeout is acceptable from the Charness side if local mitigation and
   ownership transfer are proven, upstream lifecycle ownership is linked, and the
   closeout explicitly does not claim invocation-bound teardown was fixed.
+- #371 may remain `OPEN` with `issue` disposition until controlled lifecycle
+  proof exists.
 - #371 upstream lifecycle proof is verified only if invocation-end process-tree
   teardown and `agent-browser-chrome-*` profile-dir cleanup are proven for
   normal completion, cancellation, provider failure, and timeout.
@@ -93,20 +97,20 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 
 | Issue | GitHub state | Comments read | Current proof state | Evidence |
 | --- | --- | --- | --- | --- |
-| #378 | `OPEN` | yes | local implementation proof present; carrier missing | Quality now includes an advisory structural-waste inventory for duplicate broad collection and broad AST scanner candidates. GitHub closeout carrier and closed-state proof still do not exist. |
-| #377 | `OPEN` | yes | local implementation proof present; carrier missing | Artifact resolver payloads now expose `artifact_path`, repo-wide current-pointer layout inventory reports adapter class/write-path/symlink metadata, and policy/quality guidance points agents toward resolved write paths and dated records for long evidence. GitHub closeout carrier and closed-state proof still do not exist. |
-| #376 | `OPEN` | yes | local implementation proof present; carrier missing | Handoff chunked routing now requires agentic package `judgment_summary` fields and carries them into operator-facing package candidates. GitHub closeout carrier and closed-state proof still do not exist. |
-| #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
-| #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
+| #378 | `CLOSED` | yes | verified closed | Quality now includes an advisory structural-waste inventory for duplicate broad collection and broad AST scanner candidates. Closed by the `v0.51.0` direct release commit body carrier. |
+| #377 | `CLOSED` | yes | verified closed | Artifact resolver payloads now expose `artifact_path`, repo-wide current-pointer layout inventory reports adapter class/write-path/symlink metadata, and policy/quality guidance points agents toward resolved write paths and dated records for long evidence. Closed by the `v0.51.0` direct release commit body carrier. |
+| #376 | `CLOSED` | yes | verified closed | Handoff chunked routing now requires agentic package `judgment_summary` fields and carries them into operator-facing package candidates. Closed by the `v0.51.0` direct release commit body carrier. |
+| #375 | `CLOSED` | yes | verified closed | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. Closed by the `v0.51.0` direct release commit body carrier. |
+| #371 | `OPEN` | yes | `issue` disposition | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
 
 ## Current HOTL Dispositions
 
 | Entry | HOTL status | Owner | Reason | Revisit trigger |
 | --- | --- | --- | --- | --- |
-| #375 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
-| #376 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
-| #377 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
-| #378 | `blocked-needs-operator` | Charness maintainer | Local proof and validated carrier draft exist, but no approved push/PR/merge carrier or GitHub `CLOSED` readback exists. | Operator chooses the publish path and the carrier lands. |
+| #375 | `verified` | Charness maintainer | GitHub readback reports `CLOSED`; release helper issue closeout status is `verified`; carrier is `direct_release_commit_body`. | Reopen only if GitHub issue state changes or the release carrier is reverted. |
+| #376 | `verified` | Charness maintainer | GitHub readback reports `CLOSED`; release helper issue closeout status is `verified`; carrier is `direct_release_commit_body`. | Reopen only if GitHub issue state changes or the release carrier is reverted. |
+| #377 | `verified` | Charness maintainer | GitHub readback reports `CLOSED`; release helper issue closeout status is `verified`; carrier is `direct_release_commit_body`. | Reopen only if GitHub issue state changes or the release carrier is reverted. |
+| #378 | `verified` | Charness maintainer | GitHub readback reports `CLOSED`; release helper issue closeout status is `verified`; carrier is `direct_release_commit_body`. | Reopen only if GitHub issue state changes or the release carrier is reverted. |
 | #371 | `issue` | upstream `agent-browser` lifecycle owner plus Charness maintainer for downstream mitigation | Charness local repair mitigates residue after it exists, but no adapter-declared live proof command or controlled provider proof shows invocation-end process/profile teardown. | Upstream/host lifecycle fix lands, or controlled proof covers normal completion, cancellation, provider failure, and timeout teardown. |
 
 ## Staleness Findings
@@ -119,6 +123,8 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   latest comments unless the active run either obtains controlled lifecycle
   proof or records a new operator decision that explicitly supersedes the
   current open-issue disposition.
+- The local draft carrier for #375-#378 remains useful provenance, but final
+  closeout used the release helper's direct release commit body carrier.
 - `charness-artifacts/hotl/latest.md` now carries the short current HOTL summary
   and points back to this full proof packet plus the #375-#378 carrier draft.
 
@@ -126,11 +132,11 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 
 | Issue | Initial HOTL status | Required proof or disposition |
 | --- | --- | --- |
-| #378 | planned | Local advisory implementation proof plus GitHub before/after closeout readback |
-| #377 | planned | Audit/change proof plus GitHub before/after closeout readback |
-| #376 | planned | Re-judgment contract proof plus GitHub before/after closeout readback |
-| #375 | planned | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
-| #371 | planned close | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim; verify local GitHub issue closed |
+| #378 | verified | Local advisory implementation proof plus GitHub before/after closeout readback |
+| #377 | verified | Audit/change proof plus GitHub before/after closeout readback |
+| #376 | verified | Re-judgment contract proof plus GitHub before/after closeout readback |
+| #375 | verified | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
+| #371 | issue | Charness mitigation/ownership split recorded; upstream lifecycle residual remains open with non-claim |
 
 ## Local Proof: #377
 
@@ -341,12 +347,26 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Non-claim: this validates carrier shape only. It does not push, open or merge
   a PR, close issues, or verify GitHub `CLOSED` state.
 
+## Published Release Closeout: #375-#378
+
+- Release command: `python3 skills/public/release/scripts/publish_release.py
+  --repo-root . --part minor --critique-artifact
+  charness-artifacts/critique/2026-06-16-release-v0.51.0-critique.md
+  --close-issue 375 --close-issue 376 --close-issue 377 --close-issue 378
+  --execute`.
+- Release result: `v0.51.0` published at
+  `https://github.com/corca-ai/charness/releases/tag/v0.51.0`.
+- Release helper issue closeout: `"status": "verified"` for #375, #376, #377,
+  and #378; each issue state read back as `CLOSED`; `manual_fallback_used:
+  false`; carrier `direct_release_commit_body`.
+- Independent GitHub readback: `gh issue view` reports #375, #376, #377, and
+  #378 `CLOSED`; #371 remains `OPEN`.
+- Non-claim: this release does not close #371 and does not prove upstream
+  `agent-browser` invocation-bound teardown.
+
 ## Next Action
 
-- Do not close or comment on the issues from this audit alone.
-- If another agent is implementing the open-issue queue, use this packet as the
-  current HOTL readback baseline and require before/after GitHub state proof for
-  any later closeout carrier.
-- Before any #371 close attempt, reconcile the stale goal wording with the live
-  issue comments; without controlled lifecycle proof, keep #371 as `issue`
-  disposition rather than `verified`.
+- Keep #371 as an open `issue` disposition until controlled lifecycle proof or
+  an upstream/host fix lands.
+- Restart active Codex/Claude sessions if they need the freshly installed
+  Charness v0.51.0 plugin cache.

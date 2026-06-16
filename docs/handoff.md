@@ -13,37 +13,30 @@
 
 ## Current State
 
-- **Open-issue HOTL proof bundle is local, not published.**
-  `main` is ahead of `origin/main` by 7 commits through `23be9793`
-  (`hotl: validate open issue carrier draft`). The local bundle implements and
-  proves #375, #376, #377, and #378, plus HOTL proof records. No push, PR, issue
-  comment, manual close, or release has been performed from this packet.
-- **Local branch gate is clean for the bundle.** The branch-wide changed-line
-  mutation coverage consumer over `git merge-base origin/main HEAD` returns
-  `"ok": true`, `"blocking": []`, and no `blocking_targets` for the 15 changed
-  mutation-pool files. The proof is recorded in
+- **Open-issue HOTL bundle shipped as v0.51.0.** Release `v0.51.0` was published
+  at <https://github.com/corca-ai/charness/releases/tag/v0.51.0>. `origin/main`
+  includes the release commit and post-publish issue closeout artifact commit.
+- **#375-#378 are closed.** The release helper closed #375, #376, #377, and
+  #378 through the direct release commit body carrier and verified GitHub
+  `CLOSED` readback. The proof is recorded in
   [HOTL packet](../charness-artifacts/hotl/2026-06-16-open-issue-hotl-closeout-proof-packet.md).
-- **Carrier readiness exists for #375-#378 only.** The checked-in PR-body draft
-  at
+- **The PR-body carrier draft is historical provenance.** The checked-in draft at
   [issues 375-378 carrier draft](../charness-artifacts/hotl/2026-06-16-issues-375-378-closeout-carrier-draft.md)
-  validates with `issue_tool.py validate-closeout-draft` as `draft_verified` /
-  `ready_to_publish`. It deliberately excludes #371.
+  validated before publish, but final closeout used the release helper's direct
+  release commit body carrier.
 - **#371 remains open by design.** The issue comments say the local repair is
   post-hoc mitigation only. Do not close #371 unless controlled proof shows
   invocation-end teardown of both the browser process tree and the matching
   `agent-browser-chrome-*` profile directory for normal completion,
   cancellation, provider failure, and timeout.
-- Open issues (`gh`, 2026-06-16): #378, #377, #376, #375, #371.
+- Open issues (`gh`, 2026-06-16): #371.
 
 ## Next Session
 
-- **First decision:** coordinate with any other active agent before remote
-  mutation. If publishing is approved, use the validated #375-#378 carrier draft
-  as a PR body or equivalent carrier, then run `issue_tool.py verify-closeout`
-  after merge/publish with `--expect-state CLOSED`.
-- Keep #371 separate from that carrier. Either obtain the controlled lifecycle
-  proof named above or leave it with the `issue` disposition recorded in the
-  HOTL packet.
+- First decision: either obtain controlled #371 lifecycle proof or keep #371 as
+  the explicit `issue` disposition recorded in the HOTL packet.
+- Restart active Codex/Claude sessions if they need the freshly installed
+  Charness v0.51.0 plugin cache.
 - **Still deferred** (reopen triggers): **E2b** (chunker ingests recurring waste —
   needs real 0.45.0+ usage telemetry) and the **Coordination-Cues floor merge**
   (a floor *removal*, separately critiqued).
@@ -53,8 +46,7 @@
 
 ## Discuss
 
-- Whether the local #375-#378 proof bundle should be published as one PR/merge
-  carrier now, and who owns the #371 upstream lifecycle proof path.
+- Who owns the #371 upstream lifecycle proof path.
 
 ## References
 
