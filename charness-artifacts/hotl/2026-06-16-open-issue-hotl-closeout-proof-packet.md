@@ -11,8 +11,10 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   external runtime lifecycle.
 - Related issues: #378, #377, #376, #375, #371.
 - Applied/live state at shaping: no active-run mutation had been executed.
-- Applied/live state at latest audit: no issue-closeout mutation was executed by
-  this packet audit; all issue readbacks below were read-only.
+- Applied/live state at latest audit: no issue-closeout mutation has been
+  executed by this packet audit; all issue readbacks below were read-only.
+- Local implementation state: #375 has a local implementation slice in progress;
+  no GitHub closeout carrier has been published.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
 - Issue backend: `issue_tool.py preflight --repo-root . --json` selected the
@@ -88,7 +90,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #378 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the advisory inventory is still requested; no closeout carrier or closed-state proof exists. |
 | #377 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the current-pointer audit/tightening remains open; no closeout carrier or closed-state proof exists. |
 | #376 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says deterministic-helper re-judgment guidance remains open; no closeout carrier or closed-state proof exists. |
-| #375 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says achieve scaffold adapter control remains open; no closeout carrier or closed-state proof exists. |
+| #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
 | #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
 
 ## Staleness Findings
@@ -114,6 +116,44 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #376 | planned | Re-judgment contract proof plus GitHub before/after closeout readback |
 | #375 | planned | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
 | #371 | planned close | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim; verify local GitHub issue closed |
+
+## Local Proof: #375
+
+- Classification: feature.
+- Boundary: add adapter-controlled draft Active Operating Frame scaffold lines to
+  `achieve`; do not alter existing goal artifacts or close GitHub issues.
+- Changed surfaces: `skills/public/achieve/scripts/goal_artifact_scaffold.py`,
+  `goal_artifact_lib.py`, `achieve_adapter_policy.py`,
+  `goal_artifact_template.md`, `init_adapter.py`, `adapter.example.yaml`,
+  `references/adapter-contract.md`, `docs/public-skill-dogfood.json`, mirrored
+  `plugins/charness/skills/achieve/*`, and focused tests under
+  `tests/quality_gates/`.
+- Fresh-eye critique: `charness-artifacts/critique/2026-06-16-issue-375-achieve-scaffold-adapter.md`.
+- Prepared critique packet:
+  `charness-artifacts/critique/2026-06-16-004228-packet.md`.
+- Public-skill dogfood/scenario review: `suggest_public_skill_dogfood.py`
+  reported the existing `achieve` case as `hitl-recommended`; decision recorded
+  in the critique artifact is to update the explicit dogfood case and not
+  require a maintained evaluator scenario by default for this slice.
+- Targeted proof: `python3 -m pytest -q
+  tests/quality_gates/test_goal_artifact_lib.py
+  tests/quality_gates/test_goal_artifact_scaffold.py
+  tests/quality_gates/test_achieve_adapter_policy.py
+  tests/quality_gates/test_goal_artifact_producers.py` -> 66 passed.
+- Broad local proof: `python3 scripts/run_standing_pytest.py --repo-root .
+  --mode read-only` -> 3160 passed in 21.67s.
+- Additional validators passed: packaging validation, skill validation, public
+  skill validation/dogfood, docs/markdown/secrets checks, Cautilus provenance
+  validation, Ruff, py_compile, Python length check, attention-state visibility,
+  boundary-bypass ratchet, and gitignore scan hygiene.
+- Slice closeout: `run_slice_closeout.py --verification-lock
+  --refresh-broad-pytest-proof --produce-mutation-coverage
+  --mutation-coverage-command <focused achieve scaffold pytest>
+  --ack-cautilus-skill-review` completed, including focused mutation coverage
+  production for the new scaffold helper.
+- Non-claim: this local proof does not close #375. Final issue closeout still
+  requires a carrier with close keywords or approved fallback and GitHub
+  `CLOSED` readback.
 
 ## Next Action
 

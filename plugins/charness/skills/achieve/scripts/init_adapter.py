@@ -15,6 +15,7 @@ sys.path.insert(0, str(_BOOTSTRAP_ROOT))
 import skill_runtime_bootstrap as SKILL_RUNTIME  # noqa: E402
 
 _adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+_scaffold = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_scaffold")
 run_init_adapter = _adapter_init.run_init_adapter
 
 
@@ -47,6 +48,12 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
                 "allow_host_blocked_disposition_review_skip": True,
                 "valid_dispositions": ["applied", "issue"],
                 "allow_none_optout": True,
+            },
+        ),
+        (
+            "scaffold",
+            {
+                "draft_active_frame_lines": list(_scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES),
             },
         ),
     ]

@@ -16,3 +16,21 @@ auto_retro:
     - applied
     - issue
   allow_none_optout: true
+scaffold:
+  draft_active_frame_lines:
+    - "- Current slice: before activation."
+    - "- Current slice intent: before activation. The reviewable-intent unit in progress"
+    - "  and the commits it spans; critique and broad proof do not re-fire within one"
+    - "  unchanged intent — update it when the intent changes, not per commit"
+    - "  (meaningful-slice-cadence)."
+    - "- Next action: activate with `/goal @{goal_rel}`."
+    - "- Verification cadence: cheap deterministic checks at commit boundaries;"
+    - "  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at"
+    - "  closeout."
+    - "- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;"
+    - "  final/bundle proof records the verification lock and uses `--verification-lock`."
+    - "- Slice review packet: before fresh-eye slice critique, provide intent, changed"
+    - "  files and owning/generated surfaces, expected invariants, tests/proof,"
+    - "  non-claims, out-of-scope lines, and reviewer questions."
+    - "- History boundary: keep this frame current; move completed detail to"
+    - "  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`."

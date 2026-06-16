@@ -5,6 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills/public/achieve/scripts"
 
@@ -35,6 +37,7 @@ def test_missing_adapter_uses_audit_only_defaults(tmp_path: Path) -> None:
     assert adapter["data"]["closeout_publication"]["default_mode"] == "audit-only"
     assert adapter["data"]["closeout_publication"]["issue_closeout_carrier"] == "none"
     assert adapter["data"]["auto_retro"]["disposition_floor"] == "review-required"
+    assert adapter["data"]["scaffold"]["draft_active_frame_lines"]
 
 
 def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Path) -> None:
@@ -55,6 +58,10 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
                 "  valid_dispositions:",
                 "    - applied",
                 "    - issue",
+                "scaffold:",
+                "  draft_active_frame_lines:",
+                "    - '- Current slice: real draft/backlog awaiting activation.'",
+                "    - '- Next action: activate with `/goal @{goal_rel}` after review.'",
             ]
         )
         + "\n",
@@ -68,6 +75,65 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
     assert report["issue_closeout_carrier"] == "direct-commit"
     assert report["draft_validation_required"] is True
     assert report["auto_retro_valid_dispositions"] == ["applied", "issue"]
+
+    adapter = policy.load_adapter(tmp_path)
+    assert adapter["data"]["scaffold"]["draft_active_frame_lines"][0].startswith("- Current slice: real draft")
+
+
+def test_scaffold_frame_lines_must_be_nonempty_and_not_headings(tmp_path: Path) -> None:
+    _write(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        "\n".join(
+            [
+                "version: 1",
+                "scaffold:",
+                "  draft_active_frame_lines:",
+                "    - '## Not a frame line'",
+            ]
+        )
+        + "\n",
+    )
+
+    adapter = policy.load_adapter(tmp_path)
+
+    assert adapter["valid"] is False
+    assert "scaffold.draft_active_frame_lines" in adapter["errors"][0]
+
+
+def test_scaffold_frame_lines_must_not_be_empty(tmp_path: Path) -> None:
+    _write(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        "\n".join(
+            [
+                "version: 1",
+                "scaffold:",
+                "  draft_active_frame_lines: []",
+            ]
+        )
+        + "\n",
+    )
+
+    adapter = policy.load_adapter(tmp_path)
+
+    assert adapter["valid"] is False
+    assert "must not be empty" in adapter["errors"][0]
+
+
+def test_scaffold_loader_reports_missing_helper(monkeypatch: pytest.MonkeyPatch) -> None:
+    policy._scaffold = None
+    original_spec_from_file_location = importlib.util.spec_from_file_location
+
+    def missing_scaffold(name: str, location: Path):
+        if location.name == "goal_artifact_scaffold.py":
+            return None
+        return original_spec_from_file_location(name, location)
+
+    monkeypatch.setattr(policy.importlib.util, "spec_from_file_location", missing_scaffold)
+
+    with pytest.raises(ImportError, match="goal_artifact_scaffold.py not found"):
+        policy._load_scaffold()
 
 
 def test_direct_commit_policy_requires_rehearsal_command_shape(tmp_path: Path) -> None:

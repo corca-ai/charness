@@ -44,6 +44,11 @@ auto_retro:
     - applied
     - issue
   allow_none_optout: true
+scaffold:
+  draft_active_frame_lines:
+    - "- Current slice: real draft/backlog awaiting activation."
+    - "- Current slice intent: real draft/backlog awaiting activation; reshape before activating if the acceptance boundary has changed."
+    - "- Next action: activate with `/goal @{goal_rel}` after confirming the draft is still intended."
 ```
 
 `closeout_publication.default_mode` is the default claim boundary. Supported
@@ -68,6 +73,13 @@ disposition surfaced improvements with `applied: <what>` or `issue #N`, unless a
 valid `Retro dispositions: none — <reason>` line applies. `deterministic-only`
 is for hosts that cannot support fresh-eye review, but it should be explicit in
 the adapter because it weakens the normal floor.
+
+`scaffold.draft_active_frame_lines` optionally replaces the default draft
+`## Active Operating Frame` lines in newly scaffolded goal artifacts. The field
+is a list of rendered markdown lines, including bullet prefixes when desired;
+`{goal_rel}` is replaced with the generated
+artifact path. Existing artifacts are still idempotent: `upsert_goal.py` updates
+only `Status:` on later calls and never rewrites manual frame content.
 
 ## Closeout Report
 

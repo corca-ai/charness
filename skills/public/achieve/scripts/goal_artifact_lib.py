@@ -29,6 +29,8 @@ _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
 _markdown = _load_sibling("goal_artifact_markdown")
 _metric_window = _load_sibling("goal_metric_window_lib")
+_policy = _load_sibling("achieve_adapter_policy")
+_scaffold = _load_sibling("goal_artifact_scaffold")
 _timebox = _load_sibling("goal_artifact_timebox")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
 NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
@@ -103,16 +105,6 @@ def goal_path(repo_root: Path, date: str, slug: str) -> Path:
 
 def goal_rel(repo_root: Path, path: Path) -> str:
     return path.resolve().relative_to(repo_root.resolve()).as_posix()
-
-
-def render_template(*, title: str, date: str, status: str, goal_rel_path: str, goal_body: str) -> str:
-    return _TEMPLATE.format(
-        title=title,
-        date=date,
-        status=status,
-        goal_rel=goal_rel_path,
-        goal_body=goal_body.strip() or "_State the desired outcome before activation._",
-    )
 
 
 def set_status(text: str, status: str) -> str:
@@ -205,12 +197,18 @@ def upsert_goal(
             "status": status,
             "note": "existing artifact: only Status was changed; title and goal body were left as-is",
         }
+    adapter = _policy.load_adapter(repo_root)
+    if adapter["found"] and not adapter["valid"]:
+        return {"action": "refused", "path": rel, "status": "missing", "requested_status": status,
+                "note": "refused to create goal artifact: achieve adapter is invalid", "adapter_errors": adapter["errors"]}
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = render_template(
+    body = _scaffold.render_goal_template(
+        _TEMPLATE,
         title=title,
         date=date,
         status=status,
         goal_rel_path=rel,
+        frame_lines=adapter["data"]["scaffold"]["draft_active_frame_lines"],
         goal_body=goal_body,
     )
     path.write_text(body, encoding="utf-8")

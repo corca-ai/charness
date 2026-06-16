@@ -50,6 +50,24 @@ optional_bool = _adapter_lib.optional_bool
 optional_string = _adapter_lib.optional_string
 optional_string_list = _adapter_lib.optional_string_list
 
+_scaffold = None
+
+
+def _load_scaffold():
+    global _scaffold
+    if _scaffold is not None:
+        return _scaffold
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_scaffold",
+        Path(__file__).resolve().parent / "goal_artifact_scaffold.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_scaffold.py not found beside achieve_adapter_policy.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _scaffold = module
+    return module
+
 
 def _defaults(repo_root: Path) -> dict[str, Any]:
     return {
@@ -70,6 +88,9 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
             "allow_host_blocked_disposition_review_skip": True,
             "valid_dispositions": ["applied", "issue"],
             "allow_none_optout": True,
+        },
+        "scaffold": {
+            "draft_active_frame_lines": list(_load_scaffold().DEFAULT_DRAFT_ACTIVE_FRAME_LINES),
         },
     }
 
@@ -151,6 +172,20 @@ def _validate_auto_retro(data: dict[str, Any], defaults: dict[str, Any], errors:
     return policy
 
 
+def _validate_scaffold(data: dict[str, Any], defaults: dict[str, Any], errors: list[str]) -> dict[str, Any]:
+    policy = dict(defaults["scaffold"])
+    scaffold = _mapping(data.get("scaffold"), "scaffold", errors)
+    lines = optional_string_list(scaffold.get("draft_active_frame_lines"), "scaffold.draft_active_frame_lines", errors)
+    if lines is not None:
+        if not lines:
+            errors.append("scaffold.draft_active_frame_lines must not be empty")
+        elif any(line.startswith("## ") for line in lines):
+            errors.append("scaffold.draft_active_frame_lines must not contain markdown headings")
+        else:
+            policy["draft_active_frame_lines"] = lines
+    return policy
+
+
 def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -167,6 +202,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
             validated[field] = value
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
     validated["auto_retro"] = _validate_auto_retro(data, validated, errors)
+    validated["scaffold"] = _validate_scaffold(data, validated, errors)
     if validated["closeout_publication"]["default_mode"] in {"audit-only", "handoff-only"}:
         warnings.append(
             "Achieve closeout publication default is "
