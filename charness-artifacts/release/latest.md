@@ -17,18 +17,19 @@ Advanced `charness` toward release `0.52.0` (tag `v0.52.0`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.52.0`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.52.0`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
 
 ## Release Adapter Preflight
 
@@ -90,9 +91,30 @@ Advanced `charness` toward release `0.52.0` (tag `v0.52.0`) through the repo-own
 
 - Review proof: `charness-artifacts/critique/2026-06-17-v0-52-0-release-critique.md`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.52.0`.
+
 ## Install Refresh
 
-- Post-publish install refresh: pending final publish verification.
+- Post-publish install refresh status: `refreshed`.
+- Command: `charness update`
+- Return code: `0`
+- Stdout tail: `STEP: refreshing source checkout
+STEP: refreshing install surface
+STEP: refreshing Codex host cache
+DONE: update complete
+PACKAGE: charness
+VERSION: 0.51.1 -> 0.52.0
+CHECKOUT: pulled /home/hwidong/.agents/src/charness
+SCOPE: self
+COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
+SESSION_STALENESS: cache paths rotated for active sessions
+  - local/charness 0.51.1 -> 0.52.0
+  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
+NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
+CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
+CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
 
 ## Fresh Checkout Probes
 
@@ -103,7 +125,7 @@ Advanced `charness` toward release `0.52.0` (tag `v0.52.0`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `not_requested`.
 
 ## User Update Steps
 
