@@ -48,7 +48,9 @@ human-facing surface.
 ## Artifact Write Path
 
 Keep `latest.md` short and current; move older review detail into sibling
-`history/*.md` archives when today's posture starts getting buried.
+`history/*.md` archives when today's posture starts getting buried. Do not trim
+evidence only to satisfy the current-pointer line limit when a dated record is
+the honest durable home for that evidence.
 
 Before editing the artifact, run:
 
@@ -58,6 +60,14 @@ python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent 
 
 Edit the returned `write_artifact_path`, not `latest.md` by habit. The prior
 quality artifact is history, not the authoritative universe.
+
+When the question is whether the repo's current-pointer layout itself is clear,
+run the repo inventory and use its `write_artifact_path` and symlink metadata
+rather than inspecting only one file by hand:
+
+```bash
+python3 scripts/inventory_current_pointer_layouts.py --repo-root .
+```
 
 ## Initial Signal Sweep
 

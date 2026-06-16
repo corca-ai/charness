@@ -13,7 +13,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Applied/live state at shaping: no active-run mutation had been executed.
 - Applied/live state at latest audit: no issue-closeout mutation has been
   executed by this packet audit; all issue readbacks below were read-only.
-- Local implementation state: #375, #378, and #376 have local implementation
+- Local implementation state: #375, #378, #377, and #376 have local implementation
   proof; no GitHub closeout carrier has been published.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
@@ -88,7 +88,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | Issue | GitHub state | Comments read | Current proof state | Evidence |
 | --- | --- | --- | --- | --- |
 | #378 | `OPEN` | yes | local implementation proof present; carrier missing | Quality now includes an advisory structural-waste inventory for duplicate broad collection and broad AST scanner candidates. GitHub closeout carrier and closed-state proof still do not exist. |
-| #377 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the current-pointer audit/tightening remains open; no closeout carrier or closed-state proof exists. |
+| #377 | `OPEN` | yes | local implementation proof present; carrier missing | Artifact resolver payloads now expose `artifact_path`, repo-wide current-pointer layout inventory reports adapter class/write-path/symlink metadata, and policy/quality guidance points agents toward resolved write paths and dated records for long evidence. GitHub closeout carrier and closed-state proof still do not exist. |
 | #376 | `OPEN` | yes | local implementation proof present; carrier missing | Handoff chunked routing now requires agentic package `judgment_summary` fields and carries them into operator-facing package candidates. GitHub closeout carrier and closed-state proof still do not exist. |
 | #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
 | #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
@@ -116,6 +116,53 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | #376 | planned | Re-judgment contract proof plus GitHub before/after closeout readback |
 | #375 | planned | Adapter-controlled scaffold proof plus GitHub before/after closeout readback |
 | #371 | planned close | Verify Charness mitigation/ownership closeout; disposition upstream lifecycle residual as `issue` with upstream tracker and non-claim; verify local GitHub issue closed |
+
+## Local Proof: #377
+
+- Classification: feature.
+- Boundary: make current-pointer handling auditable and harder to misread
+  across skills; do not convert every `latest.md` to a symlink, add a new
+  blocking floor, or close GitHub issues.
+- Changed surfaces: `scripts/inventory_current_pointer_layouts.py`,
+  `scripts/resolve_artifact_path.py`,
+  `skills/public/quality/scripts/resolve_quality_artifact.py`,
+  `docs/artifact-policy.md`,
+  `skills/public/quality/references/bootstrap-escalations.md`, mirrored
+  `plugins/charness/*`, and focused artifact naming tests.
+- Resolver output proof: generic and quality-specific resolvers now include
+  `artifact_path` alongside `current_artifact_path`, `write_artifact_path`,
+  `write_artifact_role`, and symlink metadata.
+- Layout audit proof: `python3 scripts/inventory_current_pointer_layouts.py
+  --repo-root . --json` reported 20 public skills plus the `cautilus` artifact
+  family: 5 adapter-unmanaged workflows, 5 missing current pointers, 9 regular
+  current pointers, 1 rolling file, and 1 symlink current pointer (`debug`),
+  with per-skill/family source, `artifact_path`, `write_artifact_path`, and
+  symlink metadata where available.
+- Fresh-eye critique: `charness-artifacts/critique/2026-06-16-issue-377-current-pointer-audit.md`.
+- Targeted proof: `python3 -m pytest -q
+  tests/quality_gates/test_artifact_naming.py
+  tests/quality_gates/test_current_pointer_writes.py` -> 38 passed.
+- Additional focused validators passed:
+  `check_current_pointer_writes.py --require-empty`,
+  `validate_current_pointer_freshness.py`, `validate_packaging.py`,
+  `validate_packaging_committed.py`, `check_doc_links.py`,
+  `check-markdown.sh`, `validate_skills.py`, Ruff on changed Python files, and
+  Python length headroom for the changed scripts.
+- Public-skill dogfood review:
+  `python3 scripts/suggest_public_skill_dogfood.py --repo-root .
+  --skill-id quality --json` reported the existing quality consumer contract as
+  `hitl-recommended`; no maintained evaluator scenario was required by default
+  for this deterministic resolver/inventory guidance slice.
+- Slice closeout: `python3 scripts/run_slice_closeout.py --repo-root .
+  --verification-lock --refresh-broad-pytest-proof
+  --produce-mutation-coverage --mutation-coverage-command "python3 -m pytest -q
+  tests/quality_gates/test_artifact_naming.py
+  tests/quality_gates/test_current_pointer_writes.py"
+  --ack-cautilus-skill-review` completed, including broad standing pytest and
+  focused mutation coverage producer.
+- Non-claim: this local proof does not close #377. Final issue closeout still
+  requires a carrier with close keywords or approved fallback and GitHub
+  `CLOSED` readback.
 
 ## Local Proof: #375
 

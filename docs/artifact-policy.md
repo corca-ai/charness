@@ -179,6 +179,16 @@ Artifact resolver behavior is owned by the adapter's `artifact_class`:
 Do not add skill-id exception lists for artifact behavior. Declare the class in
 the owning adapter resolver or policy document.
 
+To audit the current repo layout instead of relying on memory, run:
+
+```bash
+python3 scripts/inventory_current_pointer_layouts.py --repo-root .
+```
+
+The inventory reports the adapter class, `artifact_path`, `write_artifact_path`,
+symlink target metadata, and whether the checked-in current pointer is a regular
+file, symlink, rolling file, missing pointer, or adapter-unmanaged workflow.
+
 Current repo examples:
 
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
@@ -198,6 +208,10 @@ The repo currently intends these families to be history-default:
 - `announcement`
 - `narrative`
 - `cautilus`
+- `critique`
+- `create-skill`
+- `ideation`
+- `impl`
 
 The repo currently intends these families to be `current`:
 
@@ -205,6 +219,8 @@ The repo currently intends these families to be `current`:
   checked-in invocation log
 - `hitl`, because checked-in state is a current human-facing review surface
   while runtime queues and event logs stay under `.charness/`
+- `hotl`, because the checked-in surface is a current proof packet summary over
+  externally verified loops
 - `setup`, because the checked-in surface is a current bootstrap summary
   rather than a long-lived audit trail
 
@@ -214,6 +230,10 @@ adapter-managed `latest.md` flow:
 - `spec`, because design contracts already live as checked-in named artifacts
 - [`docs/handoff.md`](./handoff.md), because it is the repo entry rolling
   pointer rather than a skill-local artifact
+- `achieve` and `issue`, because their current artifact helpers are
+  workflow-specific rather than `output_dir` adapter-managed `latest.md` flows
+- `create-cli`, because it has no checked-in current artifact family in this
+  repo today
 
 ## Current Exceptions
 

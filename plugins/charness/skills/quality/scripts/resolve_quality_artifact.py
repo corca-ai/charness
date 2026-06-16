@@ -71,6 +71,7 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
         "intent": intent,
         "slug": slugify(slug),
         "date": artifact_date.isoformat(),
+        "artifact_path": str(current_path),
         "record_artifact_path": str(record_path),
         "record_artifact_supported": True,
         "current_artifact_path": str(current_path),

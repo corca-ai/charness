@@ -161,6 +161,7 @@ def main() -> int:
         "slug": slug,
         "date": artifact_date.isoformat(),
         "intent": args.intent,
+        "artifact_path": str(current_path),
         "record_artifact_path": str(record_path) if record_path is not None else None,
         "record_artifact_supported": records_supported,
         "current_artifact_path": str(current_path),
