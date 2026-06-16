@@ -119,9 +119,8 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   latest comments unless the active run either obtains controlled lifecycle
   proof or records a new operator decision that explicitly supersedes the
   current open-issue disposition.
-- No `charness-artifacts/hotl/latest.md` ledger exists yet, so this proof packet
-  is the current durable HOTL state for the loop until a ledger/current pointer
-  is added.
+- `charness-artifacts/hotl/latest.md` now carries the short current HOTL summary
+  and points back to this full proof packet plus the #375-#378 carrier draft.
 
 ## Ledger Draft
 
