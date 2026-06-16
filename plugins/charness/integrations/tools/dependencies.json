@@ -4,7 +4,6 @@
     "cautilus",
     "gitleaks",
     "nose",
-    "pry",
     "ruff",
     "specdown",
     "tokei"

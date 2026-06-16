@@ -198,10 +198,10 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
         "recommend_for_skill": None,
         "recommendation_role": "validation",
         "next_skill_id": "quality",
-        "selected_tool_ids": ["cautilus", "gitleaks", "nose", "pry", "ruff", "tokei", "vulture"],
+        "selected_tool_ids": ["cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"],
     }
-    assert payload["tool_ids"] == ["cautilus", "gitleaks", "nose", "pry", "ruff", "tokei", "vulture"]
-    assert set(payload["results"]) == {"cautilus", "gitleaks", "nose", "pry", "ruff", "tokei", "vulture"}
+    assert payload["tool_ids"] == ["cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"]
+    assert set(payload["results"]) == {"cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"}
 
 
 def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_path: Path, seeded_charness_repo: Path) -> None:

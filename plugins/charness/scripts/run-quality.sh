@@ -512,14 +512,6 @@ if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_nose_clones.py" ]];
 else
   queue_selected "inventory-nose-clones" bash -c 'echo "ADVISORY: inventory_nose_clones.py unavailable; skipping optional clone-family inventory."'
 fi
-# inventory-testability-surface wraps the pry binary (advisory, TS/JS only). It
-# degrades to exit 0 when pry is absent, so it never fails standing quality; a
-# non-empty welded-at-demand backlog surfaces as an ADVISORY line.
-if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_testability_surface.py" ]]; then
-  queue_selected "inventory-testability-surface" python3 skills/public/quality/scripts/inventory_testability_surface.py --repo-root "$REPO_ROOT"
-else
-  queue_selected "inventory-testability-surface" bash -c 'echo "ADVISORY: inventory_testability_surface.py unavailable; skipping optional testability inventory."'
-fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then

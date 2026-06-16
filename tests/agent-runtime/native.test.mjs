@@ -411,9 +411,8 @@ test("omits invalid Claude telemetry counters without fabricating totals", () =>
 
 // The codex/claude subprocess boundaries take an injectable `spawn` seam (default
 // spawnSync) so the runner orchestration — success normalization, non-zero exit,
-// and timeout handling — is reachable without spawning a real agent CLI. pry's
-// welded-at-demand backlog flagged these two boundaries (exe-inline); the seam
-// reclassifies them to seamed and these tests exercise it.
+// and timeout handling — is reachable without spawning a real agent CLI. These
+// tests exercise that seam.
 function evaluationFixture(workspace) {
 	return {
 		evaluationId: "eval-seam",

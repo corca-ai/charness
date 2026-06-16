@@ -129,7 +129,6 @@ def make_support_sync_fixture(tmp_path: Path) -> Path:
         "cautilus": ("corca-ai/cautilus@main", "skills/cautilus-agent"),
         "agent-browser": ("vercel-labs/agent-browser@main", "skills/agent-browser"),
         "specdown": ("corca-ai/specdown@main", "cmd/specdown/skills/specdown"),
-        "pry": ("corca-ai/pry@main", "skills/pry"),
     }
     for tool_id, (repo, skill_subpath) in tool_layouts.items():
         skill_root = fixture_root / tool_id / skill_subpath
