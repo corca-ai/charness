@@ -13,7 +13,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Applied/live state at shaping: no active-run mutation had been executed.
 - Applied/live state at latest audit: no issue-closeout mutation has been
   executed by this packet audit; all issue readbacks below were read-only.
-- Local implementation state: #375 has a local implementation slice in progress;
+- Local implementation state: #375 and #378 have local implementation proof;
   no GitHub closeout carrier has been published.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
@@ -77,8 +77,8 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   daemon/profile lifecycle.
 - A closed GitHub issue proves tracker state only; it does not by itself prove
   release availability or consumer update.
-- This audit does not prove any implementation acceptance for #378, #377, #376,
-  or #375; it only proves the GitHub issue state and comments were read.
+- This audit does not prove GitHub closeout acceptance for #378, #377, #376, or
+  #375; local implementation proof exists only where explicitly recorded below.
 - This audit does not claim #371 is closeable today. The latest #371 comments
   state that it should remain open unless controlled invocation-end lifecycle
   proof exists, which is stricter than the goal's draft local-close path.
@@ -87,7 +87,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 
 | Issue | GitHub state | Comments read | Current proof state | Evidence |
 | --- | --- | --- | --- | --- |
-| #378 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the advisory inventory is still requested; no closeout carrier or closed-state proof exists. |
+| #378 | `OPEN` | yes | local implementation proof present; carrier missing | Quality now includes an advisory structural-waste inventory for duplicate broad collection and broad AST scanner candidates. GitHub closeout carrier and closed-state proof still do not exist. |
 | #377 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the current-pointer audit/tightening remains open; no closeout carrier or closed-state proof exists. |
 | #376 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says deterministic-helper re-judgment guidance remains open; no closeout carrier or closed-state proof exists. |
 | #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
@@ -139,7 +139,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   tests/quality_gates/test_goal_artifact_lib.py
   tests/quality_gates/test_goal_artifact_scaffold.py
   tests/quality_gates/test_achieve_adapter_policy.py
-  tests/quality_gates/test_goal_artifact_producers.py` -> 66 passed.
+  tests/quality_gates/test_goal_artifact_producers.py` -> 68 passed.
 - Broad local proof: `python3 scripts/run_standing_pytest.py --repo-root .
   --mode read-only` -> 3160 passed in 21.67s.
 - Additional validators passed: packaging validation, skill validation, public
@@ -152,6 +152,46 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   --ack-cautilus-skill-review` completed, including focused mutation coverage
   production for the new scaffold helper.
 - Non-claim: this local proof does not close #375. Final issue closeout still
+  requires a carrier with close keywords or approved fallback and GitHub
+  `CLOSED` readback.
+
+## Local Proof: #378
+
+- Classification: feature.
+- Boundary: add a `quality` advisory inventory for duplicate broad
+  discovery/collection and broad AST scanner prefilter waste; do not create a
+  blocking gate and do not close GitHub issues.
+- Changed surfaces: `skills/public/quality/scripts/inventory_structural_waste.py`,
+  `structural_waste_lib.py`, `skills/public/quality/SKILL.md`,
+  `references/inventory-dispatch.md`,
+  `references/inventory-consumer-fields.json`,
+  `.agents/inference-interpretation-surfaces.json`,
+  `docs/public-skill-dogfood.json`, mirrored
+  `plugins/charness/skills/quality/*`, and focused quality-gate tests.
+- Fresh-eye critique:
+  `charness-artifacts/critique/2026-06-16-issue-378-quality-structural-waste.md`.
+- Public-skill dogfood/scenario review: `suggest_public_skill_dogfood.py`
+  reported the existing `quality` case as `hitl-recommended`; the checked-in
+  dogfood case was updated with #378 observed evidence. `validate_cautilus_proof.py`
+  reported `next_action: none` for live Cautilus execution because the repo
+  requires an explicit log-backed behavior proof request.
+- Local live inventory: `python3
+  skills/public/quality/scripts/inventory_structural_waste.py --repo-root .
+  --json` reported zero duplicate-discovery candidates and one advisory
+  broad-scanner candidate (`scripts/check_test_repo_copy_invariants.py:103`),
+  with an interpretation section that keeps the result advisory.
+- Targeted proof: `python3 -m pytest -q
+  tests/quality_gates/test_structural_waste_inventory.py
+  tests/quality_gates/test_inference_interpretation_meta_validator.py
+  tests/quality_gates/test_quality_skill_docs.py
+  tests/quality_gates/test_inventory_consumption.py` -> 56 passed.
+- Additional focused validators passed: `validate_inference_interpretation.py
+  --require-git-file-listing`, inventory declaration coverage/declaration drift,
+  `validate_public_skill_dogfood.py`, `validate_skills.py`,
+  `validate_packaging.py`, `validate_packaging_committed.py`, doc links,
+  command docs, markdown, secrets, py_compile, Ruff, and gitignore scan
+  hygiene.
+- Non-claim: this local proof does not close #378. Final issue closeout still
   requires a carrier with close keywords or approved fallback and GitHub
   `CLOSED` readback.
 

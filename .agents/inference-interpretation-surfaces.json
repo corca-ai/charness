@@ -89,6 +89,15 @@
       "note": "CI-recoverability triage. Token-identity match of a costly local gate against CI run-steps is an inference, not proof; the consumer reference forces the operator to confirm the CI step truly re-runs the gate's full proof before moving it off the local hot path. Emitted by inventory_ci_recoverable_gates.py, which only subscripts the imported dict, so it is not itself a declaration site."
     },
     {
+      "surface_id": "structural-waste",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/structural_waste_lib.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/inventory-dispatch.md",
+      "consumer_anchor": "duplicate broad discovery or collection",
+      "note": "Duplicate discovery and broad scanner waste advisory. Token evidence surfaces candidate collection and broad AST parser patterns; the consumer must decide whether the candidate duplicates a real runner/target-list owner or whether broad parsing is the correctness boundary."
+    },
+    {
       "surface_id": "quality-next-gates-ranking",
       "kind": "prose",
       "declaration_file": "skills/public/quality/references/gate-classification.md",

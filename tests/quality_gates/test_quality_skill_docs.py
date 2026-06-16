@@ -204,8 +204,11 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
 
     assert "$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py" in skill_text
     assert "$SKILL_DIR/scripts/inventory_standing_test_economics.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_structural_waste.py" in skill_text
     assert "file/process/startup cost" in skill_text
     assert "runner isolation/process mode" in skill_text
+    assert "duplicate broad discovery/collection" in skill_text
+    assert "broad scanner prefiltering" in skill_text
     assert "verbose-on-demand escape hatch" in skill_text
     assert "quiet failure output must still name the" in skill_text
     assert "top-N runtime hot spots" in skill_text

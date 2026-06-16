@@ -59,6 +59,8 @@ the quality adapter so the default inventory does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
 - standing test economics:
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py`
+- duplicate discovery and broad scanner waste:
+  `$SKILL_DIR/scripts/inventory_structural_waste.py`
 - release-only sentinel coverage:
   `$SKILL_DIR/scripts/inventory_release_only_sentinels.py`
   (use `--path` for selected slow/release-only files; the default all-tests
@@ -76,9 +78,10 @@ the quality adapter so the default inventory does not return an empty scan.
 
 Quiet failure output must still name the failing unit/spec/case and show a
 short actual/error snippet. Slow-gate review should separate duplicated proof,
-fixture economics, parallel critical path, runner isolation, transpiler or
-loader startup cost, nested CLI fanout, and the small real-binary/protocol
-smokes that should remain.
+duplicate broad discovery or collection, missing cheap prefilters before broad
+parser scans, fixture economics, parallel critical path, runner isolation,
+transpiler or loader startup cost, nested CLI fanout, and the small
+real-binary/protocol smokes that should remain.
 
 When slow tests or mutation tests expose poor affected-test selection, ask
 whether the code shape makes a fast subset predictable before recommending a

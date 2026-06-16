@@ -260,15 +260,16 @@ def _run_main(*args: str) -> tuple[int, str, str]:
 def test_live_repo_contract_holds() -> None:
     code, stdout, stderr = _run_main("--repo-root", str(ROOT), "--require-git-file-listing")
     assert code == 0, stderr
-    assert "Validated advisory-interpretation contract across 9 inference-layer surface(s)" in stdout
+    assert "Validated advisory-interpretation contract across 10 inference-layer surface(s)" in stdout
 
 
 def test_live_registry_is_structurally_valid() -> None:
     registry = META.load_registry(ROOT / ".agents/inference-interpretation-surfaces.json")
     assert registry is not None
     ids = {s["surface_id"] for s in registry["surfaces"]}
-    # the 8 python declarations enumerated empirically + the 1 prose ranking
+    # the 9 python declarations enumerated empirically + the 1 prose ranking
     assert "find-skills-recommendation" in ids
     assert "quality-next-gates-ranking" in ids
     assert "ci-recoverable-gate-triage" in ids
-    assert sum(1 for s in registry["surfaces"] if s["kind"] == "python") == 8
+    assert "structural-waste" in ids
+    assert sum(1 for s in registry["surfaces"] if s["kind"] == "python") == 9

@@ -75,6 +75,15 @@
       "non_headline_fields": [],
       "opt_out_reason": "advisory CI-recoverability triage (the counterweight to ci_local_gate_parity); consumed as the candidates/keep-local move-off-local recommendation an operator confirms, not as artifact-body field citation. Declare non_headline_fields when a committed quality artifact starts engaging its fields."
     },
+    "inventory_structural_waste.py": {
+      "non_headline_fields": [
+        "command_snippet_count",
+        "python_source_count",
+        "duplicate_discovery_candidates",
+        "broad_scanner_candidates",
+        "interpretation"
+      ]
+    },
     "inventory_cli_ergonomics.py": {
       "non_headline_fields": [],
       "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
