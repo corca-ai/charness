@@ -33,6 +33,7 @@ MergeProposal = _types.MergeProposal
 CHUNK_PROPOSAL_PACKET_VERSION = _policy.CHUNK_PROPOSAL_PACKET_VERSION
 DEFAULT_MAX_PACKAGE_SOURCES = _policy.DEFAULT_MAX_PACKAGE_SOURCES
 DEFAULT_BROAD_BOUNDARY_TOKENS = _policy.DEFAULT_BROAD_BOUNDARY_TOKENS
+JUDGMENT_SUMMARY_FIELDS = _policy.JUDGMENT_SUMMARY_FIELDS
 CHUNK_PROPOSER_PROMPT = _policy.CHUNK_PROPOSER_PROMPT
 
 CHUNK_PROPOSAL_RESPONSE_SCHEMA = {
@@ -49,6 +50,7 @@ CHUNK_PROPOSAL_RESPONSE_SCHEMA = {
                     "objective_summary",
                     "rationale",
                     "downstream_unlock",
+                    "judgment_summary",
                 ],
                 "properties": {
                     "label": {"type": "string", "minLength": 1},
@@ -60,6 +62,14 @@ CHUNK_PROPOSAL_RESPONSE_SCHEMA = {
                     "objective_summary": {"type": "string", "minLength": 1},
                     "rationale": {"type": "string", "minLength": 1},
                     "downstream_unlock": {"type": "string", "minLength": 1},
+                    "judgment_summary": {
+                        "type": "object",
+                        "required": list(JUDGMENT_SUMMARY_FIELDS),
+                        "properties": {
+                            field: {"type": "string", "minLength": 1}
+                            for field in JUDGMENT_SUMMARY_FIELDS
+                        },
+                    },
                     "excluded_source_ids": {
                         "type": "array",
                         "items": {"type": "integer"},
@@ -133,7 +143,8 @@ def build_chunk_proposal_packet(
         "merge_decision_contract": {
             "script_role": "facts-only",
             "no_clearance_fields": ["safe_to_merge", "merge_ok"],
-            "broad_only_overlap_false_means": "policy emitted no broad-only warning; agent still judges semantic fit, urgency, dependency, and operator value",
+            "required_agent_judgment": list(JUDGMENT_SUMMARY_FIELDS),
+            "broad_only_overlap_false_means": "policy emitted no broad-only warning; agent still judges semantic fit, implementation boundary, closeout flow, and operator value",
             "unknown_tokens_mean": "policy has no opinion",
         },
         "chunk_proposer_prompt": CHUNK_PROPOSER_PROMPT,
@@ -157,6 +168,7 @@ def materialize_chunk_proposal_response(
             entries=member_entries,
             label=str(chunk["label"]),
             objective_summary=str(chunk["objective_summary"]).strip(),
+            judgment_summary=_normalize_judgment_summary(chunk["judgment_summary"]),
         )
         if len(member_entries) == 1:
             standalone.append(candidate)
@@ -164,10 +176,25 @@ def materialize_chunk_proposal_response(
             merged.append(candidate)
         reasons[candidate.label] = (
             f"agentic rationale: {str(chunk['rationale']).strip()} "
-            f"downstream unlock: {str(chunk['downstream_unlock']).strip()}"
+            f"downstream unlock: {str(chunk['downstream_unlock']).strip()} "
+            f"judgment: {_format_judgment_summary(chunk['judgment_summary'])}"
         )
     return MergeProposal(
         standalone=tuple(standalone),
         merged=tuple(merged),
         shared_boundary_reason=reasons,
+    )
+
+
+def _normalize_judgment_summary(summary: dict[str, Any]) -> dict[str, str]:
+    return {
+        field: str(summary[field]).strip()
+        for field in JUDGMENT_SUMMARY_FIELDS
+    }
+
+
+def _format_judgment_summary(summary: dict[str, Any]) -> str:
+    return "; ".join(
+        f"{field.replace('_', ' ')}: {str(summary[field]).strip()}"
+        for field in JUDGMENT_SUMMARY_FIELDS
     )

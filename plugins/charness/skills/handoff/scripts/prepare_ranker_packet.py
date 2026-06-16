@@ -54,6 +54,7 @@ def _restore_merge_proposal(payload: dict):
             entries=tuple(restore_entry(entry) for entry in candidate_dict["entries"]),
             label=candidate_dict["label"],
             objective_summary=candidate_dict["objective_summary"],
+            judgment_summary=candidate_dict.get("judgment_summary"),
         )
 
     return chunked_routing_lib.MergeProposal(

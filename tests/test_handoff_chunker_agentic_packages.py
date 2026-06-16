@@ -61,6 +61,14 @@ def entries(lib):
 
 
 def _good_response():
+    def judgment(prefix: str):
+        return {
+            "semantic_fit": f"{prefix} sources describe one coherent operator problem.",
+            "implementation_boundary": f"{prefix} changes share a small handoff boundary.",
+            "closeout_flow": f"{prefix} can close with the same verification path.",
+            "operator_value": f"{prefix} reduces pickup ambiguity for the operator.",
+        }
+
     return {
         "chunks": [
             {
@@ -69,6 +77,7 @@ def _good_response():
                 "objective_summary": "Agentic handoff packages with stable fixtures",
                 "rationale": "Both sources change the handoff chunker pickup surface.",
                 "downstream_unlock": "Future pickups stop presenting issue lists.",
+                "judgment_summary": judgment("handoff fixture"),
                 "excluded_source_ids": [3, 4],
                 "basis_boundary_tokens": [],
             },
@@ -78,6 +87,7 @@ def _good_response():
                 "objective_summary": "Closeout rehearsal and publication policy",
                 "rationale": "Both sources reduce publish-time closeout ambiguity.",
                 "downstream_unlock": "Later issue closeout can reuse one policy path.",
+                "judgment_summary": judgment("closeout publication"),
                 "excluded_source_ids": [1, 2],
                 "basis_boundary_tokens": ["label/closeout"],
             },
@@ -104,6 +114,14 @@ def test_build_chunk_proposal_packet_uses_sources_hints_and_policy(lib, entries)
     assert "chunks" in packet["response_schema"]["properties"]
     assert packet["merge_decision_contract"]["script_role"] == "facts-only"
     assert "safe_to_merge" in packet["merge_decision_contract"]["no_clearance_fields"]
+    assert packet["merge_decision_contract"]["required_agent_judgment"] == [
+        "semantic_fit",
+        "implementation_boundary",
+        "closeout_flow",
+        "operator_value",
+    ]
+    chunk_schema = packet["response_schema"]["properties"]["chunks"]["items"]
+    assert "judgment_summary" in chunk_schema["required"]
     assert "safe_to_merge" not in packet
     assert any(hint["source_ids"] == [3, 4] for hint in packet["merge_hints"])
 
@@ -133,7 +151,10 @@ def test_materialize_agentic_packages_as_merge_proposal(lib, entries):
         "closeout-publication",
     ]
     assert [entry.index for entry in proposal.merged[0].entries] == [1, 2]
+    assert proposal.merged[0].judgment_summary == _good_response()["chunks"][0]["judgment_summary"]
     assert "agentic rationale:" in proposal.shared_boundary_reason["handoff-fixtures"]
+    assert "semantic fit:" in proposal.shared_boundary_reason["handoff-fixtures"]
+    assert proposal.merged[0].to_dict()["judgment_summary"]["operator_value"].strip()
 
 
 @pytest.mark.parametrize(
@@ -143,6 +164,14 @@ def test_materialize_agentic_packages_as_merge_proposal(lib, entries):
         (lambda r: r["chunks"][1]["source_ids"].append(1), "duplicate source_ids"),
         (lambda r: r["chunks"][1]["source_ids"].remove(4), "missing source_ids"),
         (lambda r: r["chunks"][0].update({"rationale": "  "}), "empty `rationale`"),
+        (
+            lambda r: r["chunks"][0]["judgment_summary"].update({"operator_value": "  "}),
+            "empty `judgment_summary.operator_value`",
+        ),
+        (
+            lambda r: r["chunks"][0].update({"judgment_summary": []}),
+            "`judgment_summary` must be an object",
+        ),
         (lambda r: r["chunks"][0].update({"label": "Bad Label"}), "invalid label"),
     ],
 )
@@ -163,6 +192,12 @@ def test_validate_rejects_overlarge_package(lib, entries):
             "objective_summary": "Too broad",
             "rationale": "This bundles too much.",
             "downstream_unlock": "n/a",
+            "judgment_summary": {
+                "semantic_fit": "Too many sources.",
+                "implementation_boundary": "Too broad.",
+                "closeout_flow": "Too broad.",
+                "operator_value": "Too broad.",
+            },
             "basis_boundary_tokens": [],
         }
     ]
@@ -269,6 +304,22 @@ def test_prepare_chunk_packet_cli_emits_agentic_packet(entries):
 
     assert result.returncode == 0, result.stderr
     packet = json.loads(result.stdout)
-    assert packet["version"] == 1
+    assert packet["version"] == 2
     assert [source["source_id"] for source in packet["sources"]] == [1, 2, 3, 4]
     assert "chunk_proposer_prompt" in packet
+
+
+def test_prepare_ranker_packet_preserves_judgment_summary(lib, entries):
+    proposal = lib.materialize_chunk_proposal_response(_good_response(), entries)
+    result = subprocess.run(
+        ["python3", str(SCRIPTS / "prepare_ranker_packet.py"), "--input", "-"],
+        input=json.dumps(proposal.to_dict()),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(result.stdout)
+    candidates = packet["merge_proposal"]["merged"]
+    assert candidates[0]["judgment_summary"] == _good_response()["chunks"][0]["judgment_summary"]

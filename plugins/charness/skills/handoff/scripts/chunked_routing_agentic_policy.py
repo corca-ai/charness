@@ -5,7 +5,7 @@ import importlib.util
 from pathlib import Path
 from typing import Any
 
-CHUNK_PROPOSAL_PACKET_VERSION = 1
+CHUNK_PROPOSAL_PACKET_VERSION = 2
 DEFAULT_MAX_PACKAGE_SOURCES = 5
 DEFAULT_BROAD_BOUNDARY_TOKENS = frozenset(
     {
@@ -17,17 +17,25 @@ DEFAULT_BROAD_BOUNDARY_TOKENS = frozenset(
         "label/test",
     }
 )
+JUDGMENT_SUMMARY_FIELDS = (
+    "semantic_fit",
+    "implementation_boundary",
+    "closeout_flow",
+    "operator_value",
+)
 
 CHUNK_PROPOSER_PROMPT = (
     "Propose coherent work packages from the provided handoff sources. "
     "Do not return a ranked issue list. A package should group sources only "
     "when they share an implementation boundary, closeout/publication flow, "
-    "test fixture risk, or downstream unlock. Use every source exactly once. "
+    "test fixture risk, or downstream unlock. Treat deterministic merge hints "
+    "as facts to re-judge, not as package decisions. Use every source exactly once. "
     "For each package, name included source_ids, excluded_source_ids when a "
     "nearby source might look related but should stay out, objective_summary, "
-    "rationale, downstream_unlock, and basis_boundary_tokens when boundary "
-    "tokens are part of the justification. Standalone packages are allowed "
-    "when no honest grouping exists."
+    "rationale, downstream_unlock, a judgment_summary with semantic_fit, "
+    "implementation_boundary, closeout_flow, and operator_value, and "
+    "basis_boundary_tokens when boundary tokens are part of the justification. "
+    "Standalone packages are allowed when no honest grouping exists."
 )
 
 

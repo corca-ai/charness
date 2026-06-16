@@ -243,12 +243,17 @@ merge.
    source IDs, overlap hints, adapter chunk policy, prompt, and response schema.
    The agent fills a `chunks` array with coherent work packages rather than a
    ranked issue list. Each package carries source IDs, excluded nearby IDs when
-   relevant, objective, rationale, downstream unlock, and basis boundary tokens
-   when tokens justify a merge. `validate_chunk_proposal_response` rejects
-   unknown, duplicated, missing, or over-large sources, empty rationale, and
-   broad-label-only merges unless adapter policy explicitly allows that label;
-   its merge policy facts are diagnostic only, so no broad-only warning does not
-   mean merge clearance and unknown basis tokens mean policy has no opinion;
+   relevant, objective, rationale, downstream unlock, `judgment_summary`, and
+   basis boundary tokens when tokens justify a merge. `judgment_summary`
+   records the agent's re-judgment of `semantic_fit`,
+   `implementation_boundary`, `closeout_flow`, and `operator_value`, so
+   deterministic overlap hints remain facts to interpret rather than package
+   decisions. `validate_chunk_proposal_response` rejects unknown, duplicated,
+   missing, or over-large sources, empty rationale, empty judgment-summary
+   fields, and broad-label-only merges unless adapter policy explicitly allows
+   that label; its merge policy facts are diagnostic only, so no broad-only
+   warning does not mean merge clearance and unknown basis tokens mean policy
+   has no opinion;
    `materialize_chunk_proposal_response` converts the validated packages into a
    `MergeProposal`.
 4. **Rank.** [`prepare_ranker_packet.py`](../skills/public/handoff/scripts/prepare_ranker_packet.py) writes a JSON packet containing
@@ -260,7 +265,9 @@ merge.
 5. **Present.** The handoff skill renders the ranked list inline in the
    conversation: one chunk per line with rank, label, objective summary,
    and the 2–3 line generative-sequence reasoning. Work-package candidates are
-   labelled `(package: <reason>)`. The user picks one chunk (or none) and
+   labelled `(package: <reason>)` and show `judgment_summary` when present so
+   the operator sees the semantic fit, implementation boundary, closeout flow,
+   and operator value judgment. The user picks one chunk (or none) and
    may ask "why not chunk X?" in the same turn; the agent answers from
    the already-rendered reasoning.
 6. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py) calls

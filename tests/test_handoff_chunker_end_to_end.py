@@ -103,6 +103,12 @@ def test_end_to_end_pipeline_produces_valid_goal_artifact(
                 "objective_summary": entry.title,
                 "rationale": "Standalone package: no honest fixture merge exists.",
                 "downstream_unlock": "Keeps the fixture's negative-merge invariant explicit.",
+                "judgment_summary": {
+                    "semantic_fit": "Single fixture entry is the only honest semantic fit.",
+                    "implementation_boundary": "The fixture entry stands on its own boundary.",
+                    "closeout_flow": "The fixture entry can be verified independently.",
+                    "operator_value": "Keeping it standalone preserves the negative-merge signal.",
+                },
                 "excluded_source_ids": [
                     other.index for other in entries if other.index != entry.index
                 ],
@@ -229,6 +235,12 @@ def test_end_to_end_trigger_then_pipeline_matches_user_flow(lib):
                 "objective_summary": entry.title,
                 "rationale": "Trigger smoke keeps each fixture source standalone.",
                 "downstream_unlock": "Proves the chunker reaches package candidates.",
+                "judgment_summary": {
+                    "semantic_fit": "The trigger smoke source is self-contained.",
+                    "implementation_boundary": "The smoke source has one handoff trigger boundary.",
+                    "closeout_flow": "The smoke source can be validated in this fixture path.",
+                    "operator_value": "Standalone output keeps the pickup signal legible.",
+                },
                 "basis_boundary_tokens": [],
             }
             for entry in entries

@@ -104,6 +104,7 @@ def _restore_chunk(payload: dict):
         entries=tuple(restore_entry(entry) for entry in payload["entries"]),
         label=payload["label"],
         objective_summary=payload["objective_summary"],
+        judgment_summary=payload.get("judgment_summary"),
     )
 
 

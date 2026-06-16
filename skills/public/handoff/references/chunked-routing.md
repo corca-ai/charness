@@ -100,7 +100,11 @@ step 4 is the active agent.
    broad-label-only merges unless adapter policy explicitly allows that label.
    The packet and validation report expose merge policy facts only: a false
    broad-only-overlap fact is not merge clearance, and unknown basis tokens mean
-   the policy has no opinion while the agent still judges semantic fit.
+   the policy has no opinion while the agent still judges semantic fit. Every
+   package must carry a `judgment_summary` that records the agent's
+   re-judgment of `semantic_fit`, `implementation_boundary`, `closeout_flow`,
+   and `operator_value`; deterministic overlap hints are inputs to that
+   judgment, not package decisions.
 4. **Rank.** Run
    [`prepare_ranker_packet.py`](../scripts/prepare_ranker_packet.py)
    against the materialized package proposal. The script emits a self-contained JSON
@@ -115,8 +119,10 @@ step 4 is the active agent.
 5. **Present.** Render the ranked list inline in the conversation:
    one chunk per line with rank, label, objective summary, and the
    pre-computed reasoning. Merged candidates carry a
-   `(package: <rationale>)` marker so the user sees the basis
-   for the bundle proposal. Ask the user to pick a chunk (or to
+   `(package: <rationale>)` marker and the candidate's `judgment_summary`
+   so the user sees the agent's semantic fit, implementation boundary,
+   closeout flow, and operator value judgment behind the bundle proposal.
+   Ask the user to pick a chunk (or to
    decline). A follow-up question like "why not chunk N?" must be
    answered from the already-rendered reasoning — do not re-invoke
    the ranker.

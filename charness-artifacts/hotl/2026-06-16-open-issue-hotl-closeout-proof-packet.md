@@ -13,8 +13,8 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 - Applied/live state at shaping: no active-run mutation had been executed.
 - Applied/live state at latest audit: no issue-closeout mutation has been
   executed by this packet audit; all issue readbacks below were read-only.
-- Local implementation state: #375 and #378 have local implementation proof;
-  no GitHub closeout carrier has been published.
+- Local implementation state: #375, #378, and #376 have local implementation
+  proof; no GitHub closeout carrier has been published.
 - Adapter state: no HOTL adapter is present; live proof commands are
   undeclared.
 - Issue backend: `issue_tool.py preflight --repo-root . --json` selected the
@@ -89,7 +89,7 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
 | --- | --- | --- | --- | --- |
 | #378 | `OPEN` | yes | local implementation proof present; carrier missing | Quality now includes an advisory structural-waste inventory for duplicate broad collection and broad AST scanner candidates. GitHub closeout carrier and closed-state proof still do not exist. |
 | #377 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says the current-pointer audit/tightening remains open; no closeout carrier or closed-state proof exists. |
-| #376 | `OPEN` | yes | not verified; implementation/carrier missing | Issue readback says deterministic-helper re-judgment guidance remains open; no closeout carrier or closed-state proof exists. |
+| #376 | `OPEN` | yes | local implementation proof present; carrier missing | Handoff chunked routing now requires agentic package `judgment_summary` fields and carries them into operator-facing package candidates. GitHub closeout carrier and closed-state proof still do not exist. |
 | #375 | `OPEN` | yes | local implementation proof present; carrier missing | Achieve scaffold now accepts adapter-controlled draft Active Operating Frame lines for new artifacts, refuses invalid scaffold adapter config on create, and preserves existing-artifact status-only idempotence. GitHub closeout carrier and closed-state proof still do not exist. |
 | #371 | `OPEN` | yes | `issue` disposition candidate | Latest comments preserve the upstream lifecycle proof boundary: local repair mitigation shipped, but invocation-bound process/profile teardown remains unproven. |
 
@@ -192,6 +192,44 @@ Goal: `charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md`
   command docs, markdown, secrets, py_compile, Ruff, and gitignore scan
   hygiene.
 - Non-claim: this local proof does not close #378. Final issue closeout still
+  requires a carrier with close keywords or approved fallback and GitHub
+  `CLOSED` readback.
+
+## Local Proof: #376
+
+- Classification: feature.
+- Boundary: make deterministic helper outputs visibly subordinate to agent
+  judgment for the handoff chunker package stage; record a cross-skill audit;
+  do not claim exhaustive helper-surface coverage and do not close GitHub
+  issues.
+- Changed surfaces: `skills/public/handoff/scripts/chunked_routing_agentic.py`,
+  `chunked_routing_agentic_policy.py`,
+  `chunked_routing_agentic_validation.py`, `chunked_routing_types.py`,
+  `prepare_ranker_packet.py`, `draft_goal_from_chunk.py`,
+  `references/chunked-routing.md`, `docs/handoff-chunked-routing.md`,
+  `docs/public-skill-dogfood.json`, mirrored
+  `plugins/charness/skills/handoff/*`, and focused handoff tests.
+- Cross-skill audit:
+  `charness-artifacts/audit/2026-06-16-helper-output-rejudgment.md`.
+- Fresh-eye critique:
+  `charness-artifacts/critique/2026-06-16-issue-376-helper-rejudgment.md`.
+- Public-skill dogfood/scenario review: `suggest_public_skill_dogfood.py`
+  reported `handoff` as `evaluator-required`; the checked-in dogfood case was
+  updated with #376 observed evidence. `evals/cautilus/scenarios.json` still
+  maps `handoff` to `handoff-adapter-bootstrap`; no registry mutation was made
+  because this slice changes deterministic package-synthesis schema, not
+  routing/bootstrap behavior, and no log-backed behavior proof was requested.
+- Targeted proof: `python3 -m pytest -q
+  tests/test_handoff_chunker_agentic_packages.py
+  tests/test_handoff_chunker_end_to_end.py
+  tests/test_handoff_chunker_cli_contract.py
+  tests/test_handoff_chunker_ranker_packet.py
+  tests/test_handoff_chunker_auto_draft.py
+  tests/quality_gates/test_goal_artifact_producers.py` -> 66 passed.
+- Additional focused validators passed: `validate_public_skill_dogfood.py`,
+  packaging validation, skill validation, public-skill validation, doc links,
+  markdown, py_compile, and Ruff.
+- Non-claim: this local proof does not close #376. Final issue closeout still
   requires a carrier with close keywords or approved fallback and GitHub
   `CLOSED` readback.
 

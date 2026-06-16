@@ -27,6 +27,7 @@ _facts = _load_sibling("chunked_routing_agentic_facts")
 HandoffEntry = _types.HandoffEntry
 
 DEFAULT_MAX_PACKAGE_SOURCES = _policy.DEFAULT_MAX_PACKAGE_SOURCES
+JUDGMENT_SUMMARY_FIELDS = _policy.JUDGMENT_SUMMARY_FIELDS
 
 _LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
@@ -92,6 +93,7 @@ def _validate_chunk_shape(
     )
     _validate_excluded_ids(chunk, source_ids, label_for_message, set(by_id), issues)
     _validate_required_text(chunk, label_for_message, issues)
+    _validate_judgment_summary(chunk, label_for_message, issues)
     _validate_basis_tokens(
         chunk,
         source_ids,
@@ -154,6 +156,19 @@ def _validate_required_text(
         value = chunk.get(field)
         if not isinstance(value, str) or not value.strip():
             issues.append(f"{label}: empty `{field}`")
+
+
+def _validate_judgment_summary(
+    chunk: dict[str, Any], label: str, issues: list[str]
+) -> None:
+    summary = chunk.get("judgment_summary")
+    if not isinstance(summary, dict):
+        issues.append(f"{label}: `judgment_summary` must be an object")
+        return
+    for field in JUDGMENT_SUMMARY_FIELDS:
+        value = summary.get(field)
+        if not isinstance(value, str) or not value.strip():
+            issues.append(f"{label}: empty `judgment_summary.{field}`")
 
 
 def _validate_basis_tokens(

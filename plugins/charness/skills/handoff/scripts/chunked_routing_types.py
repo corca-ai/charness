@@ -57,13 +57,17 @@ class ChunkCandidate:
     entries: tuple[HandoffEntry, ...]
     label: str
     objective_summary: str
+    judgment_summary: dict[str, str] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "entries": [entry.to_dict() for entry in self.entries],
             "label": self.label,
             "objective_summary": self.objective_summary,
         }
+        if self.judgment_summary:
+            payload["judgment_summary"] = dict(self.judgment_summary)
+        return payload
 
 
 @dataclass(frozen=True)
