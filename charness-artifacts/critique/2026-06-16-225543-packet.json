@@ -1,0 +1,42 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-06-16T22:55:43Z",
+  "prepared_for": "v0.52.0 release",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "service_tier": "priority"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/release-adapter.yaml\n\nOwning surfaces:\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- The retro skill does not consume this packet today. A retro-side prepare slot (retro-adapter.yaml packet_sections) is a separate follow-up.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true
+}
