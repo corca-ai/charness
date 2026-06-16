@@ -61,6 +61,7 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import (
         instrument_broad_command,
         is_instrumentable_pytest_command,
+        is_standing_pytest_runner_command,
     )
 
     with pytest.raises(ValueError):
@@ -69,6 +70,7 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
     assert not is_instrumentable_pytest_command(helper)
     with pytest.raises(ValueError):
         instrument_broad_command(helper, tmp_path / ".data")
+    assert is_standing_pytest_runner_command("python3 scripts/run_standing_pytest.py 'unterminated")
 
 
 def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:
@@ -411,6 +413,22 @@ def test_run_focused_closeout_coverage_appends_result(tmp_path: Path, monkeypatc
     assert captured["base_sha"] == "base"
     assert captured["coverage_json"] == tmp_path / "reports" / "mutation" / "test-coverage.json"
     assert payload["executed_commands"][-1]["produced_mutation_coverage"] is True
+
+
+def test_run_focused_closeout_coverage_skips_without_command(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    payload = {"executed_commands": []}
+    assert (
+        prod.run_focused_closeout_coverage(
+            SimpleNamespace(produce_mutation_coverage=True, mutation_coverage_command=None),
+            tmp_path,
+            payload,
+            run_command=lambda *args, **kwargs: None,
+        )
+        is False
+    )
+    assert payload["executed_commands"] == []
 
 
 def test_run_focused_closeout_coverage_marks_failed_payload(tmp_path: Path, monkeypatch) -> None:

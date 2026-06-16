@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import runpy
+import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, monkeypatch) -> None:
@@ -37,3 +41,159 @@ def test_standing_pytest_temp_root_stays_outside_repo(tmp_path: Path) -> None:
 
     assert "/charness/pytest-tmp/" in str(temp_root)
     runner.ensure_external_temp_root(repo, temp_root)
+
+
+def test_standing_pytest_env_temp_root_and_inside_repo_rejection(tmp_path: Path) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    custom = tmp_path / "custom-temp"
+
+    assert runner.default_temp_root(repo, {"PYTEST_DEBUG_TEMPROOT": str(custom)}) == custom
+    try:
+        runner.ensure_external_temp_root(repo, repo / ".pytest-tmp")
+    except SystemExit as exc:
+        assert "is inside the repo" in str(exc)
+    else:
+        raise AssertionError("expected SystemExit for repo-local pytest temp root")
+
+
+def test_standing_pytest_default_basetemp_uses_user_and_time(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=0, stdout="alice\n"),
+    )
+    monkeypatch.setattr(runner.time, "time_ns", lambda: 123)
+
+    assert runner.default_basetemp(repo, {"HOME": str(tmp_path / "home")}).name == "pytest-123"
+    assert "pytest-of-alice" in str(runner.default_basetemp(repo, {"HOME": str(tmp_path / "home")}))
+
+
+def test_standing_pytest_command_probes_and_serial_fallback(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if command == ["python3", "-m", "pytest", "--version"]:
+            return subprocess.CompletedProcess(command, returncode=1, stdout="", stderr="")
+        return subprocess.CompletedProcess(command, returncode=0, stdout="pytest help\n", stderr="")
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+
+    assert runner.choose_pytest_command() == ["pytest"]
+    assert runner.has_xdist(["pytest"]) is False
+    command = runner.build_pytest_command(
+        tmp_path,
+        basetemp=tmp_path / "base",
+        include_release_only=True,
+    )
+
+    assert command[:3] == ["pytest", "-q", "--basetemp"]
+    assert "-m" not in command
+    assert "pytest-xdist not installed" in capsys.readouterr().err
+
+
+def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, returncode=0, stdout="", stderr=""),
+    )
+
+    assert runner.choose_pytest_command() == ["python3", "-m", "pytest"]
+
+
+def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypatch, capsys) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    basetemp = tmp_path / "base"
+    monkeypatch.setattr(
+        runner,
+        "build_pytest_command",
+        lambda *args, **kwargs: ["python3", "-m", "pytest", "-q"],
+    )
+
+    printed = runner.run_standing_pytest(
+        SimpleNamespace(
+            repo_root=repo,
+            basetemp=basetemp,
+            include_release_only=False,
+            mode="read-only",
+            print_command=True,
+            keep_basetemp=False,
+        )
+    )
+    assert printed == 0
+    assert "python3 -m pytest -q" in capsys.readouterr().out
+
+    basetemp.mkdir()
+    captured: dict[str, object] = {}
+
+    def fake_run(command, *, cwd, env, check):
+        captured.update({"command": command, "cwd": cwd, "env": env, "check": check})
+        return subprocess.CompletedProcess(command, returncode=0)
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    rc = runner.run_standing_pytest(
+        SimpleNamespace(
+            repo_root=repo,
+            basetemp=basetemp,
+            include_release_only=False,
+            mode="full",
+            print_command=False,
+            keep_basetemp=False,
+        )
+    )
+
+    assert rc == 0
+    assert captured["cwd"] == repo.resolve()
+    assert captured["env"]["CHARNESS_QUALITY_MODE"] == "full"
+    assert not basetemp.exists()
+
+
+def test_standing_pytest_main_print_modes(tmp_path: Path, monkeypatch, capsys) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(runner, "expand_targets", lambda repo_root: ["tests/demo.py"])
+    monkeypatch.setattr(runner, "default_temp_root", lambda repo_root: tmp_path / "temp")
+    monkeypatch.setattr(runner, "ensure_external_temp_root", lambda repo_root, temp_root: None)
+    monkeypatch.setattr(runner, "run_standing_pytest", lambda args: 7)
+
+    assert runner.main(["--repo-root", str(repo), "--print-targets"]) == 0
+    assert "tests/quality_gates" in capsys.readouterr().out
+    assert runner.main(["--repo-root", str(repo), "--print-expanded-targets"]) == 0
+    assert "tests/demo.py" in capsys.readouterr().out
+    assert runner.main(["--repo-root", str(repo), "--print-temp-root"]) == 0
+    assert str(tmp_path / "temp") in capsys.readouterr().out
+    assert runner.main(["--repo-root", str(repo)]) == 7
+
+
+def test_standing_pytest_script_entrypoint_print_targets(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["run_standing_pytest.py", "--print-targets"])
+
+    try:
+        runpy.run_path("scripts/run_standing_pytest.py", run_name="__main__")
+    except SystemExit as exc:
+        assert exc.code == 0
+    else:
+        raise AssertionError("expected SystemExit from script entrypoint")
+
+    assert "tests/quality_gates" in capsys.readouterr().out
