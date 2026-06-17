@@ -168,7 +168,7 @@ def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) 
 
     assert concise.returncode == 0, concise.stderr
     assert "PURSUE_READY: yes" in concise.stdout
-    assert "WARNING: draft Active Operating Frame lacks lifecycle disposition" in concise.stdout
+    assert "ADVISORY: draft Active Operating Frame lacks lifecycle disposition" in concise.stdout
 
 
 def test_goal_check_help_names_stable_helper_surface() -> None:

@@ -4445,7 +4445,7 @@ def _print_goal_check_summary(payload: object) -> None:
         print(f"REASON: {reason}")
     draft_frame_warning = payload.get("draft_frame_warning")
     if isinstance(draft_frame_warning, str) and draft_frame_warning:
-        print(f"WARNING: {draft_frame_warning}")
+        print(f"ADVISORY: {draft_frame_warning}")
 
 
 def cmd_goal_check(args: argparse.Namespace) -> int:
