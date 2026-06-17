@@ -17,7 +17,8 @@ explicit disposition for anything that cannot be proven now.
 - every loop entry ends `verified` or explicitly dispositioned, never silently
   closed
 - repo specifics (proof commands, surfaces, ledger schema and paths) are
-  adapter-owned; this skill ships the discipline, statuses, and proof rules
+  adapter-owned; this skill ships the discipline, statuses, staleness
+  adjudication, and proof rules
 
 Relationship to `hitl`: `hitl` inserts human judgment inside a bounded review
 loop before changes land; `hotl` supervises and verifies behavior that is
@@ -83,14 +84,19 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
      `blocked-needs-operator`, `blocked-needs-capability`,
      `deferred-by-operator`, `issue`, `accepted-risk`, or `out-of-scope`
    - `verified` carries `verified_at` and `verified_against` (source commit,
-     proof artifact, proving-surface refs); a stale proving-surface ref
-     demands re-proof, narrower refs, or an explicit disposition
+     proof artifact, proving-surface refs); a stale proving-surface ref is a
+     `stale_candidate` / `needs_adjudication` signal until the agent decides
+     whether it is actual proof debt
+   - staleness adjudication uses one of `reproof_required`,
+     `covered_by_tests`, `covered_by_newer_proof`, `narrow_surface`,
+     `ledger_outdated`, `accepted_risk`, or `deferred`
    - final non-verified statuses carry disposition owner, reason, decided-at,
      and revisit trigger
    - queue deferrable operator-only decisions in the active goal's
      `## Operator Decision Queue`; stop only when they block all safe next work
    - completion audits block while a linked entry is neither verified nor
-     explicitly dispositioned
+     explicitly dispositioned, or while a stale candidate still has unresolved
+     adjudication
 
 ## Proof Rules
 
@@ -110,8 +116,8 @@ Apply `references/proof-rules.md`; the load-bearing rules:
 The result should usually include Loop Inventory, Surface Class, Proof Packet
 (Success Criteria, Pre-Roundtrip Failure Checks, Feasibility, Human
 Intervention, Non-Claims), Executed Proof or Recorded Disposition, Ledger
-Status, Verified-Against or Disposition fields, Staleness Findings, and Next
-Action.
+Status, Verified-Against or Disposition fields, Staleness Findings, Staleness
+Adjudication, and Next Action.
 
 ## Guardrails
 
@@ -124,8 +130,9 @@ Action.
   repo-owned command, never an undeclared manual ritual.
 - Do not grant a normalized match, direct post, bot smoke, or local test more
   proof weight than the proof rules allow.
-- Do not rely on a `verified` entry whose proving-surface refs are stale;
-  re-prove, narrow the refs, or disposition it explicitly.
+- Do not rely on a `verified` entry whose proving-surface refs are stale until
+  the stale candidate has been adjudicated; unresolved adjudication blocks
+  pre-live and completion gates, but a path diff alone is not a reproof result.
 - Do not copy repo or host facts (commands, channels, schema paths) into this
   skill's text; they belong in the adapter.
 - Do not run this loop for bounded pre-apply review; that is `hitl`.

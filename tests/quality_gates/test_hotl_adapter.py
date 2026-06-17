@@ -161,3 +161,37 @@ def test_scripts_run_as_main_in_process(tmp_path: Path, monkeypatch, capsys) -> 
     monkeypatch.setattr("sys.argv", ["init_adapter.py", "--repo-root", str(tmp_path)])
     runpy.run_path(str(ROOT / "skills" / "public" / "hotl" / "scripts" / "init_adapter.py"), run_name="__main__")
     assert (tmp_path / ".agents" / "hotl-adapter.yaml").is_file()
+
+
+def test_staleness_contract_requires_adjudication_before_reproof() -> None:
+    skill_text = (REPO_ROOT / "skills" / "public" / "hotl" / "SKILL.md").read_text(encoding="utf-8")
+    ledger_text = (
+        REPO_ROOT / "skills" / "public" / "hotl" / "references" / "ledger-and-dispositions.md"
+    ).read_text(encoding="utf-8")
+    plugin_skill_text = (REPO_ROOT / "plugins" / "charness" / "skills" / "hotl" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    plugin_ledger_text = (
+        REPO_ROOT / "plugins" / "charness" / "skills" / "hotl" / "references" / "ledger-and-dispositions.md"
+    ).read_text(encoding="utf-8")
+    combined = f"{skill_text}\n{ledger_text}\n{plugin_skill_text}\n{plugin_ledger_text}"
+
+    assert "demands re-proof" not in combined
+    assert "Staleness is proof debt" not in combined
+    assert "`stale_candidate`" in combined
+    assert "`needs_adjudication`" in combined
+    assert "unresolved adjudication blocks" in combined
+    assert "stale candidate still has unresolved" in combined
+    assert "path diff alone is not a reproof result" in combined
+    assert "must not claim a re-proof plan" in combined
+    assert "as a proof result" in combined
+    for adjudication in [
+        "reproof_required",
+        "covered_by_tests",
+        "covered_by_newer_proof",
+        "narrow_surface",
+        "ledger_outdated",
+        "accepted_risk",
+        "deferred",
+    ]:
+        assert f"`{adjudication}`" in combined

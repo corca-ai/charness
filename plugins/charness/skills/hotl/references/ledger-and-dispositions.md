@@ -36,15 +36,28 @@ A status is a recorded decision, not a mood: "probably fine" is not a status.
 ## Staleness
 
 A `verified` entry is stale when any `proving_surface_refs` entry changed after
-`verified_at`. Staleness is proof debt, not noise:
+the proof's recorded source baseline. Staleness is a candidate signal, not
+automatic proof debt.
+Tooling may surface the entry as `stale_candidate` or `needs_adjudication`; the
+agent then decides whether the candidate is actual proof debt before requiring
+live re-proof.
 
-- re-prove against the new state, or
-- narrow the proving-surface refs when the change provably cannot affect the
-  proof, or
-- replace `verified` with an explicit disposition
+Use one of these adjudications:
 
-Pre-live and completion audits must treat unresolved staleness warnings as
-blocking: a stale `verified` must not anchor new live decisions.
+| Adjudication | Meaning |
+| --- | --- |
+| `reproof_required` | the change can affect the proven behavior, so the entry needs new proof before it anchors live decisions |
+| `covered_by_tests` | deterministic tests now cover the behavior within the acceptance class; record the command or artifact |
+| `covered_by_newer_proof` | a later proof artifact covers the same acceptance surface |
+| `narrow_surface` | the original refs were too broad; narrow them with evidence that the changed path cannot affect the proof |
+| `ledger_outdated` | the ledger points at obsolete refs or baseline data; correct the ledger rather than re-proving behavior |
+| `accepted_risk` | the operator accepts the stale candidate with owner, reason, decided-at, and revisit trigger |
+| `deferred` | the candidate is explicitly postponed with owner, reason, decided-at, and revisit trigger |
+
+Pre-live and completion audits block unresolved adjudication, not every stale
+candidate. A stale `verified` entry must not anchor new live decisions until the
+adjudication is recorded, and closeout language must not claim a re-proof plan
+as a proof result.
 
 ## Non-verified dispositions
 
@@ -75,9 +88,10 @@ safe next proof or implementation step.
 
 Before closing a goal, feature, or issue whose acceptance includes applied live
 behavior, audit the linked ledger entries: completion is blocked while any
-entry is neither `verified` nor explicitly dispositioned. When the adapter
-declares a completion-audit command, run it and record the result; without one,
-perform the audit manually against the ledger and record that it was manual.
+entry is neither `verified` nor explicitly dispositioned, or while stale-candidate
+adjudication is unresolved. When the adapter declares a completion-audit command,
+run it and record the result; without one, perform the audit manually against the
+ledger and record that it was manual.
 
 ## Ledger tooling ownership
 

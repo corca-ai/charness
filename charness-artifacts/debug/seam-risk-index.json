@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 68,
-  "indexed_artifact_count": 56,
+  "source_artifact_count": 69,
+  "indexed_artifact_count": 57,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 11,
+    "none": 12,
     "operator-visible-recovery": 18,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
     "monitor": 53,
-    "none": 1
+    "none": 2
   },
   "entries": [
     {
@@ -784,6 +784,20 @@
       ],
       "seam": "public skill bootstrap instructions for artifact-producing workflows",
       "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-17-issue-382-hotl-staleness-adjudication.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-382-hotl-staleness-adjudication",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "public skill export mirror",
+      "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
