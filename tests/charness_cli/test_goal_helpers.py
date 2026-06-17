@@ -26,6 +26,23 @@ def _write_discussion_goal(repo: Path) -> Path:
     return goal
 
 
+def _write_generic_draft_frame_goal(repo: Path) -> Path:
+    goal = repo / "charness-artifacts" / "goals" / "generic-draft-frame.md"
+    goal.parent.mkdir(parents=True, exist_ok=True)
+    goal.write_text(
+        "# Achieve Goal: Generic draft frame\n\n"
+        "Status: draft\n"
+        "Activation: `/goal @charness-artifacts/goals/generic-draft-frame.md`\n\n"
+        "## Active Operating Frame\n\n"
+        "- Current slice: before activation.\n"
+        "- Next action: activate with `/goal @charness-artifacts/goals/generic-draft-frame.md`.\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n\n"
+        "## Agent Verification Plan\n\nRun the suite; assert Z.\n",
+        encoding="utf-8",
+    )
+    return goal
+
+
 def test_goal_check_uses_stable_cli_surface_for_achieve_helper() -> None:
     result = run_cli(
         "goal",
@@ -112,6 +129,46 @@ def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> N
     assert "PURSUE_READY: no" in concise.stdout
     assert "REASON:" in concise.stdout
     assert "not marked resolved" in concise.stdout
+
+
+def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) -> None:
+    target_repo = tmp_path / "target"
+    target_goal = _write_generic_draft_frame_goal(target_repo)
+
+    json_result = run_cli(
+        "goal",
+        "check",
+        "--repo-root",
+        str(target_repo),
+        "--goal-path",
+        "charness-artifacts/goals/generic-draft-frame.md",
+        "--charness-checkout",
+        str(ROOT),
+        "--pursue-ready",
+        "--json",
+    )
+
+    assert json_result.returncode == 0, json_result.stderr
+    payload = json.loads(json_result.stdout)
+    assert payload["path"] == str(target_goal.resolve())
+    assert payload["draft_frame_disposition_present"] is False
+    assert "lacks lifecycle disposition" in payload["draft_frame_warning"]
+
+    concise = run_cli(
+        "goal",
+        "check",
+        "--repo-root",
+        str(target_repo),
+        "--goal-path",
+        "charness-artifacts/goals/generic-draft-frame.md",
+        "--charness-checkout",
+        str(ROOT),
+        "--pursue-ready",
+    )
+
+    assert concise.returncode == 0, concise.stderr
+    assert "PURSUE_READY: yes" in concise.stdout
+    assert "WARNING: draft Active Operating Frame lacks lifecycle disposition" in concise.stdout
 
 
 def test_goal_check_help_names_stable_helper_surface() -> None:

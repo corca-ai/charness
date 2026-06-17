@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 from pathlib import Path
 
 import pytest
+
+from scripts.adapter_lib import load_yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills/public/achieve/scripts"
@@ -20,6 +23,7 @@ def _load(name: str):
 
 policy = _load("achieve_adapter_policy")
 closeout = _load("goal_artifact_closeout_evidence")
+ADAPTER_CONTRACT = ROOT / "skills" / "public" / "achieve" / "references" / "adapter-contract.md"
 
 
 def _write(repo: Path, rel: str, text: str) -> Path:
@@ -78,6 +82,18 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
 
     adapter = policy.load_adapter(tmp_path)
     assert adapter["data"]["scaffold"]["draft_active_frame_lines"][0].startswith("- Current slice: real draft")
+
+
+def test_adapter_contract_yaml_documents_top_level_scaffold() -> None:
+    text = ADAPTER_CONTRACT.read_text(encoding="utf-8")
+    match = re.search(r"```yaml\n(.*?)\n```", text, re.DOTALL)
+    assert match is not None
+
+    data = load_yaml(match.group(1))
+
+    assert "scaffold" in data
+    assert "scaffold" not in data["auto_retro"]
+    assert data["scaffold"]["draft_active_frame_lines"][0].startswith("- Current slice: real draft")
 
 
 def test_scaffold_frame_lines_must_be_nonempty_and_not_headings(tmp_path: Path) -> None:

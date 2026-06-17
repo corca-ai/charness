@@ -31,12 +31,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: before activation.
-- Current slice intent: before activation. The reviewable-intent unit in progress
-  and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/<file>.md`.
+- Current slice: real draft/backlog awaiting activation.
+- Current slice intent: real draft/backlog awaiting activation; reshape before
+  activating if the acceptance boundary has changed. Once active, this names the
+  reviewable-intent unit in progress and the commits it spans; critique and broad
+  proof do not re-fire within one unchanged intent — update it when the intent
+  changes, not per commit (meaningful-slice-cadence).
+- Next action: activate with `/goal @charness-artifacts/goals/<file>.md` after
+  confirming the draft is still intended.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.

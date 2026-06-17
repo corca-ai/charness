@@ -39,6 +39,18 @@ def test_upsert_uses_adapter_draft_active_frame_lines_for_new_artifacts(tmp_path
     assert "Current slice: before activation." not in frame
 
 
+def test_default_scaffold_names_draft_lifecycle_disposition(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
+
+    text = gal.goal_path(tmp_path, "2026-05-27", "g").read_text(encoding="utf-8")
+    frame = text[text.index("## Active Operating Frame") : text.index("## Goal")]
+
+    assert "- Current slice: real draft/backlog awaiting activation." in frame
+    assert "reshape before\n  activating if the acceptance boundary has changed" in frame
+    assert "after confirming the draft is\n  still intended" in frame
+    assert "Current slice: before activation." not in frame
+
+
 def test_upsert_keeps_existing_adapter_scaffold_body_idempotent(tmp_path: Path) -> None:
     first = gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
     assert first["action"] == "created"

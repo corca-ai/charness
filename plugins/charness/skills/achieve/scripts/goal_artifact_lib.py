@@ -27,6 +27,7 @@ def _load_sibling(module_name: str):
 
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
+_draft_frame = _load_sibling("goal_artifact_draft_frame")
 _markdown = _load_sibling("goal_artifact_markdown")
 _metric_window = _load_sibling("goal_metric_window_lib")
 _policy = _load_sibling("achieve_adapter_policy")
@@ -276,8 +277,10 @@ def pursue_readiness(text: str) -> dict[str, Any]:
     auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
     rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
     """
-    placeholders = _UNSHAPED_MARKER.findall(_mask_fences(text))
+    masked = _mask_fences(text)
+    placeholders = _UNSHAPED_MARKER.findall(masked)
     discussion = discussion_readiness(text)
+    disposition = _draft_frame.draft_frame_disposition(text, status=read_status(text), masked=masked)
     shape_ready = not placeholders
     activation_ready = shape_ready and discussion["discussion_ready"]
     discussion_warning = (
@@ -309,6 +312,8 @@ def pursue_readiness(text: str) -> dict[str, Any]:
         "placeholder_count": len(placeholders),
         "reason": reason,
         "activation_discussion_warning": discussion_warning,
+        "draft_frame_disposition_present": disposition["present"],
+        "draft_frame_warning": disposition["warning"],
         **discussion,
     }
 

@@ -119,6 +119,33 @@ def test_pursue_readiness_passes_when_shaped() -> None:
     assert report["discussion_required"] is False
 
 
+def test_pursue_readiness_warns_on_generic_draft_frame() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## Active Operating Frame\n\n"
+        "- Current slice: before activation.\n"
+        "- Next action: activate with `/goal @x.md`.\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n\n"
+        "## Agent Verification Plan\n\nRun the suite; assert Z.\n"
+    )
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is True
+    assert report["draft_frame_disposition_present"] is False
+    assert "lacks lifecycle disposition" in report["draft_frame_warning"]
+
+
+def test_pursue_readiness_accepts_scaffolded_draft_frame(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
+    text = _goal_text(tmp_path)
+
+    report = gal.pursue_readiness(text)
+
+    assert report["draft_frame_disposition_present"] is True
+    assert report["draft_frame_warning"] == ""
+
+
 def test_pursue_readiness_blocks_hidden_consequential_decisions() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
