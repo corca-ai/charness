@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md`; sources: 45)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`; sources: 46)
 - Final verification-lock closeout no-oped on a clean worktree, so broad pytest had to be run directly. This is acceptable but worth remembering for clean bundle closeouts. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - The first #371 wording allowed a closure path without process/profile teardown proof; fresh-eye review caught it before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - The nose helper extraction initially missed one `hotl` optional-path call site. Focused adapter tests caught the miss, and a direct helper test now pins the shared API. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md`; sources: 45)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`; sources: 46)
 - Keep the #371 lesson visible: a healthcheck/reaper is drift mitigation unless the repo owns and proves the final lifecycle boundary. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - No new gate is needed. Existing fresh-eye review, focused tests, and slice closeout caught the issues before commit. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
 - When a final verification-lock closeout no-ops because the worktree is clean, run and record the broad pytest command directly rather than trying to force a fake diff. (source: `charness-artifacts/retro/2026-06-15-nose-issues-runtime-goal-retro.md`)
@@ -73,3 +73,4 @@
 - `charness-artifacts/retro/2026-06-16-v0-52-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-17-v0-52-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`
