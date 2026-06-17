@@ -18,9 +18,9 @@
   "languages": {
     "JSON": {
       "blanks": 0,
-      "code": 65466,
+      "code": 65591,
       "comments": 0,
-      "files": 265
+      "files": 267
     },
     "JavaScript": {
       "blanks": 230,
@@ -29,10 +29,10 @@
       "files": 14
     },
     "Markdown": {
-      "blanks": 29925,
+      "blanks": 29994,
       "code": 0,
-      "comments": 124751,
-      "files": 1506
+      "comments": 125004,
+      "files": 1511
     },
     "Plain Text": {
       "blanks": 53,
@@ -41,10 +41,10 @@
       "files": 13
     },
     "Python": {
-      "blanks": 34625,
-      "code": 215419,
+      "blanks": 34662,
+      "code": 215587,
       "comments": 4280,
-      "files": 1315
+      "files": 1317
     },
     "Shell": {
       "blanks": 272,
@@ -60,7 +60,7 @@
     },
     "YAML": {
       "blanks": 52,
-      "code": 1404,
+      "code": 1408,
       "comments": 284,
       "files": 42
     }
@@ -71,9 +71,9 @@
   "status": "ok",
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
-    "blanks": 65162,
-    "code": 287251,
-    "comments": 129757,
-    "files": 3176
+    "blanks": 65268,
+    "code": 287548,
+    "comments": 130010,
+    "files": 3185
   }
 }
