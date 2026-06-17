@@ -206,6 +206,32 @@ new artifact, not only the primary `achieve` template. The current producer
 contract is pinned by the authoring-repo-internal
 `tests/quality_gates/test_goal_artifact_producers.py`.
 
+## Remaining Boundary Matrix (conditional, before blocked)
+
+A goal adds a `## Remaining Boundary Matrix` section only when it flips to
+`blocked` — it is not seeded in every goal (like `## Closeout Delegation`, it is
+conditional). Each external/live proof lane the goal mentions is one line:
+
+```markdown
+## Remaining Boundary Matrix
+
+- Lane: github publish/PR/issue-close | classification: approval-required | next: operator approval to push
+- Lane: ceal-dev apply/restart | classification: preauthorized-runnable | next: repo preauthorized apply with --boundary-reason + readbacks
+- Lane: HOTL roundtrip proof | classification: dispositioned | next: deferred to next window — operator directed
+```
+
+Classification tokens: `runnable` / `preauthorized-runnable` / `approved` (the
+lane can still make progress under repo policy), `approval-required` /
+`read-only` / `blocked` (genuinely cannot proceed now), `verified` /
+`dispositioned` (already settled). `check_goal_artifact.py` and
+`upsert_goal.py --status blocked` enforce the floor in
+`goal_artifact_blocked_matrix.py`: the matrix must name ≥1 validly-classified
+lane, and **no lane may be self-classified runnable** — a runnable lane means the
+goal should stay `active` and continue it, not block the whole goal. The floor is
+presence + no-runnable-contradiction only (Created-date grandfathered); whether a
+lane is *truly* runnable is the agent's and the operator's call, not the floor's.
+See `references/lifecycle.md` *Remaining-boundary matrix before `blocked`*.
+
 ## Closeout Delegation (optional, orchestrated mode)
 
 A goal stays **standalone** by default — it owns all closeout proof itself and

@@ -335,6 +335,49 @@ the blocker or relevant context, cite the latest `Test duplication pressure`
 sample in the blocked record so the user and any resumed session inherit it
 instead of rediscovering it.
 
+### Remaining-boundary matrix before `blocked`
+
+`blocked` is a whole-goal status, not a per-lane one. One blocked boundary
+(GitHub publication awaiting approval) does not block a goal that still has a
+runnable lane (a repo-preauthorized `ceal-dev` apply/restart). Before flipping a
+goal to `blocked`, render a `## Remaining Boundary Matrix` that classifies
+**every** external/live proof lane the goal mentions — GitHub publication / PR /
+issue-close, repo-preauthorized apply/restart (with `--boundary-reason` and
+pre/post readbacks), Slack/provider writes, and each HOTL entry. One line per
+lane:
+
+```md
+## Remaining Boundary Matrix
+
+- Lane: github publish/PR/issue-close | classification: approval-required | next: operator approval to push
+- Lane: ceal-dev apply/restart | classification: preauthorized-runnable | next: run repo preauthorized apply with --boundary-reason + readbacks
+- Lane: HOTL roundtrip proof | classification: runnable | next: write HOTL proof packet, then verify
+```
+
+`runnable` / `preauthorized-runnable` / `approved` mean the lane can still make
+progress under repo policy; `approval-required` / `read-only` / `blocked` mean it
+genuinely cannot proceed now; `verified` / `dispositioned` mean it is already
+settled. This is the Operator Decision Queue rule ("stop only when the decision
+blocks **all** safe next slices") applied to the goal status: **if any lane is
+`runnable`, `preauthorized-runnable`, or `approved`, do not mark the whole goal
+blocked** — keep it `active` and continue that lane (include the lane's
+adapter/readiness next action). Only flip to `blocked` when every lane is
+approval-required, read-only, blocked, or already settled. A purely-local
+blocker with no external/live lanes still records the matrix with one self-lane
+(`- Lane: local work | classification: blocked | next: <local blocker>`) — the
+floor needs at least one classified lane so even a local stop names what it is
+stopping on.
+
+`upsert_goal.py --status blocked` enforces this as a deterministic floor: it
+refuses the flip unless the matrix is present and no lane is self-classified
+runnable (grandfathered by `Created` date, like the other floors;
+`check_goal_artifact.py` re-surfaces it post-flip). The floor is presence +
+no-runnable-contradiction only — it reads the agent's own honest classification;
+whether a lane is *truly* runnable is the agent's and the operator's call, not a
+word-list's. When the honest reason to stop is that a runnable lane is not worth
+continuing, classify it `dispositioned` with the reason rather than mislabeling
+it `blocked`.
+
 ### Slice-Boundary Continuation
 
 At every slice boundary, use the goal's own learning to pick the next slice

@@ -84,7 +84,7 @@ lifecycle instead of starting a new one.
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
-   - on blocker or `No safe next slice:` closeout, record reason and report artifacts
+   - before `blocked`, render the `## Remaining Boundary Matrix` classifying every external/live proof lane (lifecycle.md; `upsert_goal.py` refuses the flip if a lane is runnable); on blocker or `No safe next slice:` closeout, record reason and report artifacts
 3. After — prove and reflect.
    - **closeout preflight (describe-first):** before drafting closeout evidence,
      run `describe_goal_closeout_shape.py --goal-path <artifact>` for this goal's

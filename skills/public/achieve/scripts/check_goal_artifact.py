@@ -138,6 +138,12 @@ def main() -> int:
             + lines
             + "; use `HEAD` in the live command or mark the SHA as historical/proof-targeted"
         )
+    if result.get("status") == "blocked":
+        matrix_report = goal_lib.check_blocked_matrix(text)
+        result["blocked_matrix"] = matrix_report
+        if matrix_report.get("applies") and not matrix_report["ok"]:
+            result["ok"] = False
+            result["issues"].append("remaining-boundary-matrix floor — " + matrix_report["reason"])
     if result.get("status") == "complete":
         repo_root = args.repo_root.expanduser().resolve()
         evidence_report = goal_lib.check_complete_evidence(repo_root, text)

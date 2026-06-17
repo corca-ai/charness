@@ -25,6 +25,7 @@ def _load_sibling(module_name: str):
     return module
 
 
+_blocked_matrix = _load_sibling("goal_artifact_blocked_matrix")
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
 _draft_frame = _load_sibling("goal_artifact_draft_frame")
@@ -46,6 +47,7 @@ render_metric_window_line = _metric_window.render_metric_window_line
 record_metric_window = _metric_window.record_metric_window
 metric_window_attention = _metric_window.metric_window_attention
 check_timebox_closeout = _timebox.check_timebox_closeout
+check_blocked_matrix = _blocked_matrix.check
 _mask_fences = _markdown.mask_fences
 
 GOAL_DIR = "charness-artifacts/goals"
@@ -188,6 +190,10 @@ def upsert_goal(
                     "section_placeholder_summary": placeholder_summary,
                     "timebox_report": timebox_report,
                 }
+        if status == "blocked":
+            blocked_refusal = _blocked_matrix.flip_refusal(original, rel, read_status(original))
+            if blocked_refusal is not None:
+                return blocked_refusal
         updated = set_status(original, status)
         changed = updated != original
         if changed:
@@ -212,6 +218,14 @@ def upsert_goal(
         frame_lines=adapter["data"]["scaffold"]["draft_active_frame_lines"],
         goal_body=goal_body,
     )
+    if status == "blocked":
+        # Creating straight to `blocked` would bypass the flip gate, so a fresh
+        # goal could reach blocked-on-disk with no boundary matrix. Re-run the
+        # floor on the rendered body (no prior status) and refuse if unclean.
+        create_refusal = _blocked_matrix.flip_refusal(body, rel, None)
+        if create_refusal is not None:
+            create_refusal["status"] = "missing"
+            return create_refusal
     path.write_text(body, encoding="utf-8")
     return {"action": "created", "path": rel, "status": status}
 
