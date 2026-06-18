@@ -68,6 +68,23 @@ measurably without losing a boundary safeguard, the existing gate suite stays
 green, a fresh-eye reviewer confirms the change is framing (not a smuggled gate),
 and no terminal-green gate was added.
 
+**Design lens (added 2026-06-18 — *capabilities over features*, gathered).** Frame
+both tracks as capabilities-over-features, not subtraction: the target is maximum
+**orthogonal, composable, learnable-by-use** capability from a minimal surface —
+not fewer lines. Track 2's success metric is **learnability/discoverability** (can a
+fresh agent find the right capability by invoking it?), not line count. A candidate
+north-star addition this overhaul should weigh: an **orthogonality / "one obvious
+way" lens** for any new or existing gate/skill — *is this the Nth redundant way to
+do X, or is it orthogonal and composable?* (a judgment **lens, not a gate**: a
+non-orthogonal answer is a reason to *ask*, not a license to delete) — since
+non-orthogonal surface forces "which path?" overhead and wrong choices (the page's
+core critique; charness's own overlapping closeout paths are the symptom). The
+operator's breaking-change permission is what lets the overhaul *delete*
+non-orthogonal surface, not only slim prose — **except** a gate that guards an
+irreversible boundary, which is never deleted on non-orthogonality grounds alone
+(see Non-Goals and north-star P5). (Source:
+`../gather/2026-06-18-capabilities-over-features.md`.)
+
 ## Non-Goals
 
 - **No new deterministic gate, validator, or verdict token at any boundary.**
@@ -234,6 +251,10 @@ the originating context by following them in order.
 - Commit `6e795f61` (#386 fix, prose-only). Issues: #386 CLOSED (context only);
   #387 (closeout-validator UX) and #371 (browser teardown) OPEN, out of scope.
 - `docs/handoff.md` — Next Session pickup that routed here.
+- `charness-artifacts/gather/2026-06-18-capabilities-over-features.md` — the
+  *capabilities over features* page (orthogonality, composability,
+  learnability-by-use; "features are promises, removal is hard"); the positive
+  framing behind the Design lens above and Track 2's success metric.
 
 ## Interview Decisions
 
