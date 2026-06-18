@@ -13,57 +13,56 @@
 
 ## Current State
 
-- **Design north star landed + #386 shipped as v0.52.4** (published/verified;
-  [`design-north-star.md`](./design-north-star.md) governs, referenced from
-  `AGENTS.md`). #386 fixed by a Rung-2 distinct-observer/distinct-channel
-  disposition-review mandate, **no new gate**.
-- **Overhaul COMPLETE (Track 1a + Track 2 core), 2026-06-18** —
-  [`north-star-overhaul` goal](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
-  (S1–S6). **Track 1a:** the #386 per-unit behavioral-verdict framing is
-  generalized to every audited irreversible boundary (issue/PR close, release
-  publish, release-linked close, deletion), each citing P4 with a distinct
-  channel and **no new gate/token**. **Track 2:** standing surface shrank
-  (`retro` core 160→146 off the cap; Cautilus detail pulled from `AGENTS.md`).
-  Four slice critiques + a rung-2 disposition review PASS; broad pytest green.
-  Step-0 mechanism archived in
-  [`step0-experiment-program-archive`](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md).
-- **#371 remains open by design** — no close without controlled invocation-end
-  teardown proof (process tree + `agent-browser-chrome-*` dir) for completion,
-  cancellation, provider failure, and timeout.
-- Open issues (2026-06-18): #387 (closeout-validator one-pass UX — **not** the
-  overhaul pilot, the prior handoff mislabeled it), #371 (browser teardown).
-  #388 closed.
+- **v0.52.5 shipped + verified** (latest public release, install `== repo`).
+  Bundled the north-star overhaul (Track 1a per-unit verdict framing + Track 2
+  slim) **and** the #390 code-layer pass. `origin/main` is current — nothing
+  unpushed.
+- **#390 CLOSED** (one closeable pass): the nose clone advisory is now
+  **baselined** (547 accepted) so it reports only new/changed drift; the **14
+  genuine extractable families are held visible (not baselined)** and filed in
+  **#391**. Debug sweep (492 files) clean; doc↔code clean. Record:
+  [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md).
+  - **Baseline rule:** re-baseline (`--write-baseline`) only **after** surfaced
+    candidates are fixed, never blindly (else fixable debt is re-buried). The
+    held-out signatures live in the pass record.
+- Open issues: **#391** (code-layer dup follow-ups, sub of #390), **#387**
+  (closeout-validator one-pass UX), **#371** (browser teardown — own track, no
+  close without invocation-end teardown proof).
 
 ## Next Session
 
-- **Primary spin-out: the remaining-13-capped-skill-body SRP sweep** (Track-2
-  follow-up the overhaul sized). 14 public SKILL.md bodies sit within ~8 core
-  lines of the 160-core cap (retro is now off it); compress each by own-concept
-  separation like the retro S5 pilot. **Pre-check each body first** (overhaul
-  retro lesson): grep `check_skill_contracts.py` for pinned snippets + run
-  `check_skill_surface_preflight.py` for core-headroom BEFORE editing, and run the
-  **broad** `pytest -q` at the bundle boundary (the per-slice `run_evals` subset
-  misses some pinned-phrase tests).
-- **Deferred: the `AGENTS.md` Skill-Routing duplication** — it duplicates Start
-  Here, but `## Skill Routing` is a setup-generated surface pinned by
-  `setup/scripts/render_skill_routing.py` (collapsing it flips `charness doctor`
-  `repo_onboarding`); a real collapse needs a lockstep change.
-- **External side effects deferred:** the overhaul pushed nothing. Pending local
-  commits include the overhaul series + the older Step-0 archive `4da92874` /
-  `8a92985f`; a push is a separate explicit operator decision.
-- #371 stays on its own track. #387 (closeout-validator one-pass UX) is unrelated
-  to the overhaul. Older deferrals: D28/D29 in
-  [deferred decisions](./deferred-decisions.md).
+- **A. Bootstrap-duplication justification (operator-requested, NEW).** #390
+  *assumed* the resolve_adapter/init_adapter/skill_runtime_bootstrap copies are
+  intentional portability boilerplate. **Verify that's really justified** — is
+  the local-dup-for-package-independence trade still right, or should it
+  consolidate to a shared bootstrap? This is the deepest residual the #390
+  verification flagged. Reference **`../crkaen-agents`** (confirm the path;
+  possible typo for `craken`).
+- **B. Gate reduction (operator-requested, NEW).** Go beyond "don't add gates"
+  to examine whether **existing** gates can be **removed** (the ~34.7K-line gate
+  surface). "Less but better" applied to the gate layer itself. Reference
+  `../crkaen-agents`.
+- **C. SRP sweep (original primary).** Remaining capped-skill-body compression by
+  own-concept separation. Pre-check each body: grep `check_skill_contracts.py`
+  for pinned snippets + run `check_skill_surface_preflight.py` for core-headroom
+  BEFORE editing; run the **broad** `pytest -q` at the bundle boundary.
+- **D. #391 extractions** (subprocess-timeout wrapper — a non-release session;
+  scaffold/adapter-lib classification) + the baseline `tool_version` stamp.
 
 ## Discuss
 
+- A vs the portability model: consolidate bootstrap, or keep the deliberate copy?
+- B: which existing gates are prunable without losing the teeth that matter?
+- What `../crkaen-agents` is and how to use it as working context (route via
+  `gather` if it's an external source).
 - Who owns the #371 upstream lifecycle proof path.
 
 ## References
 
-- [north-star overhaul goal (COMPLETE — S1–S6)](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
-- [Step 0 experiment program archive — RESOLVED](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md)
-- [overhaul plan v2 (Track 1a now LIGHT)](../charness-artifacts/critique/2026-06-18-overhaul-plan-v2.md)
-- [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [quality latest](../charness-artifacts/quality/latest.md)
-- [release latest](../charness-artifacts/release/latest.md)
+- [release latest](../charness-artifacts/release/latest.md),
+  [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md),
+  [session retro](../charness-artifacts/retro/2026-06-19-390-code-layer-pass-retro.md)
+- [design north star](./design-north-star.md),
+  [capabilities over features](../charness-artifacts/gather/2026-06-18-capabilities-over-features.md)
+- [recent lessons](../charness-artifacts/retro/recent-lessons.md),
+  [deferred decisions](./deferred-decisions.md)
