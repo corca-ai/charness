@@ -93,4 +93,6 @@ def test_default_mode_returns_zero_with_advisory_text(tmp_path: Path) -> None:
     result = run_script(SCRIPT, str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    assert "title-slug drift" in result.stdout
+    # The WARN: prefix is what run-quality.sh:294 surfaces non-blocking, so the
+    # advisory posture is visible even though the gate no longer exits 1.
+    assert "WARN: title-slug drift" in result.stdout

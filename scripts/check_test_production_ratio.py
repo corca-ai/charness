@@ -143,6 +143,17 @@ def main() -> int:
     parser.add_argument("--engine", choices=SUPPORTED_ENGINES, default="splitlines")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-git-file-listing", action="store_true")
+    parser.add_argument(
+        "--advisory",
+        action="store_true",
+        help=(
+            "report an over-threshold ratio as a non-blocking WARN posture instead of "
+            "failing. A test/production LOC ratio is a smell sensor, not an "
+            "irreversible-boundary contract (north-star P1); a hard cap pressures "
+            "AGAINST writing tests as the ratio approaches it. The posture stays "
+            "visible; judgment owns the split-vs-bloat call."
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -163,7 +174,11 @@ def main() -> int:
             f"engine={summary['engine']}, max {args.max_ratio:.2f})"
         )
     if float(summary["ratio"]) > args.max_ratio:
-        raise RatioError(f"test-production ratio {summary['ratio']:.2f} exceeds max {args.max_ratio:.2f}")
+        message = f"test-production ratio {summary['ratio']:.2f} exceeds max {args.max_ratio:.2f}"
+        if args.advisory:
+            print(f"WARN: {message} (advisory posture; not blocking)")
+            return 0
+        raise RatioError(message)
     return 0
 
 

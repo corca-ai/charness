@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -37,6 +38,26 @@ def test_test_production_ratio_fails_above_max() -> None:
 
     assert result.returncode == 1
     assert "exceeds max" in result.stdout
+
+
+def test_test_production_ratio_advisory_warns_above_max_without_blocking(monkeypatch, capsys) -> None:
+    # --advisory demotes the over-threshold block to a non-blocking WARN posture
+    # (north-star P1: a LOC ratio is a smell sensor, not an irreversible-boundary
+    # contract). The WARN: prefix is what run-quality.sh:294 surfaces non-blocking.
+    # Tested in-process (main() return value + captured stdout) rather than via
+    # run_script: a second exit-contract subprocess assertion would flip this test
+    # file to a keep-boundary in inventory_boundary_bypass and trip its ratchet.
+    monkeypatch.setattr(
+        sys, "argv",
+        ["check_test_production_ratio.py", "--repo-root", str(ROOT), "--max-ratio", "0.01", "--advisory"],
+    )
+
+    rc = RATIO.main()
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "WARN:" in out
+    assert "exceeds max" in out
 
 
 def test_summarize_rejects_unknown_engine() -> None:

@@ -427,7 +427,7 @@ queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root 
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
-queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py --strict
+queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 flush_phase || OVERALL_RC=$?
 
@@ -474,7 +474,7 @@ fi
 CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
 queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
-queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"

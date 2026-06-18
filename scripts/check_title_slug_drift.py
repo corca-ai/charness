@@ -125,7 +125,12 @@ def main() -> int:
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     else:
         if drift:
-            print(f"title-slug drift in {len(drift)} of {len(paths)} files:")
+            # Non-strict is the advisory posture (north-star P1: a rename-residue
+            # heuristic over reversible in-session docs). The WARN: prefix is what
+            # run-quality.sh:294 surfaces non-blocking; strict keeps the plain line
+            # and exits 1 (the output is surfaced by the fail path anyway).
+            prefix = "" if args.strict else "WARN: "
+            print(f"{prefix}title-slug drift in {len(drift)} of {len(paths)} files:")
             for entry in drift:
                 print(f"  - {entry['path']}: title={entry['title']!r} slug_words={entry['slug_words']}")
         else:

@@ -67,7 +67,9 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         # an unclassified broad-only check. Flips only on these two files.
         gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
     if any(path.endswith(".md") for path in paths):
-        gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py", "--strict"))
+        # Advisory posture (north-star P1): non-strict surfaces a WARN line that
+        # run-quality.sh surfaces non-blocking; it no longer blocks the commit.
+        gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py"))
     if any(path == "docs/handoff.md" for path in paths):
         # ~0.1s, validates exactly the staged file. A goal-closeout commit once
         # emptied a required handoff section AFTER the session's final broad
