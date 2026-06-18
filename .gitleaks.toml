@@ -12,4 +12,7 @@ paths = [
   '''(^|/)\.lycheecache$''',
   '''(^|/)skill-outputs/''',
   '''(^|/)package-lock\.json$''',
+  # Generated nose clone-family baseline: family `key`s are content-hash
+  # fingerprints (16-hex), not secrets, but trip the generic-api-key rule.
+  '''(^|/)charness-artifacts/quality/nose-baseline\.json$''',
 ]

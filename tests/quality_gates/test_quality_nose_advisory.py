@@ -289,6 +289,140 @@ def test_nose_advisory_emits_interpretation_self_declaration(tmp_path: Path) -> 
     assert "intentional" in result.stdout  # the load-bearing blind spot
 
 
+def test_nose_advisory_passes_baseline_to_nose(tmp_path: Path) -> None:
+    # A baseline accepts the codebase's intentional/portability families so the
+    # advisory surfaces only NEW/changed duplication (drift), preserving
+    # divergence detection that a hard --exclude would blind.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_nose = bin_dir / "nose"
+    fake_nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import json
+            import sys
+
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert args[args.index("--baseline") + 1] == "charness-artifacts/quality/nose-baseline.json"
+            assert "--write-baseline" not in args
+            print(json.dumps({"schema_version": 1, "tool_version": "0.10.0", "families": []}))
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_nose.chmod(0o755)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--baseline",
+            "charness-artifacts/quality/nose-baseline.json",
+            "--json",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""},
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["status"] == "clean"
+    assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
+
+
+def test_nose_advisory_defaults_baseline_when_present(tmp_path: Path) -> None:
+    # When the canonical baseline exists in the repo, the standing advisory reads
+    # it by default — no flag needed — so de-noising "sticks".
+    baseline = tmp_path / "charness-artifacts" / "quality" / "nose-baseline.json"
+    baseline.parent.mkdir(parents=True)
+    baseline.write_text("[]", encoding="utf-8")
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_nose = bin_dir / "nose"
+    fake_nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import json
+            import sys
+
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert args[args.index("--baseline") + 1] == "charness-artifacts/quality/nose-baseline.json"
+            print(json.dumps({"schema_version": 1, "tool_version": "0.10.0", "families": []}))
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_nose.chmod(0o755)
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path), "--json"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""},
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
+
+
+def test_nose_advisory_write_baseline_omits_top_and_format(tmp_path: Path) -> None:
+    # Writing a baseline must record EVERY family, so --top (which truncates the
+    # report to the top N) must NOT be passed — otherwise only N families are
+    # accepted and the remainder re-flag forever.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_nose = bin_dir / "nose"
+    fake_nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            assert "--write-baseline" in args
+            assert args[args.index("--baseline") + 1] == "charness-artifacts/quality/nose-baseline.json"
+            assert "--top" not in args
+            assert "--format" not in args
+            print("nose: wrote baseline of 3 families to charness-artifacts/quality/nose-baseline.json")
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_nose.chmod(0o755)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--write-baseline",
+            "--json",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""},
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["status"] == "baseline-written"
+    assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
+
+
 def test_nose_advisory_parses_v05_object_schema(tmp_path: Path) -> None:
     # nose 0.5 wraps families in a top-level object with tool_version; reading it
     # as a bare 0.4 array silently reported zero families. Lock the new shape in.

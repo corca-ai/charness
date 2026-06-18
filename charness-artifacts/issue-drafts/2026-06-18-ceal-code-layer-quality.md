@@ -7,6 +7,29 @@ B2 one-pass closeability — both folded before filing).
 Audience: an autonomous runner (ceal) that can make valuable, independent
 progress **before** the north-star overhaul completes.
 
+## Re-scope (2026-06-19) — overhaul now COMPLETE
+
+The north-star overhaul this issue ran *alongside* completed 2026-06-18 (S1–S6;
+`charness-artifacts/goals/2026-06-18-north-star-overhaul.md`). That moots the
+original "before / while the overhaul is in flight" rationale and the
+**concurrent-edit** basis of the hard collision guard below. The pass is now a
+**standalone post-overhaul code-layer quality pass**, with one reframing and no
+scope expansion:
+
+- **Scope unchanged — still code-layer only** (`scripts/`, `skills/**/scripts/`,
+  gate/validator code). Cut duplication + latent defects, test-first, **one
+  pass**, file the rest as sub-issues.
+- **The collision guard is now lane discipline, not collision avoidance.** Prose
+  surfaces (`AGENTS.md`, `CLAUDE.md`, `docs/design-north-star.md`, skill
+  **bodies**, closeout / gate-framing prose) stay out of scope because they
+  belong to the **prose tracks** — chiefly the still-pending capped-skill-body
+  SRP sweep (handoff "Primary spin-out"), which owns skill-body edits. If a code
+  change forces a prose change, **file a sub-issue** (unchanged).
+- **Net:** same files in / out of scope; only the *reason* for the prose
+  boundary changes from "don't collide with an active editor" to "that's another
+  track's lane." This session runs the pass interactively (not via ceal), at the
+  operator's direction.
+
 ---
 
 ## Title

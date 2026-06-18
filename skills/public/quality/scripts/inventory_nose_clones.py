@@ -6,11 +6,25 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import runpy
 import shlex
 import shutil
-import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+_SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+nose_baseline = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_baseline_lib")
+nose_report = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
+DEFAULT_BASELINE_REL = nose_baseline.DEFAULT_BASELINE_REL
 
 DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
 # nose 0.5 makes --mode REPLACE the default channels (syntax,semantic) rather
@@ -18,7 +32,6 @@ DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
 # syntax+semantic+near is a superset of the 0.5 default, so this requests
 # strictly more coverage, never less — no silent channel drop under 0.5.
 DEFAULT_MODE = "syntax,semantic,near"
-NOSE_TIMEOUT_SECONDS = 180
 
 
 def _portable_path(repo_root: Path, path: Path) -> str:
@@ -45,6 +58,8 @@ def build_command(
     sort: str,
     exclude: list[str] | None = None,
     ignore_file: str | None = None,
+    baseline: str | None = None,
+    write_baseline: bool = False,
 ) -> list[str]:
     command = [
         nose_bin,
@@ -54,134 +69,23 @@ def build_command(
         mode,
         "--min-size",
         str(min_size),
-        "--sort",
-        sort,
-        "--top",
-        str(top),
     ]
+    # --write-baseline records EVERY family; --top would truncate the report to
+    # the top N and so accept only N families, leaving the rest to re-flag. Keep
+    # ranking/limit/format off the write path.
+    if not write_baseline:
+        command.extend(["--sort", sort, "--top", str(top)])
     for pattern in exclude or []:
         command.extend(["--exclude", pattern])
     if ignore_file:
         command.extend(["--ignore-file", ignore_file])
-    command.extend(["--format", "json"])
-    return command
-
-
-def _family_summary(family: dict[str, Any]) -> dict[str, Any]:
-    locations = family.get("locations", [])
-    files = []
-    if isinstance(locations, list):
-        for location in locations[:6]:
-            if not isinstance(location, dict):
-                continue
-            file = location.get("file")
-            if not isinstance(file, str):
-                continue
-            start = location.get("start_line")
-            end = location.get("end_line")
-            files.append(
-                {
-                    "file": file,
-                    "start_line": start,
-                    "end_line": end,
-                    "name": location.get("name"),
-                    "kind": location.get("kind"),
-                }
-            )
-    return {
-        "value": family.get("value"),
-        "members": family.get("members"),
-        "files": family.get("files"),
-        "modules": family.get("modules"),
-        "languages": family.get("languages"),
-        "mean_score": family.get("mean_score"),
-        "dup_lines": family.get("dup_lines"),
-        "shared_lines": family.get("shared_lines"),
-        "params": family.get("params"),
-        "sample_locations": files,
-    }
-
-
-def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=NOSE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "status": "error",
-            "exit_code": 124,
-            "stdout": str(exc.stdout or ""),
-            "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s",
-            "families": [],
-            "tool_version": "",
-        }
-    try:
-        parsed = json.loads(completed.stdout) if completed.stdout.strip() else []
-    except json.JSONDecodeError as exc:
-        return {
-            "status": "error",
-            "exit_code": completed.returncode,
-            "stdout": completed.stdout,
-            "stderr": f"nose emitted invalid JSON: {exc}; stderr: {completed.stderr.strip()}",
-            "families": [],
-            "tool_version": "",
-        }
-    families, tool_version, scope, ranking = _extract_report(parsed)
-    status = "findings" if families else "clean"
-    if completed.returncode != 0:
-        status = "error"
-    return {
-        "status": status,
-        "exit_code": completed.returncode,
-        "stdout": "",
-        "stderr": completed.stderr.strip(),
-        "families": families,
-        "tool_version": tool_version,
-        "scope": scope,
-        "ranking": ranking,
-    }
-
-
-def _extract_report(parsed: Any) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, Any]]:
-    """Return report fields across nose 0.4 and 0.5+ JSON shapes.
-
-    nose 0.5 emits a top-level object ({"families": [...], "tool_version": ...});
-    nose 0.4 emitted a bare top-level array. Reading the 0.5 object as a list
-    silently yielded zero families, under-reporting the live scan.
-    """
-    if isinstance(parsed, dict):
-        families = parsed.get("families")
-        tool_version = str(parsed.get("tool_version") or "")
-        scope = parsed.get("scope")
-        ranking = parsed.get("ranking")
-    elif isinstance(parsed, list):
-        families = parsed
-        tool_version = ""
-        scope = {}
-        ranking = {}
+    if baseline:
+        command.extend(["--baseline", baseline])
+    if write_baseline:
+        command.append("--write-baseline")
     else:
-        families = []
-        tool_version = ""
-        scope = {}
-        ranking = {}
-    if not isinstance(families, list):
-        families = []
-    if not isinstance(scope, dict):
-        scope = {}
-    if not isinstance(ranking, dict):
-        ranking = {}
-    return [family for family in families if isinstance(family, dict)], tool_version, scope, ranking
-
-
-def _extract_families(parsed: Any) -> tuple[list[dict[str, Any]], str]:
-    families, tool_version, _scope, _ranking = _extract_report(parsed)
-    return families, tool_version
+        command.extend(["--format", "json"])
+    return command
 
 
 # Advisory interpretation contract (see skills/shared/references/
@@ -207,6 +111,9 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
     roots = [str(path) for path in (args.path or DEFAULT_PATHS)]
     excludes = list(args.exclude or [])
     ignore_file = args.ignore_file
+    baseline = nose_baseline.resolve_baseline(
+        write_baseline=args.write_baseline, baseline=args.baseline, repo_root=repo_root
+    )
     nose_bin = resolve_nose_bin()
     if nose_bin is None:
         return {
@@ -216,6 +123,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "paths": roots,
             "excludes": excludes,
             "ignore_file": ignore_file,
+            "baseline": baseline,
             "scope": {},
             "ranking": {},
             "tool_version": "",
@@ -226,6 +134,20 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
                 "Document near-copy detection remains covered by check_doc_near_duplicates.py.",
             ],
         }
+    if args.write_baseline:
+        command = build_command(
+            nose_bin,
+            roots,
+            mode=args.mode,
+            min_size=args.min_size,
+            top=args.top,
+            sort=args.sort,
+            exclude=excludes,
+            ignore_file=ignore_file,
+            baseline=baseline,
+            write_baseline=True,
+        )
+        return nose_baseline.write_baseline_payload(repo_root, command, baseline, roots)
     command = build_command(
         nose_bin,
         roots,
@@ -235,8 +157,9 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         sort=args.sort,
         exclude=excludes,
         ignore_file=ignore_file,
+        baseline=baseline,
     )
-    result = run_nose(repo_root, command)
+    result = nose_report.run_nose(repo_root, command)
     families = result["families"]
     return {
         "status": result["status"],
@@ -245,6 +168,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "paths": roots,
         "excludes": excludes,
         "ignore_file": ignore_file,
+        "baseline": baseline,
         "scope": result.get("scope", {}),
         "ranking": result.get("ranking", {}),
         "command": shlex.join(command),
@@ -252,7 +176,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "tool_version": result.get("tool_version", ""),
         "family_count": len(families),
         "total_dup_lines": sum(int(family.get("dup_lines") or 0) for family in families if isinstance(family, dict)),
-        "families": [_family_summary(family) for family in families if isinstance(family, dict)],
+        "families": [nose_report.family_summary(family) for family in families if isinstance(family, dict)],
         "stderr": result["stderr"],
         "interpretation": dict(INTERPRETATION),
         "notes": [
@@ -272,6 +196,9 @@ def print_human(payload: dict[str, Any]) -> None:
     if status == "error":
         print(f"ADVISORY: nose inventory error; review manually. {payload.get('stderr', '')}")
         return
+    if status == "baseline-written":
+        print(f"nose baseline written: {payload.get('baseline')}. {payload.get('stdout', '')}".strip())
+        return
     version_label = payload.get("tool_version") or "unknown"
     print(
         f"nose clone advisory (nose {version_label}): {status}; {payload['family_count']} families, "
@@ -283,6 +210,12 @@ def print_human(payload: dict[str, Any]) -> None:
         shown_families = ranking.get("shown_families")
         if isinstance(total_families, int) and isinstance(shown_families, int) and total_families != shown_families:
             print(f"RANKING: showing {shown_families} of {total_families} ranked families.")
+    baseline = payload.get("baseline")
+    if baseline:
+        print(
+            f"BASELINE: active ({baseline}); reporting only new/changed families (drift). "
+            "Accepted families are intentional/portability boilerplate; re-baseline per scanner version with --write-baseline."
+        )
     excludes = payload.get("excludes")
     ignore_file = payload.get("ignore_file")
     if excludes or ignore_file:
@@ -325,6 +258,8 @@ def main() -> int:
     parser.add_argument("--min-tokens", dest="min_size", type=int, help=argparse.SUPPRESS)
     parser.add_argument("--top", type=int, default=20)
     parser.add_argument("--sort", default="extractability", choices=("extractability", "value", "sites"))
+    parser.add_argument("--baseline", help=f"Accepted-baseline file (repo-relative) of already-recorded families; only new/changed are reported. Defaults to {DEFAULT_BASELINE_REL} when it exists.")
+    parser.add_argument("--write-baseline", action="store_true", help="Write current families to the baseline and exit (accept today's state); re-baseline per scanner version.")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
