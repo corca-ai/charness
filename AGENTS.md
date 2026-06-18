@@ -8,7 +8,7 @@
 - Always call `charness:find-skills` once at the start of each task-oriented session; use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map, and keep task-specific recommendation probes read-only unless deliberately refreshing the canonical inventory.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
 - Route external URLs or source links that should become repo working context through `gather` before summarizing, implementing, or deciding from them.
-- Cautilus is eval-only per corca-ai/cautilus#32: `cautilus evaluate fixture`, `cautilus evaluate observation`, and `cautilus evaluate skill-experiment` are the supported surfaces (cautilus 0.15.4 renamed the legacy `eval test/evaluate` topic; `skill-experiment` is the subagent-spawning skill-clone evaluator). Do not invoke claim discovery, optimize, review-learning, `evaluate live`, or broader Agent orchestration; deterministic gates still own closeout when no eval is requested. Before invoking any `cautilus evaluate ...` subcommand, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and refuse the call when `next_action: "none"`, or when `must_ask_before_running: true` without a named failing-log path. Use `python3 scripts/run_cautilus_eval.py` (the repo-owned wrapper) instead of bare `cautilus evaluate`; the planner-consult contract lives in [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
+- Cautilus is eval-only and ask-before-run: before any `cautilus evaluate ...`, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and refuse on `next_action: "none"` (or `must_ask_before_running` without a named failing-log path); use the repo wrapper `python3 scripts/run_cautilus_eval.py`, never bare `cautilus evaluate`. Full eval-only/disabled-surface contract: [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
 - Read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md) before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts.
 - Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.
 - Prefer validators and scripts over prose rituals; leave structured state when a tool cannot finish end-to-end.
@@ -16,19 +16,7 @@
 
 ## Skill Routing
 
-At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration.
-
-Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.
-
-When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use; recommendation-shaped probes are read-only by default, while plain inventory refreshes own `charness-artifacts/find-skills/latest.*`.
-
-After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.
-
-External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
-
-Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.
-
-Keep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.
+The `find-skills` bootstrap (Start Here) is the routing map. When a request names a workflow or capability noun (worktree, browser automation, specdown, validation), ask `find-skills` to recommend a route before ad hoc shell or tool use; recommendation probes are read-only, while a plain inventory refresh owns `charness-artifacts/find-skills/latest.*`. Otherwise pick the durable work skill that best matches. Detailed routing belongs in `find-skills` output, not a long checked-in catalog.
 
 ## Subagent Delegation
 

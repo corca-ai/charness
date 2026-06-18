@@ -132,40 +132,24 @@ The result should usually include:
 
 ## Auto-Retro Trigger
 
-- Trigger a short `session` retro automatically when a user correction exposes a
-  real miss in the workflow, not just a preference difference.
-- Also trigger a short `session` retro after slice closeout when
-  `$SKILL_DIR/scripts/check_auto_trigger.py` reports `triggered: true` for the current
-  repo (for example via `python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .`).
-  Keep this bounded to the configured repeat-trap seam rather than turning
-  every slice into a postmortem.
-- Treat valid examples such as:
-  - missing local enforcement that the agent claimed existed
-  - a wrong ownership or source-of-truth assumption
-  - a broken or missing gate that should have been checked
-  - a fresh-eye reader misread an invariant that is present in the code, revealing that the invariant still relies on convention rather than declaration
-  - install/update/support/export/discovery slices that match the adapter's
-    `auto_session_trigger_surfaces` or `auto_session_trigger_path_globs`
-- Do not trigger the full retro flow for:
-  - wording preferences
-  - open product tradeoffs the agent already marked as unresolved
-  - minor factual slips that do not reveal a workflow or guardrail gap
-- The retro may stay inline and short, but it must still include `Persisted`.
+Trigger a short `session` retro automatically when a user correction exposes a
+real miss in the workflow, not just a preference difference. Also trigger after
+slice closeout when
+`python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .` reports
+`triggered: true` (or the slice matches the adapter's
+`auto_session_trigger_surfaces` / `auto_session_trigger_path_globs`). Keep it
+bounded to the revealed miss rather than a postmortem; it may stay inline but
+must still include `Persisted`. The full trigger/skip taxonomy and examples live
+in `references/trigger-and-persistence.md`.
 
 ## Expert Counterfactual Rule
 
-- Every retro must include at least one counterfactual lens.
-- Prefer named experts only when the name sharpens a different changed action,
-  constraint, or question.
-- When the core miss is decision quality under uncertainty, Gary Klein +
-  Daniel Kahneman is a reasonable pair unless a more domain-specific lens fits
-  better.
-- If sub-agents are available and the session warrants depth, use up to two
-  named-expert sub-agents with clearly different lenses.
-- If sub-agents are unavailable, too expensive for the session weight, or
-  names add little, write the counterfactuals inline without forcing personas.
-- Do not use expert names as decoration. Each expert must produce a different
-  changed action, constraint, or question.
+Every retro includes at least one counterfactual lens. Use named experts only
+when the name sharpens a *different* changed action, constraint, or question
+(never decoration); when sub-agents are available and the session warrants
+depth, up to two distinct-lens expert sub-agents, otherwise write the
+counterfactuals inline. The lens patterns, named-expert examples, and sub-agent
+flow live in `references/expert-lens.md`.
 
 ## Guardrails
 
