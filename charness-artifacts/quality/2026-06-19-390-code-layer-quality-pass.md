@@ -17,8 +17,11 @@ tracks' lane): all prose surfaces.
   1. **Portability bootstrap boilerplate** — `resolve_adapter.py`,
      `init_adapter.py`, `_load_skill_runtime_bootstrap()`, `_RESOLVER_DIR`
      patterns. Deliberately copied so each skill package ships standalone;
-     identity is already machine-governed by `validate_adapters.py`. Extracting
-     breaks portability.
+     identity is already machine-governed by
+     `check_bootstrap_shim_consistency.py` (a canonical-source `--fix`
+     generator). Extracting breaks portability. **(Two facts here were corrected
+     and the assumption verified — see "Item A follow-up" at the end of this
+     record.)**
   2. **Idiomatic CLI entrypoint guards** — `if __name__ == "__main__": try:
      sys.exit(main()) except XError`. Different exception class each; extracting
      obscures the idiom and adds a "which helper" indirection.
@@ -121,3 +124,38 @@ portability-vs-local-duplication trade the architecture makes on purpose; the
 baseline now encodes that decision as data instead of re-litigating it each run.
 Per #390's "Done (landed **or** filed)", the pass is closeable: safest landing
 shipped test-first, genuine remainder filed.
+
+## Item A follow-up — bootstrap-duplication assumption verified (2026-06-19)
+
+Operator-requested verification of the "intentional, do-not-extract" call above
+(handoff Next Session item A). Outcome: **the copy is justified — keep it — but
+two facts in this record were wrong, and one real improvement was landed.**
+
+- **Governance owner correction.** Identity is governed by
+  `scripts/check_bootstrap_shim_consistency.py` (AST-asserts every
+  `_load_skill_runtime_bootstrap` copy byte-equals a single `CANONICAL_SHIM`
+  literal; `--fix` propagates from that one source), **not** `validate_adapters.py`
+  (which only runs each resolver and checks its JSON output — behavioral
+  conformance, not copy identity).
+- **The heavy logic is already shared.** Only a ~5-line *finder shim* is
+  duplicated per package; `scripts/runtime_bootstrap.py` +
+  `scripts/skill_runtime_bootstrap.py` are single shared modules at the plugin
+  root. So "do-not-extract" applies to the finder, not to thousands of lines.
+- **The real defect was idiom drift, not the copy.** Three finders did the same
+  job, only one governed: `_load_skill_runtime_bootstrap` (76 files, governed) +
+  `_load_runtime_bootstrap` against the lower-level `runtime_bootstrap.py` (5
+  files, ungoverned) + inline `_BOOTSTRAP_ROOT` + `import skill_runtime_bootstrap`
+  (11 `init_adapter.py`, ungoverned). **Landed:** all 16 ungoverned variants
+  converged onto the canonical shim, so `check_bootstrap_shim_consistency.py` now
+  governs every copy — 93 governed shim sites across source + plugin mirror, 0
+  drift (92 in the `skills/public` source tree). Verified: ruff clean,
+  `validate_adapters`
+  (17 resolvers) green, all 16 converted files smoke-load their bootstrap, plugin
+  mirror re-synced.
+- **Consolidation to a single shared import was rejected:** it would break the
+  bare-shell invocation contract (`bootstrap-resolution.md`), the no-cross-skill
+  import rule (`check_export_safe_imports.py`), and the planned `packages/` split
+  (`docs/host-packaging.md`). craken-agents' shared-core DRY is the norm for a
+  single bundled app, but charness ships standalone portable plugins — the copy
+  is the price of that, and is correct. See
+  `charness-artifacts/gather/2026-06-19-craken-agents-gate-bootstrap-study.md`.

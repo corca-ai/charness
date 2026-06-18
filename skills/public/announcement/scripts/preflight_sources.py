@@ -2,28 +2,21 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
-def _load_runtime_bootstrap():
-    script_path = Path(__file__).resolve()
-    for ancestor in script_path.parents:
-        candidate = ancestor / "runtime_bootstrap.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("runtime_bootstrap", candidate)
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            sys.modules.setdefault(spec.name, module)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("runtime_bootstrap.py not found")
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
-arm_cli_timeout = _load_runtime_bootstrap().arm_cli_timeout
+arm_cli_timeout = _load_skill_runtime_bootstrap().arm_cli_timeout
 
 
 def _repo_root() -> Path:
