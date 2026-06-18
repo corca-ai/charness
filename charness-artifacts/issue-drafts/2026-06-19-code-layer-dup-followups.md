@@ -32,6 +32,15 @@ they are open (which would re-accept them).
    `achieve_adapter_policy.py`, `cautilus_adapter_lib.py`. Classify intentional-
    adapter-boilerplate vs genuinely shareable before acting.
 
+## Baseline robustness gap (from the 0.52.5 release critique)
+
+The written `nose-baseline.json` records **no scanner `tool_version`**, yet the
+contract repeatedly says "re-baseline per scanner version." So a future `nose`
+upgrade silently reads a stale baseline with no version-mismatch detection — the
+exact trap the prose warns about, unenforced. Fix: have `--write-baseline` stamp
+the `nose` version into the baseline (or a sidecar) and have the read path warn on
+mismatch. Small, real robustness fix; deferred from the release as a follow-up.
+
 ## Discipline
 
 Each is `mutate → sync → verify → publish`, test-first, fresh-eye critique at the
