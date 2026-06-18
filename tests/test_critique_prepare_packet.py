@@ -19,7 +19,6 @@ from scripts.critique_packet_lib import (
     write_packet,
 )
 from scripts.surfaces_lib import collect_changed_paths_for_ref
-from scripts.validate_critique_packet import validate_packet
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -166,7 +165,6 @@ packet_sections:
     assert packet["changed_ref"] is None
     assert packet["adapter_path"] == ".agents/critique-adapter.yaml"
     assert [s["id"] for s in packet["sections"]] == ["a", "b"]
-    assert validate_packet(packet) == []
 
 
 def test_build_packet_passes_changed_ref_to_script_sections(tmp_path: Path) -> None:
@@ -254,85 +252,6 @@ packet_sections:
     assert packet["ok"] is False
     assert packet["sections"][0]["ok"] is True
     assert packet["sections"][1]["ok"] is False
-    assert validate_packet(packet) == []
-
-
-def test_validate_packet_catches_kind_drift() -> None:
-    payload = {
-        "kind": "wrong.kind",
-        "version": 1,
-        "repo": "x",
-        "generated_at": "2026-05-14T00:00:00Z",
-        "prepared_for": "x",
-        "changed_ref": None,
-        "adapter_path": None,
-        "reviewer_tier_evidence": {
-            "requested_tier": "high-leverage",
-            "requested_spawn_fields": {},
-            "host_exposure_state": "pending-parent-spawn",
-            "application_state": "unverified-by-packet",
-            "instruction": "record host state",
-        },
-        "sections": [],
-        "section_count": 0,
-        "ok": True,
-    }
-    errors = validate_packet(payload)
-    assert any("kind must be" in err for err in errors)
-
-
-def test_validate_packet_catches_section_count_mismatch() -> None:
-    payload = {
-        "kind": PACKET_KIND,
-        "version": 1,
-        "repo": "x",
-        "generated_at": "now",
-        "prepared_for": "x",
-        "changed_ref": None,
-        "adapter_path": None,
-        "reviewer_tier_evidence": {
-            "requested_tier": "high-leverage",
-            "requested_spawn_fields": {},
-            "host_exposure_state": "pending-parent-spawn",
-            "application_state": "unverified-by-packet",
-            "instruction": "record host state",
-        },
-        "sections": [{
-            "id": "s", "title": "S", "content_kind": "static",
-            "producer": "p", "content": "c", "ok": True, "errors": [],
-        }],
-        "section_count": 99,
-        "ok": True,
-    }
-    errors = validate_packet(payload)
-    assert any("section_count must equal" in err for err in errors)
-
-
-def test_validate_packet_catches_ok_lying_about_section_states() -> None:
-    payload = {
-        "kind": PACKET_KIND,
-        "version": 1,
-        "repo": "x",
-        "generated_at": "now",
-        "prepared_for": "x",
-        "changed_ref": None,
-        "adapter_path": None,
-        "reviewer_tier_evidence": {
-            "requested_tier": "high-leverage",
-            "requested_spawn_fields": {},
-            "host_exposure_state": "pending-parent-spawn",
-            "application_state": "unverified-by-packet",
-            "instruction": "record host state",
-        },
-        "sections": [{
-            "id": "s", "title": "S", "content_kind": "static",
-            "producer": "p", "content": "", "ok": False, "errors": ["boom"],
-        }],
-        "section_count": 1,
-        "ok": True,
-    }
-    errors = validate_packet(payload)
-    assert any("ok must equal all-sections-ok" in err for err in errors)
 
 
 def test_render_markdown_includes_each_section(tmp_path: Path) -> None:

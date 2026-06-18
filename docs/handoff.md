@@ -13,54 +13,54 @@
 
 ## Current State
 
-- **v0.52.5 shipped + verified** (latest public release, install `== repo`).
-  Bundled the north-star overhaul (Track 1a per-unit verdict framing + Track 2
-  slim) **and** the #390 code-layer pass. `origin/main` is current — nothing
-  unpushed.
-- **#390 CLOSED** (one closeable pass): the nose clone advisory is now
-  **baselined** (547 accepted) so it reports only new/changed drift; the **14
-  genuine extractable families are held visible (not baselined)** and filed in
-  **#391**. Debug sweep (492 files) clean; doc↔code clean. Re-baseline only
-  **after** surfaced candidates are fixed, never blindly. Record + held-out
-  signatures: [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md).
-- Open issues: **#391** (code-layer dup follow-ups, sub of #390), **#387**
-  (closeout-validator one-pass UX), **#371** (browser teardown — own track, no
-  close without invocation-end teardown proof).
+- **Mid-track: gate buy-vs-build.** Per-item decided plan + full reasoning is the
+  source of truth in
+  [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md)
+  — read it first.
+- **4 commits done, UNPUSHED (operator HELD push):** A (bootstrap idiom
+  unification + #390 record fix + craken study), B triage, B DROP #1/#2
+  (test-production-ratio + title-slug demoted to advisory), and **① now COMMITTED**
+  — `validate_critique_packet` DELETE (both copies, tests, doc pointer; dogfood
+  decision recorded in the critique dogfood case). Fresh-eye SAFE
+  (all 5 deletion claims CONFIRMED); verification-lock closeout green
+  (3201 pass); Cautilus next-action `none`.
+- length-config WITHDRAWN (caps stay hard). nose v0.13.0 = char-n-gram markdown
+  dup (confirmed); lychee on PATH but not a managed integration yet.
 
 ## Next Session
 
-- **A. Bootstrap-duplication justification (operator-requested, NEW).** #390
-  *assumed* the resolve_adapter/init_adapter/skill_runtime_bootstrap copies are
-  intentional portability boilerplate. **Verify that's really justified** — is
-  the local-dup-for-package-independence trade still right, or should it
-  consolidate to a shared bootstrap? This is the deepest residual the #390
-  verification flagged. Reference **`../craken-agents`**.
-- **B. Gate reduction (operator-requested, NEW).** Examine whether **existing**
-  gates can be **removed** (~34.7K-line gate surface) — "less but better" on the
-  gate layer, **without** adding new floors. Live case study (retro root-cause):
-  the length **hard floor** invited gaming this session (squeeze-under vs the
-  intended refactor split); consider shifting that signal to authoring-time /
-  advisory. Reference `../craken-agents`.
-- **C. SRP sweep (original primary).** Remaining capped-skill-body compression by
-  own-concept separation. Pre-check each body: grep `check_skill_contracts.py`
-  for pinned snippets + run `check_skill_surface_preflight.py` for core-headroom
-  BEFORE editing; run the **broad** `pytest -q` at the bundle boundary.
-- **D. #391 extractions** (subprocess-timeout wrapper — a non-release session;
-  scaffold/adapter-lib classification) + the baseline `tool_version` stamp.
+- Each remaining gate item is its own slice (B1 advisory pattern, fresh-eye +
+  broad closeout):
+  - **3.** function-length cap -> ruff PLR0915 + keep mccabe; delete the bespoke
+    function-length arm (file-line cap unchanged).
+  - **4.** doc near-dup -> nose advisory + make nose a required install.
+  - **2.** doc-links -> lychee BUY; keep placeholder/boundary residue; demote
+    backtick/bare-mention enforcement to advisory (keep the principle).
+  - **Demotions:** validate_critique_artifacts (keep tier-honesty, demote rest);
+    validate_skill_ergonomics (keep export-leak arm only — DELICATE adapter split).
+- **Separate untouched tracks (original primary, NOT started):**
+  - **C. SRP / skill-body reduction.** ~12 public SKILL.md at/near the 200-line
+    cap. P2: separate a concept or delete — NOT line-shave (floor stays hard).
+    Pre-check pinned snippets (check_skill_contracts) + core-headroom before edit.
+    **AGENTS.md `## Skill Routing` is GENERATED/pinned** by setup's
+    [render_skill_routing.py](../skills/public/setup/scripts/render_skill_routing.py)
+    — reduction needs a lockstep generator edit (recent-lessons S5 trap).
+  - **D. #391** extractions (per-package-copy aware) + baseline tool_version stamp.
 
 ## Discuss
 
-- A vs the portability model: consolidate bootstrap, or keep the deliberate copy?
-- B: which existing gates are prunable without losing the teeth that matter?
-- What `../craken-agents` is / how to use it (route via `gather` if external).
-- Who owns the #371 upstream lifecycle proof path.
+- **find-skills inventory drift:** session-start bootstrap regenerates `latest.*`
+  repo-only (4 support / 11 integ) vs committed host-enriched (8 / 13, incl.
+  pry + google-workspace from installed plugins). Restored to HEAD this session
+  to keep ① scoped. Decide: should canonical inventory be repo-only local-first
+  or host-enriched, and which env regenerates it?
+- Open: validate_skill_ergonomics adapter-split appetite. Push timing
+  (4 commits ready). Untouched this track: #391, #387, #371.
 
 ## References
 
-- [release latest](../charness-artifacts/release/latest.md),
-  [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md),
-  [session retro](../charness-artifacts/retro/2026-06-19-390-code-layer-pass-retro.md)
-- [design north star](./design-north-star.md),
-  [capabilities over features](../charness-artifacts/gather/2026-06-18-capabilities-over-features.md)
-- [recent lessons](../charness-artifacts/retro/recent-lessons.md),
-  [deferred decisions](./deferred-decisions.md)
+- [decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md),
+  [triage](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-triage.md),
+  [#390 record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md),
+  [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
+  [design north star](./design-north-star.md)

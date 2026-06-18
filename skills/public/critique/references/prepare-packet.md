@@ -215,8 +215,9 @@ Adapter validation is wired into the shared `validate_adapters.py`:
 `scripts/critique_adapter_lib.load_adapter` so a malformed adapter
 (missing required fields, dual-content fields, kind/field mismatch,
 duplicate section ids) fails the standing adapter gate before the
-runner ever spawns a producer process. A separate `validate_critique_packet.py`
-validates an emitted packet's envelope shape.
+runner ever spawns a producer process. The producer
+(`critique_packet_lib.build_packet`) owns the emitted packet's envelope shape
+(`section_count`, `ok`), covered directly by its own tests.
 
 ## Out Of Scope For This Contract
 
