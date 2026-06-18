@@ -663,6 +663,28 @@ made by an agent and recorded for a human, never by a regex.
   unless it is paired with one of those — a memory note is capture, not a
   structural disposition. Rejecting that over-claim is the whole point of the
   destination mandate.
+  **Confirm each closed issue's behavior at an issue-bundle closeout (the
+  irreversible-boundary mandate).** When the goal closes a tracked GitHub issue
+  bundle that touches HOTL/live behavior, closing the issues is an irreversible
+  boundary (others read "done"), so — per *P4* of the authoring-repo-internal
+  `docs/design-north-star.md` — a passing `CLOSED` state and a deployment readback
+  are *claims*, not behavior proof. For **each** closed issue, the reviewer must confirm the issue's
+  user-facing behavior through an evidence channel **distinct from** the
+  bundle-level deployment readback and `CLOSED` state — a provider/connector
+  roundtrip, a behavior test, a fetch result, the actual Slack/Notion/artifact
+  observation — **or** record an explicit non-`verified` disposition (the HOTL
+  ledger statuses, plus `local-only-by-contract` for a surface that is local by
+  the resolution contract; see `../../hotl/references/ledger-and-dispositions.md`).
+  A bundle readback (`restart_needed=false`, health `ok`) and a verified `CLOSED`
+  state only prove the bundle *deployed* and the tracker *closed*; they do not
+  prove a per-issue Slack / scheduled-workflow / public-artifact-URL / Notion-byte
+  / tracked-link / duplicate-workflow behavior. **Re-reading the readback or the
+  closeout evidence is not confirmation** — name, per issue, the distinct channel
+  consulted or the disposition that says the behavior was not reached, into the
+  bound review artifact. (This is the facet a bundle closeout silently skips: the
+  reviewer reviews the proxy it was handed and rubber-stamps. Deterministic teeth
+  cannot make this honest — re-examination of the *same* proxy is exactly what
+  fails — so it is a Rung-2 mandate, not a Rung-1 floor.)
 
 **Honest limit.** The deterministic floor proves the *process* ran (a review
 exists and binds) and catches the unambiguous *blank*; it never scores whether a
@@ -787,6 +809,14 @@ local to fully external:
 4. `applied-restarted` — the instance is applied / restarted.
 5. `live` — provider / live proof reached (a real provider roundtrip).
 6. `issue-closed` — the tracked GitHub issue's `CLOSED` state is verified.
+
+These levels do not subsume each other. `applied-restarted` (4) proves runtime
+deployment state and `issue-closed` (6) proves GitHub `CLOSED` state, but neither
+is `live` (5) behavior proof for an issue whose acceptance surface is a
+provider/connector behavior. For an issue-bundle closeout, the per-issue behavior
+binding lives in the disposition review's distinct-channel confirmation
+(*Disposition Gate - Two Rungs*, the irreversible-boundary mandate), not in a
+bundle-level deployment/`CLOSED` readback standing in for every issue.
 
 A **standalone** goal owns all reached levels itself and names any skipped level
 as an explicit non-claim (Honest Proof Discipline below). This is the strict

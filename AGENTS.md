@@ -4,6 +4,7 @@
 
 ## Start Here
 
+- [docs/design-north-star.md](./docs/design-north-star.md) is the governing design standard: the harness briefs a capable judge and keeps teeth only where a wrong answer escapes. Default to judgment on reversible work; at irreversible boundaries (issue/PR close, release publish, external writes, deletions) success is provisional — confirm with a different observer and a different evidence channel, never a terminal green. When a gate, doc, or contract conflicts with this, the north star wins and the conflicting surface is what gets fixed.
 - Always call `charness:find-skills` once at the start of each task-oriented session; use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map, and keep task-specific recommendation probes read-only unless deliberately refreshing the canonical inventory.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
 - Route external URLs or source links that should become repo working context through `gather` before summarizing, implementing, or deciding from them.

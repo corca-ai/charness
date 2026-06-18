@@ -93,6 +93,17 @@ adjudication is unresolved. When the adapter declares a completion-audit command
 run it and record the result; without one, perform the audit manually against the
 ledger and record that it was manual.
 
+Deployment readback and a closed tracker state are not this audit. They prove the
+bundle deployed and the tracker closed, not that a connector/provider behavior
+was observed; a `verified` entry must cite the behavior channel that observed it,
+not the bundle readback or `CLOSED` state it rode in on. An entry confirmed only
+by re-reading that same proxy is not `verified` — that is the re-examination
+failure that *P4* of the authoring-repo-internal `docs/design-north-star.md`
+names. When this audit runs inside an
+`achieve` issue-bundle closeout, the distinct fresh-eye disposition reviewer owns
+the per-issue confirmation (achieve `lifecycle.md`, *Disposition Gate - Two
+Rungs*).
+
 ## Ledger tooling ownership
 
 In this version the skill ships the status vocabulary, field semantics, and
