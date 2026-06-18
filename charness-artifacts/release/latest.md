@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-06-17
+Date: 2026-06-18
 
 ## Scope
 
-Advanced `charness` toward release `0.52.3` (tag `v0.52.3`) through the repo-owned release helper.
+Advanced `charness` toward release `0.52.4` (tag `v0.52.4`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.52.2`
-- target version: `0.52.3`
+- previous version: `0.52.3`
+- target version: `0.52.4`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,25 +17,24 @@ Advanced `charness` toward release `0.52.3` (tag `v0.52.3`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.52.3`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.52.4`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.52.2`
+- Previous release ref: `refs/tags/v0.52.3`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -51,33 +50,28 @@ Advanced `charness` toward release `0.52.3` (tag `v0.52.3`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 1.
   - `checked-in-plugin-export`
 - Path hits: 0.
-- Evaluated changed paths: 23.
+- Evaluated changed paths: 16.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-18-issue-385-achieve-blocked-boundary-matrix.md`
-  - `charness-artifacts/critique/2026-06-18-release-0.52.3-critique.md`
+  - `AGENTS.md`
+  - `charness-artifacts/critique/2026-06-18-issue-386-north-star-pilot.md`
+  - `charness-artifacts/critique/2026-06-18-release-0.52.4-critique.md`
+  - `charness-artifacts/issue-drafts/2026-06-18-issue-386-commit-body.md`
   - `charness-artifacts/metrics/rca-ledger.jsonl`
   - `charness-artifacts/release/latest.md`
-  - `docs/public-skill-dogfood.json`
+  - `docs/design-north-star.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/skills/achieve/SKILL.md`
-  - `plugins/charness/skills/achieve/references/goal-artifact.md`
   - `plugins/charness/skills/achieve/references/lifecycle.md`
-  - `plugins/charness/skills/achieve/scripts/check_goal_artifact.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_blocked_matrix.py`
-  - `plugins/charness/skills/achieve/scripts/goal_artifact_lib.py`
-  - `skills/public/achieve/SKILL.md`
-  - `skills/public/achieve/references/goal-artifact.md`
+  - `plugins/charness/skills/hotl/references/ledger-and-dispositions.md`
   - `skills/public/achieve/references/lifecycle.md`
-  - `skills/public/achieve/scripts/check_goal_artifact.py`
-  - ... 3 more
+  - `skills/public/hotl/references/ledger-and-dispositions.md`
 
 ## Real-Host Verification
 
@@ -89,32 +83,11 @@ Advanced `charness` toward release `0.52.3` (tag `v0.52.3`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-18-release-0.52.3-critique.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.52.3`.
+- Review proof: `charness-artifacts/critique/2026-06-18-release-0.52.4-critique.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.52.2 -> 0.52.3
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.52.2 -> 0.52.3
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
@@ -125,10 +98,11 @@ CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code t
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.52.4 (patch release); no migration or manual live reproof is required on update. Resolves issue #386 so an `achieve` issue-bundle closeout can no longer claim "HOTL closeout" on deployment-readback + `CLOSED` state alone while per-issue behavior is unproven. (1) DESIGN NORTH STAR - ships `docs/design-north-star.md`, a repo-internal governing standard (equip a capable judge; keep teeth only where a wrong answer escapes; at irreversible boundaries success is provisional and confirmed by a different observer and a different evidence channel, never a terminal green). It is source-repo-only and NOT in the plugin export; vendored skill references cite it as `authoring-repo-internal`. (2) NON-TERMINAL ISSUE-BUNDLE CLOSEOUT - the achieve fresh-eye disposition review (the already-mandatory distinct observer) now must confirm each closed issue's behavior via a channel distinct from the bundle deployment readback / `CLOSED` state, or record an explicit non-`verified` disposition; re-reading the proxy is not confirmation. Implemented as reference prose (achieve `lifecycle.md`, hotl `ledger-and-dispositions.md`), NOT a new deterministic gate. (3) NO NEW GATE - deliberately no 8th closeout floor; a terminal-green gate on self-classification would re-grant the exact trust that caused #386. OPERATOR/CONSUMER NOTE - prose behavior repair plus a repo-internal doc; no command, install, invocation, or always-rendered-section change ships to consumers, and normal `charness update` is enough. Rollback - reinstall or pin 0.52.3; no data migration needs undoing.
 - Run `charness update` to pull 0.52.3 (patch release); no migration or manual live reproof is required on update. Fixes issue #385 so `achieve` no longer marks a whole goal `blocked` while a runnable lane remains. (1) PRE-BLOCK BOUNDARY MATRIX - before a goal flips to `blocked`, `upsert_goal.py` now refuses unless a `## Remaining Boundary Matrix` classifies every external/live proof lane (`Lane: <name> | classification: <token>`), and refuses when any lane is self-classified `runnable`/`preauthorized-runnable`/`approved`, so a runnable lane keeps the goal `active` to continue that lane instead of stranding it. (2) GRANDFATHERED PRESENCE FLOOR - the gate applies to goals `Created` on or after 2026-06-18, fails closed on a missing/corrupt `Created`, is presence + no-runnable-contradiction only (the agent/operator judges whether a lane is truly runnable, with `dispositioned` the honest escape), and `check_goal_artifact.py` re-surfaces it post-flip. (3) CREATE-PATH CONSISTENCY - creating a goal straight to `blocked` is gated the same way, so the floor cannot be bypassed at goal creation. OPERATOR/CONSUMER NOTE - additive closeout-side correctness gate for fresh or undated/corrupt-date goals; routing, draft creation, activation, and inert-until-activation behavior are unchanged, and normal `charness update` is enough. Rollback - reinstall or pin 0.52.2; no data migration needs undoing.
 - Run `charness update` to pull 0.52.2 (patch release); no migration or manual live reproof is required on update. Fixes new `achieve` goal drafts so they use the intended draft/backlog lifecycle wording, while only advising on older generic draft frames. (1) DRAFT FRAME ALIGNMENT - fresh `achieve` goal artifacts now start from the adapter-contract lifecycle disposition (`real draft/backlog awaiting activation`) instead of generic `before activation` wording. (2) NON-BLOCKING DRIFT VISIBILITY - legacy or custom generic draft frames surface `draft_frame_warning` through helper JSON and concise `charness goal check --pursue-ready` `ADVISORY:` output without changing activation readiness or exit semantics. (3) CONTRACT DRIFT GUARD - the documented YAML example now matches the loader and is parser-tested so `scaffold.draft_active_frame_lines` stays top-level. OPERATOR/CONSUMER NOTE - patch-level contract/scaffold repair; normal `charness update` is enough, existing artifacts are not rewritten, and no new blocking activation floor is introduced. Rollback - reinstall or pin 0.52.1; no data migration needs undoing.
 - Run `charness update` to pull 0.52.1 (patch release); no migration or manual live reproof is required on update. HOTL proving-surface staleness adjudication repair for issue #382. (1) STALE CANDIDATE, NOT AUTOMATIC PROOF DEBT - `hotl` now treats a changed `verified_against.proving_surface_refs` entry as `stale_candidate` / `needs_adjudication` until the agent decides whether it is actual proof debt. (2) EXPLICIT ADJUDICATION OUTCOMES - the ledger reference names `reproof_required`, `covered_by_tests`, `covered_by_newer_proof`, `narrow_surface`, `ledger_outdated`, `accepted_risk`, and `deferred`, and pre-live/completion audits block unresolved adjudication rather than every stale candidate. (3) PLAN IS NOT PROOF - closeout language now avoids claiming a reproof plan as a proof result, and focused tests pin the public plus exported plugin HOTL contract. OPERATOR/CONSUMER NOTE - patch-level prompt/contract repair; normal `charness update` is enough, no runtime ledger-engine change, and no ceal-local behavior change is bundled. Rollback - reinstall or pin 0.52.0; no data migration needs undoing.
