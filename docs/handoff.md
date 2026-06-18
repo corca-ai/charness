@@ -30,23 +30,24 @@
 - **#371 remains open by design** — no close without controlled invocation-end
   teardown proof (process tree + `agent-browser-chrome-*` dir) for completion,
   cancellation, provider failure, and timeout.
-- Open issues (2026-06-18): #387 (overhaul Phase-1 pilot), #388 (mutation-test
-  regression — separate CI track), #371.
+- Open issues (2026-06-18): #387 (closeout-validator one-pass UX — **not** the
+  overhaul pilot, the prior handoff mislabeled it), #371 (browser teardown).
+  #388 closed.
 
 ## Next Session
 
-- **Primary: implement the overhaul per the RESOLVED Step 0 findings.** Read the
-  archive first. Sequence:
-  - **Track 1a (LIGHT):** obligate a per-unit behavioral verdict at irreversible
-    boundaries (issue/PR close, release publish, external write, deletion). CUT as
-    NOT load-bearing: reviewer-PULLs-raw-state, doer-can't-author-brief,
-    per-reviewer load caps. Distinct-channel falls out of the mandate.
-  - **Track 2 (SLIM):** PUSH→PULL (minimal always-on + skills index, bodies on
-    demand) + own-concept compression (SRP); cut judgment-restatement prose.
+- **Primary: the overhaul is SHAPED as a draft `achieve` goal** —
+  [`2026-06-18-north-star-overhaul.md`](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
+  (Track 1a LIGHT = generalize the per-unit behavioral-verdict framing, NO new
+  gate; Track 2 SLIM). It is `shape_ready`; `pursue_ready` is held on **4 surfaced
+  `Discuss before activation` decisions** (Track-1a in-place method, Track-2
+  bundling/spin-out, no external side effects, no tracked issue). Resolve those,
+  then activate
+  `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md`. First slice
+  S1 = read-only boundary audit. A bounded fresh-eye plan premortem is folded.
 - **Honor the north star: the fix is FRAMING/task-structure, not prose, not a new
-  gate.** Optional (not blocking): re-run Instrument 3 with a 2nd defect class to
-  harden generality (single fixture is the one named limit).
-- #388 and #371 stay on their own tracks; do not couple them to the overhaul.
+  gate.** Optional/not blocking: a 2nd defect class would harden generality.
+- #371 stays on its own track; do not couple it to the overhaul.
 - Older deferrals: D28/D29 in [deferred decisions](./deferred-decisions.md).
 
 ## Discuss
@@ -55,6 +56,7 @@
 
 ## References
 
+- [overhaul draft goal (shaped, awaiting activation)](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
 - [Step 0 experiment program archive — RESOLVED](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md)
 - [overhaul plan v2 (Track 1a now LIGHT)](../charness-artifacts/critique/2026-06-18-overhaul-plan-v2.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
