@@ -9,20 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S4 — Track 2 audit** (next). **Track 1a COMPLETE** (S1–S3);
-  every irreversible boundary from the S1 audit now mandates a per-unit
-  behavioral verdict, both sweep critiques PASS, in-place method validated.
-- Current disposition: ACTIVE, pivoting Track 1a → Track 2. Track 1a closed gaps
-  G1–G5 as framing prose with no new gate/token; S2 + S3 critiques both PASS.
-- Current slice intent: **S4** — measure the always-on surface (AGENTS.md /
-  CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP
-  splits. Track 2's success metric is learnability/discoverability, not line
-  count (capabilities-over-features Design lens). Read-only audit slice.
-- Next action: execute S4 — Track 2 audit artifact under
-  `charness-artifacts/critique/` measuring the standing surface + bloat, with a
-  PUSH→PULL + SRP-split plan; carries forward the Track-2 candidates S3 surfaced
-  (release/SKILL.md at 199/200 slim; optional shared-ref cross-link for the
-  per-unit-verdict pattern). Spin-out decision: see Operator Decision Queue.
+- Current slice: **S5 — Track 2 slim** (next). **Track 1a COMPLETE** (S1–S3);
+  S4 audit done. Standing surface measured: AGENTS.md 70 lines (CLAUDE.md
+  symlink); 14 skill bodies within 8 core lines of the 160 cap.
+- Current disposition: ACTIVE in Track 2. S4 audit landed the PUSH→PULL +
+  SRP-split plan and sized the spin-out.
+- Current slice intent: **S5** — execute the AGENTS.md PUSH→PULL (Cautilus block
+  → 1-line pointer; collapse Skill-Routing duplication into Start Here) as the
+  always-on-surface shrink + one SRP-split pilot (`retro`, at the cap), each with
+  a fresh-eye critique (reviewer question: was any boundary safeguard lost or made
+  unread?). The remaining-13-body SRP sweep is recommended to spin out.
+- Next action: execute S5 — AGENTS.md PUSH→PULL (high blast radius, its own
+  fresh-eye critique boundary) + retro SRP pilot, then closeout (S6). Compression
+  = concept-separation/deletion, never line-shaving (north-star P2); success
+  metric is learnability, not line count.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -173,7 +173,7 @@ What the user can do to verify completion directly:
 | S1 — boundary audit | Read-only: classify each irreversible boundary (issue close, PR **merge**/close, release-linked close, external write, deletion — PR trigger = merge-to-shared-history, not the tracker flip) as mandates-per-unit-verdict vs rubber-stamps-proxy; produce the gap list | Grounds Track 1a in evidence; mirrors #386 pilot-first; stops me guessing the gap | audit artifact under `charness-artifacts/critique/` | **done** — `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md` (`c6c0cc56`); models = achieve seed + HOTL; gaps G1 issue/PR close, G2 PR merge, G3 release publish, G4 release-linked close, G5 deletions; worst = G1+G2 |
 | S2 — Track 1a pilot | Close the single worst gap from S1 in-place (sharpen closeout framing → per-unit behavioral verdict, cite P4, no gate) + fresh-eye critique (framing-not-gate) | Validate the LIGHT pattern on one real gap before any sweep | diff + bound critique artifact; the critique must answer per boundary: *declares a completion condition (blocker) or only mandates the per-unit question (pass)?* | **done** — closeout-discipline.md new mandate + SKILL.md guardrail + resolve-flow.md pointer; critique `charness-artifacts/critique/2026-06-18-s2-issue-close-framing-critique.md` = PASS (declares-vs-mandates: mandates, all 3 surfaces; safeguard strengthened) |
 | S3 — Track 1a sweep | Generalize the validated framing to the remaining real gaps from S1 | Pattern proven by S2; one critique covers the coherent bundle | diffs + critique (same per-boundary declares-vs-mandates check) | **done** — G3 release publish (step-7 P4 per-surface verdict, 3 bullets consolidated), G4 release-linked close (guardrail pointer), G5 deletion (rename-critique Per-Removed-Concept Verdict); critique `charness-artifacts/critique/2026-06-18-s3-sweep-framing-critique.md` = PASS (declares-vs-mandates: mandates all 3; in-place justified; safeguard intact) |
-| S4 — Track 2 audit | Measure the always-on surface (AGENTS.md / CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP splits | Track 2 is Step-0-independent; needs its own measurement before cutting | audit + plan (decide spin-out — see Operator Decision Queue) | planned |
+| S4 — Track 2 audit | Measure the always-on surface (AGENTS.md / CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP splits | Track 2 is Step-0-independent; needs its own measurement before cutting | audit + plan (decide spin-out — see Operator Decision Queue) | **done** — `charness-artifacts/critique/2026-06-18-s4-track2-audit.md`; AGENTS.md 70L (2 PUSH→PULL targets: Cautilus block, Skill-Routing dup); 14 bodies near 160 core cap; S5 = AGENTS.md PUSH→PULL + retro SRP pilot; recommend spin out the remaining-13-body sweep |
 | S5 — Track 2 slim | Execute PUSH→PULL + SRP compression on the highest-bloat surfaces + fresh-eye critique (no safeguard lost) | After 1a lands the framing, the docs should reflect the smaller standing surface | diffs + before/after counts + critique | planned |
 | S6 — closeout | Broad proof + retro + per-improvement disposition + handoff update | Bundle boundary | gate suite green + retro + bound disposition review | planned |
 
@@ -184,14 +184,14 @@ external-boundary approvals discovered during the run when they do not block
 safe local progress. Use `none — <reason>` when the queue is empty at closeout.
 
 - Decision: Split **Track 2 (SLIM)** into its own goal? | Owner: operator |
-  Status: **REVISITED at S3 (2026-06-18) — recommend KEEP BUNDLED, continuing
-  into S4** | Rationale: Track 1a landed cleanly (S1–S3, both critiques PASS) and
-  Track 2 is its natural continuation (the smaller standing surface should reflect
-  the framing that just landed); spinning out now would fragment one coherent
-  overhaul and the goal's Done criterion already includes the Track-2 shrink.
-  Operator-overturnable — if S4's audit shows Track 2 is large enough to warrant
-  its own lifecycle, spin out then. | Revisit trigger: S4 audit sizing, or an
-  explicit operator instruction.
+  Status: **SIZED at S4 (2026-06-18) — recommend PARTIAL spin-out.** Keep the
+  **AGENTS.md PUSH→PULL + one `retro` SRP pilot** in this goal (S5) — that is the
+  contained core Track-2 deliverable satisfying the goal's "standing surface
+  shrinks measurably" Done criterion. **Spin out the remaining-13-capped-body SRP
+  sweep** as its own follow-up goal: it is a high-volume, mechanical, repeatable
+  program where each body is prompt-affecting (own dogfood review) — a clean
+  spin-out shape, not safe to rush in one session. Operator-overturnable. |
+  Revisit trigger: S5 closeout, or an explicit operator instruction.
 - Decision: File a tracking GitHub **issue** for this overhaul? | Owner: operator
   | Status: **RESOLVED 2026-06-18 — skip** (operator approved); the overhaul is
   tracked by this goal artifact | Revisit trigger: if scope outgrows one goal.
@@ -239,6 +239,20 @@ during the run:
 
 ## Slice Log
 
+- **S4 — Track 2 audit (read-only) — done.** Artifact:
+  `charness-artifacts/critique/2026-06-18-s4-track2-audit.md`. Always-on surface =
+  `AGENTS.md` 70 lines (`CLAUDE.md` symlink). Two PUSH→PULL / orthogonality
+  targets: the Cautilus block (L11, ~10 lines whose detail already lives in
+  `quality/references/cautilus-on-demand.md` + is tooling-enforced → 1-line
+  pointer) and the Skill-Routing section (L17–31, which duplicates Start Here:
+  find-skills/gather/quality routing). 14 public skill bodies sit within 8 core
+  lines of the 160 `MAX_CORE_NONEMPTY_LINES` cap (retro at 160, issue 159, impl
+  158, …) — own-concept bloat, ~68% per the Phase-0 finding. Cut target =
+  intrinsic-judgment restatement; keep = repo-specific commands/paths/observables.
+  **S5 plan:** AGENTS.md PUSH→PULL (always-on shrink) + one `retro` SRP-split
+  pilot, each its own fresh-eye critique boundary. **Spin-out sized:** keep the
+  AGENTS.md PUSH→PULL + retro pilot in this goal; recommend spinning out the
+  remaining-13-body SRP sweep as a follow-up goal.
 - **S3 — Track 1a sweep (release publish G3, release-linked close G4, deletion
   G5) — done.** Generalized the S2-validated framing in-place. **G3:**
   `release/references/install-surface.md` (Publication Closure Boundary) now
