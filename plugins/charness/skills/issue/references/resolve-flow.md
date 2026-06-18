@@ -66,4 +66,7 @@ Use `issue_tool.py verify-closeout` as the ordinary issue-resolution final gate.
 Without `--expect-state`, the verifier can only report `carrier_verified` for a
 pre-push or pre-merge carrier audit. Final handoff requires
 `--expect-state CLOSED` and `status: verified`; otherwise the issue lifecycle is
-not closed.
+not closed. `status: verified` confirms the tracker flipped, not that the fix's
+user-facing behavior happened: at this irreversible boundary the per-issue
+behavioral verdict in `closeout-discipline.md` (*Per-Issue Behavioral Verdict At
+Close*) is also required before reporting the issue resolved.

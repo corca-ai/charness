@@ -145,8 +145,8 @@ repo by created date. It must not use the current session's last created issue.
 - Do not close an issue before the pushed branch contains the fix.
 - Do not skip close keywords when the backend can auto-close; manual close is
   the fallback, not the default success path.
-- Do not report `carrier_verified` as final issue closeout; final closeout is
-  `status: verified` with GitHub state checked as `CLOSED`.
+- Do not report `carrier_verified`, or a bare `CLOSED` state, as final closeout:
+  `CLOSED` is necessary-not-sufficient — a per-issue behavioral verdict via a channel distinct from `CLOSED` is required (`references/closeout-discipline.md`).
 - Do not hardcode `gh` when the adapter advertises a stronger backend, or hide
   missing backend auth behind public-fetch fallback for mutating operations.
 - Do not invent or guess repository labels or milestones. Assign only ones the

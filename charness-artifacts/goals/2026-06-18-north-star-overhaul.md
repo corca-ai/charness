@@ -9,21 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S2 — Track 1a pilot** (in progress). S1 complete + committed
-  (`c6c0cc56`).
-- Current disposition: ACTIVE. S1 read-only audit landed the gap list; S2 closes
-  the single worst gap in-place + bound fresh-eye critique.
-- Current slice intent: **S2** — sharpen the GitHub issue/PR-close closeout prose
-  (outside the achieve seed: standalone `issue resolve`, direct-to-default and
-  PR-merge carriers — gaps G1+G2) to MANDATE a per-issue behavioral verdict
-  through a channel distinct from `CLOSED`, cite north-star P4, add no gate. The
-  slice intent names the reviewable-intent unit in progress and the commits it
-  spans; critique and broad proof do not re-fire within one unchanged intent
-  (meaningful-slice-cadence).
-- Next action: execute S2 — in-place sharpen of the issue-close closeout surface,
-  then the bound fresh-eye framing-not-gate critique (per-boundary
-  declares-vs-mandates check). S1 recommended G1+G2 as the worst gap; the S2
-  reviewer can overturn to split PR-merge out under the ≥3-duplication guard.
+- Current slice: **S3 — Track 1a sweep** (next). S1 + S2 complete; S2's in-place
+  framing pattern validated PASS by a bound fresh-eye critique.
+- Current disposition: ACTIVE. S2 proved the LIGHT pattern on gap G1+G2
+  (issue/PR close). S3 generalizes the validated pattern to the remaining real
+  gaps: G3 release publish, G4 release-linked close, G5 deletions.
+- Current slice intent: **S3** — sharpen the release-publish, release-linked-
+  issue-close, and deletion closeout prose to MANDATE a per-unit behavioral
+  verdict through a channel distinct from the proxy, cite north-star P4, add no
+  gate. One bound fresh-eye critique covers the coherent S3 bundle (same
+  per-boundary declares-vs-mandates check). Critique and broad proof do not
+  re-fire within one unchanged intent (meaningful-slice-cadence).
+- Next action: execute S3 — in-place sharpen of release/SKILL.md +
+  closeout-critique-gate (G3/G4) and rename-critique.md (G5), then the bound
+  fresh-eye framing-not-gate critique. After S3, revisit the Track-2 spin-out
+  Operator Decision Queue item.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -172,7 +172,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | S1 — boundary audit | Read-only: classify each irreversible boundary (issue close, PR **merge**/close, release-linked close, external write, deletion — PR trigger = merge-to-shared-history, not the tracker flip) as mandates-per-unit-verdict vs rubber-stamps-proxy; produce the gap list | Grounds Track 1a in evidence; mirrors #386 pilot-first; stops me guessing the gap | audit artifact under `charness-artifacts/critique/` | **done** — `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md` (`c6c0cc56`); models = achieve seed + HOTL; gaps G1 issue/PR close, G2 PR merge, G3 release publish, G4 release-linked close, G5 deletions; worst = G1+G2 |
-| S2 — Track 1a pilot | Close the single worst gap from S1 in-place (sharpen closeout framing → per-unit behavioral verdict, cite P4, no gate) + fresh-eye critique (framing-not-gate) | Validate the LIGHT pattern on one real gap before any sweep | diff + bound critique artifact; the critique must answer per boundary: *declares a completion condition (blocker) or only mandates the per-unit question (pass)?* | planned |
+| S2 — Track 1a pilot | Close the single worst gap from S1 in-place (sharpen closeout framing → per-unit behavioral verdict, cite P4, no gate) + fresh-eye critique (framing-not-gate) | Validate the LIGHT pattern on one real gap before any sweep | diff + bound critique artifact; the critique must answer per boundary: *declares a completion condition (blocker) or only mandates the per-unit question (pass)?* | **done** — closeout-discipline.md new mandate + SKILL.md guardrail + resolve-flow.md pointer; critique `charness-artifacts/critique/2026-06-18-s2-issue-close-framing-critique.md` = PASS (declares-vs-mandates: mandates, all 3 surfaces; safeguard strengthened) |
 | S3 — Track 1a sweep | Generalize the validated framing to the remaining real gaps from S1 | Pattern proven by S2; one critique covers the coherent bundle | diffs + critique (same per-boundary declares-vs-mandates check) | planned |
 | S4 — Track 2 audit | Measure the always-on surface (AGENTS.md / CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP splits | Track 2 is Step-0-independent; needs its own measurement before cutting | audit + plan (decide spin-out — see Operator Decision Queue) | planned |
 | S5 — Track 2 slim | Execute PUSH→PULL + SRP compression on the highest-bloat surfaces + fresh-eye critique (no safeguard lost) | After 1a lands the framing, the docs should reflect the smaller standing surface | diffs + before/after counts + critique | planned |
@@ -234,6 +234,25 @@ during the run:
 
 ## Slice Log
 
+- **S2 — Track 1a pilot (issue/PR close, G1+G2) — done.** Closed the single
+  worst gap in-place: added "## Per-Issue Behavioral Verdict At Close (the
+  irreversible-boundary mandate)" to `issue/references/closeout-discipline.md`
+  (full home, cites P4, names distinct channel + the resolution critique as
+  distinct observer, forbids same-proxy re-read, bakes the
+  mandate-not-declare guardrail, states no-new-gate); rewrote the
+  `issue/SKILL.md` `carrier_verified`/`CLOSED` guardrail in place to
+  "necessary-not-sufficient" (no net lines, held at 199/200 cap); added a salient
+  pointer in `issue/references/resolve-flow.md`. Covers both carriers
+  (direct-to-default commit + PR merge-to-shared-history). Synced the `plugins/`
+  mirror (byte-match). Recorded the public-skill scenario-review decision as a
+  freeze in `docs/public-skill-dogfood.json` (scenarios unchanged; rationale +
+  non-claim) and acked the slice closeout (`--ack-cautilus-skill-review`;
+  planner `next_action: none` → no Cautilus eval per the on-demand contract).
+  **Bound fresh-eye critique = PASS, no folds**
+  (`charness-artifacts/critique/2026-06-18-s2-issue-close-framing-critique.md`):
+  declares-vs-mandates = mandates on all three surfaces; no smuggled gate/token;
+  safeguard strengthened (carrier_verified prohibition retained + extended);
+  P4 distinct-channel+observer present. Cheap deterministic gate green.
 - **S1 — boundary audit (read-only) — done, `c6c0cc56`.** Artifact:
   `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md`. Classified the
   four north-star irreversible families. **Models (already mandate per-unit

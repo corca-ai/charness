@@ -103,6 +103,40 @@ status is useful before push or merge, but it is not final closeout. Final
 issue-resolution handoff requires `status: verified`, which means every selected
 issue matched the expected GitHub state.
 
+## Per-Issue Behavioral Verdict At Close (the irreversible-boundary mandate)
+
+Closing a GitHub issue — and merging a PR that closes it — is an **irreversible
+boundary**: others read the issue as "done", and a merge enters shared history
+others build on (a reopen does not undo that it was already read as resolved). So
+per *P4* of the authoring-repo-internal `<repo-root>/docs/design-north-star.md`, a
+`status: verified` / `CLOSED` state and a passing carrier are *claims* — the
+tracker flipped, the close keyword carried — **not** proof the reporter's
+job-to-be-done behavior actually happened. `status: verified` is **necessary but
+not sufficient.**
+
+Before reporting an issue resolved, for **each** closed issue render a behavioral
+verdict: confirm the issue's user-facing behavior — the reporter's JTBD acceptance
+boundary — through an evidence channel **distinct from** the `CLOSED` state and
+the carrier body (a behavior test that exercises the fix, a provider/connector
+roundtrip, a fetch/readback of the affected surface, the actual artifact
+observation). When the behavior cannot be reached, record an explicit
+non-`verified` disposition naming why (the HOTL ledger statuses, or
+`local-only-by-contract` for a surface that is local by the resolution contract;
+see `../../hotl/references/ledger-and-dispositions.md`). **Re-reading
+`verify-closeout`'s `CLOSED` result or the carrier body is not this
+confirmation** — that is the same-proxy re-read *P4* names. The fresh-eye
+resolution critique (next section) is the natural distinct observer; render the
+per-issue verdict there. A `question`/`decision-needed` issue with no behavior
+change has nothing to confirm, and the state check stands alone.
+
+This is a per-issue **question to render, never a completion condition to
+declare**: "confirm each issue, then close when all are confirmed" re-creates the
+"all-green + `CLOSED` = behavior proven" equivalence this mandate exists to
+remove — the obligation is to render the verdict-or-disposition per issue, not to
+gate the close on an aggregate "all confirmed". No new gate, script, or verdict
+token is added; `verify-closeout` still checks state, and this is the behavioral
+judgment layered on top of it.
+
 ## Resolution-Critique Carrier Header
 
 For `bug`, `feature`, and `deferred-work` classifications, the carrier body
