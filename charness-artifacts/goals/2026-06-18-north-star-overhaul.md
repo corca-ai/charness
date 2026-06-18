@@ -9,21 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S3 — Track 1a sweep** (next). S1 + S2 complete; S2's in-place
-  framing pattern validated PASS by a bound fresh-eye critique.
-- Current disposition: ACTIVE. S2 proved the LIGHT pattern on gap G1+G2
-  (issue/PR close). S3 generalizes the validated pattern to the remaining real
-  gaps: G3 release publish, G4 release-linked close, G5 deletions.
-- Current slice intent: **S3** — sharpen the release-publish, release-linked-
-  issue-close, and deletion closeout prose to MANDATE a per-unit behavioral
-  verdict through a channel distinct from the proxy, cite north-star P4, add no
-  gate. One bound fresh-eye critique covers the coherent S3 bundle (same
-  per-boundary declares-vs-mandates check). Critique and broad proof do not
-  re-fire within one unchanged intent (meaningful-slice-cadence).
-- Next action: execute S3 — in-place sharpen of release/SKILL.md +
-  closeout-critique-gate (G3/G4) and rename-critique.md (G5), then the bound
-  fresh-eye framing-not-gate critique. After S3, revisit the Track-2 spin-out
-  Operator Decision Queue item.
+- Current slice: **S4 — Track 2 audit** (next). **Track 1a COMPLETE** (S1–S3);
+  every irreversible boundary from the S1 audit now mandates a per-unit
+  behavioral verdict, both sweep critiques PASS, in-place method validated.
+- Current disposition: ACTIVE, pivoting Track 1a → Track 2. Track 1a closed gaps
+  G1–G5 as framing prose with no new gate/token; S2 + S3 critiques both PASS.
+- Current slice intent: **S4** — measure the always-on surface (AGENTS.md /
+  CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP
+  splits. Track 2's success metric is learnability/discoverability, not line
+  count (capabilities-over-features Design lens). Read-only audit slice.
+- Next action: execute S4 — Track 2 audit artifact under
+  `charness-artifacts/critique/` measuring the standing surface + bloat, with a
+  PUSH→PULL + SRP-split plan; carries forward the Track-2 candidates S3 surfaced
+  (release/SKILL.md at 199/200 slim; optional shared-ref cross-link for the
+  per-unit-verdict pattern). Spin-out decision: see Operator Decision Queue.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -173,7 +172,7 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | S1 — boundary audit | Read-only: classify each irreversible boundary (issue close, PR **merge**/close, release-linked close, external write, deletion — PR trigger = merge-to-shared-history, not the tracker flip) as mandates-per-unit-verdict vs rubber-stamps-proxy; produce the gap list | Grounds Track 1a in evidence; mirrors #386 pilot-first; stops me guessing the gap | audit artifact under `charness-artifacts/critique/` | **done** — `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md` (`c6c0cc56`); models = achieve seed + HOTL; gaps G1 issue/PR close, G2 PR merge, G3 release publish, G4 release-linked close, G5 deletions; worst = G1+G2 |
 | S2 — Track 1a pilot | Close the single worst gap from S1 in-place (sharpen closeout framing → per-unit behavioral verdict, cite P4, no gate) + fresh-eye critique (framing-not-gate) | Validate the LIGHT pattern on one real gap before any sweep | diff + bound critique artifact; the critique must answer per boundary: *declares a completion condition (blocker) or only mandates the per-unit question (pass)?* | **done** — closeout-discipline.md new mandate + SKILL.md guardrail + resolve-flow.md pointer; critique `charness-artifacts/critique/2026-06-18-s2-issue-close-framing-critique.md` = PASS (declares-vs-mandates: mandates, all 3 surfaces; safeguard strengthened) |
-| S3 — Track 1a sweep | Generalize the validated framing to the remaining real gaps from S1 | Pattern proven by S2; one critique covers the coherent bundle | diffs + critique (same per-boundary declares-vs-mandates check) | planned |
+| S3 — Track 1a sweep | Generalize the validated framing to the remaining real gaps from S1 | Pattern proven by S2; one critique covers the coherent bundle | diffs + critique (same per-boundary declares-vs-mandates check) | **done** — G3 release publish (step-7 P4 per-surface verdict, 3 bullets consolidated), G4 release-linked close (guardrail pointer), G5 deletion (rename-critique Per-Removed-Concept Verdict); critique `charness-artifacts/critique/2026-06-18-s3-sweep-framing-critique.md` = PASS (declares-vs-mandates: mandates all 3; in-place justified; safeguard intact) |
 | S4 — Track 2 audit | Measure the always-on surface (AGENTS.md / CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP splits | Track 2 is Step-0-independent; needs its own measurement before cutting | audit + plan (decide spin-out — see Operator Decision Queue) | planned |
 | S5 — Track 2 slim | Execute PUSH→PULL + SRP compression on the highest-bloat surfaces + fresh-eye critique (no safeguard lost) | After 1a lands the framing, the docs should reflect the smaller standing surface | diffs + before/after counts + critique | planned |
 | S6 — closeout | Broad proof + retro + per-improvement disposition + handoff update | Bundle boundary | gate suite green + retro + bound disposition review | planned |
@@ -185,8 +184,14 @@ external-boundary approvals discovered during the run when they do not block
 safe local progress. Use `none — <reason>` when the queue is empty at closeout.
 
 - Decision: Split **Track 2 (SLIM)** into its own goal? | Owner: operator |
-  Status: **RESOLVED 2026-06-18 — keep bundled for now** (operator approved);
-  revisit spin-out at S3 | Revisit trigger: after S3 lands Track 1a.
+  Status: **REVISITED at S3 (2026-06-18) — recommend KEEP BUNDLED, continuing
+  into S4** | Rationale: Track 1a landed cleanly (S1–S3, both critiques PASS) and
+  Track 2 is its natural continuation (the smaller standing surface should reflect
+  the framing that just landed); spinning out now would fragment one coherent
+  overhaul and the goal's Done criterion already includes the Track-2 shrink.
+  Operator-overturnable — if S4's audit shows Track 2 is large enough to warrant
+  its own lifecycle, spin out then. | Revisit trigger: S4 audit sizing, or an
+  explicit operator instruction.
 - Decision: File a tracking GitHub **issue** for this overhaul? | Owner: operator
   | Status: **RESOLVED 2026-06-18 — skip** (operator approved); the overhaul is
   tracked by this goal artifact | Revisit trigger: if scope outgrows one goal.
@@ -234,6 +239,31 @@ during the run:
 
 ## Slice Log
 
+- **S3 — Track 1a sweep (release publish G3, release-linked close G4, deletion
+  G5) — done.** Generalized the S2-validated framing in-place. **G3:**
+  `release/references/install-surface.md` (Publication Closure Boundary) now
+  renders `public release surface verified` as a P4 per-surface behavioral
+  verdict (channels: Real-Host Proof checklist, `fresh_checkout_probes`/
+  `startup_probes`, `install_refresh` readback); `release/SKILL.md` step 7 carries
+  a terse salient in-body pointer (the verdict detail was relocated out of the
+  capped body after the `check-skill-core-headroom` ratchet fired — a P2
+  concept-relocation that improved core-headroom 199 → 193; three redundant
+  step-7 state-distinction bullets + a duplicate step-6 line consolidated).
+  **G4:** the release-linked-issue guardrail now also requires the per-issue
+  behavioral verdict from `issue/closeout-discipline.md`.
+  **G5:** `critique/references/rename-critique.md` gained a "Per-Removed-Concept
+  Verdict" section. Synced mirror; froze the `critique` + `release` scenario-review
+  decisions in `docs/public-skill-dogfood.json` (hitl-recommended tier;
+  scenarios unchanged; acked). **Bound fresh-eye critique = PASS, no folds**
+  (`charness-artifacts/critique/2026-06-18-s3-sweep-framing-critique.md`):
+  declares-vs-mandates = mandates on all three; no smuggled gate/token; the
+  four-state guardrail (release L158-159) intact; consolidation is concept-merge
+  not a cap-dodge (net +2 lines); **Q5 orthogonality = in-place justified** (each
+  instantiation differs on unit/proxy/channel/disposition/observer — not a
+  duplicated paragraph; ≥3-boundary overturn rule not triggered). Track 1a
+  complete. **Track-2 candidates surfaced:** release/SKILL.md at 199/200 (slim in
+  S5); optional shared-ref cross-link naming the per-unit-verdict pattern if a
+  4th–5th boundary lands.
 - **S2 — Track 1a pilot (issue/PR close, G1+G2) — done.** Closed the single
   worst gap in-place: added "## Per-Issue Behavioral Verdict At Close (the
   irreversible-boundary mandate)" to `issue/references/closeout-discipline.md`

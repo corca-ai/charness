@@ -98,7 +98,6 @@ verified.
    - packaging and generated files agree on the same version
    - canonical quality gate passes
    - no generated install surface was left stale
-   - distinguish local/tag success from later workflow or public verification
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
    - if `fresh_checkout_probes` are declared, run them before tag publish and
@@ -110,15 +109,12 @@ verified.
    - run `audit_public_release_narrative.py` so the committed `latest.md` names the
      target tag with expected sections/ledger, and rejects a `--notes-file` at a mutable source-tree record
 7. Close the public release boundary.
-   - distinguish `local/tag state complete`, `workflow publication complete`,
-     and `public release surface verified`
-   - if a repo has tag-triggered or otherwise async publication, do not treat
-     helper success or tag push alone as publish completion
-   - if the repo has no repo-owned public verifier yet, leave the release explicitly open at that boundary
-   - render closeout only from the verified release ledger (tag, version, URL) per
-     `closeout-discipline.md`; once the target is named, surface `target_unavailable` instead of silently retargeting
-   - when the release resolves GitHub issues, pass `--close-issue <number>` so the
-     helper preflights `gh issue view`, writes close keywords, and verifies/falls back to manual close
+   - render `public release surface verified` as a per-surface behavioral verdict,
+     not tag/version state (per *P4*; `references/install-surface.md` Publication
+     Closure Boundary), then closeout only from the verified release ledger (tag,
+     version, URL) per `closeout-discipline.md`; surface `target_unavailable` on a moved target
+   - when the release resolves GitHub issues, pass `--close-issue <number>` (helper
+     preflights `gh issue view`, carries close keywords, verifies/falls back to manual)
 8. End with update steps, then refresh the maintainer's own install.
    - how operators refresh the managed install, what hosts still need after
      update, and what still requires manual human confirmation
@@ -149,7 +145,7 @@ The result should usually include:
 - Do not hand-edit generated plugin manifests when the repo has a sync helper.
 - Do not bump a version without stating why that bump level is justified.
 - Do not push, tag, or announce a release without explicit user confirmation.
-- Do not report a release-linked issue as resolved until GitHub verifies it closed via close-keyword carrier or manual fallback.
+- Do not report a release-linked issue as resolved until GitHub verifies it closed (close-keyword carrier or manual fallback) and the per-issue behavioral verdict in `../issue/references/closeout-discipline.md` is rendered — `status: verified` is the CLOSED state, not behavior proof.
 - Do not use `--close-issue` unless target issues are reachable through authenticated `gh`; fail before release mutation when they are not.
 - Do not leave a repo that treats version bumps as published releases stuck in a
   push-only state; encode that boundary in one repo-owned publish helper.

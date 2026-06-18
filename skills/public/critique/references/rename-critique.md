@@ -89,6 +89,25 @@ Charness releases; treat its findings as `Bundle Anyway` if cheap,
 `Act Before Ship` if a generated surface is wrong, and surface its dogfood as
 part of the output.
 
+## Per-Removed-Concept Verdict (deletion is an irreversible boundary)
+
+Deleting a cited concept is irreversible: consumers that depended on it lose it,
+and the removal enters shared history others build on. So per *P4* of the
+authoring-repo-internal `<repo-root>/docs/design-north-star.md`, a passing
+slug-drift run and "I updated the cites" are *claims* the cite sites were found —
+not proof each consumer still behaves without the removed concept.
+
+For **each** removed or renamed concept, render a verdict that its dependents
+resolve, confirmed through a channel **distinct from** your own edit pass: the
+`check_title_slug_drift.py` output, the rename validator allowlist, and an actual
+first-read of a consumer that knows only the new name (the First-Reader Probe
+above) — **or** record an explicit disposition (a deprecation cite kept N releases
+for consumer migration, an `Act Before Ship` hold, a deferred allowlist
+tightening). A slug-drift run or first-reader probe you do not actually read back
+is not this verdict. This is a per-concept **question to render, never a
+"cites look updated, ship it" aggregate sign-off to declare**; it adds no gate
+beyond the advisory slug-drift checker already named.
+
 ## Output Shape
 
 In addition to the substrate `Output Shape` from `SKILL.md`, rename

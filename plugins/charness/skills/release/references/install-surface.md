@@ -76,6 +76,19 @@ For repos with asynchronous publication, keep three states distinct:
 If tag push only starts a later workflow, `release` should not call the release
 complete at tag push alone.
 
+Per *P4* of the authoring-repo-internal `<repo-root>/docs/design-north-star.md`,
+`local/tag state complete` and `workflow publication complete` are state *claims*,
+not proof the shipped surface behaves. So render `public release surface verified`
+as a **per-surface behavioral verdict**: for each operator-facing surface the
+release touched, confirm it behaves through a channel **distinct from** the
+tag/version/gate state — the Real-Host Proof checklist below, the declared
+`fresh_checkout_probes` / `startup_probes`, or the `install_refresh` readback —
+**or** record an explicit non-verified disposition (with no repo-owned public
+verifier, the release stays explicitly open). Re-reading the tag/version state is
+not this verdict. This is a per-surface question to render, never a "tag pushed,
+ship it" aggregate sign-off to declare; it adds no gate beyond the checks already
+named here.
+
 If the real product boundary is an externally consumed GitHub release, package
 index, tap, or similar public surface, the canonical closure point is
 verification that the public surface is actually visible.
