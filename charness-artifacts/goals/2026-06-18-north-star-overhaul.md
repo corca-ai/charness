@@ -9,19 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: draft awaiting operator review + activation.
-- Current disposition: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary changed.
-- Current slice intent: shape-only. First real slice on activation is **S1 —
-  boundary audit** (read-only): classify every irreversible boundary as
-  *mandates-a-per-unit-behavioral-verdict* vs *rubber-stamps-a-proxy*. Once
-  active, the slice intent names the reviewable-intent unit in progress and the
-  commits it spans; critique and broad proof do not re-fire within one unchanged
-  intent (meaningful-slice-cadence).
-- Next action: activate with
-  `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md` — the four
-  `Discuss before activation` decisions are RESOLVED/approved (2026-06-18). First
-  slice on activation: S1 (read-only boundary audit).
+- Current slice: **S2 — Track 1a pilot** (in progress). S1 complete + committed
+  (`c6c0cc56`).
+- Current disposition: ACTIVE. S1 read-only audit landed the gap list; S2 closes
+  the single worst gap in-place + bound fresh-eye critique.
+- Current slice intent: **S2** — sharpen the GitHub issue/PR-close closeout prose
+  (outside the achieve seed: standalone `issue resolve`, direct-to-default and
+  PR-merge carriers — gaps G1+G2) to MANDATE a per-issue behavioral verdict
+  through a channel distinct from `CLOSED`, cite north-star P4, add no gate. The
+  slice intent names the reviewable-intent unit in progress and the commits it
+  spans; critique and broad proof do not re-fire within one unchanged intent
+  (meaningful-slice-cadence).
+- Next action: execute S2 — in-place sharpen of the issue-close closeout surface,
+  then the bound fresh-eye framing-not-gate critique (per-boundary
+  declares-vs-mandates check). S1 recommended G1+G2 as the worst gap; the S2
+  reviewer can overturn to split PR-merge out under the ≥3-duplication guard.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -169,7 +171,7 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 — boundary audit | Read-only: classify each irreversible boundary (issue close, PR **merge**/close, release-linked close, external write, deletion — PR trigger = merge-to-shared-history, not the tracker flip) as mandates-per-unit-verdict vs rubber-stamps-proxy; produce the gap list | Grounds Track 1a in evidence; mirrors #386 pilot-first; stops me guessing the gap | audit artifact under `charness-artifacts/critique/` | planned |
+| S1 — boundary audit | Read-only: classify each irreversible boundary (issue close, PR **merge**/close, release-linked close, external write, deletion — PR trigger = merge-to-shared-history, not the tracker flip) as mandates-per-unit-verdict vs rubber-stamps-proxy; produce the gap list | Grounds Track 1a in evidence; mirrors #386 pilot-first; stops me guessing the gap | audit artifact under `charness-artifacts/critique/` | **done** — `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md` (`c6c0cc56`); models = achieve seed + HOTL; gaps G1 issue/PR close, G2 PR merge, G3 release publish, G4 release-linked close, G5 deletions; worst = G1+G2 |
 | S2 — Track 1a pilot | Close the single worst gap from S1 in-place (sharpen closeout framing → per-unit behavioral verdict, cite P4, no gate) + fresh-eye critique (framing-not-gate) | Validate the LIGHT pattern on one real gap before any sweep | diff + bound critique artifact; the critique must answer per boundary: *declares a completion condition (blocker) or only mandates the per-unit question (pass)?* | planned |
 | S3 — Track 1a sweep | Generalize the validated framing to the remaining real gaps from S1 | Pattern proven by S2; one critique covers the coherent bundle | diffs + critique (same per-boundary declares-vs-mandates check) | planned |
 | S4 — Track 2 audit | Measure the always-on surface (AGENTS.md / CLAUDE.md / skill bodies at cap) + own-concept bloat; plan PUSH→PULL + SRP splits | Track 2 is Step-0-independent; needs its own measurement before cutting | audit + plan (decide spin-out — see Operator Decision Queue) | planned |
@@ -219,14 +221,35 @@ engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slo
 and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
-- **Routing** — at activation, ask `find-skills` to recommend the skill per phase
-  (expected: surface edits → `impl`; fresh-eye reviews → `critique`; validation
-  cadence → `quality`) and record the route returned. [fill during run]
+- **Routing** — `find-skills` queried at activation (read-only,
+  `--recommend-for-task`). Returned `achieve` owns the goal lifecycle (active) and
+  `critique` for the fresh-eye reviews; per the goal's Coordination Cues the
+  phase route is surface edits → `impl`, fresh-eye reviews → `critique`,
+  validation cadence → `quality`. Route recorded and followed (S1 read-only audit
+  used direct reads + one Explore fan-out; S2 framing edits → `impl`; S2 critique
+  → `critique`).
 - **Gather** — `Gather: n/a — all context is repo-internal artifacts; no external URL/Slack/Notion/Docs source to gather.`
 - **Release** — `Release: n/a — prose/skill-surface change only; no version bump or install-manifest edit planned (a later operator decision could ship it as a release).`
 - **Issue closeout** — `Issue closeout: n/a — closes no tracked issue; #386 is already CLOSED (context only), #387/#371 are explicitly out of scope and not closed by this goal.`
 
 ## Slice Log
+
+- **S1 — boundary audit (read-only) — done, `c6c0cc56`.** Artifact:
+  `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md`. Classified the
+  four north-star irreversible families. **Models (already mandate per-unit
+  verdict):** achieve issue-bundle disposition (the #386 seed, scoped to
+  `achieve`+HOTL-touching bundles) and the HOTL ledger (per-entry provider
+  readback, cites P4). **Gaps (rubber-stamp proxy):** G1 standalone `issue
+  resolve` close (`verify-closeout CLOSED` + recurrence critique), G2 PR
+  merge-to-shared-history (keyword-survival + `CLOSED`), G3 release publish
+  (critique-ran + state-distinguished + adapter host-proof checklist), G4
+  release-linked issue close, G5 deletions (rename-critique = aggregate
+  coherence, slug-drift partially covers). Announcement delivery = mostly-covered
+  (per-post readback), not a primary gap. **Recommended S2 target = G1+G2** (the
+  issue/PR-close boundary in every carrier outside the seed). Carried the B2
+  guardrail: sharpened prose must MANDATE the per-unit question, never DECLARE a
+  completion condition. Cheap deterministic gate green (doc-links, markdown,
+  secrets, critique-artifact validator). Routing recorded below.
 
 ## Context Sources
 
