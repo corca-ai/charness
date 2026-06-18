@@ -20,11 +20,9 @@
 - **#390 CLOSED** (one closeable pass): the nose clone advisory is now
   **baselined** (547 accepted) so it reports only new/changed drift; the **14
   genuine extractable families are held visible (not baselined)** and filed in
-  **#391**. Debug sweep (492 files) clean; doc↔code clean. Record:
-  [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md).
-  - **Baseline rule:** re-baseline (`--write-baseline`) only **after** surfaced
-    candidates are fixed, never blindly (else fixable debt is re-buried). The
-    held-out signatures live in the pass record.
+  **#391**. Debug sweep (492 files) clean; doc↔code clean. Re-baseline only
+  **after** surfaced candidates are fixed, never blindly. Record + held-out
+  signatures: [#390 pass record](../charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md).
 - Open issues: **#391** (code-layer dup follow-ups, sub of #390), **#387**
   (closeout-validator one-pass UX), **#371** (browser teardown — own track, no
   close without invocation-end teardown proof).
@@ -36,12 +34,13 @@
   intentional portability boilerplate. **Verify that's really justified** — is
   the local-dup-for-package-independence trade still right, or should it
   consolidate to a shared bootstrap? This is the deepest residual the #390
-  verification flagged. Reference **`../crkaen-agents`** (confirm the path;
-  possible typo for `craken`).
-- **B. Gate reduction (operator-requested, NEW).** Go beyond "don't add gates"
-  to examine whether **existing** gates can be **removed** (the ~34.7K-line gate
-  surface). "Less but better" applied to the gate layer itself. Reference
-  `../crkaen-agents`.
+  verification flagged. Reference **`../craken-agents`**.
+- **B. Gate reduction (operator-requested, NEW).** Examine whether **existing**
+  gates can be **removed** (~34.7K-line gate surface) — "less but better" on the
+  gate layer, **without** adding new floors. Live case study (retro root-cause):
+  the length **hard floor** invited gaming this session (squeeze-under vs the
+  intended refactor split); consider shifting that signal to authoring-time /
+  advisory. Reference `../craken-agents`.
 - **C. SRP sweep (original primary).** Remaining capped-skill-body compression by
   own-concept separation. Pre-check each body: grep `check_skill_contracts.py`
   for pinned snippets + run `check_skill_surface_preflight.py` for core-headroom
@@ -53,8 +52,7 @@
 
 - A vs the portability model: consolidate bootstrap, or keep the deliberate copy?
 - B: which existing gates are prunable without losing the teeth that matter?
-- What `../crkaen-agents` is and how to use it as working context (route via
-  `gather` if it's an external source).
+- What `../craken-agents` is / how to use it (route via `gather` if external).
 - Who owns the #371 upstream lifecycle proof path.
 
 ## References

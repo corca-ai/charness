@@ -28,6 +28,18 @@ code-layer quality sweep + verify. Record:
    (`nose_baseline_lib.py` + `nose_report_lib.py`; inventory 240/360). The
    discipline already says this (implementation-discipline.md); the trap is
    reaching for the cheap squeeze under gate pressure.
+   - **Root-cause (why it was missed despite reading the rule this session):** a
+     hard gate, on failure, reframes the situation as "satisfy the threshold" —
+     the gate's *intent* (a signal to read) is invisible at the failure moment,
+     only the number is visible, so the teeth convert a signal into a target
+     (Goodhart on oneself; the same terminal-green-as-goal failure the north-star
+     names, applied to the length gate). The rule lived as prose + a *bypassable*
+     non-blocking advisory, so clearing the hard floor skipped the question
+     entirely. Momentum toward closeout + "1 line over is trivial" suppressed the
+     escalation to "this is signal."
+   - **Improvement (next session, item B):** this is evidence a hard floor can
+     produce gaming; consider moving the length signal to authoring-time /
+     advisory rather than a closeout blocker — without adding a new floor.
 3. **A "quality pass" framing can overstate the debt.** #390's "duplicated,
    non-orthogonal scripts and latent defects" framing was largely NOT confirmed:
    top duplication is intentional portability/idiom boilerplate (governed by
