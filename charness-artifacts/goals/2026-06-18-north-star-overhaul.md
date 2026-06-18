@@ -1,6 +1,6 @@
 # Achieve Goal: North-star overhaul: Track 1a (per-unit verdict framing) + Track 2 (slim)
 
-Status: draft
+Status: complete
 Created: 2026-06-18
 Activation: `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md`
 
@@ -9,21 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S6 — closeout** (next). **Track 1a + Track 2 (core)
-  COMPLETE.** S1–S5 all done; four fresh-eye critiques (S2, S3, S3-reloc, S5) all
-  PASS. AGENTS.md 70→58; retro core 160→144; all gates green.
-- Current disposition: ACTIVE, entering closeout. The goal's Done criteria are
-  met (every irreversible boundary mandates a per-unit verdict; standing surface
-  shrank without losing a safeguard; gate suite green; fresh-eye confirmed
-  framing-not-gate; no terminal green added).
-- Current slice intent: **S6** — broad proof (full gate suite) + retro +
-  per-improvement disposition + handoff update + the goal's Final Verification /
-  Auto-Retro / User Verification sections; correct the handoff #387 mislabel
-  (Off-Goal Findings); record the remaining-13-body SRP sweep as a spun-out
-  follow-up.
-- Next action: execute S6 closeout — run broad proof, write the retro + the
-  disposition review, fill Final Verification, update the handoff, then flip the
-  goal to complete.
+- Current slice: **COMPLETE.** S1–S6 all done; `Status: complete` flipped via the
+  `check_goal_artifact` gate. Four slice critiques (S2, S3, S3-reloc, S5) + a
+  rung-2 disposition review all PASS; broad pytest **3275 passed, 0 failed**.
+- Current disposition: DONE. All Done criteria met — every audited irreversible
+  boundary mandates a per-unit behavioral verdict via a distinct channel (issue/PR
+  close, release publish, release-linked close, deletion; HOTL + achieve seed
+  pre-existing); the standing surface shrank (retro core 160→146 off cap + Cautilus
+  always-on text pulled) without losing a safeguard; gate suite green; fresh-eye
+  confirmed framing-not-gate; no terminal-green gate added.
+- Follow-ups (in `docs/handoff.md` Next Session): the spun-out remaining-13-body
+  SRP sweep, the deferred AGENTS.md Skill-Routing collapse (needs a lockstep
+  `render_skill_routing.py` change), and any future push (no external side effect
+  taken this run).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -180,9 +178,12 @@ What the user can do to verify completion directly:
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Closeout state: all three queue items below are RESOLVED; no operator action
+blocks completion. The only forward-looking operator decisions are the
+recommended **spin-out of the remaining-13-body SRP sweep** and the deferred
+**AGENTS.md Skill-Routing collapse** (both recorded in `docs/handoff.md` Next
+Session), plus any future **push** of the pending local commits (no external
+side effect was taken this run).
 
 - Decision: Split **Track 2 (SLIM)** into its own goal? | Owner: operator |
   Status: **SIZED at S4 (2026-06-18) — recommend PARTIAL spin-out.** Keep the
@@ -227,38 +228,37 @@ engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slo
 and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
-- **Routing** — `find-skills` queried at activation (read-only,
-  `--recommend-for-task`). Returned `achieve` owns the goal lifecycle (active) and
-  `critique` for the fresh-eye reviews; per the goal's Coordination Cues the
-  phase route is surface edits → `impl`, fresh-eye reviews → `critique`,
-  validation cadence → `quality`. Route recorded and followed (S1 read-only audit
-  used direct reads + one Explore fan-out; S2 framing edits → `impl`; S2 critique
-  → `critique`).
+- Routing: find-skills recommended the phase route followed across S1–S6 — `quality` for validation cadence, `critique` for fresh-eye reviews, `impl` for surface/prose edits, and `achieve` for the goal lifecycle (queried read-only at activation via `--recommend-for-task`).
 - **Gather** — `Gather: n/a — all context is repo-internal artifacts; no external URL/Slack/Notion/Docs source to gather.`
 - **Release** — `Release: n/a — prose/skill-surface change only; no version bump or install-manifest edit planned (a later operator decision could ship it as a release).`
 - **Issue closeout** — `Issue closeout: n/a — closes no tracked issue; #386 is already CLOSED (context only), #387/#371 are explicitly out of scope and not closed by this goal.`
 
 ## Slice Log
 
-- **S5 — Track 2 slim — done.** Two concept-separations (P2), not line-shaving.
-  **A — AGENTS.md PUSH→PULL (always-on surface, 70 → 58 lines):** the Cautilus
-  Start-Here bullet compressed to a 1-line pointer (full eval-only/disabled-
-  surface contract already in + tooling-enforced by
-  `quality/references/cautilus-on-demand.md`); the `## Skill Routing` section
-  collapsed (it duplicated Start Here's find-skills/gather/quality routing —
-  kept only the unique capability-noun recommendation + catalog principle).
-  Safeguard sections (Subagent Delegation, Phase Rules) untouched. **B — retro
-  own-concept SRP-split (core 160 → 144, off the cap):** `## Auto-Retro Trigger`
-  + `## Expert Counterfactual Rule` compressed to their load-bearing rule + the
-  repo-specific `check_auto_trigger.py` command, delegating taxonomy/examples to
-  the pre-existing references `trigger-and-persistence.md` / `expert-lens.md`
-  (zero content lost). Synced mirror; froze the `retro` scenario-review decision
-  in `docs/public-skill-dogfood.json` (scenarios unchanged). **Bound fresh-eye
-  critique = PASS, no folds**
-  (`charness-artifacts/critique/2026-06-18-s5-track2-slim-critique.md`): no
-  safeguard lost or made unread; references confirmed to hold the delegated
-  detail; P2 concept-separation, not line-shaving. Remaining-13-body SRP sweep →
-  spin-out (recommended).
+- **S5 — Track 2 slim — done (with an S6 correction, see below).** Two
+  concept-separations (P2), not line-shaving. **A — AGENTS.md always-on
+  PUSH→PULL (Cautilus):** the Cautilus Start-Here bullet compressed to a 1-line
+  pointer (full eval-only/disabled-surface contract already in + tooling-enforced
+  by `quality/references/cautilus-on-demand.md`) — always-on *text/concept load*
+  reduced (the learnability metric), line count unchanged (it was always one
+  bullet). Safeguard sections (Subagent Delegation, Phase Rules) untouched.
+  **B — retro own-concept SRP-split (core 160 → 146, off the cap):**
+  `## Auto-Retro Trigger` + `## Expert Counterfactual Rule` compressed to their
+  load-bearing rule + the repo-specific `check_auto_trigger.py` command,
+  delegating taxonomy/examples to the pre-existing references
+  `trigger-and-persistence.md` / `expert-lens.md` (zero content lost; verbatim
+  contract-snippet phrases preserved). This is the **measurable standing-surface
+  shrink**. Synced mirror; froze the `retro` scenario-review decision (scenarios
+  unchanged). **Bound fresh-eye critique = PASS**
+  (`charness-artifacts/critique/2026-06-18-s5-track2-slim-critique.md`).
+  **S6 correction:** the S5 *Skill-Routing collapse* was REVERTED — the
+  S6 broad pytest caught that `AGENTS.md`'s `## Skill Routing` is a
+  **setup-generated surface** bound verbatim by `setup/scripts/render_skill_routing.py`
+  (`matches_compact_block`), so collapsing it flipped `charness doctor`'s
+  `repo_onboarding` status `ready → required` (`test_charness_doctor_reports_managed_surface`).
+  Restored the canonical block verbatim; collapsing it needs a lockstep
+  `render_skill_routing.py` change → deferred to the spun-out Track-2 work.
+  Remaining-13-body SRP sweep → spin-out (recommended).
 - **S4 — Track 2 audit (read-only) — done.** Artifact:
   `charness-artifacts/critique/2026-06-18-s4-track2-audit.md`. Always-on surface =
   `AGENTS.md` 70 lines (`CLAUDE.md` symlink). Two PUSH→PULL / orthogonality
@@ -436,8 +436,13 @@ fix was B2, now folded.
 ## Off-Goal Findings
 
 - The handoff (`docs/handoff.md`) mislabels #387 as the "overhaul Phase-1 pilot";
-  #387 is actually a closeout-validator one-pass UX issue. Correct the handoff at
-  closeout (S6) so the next session is not misrouted.
+  #387 is actually a closeout-validator one-pass UX issue. **RESOLVED** — the
+  handoff already carried the correction (L33–34 "**not** the overhaul pilot");
+  the S6 handoff refresh keeps #387 correctly scoped.
+- **New (S6):** `AGENTS.md`'s `## Skill Routing` is a setup-generated surface
+  pinned by `setup/scripts/render_skill_routing.py` — editing it freely flips
+  `charness doctor` `repo_onboarding`. Recorded in the retro + handoff as a
+  deferred Track-2 slice (needs a lockstep `render_skill_routing.py` change).
 
 ## Final Verification
 
@@ -446,17 +451,68 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md
+Host log probe: charness-artifacts/probe/2026-06-18-north-star-overhaul.json
+Disposition review: charness-artifacts/critique/2026-06-18-north-star-overhaul-disposition-review.md
+
+Broad proof: `python3 -m pytest -q` = **3275 passed, 0 failed** (482s, 2026-06-19)
+after the S6 fixes (3 pinned-phrase/generated-surface regressions the per-slice
+gates missed, caught at this bundle-boundary broad run and fixed). Targeted gates
+green: `validate_skills`, `check_doc_links`, `check-markdown`,
+`check_skill_contracts`, `check-skill-core-headroom`. One CLI install/uninstall
+test (`test_session_capture_cli_install_and_uninstall_round_trip`) flaked once
+under heavier `-n auto` parallelism but passes in isolation and under the default
+run — a known parallelism flake, unrelated to this prose-only change.
 
 ## User Verification Instructions
 
-_Filled at closeout: the exact commands to re-run the gate suite, and the audit /
-diff / before-after artifacts to read, so the operator can confirm each
-irreversible boundary now demands a per-unit verdict and the standing surface
-shrank without losing a safeguard._
+**Re-run the gate suite:**
+
+```bash
+python3 scripts/validate_skills.py --repo-root .
+python3 scripts/check_doc_links.py --repo-root .
+./scripts/check-markdown.sh
+python3 scripts/check_skill_contracts.py --repo-root .
+python3 -m pytest -q            # full broad proof (3272+ tests; ~8 min)
+```
+
+**Read the audit + diffs (Track 1a — every irreversible boundary now demands a
+per-unit behavioral verdict):**
+
+- S1 boundary audit: `charness-artifacts/critique/2026-06-18-s1-boundary-audit.md`
+  (the gap list, models vs gaps).
+- The per-boundary mandates (each cites P4, names a distinct channel, adds no
+  gate): `git show 8b3e38e9` (issue/PR close) · `git show 439c4112` (release
+  publish + release-linked close + deletion). Grep the live surfaces:
+  `grep -n "Per-Issue Behavioral Verdict" skills/public/issue/references/closeout-discipline.md`,
+  `grep -n "per-surface behavioral verdict" skills/public/release/references/install-surface.md`,
+  `grep -n "Per-Removed-Concept Verdict" skills/public/critique/references/rename-critique.md`.
+- The framing-not-gate critiques: `charness-artifacts/critique/2026-06-18-s2-issue-close-framing-critique.md`,
+  `...-s3-sweep-framing-critique.md` (each answers per boundary: *mandates the
+  per-unit question, never declares a completion condition*).
+
+**Read the before/after (Track 2 — standing surface shrank without losing a
+safeguard):**
+
+- `git show 142329b2` (S5 slim) and the S6 closeout commit; the measurable shrink
+  is `retro/SKILL.md` core 160 → 146 (off the 160 cap) via concept-separation to
+  pre-existing references, plus the Cautilus always-on text pulled to
+  `quality/references/cautilus-on-demand.md`. The S5 critique
+  (`...-s5-track2-slim-critique.md`, with the S6 generated-surface correction)
+  confirms no safeguard lost/unread.
+- Confirm no terminal-green gate was added:
+  `git diff 1f10df0b..HEAD -- scripts/ tests/` is empty for behavior code (the
+  whole overhaul is prose/skill-surface + artifacts).
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Cited retro: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`.
+Per-improvement disposition of its `## Next Improvements`:
+
+Retro dispositions: none — workflow (pre-edit near-cap SKILL.md headroom+snippet check): both traps are already caught at commit by existing gates (check-skill-core-headroom, check_skill_contracts); the fix is a workflow pre-check habit, not a missing structural guard.
+
+Retro dispositions: none — capability (a pre-edit affordance that prints a SKILL.md's core-headroom margin + pinned contract snippets): convenience-only; the two existing commit gates already enforce both constraints, so this is nice-to-have and is deferred to the spun-out 13-body SRP goal if the manual pre-check proves costly.
+
+Retro dispositions: applied: memory — captured the staged-blob-headroom-ratchet and contract-snippet-slim traps in the durable retro (charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md) Waste + Sibling Search, the canonical home the recent-lessons digest selects from on its next persist cycle.
+
+Structural follow-up: none — the transferable waste (a body-slim drops a pinned contract phrase / ignores the staged-blob core-headroom ratchet) is already caught post-hoc by the existing commit gates check_skill_contracts and check-skill-core-headroom; the durable retro memory note is the pre-check for the spun-out 13-body SRP sweep, so no new gate/guard is warranted.

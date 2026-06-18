@@ -133,8 +133,10 @@ The result should usually include:
 ## Auto-Retro Trigger
 
 Trigger a short `session` retro automatically when a user correction exposes a
-real miss in the workflow, not just a preference difference. Also trigger after
-slice closeout when
+real miss in the workflow, not just a preference difference — for example a
+fresh-eye reader misread an invariant that is present in the code, revealing it
+still relies on convention rather than declaration. Also trigger after slice
+closeout when
 `python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .` reports
 `triggered: true` (or the slice matches the adapter's
 `auto_session_trigger_surfaces` / `auto_session_trigger_path_globs`). Keep it

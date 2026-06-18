@@ -110,9 +110,10 @@ verified.
      target tag with expected sections/ledger, and rejects a `--notes-file` at a mutable source-tree record
 7. Close the public release boundary.
    - render `public release surface verified` as a per-surface behavioral verdict,
-     not tag/version state (per *P4*; `references/install-surface.md` Publication
-     Closure Boundary), then closeout only from the verified release ledger (tag,
-     version, URL) per `closeout-discipline.md`; surface `target_unavailable` on a moved target
+     not tag/version state — do not treat tag push alone as publish completion (per
+     *P4*; `references/install-surface.md` Publication Closure Boundary); then
+     closeout only from the verified release ledger (tag, version, URL) per
+     `closeout-discipline.md`; surface `target_unavailable` on a moved target
    - when the release resolves GitHub issues, pass `--close-issue <number>` (helper
      preflights `gh issue view`, carries close keywords, verifies/falls back to manual)
 8. End with update steps, then refresh the maintainer's own install.

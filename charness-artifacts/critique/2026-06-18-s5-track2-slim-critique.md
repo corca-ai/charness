@@ -52,9 +52,28 @@ Over-worry dismissed: the compressed Cautilus pointer no longer spells the
 disabled-surfaces list inline, but the actionable trip-wires are all retained
 always-on and the governance list is one reference hop away.
 
+## Post-S5 correction (S6 broad proof)
+
+The reviewer's QA2 PASS on the **Skill-Routing collapse** was **superseded** at
+the S6 bundle-boundary broad pytest: `AGENTS.md`'s `## Skill Routing` is a
+**setup-generated surface** pinned verbatim by
+`setup/scripts/render_skill_routing.py` (`matches_compact_block`). The collapse
+flipped `charness doctor`'s `repo_onboarding` status `ready → required`, failing
+`test_charness_doctor_reports_managed_surface`. Both the reviewer and the doer
+missed that an AGENTS.md section can be skill-owned/generated (the review checked
+duplication + safeguards, not generated-surface ownership). **Corrected in S6:**
+the canonical Skill-Routing block was restored verbatim; a genuine collapse would
+need a lockstep `render_skill_routing.py` change (deferred to the spun-out
+Track-2 work). The **Cautilus PUSH→PULL (Change A) stands unaffected** — it
+targets a non-generated Start-Here bullet and its safeguard core remains
+always-on. The measurable standing-surface shrink is therefore carried by the
+retro SRP-split (B) plus the Cautilus always-on text reduction.
+
 ## Disposition
 
-PASS with no folds. Track 2's standing-surface shrink is demonstrated: the
+PASS on Change A (Cautilus) + Change B (retro SRP); Change A-routing
+(Skill-Routing collapse) reverted in S6 as a generated-surface contract
+violation. Track 2's standing-surface shrink is demonstrated: the
 always-on AGENTS.md is measurably smaller (70 → 58) with no safeguard lost or made
 unread, and the retro body was pulled off the cap (160 → 144) by genuine
 concept-separation to references that already owned the concepts. The

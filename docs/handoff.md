@@ -17,16 +17,16 @@
   [`design-north-star.md`](./design-north-star.md) governs, referenced from
   `AGENTS.md`). #386 fixed by a Rung-2 distinct-observer/distinct-channel
   disposition-review mandate, **no new gate**.
-- **Overhaul Step 0 (mechanism investigation) is RESOLVED; remaining work =
-  IMPLEMENTATION (next slice).** Mechanism of the #386-class failure = **task
-  FRAMING**: an aggregate-disposition sign-off after all-green+CLOSED makes a
-  fresh reviewer suppress its own (present) proxy-skepticism and rubber-stamp
-  (catch 0/12). The lever that flips it **0.00→1.00** = a **per-unit behavioral
-  verdict mandate**; the distinct-channel demand falls out automatically. NOT
-  context-load, NOT raw-vs-summary channel. #386's fix is empirically validated.
-  Full program + carry-forward lessons + method in
-  [`step0-experiment-program-archive`](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md)
-  (raw records in `charness-artifacts/critique/2026-06-18-*`).
+- **Overhaul COMPLETE (Track 1a + Track 2 core), 2026-06-18** —
+  [`north-star-overhaul` goal](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
+  (S1–S6). **Track 1a:** the #386 per-unit behavioral-verdict framing is
+  generalized to every audited irreversible boundary (issue/PR close, release
+  publish, release-linked close, deletion), each citing P4 with a distinct
+  channel and **no new gate/token**. **Track 2:** standing surface shrank
+  (`retro` core 160→146 off the cap; Cautilus detail pulled from `AGENTS.md`).
+  Four slice critiques + a rung-2 disposition review PASS; broad pytest green.
+  Step-0 mechanism archived in
+  [`step0-experiment-program-archive`](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md).
 - **#371 remains open by design** — no close without controlled invocation-end
   teardown proof (process tree + `agent-browser-chrome-*` dir) for completion,
   cancellation, provider failure, and timeout.
@@ -36,18 +36,24 @@
 
 ## Next Session
 
-- **Primary: the overhaul is SHAPED as a draft `achieve` goal** —
-  [`2026-06-18-north-star-overhaul.md`](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
-  (Track 1a LIGHT = generalize the per-unit behavioral-verdict framing, NO new
-  gate; Track 2 SLIM). **`pursue_ready` — the 4 `Discuss before activation`
-  decisions are RESOLVED/approved** (Track-1a in-place, Track-2 bundled[revisit
-  S3], no external side effects, no tracked issue). Activate with
-  `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md`. First slice
-  S1 = read-only boundary audit. A bounded fresh-eye plan premortem is folded.
-- **Honor the north star: the fix is FRAMING/task-structure, not prose, not a new
-  gate.** Optional/not blocking: a 2nd defect class would harden generality.
-- #371 stays on its own track; do not couple it to the overhaul.
-- Older deferrals: D28/D29 in [deferred decisions](./deferred-decisions.md).
+- **Primary spin-out: the remaining-13-capped-skill-body SRP sweep** (Track-2
+  follow-up the overhaul sized). 14 public SKILL.md bodies sit within ~8 core
+  lines of the 160-core cap (retro is now off it); compress each by own-concept
+  separation like the retro S5 pilot. **Pre-check each body first** (overhaul
+  retro lesson): grep `check_skill_contracts.py` for pinned snippets + run
+  `check_skill_surface_preflight.py` for core-headroom BEFORE editing, and run the
+  **broad** `pytest -q` at the bundle boundary (the per-slice `run_evals` subset
+  misses some pinned-phrase tests).
+- **Deferred: the `AGENTS.md` Skill-Routing duplication** — it duplicates Start
+  Here, but `## Skill Routing` is a setup-generated surface pinned by
+  `setup/scripts/render_skill_routing.py` (collapsing it flips `charness doctor`
+  `repo_onboarding`); a real collapse needs a lockstep change.
+- **External side effects deferred:** the overhaul pushed nothing. Pending local
+  commits include the overhaul series + the older Step-0 archive `4da92874` /
+  `8a92985f`; a push is a separate explicit operator decision.
+- #371 stays on its own track. #387 (closeout-validator one-pass UX) is unrelated
+  to the overhaul. Older deferrals: D28/D29 in
+  [deferred decisions](./deferred-decisions.md).
 
 ## Discuss
 
@@ -55,7 +61,7 @@
 
 ## References
 
-- [overhaul draft goal (shaped, awaiting activation)](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
+- [north-star overhaul goal (COMPLETE — S1–S6)](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
 - [Step 0 experiment program archive — RESOLVED](../charness-artifacts/retro/2026-06-18-step0-experiment-program-archive.md)
 - [overhaul plan v2 (Track 1a now LIGHT)](../charness-artifacts/critique/2026-06-18-overhaul-plan-v2.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)

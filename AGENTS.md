@@ -16,7 +16,19 @@
 
 ## Skill Routing
 
-The `find-skills` bootstrap (Start Here) is the routing map. When a request names a workflow or capability noun (worktree, browser automation, specdown, validation), ask `find-skills` to recommend a route before ad hoc shell or tool use; recommendation probes are read-only, while a plain inventory refresh owns `charness-artifacts/find-skills/latest.*`. Otherwise pick the durable work skill that best matches. Detailed routing belongs in `find-skills` output, not a long checked-in catalog.
+At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration.
+
+Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.
+
+When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use; recommendation-shaped probes are read-only by default, while plain inventory refreshes own `charness-artifacts/find-skills/latest.*`.
+
+After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.
+
+External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
+
+Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.
+
+Keep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.
 
 ## Subagent Delegation
 
