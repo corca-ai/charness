@@ -218,7 +218,7 @@ mutation_testing:
     sample: "python3 scripts/sample_mutation_files.py --repo-root ."
     summary: "python3 scripts/check_mutation_suite_score.py --repo-root ."
   score_break: 80
-  schedule_cron: "17 */3 * * *"
+  schedule_cron: "17 */12 * * *"
   changed_quota: 5
   max_files: 5
   max_executable_mutants: 120
