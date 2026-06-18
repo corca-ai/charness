@@ -18,9 +18,10 @@ runs the activation command.
   active, the slice intent names the reviewable-intent unit in progress and the
   commits it spans; critique and broad proof do not re-fire within one unchanged
   intent (meaningful-slice-cadence).
-- Next action: operator resolves the `Discuss before activation` items, then
-  activate with
-  `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md`.
+- Next action: activate with
+  `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md` — the four
+  `Discuss before activation` decisions are RESOLVED/approved (2026-06-18). First
+  slice on activation: S1 (read-only boundary audit).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   fresh-eye critique + higher-cost proof at slice-intent boundaries; broad proof
   at the closeout bundle.
@@ -165,40 +166,33 @@ external-boundary approvals discovered during the run when they do not block
 safe local progress. Use `none — <reason>` when the queue is empty at closeout.
 
 - Decision: Split **Track 2 (SLIM)** into its own goal? | Owner: operator |
-  Why deferred: Track 1a is the priority and independently shippable; Track 2 is
-  Step-0-independent and high-blast-radius (always-on surfaces) | Unblock action:
-  operator says split vs keep-bundled | Revisit trigger: after S3 lands Track 1a.
+  Status: **RESOLVED 2026-06-18 — keep bundled for now** (operator approved);
+  revisit spin-out at S3 | Revisit trigger: after S3 lands Track 1a.
 - Decision: File a tracking GitHub **issue** for this overhaul? | Owner: operator
-  | Why deferred: the handoff mislabeled #387 as the tracker; the overhaul has no
-  tracked issue today | Unblock action: operator says file vs skip | Revisit
-  trigger: at activation.
-- Decision: Push pending local commit **`4da92874`** (Step 0 archive) to
-  `origin/main`? | Owner: operator | Why deferred: external action, awaiting
-  confirmation since the prior session | Unblock action: operator approves push |
-  Revisit trigger: at activation or the next push boundary.
+  | Status: **RESOLVED 2026-06-18 — skip** (operator approved); the overhaul is
+  tracked by this goal artifact | Revisit trigger: if scope outgrows one goal.
+- Decision: Push pending local commits **`4da92874` / `8a92985f`** to
+  `origin/main`? | Owner: operator | Status: **RESOLVED 2026-06-18 — not in
+  scope** (operator approved "no external side effects"); a push needs a separate
+  explicit instruction | Revisit trigger: the next explicit push request.
 
 ## Discuss before activation
 
-Discuss before activation: four consequential defaults are surfaced for the
-operator — (1) Track-1a in-place method, (2) Track-2 bundling/spin-out,
-(3) no external side effects in scope, (4) no tracked issue filed. **SURFACED,
-NOT YET RESOLVED** — the operator resolves these before activating; until then
-`--pursue-ready` is correctly false.
+Discuss before activation: RESOLVED 2026-06-18 — operator approved all four
+defaults ("모두 승인"): (1) Track-1a **in-place** method (no new shared
+reference), (2) Track-2 **bundled** for now (revisit spin-out at S3), (3) **no
+external side effects in scope** — no push/publish/tag, including pending commits
+`4da92874` / `8a92985f` (a push needs a separate explicit later instruction),
+(4) **no tracked issue** filed. Goal is now activation-ready.
 
-These consequential defaults are **surfaced, not yet resolved** — the operator
-resolves them before activating (until then `--pursue-ready` is correctly false):
-
-1. **Track 1a method default = in-place sharpening (cite P4), not a new shared
-   reference.** Chosen to honor north-star P2 and the "salient at the decision
-   point" finding; overturned only if S1 shows ≥3 boundaries would duplicate the
-   paragraph. Confirm or override.
-2. **Track 2 is bundled but spin-out-able.** It edits always-on surfaces
-   (high blast radius). Decide at S3 whether it stays in this goal or becomes its
-   own. Confirm the bundling is acceptable for now.
-3. **No external side effects are in scope** (no push/publish/tag), including the
-   pending `4da92874` archive commit. Confirm, or approve a specific push.
-4. **No tracked issue is filed for the overhaul.** Confirm skip, or ask to file
-   one before activation.
+1. **Track 1a method = in-place sharpening (cite P4), not a new shared
+   reference.** APPROVED. Overturn only if S1 shows ≥3 boundaries would duplicate
+   the same paragraph.
+2. **Track 2 bundled, spin-out-able.** APPROVED to keep bundled; decide spin-out
+   at S3.
+3. **No external side effects in scope** (no push/publish/tag). APPROVED. Pushing
+   the pending commits requires a separate explicit instruction.
+4. **No tracked issue for the overhaul.** APPROVED skip.
 
 ## Coordination Cues
 

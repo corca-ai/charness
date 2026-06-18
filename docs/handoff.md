@@ -39,10 +39,9 @@
 - **Primary: the overhaul is SHAPED as a draft `achieve` goal** —
   [`2026-06-18-north-star-overhaul.md`](../charness-artifacts/goals/2026-06-18-north-star-overhaul.md)
   (Track 1a LIGHT = generalize the per-unit behavioral-verdict framing, NO new
-  gate; Track 2 SLIM). It is `shape_ready`; `pursue_ready` is held on **4 surfaced
-  `Discuss before activation` decisions** (Track-1a in-place method, Track-2
-  bundling/spin-out, no external side effects, no tracked issue). Resolve those,
-  then activate
+  gate; Track 2 SLIM). **`pursue_ready` — the 4 `Discuss before activation`
+  decisions are RESOLVED/approved** (Track-1a in-place, Track-2 bundled[revisit
+  S3], no external side effects, no tracked issue). Activate with
   `/goal @charness-artifacts/goals/2026-06-18-north-star-overhaul.md`. First slice
   S1 = read-only boundary audit. A bounded fresh-eye plan premortem is folded.
 - **Honor the north star: the fix is FRAMING/task-structure, not prose, not a new
