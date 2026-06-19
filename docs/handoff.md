@@ -13,57 +13,45 @@
 
 ## Current State
 
-- **Released v0.52.6 (pushed + tagged + GitHub release `verified`).** Shipped the
-  dup-ratchet hardening (F scope_paths-empty advisory, C `--write-baseline`
-  delta/confirm guard, I `validate_gate_baseline` folded into the existing
-  evaluate path — all advisory/non-blocking) + in-process coverage for
-  `check_dup_ratchet.py` (0%→86%, closes the #393 attribution class) + the earlier
-  nose 0.13.3 scan→query migration. Install refresh ran (`charness update`
-  0.52.5→0.52.6, installed plugin `== repo`); CI Quality Core green on the release
-  tip. Goal:
-  [dup-ratchet hardening goal](../charness-artifacts/goals/2026-06-19-issue-393-harden-the-dup-ratchet-gate-scope-paths-empty-warning-write.md)
-  (`Status: complete`).
-- **Release-gate catch:** `run-quality --release` caught a stale `make_fake_nose`
-  fixture (`0.6.0` < shipped floor `>=0.13.3`) that the read-only pre-push proof +
-  CI Quality Core skip; fixed to `0.13.3` before publishing.
+- **v0.52.6 released** (pushed + tagged + verified): dup-ratchet hardening +
+  `check_dup_ratchet.py` coverage (0->86%, #393) + nose 0.13.3 scan->query migration. CI
+  Quality Core green; install refreshed (plugin == repo).
+- **lychee BUY reverted** (item ②): 0 behavioral gain vs the existing 2-line `.exists()`;
+  net-negative, reset to origin/main. Lesson: a BUY must beat the *existing baseline*, not
+  a strawman. v0.52.6 findings resolved (#395 filed; pre-push vs release-mode divergence =
+  intended design).
 
 ## Next Session
 
-- **Improvement candidates — advisory by default, NOT new blocking gates** (honor
-  the Floor-Addition Restraint; promote to a floor only on recorded recurrence):
-  make the changed-line gate's `--reuse-coverage` path skip a coverage file that
-  contains none of the changed files' repo-relative paths (a degrade that *removes*
-  the false-block class — not a floor); plus two workflow habits — sanity-check a
-  tool's output shape before relaying a surprising all-fail, and don't let an
-  off-contract probe outrank the canonical gate. Rationale: the retro above.
-- **v0.52.6 release findings — resolved:** family_id churn on same-file edits → filed
-  [#395](https://github.com/corca-ai/charness/issues/395); pre-push vs release-mode proof
-  divergence → confirmed intended design (layered proof).
-- **Gate buy-vs-build — only demotions left.** lychee BUY (item ②) **REJECTED** by cold
-  analysis: 0 behavioral gain vs the existing 2-line `.exists()` (the 3 divergence cases —
-  URL-encoded / fenced-code / inline-code links — occur 0 times across 281 docs), while
-  costing a required dep + ~300 LOC + 3 CI installs; reverted. Lesson: compare a BUY
-  against the *existing baseline*, not a strawman. ①③④ already landed. **Next slice
-  (Track A):** demote check_doc_links backtick/bare-mention enforcement to advisory (WARN,
-  keep principle), then critique/skill-ergonomics demotions. See
-  [gate buy-vs-build](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md).
-- **Untouched tracks:** [#391](https://github.com/corca-ai/charness/issues/391)
-  extractions + tool_version stamp; #387 goal-closeout shape; #392 gather X; #371
-  agent-browser teardown.
+- **TOP PRIORITY — execute the North-Star Overhaul**
+  ([roadmap](./north-star-overhaul-roadmap.md)). Authored but **barely started**: only
+  the #386 non-terminality pilot landed; Phase 1 (#387) + Phases 2-4 are unstarted, so
+  the public **skills do NOT yet embody the new doctrine** (equip a judge; teeth only
+  where a wrong answer escapes; non-terminal per-unit disposition over terminal-green).
+  Now #1 because it **gates propagating the doctrine to consumer repos (ceal)**. Start:
+  Phase 0 (validate diagnosis) -> Phase 1 (#387, aggregate closeout-shape errors in one
+  pass). Open question (roadmap): one `achieve` goal vs independent issues.
+- **ceal propagation (downstream of the overhaul).** ceal already runs charness; a
+  read-only subagent drafted a ceal issue for the *already-shipped* wins (charness
+  update, nose install, pre-push dup-ratchet wiring, gate hygiene) — NOT the unfinished
+  overhaul. Review/file the draft before relying on it.
+- **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
+  to advisory (surviving value from item ②), then critique/skill-ergonomics demotions.
+  Plus: changed-line gate `--reuse-coverage` should skip a coverage file containing none
+  of the changed paths (removes a false-block class, not a floor).
+- **Untouched:** [#391](https://github.com/corca-ai/charness/issues/391) extractions +
+  tool_version stamp; #392 gather X; #371 agent-browser teardown.
 
 ## Discuss
 
-- On charness the boy-scout escalation arm is advisory-by-default
-  (`fixable_ceiling` 0, floor_F 0), so its block path is proven only by the
-  slice-2 acceptance fixture (SC4), not in production. The hard arm (new fixable
-  family blocks) is live and green.
+- **Operator decided (2026-06-20):** finish the north-star overhaul in charness BEFORE
+  propagating the doctrine to ceal — the skills must embody it first. ceal gets the
+  already-shipped mechanisms now (separate issue); the overhaul doctrine waits.
 
 ## References
 
-- [item-5 spec](../charness-artifacts/spec/boy-scout-dup-ratchet.md) (Slice 3 nose
-  migration + slice-2 decisions),
-  [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
-  [nose migration retro](../charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md),
-  [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
+- [design north star](./design-north-star.md),
+  [north-star overhaul roadmap](./north-star-overhaul-roadmap.md),
   [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md),
-  [design north star](./design-north-star.md)
+  [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
+  [recent-lessons](../charness-artifacts/retro/recent-lessons.md)
