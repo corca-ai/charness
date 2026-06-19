@@ -10,9 +10,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: shaped draft awaiting activation.
-- Current disposition: real draft/backlog awaiting activation — shaped this session (4 interview decisions folded). Reshape before activating only if the dup-ratchet hardening scope (F/C/I) or the push→release external boundary changed.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-19-issue-393-harden-the-dup-ratchet-gate-scope-paths-empty-warning-write.md` after confirming the push→release approval still holds.
+- Current slice: Slice 1 (F/C/I hardening) DONE + committed; Slice 2 (in-process coverage) next.
+- Current disposition: ACTIVE — operator activated and pre-approved push+release ("푸시 릴리즈도 사전 승인"). Push (slice 3) + release (slice 4) still gate on green bundle proof + north-star different-channel verification at each boundary.
+- Next action: Slice 2 — add in-process coverage assertions for the remaining `check_dup_ratchet.py` CLI branches (#393 class), then Slice 3 bundle proof + fresh-eye critique + push.
 - Verification cadence: cheap deterministic checks (targeted unit tests, pre-commit hooks) at commit boundaries; `run-quality.sh --read-only` focused phases + the in-repo misconfig fixture + a bounded fresh-eye critique at slice boundaries; full run-quality + packaging/managed-install + operator-approved push + post-release different-observer verification at the bundle/closeout boundary.
 - Slice review packet: intent (advisory-only gate hardening + test coverage, no new content floor); changed files (`check_dup_ratchet.py`, dup_ratchet policy lib, run-quality/validate wiring, `references/dup-ratchet.md`, `adapter.example.yaml`, dup-ratchet tests, release surface); expected invariants (F/I are advisory non-blocking; no false-block; baseline-integrity warning only); tests/proof; non-claims; out-of-scope (chunk-2/4/5); reviewer questions.
 - History boundary: keep this frame current during the active run; move
@@ -92,7 +92,7 @@ What the user can do to verify completion directly:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | dup-ratchet hardening: F (scope_paths-empty advisory warn) + C (`--write-baseline` warn + named-flag confirm on large delta, never hard-fail) + I (fold `validate_gate_baseline` advisory into the existing `check_dup_ratchet` evaluate path / `dup-ratchet` phase via `degraded_reasons` — no new phase) | onboarding correctness + surface the silent-disarm risk (advisory; promote to a block only on recorded recurrence) before the gate spreads to consumer repos (priming) | unit tests for F/C/I green; misconfig fixture shows warn+degrade (behavior, not literal ids); `dup-ratchet` phase prints the advisory; no new blocking floor; mirror synced | planned |
+| 1 | dup-ratchet hardening: F (scope_paths-empty advisory warn) + C (`--write-baseline` warn + named-flag confirm on large delta, never hard-fail) + I (fold `validate_gate_baseline` advisory into the existing `check_dup_ratchet` evaluate path / `dup-ratchet` phase via `degraded_reasons` — no new phase) | onboarding correctness + surface the silent-disarm risk (advisory; promote to a block only on recorded recurrence) before the gate spreads to consumer repos (priming) | unit tests for F/C/I green; misconfig fixture shows warn+degrade (behavior, not literal ids); `dup-ratchet` phase prints the advisory; no new blocking floor; mirror synced | **DONE** — 4 in-process F/C/I tests + 2233 quality_gates green; mirrors synced; live gate re-baselined (2-id churn, delta 4 < 50 dogfooded C's small-delta path) |
 | 2 | in-process coverage for `check_dup_ratchet.py` (the #393 subprocess-only-attribution class) | the only stated blocker to pushing the stack; the scheduled mutation run will otherwise flag 0% attributed | changed-line/mutation coverage attributes `check_dup_ratchet.py`; focused tests green | planned |
 | 3 | bundle proof + push | both slices landed; convert built→shipped | full run-quality + packaging/managed-install green; fresh-eye critique; operator-approved push to `origin/main` | planned |
 | 4 | release | consumer repos first see the hardened gate (priming terminal state) | release skill: version bump + install manifest + operator update; post-release different-observer verification; CI green on pushed SHA | planned |
@@ -116,6 +116,20 @@ What the user can do to verify completion directly:
 - Expected closeout floors: `Release:` triggered (release skill, slice 4); `Routing:` triggered (impl/quality/critique/release phases recorded); `Gather:` n/a — no external sources consumed; `Issue closeout:` n/a — #393 is a coverage-attribution class, not an open tracked issue, and the open issues #391/#387/#392/#371 are out-of-scope chunk-4.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — dup-ratchet F/C/I hardening
+
+- Objective: Land the three slice-2 critique deferrals advisory/non-blocking: F (enabled + empty scope_paths -> whole-gate advisory degrade, never a false block or silent pass), C (--write-baseline refuses a large family_id delta without --confirm-baseline-delta; never touches the gate evaluate path), I (fold dup_ratchet_lib.validate_gate_baseline into the existing check_dup_ratchet evaluate path, surfaced via degraded_reasons through the existing dup-ratchet phase — no new phase).
+- Why this approach: B1 fix: there is no generic validate phase, so I reused the existing evaluate path + dup-ratchet phase, which also keeps I honestly advisory. C is the maintenance command refusing a silent overwrite (exit-1 to signal refusal), never a gate hard-fail — the never-hard-fail constraint is about the evaluate path. F degrades the whole gate (FD8) so a misconfigured scan cannot read as clean.
+- Commits:
+- What changed: skills/public/quality/scripts/check_dup_ratchet.py (F in _evaluate_config; I integrity fold; C guardrail + DEFAULT_BASELINE_DELTA_THRESHOLD const + --confirm-baseline-delta/--baseline-delta-threshold flags; docstring); references/dup-ratchet.md (degraded ladder + adoption + review Q); adapter.example.yaml (scope_paths note); tests/quality_gates/test_dup_ratchet.py (in-process loader + 4 F/C/I tests; _consumer_repo scope_paths param); plugin mirrors (sync_root_plugin_manifests.py); charness-artifacts/quality/dup-ratchet-baseline.json (2-id rotation re-baseline).
+- Alternatives rejected: Refactor the flagged clones (rejected: the 2 new families are unchanged pre-existing patterns — the if-None idiom and the standalone-CLI main() boilerplate — re-hashed by editing the file, not new duplication; extracting main() contradicts the portable standalone-gate-script design). Classify intentional in dup-review.json (rejected: family_id churns on every edit, so an id-keyed overlay entry is not durable). New blocking floor for F/I (rejected: Floor-Addition Restraint — advisory first).
+- Targeted verification: 4 new in-process tests green; full tests/quality_gates 2233 passed (209s); live gate clean after re-baseline (status=clean, 0 new, no degrade); mirror parity diff clean; baseline diff is exactly 2 removed + 2 added.
+- Test duplication pressure: 4 new tests share _consumer_repo/_run_inproc/_code_inventory/_doc_inventory helpers (no setup copy-paste); each asserts a distinct behavior (F degrade, I integrity, C-refuse, C-confirm). In-process tests deliberately complement the subprocess SC5 tests (process contract: argv/exit/stdout) rather than duplicate them (branch attribution + new F/C/I logic). Low duplication pressure; tests/ is outside the dup-ratchet scope_paths so the gate does not self-flag them.
+- Critique: Deferred to the Slice 3 bundle boundary per the shaped plan (one bounded fresh-eye critique covering slices 1+2 before the irreversible push).
+- Off-goal findings: family_id churn: editing a scanned member file rotates the family_ids of clusters that include it (here 2 ids rotated from an unchanged file), forcing a re-baseline even with no new duplication. The reference claims content-hash id is stable across sibling churn but same-file edits still rotate. Candidate retro/issue finding; advisory, out of this slice's scope (Floor-Addition Restraint).
+- Lessons carried forward: Re-baseline is legitimate here (reviewed: no new fixable duplication), and the small delta (4) dogfooded that C's guardrail does not obstruct a legitimate small re-baseline.
+- Metrics:
 
 ## Context Sources
 

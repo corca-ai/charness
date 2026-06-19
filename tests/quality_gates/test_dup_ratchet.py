@@ -44,6 +44,17 @@ def _load(name: str):
 
 lib = _load("dup_ratchet_lib")
 nose_report = _load("nose_report_lib")
+# check_dup_ratchet is loaded in-process (not only via subprocess) so its CLI/run
+# branches attribute coverage — the #393 subprocess-only-attribution class. The
+# subprocess SC5 tests below still prove the real process contract (argv, exit codes,
+# stdout); these in-process drives prove the same branches under coverage.
+check = _load("check_dup_ratchet")
+
+
+def _run_inproc(repo: Path, *cli: str) -> dict:
+    """Drive check_dup_ratchet.run() in-process (mirrors main()'s repo_root.resolve())."""
+    args = check.parse_args(["--repo-root", str(repo), *cli])
+    return check.run(args.repo_root.resolve(), args)
 
 
 def _evaluate(**over):
@@ -266,7 +277,7 @@ def _doc_inventory(path: Path, signatures: list[str]) -> Path:
 def _consumer_repo(
     tmp_path: Path, *, with_block: bool = True, fixable_ceiling: int = 0,
     intentional_code: tuple[str, ...] = (), baseline_ids: tuple[str, ...] = ("known1",),
-    floor_F: int = 0, escalation_K: int = 10,
+    floor_F: int = 0, escalation_K: int = 10, scope_paths: tuple[str, ...] = ("src",),
 ) -> Path:
     repo = tmp_path / "consumer"
     (repo / ".agents").mkdir(parents=True)
@@ -283,13 +294,20 @@ def _consumer_repo(
         "code_family_ids": list(baseline_ids),
     })
     if with_block:
-        adapter = "\n".join([
+        lines = [
             "version: 1", "repo: consumer", "dup_ratchet:", "  enabled: true",
             f"  floor_F: {floor_F}", f"  escalation_K: {escalation_K}",
-            "  scope_paths:", "    - src",
+        ]
+        if scope_paths:
+            lines.append("  scope_paths:")
+            lines.extend(f"    - {path}" for path in scope_paths)
+        else:
+            lines.append("  scope_paths: []")
+        lines.extend([
             "  review_artifact_path: q/dup-review.json",
             "  gate_baseline_path: q/dup-ratchet-baseline.json", "",
         ])
+        adapter = "\n".join(lines)
     else:
         adapter = "version: 1\nrepo: consumer\n"
     (repo / ".agents" / "quality-adapter.yaml").write_text(adapter, encoding="utf-8")
@@ -403,3 +421,60 @@ def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
     assert written["code_family_ids"] == ["a", "b"]
     assert lib.validate_gate_baseline(written) == []
+
+
+# --------------------------------------------------------------------------- #
+# Slice 1 hardening — F (scope_paths-empty), I (baseline integrity), C
+# (--write-baseline delta guardrail). Driven in-process so the new branches in
+# check_dup_ratchet attribute coverage; behaviour asserted, not literal id counts.
+# --------------------------------------------------------------------------- #
+def test_inproc_F_enabled_empty_scope_paths_degrades_whole_gate(tmp_path: Path) -> None:
+    # F: enabled + empty scope_paths -> advisory degrade, even with a NEW family that
+    # would otherwise hard-block (FD8 whole-gate degrade: never a false block, never
+    # a silent clean pass).
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",), scope_paths=())
+    code_json = _code_inventory(tmp_path / "code.json", ["known1", "BRANDNEW"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["ok"] is True and report["block"] is False
+    assert report["status"] == "degraded"
+    assert any("scope_paths is empty" in reason for reason in report["degraded_reasons"])
+
+
+def test_inproc_I_schema_invalid_baseline_degrades_advisory(tmp_path: Path) -> None:
+    # I: a present, loadable baseline (valid id list) with a wrong schemaVersion still
+    # surfaces an integrity advisory via validate_gate_baseline — never blocks.
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    (repo / "q" / "dup-ratchet-baseline.json").write_text(
+        json.dumps({"schemaVersion": "WRONG", "code_family_ids": ["known1"]}), encoding="utf-8",
+    )
+    code_json = _code_inventory(tmp_path / "code.json", ["known1", "BRANDNEW"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["status"] == "degraded" and report["block"] is False
+    assert any("integrity" in r and "schemaVersion" in r for r in report["degraded_reasons"])
+
+
+def test_inproc_C_large_delta_without_confirm_refuses_and_preserves_baseline(tmp_path: Path) -> None:
+    # C: a large re-baseline delta refuses (exit-1 worthy) without --confirm-baseline-delta
+    # and leaves the committed baseline untouched. Never touches the gate evaluate path.
+    repo = _consumer_repo(tmp_path, baseline_ids=("old1", "old2", "old3"))
+    code_json = _code_inventory(tmp_path / "code.json", ["n1", "n2", "n3", "n4"])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline",
+                         "--baseline-delta-threshold", "2")
+    assert report["ok"] is False and report["status"] == "baseline-delta-unconfirmed"
+    assert report["baseline_delta"] == {"added": 4, "removed": 3, "threshold": 2}
+    preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert preserved["code_family_ids"] == ["old1", "old2", "old3"]  # unchanged
+
+
+def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
+    # C: the deliberate-re-baseline case (e.g. a nose version swing) proceeds with the
+    # named confirm flag.
+    repo = _consumer_repo(tmp_path, baseline_ids=("old1", "old2", "old3"))
+    code_json = _code_inventory(tmp_path / "code.json", ["n1", "n2", "n3", "n4"])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline",
+                         "--baseline-delta-threshold", "2", "--confirm-baseline-delta")
+    assert report["ok"] is True and report["status"] == "baseline-written"
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert written["code_family_ids"] == ["n1", "n2", "n3", "n4"]

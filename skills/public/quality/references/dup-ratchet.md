@@ -89,6 +89,14 @@ injectable so the policy stays pure and testable.
 - enabled but the overlay OR the gate baseline is missing / unreadable → advisory,
   never blocks (a missing reviewed subset must not be a silent all-clear *or* a
   false block).
+- enabled but `scope_paths` is empty → advisory degrade. A real scan would fall
+  back to nose `DEFAULT_PATHS` (the wrong tree on a consumer repo), so the whole
+  gate degrades rather than block on — or silently pass — a misconfigured scan.
+  Set `scope_paths` to your code roots.
+- the gate baseline is present and loadable but schema-invalid (wrong
+  `schemaVersion`, non-string ids) → advisory integrity warning
+  (`dup_ratchet_lib.validate_gate_baseline`); the hard arm must not run silently on
+  an unvalidated baseline. Never blocks.
 - nose missing or the scan errors → degraded advisory; the doc-duplicates
   `--require-nose` phase owns failing closed on nose presence, not this gate.
 
@@ -105,7 +113,12 @@ later — the trap step 3 below warns about).
    `check_dup_ratchet.py --repo-root . --write-baseline`. It reads `scope_paths` and
    MUST enumerate the full family set (a high `top=`, full `nose query` per root, no
    nose `--baseline`); a truncated or wrong-scope seed would miss families and
-   false-block later.
+   false-block later. Re-running `--write-baseline` later guards a large shift: a
+   delta (added+removed `family_id`s) beyond `--baseline-delta-threshold` (default
+   50) refuses without an explicit `--confirm-baseline-delta`, so an accidental
+   broken-scan seed cannot silently overwrite the accepted baseline; a deliberate
+   re-baseline passes the flag. This guard is on the maintenance command only — it
+   never touches the gate evaluate path, so it cannot false-block a push.
 4. Flip the block to `enabled: true`.
 5. Wire `check_dup_ratchet.py` into your broad gate / pre-push (reuse a persisted
    doc-duplicates `--json-out` via `--doc-inventory` to avoid a second doc scan).
@@ -121,4 +134,6 @@ later — the trap step 3 below warns about).
   overlay edit cosmetic? The anchor advances on any overlay commit; keep edits
   honest.
 - Did a scanner-version bump shift `family_id`s? Re-baseline per scanner version,
-  the same discipline as the doc baseline.
+  the same discipline as the doc baseline — a version swing trips the
+  `--write-baseline` large-delta guard, so confirm it deliberately with
+  `--confirm-baseline-delta`.

@@ -121,6 +121,9 @@ dup_ratchet:
   enabled: false
   floor_F: 0
   escalation_K: 10
+  # scope_paths MUST list your code roots before enabling: enabled:true with an
+  # empty scope_paths degrades the whole gate to advisory (a real scan would fall
+  # back to nose DEFAULT_PATHS — the wrong tree), never a block or a silent pass.
   scope_paths: []
   review_artifact_path: charness-artifacts/quality/dup-review.json
   gate_baseline_path: charness-artifacts/quality/dup-ratchet-baseline.json
