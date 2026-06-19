@@ -33,3 +33,6 @@ pytest-tmp/
 # Python coverage data (ad-hoc local runs)
 .coverage
 .coverage.*
+
+# Personal Claude Code overrides (local sandbox permissions, etc.)
+.claude/settings.local.json
