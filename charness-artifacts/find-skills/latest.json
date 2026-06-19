@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-19T01:50:16Z",
+  "generated_at": "2026-06-19T10:39:21Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -501,8 +501,6 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/quality/references/bootstrap-escalations.md",
           "skills/public/quality/references/inventory-dispatch.md",
-          "skills/public/quality/references/skill-ergonomics.md",
-          "skills/public/quality/references/skill-quality.md",
           "skills/public/quality/references/testability-and-selection.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/quality/references/cautilus-on-demand.md",
@@ -511,6 +509,7 @@
           "skills/public/quality/references/ci-recoverable-gate-triage.md",
           "skills/public/quality/references/quality-signal-scorecard.md",
           "skills/public/quality/references/boundary-bypass-ratchet.md",
+          "skills/public/quality/references/dup-ratchet.md",
           "skills/public/quality/references/agent-production-runtime.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/quality/references/maintainer-local-enforcement.md",
@@ -543,6 +542,8 @@
           "skills/public/quality/references/security-npm.md",
           "skills/public/quality/references/security-pnpm.md",
           "skills/public/quality/references/security-uv.md",
+          "skills/public/quality/references/skill-quality.md",
+          "skills/public/quality/references/skill-ergonomics.md",
           "skills/public/quality/references/standing-doc-provenance.md",
           "skills/public/quality/references/standing-gate-verbosity.md",
           "skills/public/quality/references/startup-probes.md",
@@ -1270,7 +1271,7 @@
       {
         "id": "nose",
         "kind": "external_binary",
-        "summary": "Required (>=0.13.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate.",
+        "summary": "Required (>=0.13.3) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. 0.13.3 removed the deprecated `nose scan`; the code path runs `nose query`.",
         "access_modes": [
           "binary"
         ],
