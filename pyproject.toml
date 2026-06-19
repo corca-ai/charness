@@ -18,11 +18,27 @@ line-length = 100
 extend-exclude = ["charness-artifacts", ".charness"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "C90"]
+select = ["E", "F", "I", "C90", "PLR0915"]
 ignore = ["E501"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
+
+[tool.ruff.lint.pylint]
+# Function statement-count cap (PLR0915): the tool-rule replacement for the
+# bespoke AST-span function-length gate removed from check_python_lengths.py.
+# Set just above the current repo maximum (74 statements in the gated scope) so
+# existing functions pass and future over-accumulation is caught — the same
+# ratchet posture the file-length cap uses. Keep mccabe complexity (C90) too:
+# statement count catches long-but-simple, complexity catches branchy-but-short.
+max-statements = 80
+
+[tool.ruff.lint.per-file-ignores]
+# The root `charness` CLI script was never function-length gated: the removed
+# bespoke arm and the file-length cap both glob `*.py` under scripts/skills/tests,
+# not this extension-less entrypoint. Keep PLR0915 off it rather than force a CLI
+# refactor as a side effect of swapping the gate (mccabe complexity still applies).
+"charness" = ["PLR0915"]
 
 [tool.vulture]
 paths = ["runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests"]

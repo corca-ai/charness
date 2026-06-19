@@ -531,17 +531,6 @@ def test_check_github_actions_json_output_is_stable_and_utf8(monkeypatch, capsys
     assert "\\ud55c" not in captured.out
 
 
-def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    scripts_dir.mkdir(parents=True)
-    long_body = "\n".join(f"    value_{i} = {i}" for i in range(101))
-    (scripts_dir / "long.py").write_text("\n".join(["def too_long():", long_body, "    return 0", ""]), encoding="utf-8")
-    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "function `too_long` length" in result.stderr
-
-
 def test_check_python_lengths_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -690,20 +679,6 @@ def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Python code lines 801 exceed limit 800" in result.stderr
-
-
-def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    tests_dir = repo / "tests"
-    tests_dir.mkdir(parents=True)
-    long_body = "\n".join(f"    value_{i} = {i}" for i in range(150))
-    (tests_dir / "test_long.py").write_text(
-        "\n".join(["def test_too_long():", long_body, "    assert True", ""]),
-        encoding="utf-8",
-    )
-    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "function `test_too_long` length 152 exceeds limit 150" in result.stderr
 
 
 def test_check_python_lengths_warns_for_in_band_files_across_classes(tmp_path: Path) -> None:

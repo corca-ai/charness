@@ -108,8 +108,9 @@ inference-layer surface, not a banner repeated per invocation):
   justified, provenance-bearing deferrals versus normalized debt THIS repo should
   structurally fix?
 - `check_python_lengths.py` warn band / `--headroom` near-limit (length smell —
-  the hard over-limit gate and the function-length AST check stay verified facts,
-  never re-litigated): is a warn-band file an honest cohesive unit near its limit,
+  the hard over-limit file gate stays a verified fact, never re-litigated;
+  function length is gated separately by ruff PLR0915):
+  is a warn-band file an honest cohesive unit near its limit,
   or genuine over-accumulation THIS repo should split now?
 - recommendation rankings (`find-skills` `recommendation_interpretation`; this
   artifact's `Recommended Next Gates` ordering — see

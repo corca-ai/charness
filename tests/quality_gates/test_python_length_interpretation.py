@@ -14,9 +14,9 @@ from .support import ROOT
 
 # Advisory-interpretation contract rollout (#322): the length warn band / headroom
 # near-limit signal is inference-layer (a length *smell*), so it self-declares the
-# 4 fields. The hard over-limit gate and the function-length AST check are verified
-# deterministic facts and must NEVER carry the declaration — these tests guard that
-# cardinal-error boundary in both directions. Driven in-process via main() (not a
+# 4 fields. The hard over-limit file gate is a verified deterministic fact and
+# must NEVER carry the declaration — these tests guard that cardinal-error
+# boundary in both directions. Driven in-process via main() (not a
 # subprocess) to stay on the testability-dsl-initiative in-process convention.
 PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
 

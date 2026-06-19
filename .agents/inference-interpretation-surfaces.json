@@ -59,7 +59,7 @@
       "declaration_symbol": "INTERPRETATION",
       "consumer_reference": "skills/public/quality/references/automation-promotion.md",
       "consumer_anchor": "is a warn-band file an honest cohesive unit near its limit",
-      "note": "Length smell (warn band / --headroom near-limit) ONLY. The hard over-limit gate and the function-length AST check are verified facts and never carry the declaration; this validator is file-granular and relies on the per-surface #322 tests for that intra-file boundary."
+      "note": "Length smell (warn band / --headroom near-limit) ONLY. The hard over-limit file gate is a verified fact and never carries the declaration (function length is gated separately by ruff PLR0915, a tool rule); this validator is file-granular and relies on the per-surface #322 tests for that intra-file boundary."
     },
     {
       "surface_id": "find-skills-recommendation",
