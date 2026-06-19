@@ -99,10 +99,11 @@ What the user can do to verify completion directly:
 
 ## Operator Decision Queue
 
+- none — no open operator decisions remain; every queued decision was resolved this session (resolutions recorded below).
 - RESOLVED: push to `origin/main` — operator pre-approved at activation ("푸시 릴리즈도 사전 승인"); executed at the slice-3 bundle boundary on green proof (`90bab0de..e97a2884`).
 - RESOLVED: release publish v0.52.6 — operator pre-approved; cut via the release skill after a green push (patch bump confirmed honest by the release-surface critique).
-- Decision: file a tracked issue for the **family_id churn on same-file edits** (a nose-tool limitation that forces a re-baseline with no new duplication; transferable to consumer repos). Owner: operator. Recorded in recent-lessons + this goal's Off-Goal Findings; not auto-filed (external write left to the operator's call).
-- Decision: file a tracked issue (or document) for the **pre-push vs release-mode proof divergence** (a stale release-mode-only fixture shipped to main undetected). Owner: operator. Candidate fix: run a release-mode test subset pre-push, or document the divergence.
+- RESOLVED: **family_id churn on same-file edits** — operator chose to file; tracked as [#395](https://github.com/corca-ai/charness/issues/395) (labels bug+documentation, body verified).
+- RESOLVED: **pre-push vs release-mode proof divergence** — operator confirmed this is **intended design** (release-mode tests are deliberately heavier and run at the release boundary; the divergence is the intended layered-proof posture, not waste). No action; not filed.
 
 ## Coordination Cues
 
@@ -215,8 +216,8 @@ Reviewer provenance: general-purpose fresh-eye subagent, bounded plan-critique p
 
 ## Off-Goal Findings
 
-- **family_id churn on same-file edits** — editing a scanned member file rotates the nose `family_id` of clusters that include it, forcing a re-baseline even with zero new duplication. The `dup_ratchet_lib` docstring's "stable across sibling churn" claim is narrower than reality (same-file edits also rotate). Transferable to consumer repos. Recorded in recent-lessons; surfaced to the operator as an issue-filing candidate (see Operator Decision Queue).
-- **pre-push proof ≠ release-mode proof** — the read-only bundle proof and CI Quality Core skip the managed-install release-mode tests, so a stale `make_fake_nose` fixture from the nose migration shipped to `main` (e97a2884) undetected until `run-quality --release`. Recorded in recent-lessons; surfaced as a process-gap candidate.
+- **family_id churn on same-file edits** — editing a scanned member file rotates the nose `family_id` of clusters that include it, forcing a re-baseline even with zero new duplication. The `dup_ratchet_lib` docstring's "stable across sibling churn" claim is narrower than reality (same-file edits also rotate). Transferable to consumer repos. **Operator filed it → [#395](https://github.com/corca-ai/charness/issues/395).**
+- **pre-push proof ≠ release-mode proof** — the read-only bundle proof and CI Quality Core skip the managed-install release-mode tests, so a stale `make_fake_nose` fixture from the nose migration shipped to `main` (e97a2884) undetected until `run-quality --release`. **Operator confirmed this is intended design** (layered proof — release-mode tests deliberately run at the release boundary), not a gap; no action.
 
 ## Final Verification
 
@@ -244,6 +245,6 @@ Full review: charness-artifacts/retro/2026-06-19-dup-ratchet-hardening-goal-retr
 Substantive findings: one wasted publish cycle (the release-mode gate caught a stale fixture the read-only/CI proof skipped); diagnosis was cheap and correct; slices 1–3 had no rework; two fresh-eye reviews found no blockers; the dup-ratchet gate's own hard-block was handled honestly (member inspection → id-churn proof → small re-baseline that dogfooded the C guardrail).
 
 Retro dispositions: applied: tests/charness_cli/tool_fakes.py fake nose 0.6.0 to 0.13.3 (committed this run) fixed the stale fixture and unblocked the release.
-Retro dispositions: out-of-scope: family_id churn is a pre-existing nose-tool behavior, not introduced here; recorded in recent-lessons and surfaced as an operator issue-filing candidate (no blocking gate per Floor-Addition Restraint).
+Retro dispositions: issue #395 (novel: first charness-tracker filing of same-file-edit family_id rotation — the upstream nose key/id-stability class is filed upstream, not in this tracker). Operator chose to file the family_id-churn finding.
 
-Structural follow-up: none — the pre-push-vs-release-mode proof divergence (transferable waste) is recorded in this goal's bound retro + Off-Goal Findings and surfaced to the Operator Decision Queue as a `Decision:` (file an issue, or add a pre-push release-mode test subset); no structural guard or issue is committed this run, pending the operator's call (external write deferred).
+Structural follow-up: none — the operator confirmed the pre-push-vs-release-mode proof divergence is intended layered-proof design (release-mode tests deliberately run at the release boundary), not transferable waste; no structural follow-up needed.

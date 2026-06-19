@@ -50,10 +50,9 @@ read below is proxy, not a fabricated token/time figure.
 
 - **applied:** `tests/charness_cli/tool_fakes.py` fake nose `0.6.0 → 0.13.3`
   (committed this run) — unblocked the release and fixed the stale fixture.
-- **Finding 1 (family_id churn):** repo-local guard — recorded in
-  `charness-artifacts/retro/recent-lessons.md`; surfaced to the operator as an
-  issue-filing candidate (consumer-facing limitation). Not promoted to a blocking
-  gate (Floor-Addition Restraint).
-- **Finding 2 (proof divergence):** repo-local guard — recorded in
-  `charness-artifacts/retro/recent-lessons.md`; surfaced to the operator as a
-  candidate to either run a release-mode subset pre-push or document the divergence.
+- **Finding 1 (family_id churn):** operator chose to file → tracked as
+  [#395](https://github.com/corca-ai/charness/issues/395) (bug+documentation). Not
+  promoted to a blocking gate (Floor-Addition Restraint).
+- **Finding 2 (proof divergence):** operator confirmed **intended design** — the
+  release-mode tests are deliberately heavier and run at the release boundary
+  (layered proof), so the divergence is the intended posture, not waste. No action.
