@@ -34,7 +34,6 @@
     "tests/quality_gates/test_current_pointer_writes.py::skills/public/hitl/scripts/bootstrap_review.py",
     "tests/quality_gates/test_current_pointer_writes.py::skills/public/hitl/scripts/sync_review_artifact.py",
     "tests/quality_gates/test_debug_seam_risk_index.py::scripts/build_debug_seam_risk_index.py",
-    "tests/quality_gates/test_docs_and_misc.py::scripts/check_doc_near_duplicates.py",
     "tests/quality_gates/test_docs_and_misc.py::scripts/validate_quality_closeout_contract.py",
     "tests/quality_gates/test_docs_and_misc.py::skills/public/find-skills/scripts/list_capabilities.py",
     "tests/quality_gates/test_docs_and_misc.py::skills/public/impl/scripts/survey_verification.py",

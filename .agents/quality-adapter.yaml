@@ -125,7 +125,7 @@ runtime_budgets:
   check-cli-skill-surface: 11000
   pytest: 70000
   check-coverage: 15000
-  check-doc-near-duplicates: 13000
+  doc-duplicates: 28000
   check-markdown: 11000
   check-secrets: 6000
   run-evals: 6500
@@ -149,7 +149,7 @@ runtime_budget_profiles:
       # headroom over the observed median/latest while staying below the aarch64
       # profile's 60000.
       check-coverage: 55000
-      check-doc-near-duplicates: 13000
+      doc-duplicates: 28000
       check-markdown: 11000
       check-secrets: 6000
       run-evals: 6500
@@ -172,7 +172,7 @@ runtime_budget_profiles:
       inventory-ubiquitous-language: 2500
       pytest: 110000
       check-coverage: 60000
-      check-doc-near-duplicates: 24000
+      doc-duplicates: 60000
       check-markdown: 15000
       check-secrets: 8000
       run-evals: 8000

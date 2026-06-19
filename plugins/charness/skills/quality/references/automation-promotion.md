@@ -98,6 +98,9 @@ inference-layer surface, not a banner repeated per invocation):
 
 - `inventory_nose_clones.py` (clone families): which families are intentional /
   portability boilerplate versus genuinely extractable debt for THIS repo?
+- `inventory_doc_duplicates.py` (Markdown near-duplicate families): which of these
+  doc families are intentional shared template versus genuinely single-sourceable
+  duplication for THIS repo?
 - `inventory_skill_ergonomics.py` (ergonomics heuristics / `subcheck_counts`):
   which heuristic hits are real ergonomic/portability debt versus intentional
   structure the lexical heuristic cannot distinguish?

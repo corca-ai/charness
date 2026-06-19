@@ -3,7 +3,7 @@
   "tool_id": "nose",
   "kind": "external_binary",
   "display_name": "nose",
-  "summary": "Advisory code clone-family scanner used by `quality` to surface refactoring candidates beyond exact document near-copy checks.",
+  "summary": "Required (>=0.13.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate.",
   "upstream_repo": "corca-ai/nose",
   "homepage": "https://github.com/corca-ai/nose",
   "platforms": [
@@ -47,16 +47,15 @@
         "exit_code:0",
         "stdout_contains:nose"
       ],
-      "failure_hint": "Install `nose` before using the quality clone-family advisory inventory."
+      "failure_hint": "Install nose >=0.13.0; the quality `doc-duplicates` phase fails closed without it (run `charness tool doctor nose --json`)."
     }
   },
   "access_modes": [
-    "binary",
-    "degraded"
+    "binary"
   ],
   "version_expectation": {
-    "policy": "advisory",
-    "constraint": "Prefer nose 0.5.0 or newer.",
+    "policy": "minimum",
+    "constraint": "Requires nose 0.13.0 or newer (the Markdown duplication engine that backs the quality doc near-duplicate review).",
     "detected_by": "stdout"
   },
   "supports_public_skills": [
@@ -75,18 +74,20 @@
     "코드 중복"
   ],
   "recommendation_role": "validation",
-  "doctor_policy": "advisory",
+  "doctor_policy": "required",
   "degradation": {
     "when_missing": [
-      "Quality still keeps the document near-copy hard gate, but cannot run the richer clone-family advisory inventory.",
-      "Do not claim semantic or near-structural duplicate review succeeded without a healthy `nose` binary."
+      "Doc near-duplicate review has no fallback: the bespoke difflib gate was removed, so a missing nose means the quality `doc-duplicates` phase fails closed.",
+      "Do not claim document near-duplicate or clone-family review succeeded without a healthy nose >=0.13.0 binary."
     ],
     "when_version_mismatch": [
-      "Treat changes in ranking, clone channels, or JSON output as advisory drift before promoting findings into gates."
+      "nose < 0.13.0 lacks the Markdown duplication engine and silently reports zero doc families; treat any pre-0.13.0 binary as missing for doc review.",
+      "Treat changes in ranking, clone channels, or JSON output across versions as advisory drift before promoting findings into gates."
     ]
   },
   "host_notes": [
-    "`nose` is advisory in Charness quality. It should propose refactoring candidates, not fail standing quality by default.",
-    "Use `nose scan scripts skills/public skills/support --mode syntax,semantic,near --min-size 24 --sort extractability` for broad Charness clone-family review; add repeatable `--exclude <glob>` or `--ignore-file <file>` only to focus the review scope, not to hide unclassified debt."
+    "`nose` is REQUIRED (>=0.13.0) in Charness quality: code clone families stay advisory (refactoring candidates), and the Markdown engine backs the doc near-duplicate review that replaced the bespoke difflib gate. Findings are advisory; tool absence fails closed.",
+    "Code clones: `nose scan scripts skills/public skills/support --mode syntax,semantic,near --min-size 24 --sort extractability` (advisory `inventory_nose_clones.py`).",
+    "Doc near-duplicates: `nose query . --exclude 'plugins/**' --exclude 'charness-artifacts/**' --format json` and read the top-level `markdown` array (advisory `inventory_doc_duplicates.py` with its own drift baseline)."
   ]
 }

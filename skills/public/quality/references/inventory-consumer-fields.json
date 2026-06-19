@@ -94,6 +94,22 @@
         "notes"
       ]
     },
+    "inventory_doc_duplicates.py": {
+      "non_headline_fields": [
+        "status",
+        "advisory",
+        "scan_path",
+        "excludes",
+        "baseline",
+        "accepted_count",
+        "total_family_count",
+        "families",
+        "command",
+        "schema_version",
+        "interpretation",
+        "notes"
+      ]
+    },
     "inventory_release_only_sentinels.py": {
       "non_headline_fields": [
         "release_only_test_count",

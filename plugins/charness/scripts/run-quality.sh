@@ -478,7 +478,7 @@ queue_selected "check-test-production-ratio" python3 scripts/check_test_producti
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
-queue_selected "check-doc-near-duplicates" python3 scripts/check_doc_near_duplicates.py --repo-root "$REPO_ROOT" --fail-on-match --require-git-file-listing
+queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose
 flush_phase || OVERALL_RC=$?
 
 queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues --require-git-file-listing

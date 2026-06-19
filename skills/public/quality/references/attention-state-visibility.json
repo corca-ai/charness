@@ -170,6 +170,12 @@
       "evidence_terms": ["ADVISORY: nose missing", "clone-family inventory skipped"],
       "rationale": "The `nose` clone-family inventory is advisory. When the binary is absent it prints an explicit advisory skip and exits zero, while document near-copy detection remains covered by the standing hard gate."
     },
+    "skills/public/quality/scripts/inventory_doc_duplicates.py": {
+      "states": ["skipped"],
+      "visibility": ["stdout_attention", "terminal_payload"],
+      "evidence_terms": ["ADVISORY: nose missing", "doc near-duplicate inventory skipped"],
+      "rationale": "The nose Markdown doc near-duplicate inventory is advisory. Without --require-nose it prints an explicit advisory skip and exits zero when the binary is absent; the run-quality `doc-duplicates` phase passes --require-nose so a missing or pre-0.13.0 nose fails closed (the required tool) rather than silently skipping."
+    },
     "scripts/plan_cautilus_proof.py": {
       "states": ["disabled"],
       "visibility": ["terminal_payload"],

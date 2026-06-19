@@ -26,6 +26,15 @@
       "note": "Pilot surface: lexical clone families. Consumer (quality) answers which families are intentional boilerplate vs extractable debt before treating the total as debt."
     },
     {
+      "surface_id": "doc-duplicates",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_doc_duplicates.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/automation-promotion.md",
+      "consumer_anchor": "doc families are intentional shared template",
+      "note": "nose Markdown near-duplicate families. Declaration rides only on the reported-families (ok) payload; tool-absence/version-too-old/error and baseline-written states are verified facts and stay clean."
+    },
+    {
       "surface_id": "skill-ergonomics",
       "kind": "python",
       "declaration_file": "skills/public/quality/scripts/inventory_skill_ergonomics.py",

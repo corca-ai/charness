@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ROOT, init_git_repo, run_script
+from .support import ROOT, run_script
 
 
 def test_release_current_release_reports_packaging_version() -> None:
@@ -520,74 +520,6 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
     assert "The quality core now treats testability and affected-test selection" in dogfood
     for tool_name in ("pytest-testmon", "Jest", "Vitest", "Pants", "Bazel"):
         assert tool_name not in skill_text
-
-
-def test_check_doc_near_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    docs_dir = repo / "docs"
-    docs_dir.mkdir(parents=True)
-    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
-    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
-    (docs_dir / "beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
-
-    result = run_script("scripts/check_doc_near_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
-    assert result.returncode == 1
-    duplicates = json.loads(result.stdout)
-    assert duplicates
-    assert duplicates[0]["left"] == "docs/alpha.md"
-    assert duplicates[0]["right"] == "docs/beta.md"
-
-
-def test_check_doc_near_duplicates_ignores_gitignored_files(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    docs_dir = repo / "docs"
-    docs_dir.mkdir(parents=True)
-    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
-    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
-    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
-    (docs_dir / "generated-beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "docs/alpha.md")
-
-    result = run_script("scripts/check_doc_near_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
-    assert result.returncode == 0, result.stderr
-    duplicates = json.loads(result.stdout)
-    assert duplicates == []
-
-
-def test_check_doc_near_duplicates_ignores_helper_scripts(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    scripts_dir.mkdir(parents=True)
-    repeated_lines = "\n".join(f"print({i!r})" for i in range(20))
-    (scripts_dir / "alpha.py").write_text(f"#!/usr/bin/env python3\n{repeated_lines}\n", encoding="utf-8")
-    (scripts_dir / "beta.py").write_text(f"#!/usr/bin/env python3\n{repeated_lines}\n", encoding="utf-8")
-
-    result = run_script("scripts/check_doc_near_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
-    assert result.returncode == 0, result.stderr
-    duplicates = json.loads(result.stdout)
-    assert duplicates == []
-
-
-def test_check_duplicates_legacy_wrapper_uses_document_scope(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    docs_dir = repo / "docs"
-    scripts_dir = repo / "scripts"
-    docs_dir.mkdir(parents=True)
-    scripts_dir.mkdir(parents=True)
-    repeated_doc_lines = "\n".join(f"- repeated doc line {i}" for i in range(20))
-    repeated_script_lines = "\n".join(f"print({i!r})" for i in range(20))
-    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_doc_lines}\n", encoding="utf-8")
-    (docs_dir / "beta.md").write_text(f"# Beta\n\n{repeated_doc_lines}\n", encoding="utf-8")
-    (scripts_dir / "alpha.py").write_text(f"#!/usr/bin/env python3\n{repeated_script_lines}\n", encoding="utf-8")
-    (scripts_dir / "beta.py").write_text(f"#!/usr/bin/env python3\n{repeated_script_lines}\n", encoding="utf-8")
-
-    result = run_script("scripts/check_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
-    assert result.returncode == 1
-    duplicates = json.loads(result.stdout)
-    assert len(duplicates) == 1
-    assert duplicates[0]["left"] == "docs/alpha.md"
-    assert duplicates[0]["right"] == "docs/beta.md"
-    assert duplicates[0]["similarity"] >= 0.98
 
 
 def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> None:

@@ -131,7 +131,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "families": [],
             "notes": [
                 "nose is missing; install per integrations/tools/nose.json to run the clone-family advisory.",
-                "Document near-copy detection remains covered by check_doc_near_duplicates.py.",
+                "nose is now required (>=0.13.0): document near-duplicate review runs through inventory_doc_duplicates.py (Markdown families), not a difflib fallback.",
             ],
         }
     if args.write_baseline:

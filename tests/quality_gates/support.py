@@ -168,7 +168,6 @@ QUALITY_PYTHON_STUBS = (
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),
     ("run-evals", "run_evals.py"),
-    ("check-doc-near-duplicates", "check_doc_near_duplicates.py"),
 )
 QUALITY_RUNTIME_STUBS = (
     ("measure-startup-probes", "measure_startup_probes.py"),
@@ -176,6 +175,7 @@ QUALITY_RUNTIME_STUBS = (
     ("inventory-ci-local-gate-parity", "inventory_ci_local_gate_parity.py"),
     ("inventory-gitignore-scan-hygiene", "inventory_gitignore_scan_hygiene.py"),
     ("check-runtime-budget", "check_runtime_budget.py"),
+    ("doc-duplicates", "inventory_doc_duplicates.py"),
 )
 QUALITY_SHELL_STUBS = (
     ("check-markdown", "check-markdown.sh"),
