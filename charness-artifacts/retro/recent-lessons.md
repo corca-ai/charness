@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
 - **Inverted the trust hierarchy.** The canonical gate (`run-quality`) had already *skipped* this check non-blocking (stale fingerprint → `--require-fresh-coverage` skip). I then ran a non-canonical bare `--reuse-coverage` (which trusts any coverage file regardless of freshness/format) and treated *its* block as more authoritative than the canonical gate's pass. A forced, off-contract probe should not outrank the standing gate. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 - **Mirror sync missed a late edit.** The ownership-overlap docstring fix landed after my last `sync_root_plugin_manifests.py`, leaving the plugin mirror stale — a real BLOCKER. The fresh-eye critique caught it (working as designed), but a sync immediately before the critique/commit would have pre-empted it. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 - **Re-introduced a known footgun by dropping a special-case in a rewrite.** The old `build_command` dropped `--top` on `--write-baseline` so a baseline records EVERY family; my `query` rewrite used the display `--top`, truncating the advisory baseline to 53 instead of 487. Caught at re-seed verification, not at edit time. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
 - **capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to "no usable coverage → skip" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.) (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 - **follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 - for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the "seed last" timing is the transferable half. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
@@ -77,3 +77,4 @@
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`
 - `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`
+- `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
