@@ -10,9 +10,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 (F/C/I hardening) DONE + committed; Slice 2 (in-process coverage) next.
+- Current slice: Slices 1 (F/C/I) + 2 (in-process coverage) DONE + committed; Slice 3 (bundle proof + fresh-eye critique + push) next.
 - Current disposition: ACTIVE — operator activated and pre-approved push+release ("푸시 릴리즈도 사전 승인"). Push (slice 3) + release (slice 4) still gate on green bundle proof + north-star different-channel verification at each boundary.
-- Next action: Slice 2 — add in-process coverage assertions for the remaining `check_dup_ratchet.py` CLI branches (#393 class), then Slice 3 bundle proof + fresh-eye critique + push.
+- Next action: Slice 3 — full run-quality + packaging/managed-install; one bounded fresh-eye critique covering slices 1+2; then operator-approved push to origin/main.
 - Verification cadence: cheap deterministic checks (targeted unit tests, pre-commit hooks) at commit boundaries; `run-quality.sh --read-only` focused phases + the in-repo misconfig fixture + a bounded fresh-eye critique at slice boundaries; full run-quality + packaging/managed-install + operator-approved push + post-release different-observer verification at the bundle/closeout boundary.
 - Slice review packet: intent (advisory-only gate hardening + test coverage, no new content floor); changed files (`check_dup_ratchet.py`, dup_ratchet policy lib, run-quality/validate wiring, `references/dup-ratchet.md`, `adapter.example.yaml`, dup-ratchet tests, release surface); expected invariants (F/I are advisory non-blocking; no false-block; baseline-integrity warning only); tests/proof; non-claims; out-of-scope (chunk-2/4/5); reviewer questions.
 - History boundary: keep this frame current during the active run; move
@@ -93,7 +93,7 @@ What the user can do to verify completion directly:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | dup-ratchet hardening: F (scope_paths-empty advisory warn) + C (`--write-baseline` warn + named-flag confirm on large delta, never hard-fail) + I (fold `validate_gate_baseline` advisory into the existing `check_dup_ratchet` evaluate path / `dup-ratchet` phase via `degraded_reasons` — no new phase) | onboarding correctness + surface the silent-disarm risk (advisory; promote to a block only on recorded recurrence) before the gate spreads to consumer repos (priming) | unit tests for F/C/I green; misconfig fixture shows warn+degrade (behavior, not literal ids); `dup-ratchet` phase prints the advisory; no new blocking floor; mirror synced | **DONE** — 4 in-process F/C/I tests + 2233 quality_gates green; mirrors synced; live gate re-baselined (2-id churn, delta 4 < 50 dogfooded C's small-delta path) |
-| 2 | in-process coverage for `check_dup_ratchet.py` (the #393 subprocess-only-attribution class) | the only stated blocker to pushing the stack; the scheduled mutation run will otherwise flag 0% attributed | changed-line/mutation coverage attributes `check_dup_ratchet.py`; focused tests green | planned |
+| 2 | in-process coverage for `check_dup_ratchet.py` (the #393 subprocess-only-attribution class) | the only stated blocker to pushing the stack; the scheduled mutation run will otherwise flag 0% attributed | **DONE** — in-process attribution 0%→86% (CLI was subprocess-only); 40 focused tests green; the ~25 remaining lines are real-nose/doc-subprocess/git/`__main__` paths covered by the live gate + nose-gated + git-seam tests; none are changed lines | planned |
 | 3 | bundle proof + push | both slices landed; convert built→shipped | full run-quality + packaging/managed-install green; fresh-eye critique; operator-approved push to `origin/main` | planned |
 | 4 | release | consumer repos first see the hardened gate (priming terminal state) | release skill: version bump + install manifest + operator update; post-release different-observer verification; CI green on pushed SHA | planned |
 
@@ -129,6 +129,20 @@ What the user can do to verify completion directly:
 - Critique: Deferred to the Slice 3 bundle boundary per the shaped plan (one bounded fresh-eye critique covering slices 1+2 before the irreversible push).
 - Off-goal findings: family_id churn: editing a scanned member file rotates the family_ids of clusters that include it (here 2 ids rotated from an unchanged file), forcing a re-baseline even with no new duplication. The reference claims content-hash id is stable across sibling churn but same-file edits still rotate. Candidate retro/issue finding; advisory, out of this slice's scope (Floor-Addition Restraint).
 - Lessons carried forward: Re-baseline is legitimate here (reviewed: no new fixable duplication), and the small delta (4) dogfooded that C's guardrail does not obstruct a legitimate small re-baseline.
+- Metrics:
+
+### Slice 2: Slice 2 — in-process coverage for check_dup_ratchet.py (#393)
+
+- Objective: Close the #393 subprocess-only-attribution class for check_dup_ratchet.py: the slice-2 CLI was only ever driven via run_script subprocess (0% attributed), which the scheduled mutation run would flag. Drive the CLI in-process so its run()/main()/evaluate/write-baseline branches attribute coverage.
+- Why this approach: Slice 1's 4 F/C/I in-process tests already lifted attribution 0%->73%; Slice 2 adds main() (json+text, exit codes), run() inert + adapter-invalid, write-baseline-failed, the _families_from_text error branches, and the overlay/baseline-missing + doc-status degrade branches -> 86%. Remaining ~25 lines are real-nose-scan / doc-inventory-subprocess / git-stagnation / __main__ paths that need real tools; they are exercised by the live gate run, the nose-gated subprocess test, and the SC4 git-seam fixture. In-process tests complement (not duplicate) the subprocess SC5 tests, which still own the real process contract (argv, exit code, stdout).
+- Commits:
+- What changed: tests/quality_gates/test_dup_ratchet.py: in-process check_dup_ratchet loader (_load + _run_inproc) and 7 in-process branch tests (main json-inert/text-hard-block, run adapter-invalid, write-baseline-failed, _families_from_text bad inputs, missing overlay+baseline degrade, doc-status degrade).
+- Alternatives rejected: Mock nose/git to attribute the real-tool paths in-process (rejected: adds harness complexity + near-duplication of the live/nose-gated coverage for marginal attribution; the integration paths are genuinely exercised by the live gate). Replace the subprocess SC5 tests with in-process equivalents (rejected: SC5 is the documented acceptance fixture and owns the real CLI process contract).
+- Targeted verification: 40 focused tests green (was 33 after slice 1); coverage --include check_dup_ratchet.py reports 86% in-process (0% before any in-process driving); missing lines confirmed to be real-tool/entry-guard, none of them changed lines.
+- Test duplication pressure: 7 new tests reuse _consumer_repo/_run_inproc/_code_inventory/_doc_inventory; each asserts a distinct branch (inert, adapter-invalid, hard-block exit, write-baseline-failed, parse helpers, degrade ladders). No setup copy-paste; tests/ is outside dup-ratchet scope_paths so the gate does not self-flag. Low pressure.
+- Critique: Deferred to the Slice 3 bundle boundary (one bounded fresh-eye critique covering slices 1+2).
+- Off-goal findings:
+- Lessons carried forward: 0%-attribution from subprocess-only CLI testing is closed by adding a thin in-process driver alongside the subprocess contract tests; the real-tool branches stay subprocess/live-gated rather than mocked.
 - Metrics:
 
 ## Context Sources

@@ -478,3 +478,73 @@ def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
     assert report["ok"] is True and report["status"] == "baseline-written"
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
     assert written["code_family_ids"] == ["n1", "n2", "n3", "n4"]
+
+
+# --------------------------------------------------------------------------- #
+# Slice 2 — in-process coverage for the remaining check_dup_ratchet CLI branches
+# (the #393 subprocess-only-attribution class). These drive main()/run() branches
+# the subprocess SC5 tests above exercise only out-of-process; the subprocess tests
+# still own the real process contract (argv, exit code, stdout), so this is
+# complementary attribution, not a re-test of the same assertion.
+# --------------------------------------------------------------------------- #
+def test_inproc_main_json_inert_exit_0(tmp_path: Path, capsys) -> None:
+    repo = _consumer_repo(tmp_path, with_block=False)
+    code_json = _code_inventory(tmp_path / "code.json", ["x"])
+    rc = check.main(["--repo-root", str(repo), "--code-inventory", str(code_json), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0 and payload["status"] == "inert"
+
+
+def test_inproc_main_text_hard_block_exit_1(tmp_path: Path, capsys) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    code_json = _code_inventory(tmp_path / "code.json", ["known1", "NEWFAM"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    rc = check.main(["--repo-root", str(repo), "--code-inventory", str(code_json),
+                     "--doc-inventory", str(doc_json)])  # text mode (no --json)
+    out = capsys.readouterr().out
+    assert rc == 1 and "FAIL (hard arm)" in out
+
+
+def test_inproc_run_adapter_invalid_fails_closed(tmp_path: Path) -> None:
+    repo = tmp_path / "bad"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: bad\ndup_ratchet:\n  enabled: notabool\n", encoding="utf-8")
+    report = _run_inproc(repo)
+    assert report["ok"] is False and report["status"] == "adapter-invalid"
+    assert report["adapter_errors"]
+
+
+def test_inproc_write_baseline_failed_on_unreadable_inventory(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("old",))
+    report = _run_inproc(repo, "--code-inventory", str(tmp_path / "absent.json"), "--write-baseline")
+    assert report["ok"] is False and report["status"] == "write-baseline-failed"
+
+
+def test_inproc_families_from_text_handles_bad_inputs() -> None:
+    assert check._families_from_text(None) is None
+    assert check._families_from_text("not json{") is None
+    assert check._families_from_text("[1, 2]") is None  # not a dict
+    assert check._families_from_text('{"families": "x"}') == []  # families not a list
+    assert check._families_from_text("") == []
+
+
+def test_inproc_missing_overlay_and_baseline_degrade(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    (repo / "q" / "dup-review.json").unlink()
+    (repo / "q" / "dup-ratchet-baseline.json").unlink()
+    code_json = _code_inventory(tmp_path / "code.json", ["known1", "NEW"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["status"] == "degraded" and report["block"] is False
+    reasons = " ".join(report["degraded_reasons"])
+    assert "overlay missing" in reasons and "gate baseline missing" in reasons
+
+
+def test_inproc_doc_inventory_status_degrades(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    bad_doc = _write_json(tmp_path / "baddoc.json", {"status": "missing"})
+    code_json = _code_inventory(tmp_path / "code.json", ["known1"])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(bad_doc))
+    assert report["status"] == "degraded"
+    assert any("doc inventory degraded" in r for r in report["degraded_reasons"])
