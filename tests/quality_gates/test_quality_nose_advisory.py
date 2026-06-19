@@ -114,6 +114,60 @@ def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
     assert all(interpretation[field].strip() for field in interpretation)
 
 
+def test_nose_advisory_propagates_family_id(tmp_path: Path) -> None:
+    # family_id is nose scan's stable per-family content hash; the dup-review
+    # ratchet (item 5) keys the reviewed-fixable classification on it, so the
+    # summary must carry it through rather than dropping it.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_nose = bin_dir / "nose"
+    fake_nose.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import json
+            import sys
+
+            args = sys.argv[1:]
+            assert args[0] == "scan"
+            print(json.dumps({"schema_version": 1, "tool_version": "0.13.0", "families": [
+                {
+                    "family_id": "ff1fc93f63fabbc0",
+                    "value": 10.0,
+                    "members": 2,
+                    "files": 2,
+                    "modules": 1,
+                    "languages": 1,
+                    "mean_score": 1.0,
+                    "dup_lines": 12,
+                    "shared_lines": 10,
+                    "params": 1,
+                    "locations": [
+                        {"file": "scripts/a.py", "start_line": 1, "end_line": 10, "name": "a", "kind": "Function"},
+                        {"file": "scripts/b.py", "start_line": 1, "end_line": 10, "name": "b", "kind": "Function"}
+                    ]
+                }
+            ]}))
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_nose.chmod(0o755)
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path), "--json"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""},
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["status"] == "findings"
+    assert payload["families"][0]["family_id"] == "ff1fc93f63fabbc0"
+
+
 def test_nose_advisory_passes_exclude_filters_to_nose(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

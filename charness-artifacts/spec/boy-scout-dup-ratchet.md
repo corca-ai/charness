@@ -91,9 +91,14 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
 
 ## Probe Questions
 
-- **Family-identity stability across nose versions.** Confirm `family_id`
-  stability; define the re-review trigger when nose changes the fingerprint (the
-  doc gate already re-baselines per scanner version). (slice 1)
+- **Family-identity stability across nose versions.** RESOLVED (2026-06-19): the
+  code gate runs `nose scan --format json` (see `inventory_nose_clones.build_command`),
+  whose top-level `families[]` each carry `family_id` (16-hex content hash, present
+  on all families, deterministic across runs). NB the `nose query` dashboard uses a
+  different `id` field — anchor on the gate's `nose scan` output only. Re-review
+  trigger when nose changes the fingerprint: same as the doc gate's per-scanner
+  re-baseline. Still TODO in slice 1: propagate `family_id` through
+  `nose_report_lib.family_summary()` (absent today).
 - **How `quality` seeds classifications.** Default new families to `unreviewed`;
   `quality` proposes `fixable` vs `intentional` (auto-seed `intentional` for
   portable-copy patterns like `*/scripts/resolve_adapter.py`, `init_adapter.py`);

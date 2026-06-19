@@ -40,6 +40,7 @@ def family_summary(family: dict[str, Any]) -> dict[str, Any]:
                 }
             )
     return {
+        "family_id": family.get("family_id"),
         "value": family.get("value"),
         "members": family.get("members"),
         "files": family.get("files"),
