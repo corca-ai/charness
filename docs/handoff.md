@@ -13,24 +13,23 @@
 
 ## Current State
 
-- **This session: item-5 slice-2 IMPLEMENTED — the boy-scout dup ratchet's teeth.**
-  The standalone gate landed per the spec
-  [`### Slice 2 — Resolved Decisions + Plan`](../charness-artifacts/spec/boy-scout-dup-ratchet.md):
-  pure policy lib + git seams ([dup_ratchet_lib.py](../skills/public/quality/scripts/dup_ratchet_lib.py)),
-  the CLI ([check_dup_ratchet.py](../skills/public/quality/scripts/check_dup_ratchet.py)),
-  a validated `dup_ratchet` adapter block (extracted to
-  [quality_dup_ratchet_policy.py](../scripts/quality_dup_ratchet_policy.py) to keep
-  `quality_policy_defaults.py` under its length cap), the gate baseline seeded green +
-  `dup_ratchet` enabled on charness (D6, `fixable_ceiling: 0`), `--json-out` on the
-  doc inventory, the `dup-ratchet` run-quality phase (broad path only; reuses the
-  doc-duplicates drift JSON), the [reference](../skills/public/quality/references/dup-ratchet.md),
-  and tests SC1–SC5 ([test_dup_ratchet.py](../tests/quality_gates/test_dup_ratchet.py)).
-  Closes C5.
+- **This session: item-5 slice-2 DONE — the boy-scout dup ratchet's teeth**
+  (closes C5). Landed per the spec
+  [`### Slice 2`](../charness-artifacts/spec/boy-scout-dup-ratchet.md): pure policy
+  lib + git seams, the [gate CLI](../skills/public/quality/scripts/check_dup_ratchet.py),
+  a validated `dup_ratchet` adapter block, the green-seeded baseline + charness
+  rollout (D6, `fixable_ceiling: 0`), run-quality + broad pre-push wiring, the
+  [reference](../skills/public/quality/references/dup-ratchet.md), and tests SC1–SC6.
 - **Chunk 1 (slice 1 + #393) earlier landed.** #393 closes on the next *scheduled*
   mutation run per its own contract.
 
 ## Next Session
 
+- **nose 0.13.3 scan→query migration (NOW REQUIRED).** Verified this session that
+  0.13.3 removed `nose scan`, breaking the code-clone path (`inventory_nose_clones`
+  and the dup-ratchet gate); the gate degraded to advisory, never false-blocked
+  (FD8 validated), and the repo stays on 0.13.0 until migrated. Findings + plan: the
+  spec's [`## Constraints`](../charness-artifacts/spec/boy-scout-dup-ratchet.md) nose note.
 - **dup-ratchet hardening slice** (deferred from the slice-2 critique — an
   "enabled-but-misconfigured → degrade / re-seed discipline" batch): a
   `--write-baseline` delta/confirm guardrail (FD6 lock-in has no code teeth yet);

@@ -171,6 +171,16 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
   root per call (corca-ai/nose#463 Obs 3+6). Treat a scan->query migration as a
   known future change isolated to the resolver, not an ambient assumption; revisit
   before slice 2 in case nose reconciles Obs 3/4 upstream (which would simplify it).
+  **UPDATE (2026-06-19, post-slice-2): nose 0.13.3 REMOVED `nose scan` entirely —
+  the migration is no longer optional.** `nose query <path> --format json` is now
+  `schema_version: 3` with `top_candidates` (NOT `families`), each keyed by `id`
+  (NOT `family_id`), plus `locations`/`members`/`removable`/`shared`; full
+  enumeration needs the `all` term, and `top=`/`sort=` are query terms. Slice 2
+  shipped on 0.13.0 (`scan`); under 0.13.3 the gate degraded to advisory and never
+  false-blocked (FD8 validated). The scan->query migration + re-baseline under
+  0.13.3 is its own next-session slice (see `docs/handoff.md` `## Next Session`);
+  it also fixes the existing `inventory_nose_clones.py` code-clone advisory, which
+  breaks identically on 0.13.3.
 - Root `scripts/` and `plugins/charness/` mirrors stay in lockstep.
 - Advisory findings never block (item 4 posture preserved); only the ratchet
   verdict gates.
