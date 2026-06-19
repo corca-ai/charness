@@ -1,0 +1,21 @@
+{
+  "entries": [
+    {
+      "class": "intentional",
+      "id": "52c1107ab6427bde",
+      "note": "auto-seeded: portable per-skill copy",
+      "reviewed_at": "2026-06-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fee3c32b97f1a6ee",
+      "note": "auto-seeded: portable per-skill copy",
+      "reviewed_at": "2026-06-19",
+      "surface": "code"
+    }
+  ],
+  "fixable_ceiling": 0,
+  "note": "Reviewed fixable-duplication overlay (item 5). Keyed by family identity (code: nose family_id; doc: family_signature). Stores only explicitly-classified families; an unlisted family defaults to 'unreviewed'. fixable_ceiling (count of 'fixable') is one-way and only decreases via a deliberate re-review. nose-baseline.json / doc-nose-baseline.json own drift detection; this overlay owns fixable classification.",
+  "schemaVersion": "charness.quality.dup_review.v1"
+}

@@ -113,8 +113,14 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
   extractability labels** — corca-ai/nose#463 Obs 1+2 show those labels overclaim
   behavioral equivalence and rank a cross-language ~0-removable family #1, so a
   cross-language 0-removable family must not auto-seed `fixable`. If a proposal
-  ever names an extraction target, exclude test-file-only helpers (Obs 5). Exact
-  proposal UX resolved in slice 1.
+  ever names an extraction target, exclude test-file-only helpers (Obs 5).
+  PARTIALLY RESOLVED (slice 1, 2026-06-19): the seed (`seed_dup_review.py` +
+  `dup_review_lib.py`) does the *mechanical* half — auto-seed `intentional` only
+  when **every** member file is a pure portable copy (`resolve_adapter.py` /
+  `init_adapter.py`), else leave `unreviewed`; it NEVER auto-seeds `fixable`. The
+  *interactive* structural-field `fixable`-vs-`intentional` proposal UX is
+  **deferred to slice 2** with the gate (it needs the structural fields the gate
+  already reads), not built blind in slice 1.
 - **Do `unreviewed` families block?** This is a *gating* (slice 2) decision and
   cannot be exercised in the no-gate slice 1. Slice 1 only records new families as
   `unreviewed`. Slice 2 decides + tests block (hard arm) vs advisory (boy-scout
@@ -226,3 +232,27 @@ inventories, seeds classifications (`intentional` for portable-copy patterns, el
 yet — just the reviewed subset + its tests (artifact shape + seed classification +
 `family_id` emission). Slice 2 adds the standalone escalation-ladder gate script,
 its adapter wiring, and the portability + escalation acceptance tests.
+
+### Slice 1 DONE (2026-06-19)
+
+- `family_summary()` emits `family_id` (5226ad9f). ✓
+- `dup_review_lib.py` (pure: `classify` / `family_records` / `build_review` /
+  `validate_review`) + `seed_dup_review.py` (CLI: collects both inventories,
+  merges, writes) + `tests/quality_gates/test_dup_review_seed.py`. ✓
+- Canonical `charness-artifacts/quality/dup-review.json` seeded
+  (`schemaVersion: charness.quality.dup_review.v1`). First seed: 2 auto-`intentional`
+  code families, `fixable_ceiling: 0`.
+- **Design decisions (reversible; regenerate the artifact to change):**
+  - **Classified-only overlay** — stores only `intentional`/`fixable`; an unlisted
+    family is implicitly `unreviewed` (keeps it small; newness still computed from
+    the baselines per FD4, not from this overlay).
+  - **Seed input = the inventories' DEFAULT (baseline-active) behavior**, so the
+    seed classifies drift; it does NOT bypass the baseline or import baseline
+    identities (avoids the unresolved baseline-`key`-vs-`family_id` reconciliation).
+  - **Docs carry no member paths** in the inventory view (only witness spans), so
+    doc families never auto-seed `intentional` in slice 1 — operator-driven later.
+- **Open for slice 2 (do not assume resolved):** the structural-field `fixable`
+  proposal UX; whether `unreviewed` blocks; baseline-`key`↔`family_id`
+  reconciliation if the overlay should ever import baseline identities; the
+  `dup_ratchet` adapter wiring (`seed_dup_review.py` defaults to the canonical
+  `--output` path, no adapter dependency yet).
