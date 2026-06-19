@@ -13,32 +13,25 @@
 
 ## Current State
 
-- **Chunk 1 (item-5 dup-ratchet slice 1 + #393) DONE this session.** Three
-  commits on top of the prior batch: #393 nose-script coverage; the 16-file
-  batch coverage debt; item-5 slice 1 dup-review overlay + seed.
-- **Push status:** this session's closing steps were the authoritative
-  changed-line gate over the batch, broad `quality_gates`, a fresh-eye critique,
-  then a push. Verify the outcome with `git log --oneline origin/main..HEAD`
-  (empty = the batch landed; non-empty = push pending, pick up there).
-- **#393** (mutation regression) closes on the next *scheduled* mutation run per
-  its own contract (a `workflow_dispatch` cannot prove a changed-line fix); the
-  local gate over `1d5b11c5..HEAD` already shows the nose scripts non-blocking.
-- **Discovery folded in:** the held batch carried a 16-file changed-line gap
-  beyond #393 (the #390 `a741e613` bootstrap-shim convergence + gate-4 doc-dup
-  work) — same recurrence class, fixed with discovery-based in-process coverage
-  tests so the push does not re-file a fresh regression.
+- **This session: item-5 slice-2 DESIGN resolved; NO code written (clean tree).**
+  The identity fork the prior handoff flagged is settled and recorded in the spec
+  [`### Slice 2 — Resolved Decisions + Plan`](../charness-artifacts/spec/boy-scout-dup-ratchet.md):
+  nose's code baseline `key` is cluster-churny and not `family_id`-diffable
+  (17/42 current "drift" families sit in unchanged files), so the gate keys code
+  newness on a NEW stable `family_id` gate baseline; docs reuse the existing
+  stable `signature` drift. Filed upstream **corca-ai/nose#466**.
+- **Chunk 1 (slice 1 + #393) landed** (`origin/main == HEAD`). #393 closes on the
+  next *scheduled* mutation run per its own contract.
 
 ## Next Session
 
-- **Item-5 slice 2** (the ratchet's teeth): standalone escalation-ladder gate
-  script consuming the seeded
-  [dup-review.json](../charness-artifacts/quality/dup-review.json), `dup_ratchet`
-  adapter wiring in [quality-adapter.yaml](../.agents/quality-adapter.yaml),
-  portability + escalation acceptance tests (closes C5). Open points are listed
-  under `## Probe Questions` / the slice-1 block in the
-  [spec](../charness-artifacts/spec/boy-scout-dup-ratchet.md): structural-field
-  fixable proposal UX, whether `unreviewed` blocks, baseline-`key`↔`family_id`
-  reconciliation.
+- **Implement item-5 slice 2 (the ratchet's teeth).** The full contract — decisions
+  D1–D6, inert/degraded ladder, the 9-step file plan, and gotchas — is in the spec
+  [`### Slice 2 — Resolved Decisions + Plan`](../charness-artifacts/spec/boy-scout-dup-ratchet.md).
+  First move: build `dup_ratchet_lib.py` (pure `evaluate` + injectable git seams)
+  and `check_dup_ratchet.py`; add the validated `dup_ratchet` adapter block; seed
+  `dup-ratchet-baseline.json` green + enable on charness (D6); wire run-quality +
+  broad pre-push (not the docs-only subset; C5); tests SC1–SC5. Closes C5.
 - **Remaining gate items** (B1 advisory pattern, fresh-eye + broad closeout):
   doc-links -> lychee BUY + demote backtick/bare-mention to advisory;
   validate_critique_artifacts (keep tier-honesty, demote rest);
@@ -50,13 +43,15 @@
 
 ## Discuss
 
-- Item-5 slice-2 design open points (above) want resolution before the gate is
-  built — especially baseline-`key`↔`family_id` reconciliation if the overlay
-  should import baseline identities.
+- Slice-2 design fork is RESOLVED (spec D1–D6); no user input pending. Note: on
+  charness the boy-scout escalation arm is advisory-by-default (`fixable_ceiling`
+  0), so its block path is proven only by the slice-2 acceptance fixture, not in
+  production.
 
 ## References
 
-- [item-5 spec](../charness-artifacts/spec/boy-scout-dup-ratchet.md),
+- [item-5 spec](../charness-artifacts/spec/boy-scout-dup-ratchet.md) (slice-2
+  decisions + file plan), [corca-ai/nose#466](https://github.com/corca-ai/nose/issues/466),
   [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md),
   [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
   [mutation-testing reference](../skills/public/quality/references/mutation-testing.md),
