@@ -43,13 +43,17 @@ driven by what is stable in the detector, not by preference:
 
 - **Code: a gate-owned `family_id` baseline** (`dup-ratchet-baseline.json`,
   `schemaVersion: charness.quality.dup_ratchet_baseline.v1`, a `code_family_ids`
-  list). A full `nose scan` (no `--baseline`) yields the current code `family_id`
-  set; a `family_id` absent from the baseline and not `intentional` is new. nose's
+  list). A full `nose query` (one call per scope root — `query` takes one path —
+  merged and deduped by family identity, no nose `--baseline`) yields the current
+  code `family_id` set; a `family_id` absent from the baseline and not
+  `intentional` is new. The identity is nose's content-hash `id` (named
+  `family_id` in the removed `scan` output, normalized by the resolver). nose's
   own `key`-based `--baseline` is NOT used for gating: `key` is
   cluster/membership-sensitive, so a copy family re-keys when any sibling copy
   changes and the tool re-flags unchanged copies as drift (a known upstream nose
-  key-stability limitation, filed upstream). The content-hash `family_id` stays
-  stable across that churn, so the gate keys on it.
+  key-stability limitation, filed upstream). The content-hash identity stays
+  stable across that churn, so the gate keys on it. Re-seed the baseline per
+  nose version: identities are scanner-version-scoped.
 - **Doc: the existing signature drift** (`doc-nose-baseline.json`, sorted member
   `path#heading` signature). The doc `signature` is heading-based and stable
   across line-number churn, so the doc inventory's drift output already is the
@@ -99,8 +103,9 @@ later — the trap step 3 below warns about).
 2. Seed the reviewed overlay: `seed_dup_review.py --repo-root . --write`.
 3. Seed the gate baseline (accept today's full code `family_id` set):
    `check_dup_ratchet.py --repo-root . --write-baseline`. It reads `scope_paths` and
-   MUST enumerate the full family set (a high `--top`, no-`--baseline` scan); a
-   truncated or wrong-scope seed would miss families and false-block later.
+   MUST enumerate the full family set (a high `top=`, full `nose query` per root, no
+   nose `--baseline`); a truncated or wrong-scope seed would miss families and
+   false-block later.
 4. Flip the block to `enabled: true`.
 5. Wire `check_dup_ratchet.py` into your broad gate / pre-push (reuse a persisted
    doc-duplicates `--json-out` via `--doc-inventory` to avoid a second doc scan).

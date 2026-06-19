@@ -86,28 +86,33 @@ refactoring proposals, surfaced as the advisory
 [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
 quality phase (`inventory-nose-clones`).
 
-- Code clones (`nose scan`, advisory `inventory-nose-clones`) rank refactoring
+- Code clones (`nose query`, advisory `inventory-nose-clones`) rank refactoring
   candidates with their own
   [`charness-artifacts/quality/nose-baseline.json`](../charness-artifacts/quality/nose-baseline.json)
-  drift baseline.
+  drift baseline (an id-set of accepted `family_id`s; nose 0.13.3 removed
+  `nose scan`, so both the advisory and the dup-ratchet gate now run `nose query`).
 - Document near-duplicates (`nose query` Markdown families, advisory
   `doc-duplicates`) own layer 1 above.
 - `jscpd` (layer 2) remains a deferred syntax/token copy-paste candidate.
 
 For Charness, the initial maintainer-local 2026-06-04 observation surfaced
 meaningful refactoring candidates, especially repeated skill-runtime bootstrap
-blocks and adapter resolver shapes. The standing code-clone scan:
+blocks and adapter resolver shapes. nose 0.13.3 removed the deprecated
+`nose scan`, and `nose query` takes one path root per call, so the advisory runs
+one query per scope root and merges the families (deduped by `family_id`):
 
 ```sh
-nose scan scripts skills/public skills/support \
-  --mode syntax,semantic,near --min-size 24 \
-  --sort extractability --top 20
+# what inventory_nose_clones.py runs, per root (scripts / skills/public / skills/support):
+nose query scripts all top=20 sort=extractability \
+  --mode syntax,semantic,near --min-size 24 --format json
 ```
 
-Use repeatable `--exclude <glob>` (for example, `--exclude '**/resolve_adapter.py'`)
-or a structured `--ignore-file <file>` for focused follow-up scans after
-classifying intentional boilerplate; do not treat filters as proof that the
-excluded duplication was resolved.
+Prefer the wrapper [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
+over a hand-run query: it loops the roots, merges, and applies the id-set drift
+baseline. Use repeatable `--exclude <glob>` (for example,
+`--exclude '**/resolve_adapter.py'`) or a structured `--ignore-file <file>` for
+focused follow-up scans after classifying intentional boilerplate; do not treat
+filters as proof that the excluded duplication was resolved.
 
 ## Test DSL And Testability Policy
 

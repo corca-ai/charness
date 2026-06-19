@@ -6,7 +6,7 @@ adapter, derives the current code/doc duplicate families, and blocks when a NEW
 fixable-eligible family is introduced (hard arm) or when the reviewed fixable
 ceiling has stagnated above the healthy floor for too long (boy-scout escalation).
 The policy lives in `dup_ratchet_lib` (pure, unit-tested); this CLI is the
-integration seam (adapter load, nose scans, git-derived stagnation).
+integration seam (adapter load, nose query scans, git-derived stagnation).
 
 Portable by construction: a consumer points `review_artifact_path`,
 `gate_baseline_path`, and `scope_paths` at its own repo; an absent / disabled
@@ -90,16 +90,21 @@ def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[
     if nose_bin is None:
         return set(), "nose binary not found; code clone scan skipped"
     paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
-    command = _inventory.build_command(
-        nose_bin, paths, mode=_inventory.DEFAULT_MODE, min_size=FULL_SCAN_MIN_SIZE,
-        top=FULL_SCAN_TOP, sort="extractability", baseline=None,
+    # Full enumeration via the pinned `nose query` resolver: one query per root
+    # (query takes one path), merged + deduped by family_id, high --top so every
+    # family_id is recorded (a truncated seed would false-block later).
+    result = _nose_report.collect_families(
+        repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
+        min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",
     )
-    result = _nose_report.run_nose(repo_root, command)
     if result.get("status") == "error":
         return set(), f"nose code scan error: {result.get('stderr', '')[:160]}"
-    families = result.get("families", [])
-    ids = {str(fam.get("family_id")) for fam in families if isinstance(fam, dict) and fam.get("family_id")}
-    return ids, None
+    ids = {
+        _nose_report.family_identity(fam)
+        for fam in result.get("families", [])
+        if isinstance(fam, dict) and _nose_report.family_identity(fam)
+    }
+    return {fid for fid in ids if fid}, None
 
 
 def _code_family_ids(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None]:
@@ -235,7 +240,7 @@ def run(repo_root: Path, args) -> dict:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Boy-scout duplicate ratchet gate.")
     parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument("--code-inventory", type=Path, help="Injected full-scan inventory_nose_clones --json file; else a full nose scan runs.")
+    parser.add_argument("--code-inventory", type=Path, help="Injected full-scan inventory_nose_clones --json file; else a full nose query scan runs.")
     parser.add_argument("--doc-inventory", type=Path, help="Injected inventory_doc_duplicates --json drift file; else the doc inventory runs.")
     parser.add_argument("--stagnation", type=int, default=None, help="Inject the stagnation commit distance (test seam); else derived from git.")
     parser.add_argument("--write-baseline", action="store_true", help="Seed the gate baseline from a full code scan and exit (accept today's code family_ids).")

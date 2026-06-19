@@ -46,7 +46,7 @@ GATE_BASELINE_NOTE = (
     "Accepted code clone family_ids for the boy-scout dup ratchet (item 5, slice 2). "
     "A code family_id present now but absent here (and not 'intentional' in dup-review.json) "
     "is a NEW fixable-eligible family and hard-blocks. Keyed by nose family_id (stable "
-    "16-hex content hash) from a FULL `nose scan` — NOT nose's churn-prone `key`/--baseline "
+    "16-hex content hash) from a FULL `nose query` (one call per scope root, deduped) — NOT nose's churn-prone `key`/--baseline "
     "(a known upstream nose key-stability limitation). Docs key on the doc-nose-baseline signature instead, not here. "
     "Re-baseline deliberately (only to accept reviewed new families) per scanner version."
 )

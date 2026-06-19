@@ -73,6 +73,18 @@ def test_run_nose_timeout(monkeypatch) -> None:
     assert result["tool_version"] == ""
 
 
+def test_run_nose_oserror_degrades_not_crashes(monkeypatch) -> None:
+    # An invalid NOSE_BIN (unchecked override) must degrade to advisory, not crash.
+    def boom(*_a, **_k):
+        raise FileNotFoundError(2, "No such file or directory", "nope-nose")
+
+    monkeypatch.setattr(nr.subprocess, "run", boom)
+    result = nr.run_nose(REPO_ROOT, ["nope-nose", "query"])
+    assert result["status"] == "error"
+    assert result["families"] == []
+    assert "could not be executed" in result["stderr"]
+
+
 def test_run_nose_invalid_json(monkeypatch) -> None:
     monkeypatch.setattr(nr.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json", stderr="warn"))
     result = nr.run_nose(REPO_ROOT, ["nose"])
@@ -114,6 +126,47 @@ def test_run_nose_success_findings(monkeypatch) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# nose_report_lib.collect_families — multi-root query merge (the 0.13.3 resolver).
+# --------------------------------------------------------------------------- #
+def test_collect_families_merges_dedupes_and_stamps_version(monkeypatch) -> None:
+    calls = []
+
+    def fake_run(_repo, command):
+        calls.append(command)
+        fams = [{"id": "a"}, {"id": "b"}] if command[2] == "scripts" else [{"id": "b"}, {"id": "c"}]
+        return {"status": "findings", "exit_code": 0, "stdout": "", "stderr": "",
+                "families": fams, "tool_version": "", "scope": {},
+                "ranking": {"total_families": 2, "shown_families": 2}}
+
+    monkeypatch.setattr(nr, "run_nose", fake_run)
+    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.13.3")
+    result = nr.collect_families(
+        REPO_ROOT, "nose", ["scripts", "skills/public"], mode="m", min_size=24, top=10, sort="extractability"
+    )
+    assert sorted(nr.family_identity(f) for f in result["families"]) == ["a", "b", "c"]  # 'b' deduped
+    assert result["status"] == "findings"
+    assert result["tool_version"] == "0.13.3"  # query JSON has no version -> stamped
+    assert result["ranking"]["total_families"] == 4  # summed per-root
+    assert len(calls) == 2 and calls[0][:3] == ["nose", "query", "scripts"]
+
+
+def test_collect_families_errored_path_degrades_to_error(monkeypatch) -> None:
+    def fake_run(_repo, command):
+        if command[2] == "scripts":
+            return {"status": "error", "exit_code": 1, "stdout": "", "stderr": "boom", "families": [], "tool_version": ""}
+        return {"status": "findings", "exit_code": 0, "stdout": "", "stderr": "",
+                "families": [{"id": "a"}], "tool_version": "", "scope": {}, "ranking": {}}
+
+    monkeypatch.setattr(nr, "run_nose", fake_run)
+    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.13.3")
+    result = nr.collect_families(
+        REPO_ROOT, "nose", ["scripts", "skills/public"], mode="m", min_size=24, top=10, sort="extractability"
+    )
+    assert result["status"] == "error"  # any errored root degrades the whole scan (never a silent clean pass)
+    assert "boom" in result["stderr"]
+
+
+# --------------------------------------------------------------------------- #
 # nose_report_lib.extract_report — every report-shape branch.
 # --------------------------------------------------------------------------- #
 def test_extract_report_v04_array_filters_non_dicts() -> None:
@@ -133,6 +186,16 @@ def test_extract_report_dict_with_wrong_typed_fields() -> None:
     )
     assert families == [] and scope == {} and ranking == {}
     assert tool_version == "0.13.0"
+
+
+def test_extract_report_query_top_candidates_and_summary_ranking() -> None:
+    # The no-`all` query dashboard emits `top_candidates`; ranking is derived from
+    # the `summary` block when no explicit `ranking` is present (nose 0.13.x query).
+    families, tool_version, scope, ranking = nr.extract_report(
+        {"top_candidates": [{"id": "q"}], "summary": {"families": 10, "shown": 1}}
+    )
+    assert families == [{"id": "q"}]
+    assert ranking == {"total_families": 10, "shown_families": 1}
 
 
 # --------------------------------------------------------------------------- #
@@ -158,6 +221,29 @@ def test_family_summary_skips_malformed_locations() -> None:
 def test_family_summary_non_list_locations() -> None:
     summary = nr.family_summary({"family_id": "fid", "locations": "nope"})
     assert summary["sample_locations"] == []
+
+
+def test_family_summary_query_shape_maps_fields() -> None:
+    # nose 0.13.3 `query` output: identity `id` (not `family_id`), `shared` (not
+    # `shared_lines`), location `start`/`end` (not `start_line`/`end_line`), and no
+    # `dup_lines` (derived from member spans). family_summary normalizes them.
+    summary = nr.family_summary(
+        {
+            "id": "qid",
+            "shared": 5,
+            "members": 2,
+            "value": 1.0,
+            "locations": [
+                {"file": "a.py", "start": 1, "end": 10, "name": "a", "lang": "python"},
+                {"file": "b.py", "start": 1, "end": 10, "name": "b", "lang": "python"},
+            ],
+        }
+    )
+    assert summary["family_id"] == "qid"
+    assert summary["shared_lines"] == 5
+    assert summary["dup_lines"] == 20  # two 10-line spans, derived
+    assert summary["sample_locations"][0]["start_line"] == 1
+    assert summary["sample_locations"][0]["end_line"] == 10
 
 
 # --------------------------------------------------------------------------- #
@@ -186,31 +272,37 @@ def test_resolve_baseline_read_default_absent(tmp_path: Path) -> None:
     assert nb.resolve_baseline(write_baseline=False, baseline=None, repo_root=tmp_path) is None
 
 
-def test_run_write_baseline_timeout(monkeypatch, tmp_path: Path) -> None:
-    def boom(*_a, **_k):
-        raise subprocess.TimeoutExpired(cmd="nose", timeout=nb.NOSE_TIMEOUT_SECONDS)
-
-    monkeypatch.setattr(nb.subprocess, "run", boom)
-    result = nb.run_write_baseline(tmp_path, ["nose"], "b.json")
-    assert result["status"] == "error"
-    assert result["exit_code"] == 124
-    assert "timed out" in result["stderr"]
-
-
-def test_run_write_baseline_success_then_error(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(nb.subprocess, "run", lambda *_a, **_k: _completed(stdout="ok"))
-    assert nb.run_write_baseline(tmp_path, ["nose"], "b.json")["status"] == "baseline-written"
-    monkeypatch.setattr(nb.subprocess, "run", lambda *_a, **_k: _completed(returncode=1, stderr="fail"))
-    assert nb.run_write_baseline(tmp_path, ["nose"], "b.json")["status"] == "error"
+def test_load_baseline_ids_reads_code_family_ids(tmp_path: Path) -> None:
+    rel = nb.DEFAULT_BASELINE_REL
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text(
+        json.dumps({"schemaVersion": nb.BASELINE_SCHEMA_VERSION, "code_family_ids": ["a", "b", 5, ""]}),
+        encoding="utf-8",
+    )
+    assert nb.load_baseline_ids(tmp_path, rel) == {"a", "b"}
 
 
-def test_write_baseline_payload_shape(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(nb.subprocess, "run", lambda *_a, **_k: _completed(stdout="wrote 3"))
-    payload = nb.write_baseline_payload(tmp_path, ["nose", "--write-baseline"], None, ["scripts"])
+def test_load_baseline_ids_none_on_missing_legacy_or_malformed(tmp_path: Path) -> None:
+    assert nb.load_baseline_ids(tmp_path, None) is None
+    assert nb.load_baseline_ids(tmp_path, "nope.json") is None
+    # A pre-migration cluster-key baseline (a bare [{key, members}] list) carries no
+    # code_family_ids -> None, so everything reads as drift until re-seeded.
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(json.dumps([{"key": "x", "members": []}]), encoding="utf-8")
+    assert nb.load_baseline_ids(tmp_path, "legacy.json") is None
+
+
+def test_write_baseline_payload_writes_id_set(tmp_path: Path) -> None:
+    payload = nb.write_baseline_payload(tmp_path, None, ["b", "a", "a", ""], ["scripts"])
     assert payload["status"] == "baseline-written"
     assert payload["advisory"] is True
     assert payload["paths"] == ["scripts"]
+    assert payload["code_family_count"] == 2
     assert len(payload["notes"]) == 2
+    written = json.loads((tmp_path / nb.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
+    assert written["code_family_ids"] == ["a", "b"]  # sorted, deduped, empties dropped
+    assert written["schemaVersion"] == nb.BASELINE_SCHEMA_VERSION
 
 
 # --------------------------------------------------------------------------- #
@@ -236,9 +328,9 @@ def test_print_human_status_error(capsys) -> None:
 
 
 def test_print_human_status_baseline_written(capsys) -> None:
-    inv.print_human({"status": "baseline-written", "baseline": "b.json", "stdout": "wrote 3"})
+    inv.print_human({"status": "baseline-written", "baseline": "b.json", "code_family_count": 3})
     out = capsys.readouterr().out
-    assert "nose baseline written: b.json" in out and "wrote 3" in out
+    assert "nose baseline written: b.json" in out and "3 code family_ids accepted" in out
 
 
 def _findings_payload(**overrides) -> dict:
@@ -308,21 +400,20 @@ def test_resolve_nose_bin_path_lookup(monkeypatch) -> None:
     assert inv.resolve_nose_bin() == "/usr/bin/nose"
 
 
-def test_build_command_read_mode() -> None:
-    cmd = inv.build_command(
-        "nose", ["scripts"], mode="syntax", min_size=24, top=20, sort="value",
-        exclude=["a"], ignore_file="ig.json", baseline="b.json", write_baseline=False,
+def test_build_query_command_terms_and_flags() -> None:
+    cmd = nr.build_query_command(
+        "nose", "scripts", mode="syntax", min_size=24, top=20, sort="value",
+        exclude=["a"], ignore_file="ig.json",
     )
-    assert "--format" in cmd and "json" in cmd
-    assert "--top" in cmd and "--sort" in cmd
-    assert "--exclude" in cmd and "--ignore-file" in cmd and "--baseline" in cmd
-    assert "--write-baseline" not in cmd
-
-
-def test_build_command_write_mode() -> None:
-    cmd = inv.build_command("nose", ["scripts"], mode="syntax", min_size=24, top=20, sort="value", write_baseline=True)
-    assert "--write-baseline" in cmd
-    assert "--top" not in cmd and "--format" not in cmd
+    assert cmd[:3] == ["nose", "query", "scripts"]
+    # all/top=/sort= are query TERMS (positional), not flags: passing --top/--sort
+    # to `query` errors and yields zero families (nose 0.13.3 migration).
+    assert "all" in cmd and "top=20" in cmd and "sort=value" in cmd
+    assert "--top" not in cmd and "--sort" not in cmd
+    assert "--mode" in cmd and "--min-size" in cmd
+    assert "--exclude" in cmd and "--ignore-file" in cmd
+    assert cmd[-2:] == ["--format", "json"]
+    assert "scan" not in cmd and "--write-baseline" not in cmd and "--baseline" not in cmd
 
 
 def _args(tmp_path: Path, **overrides) -> SimpleNamespace:
@@ -342,44 +433,95 @@ def test_payload_for_args_missing_nose(monkeypatch, tmp_path: Path) -> None:
     assert len(payload["notes"]) == 2
 
 
+def _collected(families: list, **overrides) -> dict:
+    base = {
+        "status": "findings" if families else "clean",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "families": families,
+        "tool_version": "0.13.3",
+        "scope": {"paths": ["scripts"]},
+        "ranking": {"total_families": len(families), "shown_families": len(families)},
+    }
+    base.update(overrides)
+    return base
+
+
 def test_payload_for_args_findings(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         inv.nose_report,
-        "run_nose",
-        lambda _repo_root, _command: {
-            "status": "findings",
-            "exit_code": 0,
-            "stdout": "",
-            "stderr": "",
-            "families": [
+        "collect_families",
+        lambda *_a, **_k: _collected(
+            [
                 {
                     "family_id": "fid",
                     "dup_lines": 12,
                     "locations": [{"file": "a.py", "start_line": 1, "end_line": 9, "name": "n", "kind": "Function"}],
                 }
-            ],
-            "tool_version": "0.13.0",
-            "scope": {"files": 1},
-            "ranking": {"total_families": 1, "shown_families": 1},
-        },
+            ]
+        ),
     )
+    # No nose-baseline.json in tmp_path -> baseline reads None -> all families drift.
     payload = inv.payload_for_args(_args(tmp_path, path=["scripts"], exclude=["x"], ignore_file="ig.json"))
     assert payload["status"] == "findings"
     assert payload["family_count"] == 1
     assert payload["total_dup_lines"] == 12
     assert payload["families"][0]["family_id"] == "fid"
+    assert payload["tool_version"] == "0.13.3"
+    assert payload["baseline"] is None
+
+
+def test_payload_for_args_drift_filters_baseline_ids(monkeypatch, tmp_path: Path) -> None:
+    rel = inv.nose_baseline.DEFAULT_BASELINE_REL
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text(
+        json.dumps({"schemaVersion": inv.nose_baseline.BASELINE_SCHEMA_VERSION, "code_family_ids": ["keep"]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        inv.nose_report,
+        "collect_families",
+        lambda *_a, **_k: _collected([{"family_id": "keep"}, {"family_id": "newfam"}]),
+    )
+    payload = inv.payload_for_args(_args(tmp_path))
+    assert payload["family_count"] == 1  # 'keep' is accepted in the baseline; only 'newfam' is drift
+    assert payload["families"][0]["family_id"] == "newfam"
+    assert payload["baseline"] == rel
+
+
+def test_payload_for_args_error_status(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        inv.nose_report, "collect_families",
+        lambda *_a, **_k: _collected([], status="error", stderr="scripts: boom"),
+    )
+    payload = inv.payload_for_args(_args(tmp_path))
+    assert payload["status"] == "error"
+    assert payload["family_count"] == 0
+    assert "boom" in payload["stderr"]
 
 
 def test_payload_for_args_write_baseline(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
-    monkeypatch.setattr(
-        inv.nose_baseline,
-        "write_baseline_payload",
-        lambda _repo_root, _command, _baseline, _roots: {"status": "baseline-written", "advisory": True},
-    )
-    payload = inv.payload_for_args(_args(tmp_path, path=["scripts"], write_baseline=True))
+    seen = {}
+
+    def fake_collect(_repo, _bin, _paths, **kwargs):
+        seen.update(kwargs)
+        return _collected([{"family_id": "fid2"}, {"family_id": "fid1"}, {"id": ""}])
+
+    monkeypatch.setattr(inv.nose_report, "collect_families", fake_collect)
+    payload = inv.payload_for_args(_args(tmp_path, path=["scripts"], top=20, write_baseline=True))
     assert payload["status"] == "baseline-written"
+    assert payload["code_family_count"] == 2
+    # A baseline write MUST enumerate the full set, never the display --top (which
+    # would truncate it and re-flag the rest as drift forever).
+    assert seen["top"] == inv.WRITE_BASELINE_TOP and seen["top"] != 20
+    written = json.loads((tmp_path / inv.nose_baseline.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
+    assert written["code_family_ids"] == ["fid1", "fid2"]
 
 
 def test_main_json_and_human(monkeypatch, tmp_path: Path, capsys) -> None:

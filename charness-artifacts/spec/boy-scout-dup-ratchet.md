@@ -436,3 +436,44 @@ boy-scout arm is inert at ceiling 0 (E — built + tested, dormant by honest con
 disclosed in the handoff); degraded-vs-clean summary token (H — `status` and the
 ADVISORY body already distinguish them); stale-baseline drift telemetry (J); empty
 `fixable` subset at ship (K — D4 deferred by design).
+
+## Slice 3 — nose 0.13.3 scan→query migration DONE (2026-06-19)
+
+Closes the `## Constraints` nose note (0.13.3 removed `nose scan`). The code-clone
+path (the doc path already ran `nose query`) migrated to `nose query`, isolated to
+the resolver `nose_report_lib.py` as the Constraint required; charness upgraded to
+nose 0.13.3 and both id-baselines were re-seeded on it.
+
+- **Resolver (`nose_report_lib.py`)** pins the command + shape: `build_query_command`
+  (`all`/`top=`/`sort=` are query TERMS, not flags); `collect_families` runs one
+  `nose query` per scope root (query takes one path) and merges, deduped by identity,
+  with whole-result `error` if any root errors (FD8: never a silent clean pass) and
+  `OSError` degrade for an invalid `NOSE_BIN`; `extract_report` reads `families`
+  (sv2 0.13.0 / sv3 0.13.3, under the `all` term) OR `top_candidates` (no-`all`
+  dashboard); `family_summary` normalizes `id`→`family_id`, `shared`→`shared_lines`,
+  location `start`/`end`→`start_line`/`end_line`, derives `dup_lines` from member
+  spans, and stamps `tool_version` from `nose --version` (query JSON omits it).
+- **Advisory drift baseline moved off nose-native `--baseline`** (it clobbers across
+  single-path query writes and keys on the churn-prone cluster `key`) to a pure
+  Python id-set set-diff (`nose_baseline_lib.py`, `nose-baseline.json` reshaped to
+  `schemaVersion: charness.quality.nose_baseline.v2` + `code_family_ids`). A legacy
+  key-based baseline reads as `None` → all-drift until re-seeded (honest signal).
+- **Gate (`check_dup_ratchet._scan_code_family_ids`)** reuses the resolver; both
+  `dup-ratchet-baseline.json` (gate) and `nose-baseline.json` (advisory) re-seeded
+  to 487 ids under 0.13.3. The advisory write path enumerates the FULL set
+  (`WRITE_BASELINE_TOP`), never the display `--top` (a truncation bug caught + fixed
+  in verification).
+- **Version floor bumped `>=0.13.0`→`>=0.13.3`** in `integrations/tools/nose.json`
+  (the gate baseline is version-scoped; running on a different nose risks false
+  "new family" blocks). The doc engine's internal floor stays 0.13.0 (the Markdown
+  engine landed at 0.13.0 and is unaffected) — an honest layer asymmetry.
+- **Accepted query semantics:** a clone family split across two scope roots is no
+  longer grouped (query scans one root); documented in the resolver + manifest, with
+  re-baseline-per-scanner-version guidance.
+- Verified on live 0.13.3: 104 focused tests, `run-quality.sh --read-only` 77/0
+  (dup-ratchet + inventory-nose-clones + doc-duplicates phases green), packaging +
+  managed-install green. Bounded fresh-eye critique (2 reviewers: correctness +
+  portability) ran before lock: a stale plugin-mirror BLOCKER (re-sync), the gate
+  baseline `nose scan` provenance note + stale `scan` comments, and an FD8 `OSError`
+  hardening were all acted; the version-floor message divergence was counterweighted
+  as an honest asymmetry (NIT, left).

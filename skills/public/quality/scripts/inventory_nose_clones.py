@@ -32,6 +32,10 @@ DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
 # syntax+semantic+near is a superset of the 0.5 default, so this requests
 # strictly more coverage, never less — no silent channel drop under 0.5.
 DEFAULT_MODE = "syntax,semantic,near"
+# A baseline must record EVERY family; the display `--top` would truncate the
+# enumeration and leave the rest to re-flag as drift forever. Enumerate the full
+# set when writing (high top=, no nose --baseline), independent of --top.
+WRITE_BASELINE_TOP = 1_000_000
 
 
 def _portable_path(repo_root: Path, path: Path) -> str:
@@ -46,46 +50,6 @@ def resolve_nose_bin() -> str | None:
     if override:
         return override
     return shutil.which("nose")
-
-
-def build_command(
-    nose_bin: str,
-    paths: list[str],
-    *,
-    mode: str,
-    min_size: int,
-    top: int,
-    sort: str,
-    exclude: list[str] | None = None,
-    ignore_file: str | None = None,
-    baseline: str | None = None,
-    write_baseline: bool = False,
-) -> list[str]:
-    command = [
-        nose_bin,
-        "scan",
-        *paths,
-        "--mode",
-        mode,
-        "--min-size",
-        str(min_size),
-    ]
-    # --write-baseline records EVERY family; --top would truncate the report to
-    # the top N and so accept only N families, leaving the rest to re-flag. Keep
-    # ranking/limit/format off the write path.
-    if not write_baseline:
-        command.extend(["--sort", sort, "--top", str(top)])
-    for pattern in exclude or []:
-        command.extend(["--exclude", pattern])
-    if ignore_file:
-        command.extend(["--ignore-file", ignore_file])
-    if baseline:
-        command.extend(["--baseline", baseline])
-    if write_baseline:
-        command.append("--write-baseline")
-    else:
-        command.extend(["--format", "json"])
-    return command
 
 
 # Advisory interpretation contract (see skills/shared/references/
@@ -104,6 +68,18 @@ INTERPRETATION = {
         "genuinely extractable debt for THIS repo?"
     ),
 }
+
+
+def _representative_command(nose_bin: str, roots: list[str], args: argparse.Namespace, excludes: list[str], ignore_file: str | None) -> str:
+    """A human-facing command string for one root (the resolver loops the rest).
+    `query` takes one path per call, so there is no single multi-root command."""
+    sample = roots[0] if roots else "."
+    return shlex.join(
+        nose_report.build_query_command(
+            nose_bin, sample, mode=args.mode, min_size=args.min_size, top=args.top,
+            sort=args.sort, exclude=excludes, ignore_file=ignore_file,
+        )
+    )
 
 
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
@@ -131,53 +107,72 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "families": [],
             "notes": [
                 "nose is missing; install per integrations/tools/nose.json to run the clone-family advisory.",
-                "nose is now required (>=0.13.0): document near-duplicate review runs through inventory_doc_duplicates.py (Markdown families), not a difflib fallback.",
+                "nose is now required (>=0.13.3): document near-duplicate review runs through inventory_doc_duplicates.py (Markdown families), not a difflib fallback.",
             ],
         }
-    if args.write_baseline:
-        command = build_command(
-            nose_bin,
-            roots,
-            mode=args.mode,
-            min_size=args.min_size,
-            top=args.top,
-            sort=args.sort,
-            exclude=excludes,
-            ignore_file=ignore_file,
-            baseline=baseline,
-            write_baseline=True,
-        )
-        return nose_baseline.write_baseline_payload(repo_root, command, baseline, roots)
-    command = build_command(
-        nose_bin,
-        roots,
-        mode=args.mode,
-        min_size=args.min_size,
-        top=args.top,
-        sort=args.sort,
-        exclude=excludes,
-        ignore_file=ignore_file,
-        baseline=baseline,
+    # Writing a baseline enumerates EVERY family (full top); a read uses the
+    # display --top for ranking. A truncated write would re-flag the rest forever.
+    scan_top = WRITE_BASELINE_TOP if args.write_baseline else args.top
+    collected = nose_report.collect_families(
+        repo_root, nose_bin, roots, mode=args.mode, min_size=args.min_size,
+        top=scan_top, sort=args.sort, exclude=excludes, ignore_file=ignore_file,
     )
-    result = nose_report.run_nose(repo_root, command)
-    families = result["families"]
+    command = _representative_command(nose_bin, roots, args, excludes, ignore_file)
+    families = collected["families"]
+    if args.write_baseline:
+        if collected["status"] == "error":
+            return {
+                "status": "error", "advisory": True, "repo_root": str(repo_root),
+                "paths": roots, "baseline": baseline, "command": command,
+                "stderr": collected["stderr"],
+                "notes": ["nose query errored; baseline not written. Review manually."],
+            }
+        ids = {nose_report.family_identity(family) for family in families}
+        return nose_baseline.write_baseline_payload(
+            repo_root, baseline, {fid for fid in ids if fid}, roots
+        )
+    if collected["status"] == "error":
+        return {
+            "status": "error",
+            "advisory": True,
+            "repo_root": str(repo_root),
+            "paths": roots,
+            "excludes": excludes,
+            "ignore_file": ignore_file,
+            "baseline": baseline,
+            "scope": collected.get("scope", {}),
+            "ranking": {},
+            "command": command,
+            "exit_code": collected["exit_code"],
+            "tool_version": collected.get("tool_version", ""),
+            "family_count": 0,
+            "families": [],
+            "stderr": collected["stderr"],
+            "notes": ["nose inventory error; review manually."],
+        }
+    baseline_ids = nose_baseline.load_baseline_ids(repo_root, baseline)
+    if baseline_ids is not None:
+        drift = [family for family in families if nose_report.family_identity(family) not in baseline_ids]
+    else:
+        drift = families
+    summaries = [nose_report.family_summary(family) for family in drift]
     return {
-        "status": result["status"],
+        "status": "findings" if summaries else "clean",
         "advisory": True,
         "repo_root": str(repo_root),
         "paths": roots,
         "excludes": excludes,
         "ignore_file": ignore_file,
-        "baseline": baseline,
-        "scope": result.get("scope", {}),
-        "ranking": result.get("ranking", {}),
-        "command": shlex.join(command),
-        "exit_code": result["exit_code"],
-        "tool_version": result.get("tool_version", ""),
-        "family_count": len(families),
-        "total_dup_lines": sum(int(family.get("dup_lines") or 0) for family in families if isinstance(family, dict)),
-        "families": [nose_report.family_summary(family) for family in families if isinstance(family, dict)],
-        "stderr": result["stderr"],
+        "baseline": baseline if baseline_ids is not None else None,
+        "scope": collected.get("scope", {}),
+        "ranking": collected.get("ranking", {}),
+        "command": command,
+        "exit_code": collected["exit_code"],
+        "tool_version": collected.get("tool_version", ""),
+        "family_count": len(summaries),
+        "total_dup_lines": sum(int(summary.get("dup_lines") or 0) for summary in summaries),
+        "families": summaries,
+        "stderr": collected["stderr"],
         "interpretation": dict(INTERPRETATION),
         "notes": [
             "nose findings are refactoring candidates, not standing quality failures.",
@@ -197,7 +192,9 @@ def print_human(payload: dict[str, Any]) -> None:
         print(f"ADVISORY: nose inventory error; review manually. {payload.get('stderr', '')}")
         return
     if status == "baseline-written":
-        print(f"nose baseline written: {payload.get('baseline')}. {payload.get('stdout', '')}".strip())
+        count = payload.get("code_family_count")
+        suffix = f" ({count} code family_ids accepted)" if isinstance(count, int) else ""
+        print(f"nose baseline written: {payload.get('baseline')}{suffix}.")
         return
     version_label = payload.get("tool_version") or "unknown"
     print(
