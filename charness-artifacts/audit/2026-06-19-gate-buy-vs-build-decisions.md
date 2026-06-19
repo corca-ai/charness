@@ -45,7 +45,19 @@ P5 (teeth only at irreversible boundaries), "count is not a metric."
 - **Decision: DELETE outright** (NOT jsonschema — that adds surface for zero
   protection). Confidence HIGH.
 
-### ② `check_doc_links` (396 lines) → lychee BUY + split (decided)
+### ② `check_doc_links` (396 lines) → lychee BUY REJECTED (2026-06-20); demotion-only
+
+> **REVERSED 2026-06-20.** The BUY below compared lychee against *markdownlint* — the
+> wrong baseline. The real baseline was the existing 2-line `.exists()`, which lychee
+> matched on every real link in this repo: the only 3 cases where they diverge
+> (URL-encoded paths, links inside fenced code blocks, links inside inline code) occur
+> **0 times** across the 281 checked docs. Adopting it cost a required fail-closed
+> dependency + ~300 LOC + 3 CI installs for **0 behavioral gain**, so slice 1 was
+> reverted (3 independent reviewers incl. the assigned defender said REVERT).
+> **Lesson: a BUY must beat the existing working baseline, not a strawman; prefer
+> delete/demote over replace-with-tool.** The only surviving value from item ② is (c):
+> demote the FP-heavy backtick/bare-mention enforcement to advisory (bespoke, no tool).
+> Original decision retained below for the record.
 
 - Verified: no buyable broken-relative-link checker except lychee (above).
 - Steelman (KEEP ~90 lines, P5): `validate_link` broken-relative-link resolution

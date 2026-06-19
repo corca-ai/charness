@@ -36,19 +36,20 @@
   the false-block class — not a floor); plus two workflow habits — sanity-check a
   tool's output shape before relaying a surprising all-fail, and don't let an
   off-contract probe outrank the canonical gate. Rationale: the retro above.
-- **Two findings from the v0.52.6 release (operator's call to file):** (a)
-  **family_id churn on same-file edits** — editing a scanned member file rotates
-  its clusters' nose `family_id`, forcing a re-baseline with no new duplication
-  (transferable to consumer repos); (b) **pre-push vs release-mode proof
-  divergence** — release-mode-only tests are skipped pre-push and by CI Quality
-  Core, so a stale fixture shipped to main undetected. Detail in the goal's
-  Off-Goal Findings + Operator Decision Queue.
-- **Remaining gate items + untouched tracks:** doc-links→lychee BUY +
-  critique/skill-ergonomics demotions (see
-  [gate buy-vs-build](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md));
-  [#391](https://github.com/corca-ai/charness/issues/391) extractions +
-  tool_version stamp; #387 goal-closeout shape; #392 gather X; #371 agent-browser
-  teardown.
+- **v0.52.6 release findings — resolved:** family_id churn on same-file edits → filed
+  [#395](https://github.com/corca-ai/charness/issues/395); pre-push vs release-mode proof
+  divergence → confirmed intended design (layered proof).
+- **Gate buy-vs-build — only demotions left.** lychee BUY (item ②) **REJECTED** by cold
+  analysis: 0 behavioral gain vs the existing 2-line `.exists()` (the 3 divergence cases —
+  URL-encoded / fenced-code / inline-code links — occur 0 times across 281 docs), while
+  costing a required dep + ~300 LOC + 3 CI installs; reverted. Lesson: compare a BUY
+  against the *existing baseline*, not a strawman. ①③④ already landed. **Next slice
+  (Track A):** demote check_doc_links backtick/bare-mention enforcement to advisory (WARN,
+  keep principle), then critique/skill-ergonomics demotions. See
+  [gate buy-vs-build](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md).
+- **Untouched tracks:** [#391](https://github.com/corca-ai/charness/issues/391)
+  extractions + tool_version stamp; #387 goal-closeout shape; #392 gather X; #371
+  agent-browser teardown.
 
 ## Discuss
 
