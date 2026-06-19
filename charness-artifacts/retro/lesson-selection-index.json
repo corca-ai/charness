@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-19",
-  "source_artifact_count": 237,
-  "candidate_count": 1145,
+  "source_artifact_count": 238,
+  "candidate_count": 1155,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -545,6 +545,66 @@
       ]
     },
     {
+      "candidate_id": "current_focus:345cdc2cad5b",
+      "kind": "current_focus",
+      "lesson": "Migrated the code-clone path from the removed `nose scan` to `nose query` (commit `15d5df4f`), re-baselined, verified (run-quality 77/0, 104 focused tests, 2-reviewer fresh-eye critique), committed.",
+      "normalized_key": "migrated the code clone path from the removed nose scan to nose query commit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:38548934bebb",
+      "kind": "next_improvement",
+      "lesson": "**capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to \"no usable coverage → skip\" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.)",
+      "normalized_key": "capability check changed line mutation coverage reuse coverage should reject a coverage json that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:81f2c607c877",
+      "kind": "next_improvement",
+      "lesson": "**follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack.",
+      "normalized_key": "follow up genuine separate from this migration check dup ratchet py has 0 attributed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9a2bba2b4036",
       "kind": "next_improvement",
       "lesson": "for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the \"seed last\" timing is the transferable half.",
@@ -559,6 +619,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:10508c4126f0",
+      "kind": "next_improvement",
+      "lesson": "**memory:** When migrating a command builder that had read-vs-write special casing, preserve the invariant explicitly — a baseline write MUST enumerate the full set, never the display `--top`. (Captured here + in the spec Slice 3 note.)",
+      "normalized_key": "memory when migrating a command builder that had read vs write special casing preserve",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
           "date": "2026-06-19",
           "section": "Next Improvements"
         }
@@ -605,121 +685,41 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:6b3528fed839",
-      "kind": "repeat_trap",
-      "lesson": "**Re-seeded the gate baseline 3×** (mid-implementation, after the module extraction, after the critique fixes). The baseline is a content-hash (`family_id`) snapshot of the scanned `.py` tree, so every code edit shifts it and invalidates a prematurely-seeded baseline. Each re-seed cost a scan + a re-verify. Root cause: seeding a content-hash baseline before code was frozen.",
-      "normalized_key": "re seeded the gate baseline 3 mid implementation after the module extraction after the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-          "date": "2026-06-19",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:bbd46d12524c",
-      "kind": "repeat_trap",
-      "lesson": "**Two length-cap collisions discovered at the gate, not before the edit:** `quality_policy_defaults.py` was already at its cap (adding the validator pushed 490 > 480), and `quality/SKILL.md` was pinned at exactly 200 lines (adding a required reference entry pushed it to 201). Both forced rework (extract a module; trade a redundant convenience line) that a pre-write headroom check would have surfaced up front.",
-      "normalized_key": "two length cap collisions discovered at the gate not before the edit quality policy",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-          "date": "2026-06-19",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:fbb3688fb5ad",
-      "kind": "current_focus",
-      "lesson": "One autonomous run executed the whole north-star overhaul goal: Track 1a (generalize the #386 per-unit behavioral-verdict framing to every irreversible boundary) + Track 2 (slim the standing prose surface).",
-      "normalized_key": "one autonomous run executed the whole north star overhaul goal track 1a generalize the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md",
-      "latest_source_date": "2026-06-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md",
-          "date": "2026-06-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9faa074ddee6",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.52.4`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 52 4",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md",
-      "latest_source_date": "2026-06-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md",
-          "date": "2026-06-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:8a58d3db3a14",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.52.5`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 52 5",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md",
-      "latest_source_date": "2026-06-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md",
-          "date": "2026-06-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2858b8956527",
+      "candidate_id": "next_improvement:aa320a331687",
       "kind": "next_improvement",
-      "lesson": "**capability:** a small pre-edit affordance that, given a SKILL.md path, prints its core-headroom margin + its pinned contract snippets would collapse both traps to one read. Candidate follow-up issue (not filed this run — see Auto-Retro disposition).",
-      "normalized_key": "capability a small pre edit affordance that given a skill md path prints its",
+      "lesson": "**workflow:** Before reporting a coverage/quality tool's surprising 0%/all-fail as a finding, sanity-check the tool's own output: does the artifact contain the target file paths at all? Treat \"whole-file-uncovered including non-executable lines\" as a tool/format artifact, not a real gap.",
+      "normalized_key": "workflow before reporting a coverage quality tool s surprising 0 all fail as a",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md",
-      "latest_source_date": "2026-06-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md",
-          "date": "2026-06-18",
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f298320fc3a8",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Don't let an off-contract probe's verdict outrank the canonical gate. If `run-quality` skipped a check, a hand-run `--reuse-coverage` block is a reason to investigate the probe, not to report a regression.",
+      "normalized_key": "workflow don t let an off contract probe s verdict outrank the canonical gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
           "section": "Next Improvements"
         }
       ]
@@ -1257,6 +1257,66 @@
       ]
     },
     {
+      "candidate_id": "current_focus:345cdc2cad5b",
+      "kind": "current_focus",
+      "lesson": "Migrated the code-clone path from the removed `nose scan` to `nose query` (commit `15d5df4f`), re-baselined, verified (run-quality 77/0, 104 focused tests, 2-reviewer fresh-eye critique), committed.",
+      "normalized_key": "migrated the code clone path from the removed nose scan to nose query commit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:38548934bebb",
+      "kind": "next_improvement",
+      "lesson": "**capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to \"no usable coverage → skip\" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.)",
+      "normalized_key": "capability check changed line mutation coverage reuse coverage should reject a coverage json that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:81f2c607c877",
+      "kind": "next_improvement",
+      "lesson": "**follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack.",
+      "normalized_key": "follow up genuine separate from this migration check dup ratchet py has 0 attributed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9a2bba2b4036",
       "kind": "next_improvement",
       "lesson": "for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the \"seed last\" timing is the transferable half.",
@@ -1271,6 +1331,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:10508c4126f0",
+      "kind": "next_improvement",
+      "lesson": "**memory:** When migrating a command builder that had read-vs-write special casing, preserve the invariant explicitly — a baseline write MUST enumerate the full set, never the display `--top`. (Captured here + in the spec Slice 3 note.)",
+      "normalized_key": "memory when migrating a command builder that had read vs write special casing preserve",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
           "date": "2026-06-19",
           "section": "Next Improvements"
         }
@@ -1317,6 +1397,106 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:aa320a331687",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Before reporting a coverage/quality tool's surprising 0%/all-fail as a finding, sanity-check the tool's own output: does the artifact contain the target file paths at all? Treat \"whole-file-uncovered including non-executable lines\" as a tool/format artifact, not a real gap.",
+      "normalized_key": "workflow before reporting a coverage quality tool s surprising 0 all fail as a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f298320fc3a8",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Don't let an off-contract probe's verdict outrank the canonical gate. If `run-quality` skipped a check, a hand-run `--reuse-coverage` block is a reason to investigate the probe, not to report a regression.",
+      "normalized_key": "workflow don t let an off contract probe s verdict outrank the canonical gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3cc699ccf025",
+      "kind": "repeat_trap",
+      "lesson": "**Inverted the trust hierarchy.** The canonical gate (`run-quality`) had already *skipped* this check non-blocking (stale fingerprint → `--require-fresh-coverage` skip). I then ran a non-canonical bare `--reuse-coverage` (which trusts any coverage file regardless of freshness/format) and treated *its* block as more authoritative than the canonical gate's pass. A forced, off-contract probe should not outrank the standing gate.",
+      "normalized_key": "inverted the trust hierarchy the canonical gate run quality had already skipped this check",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6fb263a7c333",
+      "kind": "repeat_trap",
+      "lesson": "**Mirror sync missed a late edit.** The ownership-overlap docstring fix landed after my last `sync_root_plugin_manifests.py`, leaving the plugin mirror stale — a real BLOCKER. The fresh-eye critique caught it (working as designed), but a sync immediately before the critique/commit would have pre-empted it.",
+      "normalized_key": "mirror sync missed a late edit the ownership overlap docstring fix landed after my",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:384a48456a6a",
+      "kind": "repeat_trap",
+      "lesson": "**Re-introduced a known footgun by dropping a special-case in a rewrite.** The old `build_command` dropped `--top` on `--write-baseline` so a baseline records EVERY family; my `query` rewrite used the display `--top`, truncating the advisory baseline to 53 instead of 487. Caught at re-seed verification, not at edit time.",
+      "normalized_key": "re introduced a known footgun by dropping a special case in a rewrite the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+          "date": "2026-06-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:6b3528fed839",
       "kind": "repeat_trap",
       "lesson": "**Re-seeded the gate baseline 3×** (mid-implementation, after the module extraction, after the critique fixes). The baseline is a content-hash (`family_id`) snapshot of the scanned `.py` tree, so every code edit shifts it and invalidates a prematurely-seeded baseline. Each re-seed cost a scan + a re-verify. Root cause: seeding a content-hash baseline before code was frozen.",
@@ -1331,6 +1511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
+          "date": "2026-06-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e000cb41cd0c",
+      "kind": "repeat_trap",
+      "lesson": "**Reported a tool artifact as a genuine open concern (the headline miss).** The changed-line mutation-coverage producer \"blocked\" on 3 files showing 0% — with *every line, including docstrings and imports*, marked uncovered, against a 2.1GB coverage file and a stale fingerprint. Those three signals are a textbook tell of a coverage attribution/format artifact (docstrings/imports always execute on import — a real 0% there is impossible). I instead presented it as an \"honest open item / pre-push concern,\" overstating risk, and only root-caused it as a stale, context-keyed leftover after the user said \"investigate first.\" Cost: a misleading hedge + an extra round-trip.",
+      "normalized_key": "reported a tool artifact as a genuine open concern the headline miss the changed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
+      "latest_source_date": "2026-06-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
           "date": "2026-06-19",
           "section": "Waste"
         }

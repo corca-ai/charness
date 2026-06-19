@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Implemented item-5 slice-2 (the boy-scout duplicate ratchet's teeth): pure policy lib + git seams, the adapter-driven gate CLI, a validated `dup_ratchet` adapter block, the green-seeded gate baseline + charness rollout (D6), run-quality + broad pre-push wiring, the reference, and SC1–SC6 tests. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- One autonomous run executed the whole north-star overhaul goal: Track 1a (generalize the #386 per-unit behavioral-verdict framing to every irreversible boundary) + Track 2 (slim the standing prose surface). (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
+- Migrated the code-clone path from the removed `nose scan` to `nose query` (commit `15d5df4f`), re-baselined, verified (run-quality 77/0, 104 focused tests, 2-reviewer fresh-eye critique), committed. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
-- **Re-seeded the gate baseline 3×** (mid-implementation, after the module extraction, after the critique fixes). The baseline is a content-hash (`family_id`) snapshot of the scanned `.py` tree, so every code edit shifts it and invalidates a prematurely-seeded baseline. Each re-seed cost a scan + a re-verify. Root cause: seeding a content-hash baseline before code was frozen. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- **Two length-cap collisions discovered at the gate, not before the edit:** `quality_policy_defaults.py` was already at its cap (adding the validator pushed 490 > 480), and `quality/SKILL.md` was pinned at exactly 200 lines (adding a required reference entry pushed it to 201). Both forced rework (extract a module; trade a redundant convenience line) that a pre-write headroom check would have surfaced up front. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- **AGENTS.md `## Skill Routing` is a GENERATED surface (S5 → reverted in S6).** The S5 collapse treated it as free prose, but `setup/scripts/render_skill_routing.py` pins the canonical compact block verbatim (`matches_compact_block`), and `charness doctor`'s `repo_onboarding` status flips `ready → required` when AGENTS.md diverges — failing `test_charness_doctor_reports_managed_surface` in the broad suite. The S5 fresh-eye reviewer AND I both missed that an AGENTS.md section can be skill-owned/generated. Reverted to the canonical block; a real collapse needs a lockstep `render_skill_routing.py` edit. **Lesson: before editing an AGENTS.md section, check whether a `setup`/`render_*` script generates or pins it.** (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
+- **Inverted the trust hierarchy.** The canonical gate (`run-quality`) had already *skipped* this check non-blocking (stale fingerprint → `--require-fresh-coverage` skip). I then ran a non-canonical bare `--reuse-coverage` (which trusts any coverage file regardless of freshness/format) and treated *its* block as more authoritative than the canonical gate's pass. A forced, off-contract probe should not outrank the standing gate. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
+- **Mirror sync missed a late edit.** The ownership-overlap docstring fix landed after my last `sync_root_plugin_manifests.py`, leaving the plugin mirror stale — a real BLOCKER. The fresh-eye critique caught it (working as designed), but a sync immediately before the critique/commit would have pre-empted it. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
+- **Re-introduced a known footgun by dropping a special-case in a rewrite.** The old `build_command` dropped `--top` on `--write-baseline` so a baseline records EVERY family; my `query` rewrite used the display `--top`, truncating the advisory baseline to 53 instead of 487. Caught at re-seed verification, not at edit time. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
+- **capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to "no usable coverage → skip" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.) (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
+- **follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
 - for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the "seed last" timing is the transferable half. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- run `check_python_lengths --repo-root . --headroom <file>` before adding code to a near-cap module, rather than learning the cap at the gate. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- this artifact + the recent-lessons digest carry the "seed content-hash baselines after freeze" + "check length headroom before editing near-cap files" lessons. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
 
 ## Selection Policy
 
@@ -73,7 +73,7 @@
 - `charness-artifacts/retro/2026-06-17-v0-52-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`
+- `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`
