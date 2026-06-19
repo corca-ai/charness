@@ -10,9 +10,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1 (F/C/I) + 2 (in-process coverage) DONE + committed; Slice 3 (bundle proof + fresh-eye critique + push) next.
-- Current disposition: ACTIVE — operator activated and pre-approved push+release ("푸시 릴리즈도 사전 승인"). Push (slice 3) + release (slice 4) still gate on green bundle proof + north-star different-channel verification at each boundary.
-- Next action: Slice 3 — full run-quality + packaging/managed-install; one bounded fresh-eye critique covering slices 1+2; then operator-approved push to origin/main.
+- Current slice: Slices 1+2+3 DONE (pushed to origin/main `e97a2884`, CI Quality Core green on that SHA); Slice 4 (release) in progress.
+- Current disposition: ACTIVE — operator activated and pre-approved push+release ("푸시 릴리즈도 사전 승인"). Release (slice 4) gates on the release skill flow + north-star post-release different-channel verification.
+- Next action: Slice 4 — release via the `release` skill (version bump + install manifest + operator update); then post-release different-observer verification (install/update fetches the hardened gate; CI green on the release SHA).
 - Verification cadence: cheap deterministic checks (targeted unit tests, pre-commit hooks) at commit boundaries; `run-quality.sh --read-only` focused phases + the in-repo misconfig fixture + a bounded fresh-eye critique at slice boundaries; full run-quality + packaging/managed-install + operator-approved push + post-release different-observer verification at the bundle/closeout boundary.
 - Slice review packet: intent (advisory-only gate hardening + test coverage, no new content floor); changed files (`check_dup_ratchet.py`, dup_ratchet policy lib, run-quality/validate wiring, `references/dup-ratchet.md`, `adapter.example.yaml`, dup-ratchet tests, release surface); expected invariants (F/I are advisory non-blocking; no false-block; baseline-integrity warning only); tests/proof; non-claims; out-of-scope (chunk-2/4/5); reviewer questions.
 - History boundary: keep this frame current during the active run; move
@@ -94,7 +94,7 @@ What the user can do to verify completion directly:
 | --- | --- | --- | --- | --- |
 | 1 | dup-ratchet hardening: F (scope_paths-empty advisory warn) + C (`--write-baseline` warn + named-flag confirm on large delta, never hard-fail) + I (fold `validate_gate_baseline` advisory into the existing `check_dup_ratchet` evaluate path / `dup-ratchet` phase via `degraded_reasons` — no new phase) | onboarding correctness + surface the silent-disarm risk (advisory; promote to a block only on recorded recurrence) before the gate spreads to consumer repos (priming) | unit tests for F/C/I green; misconfig fixture shows warn+degrade (behavior, not literal ids); `dup-ratchet` phase prints the advisory; no new blocking floor; mirror synced | **DONE** — 4 in-process F/C/I tests + 2233 quality_gates green; mirrors synced; live gate re-baselined (2-id churn, delta 4 < 50 dogfooded C's small-delta path) |
 | 2 | in-process coverage for `check_dup_ratchet.py` (the #393 subprocess-only-attribution class) | the only stated blocker to pushing the stack; the scheduled mutation run will otherwise flag 0% attributed | **DONE** — in-process attribution 0%→86% (CLI was subprocess-only); 40 focused tests green; the ~25 remaining lines are real-nose/doc-subprocess/git/`__main__` paths covered by the live gate + nose-gated + git-seam tests; none are changed lines | planned |
-| 3 | bundle proof + push | both slices landed; convert built→shipped | full run-quality + packaging/managed-install green; fresh-eye critique; operator-approved push to `origin/main` | planned |
+| 3 | bundle proof + push | both slices landed; convert built→shipped | **DONE** — run-quality 77/0 (dup-ratchet PASS); plugin-import-smoke + packaging-committed green; fresh-eye critique push-safe (no blockers); pushed `90bab0de..e97a2884`; pre-push hook re-ran 77/0; CI Quality Core success on `e97a2884` (different channel) | planned |
 | 4 | release | consumer repos first see the hardened gate (priming terminal state) | release skill: version bump + install manifest + operator update; post-release different-observer verification; CI green on pushed SHA | planned |
 
 ## Operator Decision Queue
@@ -143,6 +143,20 @@ What the user can do to verify completion directly:
 - Critique: Deferred to the Slice 3 bundle boundary (one bounded fresh-eye critique covering slices 1+2).
 - Off-goal findings:
 - Lessons carried forward: 0%-attribution from subprocess-only CLI testing is closed by adding a thin in-process driver alongside the subprocess contract tests; the real-tool branches stay subprocess/live-gated rather than mocked.
+- Metrics:
+
+### Slice 3: Slice 3 — bundle proof + operator-approved push
+
+- Objective: Convert the built slices (1+2) plus the rest of the unpushed stack into shipped state: full quality proof, an independent fresh-eye review, packaging proof, then the operator-approved push to origin/main, with a different-channel CI verification per the north-star irreversible-boundary rule.
+- Why this approach: Operator pre-approved push at activation ('푸시 릴리즈도 사전 승인'); still gated push on green bundle proof + an independent observer (fresh-eye critique) + a different evidence channel (remote CI on the pushed SHA), never a local terminal green alone.
+- Commits:
+- What changed: No code changes in this slice — proof + push only. Pushed 9-commit stack 90bab0de..e97a2884 (the nose-migration stack, find-skills refresh, handoff, goal shaping, and slices 1+2).
+- Alternatives rejected:
+- Targeted verification: run-quality.sh --read-only: 77 passed / 0 failed (dup-ratchet phase PASS), tree clean; check_plugin_import_smoke.py green (every plugins/charness module imports); validate_packaging_committed.py green; bounded fresh-eye subagent critique returned VERDICT=push-safe with no blockers (independently verified F/I cannot block, C never touches the evaluate path, no new phase/floor, mirror byte-identical, and the 2-id re-baseline honest by inspecting members byte-identical base-vs-HEAD). Pre-push hook re-ran run-quality 77/0. Post-push: CI Quality Core run 27825608075 on e97a2884 = success (Core deterministic gates success; PR-mirror job skipped on direct push).
+- Test duplication pressure:
+- Critique: Bounded fresh-eye subagent (different agent context, read-only in the shared parent worktree per fresh-eye-subagent-review.md). One should-fix: the dup_ratchet_lib docstring's family_id-stability claim is narrower than reality (same-file edits also rotate ids) — pre-existing, already logged as the slice-1 off-goal finding, correctly deferred under Floor-Addition Restraint.
+- Off-goal findings: Scheduled 'Mutation Tests' workflow failed at 01:34 on an OLDER SHA (pre-push) — the exact #393 0%-attribution class Slice 2 addresses. It is schedule-triggered, not push-triggered, so it did not re-run on e97a2884; the next scheduled run should benefit from the 86% in-process attribution. Candidate to confirm at the next scheduled mutation cycle.
+- Lessons carried forward: North-star push verification satisfied with three independent signals: fresh-eye observer + packaging channel + remote CI on the pushed SHA — not a single local terminal green.
 - Metrics:
 
 ## Context Sources
