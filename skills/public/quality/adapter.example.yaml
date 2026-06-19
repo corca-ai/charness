@@ -110,3 +110,17 @@ changed_line_mutation_gate:
   coverage_json: reports/mutation/test-coverage.json
   eligible_globs: []
   exclude_globs: []
+dup_ratchet:
+  # enabled:false keeps the boy-scout duplicate ratchet inert (opt-in). To adopt
+  # (order matters — the seed reads scope_paths): 1. point scope_paths + the
+  # artifact paths at your repo, 2. seed the reviewed overlay (seed_dup_review.py)
+  # and the gate baseline (check_dup_ratchet.py --write-baseline), 3. set
+  # enabled:true. floor_F is the healthy fixable floor; escalation_K is the
+  # stagnation commit budget before the boy-scout nudge escalates to a one-time
+  # block. See references/dup-ratchet.md.
+  enabled: false
+  floor_F: 0
+  escalation_K: 10
+  scope_paths: []
+  review_artifact_path: charness-artifacts/quality/dup-review.json
+  gate_baseline_path: charness-artifacts/quality/dup-ratchet-baseline.json

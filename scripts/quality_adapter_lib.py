@@ -8,6 +8,7 @@ from typing import Any
 from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
+from scripts.quality_dup_ratchet_policy import DEFAULT_DUP_RATCHET, validate_dup_ratchet
 from scripts.quality_policy_defaults import (
     DEFAULT_CHANGED_LINE_MUTATION_GATE,
     DEFAULT_COVERAGE_FLOOR_POLICY,
@@ -165,6 +166,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "mutation_testing": copy.deepcopy(DEFAULT_MUTATION_TESTING),
         "standing_doc_provenance": copy.deepcopy(DEFAULT_STANDING_DOC_PROVENANCE),
         "changed_line_mutation_gate": copy.deepcopy(DEFAULT_CHANGED_LINE_MUTATION_GATE),
+        "dup_ratchet": copy.deepcopy(DEFAULT_DUP_RATCHET),
     }
 
 
@@ -294,6 +296,14 @@ def _apply_changed_line_mutation_gate(
         validated["changed_line_mutation_gate"] = block
 
 
+def _apply_dup_ratchet(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    block = validate_dup_ratchet(data.get("dup_ratchet"), errors, warnings)
+    if block is not None:
+        validated["dup_ratchet"] = block
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -314,6 +324,7 @@ def validate_quality_adapter_data(
     _apply_mutation_testing(data, validated, errors, warnings)
     _apply_standing_doc_provenance(data, validated, errors, warnings)
     _apply_changed_line_mutation_gate(data, validated, errors, warnings)
+    _apply_dup_ratchet(data, validated, errors, warnings)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

@@ -266,3 +266,19 @@ changed_line_mutation_gate:
     - skills/support/**/*.py
   exclude_globs:
     - "**/tests/**"
+dup_ratchet:
+  # Boy-scout duplicate ratchet (item 5, slice 2). Enabled green + seeded: the
+  # gate baseline carries today's full code family_id set so the hard arm passes;
+  # fixable_ceiling is 0 so the boy-scout arm is advisory (its block path is proven
+  # by the slice-2 acceptance fixture, not in production here). scope_paths mirror
+  # inventory_nose_clones' DEFAULT_PATHS. Wired into run-quality.sh + broad pre-push
+  # only (NOT the docs-only fast subset). See references/dup-ratchet.md.
+  enabled: true
+  floor_F: 0
+  escalation_K: 10
+  scope_paths:
+    - scripts
+    - skills/public
+    - skills/support
+  review_artifact_path: charness-artifacts/quality/dup-review.json
+  gate_baseline_path: charness-artifacts/quality/dup-ratchet-baseline.json

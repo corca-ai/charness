@@ -323,9 +323,23 @@ def main() -> int:
         ),
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--json-out",
+        type=Path,
+        help=(
+            "Also write the JSON payload to this path (drift families with stable "
+            "signatures). Lets the dup-ratchet gate reuse this scan instead of "
+            "re-running the ~18.5s doc scan; independent of --json/human stdout."
+        ),
+    )
     args = parser.parse_args()
 
     payload = payload_for_args(args)
+    if args.json_out is not None:
+        args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        args.json_out.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:

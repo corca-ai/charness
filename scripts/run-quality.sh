@@ -478,8 +478,19 @@ queue_selected "check-test-production-ratio" python3 scripts/check_test_producti
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
-queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose
+queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose --json-out "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
 flush_phase || OVERALL_RC=$?
+
+# Boy-scout duplicate ratchet (item 5, slice 2). Runs in the broad path only (this
+# phase is not in the pre-push DOCS_ONLY_LABELS subset; C5). Hard-blocks a new
+# fixable-eligible clone family (code via the full nose family_id scan vs the gate
+# baseline; doc via signature drift) and escalates the boy-scout nudge when the
+# reviewed fixable ceiling stagnates above the healthy floor. Reuses the
+# doc-duplicates drift JSON above (flushed) so it does not pay the ~18.5s doc scan
+# twice; it runs its own ~0.6s code scan. Inert when dup_ratchet is disabled;
+# advisory (never blocks) when the overlay/baseline/nose are missing. See
+# skills/public/quality/references/dup-ratchet.md.
+queue_selected "dup-ratchet" python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root "$REPO_ROOT" --doc-inventory "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
 
 queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues --require-git-file-listing
 if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py" ]]; then

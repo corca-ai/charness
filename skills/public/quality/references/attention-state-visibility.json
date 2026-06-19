@@ -44,6 +44,12 @@
       "evidence_terms": ["skipped", "inert"],
       "rationale": "The only `skipped` string is the adapter-invalid stderr message, which exits 1 (a hard failure/blocker, not an exit-0 pass). The command's genuine exit-0 attention state is `inert` (opt-out: empty standing_doc_provenance.standing_docs), surfaced verbatim in the plain summary and the JSON `inert` field, so an opted-out repo cannot read as a silent clean pass."
     },
+    "skills/public/quality/scripts/check_dup_ratchet.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["explicit_skip_summary", "stdout_attention"],
+      "evidence_terms": ["enabled", "inert", "advisory", "degraded"],
+      "rationale": "The boy-scout duplicate ratchet's exit-0 attention states are `inert` (opt-out: dup_ratchet absent or enabled:false) and `degraded` (overlay/baseline missing or nose unavailable so the code scan is skipped). Both are surfaced verbatim in the plain `messages` and the JSON `status`/`degraded_reasons` fields, and the degraded path prepends `ADVISORY:` so the run-quality phase prints it for attention — a disabled or degraded gate cannot read as a silent clean pass. An invalid adapter exits 1 (fails closed)."
+    },
     "scripts/cautilus_adapter_lib.py": {
       "states": ["disabled"],
       "visibility": ["structured_warning", "terminal_payload"],

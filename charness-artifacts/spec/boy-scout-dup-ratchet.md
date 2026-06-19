@@ -365,3 +365,64 @@ fail-closed on nose presence, not this gate).
 - `family_summary()` already emits `family_id` (slice 1). `members` is an int
   count in the scan report but a list in the baseline file — read `locations` for
   files in scan output.
+
+### Slice 2 DONE (2026-06-19)
+
+All nine file-plan steps landed; SC1–SC6 green; full `run-quality.sh --read-only`
+green (77/0) with the live `dup-ratchet` phase PASS (~1.4s).
+
+- `dup_ratchet_lib.py` (pure `evaluate` two-arm policy + gate-baseline
+  build/load/validate + overlay readers + injectable git seams `resolve_anchor` /
+  `anchor_is_ancestor` / `stagnation_commits`; `evaluate` takes injected stagnation).
+- `check_dup_ratchet.py` CLI (adapter-driven; full code scan reuse of
+  `inventory_nose_clones` build_command with `baseline=None` + high `--top`; doc via
+  injected `--doc-inventory`; `--write-baseline` seed; `--stagnation` test seam).
+- Adapter block validated. **Deviation from file-plan step 3:** the default +
+  validator live in a NEW module `scripts/quality_dup_ratchet_policy.py`, not
+  `quality_policy_defaults.py` — that file was already at its 480-line cap, so
+  piling on would have entered the warn band; `quality_adapter_lib` imports the
+  default + validator from the new module. Net behavior identical to the plan.
+- `inventory_doc_duplicates.py` `--json-out`; `run-quality.sh` doc-duplicates
+  `--json-out` + a broad-only `dup-ratchet` phase reusing it (C5: NOT in the
+  pre-push docs-only subset). `dup-ratchet-baseline.json` seeded green (571 ids,
+  `fixable_ceiling: 0`); `dup_ratchet` enabled on charness (D6).
+- Reference `references/dup-ratchet.md`; tests `tests/quality_gates/test_dup_ratchet.py`.
+- Truth-surface follow-ons required by the new phase/surfaces: quality `SKILL.md`
+  references entry (traded the redundant "Frequent-path references" line to stay
+  under the 200-line cap), the validator-timing-layers table row, the
+  attention-state-visibility declaration, and the handoff rewrite.
+- **nose#466 anchors stripped from the portable skill package** (skill-anchor
+  guard); provenance kept in this spec + the commit, not in the package.
+
+### Slice 2 Critique (2026-06-19)
+
+Bounded fresh-eye code critique via the prepare packet: 4 angle reviewers
+(Jackson framing / Weinberg diagnostic / Gawande operational / Minto legibility)
++ 1 separate counterweight pass. Acted before commit:
+
+- **D (Act):** reordered the Adoption steps in `references/dup-ratchet.md` +
+  `adapter.example.yaml` so `scope_paths` is set BEFORE `--write-baseline` (the
+  seed reads it; the old order re-introduced the truncation footgun the doc itself
+  warns about).
+- **B (Bundle):** `check_dup_ratchet.py` degrades when a real (non-injected) code
+  scan returns 0 families against a non-empty gate baseline — a broken scan /
+  misconfigured `scope_paths` can no longer read as a silent clean pass (new
+  empty-real-scan guard test).
+- **G (Bundle):** `escalation_K` CLI fallback aligned to the policy default (10).
+- **L (Bundle):** dropped the point-in-time "17/42" number from the portable lib
+  docstring (would rot per consumer/scan).
+
+Deferred to a Next-Session "enabled-but-misconfigured → degrade / re-seed
+discipline" hardening slice: **C** `--write-baseline` delta/confirm guardrail
+(FD6 one-way lock-in has no code teeth yet); **I** wire `validate_gate_baseline`
+into a run-quality/validate phase (a malformed committed baseline silently
+disarms the hard arm); **F** warn when `enabled` but `scope_paths` empty (falls
+back to nose `DEFAULT_PATHS` silently).
+
+Counterweighted as Over-Worry (recorded so they are not relitigated): per-surface
+vs whole-gate degrade (A — whole-gate advisory is the FD8 conservative posture,
+never false-blocks, prints `degraded_reasons`); the "ratchet down" claim while the
+boy-scout arm is inert at ceiling 0 (E — built + tested, dormant by honest config,
+disclosed in the handoff); degraded-vs-clean summary token (H — `status` and the
+ADVISORY body already distinguish them); stale-baseline drift telemetry (J); empty
+`fixable` subset at ship (K — D4 deferred by design).

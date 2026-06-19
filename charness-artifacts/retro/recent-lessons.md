@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Implemented item-5 slice-2 (the boy-scout duplicate ratchet's teeth): pure policy lib + git seams, the adapter-driven gate CLI, a validated `dup_ratchet` adapter block, the green-seeded gate baseline + charness rollout (D6), run-quality + broad pre-push wiring, the reference, and SC1–SC6 tests. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
 - One autonomous run executed the whole north-star overhaul goal: Track 1a (generalize the #386 per-unit behavioral-verdict framing to every irreversible boundary) + Track 2 (slim the standing prose surface). (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.52.4`. (source: `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
+- **Re-seeded the gate baseline 3×** (mid-implementation, after the module extraction, after the critique fixes). The baseline is a content-hash (`family_id`) snapshot of the scanned `.py` tree, so every code edit shifts it and invalidates a prematurely-seeded baseline. Each re-seed cost a scan + a re-verify. Root cause: seeding a content-hash baseline before code was frozen. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
+- **Two length-cap collisions discovered at the gate, not before the edit:** `quality_policy_defaults.py` was already at its cap (adding the validator pushed 490 > 480), and `quality/SKILL.md` was pinned at exactly 200 lines (adding a required reference entry pushed it to 201). Both forced rework (extract a module; trade a redundant convenience line) that a pre-write headroom check would have surfaced up front. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
 - **AGENTS.md `## Skill Routing` is a GENERATED surface (S5 → reverted in S6).** The S5 collapse treated it as free prose, but `setup/scripts/render_skill_routing.py` pins the canonical compact block verbatim (`matches_compact_block`), and `charness doctor`'s `repo_onboarding` status flips `ready → required` when AGENTS.md diverges — failing `test_charness_doctor_reports_managed_surface` in the broad suite. The S5 fresh-eye reviewer AND I both missed that an AGENTS.md section can be skill-owned/generated. Reverted to the canonical block; a real collapse needs a lockstep `render_skill_routing.py` edit. **Lesson: before editing an AGENTS.md section, check whether a `setup`/`render_*` script generates or pins it.** (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
-- **Release cap fight (S3, ~4 wasted edit-cycles).** I tried to land the G3 per-surface-verdict framing inside the capped `release/SKILL.md` body several times before recognizing the `check-skill-core-headroom` ratchet (a ≥4-line core-headroom buffer that blocks a *regressing* change) required relocating the detail to a reference. Checking the binding constraint *first* would have routed it to `install-surface.md` immediately. (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
-- **Skill-prose slim broke 3 deterministic tests the per-slice gates missed (caught only at the S6 bundle-boundary broad pytest).** (a) `retro/SKILL.md` reworded a trigger sentence `check_skill_contracts.py` pins (caught at the S5 commit by `run_evals`); (b) the S3 release consolidation dropped the exact phrase "tag push alone as publish completion" that `test_release_real_host.py` pins (NOT in the `run_evals` subset, so it survived to S6); (c) the S5 `retro/SKILL.md` slim dropped "fresh-eye reader misread an invariant" that `test_retro_skill.py` pins. The fresh-eye critiques checked safeguard *content*, not the verbatim pinned-phrase tests — so the broad suite, not the reviewer or the per-slice subset, was the catch. **Lesson: the bundle-boundary broad pytest is load-bearing for skill-prose slims; the per-slice `run_evals` subset does not cover every pinned-phrase test.** (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`; sources: 48)
-- **capability:** a small pre-edit affordance that, given a SKILL.md path, prints its core-headroom margin + its pinned contract snippets would collapse both traps to one read. Candidate follow-up issue (not filed this run — see Auto-Retro disposition). (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
-- **memory:** the staged-blob-headroom-ratchet and contract-snippet-slim traps are captured durably in this retro's Waste + Sibling Search (the canonical memory home the `recent-lessons.md` digest selects from on its next persist cycle) so the spun-out 13-body SRP sweep can pre-check them. (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
-- **workflow:** before editing a near-cap SKILL.md, in one shot check `check_skill_surface_preflight.py` core-headroom AND grep `check_skill_contracts.py` for that skill's pinned snippets — the two traps above are both pre-checkable. Re-stage before re-reading any staged-boundary gate. (source: `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`)
+- for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the "seed last" timing is the transferable half. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
+- run `check_python_lengths --repo-root . --headroom <file>` before adding code to a near-cap module, rather than learning the cap at the gate. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
+- this artifact + the recent-lessons digest carry the "seed content-hash baselines after freeze" + "check length headroom before editing near-cap files" lessons. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
 
 ## Selection Policy
 
@@ -76,3 +76,4 @@
 - `charness-artifacts/retro/2026-06-18-north-star-overhaul-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`
