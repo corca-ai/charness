@@ -55,7 +55,7 @@
   ],
   "version_expectation": {
     "policy": "minimum",
-    "constraint": "Requires nose 0.13.0 or newer (the Markdown duplication engine that backs the quality doc near-duplicate review).",
+    "constraint": ">=0.13.0",
     "detected_by": "stdout"
   },
   "supports_public_skills": [

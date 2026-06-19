@@ -17,11 +17,17 @@
   source of truth in
   [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md)
   — read it first.
-- **6 commits done, UNPUSHED (operator HELD push):** A (bootstrap + #390), B
-  triage, B DROP #1/#2 (advisory), ① validate_critique_packet DELETE, ③
-  function-length -> ruff PLR0915 (bespoke arm deleted), ④ doc near-dup -> nose
-  Markdown advisory + **nose now REQUIRED >=0.13.0**. All fresh-eye SHIP +
-  verification-lock green; Cautilus next-action `none` throughout.
+- **Batch done, UNPUSHED (operator HELD push)** — count via
+  `git log --oneline origin/main..HEAD`: A (bootstrap + #390), B triage, B DROP
+  #1/#2 (advisory), ① validate_critique_packet DELETE, ③ function-length -> ruff
+  PLR0915 (bespoke arm deleted), ④ doc near-dup -> nose Markdown advisory +
+  **nose now REQUIRED >=0.13.0**; plus find-skills repo-only regen and a
+  critique-fix commit. All fresh-eye SHIP + verification-lock green; Cautilus
+  next-action `none` throughout.
+- **Batch critique (4 angles + counterweight), fixes applied:** C1 nose.json
+  `constraint` prose -> `>=0.13.0` (doctor now flags old nose) + C2 `--require-nose`
+  fails closed on nose `error` too. Deferred C3 (validate_integrations parse-check),
+  C5 (docs-only doc-dup -> item 5). Detail in the 2026-06-19 critique artifact.
 - **Env change:** this machine's nose was upgraded 0.10.0 -> 0.13.0 so the new
   required gate passes locally.
 - length-config WITHDRAWN (caps stay hard). lychee on PATH, not yet managed.
@@ -49,12 +55,10 @@
 
 ## Discuss
 
-- **find-skills inventory (OPEN):** committed inventory is host-enriched (8/13);
-  session bootstrap regenerates a repo-only view (4/11) I restore to HEAD each
-  session, and the committed view is STALE re: `pry` (removed but still listed).
-  Decide: regenerate in a canonical full-install env, or make repo-only canonical.
-- Push timing (6 commits). validate_skill_ergonomics adapter-split appetite.
-  Untouched this track: #391, #387, #371.
+- find-skills inventory: RESOLVED -> repo-only canonical `20/4/11` (idempotent
+  write ends the per-session drift; stale `pry`+`gws` dropped). See f7cc8fc0.
+- Push timing (operator HELD; batch ready post-critique-fix).
+  validate_skill_ergonomics adapter-split appetite. Untouched: #391, #387, #371.
 
 ## References
 

@@ -99,6 +99,43 @@ def test_doc_dup_version_too_old_blocks_under_require(tmp_path: Path) -> None:
     assert required.returncode == 1
 
 
+def _write_broken_nose(path: Path, *, version: str) -> None:
+    """A present, new-enough nose whose query errors out (nonzero exit)."""
+    path.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import sys",
+                "args = sys.argv[1:]",
+                "if '--version' in args:",
+                f"    print('nose {version}'); sys.exit(0)",
+                "sys.stderr.write('nose query exploded'); sys.exit(2)",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def test_doc_dup_error_status_blocks_under_require(tmp_path: Path) -> None:
+    # A present-but-broken nose (right version, query crashes) must NOT be a
+    # silent all-clear under --require-nose. Advisory stays exit 0; required
+    # fails closed on status "error" just like missing/version-too-old.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fake = repo / "nose-broken"
+    _write_broken_nose(fake, version="0.13.0")
+
+    advisory = _run(repo, str(fake))
+    assert advisory.returncode == 0, advisory.stderr
+    assert json.loads(advisory.stdout)["status"] == "error"
+
+    required = _run(repo, str(fake), "--require-nose")
+    assert required.returncode == 1
+    assert json.loads(required.stdout)["status"] == "error"
+
+
 def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

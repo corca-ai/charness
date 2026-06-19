@@ -315,9 +315,10 @@ def main() -> int:
         "--require-nose",
         action="store_true",
         help=(
-            "Fail closed (exit 1) when nose is missing or older than the required "
-            ">=0.13.0 Markdown engine. Findings themselves never block (advisory); "
-            "this only enforces the required tool so an absent nose is not a silent "
+            "Fail closed (exit 1) when nose is missing, older than the required "
+            ">=0.13.0 Markdown engine, or errors out (crash/timeout/invalid JSON). "
+            "Findings themselves never block (advisory); this only enforces a "
+            "healthy required tool so an absent or broken nose is not a silent "
             "all-clear. Used by the run-quality `doc-duplicates` phase."
         ),
     )
@@ -329,7 +330,7 @@ def main() -> int:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print_human(payload)
-    if args.require_nose and payload["status"] in ("missing", "version-too-old"):
+    if args.require_nose and payload["status"] in ("missing", "version-too-old", "error"):
         return 1
     return 0
 
