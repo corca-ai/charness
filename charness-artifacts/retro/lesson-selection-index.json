@@ -11,7 +11,7 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-19",
-  "source_artifact_count": 239,
+  "source_artifact_count": 240,
   "candidate_count": 1156,
   "top_candidates": [
     {

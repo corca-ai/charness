@@ -1,6 +1,6 @@
 # Achieve Goal: Harden the dup-ratchet gate (scope_paths-empty warning, --write-baseline delta/confirm guardrail, validate_gate_baseline wired into a run-quality/validate phase), then add in-process coverage for check_dup_ratchet.py, and land both with the rest of the unpushed stack in a single push so consumer repos first see the hardened gate.
 
-Status: draft
+Status: complete
 Created: 2026-06-19
 Activation: `/goal @charness-artifacts/goals/2026-06-19-issue-393-harden-the-dup-ratchet-gate-scope-paths-empty-warning-write.md`
 Discuss before activation: RESOLVED. Consequential decisions surfaced and settled with the operator during shaping (see Interview Decisions): (1) irreversible side effects + live proof + broad bundle scope — this goal crosses two external/irreversible boundaries, a push to `origin/main` and a release publish; operator APPROVED the push-through-release path, with push at the slice-3 bundle boundary under explicit per-instance approval (NOT auto-on-green) and the release via the `release` skill verified on a different evidence channel (install/update fetches the hardened gate; CI green on the pushed SHA), per the north-star irreversible-boundary rule. (2) issue close/split — none in scope: #393 is a coverage-attribution class (not closed by this goal) and the open issues #391/#387/#392/#371 are explicitly out-of-scope chunk-4. Never auto-push or auto-publish without the operator's go at each boundary.
@@ -10,9 +10,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1+2+3 DONE (pushed to origin/main `e97a2884`, CI Quality Core green on that SHA); Slice 4 (release) in progress.
-- Current disposition: ACTIVE — operator activated and pre-approved push+release ("푸시 릴리즈도 사전 승인"). Release (slice 4) gates on the release skill flow + north-star post-release different-channel verification.
-- Next action: Slice 4 — release via the `release` skill (version bump + install manifest + operator update); then post-release different-observer verification (install/update fetches the hardened gate; CI green on the release SHA).
+- Current slice: ALL 4 slices DONE. Released v0.52.6 (tag, GitHub release, install refresh) and verified on independent channels. Goal complete.
+- Current disposition: COMPLETE — dup-ratchet F/C/I hardening + in-process coverage shipped to consumers via v0.52.6.
+- Next action: none — closeout (Final Verification + Auto-Retro) recorded; status flipped to complete.
 - Verification cadence: cheap deterministic checks (targeted unit tests, pre-commit hooks) at commit boundaries; `run-quality.sh --read-only` focused phases + the in-repo misconfig fixture + a bounded fresh-eye critique at slice boundaries; full run-quality + packaging/managed-install + operator-approved push + post-release different-observer verification at the bundle/closeout boundary.
 - Slice review packet: intent (advisory-only gate hardening + test coverage, no new content floor); changed files (`check_dup_ratchet.py`, dup_ratchet policy lib, run-quality/validate wiring, `references/dup-ratchet.md`, `adapter.example.yaml`, dup-ratchet tests, release surface); expected invariants (F/I are advisory non-blocking; no false-block; baseline-integrity warning only); tests/proof; non-claims; out-of-scope (chunk-2/4/5); reviewer questions.
 - History boundary: keep this frame current during the active run; move
@@ -95,25 +95,22 @@ What the user can do to verify completion directly:
 | 1 | dup-ratchet hardening: F (scope_paths-empty advisory warn) + C (`--write-baseline` warn + named-flag confirm on large delta, never hard-fail) + I (fold `validate_gate_baseline` advisory into the existing `check_dup_ratchet` evaluate path / `dup-ratchet` phase via `degraded_reasons` — no new phase) | onboarding correctness + surface the silent-disarm risk (advisory; promote to a block only on recorded recurrence) before the gate spreads to consumer repos (priming) | unit tests for F/C/I green; misconfig fixture shows warn+degrade (behavior, not literal ids); `dup-ratchet` phase prints the advisory; no new blocking floor; mirror synced | **DONE** — 4 in-process F/C/I tests + 2233 quality_gates green; mirrors synced; live gate re-baselined (2-id churn, delta 4 < 50 dogfooded C's small-delta path) |
 | 2 | in-process coverage for `check_dup_ratchet.py` (the #393 subprocess-only-attribution class) | the only stated blocker to pushing the stack; the scheduled mutation run will otherwise flag 0% attributed | **DONE** — in-process attribution 0%→86% (CLI was subprocess-only); 40 focused tests green; the ~25 remaining lines are real-nose/doc-subprocess/git/`__main__` paths covered by the live gate + nose-gated + git-seam tests; none are changed lines | planned |
 | 3 | bundle proof + push | both slices landed; convert built→shipped | **DONE** — run-quality 77/0 (dup-ratchet PASS); plugin-import-smoke + packaging-committed green; fresh-eye critique push-safe (no blockers); pushed `90bab0de..e97a2884`; pre-push hook re-ran 77/0; CI Quality Core success on `e97a2884` (different channel) | planned |
-| 4 | release | consumer repos first see the hardened gate (priming terminal state) | release skill: version bump + install manifest + operator update; post-release different-observer verification; CI green on pushed SHA | planned |
+| 4 | release | consumer repos first see the hardened gate (priming terminal state) | **DONE** — v0.52.6 published (tag + GitHub release `public_release_verification: verified`); `run-quality --release` green after fixing a release-blocking stale fixture; install_refresh ran `charness update` 0.52.5→0.52.6 (installed plugin `== repo`); CI Quality Core success on release tip `d64e3bc2`; real-host nose checklist green (nose `ready`, version matched >=0.13.3) | planned |
 
 ## Operator Decision Queue
 
-- Decision: approve the push to `origin/main` at the slice-3 bundle boundary.
-  - Owner: operator
-  - Why deferred: slices 1–2 and local proof proceed safely first.
-  - Unblock action: explicit "push" approval after slice-3 bundle proof passes.
-  - Revisit trigger: slice-3 bundle boundary reached with green proof.
-- Decision: approve the release publish (and confirm the version number).
-  - Owner: operator / maintainer
-  - Why deferred: release follows a green push.
-  - Unblock action: approve the release cut + version bump.
-  - Revisit trigger: slice-4 after a green push.
+- RESOLVED: push to `origin/main` — operator pre-approved at activation ("푸시 릴리즈도 사전 승인"); executed at the slice-3 bundle boundary on green proof (`90bab0de..e97a2884`).
+- RESOLVED: release publish v0.52.6 — operator pre-approved; cut via the release skill after a green push (patch bump confirmed honest by the release-surface critique).
+- Decision: file a tracked issue for the **family_id churn on same-file edits** (a nose-tool limitation that forces a re-baseline with no new duplication; transferable to consumer repos). Owner: operator. Recorded in recent-lessons + this goal's Off-Goal Findings; not auto-filed (external write left to the operator's call).
+- Decision: file a tracked issue (or document) for the **pre-push vs release-mode proof divergence** (a stale release-mode-only fixture shipped to main undetected). Owner: operator. Candidate fix: run a release-mode test subset pre-push, or document the divergence.
 
 ## Coordination Cues
 
 - Phase routing defers to `find-skills` (no inline phase→skill map baked here).
-- Expected closeout floors: `Release:` triggered (release skill, slice 4); `Routing:` triggered (impl/quality/critique/release phases recorded); `Gather:` n/a — no external sources consumed; `Issue closeout:` n/a — #393 is a coverage-attribution class, not an open tracked issue, and the open issues #391/#387/#392/#371 are out-of-scope chunk-4.
+- Routing: find-skills routed the session pickup to `handoff`/`achieve`; the impl work, the debug diagnosis of the release-gate failure, the quality gating, the critique reviews, and the release all routed through find-skills to `impl`, `debug`, `quality`, `critique`, and `release` respectively (debug-shaped root-cause work was done inline this run, but the route is via find-skills → debug).
+- Gather: n/a — no external URLs/sources consumed; all context was repo-internal (handoff, spec, dup-ratchet reference, recent-lessons).
+- Release: v0.52.6 published via the `release` skill (`publish_release.py`) — tag `v0.52.6`, GitHub release `public_release_verification: verified`, install_refresh `charness update` 0.52.5→0.52.6; release critique `charness-artifacts/critique/2026-06-19-dup-ratchet-release-0.52.6.md`.
+- Issue closeout: n/a — #393 is a coverage-attribution class (not an open tracked issue) and the open issues #391/#387/#392/#371 are out-of-scope chunk-4; no issue was closed.
 
 ## Slice Log
 
@@ -157,6 +154,20 @@ What the user can do to verify completion directly:
 - Critique: Bounded fresh-eye subagent (different agent context, read-only in the shared parent worktree per fresh-eye-subagent-review.md). One should-fix: the dup_ratchet_lib docstring's family_id-stability claim is narrower than reality (same-file edits also rotate ids) — pre-existing, already logged as the slice-1 off-goal finding, correctly deferred under Floor-Addition Restraint.
 - Off-goal findings: Scheduled 'Mutation Tests' workflow failed at 01:34 on an OLDER SHA (pre-push) — the exact #393 0%-attribution class Slice 2 addresses. It is schedule-triggered, not push-triggered, so it did not re-run on e97a2884; the next scheduled run should benefit from the 86% in-process attribution. Candidate to confirm at the next scheduled mutation cycle.
 - Lessons carried forward: North-star push verification satisfied with three independent signals: fresh-eye observer + packaging channel + remote CI on the pushed SHA — not a single local terminal green.
+- Metrics:
+
+### Slice 4: Slice 4 — release v0.52.6 + post-release verification
+
+- Objective: Cut a patch release so consumer repos first receive the hardened, self-checking dup-ratchet gate (the goal's priming terminal state), then verify on independent channels per the north-star irreversible-boundary rule.
+- Why this approach: Operator pre-approved release ('푸시 릴리즈도 사전 승인'). Used the coupled publish helper (publish_release.py) which bumps + syncs + runs run-quality --release + commits + pushes + tags + cuts the GitHub release + auto-runs the install refresh. Patch bump (behavior-repair of an existing advisory gate; consumer adapter contract unchanged; new flags are on an internal maintenance command) confirmed honest by a second bounded fresh-eye release-surface critique (release-safe, no blockers).
+- Commits:
+- What changed: tests/charness_cli/tool_fakes.py (release-unblock fix: fake nose 0.6.0 -> 0.13.3); .agents/release-adapter.yaml (0.52.6 update_instructions); charness-artifacts/critique/2026-06-19-dup-ratchet-release-0.52.6.md (release critique); version surfaces 0.52.5 -> 0.52.6 (plugin.json x2, packaging, marketplace) via publish; charness-artifacts/release/latest.md; release auto-retro artifact.
+- Alternatives rejected: Bypass / force the release past the failing run-quality --release gate (rejected: north-star forbids substituting a terminal green at an irreversible boundary; the gate caught a real stale fixture). Bump minor for the two new --write-baseline flags (rejected: release-surface critique confirmed patch honest — internal maintenance flags, consumer contract unchanged, gate opt-in/inert). Stop and report the failing test to the operator without fixing (rejected: the failure was a tiny, clearly-correct stale-fixture fix in the very stack being released, and unblocking the release is the goal's mandate).
+- Targeted verification: First publish attempt FAILED at run-quality --release: test_installed_cli_update_all_refreshes_external_tools_and_support_state asserted nose doctor 'ok' but got 'version-mismatch' (fake nose 0.6.0 < shipped floor >=0.13.3). Diagnosed as a stale fixture left by the nose migration 15d5df4f, masked because the read-only bundle proof + CI Quality Core skip this managed-install release-mode test. Fixed the fixture (0.13.3), re-verified the 2 affected test files green, re-ran publish: run-quality --release green, pushed, tag v0.52.6, GitHub release public_release_verification=verified, fresh_checkout_probes passed. Post-release independent channels: CI Quality Core success on release tip d64e3bc2; installed managed plugin reports 0.52.6 (install/update channel fetched the hardened gate); GitHub release live (not draft). Real-host nose checklist: nose ready/doctor ok, version matched >=0.13.3 (observed 0.13.3 at ~/.cargo/bin/nose), install route upstream nose-cli-installer.sh/v0.13.3, support integration-only.
+- Test duplication pressure:
+- Critique: Bounded fresh-eye release-surface critique (different agent context, read-only): VERDICT release-safe, bump=patch honest, no blockers, one should-fix folded (update_instructions 'no command change' over-claim reworded for the two new flags). Persisted as charness-artifacts/critique/2026-06-19-dup-ratchet-release-0.52.6.md.
+- Off-goal findings: PROCESS GAP (transferable): the read-only pre-push bundle proof and CI Quality Core do NOT run the managed-install release-mode tests, so a stale test fixture from the nose migration shipped to main (e97a2884) undetected until run-quality --release at the release boundary. The pre-push proof and the release-mode proof diverge. Candidate structural follow-up.
+- Lessons carried forward: A failing gate at an irreversible boundary is a signal to fix the root cause, not to bypass — here a tiny stale-fixture fix unblocked an honest release. North-star post-release verification met with three independent signals: remote CI on the release tip, the installed-plugin version readback, and the live GitHub release.
 - Metrics:
 
 ## Context Sources
@@ -204,8 +215,35 @@ Reviewer provenance: general-purpose fresh-eye subagent, bounded plan-critique p
 
 ## Off-Goal Findings
 
+- **family_id churn on same-file edits** — editing a scanned member file rotates the nose `family_id` of clusters that include it, forcing a re-baseline even with zero new duplication. The `dup_ratchet_lib` docstring's "stable across sibling churn" claim is narrower than reality (same-file edits also rotate). Transferable to consumer repos. Recorded in recent-lessons; surfaced to the operator as an issue-filing candidate (see Operator Decision Queue).
+- **pre-push proof ≠ release-mode proof** — the read-only bundle proof and CI Quality Core skip the managed-install release-mode tests, so a stale `make_fake_nose` fixture from the nose migration shipped to `main` (e97a2884) undetected until `run-quality --release`. Recorded in recent-lessons; surfaced as a process-gap candidate.
+
 ## Final Verification
+
+- **Self-verification (high-confidence, local):** 40 focused dup-ratchet tests green; full `tests/quality_gates` 2233 green; `run-quality.sh --read-only` 77/0 (dup-ratchet PASS); in-process attribution for `check_dup_ratchet.py` 0%→86%; live gate `status: clean` after the honest 2-id re-baseline; plugin mirror byte-identical; packaging + plugin-import-smoke green.
+- **External/live proof:** pushed `90bab0de..e97a2884` (slices 1+2) then `…→d64e3bc2` (release); pre-push hook re-ran run-quality 77/0; `run-quality --release` green (after the fake-nose fixture fix); v0.52.6 tag + GitHub release `public_release_verification: verified`; install_refresh `charness update` 0.52.5→0.52.6; CI Quality Core **success** on release tip `d64e3bc2`; real-host nose checklist green (nose `ready`, version matched `>=0.13.3`).
+- **Two bounded fresh-eye reviews (different agent contexts):** code critique push-safe; release-surface critique release-safe (bump=patch honest). No blockers; should-fixes folded.
+- **Residual risk / non-claims:** the boy-scout escalation arm's block path remains proven only by the SC4 acceptance fixture, not in production (unchanged by this goal). The real-nose-scan / doc-subprocess / git-stagnation branches of `check_dup_ratchet.py` (~25 lines) are covered by the live gate + nose-gated + git-seam tests, not in-process — I do NOT claim 100% in-process attribution. No new blocking content floor was added. The two off-goal findings are recorded, not yet filed as issues.
+Retro: charness-artifacts/retro/2026-06-19-dup-ratchet-hardening-goal-retro.md
+Host log probe: charness-artifacts/retro/2026-06-19-issue-393-harden-the-dup-ratchet-gate-scope-paths-empty-warning-write-host-log-probe.json
+Disposition review: charness-artifacts/retro/2026-06-19-dup-ratchet-hardening-goal-retro.md
 
 ## User Verification Instructions
 
+- Confirm the release is live: `gh release view v0.52.6` (not draft) and the URL https://github.com/corca-ai/charness/releases/tag/v0.52.6.
+- Confirm consumers receive the hardened gate: in a managed install, `charness update` then check `~/.agents/src/charness/plugins/charness/.claude-plugin/plugin.json` reads `0.52.6` (already done here: install_refresh refreshed 0.52.5→0.52.6).
+- F: set `dup_ratchet.enabled: true` with empty `scope_paths` and run the gate → `status: degraded`, advisory names "scope_paths is empty"; never blocks.
+- C: `check_dup_ratchet.py --write-baseline --baseline-delta-threshold 2` on a large delta → refuses (`baseline-delta-unconfirmed`); add `--confirm-baseline-delta` → writes.
+- I: point the gate at a baseline with a wrong `schemaVersion` (valid id list) → `status: degraded`, advisory names the integrity error; never blocks.
+- Coverage: `python3 -m coverage run --include='*/skills/public/quality/scripts/check_dup_ratchet.py' -m pytest tests/quality_gates/test_dup_ratchet.py && python3 -m coverage report --include='*/skills/public/quality/scripts/check_dup_ratchet.py'` → 86%.
+
 ## Auto-Retro
+
+Full review: charness-artifacts/retro/2026-06-19-dup-ratchet-hardening-goal-retro.md (efficiency review + findings; bound to this goal slug).
+
+Substantive findings: one wasted publish cycle (the release-mode gate caught a stale fixture the read-only/CI proof skipped); diagnosis was cheap and correct; slices 1–3 had no rework; two fresh-eye reviews found no blockers; the dup-ratchet gate's own hard-block was handled honestly (member inspection → id-churn proof → small re-baseline that dogfooded the C guardrail).
+
+Retro dispositions: applied: tests/charness_cli/tool_fakes.py fake nose 0.6.0 to 0.13.3 (committed this run) fixed the stale fixture and unblocked the release.
+Retro dispositions: out-of-scope: family_id churn is a pre-existing nose-tool behavior, not introduced here; recorded in recent-lessons and surfaced as an operator issue-filing candidate (no blocking gate per Floor-Addition Restraint).
+
+Structural follow-up: none — the pre-push-vs-release-mode proof divergence (transferable waste) is recorded in this goal's bound retro + Off-Goal Findings and surfaced to the Operator Decision Queue as a `Decision:` (file an issue, or add a pre-push release-mode test subset); no structural guard or issue is committed this run, pending the operator's call (external write deferred).

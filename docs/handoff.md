@@ -13,26 +13,22 @@
 
 ## Current State
 
-- **nose 0.13.3 scan→query migration DONE + committed (`15d5df4f`), NOT pushed**
-  (stack is 4 ahead of origin/main). Code-clone path moved to `nose query` behind
-  the resolver [`nose_report_lib.py`](../skills/public/quality/scripts/nose_report_lib.py)
-  (per-root query merge, sv2/sv3 + `families`/`top_candidates`, `id`→`family_id`);
-  advisory + gate id-baselines re-seeded to 487 on 0.13.3; manifest floor
-  `>=0.13.3`. Verified green (run-quality 77/0, 104 focused tests,
-  packaging/managed-install, 2-reviewer fresh-eye critique). Detail: spec
-  [`### Slice 3`](../charness-artifacts/spec/boy-scout-dup-ratchet.md).
-- **Post-migration:** the mutation-coverage producer's "block" was a FALSE positive
-  (stale, context-keyed 2.1GB leftover that bare `--reuse-coverage` trusted);
-  diagnosed + leftover removed, real gates skip it safely. Lessons in the
-  [retro](../charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md).
-- **Earlier:** slice-2 (dup ratchet teeth, closes C5) + chunk 1 (slice 1 + #393).
+- **Released v0.52.6 (pushed + tagged + GitHub release `verified`).** Shipped the
+  dup-ratchet hardening (F scope_paths-empty advisory, C `--write-baseline`
+  delta/confirm guard, I `validate_gate_baseline` folded into the existing
+  evaluate path — all advisory/non-blocking) + in-process coverage for
+  `check_dup_ratchet.py` (0%→86%, closes the #393 attribution class) + the earlier
+  nose 0.13.3 scan→query migration. Install refresh ran (`charness update`
+  0.52.5→0.52.6, installed plugin `== repo`); CI Quality Core green on the release
+  tip. Goal:
+  [dup-ratchet hardening goal](../charness-artifacts/goals/2026-06-19-issue-393-harden-the-dup-ratchet-gate-scope-paths-empty-warning-write.md)
+  (`Status: complete`).
+- **Release-gate catch:** `run-quality --release` caught a stale `make_fake_nose`
+  fixture (`0.6.0` < shipped floor `>=0.13.3`) that the read-only pre-push proof +
+  CI Quality Core skip; fixed to `0.13.3` before publishing.
 
 ## Next Session
 
-- **Before pushing the unpushed stack:** add in-process coverage for
-  `check_dup_ratchet.py` (the slice-2 CLI is subprocess-tested → 0% *attributed*,
-  the #393 class). It is a TEST addition; the changed-line gate skips non-blocking
-  today, but the scheduled mutation run will flag it. Then decide on push.
 - **Improvement candidates — advisory by default, NOT new blocking gates** (honor
   the Floor-Addition Restraint; promote to a floor only on recorded recurrence):
   make the changed-line gate's `--reuse-coverage` path skip a coverage file that
@@ -40,9 +36,13 @@
   the false-block class — not a floor); plus two workflow habits — sanity-check a
   tool's output shape before relaying a surprising all-fail, and don't let an
   off-contract probe outrank the canonical gate. Rationale: the retro above.
-- **dup-ratchet hardening slice** (slice-2 critique deferrals): `--write-baseline`
-  delta/confirm guardrail; wire `validate_gate_baseline` into a run-quality/validate
-  phase; warn when `enabled` but `scope_paths` empty. See spec `### Slice 2 Critique`.
+- **Two findings from the v0.52.6 release (operator's call to file):** (a)
+  **family_id churn on same-file edits** — editing a scanned member file rotates
+  its clusters' nose `family_id`, forcing a re-baseline with no new duplication
+  (transferable to consumer repos); (b) **pre-push vs release-mode proof
+  divergence** — release-mode-only tests are skipped pre-push and by CI Quality
+  Core, so a stale fixture shipped to main undetected. Detail in the goal's
+  Off-Goal Findings + Operator Decision Queue.
 - **Remaining gate items + untouched tracks:** doc-links→lychee BUY +
   critique/skill-ergonomics demotions (see
   [gate buy-vs-build](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md));
