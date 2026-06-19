@@ -53,12 +53,18 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
    `{ id, surface: code|doc, class: fixable|intentional|unreviewed, note,
    reviewed_at }`. The two existing baselines keep owning drift detection
    unchanged; the review artifact references their identities.
-4. **New-family detection is per-surface** (the two surfaces differ; do not unify):
-   - **code:** nose native `--baseline nose-baseline.json --fail-on new`.
-   - **docs:** the Python `family_signature` set-diff in `inventory_doc_duplicates.py`
-     (nose's native `--baseline` does not filter the markdown array).
-   A "new fixable-eligible family" = a family newly reported by its surface's own
-   newness mechanism whose identity is not classified `intentional`.
+4. **New-family detection = our own set-diff over the enumerated `families[]`,
+   per surface — NOT nose's native `--fail-on`.** Driven by corca-ai/nose#463
+   Obs 4 ([gather asset](../gather/2026-06-19-nose-463-v013-output-observations.md)):
+   on a real repo nose's `--fail-on any` count (1163) diverges from
+   `summary.families`/`families[]` (1068) by ~95, so the gate count and the
+   fixable count would be inconsistent if mixed. **One enumeration feeds both the
+   count and the newness check.**
+   - **code:** diff the current `family_id` set vs the accepted code baseline.
+   - **docs:** diff the current `family_signature` set vs `doc-nose-baseline.json`
+     (already how `inventory_doc_duplicates.py` works).
+   A "new fixable-eligible family" = a family present now, absent from the
+   baseline, whose identity is not classified `intentional`.
 5. **Stagnation measured from git, no stored SHA, no mutable counter.** Anchor =
    `git log -1 --format=%H -- <review_artifact_path>` (the commit that last touched
    the review artifact). Stagnation = `git rev-list --count <anchor>..HEAD`. This
@@ -102,7 +108,13 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
 - **How `quality` seeds classifications.** Default new families to `unreviewed`;
   `quality` proposes `fixable` vs `intentional` (auto-seed `intentional` for
   portable-copy patterns like `*/scripts/resolve_adapter.py`, `init_adapter.py`);
-  operator confirms. Exact proposal UX resolved in slice 1.
+  operator confirms. **Key proposals on structural fields (`shared`/`removable`,
+  members, files, same-vs-cross-language), NOT the dashboard `proven`/
+  extractability labels** — corca-ai/nose#463 Obs 1+2 show those labels overclaim
+  behavioral equivalence and rank a cross-language ~0-removable family #1, so a
+  cross-language 0-removable family must not auto-seed `fixable`. If a proposal
+  ever names an extraction target, exclude test-file-only helpers (Obs 5). Exact
+  proposal UX resolved in slice 1.
 - **Do `unreviewed` families block?** This is a *gating* (slice 2) decision and
   cannot be exercised in the no-gate slice 1. Slice 1 only records new families as
   `unreviewed`. Slice 2 decides + tests block (hard arm) vs advisory (boy-scout
@@ -142,6 +154,13 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
   pointing the adapter at its own artifact + scope. nose engine ships in the
   plugin, so consumers have the detector.
 - nose >=0.13.0 required (item 4 enabler) — same engine in both repos.
+- **Pin the nose command + JSON shape behind one resolver.** Gates today run the
+  *deprecated* `nose scan --format json` (which carries `families[]` + `family_id`
+  — confirmed). The recommended `nose query` has a different shape
+  (`top_candidates` vs `families`, needs the `all` term) and takes only one path
+  root per call (corca-ai/nose#463 Obs 3+6). Treat a scan->query migration as a
+  known future change isolated to the resolver, not an ambient assumption; revisit
+  before slice 2 in case nose reconciles Obs 3/4 upstream (which would simplify it).
 - Root `scripts/` and `plugins/charness/` mirrors stay in lockstep.
 - Advisory findings never block (item 4 posture preserved); only the ratchet
   verdict gates.
@@ -149,7 +168,8 @@ runner/hook or gets the verdict via the `quality` skill. First impl slice = piec
 ## Success Criteria
 
 1. A new fixable-eligible family fails the ratchet (exit 1) via the gate script,
-   per surface (code via `--fail-on new`, doc via signature diff).
+   per surface (code via `family_id` set-diff, doc via signature diff) — counts
+   derived from the same `families[]` enumeration, not nose's `--fail-on`.
 2. A family classified `intentional` does not count toward the fixable ceiling
    and never triggers the ratchet.
 3. When fixable count `<= F`, the boy-scout arm is advisory; the hard
