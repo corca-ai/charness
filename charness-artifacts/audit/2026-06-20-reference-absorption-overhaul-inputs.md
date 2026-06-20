@@ -134,11 +134,24 @@ per-surface under the same baseline discipline (two read-only agents).
   observable-contract-over-private-mechanics + one-reason-to-fail + explicit
   assertions over snapshots, (4) real-collaborators-by-default for *in-process*
   code (charness only states this for external provider APIs), (5)
-  map-behavior-before-testing + negative/edge-case menu. Constraints: under cap,
-  P3 principle-over-rulebook, one worked example per pattern, **not** better-UT's
-  do-not lists / glossary / workflow; route from the Behavior lens in
-  `quality-lenses.md`, sit *below* `testability-and-selection.md` (avoid the
-  dup-ratchet two-references-one-concept trap). Lands in overhaul **WS-B**.
+  map-behavior-before-testing + negative/edge-case menu, and (6) **fixture/DSL
+  *authoring* principles** — plain-literals-until-repetition-hides-intent;
+  defaults valid/minimal/visible (override only scenario-relevant fields); avoid
+  fluent chains that obscure cause/effect; small named helpers over a clever
+  grammar. Constraints: under cap, P3 principle-over-rulebook, one worked example
+  per pattern, **not** better-UT's do-not lists / glossary / workflow; route from
+  the Behavior lens in `quality-lenses.md`, sit *below*
+  `testability-and-selection.md` (avoid the dup-ratchet two-references-one-concept
+  trap). Lands in overhaul **WS-B**.
+  - *Pattern 6 boundary (operator-surfaced, verified):* charness's
+    `testability-and-selection.md:121-170` already owns the test-DSL **review**
+    lens (is the DSL hiding untestable structure? are assertions still visible at
+    the `.test` site?) and is *stronger* there — keep that convergent/SKIP. The
+    gap the eval over-merged is the stack-neutral **authoring** principles, which
+    `:168-170` explicitly declines ("`quality` does not author a stack-specific
+    DSL; consumer repos build their own"). Graft only the *principles*; charness
+    still ships no stack-specific DSL implementation, so the existing boundary
+    holds.
 
 ## Operator clarification (2026-06-20)
 

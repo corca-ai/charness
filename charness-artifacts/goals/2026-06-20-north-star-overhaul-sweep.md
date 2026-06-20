@@ -97,8 +97,13 @@ metric (it is a north-star failure signature).
   grafts one `quality/references/unit-test-quality.md` (better-UT patterns:
   determinism harness; properties/invariants in the test; observable-contract +
   one-reason-to-fail; in-process real-collaborators-by-default;
-  map-behavior/edge-cases) under cap, P3 worked-example-not-do-not-list, routed
-  from the Behavior lens *below* `testability-and-selection.md`.
+  map-behavior/edge-cases; **fixture/DSL *authoring* principles** —
+  plain-literals-first, valid/minimal/visible defaults, avoid cause/effect-hiding
+  fluent chains) under cap, P3 worked-example-not-do-not-list, routed from the
+  Behavior lens *below* `testability-and-selection.md`. Boundary: graft the
+  test-DSL *authoring principles* only — the DSL *review* lens is already stronger
+  in `testability-and-selection.md:121-170`, and charness still ships no
+  stack-specific DSL implementation (consumer repos build their own).
 - **Governing-surface edits** (design-north-star.md, AGENTS.md,
   portable-authoring.md, skill bodies, gate scripts) each get a **bounded
   fresh-eye critique before commit**.
@@ -152,7 +157,7 @@ What the user can do to verify completion directly.
 | S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | pending |
 | S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | pending |
 | S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | pending |
-| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-5, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
+| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims | bundle boundary | final verification populated | pending |
 
 ## Operator Decision Queue
