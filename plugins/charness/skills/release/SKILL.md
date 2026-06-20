@@ -148,35 +148,20 @@ The result should usually include:
 - Do not bump a version without stating why that bump level is justified.
 - Do not push, tag, or announce a release without explicit user confirmation.
 - Do not report a release-linked issue as resolved until GitHub verifies it closed (close-keyword carrier or manual fallback) and the per-issue behavioral verdict in `../issue/references/closeout-discipline.md` is rendered — `status: verified` is the CLOSED state, not behavior proof.
-- Do not use `--close-issue` unless target issues are reachable through authenticated `gh`; fail before release mutation when they are not.
-- Do not leave a repo that treats version bumps as published releases stuck in a
-  push-only state; encode that boundary in one repo-owned publish helper.
-- Do not treat `tag pushed`, publish-helper success, workflow completion, and
-  `public release surface verified` as interchangeable states.
-- Do not point public release notes at mutable source-tree records (such as
-  `charness-artifacts/release/latest.md` at the target tag URL); generate
-  self-contained notes or audit the file before passing `--notes-file`.
-- The publish helper's only installed-host mutation is the adapter-declared
-  `post_publish_install_refresh`, auto-run on the authoring machine after a
-  verified publish (opt-in, recorded, non-blocking); do not auto-mutate other
-  host caches or downgrade it to a manual ask.
-- Do not turn host-specific human proof into fake standing CI. If a support or
-  install surface still depends on PATH, package managers, or host cache
-  state, say so explicitly and carry a short checklist.
-- Do not call eventual-consistency delay flaky publication noise when the repo
-  still owes bounded retry/backoff or a public visibility check.
+- The Workflow steps and references own the remaining publish-boundary failure modes;
+  do not restate them as negatives here — `tag pushed` / publish-helper success /
+  workflow completion are not `public release surface verified`; `--close-issue`
+  reachability, the push-only-state publish helper, mutable-source release notes, the
+  installed-host `post_publish_install_refresh` boundary, host-specific-proof-is-not-fake-CI,
+  eventual-consistency retry, and the review-gate-failure fix all live in their Workflow
+  step + `references/install-surface.md` / `../issue/references/closeout-discipline.md`.
 - Do not run sync, export, bump, install/update, or git-mutation commands in
   parallel with validators. Use parallelism only for read-only inspection.
-- Do not skip critique for task-completing release work. Use the standalone
-  `critique` pass when a release changes compatibility, install/update flow,
-  public visibility, or host-proof expectations in a way the next maintainer
-  could misread.
+- Treat the critique gate as non-substitutable: scale the pass, never skip it for
+  task-completing release work, and never let a same-agent or blocked-host pass
+  stand in for it (Workflow step 3 + `references/closeout-critique-gate.md` own the
+  enum and the blocked path).
 - Do not call a same-agent review a critique.
-- If the required critique is blocked, stop instead of downgrading to a local
-  substitute and still calling the release reviewed.
-- Do not downgrade a user-requested review gate failure into a release caveat.
-  A release record that says review was unavailable needs a fix, an explicitly
-  selected working adapter, or an explicit review waiver before publish/tag.
 - If the repo lacks the declared release files or sync script, stop cleanly and
   name the missing seam instead of inventing one.
 

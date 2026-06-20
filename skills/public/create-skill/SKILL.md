@@ -123,24 +123,19 @@ canonical adapter when the repo should own topology terms.
   already captures the right behavior.
 - Do not let a public skill smuggle multiple concepts just because the old repo
   had several narrow expert surfaces.
-- Use a named person anchor in the public core when it reliably retrieves a
-  real reasoning frame; do not use names as decoration or strip them out when
-  the public trigger actually benefits from the anchor.
-- When one philosophy should shape several adjacent skills, encode its
-  behavioral translation in each core and keep only the anchors that materially
-  improve retrieval.
+- Use a named person anchor in the public core only when it reliably retrieves a
+  real reasoning frame (the decoration/strip guidance and the multi-skill
+  propagation rule live in `references/portable-authoring.md` "Named Anchor Rule").
 - Keep selection logic in `SKILL.md` core. References should deepen a chosen
   move, not become a second workflow that re-decides when to act.
-- Do not let repo-local skill placement topology leak into the public skill
-  body. Use `create-skill` adapter terms for implementation identity, exposed
-  placements, aliases, and intentional fork signals.
+- Keep host-specific behavior and repo-local placement topology out of the
+  `SKILL.md` body; use `create-skill` adapter terms/presets for implementation
+  identity, exposed placements, aliases, and intentional fork signals.
 - Keep expert references source-faithful and minimal. Verify fuzzy or
   non-obvious claims before compressing them into a public skill or reference.
-- Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
-- Do not reach for user-facing branches or flags just because the design is
-  underspecified; first try context, current artifacts, or a stronger default.
-- Add a new user-visible branch only when the behaviors are genuinely distinct,
-  user-meaningful, and unsafe to infer.
+- Prefer strong defaults over user-facing branches or flags; add a branch only
+  when the behaviors are genuinely distinct, user-meaningful, and unsafe to infer
+  (`references/portable-authoring.md` "Option Minimalism").
 - External tool dependencies must be explicit in manifests and degradation
   rules, not implied by a casual command example.
 - When a host may be isolated, prefer grant-first and authenticated-binary
@@ -168,8 +163,6 @@ canonical adapter when the repo should own topology terms.
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.
 - If the adjacent skill sits at its line ceiling (surface preflight warns near-cap), trim deliberately or file an issue — never silently drop the reciprocal line.
-- Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
-  `references/`.
 
 ## References
 

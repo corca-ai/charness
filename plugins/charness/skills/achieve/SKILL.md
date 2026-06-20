@@ -154,29 +154,15 @@ lifecycle instead of starting a new one.
 
 ## Guardrails
 
-- Do not make `achieve` a generic task runner; it is a goal operator, and it
-  does not implement a new execution engine.
-- Do not start executing the goal before the user activates it.
-- Do not shape a goal at `/goal` activation; `/goal` pursues only and
-  fail-fasts on an unshaped goal, routing the operator to `/achieve`.
-- Do not require every short prompt to become a goal.
-- Do not run broad quality gates after every small commit.
-- Do not make `handoff` the normal running scratchpad while a goal is active.
-- Do not treat the historical slice log as the normal active prompt surface;
-  refresh the active operating frame and archive completed detail below it.
-- Do not claim provider, live, or release proof when only local deterministic
-  checks ran; name skipped proof levels in the final report.
+- `achieve` is a goal operator, not a generic task runner or execution engine: it
+  does not start executing before activation, and not every short prompt needs to
+  become a goal. The Workflow steps and `references/lifecycle.md` own the positive
+  form of each phase rule the guardrails would otherwise restate — `/goal` shapes
+  nothing (pursue-only), slice/quality cadence, named proof levels (no provider/live
+  claim from local checks), `handoff`-is-not-the-scratchpad, frame-over-slice-log,
+  cached-input-is-not-waste, the inline-and-persisted `retro`, the
+  presence-only disposition floor, and `find-skills`-deferred coordination routing.
 - Do not fabricate token, time, or tool-call metrics the host log does not expose.
-- Do not treat cached input volume alone as waste.
-- Do not collapse `retro` into a path reference; include its substantive findings
-  inline and persist the file (see `references/lifecycle.md`).
-- Do not leave surfaced improvements as prose-only retro memory; disposition
-  each one, or record the falsifiable per-goal `none` line.
-- Do not tighten the deterministic disposition floor into a content
-  classifier; it proves a review ran, and the reviewer/human judges substance.
-- Do not bake a phase→skill map into `## Coordination Cues`; defer routing to
-  `find-skills` and record only closeout-floor evidence or explicit
-  `n/a — <reason>` opt-outs.
 
 ## References
 

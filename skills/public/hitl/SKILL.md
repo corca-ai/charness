@@ -98,8 +98,9 @@ the repo has named where state, rules, and queue ownership live.
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
      chunks in the same run
-   - before editing or rewriting a chunk, read accepted rules, state the active
-     constraints, and verify target, cursor, queue item, and line bounds
+   - before editing or rewriting a chunk, read accepted rules into
+     `active_rules_applied`, state the active constraints, and verify target,
+     `target_cursor_checked`, queue item, and line bounds
 7. Record accepted chunk state.
    - after every accepted chunk, write the accepted working text to the
      scratchpad before presenting the next chunk
@@ -141,7 +142,8 @@ the repo has named where state, rules, and queue ownership live.
 12. Full Target Review. After accepted edits are applied or staged, present the
     updated target with an Agent Assessment and Recommended Disposition per
     `../../shared/references/agent-assessment-invariant.md`, record
-    `full_target_review`, and only then close the target as accepted.
+    `full_target_review`, then close the target only on whole-target acceptance,
+    or record the explicit need for another pass.
 
 ## Output Shape
 
@@ -151,35 +153,19 @@ Checked, Accepted Working Text, Accepted Rules, and Next State.
 
 ## Guardrails
 
-- Do not present isolated snippets without enough context for judgment.
-- Do not present a chunk that asks for a disposition without an Agent
-  Assessment and a non-binding Recommended Disposition.
-- Do not ask for judgment on summary-only paraphrases when the underlying text,
-  diff, or artifact excerpt can be shown directly.
-- Do not make raw tables or generated matrices the primary human review
-  surface; explain the table's significance first and keep the raw structure as
-  inspectable evidence.
-- Do not put nested fenced code blocks inside user-facing review excerpts; use
-  display-only pseudo-tags for inner examples instead.
+- Never advance, edit, or close on chat memory or suggestion-as-approval: every
+  transition — chunk advance, chunk edit, requested-rewrite acceptance, the Apply
+  Phase, target close, and handoff — requires its recorded state gate, with enough
+  direct context and an Agent Assessment + non-binding Recommended Disposition for
+  human judgment. The Workflow steps and `references/state-model.md`,
+  `references/chunk-contract.md`, and `references/report-mode.md` own the per-gate
+  enforcement the guardrails would otherwise restate (context-over-snippet,
+  no-nested-fences, suggestion-is-not-approval, no-advance-while-stale,
+  runtime-vs-durable agreement, rule propagation, out-of-band resync).
 - Do not persist suggested decisions as human approval unless the human
   explicitly changes a card decision.
-- Do not keep advancing when the current item is still unresolved.
-- Do not advance to the next accepted chunk while the scratchpad and state
-  cursor still depend on chat memory.
-- Do not edit a chunk while `target_cursor_checked` is stale or accepted rules
-  have not been selected into `active_rules_applied`.
-- Do not summarize a requested rewrite as "applied and checked" or advance
-  `last_presented_chunk_id` while `applied_rewrite_review_status` is pending.
-- Do not silently apply edits that require explicit human approval.
 - Do not edit the target file while the review loop is in progress; touch it
   only in the Apply Phase and after explicit approval when required.
-- Do not close a target as accepted until the `full_target_review` item records
-  whole-target acceptance or the explicit need for another pass.
-- Do not close or hand off a HITL run while runtime state is newer than the
-  durable artifact, or while durable target, cursor, queue, or accepted rules
-  disagree with the runtime session.
-- Do not lose accepted review rules between chunks in the same session.
-- If manual edits changed the target out of band, resync intent before the next chunk.
 
 ## References
 

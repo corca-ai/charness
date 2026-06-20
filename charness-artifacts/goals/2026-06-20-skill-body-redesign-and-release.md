@@ -9,26 +9,25 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S2 (cure crammed batch B: create-skill / achieve / hitl /
-  release)** — S0 and **S1 complete and committed**. The full diagnose-and-cure
-  scope (all 20 public bodies) and the terminal live-release slice are
-  operator-resolved.
-- Current slice intent: apply the S0-diagnosed cures to create-skill / achieve /
-  hitl / release (all `duplication`, guardrail-cluster collapse + single-source).
-  create-skill has a precision REVISE (off-by-one: PRESERVE L124-125
-  concept-singularity; keep L150 secrets-safety optional); achieve has a
-  completeness REVISE (KEEP L162 `not every prompt is a goal`; add L175-176 to the
-  prune set). release keeps its 6 CORE + 4 `Critique:` package pins + FORBIDDEN
-  `local critique` absent. Run the pre-cut check + per-body fresh-eye; sync the
-  mirror before validators.
-- Next action: cure the S2 batch per the S0 disposition rows; pre-cut check each,
-  re-measure, one fresh-eye reviewer for the batch, commit.
-- S0/S1 deliverables: `scripts/check_skill_cut_safety.py` (+ test/docs/drift-guard;
-  now also suppresses test-pin false positives when the literal survives elsewhere);
-  the LOCKED disposition table
-  [2026-06-20-skill-body-diagnosis-disposition.md](../spec/2026-06-20-skill-body-diagnosis-disposition.md);
-  S1 cured issue 159→148, impl 158→152, debug 157→150 (all off the under-buffer
-  floor), per-body fresh-eye PASS.
+- Current slice: **S3 (cure crammed batch C: create-cli / find-skills /
+  announcement / critique)** — S0, S1, **S2 complete and committed**. The full
+  diagnose-and-cure scope (all 20 public bodies) and the terminal live-release
+  slice are operator-resolved.
+- Current slice intent: apply the S0-diagnosed cures to create-cli / find-skills /
+  announcement / critique (all `duplication`, guardrail-cluster collapse +
+  single-source). find-skills carries the short-pin hazard (`routing miss this`,
+  `Do not stop after emitting the inventory` — keep verbatim per
+  `test_find_skills_routing_drive.py`); critique keeps its 6 CORE pins + FORBIDDEN
+  `short bounded local pass` absent. **Run the pinned skill-doc tests after the
+  batch** (the <24-char blind-spot backstop — S2 hitl needed it). Pre-cut check +
+  per-body fresh-eye; sync the mirror before validators.
+- Next action: cure the S3 batch per the S0 disposition rows; pre-cut check + run
+  pinned tests each, re-measure, one fresh-eye reviewer for the batch, commit.
+- Cure pattern (S1–S2 proven): collapse the `## Guardrails` negative-restatement
+  cluster to a named heuristic + single-source cite; keep every CORE/PACKAGE/test
+  pin verbatim; the pre-cut check catches ≥24-char pins, running the pinned tests
+  catches short ones, fresh-eye is the losslessness backstop. S2 cured create-skill
+  156→149, achieve 156→142, hitl 155→140, release 155→140 (4/4 fresh-eye PASS).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -205,7 +204,7 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 | S0 | Diagnosis spec + gating critique: measure all 20 cores; apply the §5 instrument set diagnostically per body; produce a per-body length-cause + cure/defer-with-cause disposition table; build/confirm the pre-cut lossless+contract-safe check (declarative, not manual); lock with a bounded fresh-eye critique | concept-first; the diagnosis IS the contract that gates every cure | diagnosis artifact under `charness-artifacts/spec/` (or `audit/`) + the pre-cut check + critique PASS folded | **complete** (2026-06-20): disposition spec LOCKED (19 cure + 1 defer `hotl`); `check_skill_cut_safety.py` + test + docs + drift-guard landed; gating critique PASS-WITH-CONDITIONS folded |
 | S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | **complete** (2026-06-20): issue 159→148, impl 158→152, debug 157→150; all guardrail-cluster duplication collapsed lossless; pins verbatim-preserved (no contract change); fresh-eye PASS (impl condition folded — cure A reverted as an imprecise pointer) |
-| S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | pending |
+| S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | **complete** (2026-06-20): create-skill 156→149, achieve 156→142, hitl 155→140, release 155→140; guardrail-cluster duplication collapsed lossless; pins verbatim (incl. FORBIDDEN `local critique` absent); 3 test-pin breaks caught pre-commit + restored; 4/4 fresh-eye PASS |
 | S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | same | pending |
 | S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | per-body disposition: cured-with-cause or deferred-with-cause; no count-driven cut | pending |
 | S5 | Release terminal slice: bump version + sync install manifests + announcement; **live publish operator-approved + phase-scoped**; rung-2 distinct-channel confirmation; close any release-tracked issues through the non-terminal floors | the body redesign is the release payload; the live cut is the deferred WS-1 live-floor proof | release proof; distinct-channel verification recorded; mirror synced; WS-1 floors exercised | pending |
@@ -272,6 +271,32 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S2 — cure create-skill / achieve / hitl / release (complete, 2026-06-20)
+
+- All `duplication` (guardrail/Rules clusters restating Workflow/references).
+  create-skill: 4 Rules collapses (named-anchor + option-minimalism → cites,
+  host/topology merge, sediment delete) — REVISE folded (preserved
+  concept-singularity + secrets bullets). achieve: 13 guardrails → 2 (one named
+  heuristic + the distinct host-metrics rule) — REVISE folded (kept "not every
+  short prompt"; pruned L175-176). hitl: 16 → 3 (named heuristic + 2 verbatim
+  test-pinned bullets). release: ~18 → 8 (kept 2 CORE pins + verbatim issue pin +
+  parallelism + same-agent + missing-seam; collapsed publish-boundary + critique
+  clusters; FORBIDDEN `local critique` stays absent).
+- Re-measured: create-skill 156→149, achieve 156→142, hitl 155→140, release
+  155→140. Clarity win = distinct rules visible instead of buried restatements.
+- **Pre-cut check + pinned tests caught 4 real breaks pre-commit:** 3 test-pinned
+  guardrails (hitl ×2, release ×1, all ≥24 chars → BLOCK) restored verbatim; and
+  2 **short pins** (`active_rules_applied` 20ch, `whole-target acceptance` 23ch)
+  the <24-char scan missed but the pinned `test_docs_and_misc.py` caught → re-homed
+  into hitl Workflow steps 6/12 (+ a line-wrap fix so the phrase stays contiguous).
+  This is the documented blind-spot backstop working. No contract change.
+- S2 batch fresh-eye: **4/4 PASS** (distinct channel: opened every cited reference,
+  traced each collapsed rule to its home, grepped pins, confirmed FORBIDDEN absent).
+  Two non-blocking density nits left as-is (anti-over-rigor).
+- Scenario review = preserve/no-change (0 eval-file hits for removed literals; 22
+  eval scenarios pass). Cautilus eval-only/ask-before-run. Routing: `create-skill`/
+  `quality` + `critique`. Gates green incl. run-evals, contracts, ratchet.
 
 ### S1 — cure issue / impl / debug (complete, 2026-06-20)
 
