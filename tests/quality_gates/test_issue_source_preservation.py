@@ -55,6 +55,8 @@ def _bug_closeout_body(*, source_block: str, close_line: str = "Close #42.") -> 
         "Siblings: issue closeout body | decision: same bug, fix now | proof: static scan.",
         "Prevention: verify-closeout blocks unpreserved external-source closeouts.",
         "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+        "Behavior #42: behavior test exercises the fix (distinct channel from CLOSED)",
+        "AI-provenance: agent-drafted; human-audited per the resolution critique",
     ]
     body = "\n\n".join(parts)
     if source_block:

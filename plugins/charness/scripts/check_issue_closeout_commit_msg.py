@@ -161,6 +161,16 @@ def _format_failure(report: dict[str, Any]) -> str:
         critique = item.get("resolution_critique_check", {})
         if not critique.get("ok", True):
             lines.append("  missing/invalid resolution critique evidence")
+        behavioral = item.get("behavioral_verdict", {})
+        if behavioral.get("applies") and not behavioral.get("ok", True):
+            missing_behavior = ", ".join(f"#{number}" for number in behavioral.get("missing", []))
+            lines.append(
+                "  missing per-issue behavioral verdict (a `Behavior #N:` line naming a "
+                f"distinct channel or a typed non-verified disposition): {missing_behavior}"
+            )
+        provenance = item.get("ai_provenance", {})
+        if provenance.get("applies") and not provenance.get("ok", True):
+            lines.append("  missing `AI-provenance:` marker on the agent-authored carrier")
     lines.append("Put the close keywords and closeout ledger in the commit body, or unstage the issue closeout artifact.")
     return "\n".join(lines)
 

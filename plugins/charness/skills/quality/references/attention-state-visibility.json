@@ -506,6 +506,12 @@
       "evidence_terms": ["skipped_classification", "host-blocked-subagent"],
       "rationale": "Issue closeout verifier reports an explicit skipped_classification payload and refuses closure when a required resolution-critique skip lacks a recognized host-blocked reason."
     },
+    "skills/public/issue/scripts/issue_verify_closeout_body.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload", "hard_failure_or_blocker"],
+      "evidence_terms": ["skipped_classification"],
+      "rationale": "The rung-1 behavioral-verdict and AI-provenance floors return an explicit skipped_classification payload for question/decision-needed carriers (exempt: no user-facing behavior to confirm), so an exempt closeout reads as a typed non-claim rather than a clean behavior-confirmed pass."
+    },
     "skills/public/release/scripts/publish_release_preflight.py": {
       "states": ["skipped"],
       "visibility": ["hard_failure_or_blocker"],

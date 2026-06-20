@@ -9,20 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S1 (R2) — wire the rung-2 distinct-channel observer +
-  AI-provenance marker onto the standalone issue/PR-close path** (the open
-  escape). S0 locked 2026-06-20.
-- Current slice intent: implement the rung-1 block-the-silent presence floor on
-  the issue closeout path (a `bug`/`feature`/`deferred-work` carrier must contain,
-  per closed issue, a behavioral-verdict line naming a distinct channel OR a typed
-  non-`verified` disposition) + the AI-provenance marker on agent-posted comments,
-  per the locked spec §2. Seeded-instance proof local-only. No terminal-green gate;
-  rung-1 refuses silence only; honesty stays rung-2. This is the reviewable intent
-  unit; critique fires once at the S1 boundary.
-- Next action: route S1 via `find-skills`; implement via `impl` consuming the
-  locked spec; seeded-instance proof + bounded fresh-eye critique; preserve the
-  `closeout-discipline.md` render-not-declare sentence; commit at the slice
-  boundary.
+- Current slice: **S2 (R1) — extract the cloned rung-1 grammar into one shared
+  substrate**; operator-queue/blocked-matrix/coordination → thin configs.
+  S0 locked + S1 (R2 escape closed) committed 2026-06-20.
+- Current slice intent: per the locked spec §3+§4, unify `parse_created_date`
+  (5 clones incl. phase_routing), `is_floor_in_scope`, placeholder-markers, and a
+  parametric opt-out matcher into one substrate; keep the ≥7 RULE_DATEs, narrow
+  triggers, verdict fns, first-satisfying-wins, and the `_section_body` divergence
+  separate. The created-date strict→permissive swap is a **tested deliberate
+  behavior change** — each swapped consumer gets a divergence-input locked test
+  ("9 locked tests pass" alone is rejected as proof). All 6 risk-constraints binding.
+- Next action: route S2 via `find-skills`; implement the substrate + per-consumer
+  migration with seeded behavior-preservation tests; locked floor tests green;
+  bounded fresh-eye critique; commit at the slice boundary.
 - Locked spec (gates all impl):
   [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -162,7 +161,7 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (spec locked; critique PASS-WITH-CONDITIONS folded 2026-06-20) |
-| S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | pending |
+| S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | **done** (rung-1 block-the-silent + provenance floors wired; 6 seeded tests; fresh-eye PASS-WITH-CONDITIONS folded; cautilus refused per policy) |
 | S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | pending |
 | S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims | bundle boundary | final verification populated | pending |
@@ -215,6 +214,10 @@ during the run:
     `achieve` (owner) coordinating `spec` (concept-spec authoring) + `critique`
     (gating fresh-eye review). Spec authored inline under achieve; gating critique
     run as a bounded fresh-eye subagent. `Routing: spec + critique`.
+  - S1 (R2 impl): `find-skills --recommend-for-task` → `issue` (owns the closeout
+    surface; impl-style slice on it) + `critique` (slice fresh-eye). Cautilus
+    refused (`plan_cautilus_proof` next_action=none, ask-before-run);
+    deterministic gates + fresh-eye own closeout. `Routing: issue + critique`.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -243,6 +246,20 @@ during the run:
 - Critique: PASS-WITH-CONDITIONS — folded into ## Plan Critique Findings + the spec's section 10. T1 (rung-1 != terminal-green) adjudicated distinct; T2/T3/T4 resolved; 4 blockers folded as S2 measurement-tightening conditions.
 - Off-goal findings:
 - Lessons carried forward: S2 must prove behavior-preservation per swap (created-date strict->permissive RELAXES grandfathering; 9 locked tests green on unchanged inputs = form-passed-not-content-correct). Surface maps from subagents can under-count (phase_routing missed) — re-verify load-bearing counts on a distinct channel before locking.
+- Metrics:
+
+### Slice 2: S1 (R2) — wire rung-2 distinct-channel observer + AI-provenance onto issue/PR close
+
+- Objective: Close the open escape where the standalone issue/PR-close path treats CLOSED+ledger-form as terminal-green: wire a rung-1 block-the-silent behavioral-verdict presence floor + an AI-provenance presence floor onto issue closeout (verify-closeout / validate-closeout-draft / commit-msg hook), presence/form only, honesty stays rung-2.
+- Why this approach: Per the locked S0 spec section 2: the prose mandate existed (closeout-discipline.md:106-138) but was unwired — issue_verify_closeout.py:262-263 greened status:verified on CLOSED+form only. The rung-1/rung-2 split is the third option between judgment-only and terminal-green; it forces the question without declaring completion (status:verified stays necessary-not-sufficient; a typed non-verified disposition satisfies the floor).
+- Commits:
+- What changed: issue_verify_closeout_body.py: evaluate_behavioral_verdict + evaluate_ai_provenance + _behavior_lines + has_ai_provenance_marker + Behavior #N: line grammar (mirrors Critique #N:). issue_verify_closeout.py: both floors wired into ok/status + result. check_issue_closeout_commit_msg.py: _format_failure surfaces the new floor failures (legibility). closeout-discipline.md: doctrine sync (replaced the stale 'no new gate/script/verdict token' clause with the rung-1/rung-2 split; PRESERVED the render-not-declare/no-aggregate #386 sentence). attention-state-visibility.json: registered issue_verify_closeout_body.py (new skipped_classification term). 5 test files + 6 new seeded tests. Plugin mirror synced. SKILL.md reverted (headroom-gate: detail belongs in the reference, not the capped body).
+- Alternatives rejected: Hard-require the marker in close_with_comment (rejected: fires before backend logic, masks backend errors, breaks 7 unrelated tests; provenance enforcement belongs in the floor like ledger fields). Adding a SKILL.md guardrail (reverted: issue SKILL.md at 199 has <4-line headroom buffer; progressive disclosure keeps the rung-1/rung-2 detail in closeout-discipline.md). Gating close on aggregate 'all confirmed' (rejected: the #386 anti-pattern; floor demands rendering per issue, accepts typed dispositions).
+- Targeted verification: 88 issue tests pass incl 6 new seeded (silent carrier FAILS before CLOSED greens; typed disposition PASSES; missing marker FAILS; question-class exempt; per-issue-in-bundle; validate-draft blocks-silent pre-mutation). run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review = exit 0 (validate_skills, check_skill_contracts, check_python_lengths, ruff, attention-state-visibility, skill-ergonomics, mirror-drift, doc-links all PASS). Cautilus refused: plan_cautilus_proof next_action=none, ask-before-run; deterministic+fresh-eye own closeout.
+- Test duplication pressure: 6 new seeded tests target distinct behaviors (silent-fail, typed-disposition-pass, missing-marker-fail, class-exempt, per-issue-bundle, draft-pre-mutation-block); no duplicate-pressure with existing tests (those cover close-keywords/ledger/state/critique/source-preservation — orthogonal axes).
+- Critique: PASS-WITH-CONDITIONS (bounded fresh-eye, verified against actual code+tests). 6 invariants CONFIRMED (presence-only, render-not-declare, classification-gate, necessary-not-sufficient, no-aggregate, doctrine-preserved); bypass holes clean (fence-strip, placeholder, single-issue-shorthand scoping, silent->verified closed). 2 conditions folded: (1) registered issue_verify_closeout_body.py in attention-state-visibility.json; (2) fixed the has_ai_provenance_marker docstring overstatement.
+- Off-goal findings:
+- Lessons carried forward: #386 trap, self-inflicted then caught: I 'confirmed pre-existing' the attention-state failure by stash-testing with the WRONG gate invocation (missing --scan-root skills --scan-root-map) — both stashed/unstashed runs failed identically for the wrong reason, masking that my change added a REAL new violation. The fresh-eye reviewer caught it by running the gate the enforcement way (distinct channel). Lesson: verify gate failures with the EXACT enforcement invocation, never a hand-rolled approximation. Touching a capped SKILL.md forces the 4-line headroom buffer — prefer pushing detail to references.
 - Metrics:
 
 ## Context Sources
@@ -303,6 +320,22 @@ adjudicated **distinct** — the achieve path already ships the non-terminal
 rung-1b/rung-2 shape in code; the issue floor refuses silence only,
 `status: verified` stays necessary-not-sufficient. Gate result: **S0 locked;
 S1 may proceed.**
+
+**S1 (R2) impl critique — PASS-WITH-CONDITIONS (2026-06-20), folded.** Bounded
+fresh-eye reviewer verified all 6 invariants against the actual code + live tests
+(presence-only; render-not-declare; classification-gate; necessary-not-sufficient;
+no-aggregate; doctrine #386-sentence preserved) and probed bypass holes (fence
+strip, placeholder, single-issue-shorthand scope, silent→verified path — all
+closed). Two conditions folded: (1) registered `issue_verify_closeout_body.py` in
+`attention-state-visibility.json` (the new `skipped_classification` term); (2)
+corrected the `has_ai_provenance_marker` docstring (the write-site guard was
+reverted; the floor owns enforcement). The reviewer also caught a **#386 trap I
+fell into**: I "confirmed pre-existing" the attention-state failure via a
+stash-test using the *wrong* gate invocation (both runs failed identically for the
+wrong reason, masking a real S1-caused violation). Running the gate the
+enforcement way (distinct channel) showed it was S1-caused — and after the fix +
+correct invocation it PASSES (85 files validated). The distinct-channel doctrine
+validated itself on this slice.
 
 ## Off-Goal Findings
 

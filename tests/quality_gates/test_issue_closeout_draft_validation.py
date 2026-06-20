@@ -18,6 +18,8 @@ def _bug_body(close_line: str = "Close #42.") -> str:
             "Siblings: issue_tool finalization | decision: same bug, fix now | proof: static scan.",
             "Prevention: validate-closeout-draft blocks malformed bodies before mutation.",
             "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+            "Behavior #42: behavior test exercises the fix (distinct channel from CLOSED)",
+            "AI-provenance: agent-drafted; human-audited per the resolution critique",
         ]
     )
 

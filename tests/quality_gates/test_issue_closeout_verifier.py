@@ -45,6 +45,14 @@ def _bug_closeout_body(
         "Critique: blocked synthetic-test-harness: this test does not spawn "
         "a real resolution critique subagent"
     ),
+    behavior_line: str | None = (
+        "Behavior #42: behavior test tests/foo.py exercises the fixed parse path "
+        "(distinct channel from CLOSED)"
+    ),
+    provenance_line: str | None = (
+        "AI-provenance: agent-drafted via charness issue resolve; "
+        "human-audited per the resolution critique"
+    ),
 ) -> str:
     parts = [
         close_line,
@@ -56,6 +64,10 @@ def _bug_closeout_body(
     ]
     if critique_line is not None:
         parts.append(critique_line)
+    if behavior_line is not None:
+        parts.append(behavior_line)
+    if provenance_line is not None:
+        parts.append(provenance_line)
     return "\n\n".join(parts)
 
 
@@ -225,6 +237,8 @@ def test_issue_verify_closeout_rejects_empty_bug_sibling_proof(tmp_path: Path) -
                 "Debug artifact: charness-artifacts/debug/latest.md.",
                 "Siblings: same nearby file.",
                 "Prevention: verify-closeout blocks missing carriers.",
+                "Behavior #42: behavior test exercises the fix (distinct channel).",
+                "AI-provenance: agent-drafted; human-audited per the resolution critique.",
             ]
         ),
     )
@@ -601,6 +615,133 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
     assert payload["state_mismatches"][0]["actual"] == "OPEN"
+
+
+# --- rung-1 block-the-silent behavioral-verdict + AI-provenance floors (S1/R2) ---
+
+
+def test_issue_verify_closeout_rejects_silent_behavioral_verdict(tmp_path: Path) -> None:
+    """Seeded escape: a bug carrier silent on the per-issue behavioral verdict
+    must FAIL before the CLOSED-state green can stand alone."""
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42.", behavior_line=None))
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["behavioral_verdict"]["ok"] is False
+    assert payload["behavioral_verdict"]["missing"] == [42]
+
+
+def test_issue_verify_closeout_accepts_typed_nonverified_disposition(tmp_path: Path) -> None:
+    """Render-not-declare: a typed non-`verified` disposition satisfies the floor
+    exactly as a confirmation does — the obligation is to render, not to confirm."""
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            behavior_line="Behavior #42: local-only-by-contract — surface is local by the resolution contract",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["behavioral_verdict"]["ok"] is True
+    assert payload["status"] == "carrier_verified"
+
+
+def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Path) -> None:
+    """Seeded escape: an agent-authored bug carrier without an AI-provenance marker
+    is not legible to the distinct observer and must FAIL its presence check."""
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42.", provenance_line=None))
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["ai_provenance"]["ok"] is False
+
+
+def test_issue_verify_closeout_question_class_exempt_from_rung1_floors(tmp_path: Path) -> None:
+    """A `question` carrier has no behavior to confirm: both rung-1 floors are
+    inert (mirroring the resolution-critique classification gate)."""
+    _seed_commit(
+        tmp_path,
+        "\n\n".join(
+            [
+                "Close #42.",
+                "JTBD: answer a clarification question.",
+                "Answer: documented the resolved decision in the issue thread.",
+            ]
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["behavioral_verdict"]["applies"] is False
+    assert payload["ai_provenance"]["applies"] is False
+
+
+def test_issue_verify_closeout_requires_per_issue_behavioral_verdict_in_bundle(tmp_path: Path) -> None:
+    """No aggregate pass: a bundle where one issue is silent fails for that issue
+    even when the other carries a verdict."""
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #1.\nClose #2.",
+            critique_line="Critique #1 #2: charness-artifacts/critique/x.md",
+            behavior_line="Behavior #1: behavior test exercises the fix (distinct channel)",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "1", "--number", "2",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["behavioral_verdict"]["missing"] == [2]
+
+
+def test_validate_closeout_draft_blocks_silent_carrier_before_mutation(tmp_path: Path) -> None:
+    """The block-the-silent teeth land at the pre-publish draft boundary: a silent
+    bug draft fails validate-closeout-draft before any GitHub mutation."""
+    body = tmp_path / "draft.md"
+    body.write_text(_bug_closeout_body(close_line="Resolves #42.", behavior_line=None), encoding="utf-8")
+
+    result = run_script(
+        SCRIPT, "validate-closeout-draft", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "pr-body", "--body-file", str(body),
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["behavioral_verdict"]["ok"] is False
 
 
 def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path: Path) -> None:

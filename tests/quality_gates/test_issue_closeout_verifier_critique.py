@@ -41,6 +41,12 @@ def _bug_closeout_body(
         "Critique: blocked synthetic-test-harness: this test does not spawn "
         "a real resolution critique subagent"
     ),
+    behavior_line: str | None = (
+        "Behavior #42: behavior test exercises the fix (distinct channel from CLOSED)"
+    ),
+    provenance_line: str | None = (
+        "AI-provenance: agent-drafted; human-audited per the resolution critique"
+    ),
 ) -> str:
     parts = [
         close_line,
@@ -52,6 +58,10 @@ def _bug_closeout_body(
     ]
     if critique_line is not None:
         parts.append(critique_line)
+    if behavior_line is not None:
+        parts.append(behavior_line)
+    if provenance_line is not None:
+        parts.append(provenance_line)
     return "\n\n".join(parts)
 
 
@@ -202,6 +212,10 @@ def test_bug_bundle_accepts_explicit_multi_issue_critique_binding(tmp_path: Path
         _bug_closeout_body(
             close_line="Close #184.\nClose #221.",
             critique_line="Critique #184 #221: charness-artifacts/critique/2026-06-02-184-221.md",
+            behavior_line=(
+                "Behavior #184: behavior test exercises the fix (distinct channel)\n"
+                "Behavior #221: fetch/readback of the affected surface (distinct channel)"
+            ),
         ),
     )
 
@@ -380,7 +394,9 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
         "Resolution brief: see issue body.\n"
         "Implementation: small additive change behind existing seam.\n"
         "Prevention: closeout discipline added.\n"
-        "Critique: blocked claude-code-agent-tool-missing in offline session\n",
+        "Critique: blocked claude-code-agent-tool-missing in offline session\n"
+        "Behavior #42: behavior test exercises the new surface (distinct channel)\n"
+        "AI-provenance: agent-drafted; human-audited per the resolution critique\n",
         encoding="utf-8",
     )
 

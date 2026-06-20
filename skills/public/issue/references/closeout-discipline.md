@@ -133,9 +133,23 @@ This is a per-issue **question to render, never a completion condition to
 declare**: "confirm each issue, then close when all are confirmed" re-creates the
 "all-green + `CLOSED` = behavior proven" equivalence this mandate exists to
 remove — the obligation is to render the verdict-or-disposition per issue, not to
-gate the close on an aggregate "all confirmed". No new gate, script, or verdict
-token is added; `verify-closeout` still checks state, and this is the behavioral
-judgment layered on top of it.
+gate the close on an aggregate "all confirmed".
+
+A **rung-1 presence floor** enforces exactly that obligation and no more.
+`verify-closeout` / `validate-closeout-draft` refuse a `bug` / `feature` /
+`deferred-work` carrier that is **silent** on a closed issue: it must carry a
+`Behavior #N: <…>` line naming the distinct evidence channel the behavior was
+confirmed through, **or** a typed non-`verified` disposition (a HOTL status, or
+`local-only-by-contract`); a single-issue carrier may use the `Behavior:`
+shorthand. The floor is **presence/form only** — it refuses *silence*, it never
+declares completion: `status: verified` stays necessary-not-sufficient, a typed
+non-`verified` disposition satisfies it exactly as a confirmation does, and
+whether the named channel is genuinely distinct from `CLOSED`/the carrier (or the
+disposition real) is the fresh-eye reviewer's judgment (**rung-2**), never the
+floor's. This is the third option between judgment-only prose and a terminal-green
+gate: a gate may *force the question*; it may not *declare* the behavior proven.
+Alongside it, an `AI-provenance:` marker is required on the agent-authored carrier
+so the irreversible external write is legible to that distinct observer.
 
 ## Resolution-Critique Carrier Header
 

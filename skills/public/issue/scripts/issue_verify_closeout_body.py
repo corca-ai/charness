@@ -16,6 +16,43 @@ _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<name>.+?)\s*$")
 _FIELD_RE = re.compile(r"^\s*(?:[-*]\s*)?(?P<name>[A-Za-z][A-Za-z -]{1,40}):\s*(?P<value>.*)$")
 _PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na"}
 
+# Classifications whose carrier has user-facing behavior to confirm. The rung-1
+# behavioral-verdict + AI-provenance floors apply only here; question /
+# decision-needed carriers have no behavior change and stay exempt (mirroring the
+# resolution-critique classification gate).
+BEHAVIORAL_VERDICT_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
+
+# Per-issue behavioral-verdict line grammar, mirroring the ``Critique #N:`` /
+# ``Critique:`` shorthand: ``Behavior #N: <distinct-channel or disposition>`` per
+# issue, with a single-issue ``Behavior: <…>`` shorthand.
+_BEHAVIOR_LINE_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?Behaviou?r(?:\s+(?P<target>[^:]+?))?\s*:\s*(?P<value>.+?)\s*$",
+    re.MULTILINE,
+)
+_ISSUE_REF_RE = re.compile(r"#(\d+)\b")
+
+# AI-provenance marker: an agent-posted GitHub write must be legible as
+# agent-authored to the distinct (rung-2) observer. Presence is rung-1; whether
+# the human-audit claim is real is rung-2.
+_PROVENANCE_ALIASES = ("ai provenance", "provenance")
+AI_PROVENANCE_MARKER = (
+    "AI-provenance: agent-drafted via charness issue resolve; "
+    "human-audited per the resolution critique"
+)
+
+
+def has_ai_provenance_marker(text: str) -> bool:
+    """True when the body carries a substantive ``AI-provenance:`` marker.
+
+    Presence/form only. Enforced by the closeout floor (``verify-closeout`` /
+    ``validate-closeout-draft``) on the agent-authored carrier — for a
+    manual-fallback close that carrier *is* the comment body, and the documented
+    flow runs ``validate-closeout-draft`` before ``close_with_comment``, so an
+    agent-posted comment cannot be published unmarked without bypassing the
+    draft-validation step.
+    """
+    return _has_substantive_value(_first_field(_body_fields(text), _PROVENANCE_ALIASES))
+
 
 def _strip_code_fences(text: str) -> list[str]:
     lines: list[str] = []
@@ -166,3 +203,71 @@ def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[in
             continue
         found.add(int(match.group("number")))
     return [number for number in numbers if number not in found]
+
+
+def _behavior_lines(text: str) -> list[dict]:
+    plain = "\n".join(_strip_code_fences(text))
+    lines: list[dict] = []
+    for match in _BEHAVIOR_LINE_RE.finditer(plain):
+        target = (match.group("target") or "").strip()
+        value = match.group("value").strip()
+        lines.append(
+            {
+                "target": target or None,
+                "value": value,
+                "target_numbers": [int(raw) for raw in _ISSUE_REF_RE.findall(target)],
+            }
+        )
+    return lines
+
+
+def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[int]) -> dict:
+    """Rung-1 block-the-silent presence floor for the per-issue behavioral verdict.
+
+    A ``bug`` / ``feature`` / ``deferred-work`` carrier must carry, per closed
+    issue, a substantive ``Behavior #N: <…>`` line (single-issue shorthand
+    ``Behavior: <…>``) whose value either names the distinct evidence channel the
+    user-facing behavior was confirmed through, or records a typed non-``verified``
+    disposition (a HOTL status, or ``local-only-by-contract``).
+
+    **Presence/form only — this is rung-1.** It refuses *silence* (no line for an
+    issue), never declaring completion: ``status: verified`` stays necessary-not-
+    sufficient. A typed non-``verified`` disposition satisfies it exactly as a
+    confirmation does, so it renders the per-issue question without ever gating the
+    close on an aggregate "all confirmed". Whether the named channel is genuinely
+    distinct from ``CLOSED``/the carrier — or the disposition is real — is the
+    fresh-eye reviewer's judgment (rung-2), never this floor's.
+    """
+    if classification not in BEHAVIORAL_VERDICT_CLASSIFICATIONS:
+        return {"applies": False, "ok": True, "missing": [], "skipped_classification": classification}
+    bound: set[int] = set()
+    lines = _behavior_lines(text)
+    for line in lines:
+        if not _has_substantive_value(line["value"]):
+            continue
+        targets = [number for number in line["target_numbers"] if number in numbers]
+        if not targets and line["target"] is None and len(numbers) == 1:
+            targets = [numbers[0]]
+        bound.update(targets)
+    missing = [number for number in numbers if number not in bound]
+    return {
+        "applies": True,
+        "ok": not missing,
+        "missing": missing,
+        "lines": [{"target": line["target"], "value": line["value"]} for line in lines],
+    }
+
+
+def evaluate_ai_provenance(text: str, classification: str) -> dict:
+    """Rung-1 presence floor for the AI-provenance marker on an agent-posted
+    closeout carrier (``bug`` / ``feature`` / ``deferred-work``).
+
+    Presence/form only: an ``AI-provenance:`` marker must be present so the
+    irreversible external write is legible as agent-authored to the distinct
+    (rung-2) observer. Whether the human-audit claim it makes is real is rung-2.
+    """
+    if classification not in BEHAVIORAL_VERDICT_CLASSIFICATIONS:
+        return {"applies": False, "ok": True, "marker": None, "skipped_classification": classification}
+    marker = _first_field(_body_fields(text), _PROVENANCE_ALIASES)
+    present = _has_substantive_value(marker)
+    return {"applies": True, "ok": present, "missing": not present, "marker": marker if present else None}

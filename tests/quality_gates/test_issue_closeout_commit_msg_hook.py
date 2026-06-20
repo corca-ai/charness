@@ -40,6 +40,8 @@ def _bug_closeout_body(close_line: str = "Close #42.") -> str:
             "Siblings: issue closeout | decision: same carrier bug | proof: commit-msg hook.",
             "Prevention: commit-msg blocks missing closeout carriers.",
             "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+            "Behavior #42: behavior test exercises the fix (distinct channel from CLOSED)",
+            "AI-provenance: agent-drafted; human-audited per the resolution critique",
         ]
     )
 
