@@ -284,6 +284,30 @@ Reopen trigger:
   content identity (which would enable solution (a) and flip the
   `test_real_nose_family_id_rotates_on_member_line_shift` characterization test).
 
+### D31. Handoff chunker should reconcile against recent commits
+
+- Question: Should the `handoff` chunked-routing pipeline consume recent commits
+  (`origin/main..HEAD` or last-N) in addition to handoff entries + open issues, so a
+  pickup automatically reconciles the backlog against just-committed work?
+- Current choice: Defer the pipeline change; for now the handoff `Workflow Trigger`
+  carries a "body-read the issues, don't trust the list flat" directive and the
+  refresh commands already include `git log`. The chunker itself does not yet read
+  commits.
+- Why now: A 2026-06-21 session demonstrated the gap — #395's closeout satisfied the
+  overhaul-sweep R2 live proof, and chunk-2's multi-root change altered #391's
+  surface, but both were caught only by manual commit reading, not the chunker. The
+  correct form is NOT a candidate union (commits are *done work*, not *to-do*): it is
+  a **reconcile/enrich pass** that (a) flags candidates a recent commit likely
+  closed/obviated (de-stale), and (b) harvests commit-body `Close #N` / `deferred X`
+  / `follow-up Y` markers as new signals. Designing that pass — and its precision
+  (avoid false "already done" suppression) — is its own slice, not a drive-by.
+- Impact surfaces: [chunked-routing.md](../skills/public/handoff/references/chunked-routing.md),
+  [parse_handoff_entries.py](../skills/public/handoff/scripts/parse_handoff_entries.py)
+  (and the proposer/ranker), [handoff-chunked-routing.md](./handoff-chunked-routing.md)
+  (authoring-repo-internal contract).
+- Reopen trigger: A pickup again misses a backlog item already resolved/obviated by a
+  recent commit, or the chunker's issue-union is extended for another reason.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

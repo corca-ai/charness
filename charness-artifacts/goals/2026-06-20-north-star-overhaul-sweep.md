@@ -19,9 +19,9 @@ runs the activation command.
   graft + one lossless body cure; deeper body redesign deferred with cause (the
   cuts are contract-blocked or lossy — forcing them is the north-star failure
   signature). Bundle proof: broad pytest 3428/0.
-- Open operator items (do not block completion): live GitHub R2 proof + filing the
-  WS-B body-redesign follow-on issue — both external writes, see
-  `## Operator Decision Queue`.
+- Open operator items (do not block completion): live R2 proof **SATISFIED via #395
+  (2026-06-21)**; WS-B body-redesign follow-on tracked **file-over-issue** (no GitHub
+  issue, per operator) — see `## Operator Decision Queue`.
 - Locked spec (gates all impl):
   [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -181,15 +181,22 @@ both are external-write boundaries the goal contract scopes out by default).
     close/comment run.
   - Revisit trigger: the next real `issue resolve` of a bug/feature/deferred-work
     issue once the operator approves the external write.
-- Decision: file tracked GitHub issue(s) for the **deferred body-redesign
-  follow-on** (impl/debug/quality/achieve concept-separation + the pre-cut
-  lossless+contract-safe WS-B instrument).
+  - **SATISFIED 2026-06-21:** #395 (bug) was resolved+closed via a live
+    `issue resolve` exercising the R2 rung-1 floors — per-issue behavioral verdict
+    (distinct channel: a green real-nose characterization test + the dogfooded
+    case-2 recovery, not a CLOSED-only green) + AI-provenance marker;
+    `verify-closeout --expect-state CLOSED` verified, confirmed via `gh` SoT.
+    This is the live proof the goal deferred. Commit `6658acec`.
+- Decision: track the **deferred body-redesign follow-on**
+  (impl/debug/quality/achieve concept-separation + the pre-cut lossless+contract-safe
+  WS-B instrument).
   - Owner: operator
-  - Why deferred: filing an issue is an external write not approved this run; the
-    follow-on is captured in the retro `## Next Improvements`/`## Sibling Search`
-    and this goal's S3 slice log.
-  - Unblock action: operator approves filing via `issue`, or starts the follow-on
-    goal directly from the retro/S3 record.
+  - **DECISION 2026-06-21 (operator): file-over-issue.** Do NOT file a GitHub
+    issue — the deferral already has a documented cause and a file home (this goal's
+    S3 slice log + the overhaul-sweep retro `## Next Improvements`/`## Sibling
+    Search`), and needs no tracker lifecycle. Promote to a goal when the WS-B
+    body-redesign is actually started.
+  - Unblock action: start the follow-on goal directly from the retro/S3 record.
   - Revisit trigger: starting the WS-B body-redesign follow-on.
 
 ## Discuss before activation
