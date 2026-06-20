@@ -410,6 +410,68 @@ def test_cli_empty_real_scan_with_nonempty_baseline_degrades(tmp_path: Path) -> 
     assert any("0 families" in reason for reason in verdict["degraded_reasons"])
 
 
+@pytest.mark.skipif(
+    shutil.which("nose") is None and not os.environ.get("NOSE_BIN"),
+    reason="nose binary required for the family_id offset-stability characterization",
+)
+def test_real_nose_family_id_rotates_on_member_line_shift(tmp_path: Path) -> None:
+    # Characterization for the family_id offset-rotation issue (issue 395): the gate
+    # keys code newness on nose's `family_id`, which the docs once claimed was "stable
+    # across sibling churn". It is NOT — the family id folds each member's LINE OFFSET,
+    # so inserting lines ABOVE an unchanged duplicated span rotates the whole family id
+    # even though no duplication changed and a sibling copy is byte-identical. This locks
+    # that reality (the basis for the documented re-baseline-on-member-edit workflow and
+    # the deferred id-rotation affordance in references/dup-ratchet.md). If a future nose
+    # makes family_id position-independent this assertion flips, signalling a docs revisit.
+    nose_bin = os.environ.get("NOSE_BIN") or "nose"
+    scope = tmp_path / "scope"
+    scope.mkdir()
+    func = (
+        "def compute_widget_summary(items, threshold):\n"
+        "    total = 0\n"
+        "    kept = []\n"
+        "    for item in items:\n"
+        '        value = item.get("value", 0)\n'
+        "        if value is None:\n"
+        "            continue\n"
+        "        if value >= threshold:\n"
+        "            kept.append(item)\n"
+        "            total += value\n"
+        "    average = total / len(kept) if kept else 0\n"
+        '    return {"total": total, "kept": kept, "count": len(kept), "average": average}\n'
+    )
+    alpha = scope / "alpha.py"
+    beta = scope / "beta.py"
+    alpha.write_text("import os\n\n\n" + func, encoding="utf-8")
+    beta.write_text("import sys\n\n\n" + func, encoding="utf-8")
+
+    def family_ids() -> set[str]:
+        result = subprocess.run(
+            [nose_bin, "query", str(scope), "--format", "json",
+             "--min-size", "24", "--min-members", "2"],
+            capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        return {fam["id"] for fam in json.loads(result.stdout).get("families", [])}
+
+    before = family_ids()
+    assert len(before) == 1, f"expected exactly one clone family, got {before}"
+
+    beta_before = beta.read_text(encoding="utf-8")
+    # Pure line-shift: prepend comment lines to alpha.py. alpha's function body is
+    # byte-identical, beta.py is untouched, and no duplication is added or removed.
+    alpha.write_text("# shift\n" * 5 + alpha.read_text(encoding="utf-8"), encoding="utf-8")
+    assert beta.read_text(encoding="utf-8") == beta_before  # the sibling copy is unchanged
+
+    after = family_ids()
+    assert len(after) == 1, f"expected one clone family after the shift, got {after}"
+    assert before != after, (
+        "family_id did NOT rotate on a pure line-shift; nose may have become "
+        "position-independent. Revisit the dup-ratchet stability caveat and the "
+        "deferred id-rotation affordance."
+    )
+
+
 def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("old",))
     code_json = _code_inventory(tmp_path / "code.json", ["a", "b", "a"])

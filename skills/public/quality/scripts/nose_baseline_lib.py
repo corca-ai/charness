@@ -9,8 +9,13 @@ nose 0.13.3 removed `nose scan`; the advisory now runs `nose query` (see
 `nose_report_lib`). nose's native `--baseline`/`--write-baseline` is unusable for a
 multi-root scope: `query` takes one path root per call and `--write-baseline`
 CLOBBERS the target file on each run (so the three scope roots cannot share one
-baseline), and it keys on the churn-prone cluster `key` (an unchanged copy re-keys
-when a sibling copy changes), not the stable content-hash `family_id`. So the
+baseline), and it keys on the churn-prone cluster `key`, not the content-hash
+`family_id`. (The advisory uses `family_id` for those plumbing reasons, NOT for
+churn-stability: `family_id` also rotates an unchanged copy's id whenever any member
+is edited — demonstrated for content/line-offset/file-path shifts, and by construction
+for a membership change — so it is not "stable across sibling churn" either. The advisory is non-blocking, so a rotated id only adds
+advisory drift, never a hard block; the blocking dup-ratchet gate owns the re-baseline
+discipline. See `dup_ratchet_lib`.) So the
 advisory keeps its own id-set drift baseline here — a sorted `code_family_ids`
 snapshot, symmetric with the dup-ratchet gate baseline and the doc signature
 baseline — and filters via a pure set-diff in `inventory_nose_clones`.
@@ -31,10 +36,13 @@ DEFAULT_BASELINE_REL = "charness-artifacts/quality/nose-baseline.json"
 BASELINE_SCHEMA_VERSION = "charness.quality.nose_baseline.v2"
 BASELINE_NOTE = (
     "Accepted (intentional/portability) code clone family_ids so the advisory "
-    "reports only new/changed drift. Keyed by nose family_id (stable 16-hex content "
-    "hash) from a full `nose query` over the scanned roots — NOT nose's churn-prone "
-    "cluster key/--baseline. Re-baseline per scanner version with --write-baseline; "
-    "never treat the accepted count as a reduction target (see item 5 review)."
+    "reports only new/changed drift. Keyed by nose family_id (16-hex content hash) "
+    "from a full `nose query` over the scanned roots — NOT nose's cluster key/--baseline "
+    "(plumbing reasons; see nose_baseline_lib docstring). family_id is NOT churn-stable: "
+    "any member edit (content, line offset, file path — and, by construction, membership) "
+    "rotates it. The "
+    "advisory is non-blocking, so re-baseline per scanner version (and when ids rotate) "
+    "with --write-baseline; never treat the accepted count as a reduction target (see item 5 review)."
 )
 
 

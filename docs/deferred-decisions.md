@@ -260,6 +260,30 @@ Reopen trigger:
 - Impact surfaces: [skills/public/quality/references/quality-signal-scorecard.md](../skills/public/quality/references/quality-signal-scorecard.md), [skills/public/quality/references/inventory-dispatch.md](../skills/public/quality/references/inventory-dispatch.md), quality closeout validators.
 - Reopen trigger: A consumer-repo run skips the scorecard despite the wiring (discovery failure), or a quality closeout ships metric-only rationale past review (guard-shaped failure), or an operator asks for the rendered skeleton.
 
+### D30. dup-ratchet id-rotation affordance (gate auto-downgrade)
+
+- Question: Should the boy-scout dup-ratchet gate recognize a pure `family_id`
+  rotation (a "new" family whose position-independent member set matches a
+  vanished baseline family) and downgrade it from hard-block to advisory, instead
+  of forcing a manual re-baseline on every member-file edit that shifts a
+  duplicated span?
+- Current choice: Defer the affordance. Resolve the documentation half (correct
+  the false "stable across sibling churn" claim) and document the
+  verify-then-`--write-baseline` recovery as expected maintenance. The blocking
+  behavior is unchanged; rotation-driven re-baselines remain manual.
+- Why now: Solution (a) (re-key on a content-only id) is empirically impossible —
+  nose's schema-v4 query output exposes no position-independent content id. The
+  affordance needs a baseline schema migration (store a per-family
+  position-independent member fingerprint) AND carries a false-negative tradeoff:
+  a sorted member `(file, name)` fingerprint masks a genuinely new clone that
+  reuses the same member files, which would be wrongly downgraded. That tradeoff
+  deserves its own design + critique slice, not a rushed addition to a doc fix.
+- Impact surfaces: [skills/public/quality/scripts/dup_ratchet_lib.py](../skills/public/quality/scripts/dup_ratchet_lib.py), [skills/public/quality/scripts/check_dup_ratchet.py](../skills/public/quality/scripts/check_dup_ratchet.py), [skills/public/quality/references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md) ("Re-Baseline Triggers"), the gate + advisory id-set baselines, [charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md)
+- Reopen trigger: An operator hits rotation-driven re-baseline friction often
+  enough to justify the schema migration, OR nose ships a position-independent
+  content identity (which would enable solution (a) and flip the
+  `test_real_nose_family_id_rotates_on_member_line_shift` characterization test).
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

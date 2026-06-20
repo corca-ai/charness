@@ -48,21 +48,68 @@ driven by what is stable in the detector, not by preference:
   code `family_id` set; a `family_id` absent from the baseline and not
   `intentional` is new. The identity is nose's content-hash `id` (named
   `family_id` in the removed `scan` output, normalized by the resolver). nose's
-  own `key`-based `--baseline` is NOT used for gating: `key` is
-  cluster/membership-sensitive, so a copy family re-keys when any sibling copy
-  changes and the tool re-flags unchanged copies as drift (a known upstream nose
-  key-stability limitation, filed upstream). The content-hash identity stays
-  stable across that churn, so the gate keys on it. Re-seed the baseline per
-  nose version: identities are scanner-version-scoped.
+  own `key`-based `--baseline` is NOT used for gating, for plumbing reasons:
+  `query` takes one root per call and `--write-baseline` clobbers its target each
+  run, so the multi-root scope cannot share one native baseline.
+
+  **Stability caveat — `family_id` is NOT churn-stable.** The gate keys on
+  `family_id` for that plumbing reason, not because it survives sibling churn — it
+  does not. The family `id` folds every member's per-span id, and each per-span id
+  folds the span's normalized content, its **line offset**, AND its **file path**.
+  So editing any scanned member file — even inserting lines *above* an unchanged
+  duplicated span — shifts that member's offset, rotates its id, and rotates the
+  whole family `id`, even for the byte-identical sibling copies in unrelated files.
+  This is the same "an unchanged copy re-keys when a sibling copy changes" failure
+  nose's `key` has; `family_id` does not escape it. A rotated id reads as a new
+  family (the hard arm blocks) with zero new duplication. The honest recovery is a
+  deliberate re-baseline (see "Re-baseline triggers" below). Re-seed per nose
+  version too: identities are scanner-version-scoped.
 - **Doc: the existing signature drift** (`doc-nose-baseline.json`, sorted member
-  `path#heading` signature). The doc `signature` is heading-based and stable
-  across line-number churn, so the doc inventory's drift output already is the
+  `path#heading` signature). The doc `signature` is heading-based and
+  position-independent — stable across line-number churn (unlike the code
+  `family_id` above), so the doc inventory's drift output already is the
   new-family set; a doc drift family not `intentional` blocks. No separate doc
-  gate baseline is needed.
+  gate baseline is needed. (The code/doc asymmetry is real, but only the doc side
+  is genuinely churn-stable; the code side trades that away for the multi-root
+  plumbing reasons above.)
 
 The counts feeding both the gate and the newness check come from the SAME family
 enumeration per surface, never from nose's `--fail-on` (whose count diverges from
 the enumerated families).
+
+## Re-Baseline Triggers
+
+A `--write-baseline` re-baseline is legitimate maintenance, not a workaround, in
+three cases — all of which rotate `family_id`s without representing new
+duplication:
+
+1. **Scanner-version bump.** A new nose version re-hashes every `family_id`; the
+   whole set shifts. Trips the `--write-baseline` large-delta guard, so confirm it
+   deliberately with `--confirm-baseline-delta`.
+2. **Member-file edit that shifts a duplicated span.** Editing any scanned file —
+   even inserting lines *above* an unchanged duplicated span, or renaming/moving a
+   member file — rotates the `family_id`s of every family that file belongs to
+   (see the stability caveat above), even though the duplication is unchanged. The
+   gate's hard arm reports these as new families. Before re-baselining, **verify
+   the rotated families are byte-identical base-vs-HEAD** (`git show <base>:<file>`)
+   so a real new clone is not laundered through as a "rotation"; then re-baseline.
+3. **Reviewed batch accept.** You genuinely accept new fixable families after
+   review (the only case that should change the duplication picture).
+
+Re-baseline **both id-set baselines together** when ids rotate: the gate baseline
+(`dup-ratchet-baseline.json`) and the clone-advisory baseline (`nose-baseline.json`)
+key on the same `family_id` set and rotate in lockstep, so updating only the gate
+baseline that blocked you leaves the advisory baseline stale (silent advisory drift).
+
+A re-baseline driven by case 2 is expected churn, not a defect — it is the cost of
+keying on an offset-sensitive `family_id` (the known limitation the gate documents
+rather than hides). A future gate affordance could recognize a pure id-rotation
+(a "new" family whose position-independent member set matches a vanished baseline
+family) and downgrade it from hard-block to advisory — though that design must guard
+a false-negative: a genuinely new clone that reuses the same member files would
+fingerprint-match a vanished family and be wrongly downgraded, so the affordance is
+deferred to its own slice rather than bolted on here. Until then, case-2 re-baselines
+are the honest recovery.
 
 ## Stagnation Without A Counter
 
