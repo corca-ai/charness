@@ -3,7 +3,7 @@
 ## Current Focus
 
 - After Phase 4 closeout, the operator corrected my framing: I described "fewer lines / fewer gates" as a north-star *failure signature* in a way that inverted into "more code = success," and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was "honored." That is backwards. (source: `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`)
-- Release publish triggered a configured automatic session retro for `v0.53.0`. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`)
+- Goal `2026-06-20-skill-body-redesign-and-release`: diagnose all 20 public SKILL.md bodies (diagnosis-first), cure where the length-cause warranted, defer justified-density bodies with cause, then cut a live release exercising the WS-1 non-terminality floors. (source: `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
 - **A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
 - **Bloat diagnoses are hypotheses to verify per-body, not mandates to cut** — carry this into the deferred follow-on body redesign. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
-- **capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- **capability:** `check_skill_cut_safety.py` could map a changed skill → its pinned test files and surface short (<24-char) literals from *those* tests, closing the documented blind spot deterministically. Tracked as a follow-up, not built this goal (the pinned-test sweep + fresh-eye already backstop it). (source: `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`)
 
 ## Selection Policy
 
@@ -79,4 +79,5 @@
 - `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`
 - `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
 - `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`
+- `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`

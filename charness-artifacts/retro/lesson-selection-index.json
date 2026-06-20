@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-20",
-  "source_artifact_count": 245,
-  "candidate_count": 1176,
+  "source_artifact_count": 247,
+  "candidate_count": 1180,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -565,6 +565,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:afbab5350a14",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-06-20-skill-body-redesign-and-release`: diagnose all 20 public SKILL.md bodies (diagnosis-first), cure where the length-cause warranted, defer justified-density bodies with cause, then cut a live release exercising the WS-1 non-terminality floors.",
+      "normalized_key": "goal 2026 06 20 skill body redesign and release diagnose all 20 public skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0a1c5fa2ba7a",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.53.0`.",
@@ -719,26 +739,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md",
-          "date": "2026-06-20",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:604ddbdc88c4",
-      "kind": "next_improvement",
-      "lesson": "**capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one.",
-      "normalized_key": "capability none new the gate suite attention state visibility skill ergonomics staged core headroom",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
-      "latest_source_date": "2026-06-20",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
         }
@@ -1297,6 +1297,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:afbab5350a14",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-06-20-skill-body-redesign-and-release`: diagnose all 20 public SKILL.md bodies (diagnosis-first), cure where the length-cause warranted, defer justified-density bodies with cause, then cut a live release exercising the WS-1 non-terminality floors.",
+      "normalized_key": "goal 2026 06 20 skill body redesign and release diagnose all 20 public skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0a1c5fa2ba7a",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.53.0`.",
@@ -1457,6 +1477,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d27bcce7be0b",
+      "kind": "next_improvement",
+      "lesson": "**capability:** `check_skill_cut_safety.py` could map a changed skill → its pinned test files and surface short (<24-char) literals from *those* tests, closing the documented blind spot deterministically. Tracked as a follow-up, not built this goal (the pinned-test sweep + fresh-eye already backstop it).",
+      "normalized_key": "capability check skill cut safety py could map a changed skill its pinned test",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:604ddbdc88c4",
       "kind": "next_improvement",
       "lesson": "**capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one.",
@@ -1491,6 +1531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5fe48115af6e",
+      "kind": "next_improvement",
+      "lesson": "**memory:** \"diagnosis is a hypothesis; the deterministic pre-cut check catches ≥24-char pins, the skill's pinned tests catch short ones, fresh-eye catches losslessness\" — the layered stack is the durable lesson.",
+      "normalized_key": "memory diagnosis is a hypothesis the deterministic pre cut check catches 24 char pins",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
         }
@@ -1591,6 +1651,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d8817b0d67ea",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** body cures run the skill's *own* pinned tests (derive from `grep -rl <skill-id> tests/`), not a fixed sweep. This would have caught `fail-fast` at S2 instead of the release gate.",
+      "normalized_key": "workflow body cures run the skill s own pinned tests derive from grep rl",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
         }
