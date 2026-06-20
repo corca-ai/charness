@@ -37,10 +37,6 @@ DISPOSITION_RULE_DATE = date(2026, 5, 30)
 # one-word bypass; rung 2 can falsify a false "none".
 MIN_OPTOUT_REASON = 30
 
-_CREATED_LINE = re.compile(
-    r"^[\s>*-]*Created\s*:\s*(\d{4}-\d{2}-\d{2})\b",
-    re.MULTILINE | re.IGNORECASE,
-)
 _DISPOSITION_OPTOUT = re.compile(
     r"^[\s>*-]*Retro dispositions\s*:\s*none\b[ \t]*[—–:-]+[ \t]*(\S.*?)[ \t]*$",
     re.MULTILINE | re.IGNORECASE,
@@ -63,54 +59,20 @@ _DISPOSITION_PLACEHOLDER = re.compile(
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_floor_grammar import is_floor_in_scope, parse_created_date  # noqa: E402
+from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
-
-def goal_created_date(text: str) -> date | None:
-    """Parse the goal's ``Created:`` date; ``None`` when absent or malformed.
-
-    Scoped to the masked body so a fenced example line cannot be read as the
-    real ``Created:``. The caller fails closed (treats ``None`` as in-scope).
-    """
-    match = _CREATED_LINE.search(_mask_fences(text))
-    if not match:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
+# ``goal_created_date`` is the shared permissive Created-parse; kept as a named
+# re-export so importers/tests that reference it keep working post-extraction.
+goal_created_date = parse_created_date
 
 
 def disposition_gate_applies(text: str) -> bool:
     """Whether the disposition rungs fire for this goal (grandfather-by-
     ``Created``-date). Fail-CLOSED: a missing/malformed ``Created:`` is treated
     as in-scope, so a goal cannot dodge both rungs by corrupting one line."""
-    created = goal_created_date(text)
-    if created is None:
-        return True
-    return created >= DISPOSITION_RULE_DATE
-
-
-def _section_body(masked: str, heading: str) -> str | None:
-    """Return the body of the named section (heading line excluded), from the
-    heading to the next heading of the same-or-higher level, or EOF.
-
-    ``masked`` must already be fence-masked. Returns ``None`` when the section is
-    absent (vs ``""`` when present-but-empty).
-    """
-    start = re.compile(
-        rf"^(#{{1,6}})[ \t]+{re.escape(heading)}\b[^\n]*$",
-        re.MULTILINE | re.IGNORECASE,
-    ).search(masked)
-    if start is None:
-        return None
-    level = len(start.group(1))
-    body_start = masked.find("\n", start.end())
-    if body_start == -1:
-        return ""
-    body_start += 1
-    nxt = re.compile(rf"^#{{1,{level}}}[ \t]+\S", re.MULTILINE).search(masked, body_start)
-    return masked[body_start : nxt.start() if nxt else len(masked)]
+    return is_floor_in_scope(goal_created_date(text), DISPOSITION_RULE_DATE)
 
 
 def auto_retro_is_blank(text: str) -> bool:

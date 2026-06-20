@@ -23,19 +23,22 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_markdown():
+def _load_floor_grammar():
     spec = importlib.util.spec_from_file_location(
-        "goal_artifact_markdown",
-        Path(__file__).resolve().parent / "goal_artifact_markdown.py",
+        "goal_artifact_floor_grammar",
+        Path(__file__).resolve().parent / "goal_artifact_floor_grammar.py",
     )
     if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_markdown.py not found beside goal_artifact_blocked_matrix.py")
+        raise ImportError("goal_artifact_floor_grammar.py not found beside goal_artifact_blocked_matrix.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_mask_fences = _load_markdown().mask_fences
+_GRAMMAR = _load_floor_grammar()
+_mask_fences = _GRAMMAR.mask_fences
+parse_created_date = _GRAMMAR.parse_created_date
+is_floor_in_scope = _GRAMMAR.is_floor_in_scope
 
 RULE_DATE = date(2026, 6, 18)
 SECTION = "Remaining Boundary Matrix"
@@ -51,22 +54,11 @@ BLOCKING_TOKENS = frozenset({"approval-required", "read-only", "blocked"})
 SETTLED_TOKENS = frozenset({"verified", "dispositioned"})
 ALL_TOKENS = RUNNABLE_TOKENS | BLOCKING_TOKENS | SETTLED_TOKENS
 
-_CREATED = re.compile(r"^Created:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _LANE = re.compile(
     r"^\s*(?:[-*]\s*)?Lane:\s*(?P<name>[^|\n]{2,}?)\s*\|\s*classification:\s*(?P<token>[a-z][a-z-]*)\b",
     re.MULTILINE | re.IGNORECASE,
 )
-
-
-def _created_date(text: str) -> date | None:
-    match = _CREATED.search(_mask_fences(text))
-    if match is None:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
 
 
 def applies(text: str) -> bool:
@@ -76,8 +68,7 @@ def applies(text: str) -> bool:
     goal cannot dodge the floor by corrupting one line. Clone-safe: it reads
     in-file content, never mtime.
     """
-    created = _created_date(text)
-    return created is None or created >= RULE_DATE
+    return is_floor_in_scope(parse_created_date(text), RULE_DATE)
 
 
 def _section_body(text: str, heading: str) -> str | None:

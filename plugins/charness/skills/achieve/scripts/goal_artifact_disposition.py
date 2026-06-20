@@ -66,6 +66,7 @@ _grammar = _load_local_module("goal_artifact_disposition_grammar")
 DISPOSITION_RULE_DATE = _grammar.DISPOSITION_RULE_DATE
 _mask_fences = _grammar._mask_fences
 goal_created_date = _grammar.goal_created_date
+is_floor_in_scope = _grammar.is_floor_in_scope
 disposition_gate_applies = _grammar.disposition_gate_applies
 _section_body = _grammar._section_body
 auto_retro_is_blank = _grammar.auto_retro_is_blank
@@ -155,7 +156,7 @@ def apply_recurrence_lineage_floor(report: dict[str, Any], text: str) -> None:
     """
     form = _load_shared_form()
     created = goal_created_date(text)
-    enforced = created is None or created >= RECURRENCE_LINEAGE_RULE_DATE
+    enforced = is_floor_in_scope(created, RECURRENCE_LINEAGE_RULE_DATE)
     report["recurrence_lineage_scope"] = {
         "enforced": enforced,
         "created": created.isoformat() if created else None,
@@ -204,7 +205,7 @@ def apply_structural_followup_floor(report: dict[str, Any], text: str, retro_tex
     """
     form = _load_shared_form()
     created = goal_created_date(text)
-    enforced = created is None or created >= form.STRUCTURAL_FOLLOWUP_RULE_DATE
+    enforced = is_floor_in_scope(created, form.STRUCTURAL_FOLLOWUP_RULE_DATE)
     transferable = form.names_transferable_waste(retro_text)
     report["structural_followup_scope"] = {
         "enforced": enforced,

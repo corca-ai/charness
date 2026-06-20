@@ -14,15 +14,30 @@ oq = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(oq)
 
 
-def test_operator_queue_loader_fails_when_markdown_helper_is_missing(monkeypatch) -> None:
+def test_operator_queue_loader_fails_when_grammar_helper_is_missing(monkeypatch) -> None:
     monkeypatch.setattr(oq.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None)
 
-    with pytest.raises(ImportError, match="goal_artifact_markdown.py not found"):
-        oq._load_markdown()
+    with pytest.raises(ImportError, match="goal_artifact_floor_grammar.py not found"):
+        oq._load_floor_grammar()
 
 
 def test_operator_queue_invalid_created_date_still_applies() -> None:
     assert oq.applies("Created: 2026-99-99\n") is True
+
+
+def test_operator_queue_created_swap_is_a_tested_behavior_change() -> None:
+    """S2 divergence-preservation proof: the strict->permissive Created-parse swap
+    is a DELIBERATE behavior change, not a no-op. The old strict parser ignored a
+    prefixed/list/lowercase `Created:` line (read None -> floor fired); the shared
+    permissive parser now reads it and grandfathers a pre-rule goal. These inputs
+    are exactly where strict and permissive diverge, so this pins the new behavior
+    that the plain-form locked tests cannot see."""
+    pre_rule = "2026-01-01"  # < RULE_DATE 2026-06-17
+    for line in (f"> Created: {pre_rule}\n", f"- Created: {pre_rule}\n", f"created: {pre_rule}\n"):
+        assert oq.applies(line) is False, line  # now grandfathered (strict would have fired)
+    # Plain forms unchanged: pre-rule grandfathered, on/after rule date in scope.
+    assert oq.applies(f"Created: {pre_rule}\n") is False
+    assert oq.applies("Created: 2026-06-17\n") is True
 
 
 def test_operator_queue_blank_heading_body_fails() -> None:

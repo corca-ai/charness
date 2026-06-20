@@ -24,10 +24,6 @@ CONTEXT_SOURCES_SECTION = "Context Sources"
 AUTO_RETRO_SECTION = "Auto-Retro"
 RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
 
-_CREATED_LINE = re.compile(
-    r"^[\s>*-]*Created\s*:\s*(\d{4}-\d{2}-\d{2})\b",
-    re.MULTILINE | re.IGNORECASE,
-)
 _EXTERNAL_URL = re.compile(r"https?://\S", re.IGNORECASE)
 
 # Step lines are anchored so inline examples never satisfy a floor.
@@ -63,67 +59,22 @@ _CLOSE_KEYWORD = re.compile(
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_floor_grammar import is_floor_in_scope  # noqa: E402
+from goal_artifact_floor_grammar import parse_created_date as goal_created_date  # noqa: E402
+from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
+from goal_artifact_floor_grammar import section_span as _section_span  # noqa: E402
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
-
-
-def _section_span(masked: str, heading: str) -> tuple[int, int] | None:
-    """Return ``(body_start, body_end)`` offsets for the named section's body in
-    ``masked`` (already fence-masked), from just after the heading line to the
-    next heading of same-or-higher level, or EOF. ``None`` when the section is
-    absent.
-    """
-    start = re.compile(
-        rf"^(#{{1,6}})[ \t]+{re.escape(heading)}\b[^\n]*$",
-        re.MULTILINE | re.IGNORECASE,
-    ).search(masked)
-    if start is None:
-        return None
-    level = len(start.group(1))
-    body_start = masked.find("\n", start.end())
-    if body_start == -1:
-        return (len(masked), len(masked))
-    body_start += 1
-    nxt = re.compile(rf"^#{{1,{level}}}[ \t]+\S", re.MULTILINE).search(masked, body_start)
-    return (body_start, nxt.start() if nxt else len(masked))
-
-
-def _section_body(masked: str, heading: str) -> str | None:
-    span = _section_span(masked, heading)
-    if span is None:
-        return None
-    return masked[span[0] : span[1]]
-
-
-def goal_created_date(text: str) -> date | None:
-    """Parse the goal's ``Created:`` date; ``None`` when absent or malformed.
-
-    Scoped to the masked body so a fenced example line is not read as the real
-    ``Created:``. The caller fails closed (treats ``None`` as in-scope).
-    """
-    match = _CREATED_LINE.search(_mask_fences(text))
-    if not match:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
 
 
 def coordination_floors_apply(text: str) -> bool:
     """Whether the gather/release floors fire for this goal (grandfather-by-
     ``Created``-date). Fail-CLOSED: a missing/malformed ``Created`` is in-scope."""
-    created = goal_created_date(text)
-    if created is None:
-        return True
-    return created >= COORDINATION_FLOOR_RULE_DATE
+    return is_floor_in_scope(goal_created_date(text), COORDINATION_FLOOR_RULE_DATE)
 
 
 def issue_closeout_floor_applies(text: str) -> bool:
     """Whether the issue-closeout floor fires for this goal."""
-    created = goal_created_date(text)
-    if created is None:
-        return True
-    return created >= ISSUE_CLOSEOUT_FLOOR_RULE_DATE
+    return is_floor_in_scope(goal_created_date(text), ISSUE_CLOSEOUT_FLOOR_RULE_DATE)
 
 
 def gather_triggered(text: str) -> bool:

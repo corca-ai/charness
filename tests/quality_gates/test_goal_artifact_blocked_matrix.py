@@ -216,3 +216,16 @@ def test_checker_passes_blocked_goal_with_clean_matrix(tmp_path: Path) -> None:
     payload = json.loads(proc.stdout)
     assert payload["blocked_matrix"]["ok"] is True
     assert payload["ok"] is True
+
+
+def test_blocked_matrix_created_swap_is_a_tested_behavior_change() -> None:
+    """S2 divergence-preservation proof: the strict->permissive Created-parse swap
+    is a DELIBERATE behavior change. A prefixed/list/lowercase pre-rule `Created:`
+    line was ignored by the old strict parser (read None -> floor applied); the
+    shared permissive parser now reads it and grandfathers the goal. These are the
+    inputs where strict and permissive diverge."""
+    pre_rule = "2026-01-01"  # < RULE_DATE 2026-06-18
+    for line in (f"> Created: {pre_rule}\n", f"- Created: {pre_rule}\n", f"created: {pre_rule}\n"):
+        assert bm.applies(line) is False, line  # now grandfathered (strict would have applied)
+    assert bm.applies(f"Created: {pre_rule}\n") is False
+    assert bm.applies("Created: 2026-06-18\n") is True

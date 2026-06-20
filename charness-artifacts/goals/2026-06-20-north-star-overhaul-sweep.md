@@ -9,19 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S2 (R1) — extract the cloned rung-1 grammar into one shared
-  substrate**; operator-queue/blocked-matrix/coordination → thin configs.
-  S0 locked + S1 (R2 escape closed) committed 2026-06-20.
-- Current slice intent: per the locked spec §3+§4, unify `parse_created_date`
-  (5 clones incl. phase_routing), `is_floor_in_scope`, placeholder-markers, and a
-  parametric opt-out matcher into one substrate; keep the ≥7 RULE_DATEs, narrow
-  triggers, verdict fns, first-satisfying-wins, and the `_section_body` divergence
-  separate. The created-date strict→permissive swap is a **tested deliberate
-  behavior change** — each swapped consumer gets a divergence-input locked test
-  ("9 locked tests pass" alone is rejected as proof). All 6 risk-constraints binding.
-- Next action: route S2 via `find-skills`; implement the substrate + per-consumer
-  migration with seeded behavior-preservation tests; locked floor tests green;
-  bounded fresh-eye critique; commit at the slice boundary.
+- Current slice: **S3 (WS-B) — Phase-3 skill bloat-audit + redesign of the named
+  first candidates** + graft `quality/references/unit-test-quality.md`.
+  S0 locked + S1 (R2 escape closed) + S2 (R1 grammar collapsed) committed 2026-06-20.
+- Current slice intent: per the locked spec §5, apply the Phase-3 instrument set
+  (no-op deletion test, three length-causes, Leading Word Rule, body-altitude,
+  named-heuristic-over-do-nots, load-bearing-anchor split, show-one-instance) to
+  the named candidates (debug=DUPLICATION floor-extract; quality=SPRAWL
+  load-bearing-anchor split; impl/find-skills/achieve = re-measure cause first),
+  de-pinning by the *right* cure (negative-directive count drop + no-op test
+  applied + concept clarity, NOT line count); + graft the unit-test-quality
+  reference (6 better-UT patterns, authoring-only, P3 worked-examples, routed from
+  the Behavior lens below testability-and-selection.md). Each capped-body edit
+  must respect the 4-line headroom buffer (push detail to references).
+- Next action: route S3 via `find-skills`; per-body cause-diagnosis (re-measure) +
+  cut; graft the reference under cap; fresh-eye critique; commit at the boundary.
 - Locked spec (gates all impl):
   [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -162,7 +164,7 @@ What the user can do to verify completion directly.
 | --- | --- | --- | --- | --- |
 | S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (spec locked; critique PASS-WITH-CONDITIONS folded 2026-06-20) |
 | S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | **done** (rung-1 block-the-silent + provenance floors wired; 6 seeded tests; fresh-eye PASS-WITH-CONDITIONS folded; cautilus refused per policy) |
-| S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | pending |
+| S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | **done** (goal_artifact_floor_grammar.py; parser 5→1, section_body 3→1; 380 floor tests green; strict→permissive swap tested; net −28 lines; fresh-eye PASS) |
 | S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims | bundle boundary | final verification populated | pending |
 
@@ -198,6 +200,19 @@ Resolved — all consequential defaults confirmed with the proposed values
    bundle-closeout #386 risk is mitigated by per-slice critique + this goal's own
    non-terminal, per-unit closeout (no aggregate green).
 
+**S2 (R1) impl critique — PASS (2026-06-20), folded.** Bounded fresh-eye reviewer
+verified against actual code + ran the tests + ran ruff on canonical AND mirror
+(distinct evidence channel). 6 checks confirmed: 3 permissive consumers
+behavior-preserving; the strict→permissive swap real + pinned by divergence-input
+tests; the ≥7 RULE_DATEs still separate per floor; fail-closed/grandfather intact;
+narrow triggers + anti-bypass guards untouched; substrate a pure leaf; no clone
+missed; operator-queue/blocked-matrix H2-list `_section_body` correctly kept
+separate (level-aware migration deferred — needs the P-e `###`-subsection proof).
+De-dup judged **genuine** (single source of truth: parser 5→1, section_body 3→1),
+not line-count churn. No conditions. The extraction also surfaced a latent
+accidental divergence (two floors parsed `Created:` more strictly than three
+others) and turned it into one deliberate, tested decision.
+
 ## Coordination Cues
 
 Phase-appropriate routing for this run, deferred to `find-skills` (its
@@ -218,6 +233,9 @@ during the run:
     surface; impl-style slice on it) + `critique` (slice fresh-eye). Cautilus
     refused (`plan_cautilus_proof` next_action=none, ask-before-run);
     deterministic gates + fresh-eye own closeout. `Routing: issue + critique`.
+  - S2 (R1 impl): `impl` (gate-script refactor on the achieve floor surface) +
+    `critique` (slice fresh-eye). Cautilus refused (next_action=none).
+    `Routing: impl + critique`.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -260,6 +278,20 @@ during the run:
 - Critique: PASS-WITH-CONDITIONS (bounded fresh-eye, verified against actual code+tests). 6 invariants CONFIRMED (presence-only, render-not-declare, classification-gate, necessary-not-sufficient, no-aggregate, doctrine-preserved); bypass holes clean (fence-strip, placeholder, single-issue-shorthand scoping, silent->verified closed). 2 conditions folded: (1) registered issue_verify_closeout_body.py in attention-state-visibility.json; (2) fixed the has_ai_provenance_marker docstring overstatement.
 - Off-goal findings:
 - Lessons carried forward: #386 trap, self-inflicted then caught: I 'confirmed pre-existing' the attention-state failure by stash-testing with the WRONG gate invocation (missing --scan-root skills --scan-root-map) — both stashed/unstashed runs failed identically for the wrong reason, masking that my change added a REAL new violation. The fresh-eye reviewer caught it by running the gate the enforcement way (distinct channel). Lesson: verify gate failures with the EXACT enforcement invocation, never a hand-rolled approximation. Touching a capped SKILL.md forces the 4-line headroom buffer — prefer pushing detail to references.
+- Metrics:
+
+### Slice 3: S2 (R1) — collapse the cloned rung-1 grammar into one shared substrate
+
+- Objective: Extract the rung-1 grammar cloned across the Created-gated goal-artifact closeout floors (parse_created_date x5, is_floor_in_scope x6+, section_span/section_body x3) into one shared substrate; operator-queue/blocked-matrix/coordination/phase-routing/disposition become thin configs over it.
+- Why this approach: Per locked spec section 3-4 + F4: this is the genuine duplication the goal names. The created-date parse was inconsistent (strict in operator_queue/blocked_matrix, permissive in 3 others) — an accidental divergence; unification makes it one deliberate, tested decision.
+- Commits:
+- What changed: NEW skills/public/achieve/scripts/goal_artifact_floor_grammar.py (pure leaf: parse_created_date permissive, is_floor_in_scope fail-closed grandfather, section_span/section_body level-aware). Migrated 6 consumers: operator_queue + blocked_matrix (strict->permissive swap, re-export parse_created_date/is_floor_in_scope), disposition_grammar + phase_routing + coordination_floors (zero-change: already permissive/level-aware), disposition.py (2 inline scope checks -> is_floor_in_scope). Kept separate per spec: the >=7 RULE_DATEs, narrow triggers, verdict fns, first-satisfying-wins, operator_queue/blocked_matrix H2-list _section_body (NOT migrated to level-aware). Plugin mirror synced.
+- Alternatives rejected: Migrate operator_queue/blocked_matrix _section_body to the level-aware variant (rejected without a ###-subsection divergence proof, spec P-e). Unify the divergent opt-out matchers (deferred: 3 genuinely divergent forms — none/n-a/Auto-Retro-scoped; the spec allows keeping divergent things separate; the high-value de-dup is the parse grammar).
+- Targeted verification: 380 goal/disposition/coordination floor tests pass; 2 NEW divergence-input behavior-preservation tests pin the strict->permissive swap (prefixed/list/lowercase pre-rule Created now grandfathers; plain forms unchanged). ruff clean (canonical + mirror). run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review = exit 0. Net script lines -28 with genuine duplication removed (parser 5->1, section_body 3->1, section_span 2->1).
+- Test duplication pressure: 2 new tests target ONLY the strict->permissive divergence inputs (the case the locked plain-form tests cannot see) — no duplicate pressure with the existing floor tests, which cover trigger/verdict/scope behavior the substrate did not touch.
+- Critique: PASS (bounded fresh-eye, no conditions). Verified against actual code + ran tests + ruff on canonical AND mirror. 6 checks CONFIRMED: 3 permissive consumers behavior-preserving; strict swap real+tested; >=7 RULE_DATEs still separate; fail-closed/grandfather intact; triggers/anti-bypass guards untouched; substrate a pure leaf; operator_queue/blocked_matrix H2-list _section_body correctly kept separate; no clone missed. De-dup judged GENUINE (single source of truth), not line-count churn.
+- Off-goal findings:
+- Lessons carried forward: An accidental divergence (2 floors parsed Created more strictly than 3 others) hid behind passing tests because the tests only used plain Created lines — extraction surfaced it and turned it into one deliberate, tested decision. De-dup value is single-source-of-truth + consistency, not line count (north-star metric).
 - Metrics:
 
 ## Context Sources
