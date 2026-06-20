@@ -1,6 +1,6 @@
 # Achieve Goal: Skill-body redesign (all 20 public bodies, diagnosis-first) -> release
 
-Status: draft
+Status: complete
 Created: 2026-06-20
 Activation: `/goal @charness-artifacts/goals/2026-06-20-skill-body-redesign-and-release.md`
 
@@ -9,24 +9,26 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S5 (release terminal slice)** — S0–S4 complete and committed.
-  All 20 public bodies are now dispositioned: **18 cured, 2 deferred-with-cause**
-  (`hotl` justified-density; `quality` contract-change → operator ODQ). The
-  live-release slice is operator-approved + phase-scoped at S5 (ODQ #1).
-- Current slice intent: bump the version + sync install manifests + draft the
-  announcement (the body redesign is the release payload); the **live publish is
-  operator-approved + phase-scoped at this point** and is the deferred WS-1
-  live-floor proof; rung-2 confirms the published release via a channel **distinct
-  from `gh release view`**; close any release-tracked issues through the
-  non-terminal floors. **This is the terminal external-write boundary — operator
-  approval is required at run; do not publish without it.**
-- Next action: route through the `release` skill — read current release state,
-  run the required critique, choose the bump, and surface the live-publish
-  decision to the operator (ODQ #1) before any push/tag/publish.
-- S4 outcome: cured gather 149→146, spec 148→139, ideation 147→142, retro 146→140,
-  narrative 144→136, setup 137→132, handoff 125→110; **deferred** quality (anchor
-  catalog is test-pinned — collapsing it is a contract change, see ODQ) and hotl
-  (justified density). 7/7 cured fresh-eye PASS; both defers JUSTIFIED.
+- Current slice: **S6 (closeout)** — S0–S5 complete. **Live release v0.53.0 is
+  published and independently confirmed** (operator-approved minor bump). All 20
+  public bodies dispositioned: 18 cured, 2 deferred-with-cause.
+- S5 outcome (terminal external-write boundary, operator-approved at run): the
+  `release` helper bumped 0.52.6→**0.53.0**, ran the broad quality gate (78
+  passed), fresh-checkout probes (passed), pushed, tagged **v0.53.0**, and created
+  the GitHub release. **WS-1 live-floor proof satisfied:** rung-1 presence floor +
+  rung-2 distinct-channel observer (helper https-fetch 200) **plus** my
+  independent confirmation via two channels distinct from `gh release view` —
+  `git ls-remote --tags origin v0.53.0` (→ `cabdd30b`) and
+  `gh api .../releases/tags/v0.53.0` (draft:false, prerelease:false). Release
+  critique SHIP-WITH-CONDITIONS (both publish-time conditions met: generate-notes
+  covers the full 35-commit payload; distinct-channel proof recorded).
+  `post_publish_install_refresh` auto-ran `charness update` (0.52.6→0.53.0).
+- Next action: S6 — broad pytest verification lock, fold the release auto-retro +
+  goal closeout retro, disposition every surfaced improvement, honest non-claims,
+  flip Status to complete.
+- Real-host follow-ups (operator smoke, recorded not auto-run): the release
+  `real_host_checklist` (nose doctor/install verification); `charness update`
+  already executed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -206,8 +208,8 @@ What the user can do to verify completion directly.
 | S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | **complete** (2026-06-20): create-skill 156→149, achieve 156→142, hitl 155→140, release 155→140; guardrail-cluster duplication collapsed lossless; pins verbatim (incl. FORBIDDEN `local critique` absent); 3 test-pin breaks caught pre-commit + restored; 4/4 fresh-eye PASS |
 | S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | **complete** (2026-06-20): create-cli 155→141, find-skills 152→151, announcement 152→146, critique 150→144; guardrail/catalog duplication collapsed lossless; 4 test-pin breaks caught pre-commit + restored (incl. a Step-6 gate-name reword); FORBIDDEN `short bounded local pass` absent; 4/4 fresh-eye PASS |
 | S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | **complete** (2026-06-20): cured gather/spec/ideation/retro/narrative/setup/handoff (lossless localized cures); **deferred-with-cause quality** (anchor catalog test-pinned → contract change, operator ODQ — the §5 hypothesis correctly did NOT force a test-breaking cut) and **hotl** (justified density). 7/7 fresh-eye PASS; both defers JUSTIFIED. No count-driven cut. |
-| S5 | Release terminal slice: bump version + sync install manifests + announcement; **live publish operator-approved + phase-scoped**; rung-2 distinct-channel confirmation; close any release-tracked issues through the non-terminal floors | the body redesign is the release payload; the live cut is the deferred WS-1 live-floor proof | release proof; distinct-channel verification recorded; mirror synced; WS-1 floors exercised | pending |
-| S6 | Closeout: broad proof (verification lock), retro, disposition every surfaced improvement, honest non-claims, flip to complete | bundle boundary | Final Verification populated; disposition review (rung 2); gate suite green | pending |
+| S5 | Release terminal slice: bump version + sync install manifests + announcement; **live publish operator-approved + phase-scoped**; rung-2 distinct-channel confirmation; close any release-tracked issues through the non-terminal floors | the body redesign is the release payload; the live cut is the deferred WS-1 live-floor proof | release proof; distinct-channel verification recorded; mirror synced; WS-1 floors exercised | **complete** (2026-06-20): operator-approved minor cut → **v0.53.0** live; release critique SHIP-WITH-CONDITIONS (both met); WS-1 rung-1 + rung-2 distinct-channel floors exercised, independently confirmed via `git ls-remote` + `gh api` (distinct from `gh release view`); install-refresh auto-ran |
+| S6 | Closeout: broad proof (verification lock), retro, disposition every surfaced improvement, honest non-claims, flip to complete | bundle boundary | Final Verification populated; disposition review (rung 2); gate suite green | **complete** (2026-06-20): broad pytest **3453 passed**; goal retro + host-log probe bound; every surfaced improvement dispositioned; rung-2 disposition review **PASS** (no dishonest claim); Status → complete |
 
 S0's diagnosis may re-batch S1–S4; the plan table is up-front intent, the Slice
 Log is execution truth. **Prior-cure note:** `find-skills` (S3) already took a
@@ -257,6 +259,14 @@ engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slo
 and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
 during the run:
 
+Routing: find-skills recommended `quality`/`create-skill` + `critique` for the S1–S4 body cures (including the `debug`, `issue`, and `impl` bodies — authored as skill surfaces via the `quality`/`create-skill` route, not `debug`-workflow runs), `spec`/`quality` + `critique` at S0, `release` + `critique` at S5, and `retro` + `critique` at S6 — each route recorded per slice in the Slice Log.
+Release: v0.53.0 published — proof in `charness-artifacts/release/latest.md` and
+the live release `https://github.com/corca-ai/charness/releases/tag/v0.53.0`,
+distinct-channel confirmed via `git ls-remote --tags origin v0.53.0` (→ cabdd30b)
+and `gh api .../releases/tags/v0.53.0` (draft:false, prerelease:false).
+Gather: n/a — shaped from in-repo doctrine only; no external URL/Slack/Notion/Docs/Drive source.
+Issue closeout: n/a — this goal resolved no tracked GitHub issue; the quality anchor-split is recorded as operator ODQ #2, not a resolved issue.
+
 - **Routing** — ask `find-skills` to recommend the skill for the current phase or
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
@@ -280,6 +290,27 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S5–S6 — live release v0.53.0 + closeout (complete, 2026-06-20)
+
+- **S5 release (terminal external-write boundary, operator-approved at run):**
+  operator approved a live minor cut. `release` helper bumped 0.52.6→**0.53.0**,
+  ran the broad quality gate, fresh-checkout probes, pushed, tagged **v0.53.0**,
+  created the GitHub release. **WS-1 live-floor proof:** rung-1 presence + rung-2
+  distinct-channel observer (helper https-fetch 200) + my independent confirmation
+  via `git ls-remote --tags origin v0.53.0` (→ cabdd30b) and
+  `gh api .../releases/tags/v0.53.0` (draft:false, prerelease:false) — both
+  distinct from `gh release view`. `post_publish_install_refresh` auto-ran
+  `charness update`.
+- **First publish attempt aborted cleanly at the broad quality gate (no external
+  write):** it caught 2 real failures the commit-boundary gates don't run — the
+  achieve `fail-fast` short-pin miss (S2; restored) and dup-ratchet 31+/29-
+  accumulated families (re-baselined at the release boundary, its designed
+  checkpoint). Fixed (commit f6a4c342), re-ran clean (78/0), then published.
+- **S6 closeout:** broad pytest **3453 passed** (bundle proof); goal retro +
+  host-log probe bound; Auto-Retro disposition every surfaced improvement;
+  rung-2 disposition review **PASS** (independent channels, no dishonest claim).
+- Routing: `find-skills` S5 = `release` + `critique`; S6 = `retro` + `critique`.
 
 ### S4 — headroom tier: 7 cured + 2 deferred-with-cause (complete, 2026-06-20)
 
@@ -538,9 +569,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md
+Host log probe: charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-host-log.md
+Disposition review: charness-artifacts/critique/2026-06-20-skill-body-redesign-and-release-disposition-review.md
 
 ## User Verification Instructions
 
@@ -558,5 +589,8 @@ closeout). Expected shape:
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: scripts/check_skill_cut_safety.py + tests/quality_gates/test_check_skill_cut_safety.py — the pre-cut lossless+contract-safe check (S0), later hardened with test-pin survival-suppression (S1).
+Retro dispositions: applied: docs/conventions/authoring-preflight.md + the disposition spec document the <24-char short-pin blind spot; the per-skill pinned-test sweep + per-body fresh-eye are the backstop.
+Retro dispositions: out-of-scope: the quality `## Load-Bearing Anchors` split needs an operator-approved test-contract move (~25 test_quality_skill_docs.py assertions → inventory-dispatch.md); recorded as operator ODQ #2, not forced this goal.
+Retro dispositions: applied: re-baselined dup-ratchet at the release boundary (its designed checkpoint) for the accumulated +31/-29 reviewed family churn.
+Structural follow-up: none — the short-pin blind spot is documented in authoring-preflight.md + the disposition spec; the deterministic CORE/PACKAGE pin half has no length filter, and the skill's own pinned tests + fresh-eye backstop test-only short pins (a deeper skill→pinned-test mapping in the check is a noted future enhancement, not required).
