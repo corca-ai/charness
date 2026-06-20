@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- One pickup session that resolved three user-sequenced picks: GitHub **#395** (dup-ratchet `family_id` churn, bug), **chunk-2** (nose 0.14.0 `--root` multi-root clone resolver — a quality-contract change), and **chunk-1** (nose 0.14.0 rollout, ops). (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
 - After Phase 4 closeout, the operator corrected my framing: I described "fewer lines / fewer gates" as a north-star *failure signature* in a way that inverted into "more code = success," and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was "honored." That is backwards. (source: `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`)
-- Goal `2026-06-20-skill-body-redesign-and-release`: diagnose all 20 public SKILL.md bodies (diagnosis-first), cure where the length-cause warranted, defer justified-density bodies with cause, then cut a live release exercising the WS-1 non-terminality floors. (source: `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
-- **A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
-- **Bloat diagnoses are hypotheses to verify per-body, not mandates to cut** — carry this into the deferred follow-on body redesign. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
-- **capability:** `check_skill_cut_safety.py` could map a changed skill → its pinned test files and surface short (<24-char) literals from *those* tests, closing the documented blind spot deterministically. Tracked as a follow-up, not built this goal (the pinned-test sweep + fresh-eye already backstop it). (source: `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`)
+- **capability:** an authoring-time `check_artifact_surface_preflight.py --report-all` over a *draft* artifact (before staging) would surface all required-shape gaps in one pass instead of one commit-attempt at a time. Tracked as a follow-up, not built here — the commit-time preflight already backstops it. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **memory:** "any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline" is now both the #395 fix's documented contract and a session-workflow constraint: expect rotation, batch the re-baseline. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **workflow:** for strict-validator artifacts (debug, critique, closeout carrier), read the required-shape contract FIRST (`describe_closeout_draft_shape.py --stub`, the debug `REQUIRED_SECTIONS`, the `validate_critique_artifacts` reviewer-tier fields) and author to it. Applied to *this* retro (read the validator before writing). (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
 
 ## Selection Policy
 
@@ -77,7 +77,6 @@
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`
-- `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
 - `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`
-- `charness-artifacts/retro/2026-06-20-skill-body-redesign-and-release-retro.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`
