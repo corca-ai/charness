@@ -61,10 +61,10 @@ lifecycle instead of starting a new one.
      inert-until-`/goal` status; do not execute slices yourself
 2. During — slice and record.
    - activation (`/goal`) is pure pursue: check
-     `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and fail
-     fast to the Before-phase (`/achieve @...`) if unshaped, missing a required
-     activation-discussion summary, or carrying unresolved consequential
-     activation discussion
+     `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and
+     fail-fast to the Before-phase (`/achieve @...`) if unshaped, missing a
+     required activation-discussion summary, or carrying unresolved consequential
+     activation discussion (`/goal` shapes nothing)
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - keep `## Active Operating Frame` current as the short control panel; let
      `## Slice Log` remain the archive
