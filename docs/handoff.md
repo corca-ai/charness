@@ -39,10 +39,15 @@
   scaffolding, `*_adapter_lib`/`_adapter_policy` logic — judgment per family ("decide
   per family, don't chase the count"). #394 mutation regression re-fires on
   changed-line coverage while the score passes — real-gap vs noise triage.
-- **Tier 3 — the deferred skill sweep (needs operator decisions).** Unblock starts at
-  the **`quality` anchor-split (ODQ #2)**: the `Load-Bearing Anchors` section is pinned
-  by ~60 [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py)
-  assertions; operator must approve moving them to `quality/references/inventory-dispatch.md`.
+- **Tier 3 — the deferred skill sweep: `quality` anchor-split APPROVED + VERIFIED, ready to execute.**
+  Operator approved (2026-06-21); a distinct-channel adversarial verifier proved it
+  `LOSSLESS-ACHIEVABLE` via concept-separation (zero orphans; the prior defer was
+  delete-without-merge). The ready-to-execute slice plan lives in the
+  [sweep goal Operator Decision Queue](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
+  (merge distinct routing → `inventory-dispatch.md`, fold principles → Workflow/
+  Guardrails verbatim, re-point ~38 quality-skill-doc test pins = the
+  losslessness oracle, sync/critique/commit). Then impl/debug/achieve bodies follow
+  the same recipe.
 - **Tier 4 — deferred ledger + ops.** D30 (dup-ratchet id-rotation affordance), D31
   (handoff chunker reconcile-against-recent-commits) in
   [deferred-decisions.md](./deferred-decisions.md); ceal #417; other-machine

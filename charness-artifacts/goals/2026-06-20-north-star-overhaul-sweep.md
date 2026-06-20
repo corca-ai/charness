@@ -198,6 +198,40 @@ both are external-write boundaries the goal contract scopes out by default).
     body-redesign is actually started.
   - Unblock action: start the follow-on goal directly from the retro/S3 record.
   - Revisit trigger: starting the WS-B body-redesign follow-on.
+  - **APPROVED + VERIFIED 2026-06-21 (operator): the `quality` anchor-split (the
+    first unblock step) is approved AND its lossless+contract-safety is proven.**
+    A bounded fresh-eye adversarial verifier (distinct channel; read the actual
+    files, told to REFUTE "lossless") returned **`LOSSLESS-ACHIEVABLE` via
+    concept-separation** with a bullet-by-bullet orphan hunt = ZERO irreducible
+    orphans. Root cause of the prior S3 defer identified: it tried *delete-without-
+    merge* of the distinct-routing anchors (`inventory_ci_recoverable_gates.py`,
+    dup-ratchet/boundary-bypass routing, the Python/JS lint baselines), which
+    orphaned them — concept-separation with *targeted merge* fixes exactly that.
+    Refinement on the verifier: the two `"canonical routing lives in SKILL.md"`
+    pointers (`quality-lenses.md:20`, `automation-promotion.md:48`) refer to the
+    smell-sensor graduation PRINCIPLE (stays in SKILL.md), NOT the inventory
+    routing — so they stay green unchanged (no pointer flip needed).
+  - **Ready-to-execute plan (the next slice):** (1) MERGE the ~8 distinct-routing
+    anchors into `references/inventory-dispatch.md` (Runtime gains
+    `inventory_ci_recoverable_gates.py` + ci-recoverable-gate-triage; Source Hygiene
+    gains a boundary-bypass/dup-ratchet subsection; Language/Adapter gains the
+    ruff/C90/mypy + eslint/tsc/complexity baselines; Skills/CLI/Docs gain the smell-
+    list phrases the tests pin). (2) DE-DUP the 3 already-present anchors
+    (`recommend_behavior_test.py`, the source-guard rollup, the smaller-surface
+    principle already in `quality-lenses.md`). (3) FOLD the ~6 judgment principles
+    into SKILL.md `## Workflow`/`## Guardrails` VERBATIM (preserve the pinned strings
+    `"Do not treat a passing length, duplicate, or pressure heuristic as the goal"`
+    + `"delete, merge, split ownership, extract a helper, or narrow the interface"`).
+    (4) Replace `## Load-Bearing Anchors` with a short branch-reliable pointer to
+    `references/inventory-dispatch.md` (Workflow step 2 already points there).
+    (5) RE-POINT ~38 `assert "X" in skill_text` in
+    `tests/quality_gates/test_quality_skill_docs.py` to the new home — **the green
+    test suite IS the losslessness oracle** (every must-survive phrase is pinned).
+    Caveats: the 4 language-lint asserts (`test ...language_lint_defaults`, L191-196)
+    must flip `quality_skill`→dispatch read; do NOT re-point `Standing Test
+    Economics` (L168, passes vs Output Shape) or `structural smell sensors` (L166,
+    intro) — moving them regresses. (6) sync mirror, verify, fresh-eye critique,
+    commit. Then the impl/debug/achieve bodies follow the same recipe.
 
 ## Discuss before activation
 
