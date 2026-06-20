@@ -19,6 +19,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
 head_freshness = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_head_freshness")
+adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapter_policy")
 # The proof-mismatch floor is a portable top-level module (reused by issue
 # closeout); loaded via the repo-module path so its `from scripts.` imports resolve.
 proof_mismatch = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
@@ -119,7 +120,10 @@ def main() -> int:
         return 2
     text = path.read_text(encoding="utf-8")
     if args.pursue_ready:
-        report = goal_lib.pursue_readiness(text)
+        # The pre-activation discussion gate's deploy vocabulary is adapter-provided
+        # (consumer-axis), not a charness hardcode; absent adapter -> English default.
+        deploy_vocab = adapter_policy.resolve_discussion_deploy_vocab(args.repo_root.expanduser().resolve()) or None
+        report = goal_lib.pursue_readiness(text, deploy_vocab=deploy_vocab)
         report["path"] = str(path)
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if report["pursue_ready"] else 1

@@ -75,6 +75,11 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "artifact_dir": "charness-artifacts/goals",
+        # Consumer-axis deploy/irreversible-side-effect detection vocabulary for the
+        # pre-activation discussion gate. Empty -> the portable English default
+        # (`goal_artifact_discussion._DEFAULT_DEPLOY_VOCAB`); a consumer declares its
+        # own deploy verbs so charness does not hardcode one consumer's boundary words.
+        "discussion_deploy_vocab": [],
         "closeout_publication": {
             "default_mode": "audit-only",
             "issue_closeout_carrier": "none",
@@ -200,6 +205,9 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+    deploy_vocab = optional_string_list(data.get("discussion_deploy_vocab"), "discussion_deploy_vocab", errors)
+    if deploy_vocab is not None:
+        validated["discussion_deploy_vocab"] = deploy_vocab
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
     validated["auto_retro"] = _validate_auto_retro(data, validated, errors)
     validated["scaffold"] = _validate_scaffold(data, validated, errors)
@@ -254,6 +262,15 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "warnings": warnings,
         "searched_paths": searched_paths,
     }
+
+
+def resolve_discussion_deploy_vocab(repo_root: Path) -> list[str]:
+    """The consumer-axis deploy vocabulary for the pre-activation discussion gate,
+    or ``[]`` for the portable English default. Graceful: a missing or invalid
+    achieve adapter resolves to ``[]`` so the discussion gate never fails on adapter
+    state (the default preserves behavior)."""
+    vocab = (load_adapter(repo_root).get("data") or {}).get("discussion_deploy_vocab")
+    return list(vocab) if isinstance(vocab, list) else []
 
 
 def closeout_policy_report(repo_root: Path) -> dict[str, Any]:

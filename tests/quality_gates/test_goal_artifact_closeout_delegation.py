@@ -98,7 +98,7 @@ def test_orchestrator_all_resolution_forms_pass() -> None:
         "## Closeout Delegation\n\n- Closeout mode: orchestrator\n"
         "- Delegated proof checklist:\n"
         "  - pushed-ci — verified: CI green on abc123 (run https://ci/1)\n"
-        "  - applied-restarted — skipped: apply deferred to next window — operator directed\n"
+        "  - instance-synced — skipped: instance update deferred to next window — operator directed\n"
         "  - issue-closed — issue #5\n"
         "  - carrier — see #12\n"
     )

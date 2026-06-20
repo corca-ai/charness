@@ -284,16 +284,20 @@ def missing_portability_sections(text: str) -> list[str]:
     return [section for section in PORTABILITY_SECTIONS if section not in present]
 
 
-def pursue_readiness(text: str) -> dict[str, Any]:
+def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | None = None) -> dict[str, Any]:
     """Whether a goal is shaped enough to *pursue* via ``/goal``.
 
     Unshaped = a Before-phase placeholder marker still present (the handoff
     auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
     rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
+
+    ``deploy_vocab`` (an achieve adapter's ``discussion_deploy_vocab``) is passed
+    through to the discussion gate so the consumer-axis deploy vocabulary is
+    adapter-provided, not a charness hardcode; ``None`` keeps the English default.
     """
     masked = _mask_fences(text)
     placeholders = _UNSHAPED_MARKER.findall(masked)
-    discussion = discussion_readiness(text)
+    discussion = discussion_readiness(text, deploy_vocab=deploy_vocab)
     disposition = _draft_frame.draft_frame_disposition(text, status=read_status(text), masked=masked)
     shape_ready = not placeholders
     activation_ready = shape_ready and discussion["discussion_ready"]

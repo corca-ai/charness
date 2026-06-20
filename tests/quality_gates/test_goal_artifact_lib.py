@@ -181,6 +181,26 @@ def test_pursue_readiness_discussion_trigger_families(body: str, trigger: str) -
     assert trigger in report["discussion_triggers"]
 
 
+def test_discussion_deploy_vocab_is_adapter_provided_with_english_default() -> None:
+    # WS-3b b-ii migration proof: the deploy/irreversible vocab is adapter-provided,
+    # with a behavior-preserving English default (no adapter -> byte-identical).
+    header = "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+    deploy_body = "## Boundaries\n\nWe will deploy and apply/restart the instance.\n"
+    # default (no adapter vocab): English deploy verbs still trigger (guard preserved)
+    default = gal.pursue_readiness(header + deploy_body)
+    assert "production_or_live_proof" in default["discussion_triggers"]
+    assert "irreversible_side_effect" in default["discussion_triggers"]
+    # a consumer's vocab REPLACES the default: its own verb triggers...
+    rollout_body = "## Boundaries\n\nWe will rollout the change to the fleet.\n"
+    rolled = gal.pursue_readiness(header + rollout_body, deploy_vocab=["rollout"])
+    assert "production_or_live_proof" in rolled["discussion_triggers"]
+    # ...and the English default deploy verb no longer triggers under that vocab
+    # (the neutral concepts like `prod`/`irreversible` are unaffected and still fire)
+    no_deploy = gal.pursue_readiness(header + deploy_body, deploy_vocab=["rollout"])
+    assert "production_or_live_proof" not in no_deploy["discussion_triggers"]
+    assert "irreversible_side_effect" not in no_deploy["discussion_triggers"]
+
+
 def test_pursue_readiness_does_not_treat_empty_discussion_label_as_summary() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"

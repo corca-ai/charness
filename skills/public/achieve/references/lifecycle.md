@@ -275,7 +275,7 @@ the strength of the earlier lane's approval — that silent carry-forward burns
 the operator's time and noises the audit trail. Per-slice remote publication is
 assumed **only** when the operator explicitly asks for it, or when a slice is
 itself runtime-affecting and requires earlier publication to be proven (see
-*Post-Apply Checkpoint Classification*). When in doubt about whether a later
+*Post-Checkpoint Commit Classification*). When in doubt about whether a later
 phase still carries the earlier approval, treat it as not carried and ask.
 
 Fresh-eye slice critique should receive a bounded slice review packet rather
@@ -537,7 +537,7 @@ the checked-in goal artifact must already read `Status: complete` and
 the artifact disagree, the artifact is the source of truth and the closeout is
 not complete.
 
-### Post-Apply Checkpoint Classification
+### Post-Checkpoint Commit Classification
 
 When a goal includes a live apply, restart, deployment smoke, or other
 behavioral checkpoint before the final commit, the After-phase closeout must
@@ -806,11 +806,12 @@ local to fully external:
 2. `carrier` — the closeout carrier (direct commit / PR body / release commit)
    is validated and staged (`issue_tool.py validate-closeout-draft`).
 3. `pushed-ci` — the carrier is pushed and remote CI is verified.
-4. `applied-restarted` — the instance is applied / restarted.
+4. `instance-synced` — the running instance reflects the change (applied /
+   restarted / redeployed, per the consumer's deployment model).
 5. `live` — provider / live proof reached (a real provider roundtrip).
 6. `issue-closed` — the tracked GitHub issue's `CLOSED` state is verified.
 
-These levels do not subsume each other. `applied-restarted` (4) proves runtime
+These levels do not subsume each other. `instance-synced` (4) proves runtime
 deployment state and `issue-closed` (6) proves GitHub `CLOSED` state, but neither
 is `live` (5) behavior proof for an issue whose acceptance surface is a
 provider/connector behavior. For an issue-bundle closeout, the per-issue behavior

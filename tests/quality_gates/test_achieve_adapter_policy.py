@@ -84,6 +84,21 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
     assert adapter["data"]["scaffold"]["draft_active_frame_lines"][0].startswith("- Current slice: real draft")
 
 
+def test_discussion_deploy_vocab_resolves_from_adapter_else_empty(tmp_path: Path) -> None:
+    # WS-3b b-ii: the discussion-gate deploy vocabulary is adapter-provided. No
+    # adapter -> [] (the discussion gate then uses its English default).
+    assert policy.resolve_discussion_deploy_vocab(tmp_path) == []
+    _write(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        "version: 1\ndiscussion_deploy_vocab:\n  - rollout\n  - hotfix\n",
+    )
+    adapter = policy.load_adapter(tmp_path)
+    assert adapter["valid"] is True
+    assert adapter["data"]["discussion_deploy_vocab"] == ["rollout", "hotfix"]
+    assert policy.resolve_discussion_deploy_vocab(tmp_path) == ["rollout", "hotfix"]
+
+
 def test_adapter_contract_yaml_documents_top_level_scaffold() -> None:
     text = ADAPTER_CONTRACT.read_text(encoding="utf-8")
     match = re.search(r"```yaml\n(.*?)\n```", text, re.DOTALL)

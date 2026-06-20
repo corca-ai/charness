@@ -7,11 +7,11 @@ def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
-def test_achieve_lifecycle_classifies_post_apply_commits() -> None:
+def test_achieve_lifecycle_classifies_post_checkpoint_commits() -> None:
     lifecycle = _read("skills/public/achieve/references/lifecycle.md")
     normalized = " ".join(lifecycle.split())
 
-    assert "Post-Apply Checkpoint Classification" in lifecycle
+    assert "Post-Checkpoint Commit Classification" in lifecycle
     assert "runtime-affecting" in lifecycle
     assert "test-only" in lifecycle
     assert "audit-doc-only" in lifecycle

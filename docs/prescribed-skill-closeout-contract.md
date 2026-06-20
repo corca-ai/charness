@@ -224,7 +224,7 @@ the strict standalone default stays the hard default.
 
 Closeout-state taxonomy (documentation vocabulary; the gate is
 presence/resolution-based, not an exact-token match): `impl-local`, `carrier`,
-`pushed-ci`, `applied-restarted`, `live`, `issue-closed`.
+`pushed-ci`, `instance-synced`, `live`, `issue-closed`.
 
 - **orchestrated sub-goal** (`Closeout mode: orchestrated`) — must name an
   `Orchestrator goal:` and list ≥1 `Delegated proof:` item, so delegation is

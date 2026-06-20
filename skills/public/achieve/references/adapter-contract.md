@@ -30,6 +30,9 @@ version: 1
 repo: charness
 language: en
 artifact_dir: charness-artifacts/goals
+discussion_deploy_vocab:
+  - rollout
+  - hotfix
 closeout_publication:
   default_mode: handoff-only
   issue_closeout_carrier: direct-commit
@@ -85,6 +88,16 @@ is a list of rendered markdown lines, including bullet prefixes when desired;
 `{goal_rel}` is replaced with the generated
 artifact path. Existing artifacts are still idempotent: `upsert_goal.py` updates
 only `Status:` on later calls and never rewrites manual frame content.
+
+`discussion_deploy_vocab` optionally provides the consumer-axis deploy /
+irreversible-side-effect verbs the pre-activation discussion gate detects (for
+example `rollout`, `hotfix`, `redeploy`). When set it **replaces** the portable
+English default (`apply/restart`, `restart`, `deploy`); when omitted the English
+default applies, so a repo that does not declare it keeps byte-identical
+behavior. The charness-neutral concepts (`production`, `live proof`,
+`irreversible`, `external side effect`, ...) always apply regardless. This keeps
+charness from hardcoding one consumer's boundary vocabulary while never silently
+dropping the guard for an unconfigured consumer.
 
 ## Closeout Report
 

@@ -263,7 +263,7 @@ goal can flip to `complete`:
 - Closeout mode: orchestrator
 - Delegated proof checklist:
   - pushed-ci — verified: CI green on <sha> (<run-url>)
-  - applied-restarted — skipped: apply deferred to next window — operator directed
+  - instance-synced — skipped: instance update deferred to next window — operator directed
   - live — verified: provider roundtrip observed <ts>
   - issue-closed — issue #<N>
 ```
@@ -274,7 +274,7 @@ orchestrator and list ≥1 delegated item; an orchestrator must resolve every
 checklist item. The check is presence/resolution-based — it proves the delegated
 proof is recorded and (for the orchestrator) accounted for, not that the prose is
 "good enough". The taxonomy tokens (`impl-local`, `carrier`, `pushed-ci`,
-`applied-restarted`, `live`, `issue-closed`) are the shared vocabulary, not a
+`instance-synced`, `live`, `issue-closed`) are the shared vocabulary, not a
 required exact match.
 
 The gate does **not** verify that the named orchestrator goal file exists or that

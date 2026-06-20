@@ -18,7 +18,7 @@ the same gate-and-intelligence split the disposition/coordination floors use):
   ``complete``, so the orchestrator cannot silently forget a delegated proof.
 
 The closeout-state taxonomy (``impl-local``, ``carrier``, ``pushed-ci``,
-``applied-restarted``, ``live``, ``issue-closed``) is the documented vocabulary
+``instance-synced``, ``live``, ``issue-closed``) is the documented vocabulary
 in ``references/lifecycle.md`` and ``references/goal-artifact.md``; this gate does
 not require those exact tokens, only that each checklist item is resolved.
 """
@@ -37,7 +37,7 @@ CLOSEOUT_STATE_LEVELS = (
     "impl-local",
     "carrier",
     "pushed-ci",
-    "applied-restarted",
+    "instance-synced",
     "live",
     "issue-closed",
 )

@@ -14,13 +14,40 @@ _SUMMARY_LINE = re.compile(r"^[ \t]*(?:[-*][ \t]*)?Discuss before activation:[ \
 _N_A = re.compile(r"^(?:n/?a|none|no consequential|not applicable)\b", re.IGNORECASE)
 _RESOLVED = re.compile(r"^(?:resolved|confirmed|approved)\b", re.IGNORECASE)
 
-TRIGGERS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("production_or_live_proof", re.compile(r"\b(prod(?:uction)?|live proof|real github lookup|apply/restart|restart|deploy)\b", re.IGNORECASE)),
-    ("issue_close_or_split", re.compile(r"\b(close[sd]?|closing|split|leave open|defer(?:red)?)\b.{0,60}#\d+|#\d+.{0,60}\b(close[sd]?|closing|split|leave open|defer(?:red)?)\b", re.IGNORECASE)),
-    ("broad_bundle_scope", re.compile(r"\b(bundle[sd]?|broad(?:ly)? bundled|selected bundle|combined|together|all (?:\d+|\w+) proposed)\b|#\d+.{0,60}#\d+", re.IGNORECASE)),
-    ("proof_nonclaim_or_downgrade", re.compile(r"\b(proof|verification|live|external).{0,40}\b(non-claim|not run|skipped|fixture-only|downgrad(?:e|ed)|without live|no live)\b|\b(non-claim|fixture-only|without live|no live)\b", re.IGNORECASE)),
-    ("irreversible_side_effect", re.compile(r"\b(irreversible|external side effect|production contact|apply/restart|restart|deploy)\b", re.IGNORECASE)),
-)
+# Consumer-axis deploy / irreversible-side-effect verbs. The portable DEFAULT is the
+# English set; a consumer's achieve adapter (`discussion_deploy_vocab`) replaces it so
+# charness does not hardcode one consumer's boundary vocabulary. Option A
+# (behavior-preserving): no adapter -> byte-identical triggers; dropping the default
+# would lose the guard for an unconfigured consumer.
+_DEFAULT_DEPLOY_VOCAB: tuple[str, ...] = ("apply/restart", "restart", "deploy")
+# charness-neutral concept alternants (raw regex) that always apply, independent of the
+# consumer's deploy vocabulary.
+_PRODUCTION_CONCEPTS = ("prod(?:uction)?", "live proof", "real github lookup")
+_IRREVERSIBLE_CONCEPTS = ("irreversible", "external side effect", "production contact")
+
+
+def _deploy_trigger(name: str, concepts: tuple[str, ...], vocab: tuple[str, ...]) -> tuple[str, re.Pattern[str]]:
+    alternants = list(concepts) + [re.escape(token) for token in vocab]
+    return (name, re.compile(r"\b(" + "|".join(alternants) + r")\b", re.IGNORECASE))
+
+
+def build_triggers(deploy_vocab: tuple[str, ...] | list[str] | None = None) -> tuple[tuple[str, re.Pattern[str]], ...]:
+    """Build the pre-activation discussion triggers. ``deploy_vocab`` (an adapter's
+    ``discussion_deploy_vocab``) replaces the English default for the two deploy /
+    irreversible-side-effect triggers; the neutral concepts and the other three
+    triggers are invariant. ``None``/empty -> the byte-preserving English default."""
+    vocab = tuple(deploy_vocab) if deploy_vocab else _DEFAULT_DEPLOY_VOCAB
+    return (
+        _deploy_trigger("production_or_live_proof", _PRODUCTION_CONCEPTS, vocab),
+        ("issue_close_or_split", re.compile(r"\b(close[sd]?|closing|split|leave open|defer(?:red)?)\b.{0,60}#\d+|#\d+.{0,60}\b(close[sd]?|closing|split|leave open|defer(?:red)?)\b", re.IGNORECASE)),
+        ("broad_bundle_scope", re.compile(r"\b(bundle[sd]?|broad(?:ly)? bundled|selected bundle|combined|together|all (?:\d+|\w+) proposed)\b|#\d+.{0,60}#\d+", re.IGNORECASE)),
+        ("proof_nonclaim_or_downgrade", re.compile(r"\b(proof|verification|live|external).{0,40}\b(non-claim|not run|skipped|fixture-only|downgrad(?:e|ed)|without live|no live)\b|\b(non-claim|fixture-only|without live|no live)\b", re.IGNORECASE)),
+        _deploy_trigger("irreversible_side_effect", _IRREVERSIBLE_CONCEPTS, vocab),
+    )
+
+
+# Module-level default triggers (back-compat for importers); adapter-overridden per call.
+TRIGGERS: tuple[tuple[str, re.Pattern[str]], ...] = build_triggers()
 
 SECTIONS = (
     "Non-Goals",
@@ -74,10 +101,11 @@ def _has_summary_content(text: str) -> bool:
     )
 
 
-def discussion_readiness(text: str) -> dict[str, Any]:
+def discussion_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | None = None) -> dict[str, Any]:
     bodies = _section_bodies(text)
     combined = "\n".join(bodies.get(section, "") for section in SECTIONS)
-    triggers = [name for name, pattern in TRIGGERS if pattern.search(combined)]
+    active = build_triggers(deploy_vocab) if deploy_vocab else TRIGGERS
+    triggers = [name for name, pattern in active if pattern.search(combined)]
     required = bool(triggers)
     summary = _summary_content(text)
     present = _has_summary_content(summary)
