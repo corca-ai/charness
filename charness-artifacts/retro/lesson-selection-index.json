@@ -565,10 +565,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:b5bdd7de1d1e",
+      "candidate_id": "next_improvement:eff2265e94bf",
       "kind": "next_improvement",
-      "lesson": "**capability:** an authoring-time `check_artifact_surface_preflight.py --report-all` over a *draft* artifact (before staging) would surface all required-shape gaps in one pass instead of one commit-attempt at a time. Tracked as a follow-up, not built here — the commit-time preflight already backstops it.",
-      "normalized_key": "capability an authoring time check artifact surface preflight py report all over a draft",
+      "lesson": "**capability → already exists (correction):** the authoring-time preflight is NOT unbuilt — `check_artifact_surface_preflight.py --path <artifact>` already runs the owning validator on a single artifact, and the same check is already a commit-time gate. The miss was not using it early, now closed by the contract note above.",
+      "normalized_key": "capability already exists correction the authoring time preflight is not unbuilt check artifact surface",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",
@@ -587,7 +587,7 @@
     {
       "candidate_id": "next_improvement:062ca40a5f6d",
       "kind": "next_improvement",
-      "lesson": "**memory:** \"any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline\" is now both the #395 fix's documented contract and a session-workflow constraint: expect rotation, batch the re-baseline.",
+      "lesson": "**memory:** \"any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline\" is the #395 fix's documented contract AND now an `implementation-discipline.md` rule: expect rotation, batch the re-baseline.",
       "normalized_key": "memory any edit to a scanned clone member file rotates nose family id s",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
@@ -605,10 +605,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:8afbce7f1bce",
+      "candidate_id": "next_improvement:193fa0e02e86",
       "kind": "next_improvement",
-      "lesson": "**workflow:** for strict-validator artifacts (debug, critique, closeout carrier), read the required-shape contract FIRST (`describe_closeout_draft_shape.py --stub`, the debug `REQUIRED_SECTIONS`, the `validate_critique_artifacts` reviewer-tier fields) and author to it. Applied to *this* retro (read the validator before writing).",
-      "normalized_key": "workflow for strict validator artifacts debug critique closeout carrier read the required shape contract",
+      "lesson": "**workflow → applied (contract):** author strict-validator artifacts (debug/ critique/retro/closeout) to their required-shape contract first, dry-running `check_artifact_surface_preflight.py --path <artifact>` at authoring time. Promoted to the same contract section.",
+      "normalized_key": "workflow applied contract author strict validator artifacts debug critique retro closeout to their required",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",
@@ -625,10 +625,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:d90ac5b347a4",
+      "candidate_id": "next_improvement:eac6c3c0e7a6",
       "kind": "next_improvement",
-      "lesson": "**workflow:** when a task will edit several scanned clone-member files (e.g. a doc sweep across `skills/public/quality/scripts/`), batch ALL edits — including critique-driven fixes — before a single `--write-baseline`, not one re-baseline per edit round. Applied late this session; make it the default next time.",
-      "normalized_key": "workflow when a task will edit several scanned clone member files e g a",
+      "lesson": "**workflow → applied (contract):** batch ALL edits to scanned clone-member files (`skills/public/quality/scripts/*`), including critique-driven fixes, before a single `--write-baseline`. Promoted to `implementation-discipline.md` \"Sync Before Validation\"; structural elimination tracked as D30.",
+      "normalized_key": "workflow applied contract batch all edits to scanned clone member files skills public quality",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",
@@ -1297,10 +1297,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:b5bdd7de1d1e",
+      "candidate_id": "next_improvement:eff2265e94bf",
       "kind": "next_improvement",
-      "lesson": "**capability:** an authoring-time `check_artifact_surface_preflight.py --report-all` over a *draft* artifact (before staging) would surface all required-shape gaps in one pass instead of one commit-attempt at a time. Tracked as a follow-up, not built here — the commit-time preflight already backstops it.",
-      "normalized_key": "capability an authoring time check artifact surface preflight py report all over a draft",
+      "lesson": "**capability → already exists (correction):** the authoring-time preflight is NOT unbuilt — `check_artifact_surface_preflight.py --path <artifact>` already runs the owning validator on a single artifact, and the same check is already a commit-time gate. The miss was not using it early, now closed by the contract note above.",
+      "normalized_key": "capability already exists correction the authoring time preflight is not unbuilt check artifact surface",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",
@@ -1319,7 +1319,7 @@
     {
       "candidate_id": "next_improvement:062ca40a5f6d",
       "kind": "next_improvement",
-      "lesson": "**memory:** \"any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline\" is now both the #395 fix's documented contract and a session-workflow constraint: expect rotation, batch the re-baseline.",
+      "lesson": "**memory:** \"any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline\" is the #395 fix's documented contract AND now an `implementation-discipline.md` rule: expect rotation, batch the re-baseline.",
       "normalized_key": "memory any edit to a scanned clone member file rotates nose family id s",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
@@ -1337,10 +1337,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:8afbce7f1bce",
+      "candidate_id": "next_improvement:193fa0e02e86",
       "kind": "next_improvement",
-      "lesson": "**workflow:** for strict-validator artifacts (debug, critique, closeout carrier), read the required-shape contract FIRST (`describe_closeout_draft_shape.py --stub`, the debug `REQUIRED_SECTIONS`, the `validate_critique_artifacts` reviewer-tier fields) and author to it. Applied to *this* retro (read the validator before writing).",
-      "normalized_key": "workflow for strict validator artifacts debug critique closeout carrier read the required shape contract",
+      "lesson": "**workflow → applied (contract):** author strict-validator artifacts (debug/ critique/retro/closeout) to their required-shape contract first, dry-running `check_artifact_surface_preflight.py --path <artifact>` at authoring time. Promoted to the same contract section.",
+      "normalized_key": "workflow applied contract author strict validator artifacts debug critique retro closeout to their required",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",
@@ -1357,10 +1357,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:d90ac5b347a4",
+      "candidate_id": "next_improvement:eac6c3c0e7a6",
       "kind": "next_improvement",
-      "lesson": "**workflow:** when a task will edit several scanned clone-member files (e.g. a doc sweep across `skills/public/quality/scripts/`), batch ALL edits — including critique-driven fixes — before a single `--write-baseline`, not one re-baseline per edit round. Applied late this session; make it the default next time.",
-      "normalized_key": "workflow when a task will edit several scanned clone member files e g a",
+      "lesson": "**workflow → applied (contract):** batch ALL edits to scanned clone-member files (`skills/public/quality/scripts/*`), including critique-driven fixes, before a single `--write-baseline`. Promoted to `implementation-discipline.md` \"Sync Before Validation\"; structural elimination tracked as D30.",
+      "normalized_key": "workflow applied contract batch all edits to scanned clone member files skills public quality",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
       "latest_source_date": "2026-06-21",

@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
-- **capability:** an authoring-time `check_artifact_surface_preflight.py --report-all` over a *draft* artifact (before staging) would surface all required-shape gaps in one pass instead of one commit-attempt at a time. Tracked as a follow-up, not built here — the commit-time preflight already backstops it. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
-- **memory:** "any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline" is now both the #395 fix's documented contract and a session-workflow constraint: expect rotation, batch the re-baseline. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
-- **workflow:** for strict-validator artifacts (debug, critique, closeout carrier), read the required-shape contract FIRST (`describe_closeout_draft_shape.py --stub`, the debug `REQUIRED_SECTIONS`, the `validate_critique_artifacts` reviewer-tier fields) and author to it. Applied to *this* retro (read the validator before writing). (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **capability → already exists (correction):** the authoring-time preflight is NOT unbuilt — `check_artifact_surface_preflight.py --path <artifact>` already runs the owning validator on a single artifact, and the same check is already a commit-time gate. The miss was not using it early, now closed by the contract note above. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **memory:** "any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline" is the #395 fix's documented contract AND now an `implementation-discipline.md` rule: expect rotation, batch the re-baseline. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **workflow → applied (contract):** author strict-validator artifacts (debug/ critique/retro/closeout) to their required-shape contract first, dry-running `check_artifact_surface_preflight.py --path <artifact>` at authoring time. Promoted to the same contract section. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
 
 ## Selection Policy
 
