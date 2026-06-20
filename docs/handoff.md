@@ -30,12 +30,10 @@
 > session found #391 and the overhaul-sweep buried real signal under issue
 > numbers. Tiers below are from a live-backlog read on 2026-06-21.
 
-- **Tier 0 — close this-session loops (cheap).** (a) **Record that #395's closeout
-  satisfied overhaul-sweep R2's open live-proof** — a real issue closed through the
-  #386 distinct-channel verdict + AI-provenance floors (mark S4/open-operator-items
-  in [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)).
-  (b) **File the WS-B deeper-body-redesign follow-on issue — it was NEVER filed**,
-  so the unfinished skill sweep is currently untracked.
+- **Tier 0 — DONE 2026-06-21.** #395→R2 live-proof recorded in the
+  [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md);
+  the deferred WS-B body redesign is tracked **file-over-issue** there (no GitHub
+  issue, per operator). Next session starts at Tier 1.
 - **Tier 1 — #391 baseline `tool_version` stamp (concrete, session-adjacent).**
   The clone-advisory baseline records no scanner version, yet the contract says
   "re-baseline per scanner version" — a future nose bump silently reads a stale
