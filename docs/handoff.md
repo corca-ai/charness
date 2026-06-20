@@ -13,8 +13,9 @@
 
 ## Current State
 
-- **nose 0.14.0 compat pass COMPLETE → committed local, NOT pushed (ahead 1).**
-  Commit `789d2d7d` (mechanics there). schema v4 query JSON parses **unchanged**
+- **nose 0.14.0 compat pass COMPLETE → committed + PUSHED to origin/main**
+  (@ `8d5f9998`; compat commit `789d2d7d`, mechanics there). Push verified via
+  `git ls-remote` + `gh api` (distinct channels). schema v4 query JSON parses **unchanged**
   (no consumer code touched); the family-id set shifted, so re-seeded
   [nose-baseline.json](../charness-artifacts/quality/nose-baseline.json) (487→491)
   and [dup-ratchet-baseline.json](../charness-artifacts/quality/dup-ratchet-baseline.json)
@@ -29,14 +30,11 @@
 
 ## Next Session
 
-- **PUSH the nose compat commit, then roll out — operator-gated (see Discuss).**
-  Compat is done + verified (Current State); the only open action is the push
-  go/no-go + rollout, no re-verification needed. Pushing the `>=0.14.0` floor
-  **couples pulling machines**: one still on an older nose reports `doctor` version
-  `status: mismatch` (verified here: 0.14.0 → `matched`) and its clone/dup-ratchet
-  baselines won't match the 0.14.0-seeded ids (version-coupled drift). Sequence:
-  push → `charness update all` on each machine (re-runs nose's installer = latest
-  = 0.14.0).
+- **Roll out nose 0.14.0 to the other machines.** Push is done (origin/main @
+  `8d5f9998`); the only remaining action is `charness update all` on each machine
+  (re-runs nose's installer = latest = 0.14.0). Until a machine updates, its
+  `doctor` shows nose version `mismatch` against the new `>=0.14.0` floor —
+  expected, clears on `update all`.
 - **Leverage 0.14.0 (optional, not compat-required).** New `nose query --root/-r`
   multi-root + advertised `query.capabilities.multi_root` could collapse the
   per-root loop in `collect_families`; hidden `nose gap-impact` diagnostic exists.
@@ -52,12 +50,10 @@
 
 ## Discuss
 
-- **nose rollout — verdict: YES, now safe.** The compat blocker is cleared:
-  consumers parse schema v4, baselines re-seeded to 0.14.0, `doctor` matches the
-  new floor. The only remaining call is **operator go to push `789d2d7d` to
-  origin/main** (after which a pulling machine on an older nose shows `doctor`
-  version `mismatch` until it runs `update all`) and then recommend `update all`
-  broadly.
+- **nose rollout — DECIDED + EXECUTED this session.** Operator approved push;
+  compat is on origin/main. No open decision remains — residual is purely the
+  per-machine `charness update all` (Next Session). Re-open only if a machine
+  reports unexpected nose breakage after updating.
 
 ## References
 
