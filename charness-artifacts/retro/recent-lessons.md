@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- After Phase 4 closeout, the operator corrected my framing: I described "fewer lines / fewer gates" as a north-star *failure signature* in a way that inverted into "more code = success," and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was "honored." That is backwards. (source: `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`)
 - **S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`). (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
-- **WS-1** — release-publish rung-1 presence floor + rung-2 distinct-channel observer on BOTH the main and `--resume` paths (`e45f71d2`). (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 
 ## Repeat Traps
 
@@ -76,5 +76,6 @@
 - `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`
 - `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
 - `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`

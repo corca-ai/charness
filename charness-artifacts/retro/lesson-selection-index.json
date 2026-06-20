@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-20",
-  "source_artifact_count": 243,
-  "candidate_count": 1171,
+  "source_artifact_count": 244,
+  "candidate_count": 1175,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -535,6 +535,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:89e8735cc625",
+      "kind": "current_focus",
+      "lesson": "After Phase 4 closeout, the operator corrected my framing: I described \"fewer lines / fewer gates\" as a north-star *failure signature* in a way that inverted into \"more code = success,\" and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was \"honored.\" That is backwards.",
+      "normalized_key": "after phase 4 closeout the operator corrected my framing i described fewer lines fewer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:04ed2d21d272",
       "kind": "current_focus",
       "lesson": "**S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`).",
@@ -709,26 +729,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md",
-          "date": "2026-06-20",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5d37c84c492c",
-      "kind": "next_improvement",
-      "lesson": "**memory:** this retro + the recent-lessons digest.",
-      "normalized_key": "memory this retro the recent lessons digest",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
-      "latest_source_date": "2026-06-20",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
         }
@@ -1257,6 +1257,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:89e8735cc625",
+      "kind": "current_focus",
+      "lesson": "After Phase 4 closeout, the operator corrected my framing: I described \"fewer lines / fewer gates\" as a north-star *failure signature* in a way that inverted into \"more code = success,\" and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was \"honored.\" That is backwards.",
+      "normalized_key": "after phase 4 closeout the operator corrected my framing i described fewer lines fewer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:04ed2d21d272",
       "kind": "current_focus",
       "lesson": "**S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`).",
@@ -1437,6 +1457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:067ff6bacd7a",
+      "kind": "next_improvement",
+      "lesson": "**memory/judgment:** The success metric for this class of work is **escape-closed + no-guard-lost + concept clearer/more-portable/more-declarative**. **Never cite line-count direction as evidence** (up OR down). When reporting or reviewing, lead with the *capability* delta, not the diff size.",
+      "normalized_key": "memory judgment the success metric for this class of work is escape closed no",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5d37c84c492c",
       "kind": "next_improvement",
       "lesson": "**memory:** this retro + the recent-lessons digest.",
@@ -1451,6 +1491,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d20261f988ac",
+      "kind": "next_improvement",
+      "lesson": "The Goodhart point (\"don't make fewer-gates a *target*\") is real and stays — but it is a warning against *optimizing the proxy*, not a license to inflate.",
+      "normalized_key": "the goodhart point don t make fewer gates a target is real and stays",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:82a0bc220498",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Apply the operator's ordering as an active lens on every change: (1) fewer capabilities-equal features, (2) less code for equal capability, (3) more open, (4) declarative over procedural. Ask \"could this be smaller or more declarative?\" of every ADDED floor/gate, not only of deletions.",
+      "normalized_key": "workflow apply the operator s ordering as an active lens on every change 1",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
         }
