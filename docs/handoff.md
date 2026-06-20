@@ -2,67 +2,69 @@
 
 ## Workflow Trigger
 
-- Pickup = `charness:find-skills` -> **invoke `charness:handoff`**. Bare
-  `/handoff` runs chunked routing over handoff entries plus live open issues;
-  `## Next Session` is sequencing judgment, not the full queue.
-- Refresh live state: `git status --short --branch`,
-  `git log --oneline origin/main..HEAD`, `gh issue list --state open --limit 50`.
-- Before mutating code/exports/validation, read
-  [implementation discipline](./conventions/implementation-discipline.md) and
+- Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
+  runs chunked routing over handoff entries + live open issues. `## Next Session` is
+  sequencing judgment, not the full queue — **body-read the issues, don't trust it flat.**
+- Refresh: `git status -sb`, `git log --oneline origin/main..HEAD`,
+  `gh issue list --state open --limit 50`. Before mutating, read
+  [implementation discipline](./conventions/implementation-discipline.md) +
   [operating contract](./conventions/operating-contract.md).
 
 ## Current State
 
-- **#395 dup-ratchet family_id churn — RESOLVED + CLOSED + PUSHED**
-  (@ `6658acec`). The gate keyed code-newness on nose's family `id`, which folds
-  member line-offset + file path (not just content), so member-file edits rotated
-  ids and false-blocked with zero new duplication. Solution (a) is impossible
-  (nose emits no position-independent id); shipped reporter solution (b): doc
-  correction across 3 carriers + a real-nose characterization test + lockstep
-  re-baseline. The affordance (solution c) is deferred as **D30** in
-  [deferred-decisions.md](./deferred-decisions.md). Mechanics + RCA:
+- **#395 dup-ratchet family_id churn — RESOLVED + CLOSED + PUSHED** (@ `6658acec`).
+  Family `id` folds member line-offset + path → member edits false-block. Shipped
+  reporter solution (b) (doc + characterization test + lockstep re-baseline); the
+  affordance (c) deferred as **D30**. RCA:
   [debug artifact](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md).
 - **Chunk-2 multi-root resolver — DONE + PUSHED** (@ `91aae959`). `collect_families`
-  now runs ONE nose 0.14.0 `--root` multi-root query (global clustering) instead of
-  a per-root loop. **Quality-contract change**: family set 491→525 (gains 108
-  cross-root clone families the per-root loop missed; both id-set baselines
-  re-baselined lockstep, `--confirm-baseline-delta`). Critiqued (3 angles +
-  counterweight):
-  [critique](../charness-artifacts/critique/2026-06-21-quality-nose-multiroot-resolver.md).
-- **nose 0.14.0 floor live** (@ `8d5f9998`); **this machine's installed plugin
-  updated** (`charness update all`, doctor `matched` @ `>=0.14.0`). Other machines
-  still pending their own `update all`.
+  now runs ONE nose 0.14.0 `--root` multi-root query (global clustering). **Quality-
+  contract change**: 491→525 families (gains 108 cross-root clones; both baselines
+  re-baselined lockstep). [critique](../charness-artifacts/critique/2026-06-21-quality-nose-multiroot-resolver.md).
+- **nose 0.14.0 floor live**; this machine's plugin updated; other machines pending
+  `update all`.
 
 ## Next Session
 
-- **Other-machine nose rollout (operator).** Run `charness update all` on each
-  remaining machine. Low urgency — nothing is broken (binaries are fine); this
-  just propagates the pushed repo state to each installed plugin.
-- **D30 — dup-ratchet id-rotation affordance.** The real relief for #395's
-  false-block (recognize a pure rotation by position-independent member set →
-  downgrade hard-block to advisory). Needs a baseline schema migration + must guard
-  the false-negative (a new clone reusing the same member files). See
-  [deferred-decisions.md](./deferred-decisions.md) D30.
-- **`quality` anchor-split (ODQ #2).** Still blocked: `## Load-Bearing Anchors` is
-  pinned by ~60 [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py)
-  assertions; unblock = operator approves moving them to
-  `quality/references/inventory-dispatch.md`, then collapse the catalog.
-- **Open issues:** #394 (mutation regression on main), #387, #391, #392, #371.
-- **Deferred proofs:** overhaul-sweep R2 (a real `issue resolve`/PR-close through
-  the floors); **ceal #417**; gate demotions (`check_doc_links` backtick→advisory;
-  `--reuse-coverage` skip).
+> Pickup must **body-read the open issues**, not trust this list flat — a prior
+> session found #391 and the overhaul-sweep buried real signal under issue
+> numbers. Tiers below are from a live-backlog read on 2026-06-21.
+
+- **Tier 0 — close this-session loops (cheap).** (a) **Record that #395's closeout
+  satisfied overhaul-sweep R2's open live-proof** — a real issue closed through the
+  #386 distinct-channel verdict + AI-provenance floors (mark S4/open-operator-items
+  in [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)).
+  (b) **File the WS-B deeper-body-redesign follow-on issue — it was NEVER filed**,
+  so the unfinished skill sweep is currently untracked.
+- **Tier 1 — #391 baseline `tool_version` stamp (concrete, session-adjacent).**
+  The clone-advisory baseline records no scanner version, yet the contract says
+  "re-baseline per scanner version" — a future nose bump silently reads a stale
+  baseline. Fix: `--write-baseline` stamps the version; read path warns on mismatch.
+  (#391 also lists cross-dir extraction candidates newly visible under multi-root.)
+- **Tier 2 — backlog clearing.** Activate the draft
+  [open-issue-hotl-closeout goal](../charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md)
+  to clear #387 (goal-closeout shape errors), #392 (gather X/Twitter), #371
+  (agent-browser orphaned chromium).
+- **Tier 3 — the deferred skill sweep (needs operator decisions).** Deeper body
+  redesign of impl/debug/quality/achieve was deferred-with-cause (cuts blocked or
+  lossy). Unblock starts at the **`quality` anchor-split (ODQ #2)**: the
+  `Load-Bearing Anchors` section is pinned by ~60
+  [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py)
+  assertions; operator must approve moving them to `quality/references/inventory-dispatch.md`.
+- **Tier 4 — triage.** #394 mutation regression (re-fires on changed-line coverage,
+  score passes — real-gap vs noise); **D30** ([deferred-decisions.md](./deferred-decisions.md));
+  ceal #417; gate demotions; other-machine `charness update all` (low-urgency).
 
 ## Discuss
 
-- **Multi-root clone model is now live (chunk-2).** It is a deliberate
-  quality-contract change (per-root → global). If a consumer repo behaves oddly on
-  the new global clone model, that is the first place to look — but it is verified,
-  critiqued, and the coverage shift (51 marginal within-root spans dropped, 186
-  cross-root spans gained) is documented in the commit body + critique.
+- **#395 may have satisfied overhaul-sweep R2's open live-proof** (a real issue
+  closed through the distinct-channel verdict + AI-provenance floors). Confirm + mark
+  it in the sweep goal before treating R2 as still-open.
+- **Multi-root model is live (chunk-2)** — deliberate quality-contract change
+  (per-root → global); first place to look if a consumer repo behaves oddly.
 
 ## References
 
-- [nose manifest](../integrations/tools/nose.json),
-  [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
-  [design north star](./design-north-star.md),
-  [recent-lessons](../charness-artifacts/retro/recent-lessons.md)
+- [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
+  [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
+  [deferred-decisions](./deferred-decisions.md)
