@@ -4,6 +4,14 @@ Use focused inventories only when the quality question brings the surface into
 scope. Advisory inventories are prompts for review unless the repo adapter
 declares a low-noise invariant and a clear structural response.
 
+Inventories named in the quality artifact's `## Commands Run` must engage with at
+least two distinct declared non-headline fields (one is enough when only one is
+declared); the `validate-inventory-consumption` phase fails closeout when the
+artifact summarizes a cited inventory by headline only, and
+`validate-inventory-consumption-declaration` plus
+`check-inventory-declaration-coverage` keep the declaration drift-free and
+complete (declaration: `references/inventory-consumer-fields.json`).
+
 ## CLI And Operator Surface
 
 - CLI ergonomics:
@@ -19,7 +27,8 @@ declares a low-noise invariant and a clear structural response.
 Separate help/read-only behavior, option-looking positional rejection,
 dry-run/plan output, side-effect watch contracts, binary health, install
 readiness, local discoverability, target lifecycle ownership, and cleanup
-ownership.
+ownership. Review covers flat help-list crowding, mutating subcommand probes,
+multiple archetype schema namespaces, and the command-docs drift gate.
 
 ## Docs And Readability
 
@@ -34,7 +43,10 @@ ownership.
 
 Ask whether first-touch docs are concise enough, whether deeper owners are
 linked instead of duplicated, and whether public executable specs duplicate
-cheaper proof at the wrong layer.
+cheaper proof at the wrong layer. Review covers entrypoint-doc ergonomics (a
+smart agent/operator can infer safely, no doc-set dogma), what proof is
+duplicated at the wrong layer, ordinary Markdown uses the markdown preview seam,
+and executable specs use the rendered Specdown report.
 
 ## Skills
 
@@ -48,10 +60,12 @@ cheaper proof at the wrong layer.
   `references/skill-ergonomics.md`
 
 Review concise core, progressive disclosure honesty, trigger overlap or
-undertrigger risk, unnecessary mode/option pressure, and prose ritual that
-should become a helper script. If the repo stores skills outside
-`skills/public` or `skills/support`, record `skill_ergonomics_skill_paths` in
-the quality adapter so the default inventory does not return an empty scan.
+undertrigger risk, unnecessary mode/option pressure, taste policing, and prose
+ritual that should become a helper script. When public-skill or durable artifact
+behavior is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`.
+If the repo stores skills outside `skills/public` or `skills/support`, record
+`skill_ergonomics_skill_paths` in the quality adapter so the default inventory
+does not return an empty scan.
 
 ## Runtime And Test Economics
 
@@ -75,6 +89,11 @@ the quality adapter so the default inventory does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_sloc.py`
 - testability and affected-test selection:
   `references/testability-and-selection.md`
+- local-gate speed vs CI recoverability:
+  `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py`
+  (`references/ci-recoverable-gate-triage.md` — the counterweight that flags only
+  the costly local gates CI fully re-runs as move-off-local candidates; the rest
+  stay `keep-local`)
 
 Quiet failure output must still name the failing unit/spec/case and show a
 short actual/error snippet. Slow-gate review should separate duplicated proof,
@@ -92,6 +111,12 @@ to the tests that prove it.
 When a hot spot becomes the standing single dominator, define adapter-owned
 `runtime_budgets` or `runtime_budget_profiles`; budgets should fail on
 recent-median drift and report latest-sample spikes separately.
+
+Runtime review covers file/process/startup cost, runner isolation/process mode,
+duplicate broad discovery/collection, broad scanner prefiltering, the
+verbose-on-demand escape hatch (quiet failure output must still name the failing
+unit), top-N runtime hot spots, serial fallback vs `runtime_budget_profiles`,
+Pytest Economics, and bounded test-ratio posture; see `standing-gate-verbosity.md`.
 
 ## Agent Production Runtime
 
@@ -119,6 +144,14 @@ Review cache/cost economics, overload fallback, retry idempotency, streaming
 stall recovery, model routing economics, and telemetry as evidence questions.
 Classify each gap as deterministic proof, behavior-proof recommendation, or
 product-policy decision before proposing new gates.
+
+For evaluator-backed behavior closeout, prompt regression, baseline compare, or
+operator reading test, use `quality` before downgrading to HITL.
+Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
+For external/runtime capability slices, treat readiness-only proof (`surface`,
+`worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one
+`provider_roundtrip` is observed
+(`../../../shared/references/external-capability-proof-ladder.md`).
 
 ## Source Hygiene
 
@@ -180,9 +213,20 @@ per-candidate scorecard in
 behavior-value, ownership, blast-radius, and stop-condition judgments that no
 advisory number can make, and it rejects metric-only cleanup rationale.
 
-Elevate source-guard pressure as a rollup: total rows, top specs, brittle
-count, and next action category should be visible together. Blanket, file-level,
-or retained policy-level lint ignores need provenance and revisit conditions.
+Elevate source-guard pressure as a rollup: total source-guard rows, top specs,
+brittle count, and next action category should be visible together.
+
+Watch how lint suppressions start to accumulate: lint suppression pressure,
+growing lint suppressions, and retained policy-level ignores each need
+free safety oracle checks, provenance, and concrete revisit conditions. Blanket,
+file-level, or retained policy-level lint ignores need provenance and revisit
+conditions.
+
+Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`; duplicate
+ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet
+`$SKILL_DIR/scripts/check_dup_ratchet.py`): `quality` owns the portable
+payload/policy and exemption contract; consumer repos own stack-specific probes,
+scope, and artifacts.
 
 ## Language And Adapter Policy
 
@@ -197,6 +241,15 @@ advisory unless the adapter declares low-noise deprecated aliases.
 
 Use adapter/gate design review when adapter policy, recommendation queues,
 acknowledgements, migrations, or brittle gate promotion are in scope.
+
+Language baselines stay explicit.
+For Python, default to `ruff check` as the standing lint path, include `C90`,
+and choose exactly one type checker (`mypy` or `pyright`).
+For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when
+TypeScript is present, and turn on a `complexity` rule.
+This is a routing default, not a veto against good deterministic enforcement;
+do not over-apply it to standing threshold gates such as coverage floors, runtime budgets,
+or other already-honest enforced limits.
 
 ## Security And Supply Chain
 
@@ -221,6 +274,6 @@ repo-surface-driven escalations, not mandatory first-day defaults.
 
 If the repo keeps standing coverage floors, tag seams within
 `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in
-prose. `prompt_asset_roots: []` means no canonical asset root is declared; it is
-not an opt-out from inline prompt/content bulk inventory when prompt-sensitive
+prose. `prompt_asset_roots: []` only means no canonical asset root is declared; it
+is not an opt-out from inline prompt/content bulk inventory when prompt-sensitive
 output matters.

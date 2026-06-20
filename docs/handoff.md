@@ -14,13 +14,10 @@
 ## Current State
 
 - **#391 baseline `tool_version` stamp — RESOLVED + PUSHED** (@ `edd8bade`); **#391
-  stays OPEN** for its 3 extraction candidates. Both nose code id-set baselines now
-  stamp the producing nose version and WARN (never degrade) on a scanner-version skew;
-  additive field, no schema bump, legacy-unstamped = "unknown". RCA + version-safe/
-  unsafe derived-surface inventory:
-  [debug artifact](../charness-artifacts/debug/2026-06-21-nose-baseline-tool-version-stamp.md).
-- **nose 0.14.0 floor + multi-root global clustering live** (prior sessions). The
-  clone resolver analyzes the whole scope as one corpus; both baselines at 526 ids,
+  stays OPEN** for its 3 extraction candidates. Both nose id-set baselines stamp the
+  producing nose version and WARN (never degrade) on scanner-version skew (additive, no
+  schema bump). [debug](../charness-artifacts/debug/2026-06-21-nose-baseline-tool-version-stamp.md).
+- **nose 0.14.0 floor + multi-root global clustering live**; both baselines at 526 ids,
   stamped 0.14.0. First place to look if a consumer repo's clone gate behaves oddly.
 
 ## Next Session
@@ -39,15 +36,14 @@
   scaffolding, `*_adapter_lib`/`_adapter_policy` logic — judgment per family ("decide
   per family, don't chase the count"). #394 mutation regression re-fires on
   changed-line coverage while the score passes — real-gap vs noise triage.
-- **Tier 3 — the deferred skill sweep: `quality` anchor-split APPROVED + VERIFIED, ready to execute.**
-  Operator approved (2026-06-21); a distinct-channel adversarial verifier proved it
-  `LOSSLESS-ACHIEVABLE` via concept-separation (zero orphans; the prior defer was
-  delete-without-merge). The ready-to-execute slice plan lives in the
-  [sweep goal Operator Decision Queue](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
-  (merge distinct routing → `inventory-dispatch.md`, fold principles → Workflow/
-  Guardrails verbatim, re-point ~38 quality-skill-doc test pins = the
-  losslessness oracle, sync/critique/commit). Then impl/debug/achieve bodies follow
-  the same recipe.
+- **Tier 3 — `quality` anchor-split EXECUTED; impl/debug/achieve bodies are the
+  same-recipe follow-on.** The `quality` `## Load-Bearing Anchors` catalog was dissolved
+  (routing → `inventory-dispatch.md`, CORE+judgment → Workflow/Guardrails, a `## Routing`
+  pointer replaced it; SKILL.md 200→191/200). Lossless by the green oracle
+  (`tests/quality_gates/` 2283 + contracts + 3 distinct-channel fresh-eye reviewers, zero
+  orphans); see the [critique](../charness-artifacts/critique/2026-06-21-quality-anchor-split.md)
+  and the sweep goal ODQ EXECUTED block. **Next:** apply the SAME recipe to the
+  impl/debug/achieve bodies (2 deferred NITs noted in the critique).
 - **Tier 4 — deferred ledger + ops.** D30 (dup-ratchet id-rotation affordance), D31
   (handoff chunker reconcile-against-recent-commits) in
   [deferred-decisions.md](./deferred-decisions.md); ceal #417; other-machine

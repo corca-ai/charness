@@ -232,6 +232,22 @@ both are external-write boundaries the goal contract scopes out by default).
     Economics` (L168, passes vs Output Shape) or `structural smell sensors` (L166,
     intro) — moving them regresses. (6) sync mirror, verify, fresh-eye critique,
     commit. Then the impl/debug/achieve bodies follow the same recipe.
+  - **EXECUTED 2026-06-21 (the `quality` anchor-split landed).** The `## Load-Bearing
+    Anchors` catalog was dissolved exactly per the plan: distinct/duplicated routing →
+    `references/inventory-dispatch.md` (verbatim phrases), CORE-contract + judgment cues
+    folded into `SKILL.md` `## Workflow`/`## Guardrails`, the catalog replaced by a short
+    `## Routing` pointer. SKILL.md 200/200 → 191/200 (9 headroom restored). ~40 test pins
+    re-pointed across `test_quality_skill_docs.py` + `test_docs_and_misc.py` +
+    `test_quality_dual_implementation.py` (the green losslessness oracle). Proof: full
+    `tests/quality_gates/` = 2283 passed; `check_skill_contracts` (13 core + 8 package),
+    `validate_quality_closeout_contract`, `validate_skills`, ergonomics, markdown,
+    doc-links, mirror-drift all green; `--verification-lock` closeout exit 0. Three
+    distinct-channel fresh-eye reviewers returned `LOSSLESS-CONFIRMED` /
+    `RELOCATION-SOUND` / `SEPARATION-HONEST` (zero orphans; cautilus-refuse safety stays
+    in the always-loaded body and gate-enforced). Critique:
+    [2026-06-21-quality-anchor-split](../critique/2026-06-21-quality-anchor-split.md).
+    Two deferred NITs recorded there. The impl/debug/achieve bodies remain the follow-on
+    (same recipe).
 
 ## Discuss before activation
 

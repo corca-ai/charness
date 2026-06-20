@@ -73,6 +73,12 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
    - before reporting runtime trends, prefer
      `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are
      missing, report that as the next gate instead of inventing numbers
+   - Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract
+     at `references/cautilus-on-demand.md`; refuse on `next_action: "none"` (or
+     `must_ask_before_running: true` without a named failing-log path), and
+     route the call through the repo-owned wrapper instead of bare `cautilus evaluate`.
+     Supported modes are `fixture`, `observation`, `skill-experiment`; for
+     recommend-only behavior tests use `references/behavior-testing.md`.
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
@@ -91,40 +97,25 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
    - implement clear repo-owned automation unless the user asked for review only
    - do not leave dual implementations, duplicated proof, or stale command
      surfaces in an unpriced "keep both for safety" state
+   - When the next quality move is repo-local, deterministic, and low-risk, prefer
+     implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in
+     the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate,
+     name the unresolved enforcement gap.
 8. Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations
    as `high-leverage`, applying host-exposed
    `reviewer_tiers.high-leverage` fields. Report exactly
    `Delegated Review: executed|blocked|not_applicable`. Blocked requires a concrete
    host or tool signal; use `../../shared/references/fresh-eye-subagent-review.md`.
-9. End with a quality posture summary that does not hide `Weak`, `Missing`,
-   `Advisory`, delegated-review status, or active recommended next gates just
-   because the implemented slice or final gate passed.
+9. End with a quality posture summary. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings just because the implemented slice or final gate passed.
 
-## Load-Bearing Anchors
+## Routing
 
-Validators and consumer prompts use these core routing anchors; references carry detail.
-
-- The prior quality artifact is history; a fresh 5-minute reader can misclassify as absent an invariant that is merely scattered, so do not dismiss that as reader noise.
-- For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading test, use `quality` before downgrading to HITL. Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
-- For recommend-only behavior robustness findings, use `$SKILL_DIR/scripts/recommend_behavior_test.py` so artifacts carry the Cautilus robustness request/report vocabulary instead of prose-only advice.
-- Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract at `references/cautilus-on-demand.md`; for recommend-only behavior tests, use `references/behavior-testing.md`. Supported modes are `fixture`, `observation`, and `skill-experiment`. Refuse when `next_action: "none"` or when `must_ask_before_running: true` without a named failing-log path, and route the call through the repo-owned wrapper instead of bare `cautilus evaluate`.
-- When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate, name the unresolved enforcement gap.
-- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`. Inventories named in `## Commands Run` must engage with at least two distinct declared non-headline fields (one is enough when only one is declared); the `validate-inventory-consumption` phase fails closeout when the artifact summarizes a cited inventory by headline only, and `validate-inventory-consumption-declaration` plus `check-inventory-declaration-coverage` keep the declaration drift-free and complete (declaration: `references/inventory-consumer-fields.json`).
-- Skill review uses `$SKILL_DIR/scripts/inventory_skill_ergonomics.py`, skill ergonomics, mode/option pressure, trigger overlap, undertrigger risk, taste policing, and repeated prose ritual checks.
-- CLI/operator review uses `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`, flat help-list, multiple archetype schema namespaces, `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`, option-looking positional rejection, mutating command probes, and command-docs drift gate checks.
-- Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
-- Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
-- Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, `$SKILL_DIR/scripts/inventory_structural_waste.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, duplicate broad discovery/collection, broad scanner prefiltering, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles (or a repo-declared `command_timing_log` as the sample source), Pytest Economics, and bounded test-ratio posture. For local-gate-*speed* triage add `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py`, the counterweight that flags only the costly local gates CI fully re-runs as move-off-local candidates (the rest stay `keep-local`); see `references/ci-recoverable-gate-triage.md`.
-- Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, classify hidden broad-test compensation as a design smell rather than only a runtime smell, distinguish structural test cleanup (extract builders/wrappers/runners/shared assertions, keep intent in `.test.*`) from hiding test bodies in support files, and on duplicate/pressure-gate failure score candidates through `references/quality-signal-scorecard.md` and name the smallest next structural cleanup instead of only reporting the percentage.
-- Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`; duplicate ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet `$SKILL_DIR/scripts/check_dup_ratchet.py`): `quality` owns the portable payload/policy and exemption contract; consumer repos own stack-specific probes, scope, and artifacts.
-- Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
-- Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule. This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
-- prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
-- Watch stale gate wiring and hidden network/external-repo work in maintainer-local enforcement.
-- When repo evidence shows a production LLM or agent runtime, use `references/agent-production-runtime.md`: review cache/cost economics, overload fallback, retry idempotency, streaming stalls, model routing economics, and telemetry as evidence questions, not provider-specific architecture mandates.
-- For external/runtime capability slices, treat readiness-only proof (`surface`, `worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one `provider_roundtrip` is observed; see `../../shared/references/external-capability-proof-ladder.md`.
-- when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, inspect prompt/content bulk. `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline prompt/content bulk inventory should be skipped. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
-- Do not treat a passing length, duplicate, or pressure heuristic as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
+Detailed inventory routing — CLI/operator, docs/spec, skills, runtime/test
+economics, source hygiene, behavior/evaluator and Cautilus, boundary-bypass and
+duplicate ratchets, language lint baselines, agent-production-runtime, and
+coverage/eval — lives in `references/inventory-dispatch.md`. Reach for a focused
+inventory only when the quality question brings that surface into scope; the
+judgment that governs every route is in `## Workflow` and `## Guardrails`.
 
 ## Output Shape
 
@@ -134,14 +125,14 @@ Validators and consumer prompts use these core routing anchors; references carry
 
 - Do not split bounded repo-local quality setup into another public concept.
 - Do not recommend gates the repo cannot realistically run without saying why.
-- Do not treat a passing metric or green gate as the goal; name the structural simplification or ownership clarification.
+- Do not treat a passing length, duplicate, or pressure heuristic as the goal, and do not treat a passing metric or green gate as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
+- When the same confidence gap can be closed by shrinking production branches/interfaces rather than adding more tests, prefer the smaller production surface first.
 - Do not leave automatable rules as prose-only guidance.
-- Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`. The CI-recoverability lens is the bounded counterweight (not a loophole): it proposes moving a gate off-local only when CI fully re-runs that proof; see `references/ci-recoverable-gate-triage.md`.
+- Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`. The CI-recoverability lens is the bounded counterweight (not a loophole): it proposes moving a gate off-local only when CI fully re-runs that proof; see `references/ci-recoverable-gate-triage.md`. Watch stale gate wiring and hidden network/external-repo work in maintainer-local enforcement.
 - Do not give generic "add tests" or "improve security" advice without the seam and next setup.
-- Do not dismiss fresh-eye misreads when scattered evidence or undeclared
-  enforcement is the real gap.
-- Do not stop at producer-side validators when public-skill routing or durable
-  artifact behavior is the risk; run or name a consumer prompt and artifact.
+- The prior quality artifact is history; a fresh 5-minute reader can misclassify as absent an invariant that is merely scattered, so do not dismiss fresh-eye misreads as reader noise when scattered evidence or undeclared enforcement is the real gap.
+- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold or name one consumer-side dogfood case and artifact.
+- Inspect inline prompt/content inventory when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured; routing in `references/inventory-dispatch.md`.
 - Do not write size, runtime, or cost numbers that did not come from a command run this turn; label estimates explicitly. See `references/proposal-flow.md`.
 - Do not propose a new enforcement gate for an advisory cost before checking `git log -S`, `grep -rn`, and `pyproject.toml` markers for an existing convention; if one is ignored, the recommendation is the routing fix. See `references/proposal-flow.md`.
 

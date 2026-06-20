@@ -193,9 +193,9 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
 
 def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
     skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     verification_ladder = (
         ROOT / "skills" / "public" / "impl" / "references" / "verification-ladder.md"
     ).read_text(encoding="utf-8")
@@ -209,8 +209,8 @@ def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
     assert "code/fixture" in skill_text
     assert "Browser-Facing Output" in verification_ladder
     assert "same-agent/manual review" in verification_ladder
-    assert "operator reading test" in quality_text
-    assert "before downgrading to HITL" in quality_text
+    assert "operator reading test" in dispatch
+    assert "before downgrading to HITL" in dispatch
 
 
 def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> None:
@@ -445,6 +445,9 @@ def test_release_bump_version_applies_valid_set_version_and_runs_sync(tmp_path: 
 
 def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     adapter_contract = (
         ROOT / "skills" / "public" / "quality" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
@@ -461,7 +464,7 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     assert "prior quality artifact is history" in skill_text
     assert "bounded fresh-eye reviewer" in skill_text
     assert "active` or `passive" in skill_text
-    assert "prompt/content bulk" in skill_text
+    assert "prompt/content bulk" in dispatch
     assert "fresh 5-minute reader" in skill_text
     assert "coverage_floor_policy" in adapter_contract
     assert "spec_pytest_reference_format" in adapter_contract
@@ -479,6 +482,9 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
 
 def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     automation = (
         ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
     ).read_text(encoding="utf-8")
@@ -493,7 +499,7 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
     ).read_text(encoding="utf-8")
 
     assert "prefer the smaller production surface first" in skill_text
-    assert "bounded test-ratio posture" in skill_text
+    assert "bounded test-ratio posture" in dispatch
     assert "stale gate wiring" in skill_text
     assert "shrinking production\nsurface" in automation
     assert "changed-file router" in economics
@@ -618,13 +624,16 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
 
 def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     prompt_policy = (
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
     assert "must not silently omit `Weak`, `Missing`, `Advisory`" in skill_text
     assert "active `Recommended Next Gates`" in skill_text
-    assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in skill_text
+    assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in dispatch
     assert "must not suppress inline prompt/content inventory" in prompt_policy
 
     result = run_script("scripts/validate_quality_closeout_contract.py", "--repo-root", str(ROOT))
@@ -650,7 +659,9 @@ def test_current_cautilus_guidance_uses_eval_surface() -> None:
 
 def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:
     impl_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     prompt_policy = (
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
@@ -658,7 +669,7 @@ def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:
 
     assert "generic" in impl_text
     assert "review or closeout wording must not silently launch Cautilus" in impl_text
-    assert "Generic review, closeout, or \"run quality\" wording" in quality_text
+    assert "Generic review, closeout, or \"run quality\" wording" in dispatch
     assert "generic review, closeout, or quality-gate wording" in prompt_policy
     assert "not a Cautilus execution" in prompt_policy
     assert "prompt behavior regression" in manifest["intent_triggers"]

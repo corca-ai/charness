@@ -40,13 +40,13 @@ def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) 
 
 
 def test_quality_skill_carries_dual_implementation_lens() -> None:
-    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
     parity_text = (
         ROOT / "skills" / "public" / "quality" / "references" / "dual-implementation-parity.md"
     ).read_text(encoding="utf-8")
 
-    assert "inventory_dual_implementation.py" in skill_text
-    assert "free safety oracle" in skill_text
+    assert "inventory_dual_implementation.py" in dispatch
+    assert "free safety oracle" in dispatch
     assert "free oracle" in parity_text
