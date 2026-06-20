@@ -13,44 +13,43 @@
 
 ## Current State
 
-- **v0.52.6 released** (pushed + tagged + verified): dup-ratchet hardening +
-  `check_dup_ratchet.py` coverage (0->86%, #393) + nose 0.13.3 scan->query migration. CI
-  Quality Core green; install refreshed (plugin == repo).
-- **lychee BUY reverted** (item ②): 0 behavioral gain vs the existing 2-line `.exists()`;
-  net-negative, reset to origin/main. Lesson: a BUY must beat the *existing baseline*, not
-  a strawman. v0.52.6 findings resolved (#395 filed; pre-push vs release-mode divergence =
-  intended design).
+- **North-Star Overhaul → a pursue-ready `achieve` goal.** This session moved it from
+  roadmap-only to executable:
+  [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
+  (`check_goal_artifact --pursue-ready = True`; Status: draft, inert until `/goal`). Done
+  this session: Phase 0 diagnosis back-test (PARTIALLY CONFIRMED → proceed; sharpened to
+  distinct-*channel* not anti-gate, + #385 mirror-image); Dynamic Workflows standing
+  pre-authorization (AGENTS.md + wired via `setup`); matt-skills + craken + the arrived
+  bug-hunt/better-UT absorbed under baseline discipline (small net-new core — notes under
+  `charness-artifacts/audit/2026-06-20-*`).
+- **v0.52.6 still the released surface** — no release this session; all commits are
+  docs/artifacts. Several commits ahead of origin/main; push at maintainer cadence.
 
 ## Next Session
 
-- **TOP PRIORITY — execute the North-Star Overhaul**
-  ([roadmap](./north-star-overhaul-roadmap.md)). Authored but **barely started**: only
-  the #386 non-terminality pilot landed; Phase 1 (#387) + Phases 2-4 are unstarted, so
-  the public **skills do NOT yet embody the new doctrine** (equip a judge; teeth only
-  where a wrong answer escapes; non-terminal per-unit disposition over terminal-green).
-  Now #1 because it **gates propagating the doctrine to consumer repos (ceal)**. Start:
-  Phase 0 (validate diagnosis) -> Phase 1 (#387, aggregate closeout-shape errors in one
-  pass). Open question (roadmap): one `achieve` goal vs independent issues.
-- **craken-agents absorption (recurring overhaul input).** Pass-1 done
-  ([note](../charness-artifacts/audit/2026-06-20-craken-agents-absorption-pass-1.md)):
-  craken & charness independently converged on the north star, so wins are better
-  phrasings/worked examples (A1 survivor-disposition, A2 re-audit-by-removal, A4
-  evidence-depth), not new capability. craken's skills (bug-hunt) live on its dev machine,
-  not in the repo — operator requested them separately (pending); until then learn from
-  craken's **code structure + docs only**. Re-run each session.
-- **matt-skills (skill-redesign reference — review AGGRESSIVELY).** When the overhaul
-  redesigns charness skills, actively mine ../matt-skills for skill patterns (same
-  baseline discipline). Unexplored so far — first pass pending.
-- **ceal propagation — issue filed (corca-ai/ceal#417).** ceal embeds charness via a
-  vendored pin (~31 commits behind v0.52.6) AND a machine-level plugin (already v0.52.6) —
-  the two are diverged and the agent runs on the stale vendored copy. Issue #417 covers:
-  delete the broken native nose advisory + route through vendored charness (own zero
-  charness copies), bump pin to the v0.52.6 tag, reconcile both surfaces, lean-adopt the
-  dup-ratchet, harden the staleness signal. North-star overhaul deferred there.
+- **TOP PRIORITY — activate the overhaul-sweep goal:**
+  `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md` (pursue-ready;
+  operator deferred activation to this session per the 2026-06-20 decision). Slices:
+  **S0** concept spec + critique (gating) → **S1 R2** (wire the #386 distinct-channel
+  observer + an AI-provenance marker onto the standalone `issue resolve`/PR-close path —
+  the open escape: that path has no coded rung-2 today, `CLOSED` is the terminal-green
+  proxy) → **S2 R1** (de-dup the rung-1 grammar cloned ~4x into one shared substrate) →
+  **S3 WS-B** (capped-body redesign with the absorbed instruments + graft a new
+  `quality/references/unit-test-quality.md`) → **S4** closeout. 6 consolidation
+  risk-constraints are binding (see the goal). Design inputs: the
+  [Phase-0 back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md),
+  the [reference-absorption note](../charness-artifacts/audit/2026-06-20-reference-absorption-overhaul-inputs.md),
+  and cluster-survey `wf_f03ba5fe-62d` (per-unit-disposition family map; ephemeral — folded
+  into S0). The [roadmap](./north-star-overhaul-roadmap.md) Phase 0 block is now resolved.
+- **Reference absorption is current.** matt-skills first pass done; craken bug-hunt +
+  better-UT (the pending-share arrivals) evaluated per-surface + folded (both MOSTLY-CONVERGENT;
+  only net-new = the WS-B `unit-test-quality.md` graft). Re-run craken absorption only if
+  new material arrives.
+- **ceal propagation — issue filed (corca-ai/ceal#417)** — unchanged; the overhaul doctrine
+  stays deferred there until charness embodies it (S0–S4 above).
 - **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
-  to advisory (surviving value from item ②), then critique/skill-ergonomics demotions.
-  Plus: changed-line gate `--reuse-coverage` should skip a coverage file containing none
-  of the changed paths (removes a false-block class, not a floor).
+  to advisory, then critique/skill-ergonomics demotions. Plus: changed-line gate
+  `--reuse-coverage` should skip a coverage file containing none of the changed paths.
 - **Untouched:** [#391](https://github.com/corca-ai/charness/issues/391) extractions +
   tool_version stamp; #392 gather X; #371 agent-browser teardown.
 
@@ -62,6 +61,8 @@
 
 ## References
 
+- [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
+  (the pursue-ready pickup),
 - [design north star](./design-north-star.md),
   [north-star overhaul roadmap](./north-star-overhaul-roadmap.md),
   [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md),
