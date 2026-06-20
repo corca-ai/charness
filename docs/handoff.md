@@ -13,50 +13,56 @@
 
 ## Current State
 
-- **nose 0.14.0 compat pass COMPLETE → committed + PUSHED to origin/main**
-  (@ `8d5f9998`; compat commit `789d2d7d`, mechanics there). Push verified via
-  `git ls-remote` + `gh api` (distinct channels). schema v4 query JSON parses **unchanged**
-  (no consumer code touched); the family-id set shifted, so re-seeded
-  [nose-baseline.json](../charness-artifacts/quality/nose-baseline.json) (487→491)
-  and [dup-ratchet-baseline.json](../charness-artifacts/quality/dup-ratchet-baseline.json)
-  (`--confirm-baseline-delta`, deliberate version swing). Tree was clean → all
-  drift is scanner-version-attributable.
-  [doc-nose-baseline.json](../charness-artifacts/quality/doc-nose-baseline.json)
-  unchanged (signature-keyed, 0 drift). Floor bumped `>=0.13.3 → >=0.14.0` +
-  synced mirror.
-- **Verify:** 91 nose/dup-ratchet tests; clone advisory clean; dup-ratchet exit 0;
-  `validate_integrations` ok; `doctor` ok; fresh-eye **SOUND**.
-- **v0.53.0 live** (prior session): skill-body redesign released.
+- **#395 dup-ratchet family_id churn — RESOLVED + CLOSED + PUSHED**
+  (@ `6658acec`). The gate keyed code-newness on nose's family `id`, which folds
+  member line-offset + file path (not just content), so member-file edits rotated
+  ids and false-blocked with zero new duplication. Solution (a) is impossible
+  (nose emits no position-independent id); shipped reporter solution (b): doc
+  correction across 3 carriers + a real-nose characterization test + lockstep
+  re-baseline. The affordance (solution c) is deferred as **D30** in
+  [deferred-decisions.md](./deferred-decisions.md). Mechanics + RCA:
+  [debug artifact](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md).
+- **Chunk-2 multi-root resolver — DONE + PUSHED** (@ `91aae959`). `collect_families`
+  now runs ONE nose 0.14.0 `--root` multi-root query (global clustering) instead of
+  a per-root loop. **Quality-contract change**: family set 491→525 (gains 108
+  cross-root clone families the per-root loop missed; both id-set baselines
+  re-baselined lockstep, `--confirm-baseline-delta`). Critiqued (3 angles +
+  counterweight):
+  [critique](../charness-artifacts/critique/2026-06-21-quality-nose-multiroot-resolver.md).
+- **nose 0.14.0 floor live** (@ `8d5f9998`); **this machine's installed plugin
+  updated** (`charness update all`, doctor `matched` @ `>=0.14.0`). Other machines
+  still pending their own `update all`.
 
 ## Next Session
 
-- **Roll out nose 0.14.0 to the other machines.** Push is done (origin/main @
-  `8d5f9998`); the only remaining action is `charness update all` on each machine
-  (re-runs nose's installer = latest = 0.14.0). Until a machine updates, its
-  `doctor` shows nose version `mismatch` against the new `>=0.14.0` floor —
-  expected, clears on `update all`.
-- **Leverage 0.14.0 (optional, not compat-required).** New `nose query --root/-r`
-  multi-root + advertised `query.capabilities.multi_root` could collapse the
-  per-root loop in `collect_families`; hidden `nose gap-impact` diagnostic exists.
+- **Other-machine nose rollout (operator).** Run `charness update all` on each
+  remaining machine. Low urgency — nothing is broken (binaries are fine); this
+  just propagates the pushed repo state to each installed plugin.
+- **D30 — dup-ratchet id-rotation affordance.** The real relief for #395's
+  false-block (recognize a pure rotation by position-independent member set →
+  downgrade hard-block to advisory). Needs a baseline schema migration + must guard
+  the false-negative (a new clone reusing the same member files). See
+  [deferred-decisions.md](./deferred-decisions.md) D30.
 - **`quality` anchor-split (ODQ #2).** Still blocked: `## Load-Bearing Anchors` is
   pinned by ~60 [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py)
-  assertions. Unblock = operator approves moving them to
-  `quality/references/inventory-dispatch.md`, then collapse the catalog (pure
-  clarity, pressure-exempt). See the skill-body goal ODQ.
-- **Deferred proofs / open tracks:** overhaul-sweep R2 (a real `issue resolve`/
-  PR-close through the floors); **ceal #417** (propagate the doctrine); gate
-  demotions (`check_doc_links` backtick→advisory; `--reuse-coverage` skip);
-  **untouched issues:** #387, #391, #392, #371, #394, #395.
+  assertions; unblock = operator approves moving them to
+  `quality/references/inventory-dispatch.md`, then collapse the catalog.
+- **Open issues:** #394 (mutation regression on main), #387, #391, #392, #371.
+- **Deferred proofs:** overhaul-sweep R2 (a real `issue resolve`/PR-close through
+  the floors); **ceal #417**; gate demotions (`check_doc_links` backtick→advisory;
+  `--reuse-coverage` skip).
 
 ## Discuss
 
-- **nose rollout — DECIDED + EXECUTED this session.** Operator approved push;
-  compat is on origin/main. No open decision remains — residual is purely the
-  per-machine `charness update all` (Next Session). Re-open only if a machine
-  reports unexpected nose breakage after updating.
+- **Multi-root clone model is now live (chunk-2).** It is a deliberate
+  quality-contract change (per-root → global). If a consumer repo behaves oddly on
+  the new global clone model, that is the first place to look — but it is verified,
+  critiqued, and the coverage shift (51 marginal within-root spans dropped, 186
+  cross-root spans gained) is documented in the commit body + critique.
 
 ## References
 
 - [nose manifest](../integrations/tools/nose.json),
+  [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
   [design north star](./design-north-star.md),
   [recent-lessons](../charness-artifacts/retro/recent-lessons.md)
