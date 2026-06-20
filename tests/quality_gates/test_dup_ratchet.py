@@ -181,6 +181,31 @@ def test_validate_gate_baseline_flags_bad_schema_and_ids() -> None:
     assert "schemaVersion" in joined and "code_family_ids[0]" in joined
 
 
+# --------------------------------------------------------------------------- #
+# Scanner tool_version stamp (issue #391): build stamps it, validate accepts it as
+# an optional string, the read path exposes it for skew detection.
+# --------------------------------------------------------------------------- #
+def test_build_gate_baseline_stamps_and_reads_tool_version() -> None:
+    assert "tool_version" not in lib.build_gate_baseline(["a"])  # unknown stays unstamped
+    stamped = lib.build_gate_baseline(["b", "a"], tool_version="0.14.0")
+    assert stamped["tool_version"] == "0.14.0" and stamped["code_family_ids"] == ["a", "b"]
+    assert lib.validate_gate_baseline(stamped) == []  # additive, no schemaVersion bump
+    assert lib.load_gate_baseline_tool_version(stamped) == "0.14.0"
+
+
+def test_load_gate_baseline_tool_version_empty_on_absent_or_nonstring() -> None:
+    assert lib.load_gate_baseline_tool_version({"code_family_ids": ["a"]}) == ""
+    assert lib.load_gate_baseline_tool_version({"tool_version": 14}) == ""
+    assert lib.load_gate_baseline_tool_version(None) == ""
+
+
+def test_validate_gate_baseline_rejects_nonstring_tool_version() -> None:
+    errors = lib.validate_gate_baseline(
+        {"schemaVersion": lib.GATE_BASELINE_SCHEMA_VERSION, "tool_version": 14, "code_family_ids": ["a"]}
+    )
+    assert any("tool_version" in e for e in errors)
+
+
 def test_overlay_intentional_only_collects_intentional() -> None:
     overlay = {"entries": [
         {"surface": "code", "id": "ci", "class": "intentional"},
@@ -610,3 +635,101 @@ def test_inproc_doc_inventory_status_degrades(tmp_path: Path) -> None:
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(bad_doc))
     assert report["status"] == "degraded"
     assert any("doc inventory degraded" in r for r in report["degraded_reasons"])
+
+
+# --------------------------------------------------------------------------- #
+# Scanner tool_version stamp (issue #391): the live version threads through the
+# code-family helpers, stamps the baseline on write, and surfaces a skew WARNING on
+# evaluate WITHOUT degrading the block. In-process so coverage attributes the lines
+# (the #393 subprocess-only class — the injected-inventory branch carries the version).
+# --------------------------------------------------------------------------- #
+def test_payload_tool_version_reads_or_empty() -> None:
+    assert check._payload_tool_version('{"tool_version": "0.14.0"}') == "0.14.0"
+    assert check._payload_tool_version('{"families": []}') == ""  # unstamped
+    assert check._payload_tool_version("") == ""
+    assert check._payload_tool_version(None) == ""
+    assert check._payload_tool_version("not json{") == ""
+    assert check._payload_tool_version('{"tool_version": 14}') == ""  # non-string
+    assert check._payload_tool_version("[1, 2]") == ""  # not a dict
+
+
+def test_scan_code_family_ids_threads_live_version(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        check._nose_report, "collect_families",
+        lambda *_a, **_k: {"status": "findings", "families": [{"id": "x"}], "tool_version": "0.14.0"},
+    )
+    ids, reason, version = check._scan_code_family_ids(tmp_path, ["scripts"])
+    assert ids == {"x"} and reason is None and version == "0.14.0"
+
+
+def test_scan_code_family_ids_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        check._nose_report, "collect_families",
+        lambda *_a, **_k: {"status": "error", "stderr": "boom", "families": [], "tool_version": "0.14.0"},
+    )
+    ids, reason, version = check._scan_code_family_ids(tmp_path, ["scripts"])
+    assert ids == set() and "boom" in reason and version == "0.14.0"  # error still carries the live version
+    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: None)
+    ids, reason, version = check._scan_code_family_ids(tmp_path, [])
+    assert ids == set() and "nose binary not found" in reason and version == ""
+
+
+def test_code_family_ids_injected_threads_version_and_unreadable(tmp_path: Path) -> None:
+    inv_path = tmp_path / "c.json"
+    inv_path.write_text(json.dumps({"families": [{"family_id": "a"}], "tool_version": "0.14.0"}), encoding="utf-8")
+    args = check.parse_args(["--code-inventory", str(inv_path)])
+    ids, reason, version = check._code_family_ids(args, tmp_path, [])
+    assert ids == {"a"} and reason is None and version == "0.14.0"
+    missing = check.parse_args(["--code-inventory", str(tmp_path / "absent.json")])
+    ids, reason, version = check._code_family_ids(missing, tmp_path, [])
+    assert ids == set() and "unreadable" in reason and version == ""
+
+
+def test_inproc_write_baseline_stamps_tool_version(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("old",))
+    code_json = _write_json(
+        tmp_path / "code.json",
+        {"families": [{"family_id": "a"}, {"family_id": "b"}], "tool_version": "0.14.0"},
+    )
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline")
+    assert report["status"] == "baseline-written" and report["tool_version"] == "0.14.0"
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert written["tool_version"] == "0.14.0"
+    assert lib.validate_gate_baseline(written) == []
+
+
+def test_inproc_version_skew_warns_without_degrading_block(tmp_path: Path) -> None:
+    # Baseline minted under nose 0.13.0; the live (injected) scan is 0.14.0 and every
+    # id rotated -> a wall of "new" families. The gate STILL hard-blocks (never
+    # degrades on skew), but surfaces the skew so the operator re-baselines.
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    (repo / "q" / "dup-ratchet-baseline.json").write_text(
+        json.dumps({"schemaVersion": "charness.quality.dup_ratchet_baseline.v1",
+                    "tool_version": "0.13.0", "code_family_ids": ["known1"]}),
+        encoding="utf-8",
+    )
+    code_json = _write_json(
+        tmp_path / "code.json",
+        {"status": "findings", "tool_version": "0.14.0",
+         "families": [{"family_id": "ROT1"}, {"family_id": "ROT2"}]},
+    )
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["status"] == "hard-block" and report["block"] is True  # never degraded
+    assert report["version_skew"] and "0.13.0" in report["version_skew"] and "0.14.0" in report["version_skew"]
+    assert any("scanner-version skew" in m for m in report["messages"])
+
+
+def test_inproc_no_version_skew_on_legacy_unstamped_baseline(tmp_path: Path) -> None:
+    # The _consumer_repo baseline carries NO tool_version (legacy). A live 0.14.0 scan
+    # must NOT warn (a missing stamp is "unknown", not a mismatch) and must not block.
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    code_json = _write_json(
+        tmp_path / "code.json",
+        {"status": "findings", "tool_version": "0.14.0", "families": [{"family_id": "known1"}]},
+    )
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["version_skew"] is None and report["status"] == "clean"

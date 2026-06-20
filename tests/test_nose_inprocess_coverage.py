@@ -306,6 +306,53 @@ def test_write_baseline_payload_writes_id_set(tmp_path: Path) -> None:
     written = json.loads((tmp_path / nb.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
     assert written["code_family_ids"] == ["a", "b"]  # sorted, deduped, empties dropped
     assert written["schemaVersion"] == nb.BASELINE_SCHEMA_VERSION
+    assert "tool_version" not in written  # unstamped when the producing version is unknown
+
+
+# --------------------------------------------------------------------------- #
+# Scanner tool_version stamp (issue #391): write stamps it, read warns on skew.
+# --------------------------------------------------------------------------- #
+def test_tool_version_skew_warns_only_on_real_mismatch() -> None:
+    msg = nr.tool_version_skew("0.13.0", "0.14.0")
+    assert msg and "0.13.0" in msg and "0.14.0" in msg and "re-baseline" in msg.lower()
+    # same version, or either side missing/blank -> no warning (a missing stamp is
+    # "unknown", NOT a mismatch: legacy baselines must not warn until re-baselined).
+    assert nr.tool_version_skew("0.14.0", "0.14.0") is None
+    assert nr.tool_version_skew("", "0.14.0") is None
+    assert nr.tool_version_skew("0.13.0", "") is None
+    assert nr.tool_version_skew(None, None) is None
+    assert nr.tool_version_skew("  0.14.0 ", "0.14.0") is None  # whitespace-normalized
+
+
+def test_build_baseline_stamps_tool_version_only_when_known() -> None:
+    assert "tool_version" not in nb.build_baseline(["a"])  # legacy/unknown stays unstamped
+    stamped = nb.build_baseline(["a"], tool_version="0.14.0")
+    assert stamped["tool_version"] == "0.14.0"
+    assert stamped["code_family_ids"] == ["a"]
+
+
+def test_write_baseline_payload_stamps_tool_version(tmp_path: Path) -> None:
+    payload = nb.write_baseline_payload(tmp_path, None, ["a"], ["scripts"], tool_version="0.14.0")
+    assert payload["tool_version"] == "0.14.0"
+    written = json.loads((tmp_path / nb.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
+    assert written["tool_version"] == "0.14.0"
+
+
+def test_load_baseline_tool_version_reads_or_empty(tmp_path: Path) -> None:
+    rel = nb.DEFAULT_BASELINE_REL
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text(json.dumps({"code_family_ids": ["a"], "tool_version": "0.14.0"}), encoding="utf-8")
+    assert nb.load_baseline_tool_version(tmp_path, rel) == "0.14.0"
+    # absent rel / missing file / unstamped / non-string / unreadable JSON -> ""
+    assert nb.load_baseline_tool_version(tmp_path, None) == ""
+    assert nb.load_baseline_tool_version(tmp_path, "nope.json") == ""
+    target.write_text(json.dumps({"code_family_ids": ["a"]}), encoding="utf-8")
+    assert nb.load_baseline_tool_version(tmp_path, rel) == ""
+    target.write_text(json.dumps({"tool_version": 14}), encoding="utf-8")
+    assert nb.load_baseline_tool_version(tmp_path, rel) == ""
+    target.write_text("not json{", encoding="utf-8")
+    assert nb.load_baseline_tool_version(tmp_path, rel) == ""
 
 
 # --------------------------------------------------------------------------- #
@@ -542,6 +589,36 @@ def test_payload_for_args_write_baseline(monkeypatch, tmp_path: Path) -> None:
     assert seen["top"] == inv.WRITE_BASELINE_TOP and seen["top"] != 20
     written = json.loads((tmp_path / inv.nose_baseline.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
     assert written["code_family_ids"] == ["fid1", "fid2"]
+    # The write stamps the producing nose version (from the same scan, _collected's 0.13.3).
+    assert payload["tool_version"] == "0.13.3"
+    assert written["tool_version"] == "0.13.3"
+
+
+def test_payload_for_args_surfaces_version_skew(monkeypatch, tmp_path: Path) -> None:
+    # A baseline minted under nose 0.13.0, scanned now with 0.14.0 -> the advisory
+    # warns "re-baseline" instead of silently flooding with version-rotated drift.
+    rel = inv.nose_baseline.DEFAULT_BASELINE_REL
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text(
+        json.dumps({"schemaVersion": inv.nose_baseline.BASELINE_SCHEMA_VERSION,
+                    "code_family_ids": ["keep"], "tool_version": "0.13.0"}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        inv.nose_report, "collect_families",
+        lambda *_a, **_k: _collected([{"family_id": "keep"}], tool_version="0.14.0"),
+    )
+    payload = inv.payload_for_args(_args(tmp_path))
+    assert payload["version_skew"] and "0.13.0" in payload["version_skew"] and "0.14.0" in payload["version_skew"]
+    assert any("WARNING" in note and "skew" in note for note in payload["notes"])
+
+
+def test_print_human_findings_warns_on_version_skew(capsys) -> None:
+    inv.print_human(_findings_payload(version_skew="nose version skew: 0.13.0 vs 0.14.0; re-baseline"))
+    out = capsys.readouterr().out
+    assert "WARNING: nose version skew" in out
 
 
 def test_main_json_and_human(monkeypatch, tmp_path: Path, capsys) -> None:

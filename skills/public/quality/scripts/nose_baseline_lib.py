@@ -42,7 +42,9 @@ BASELINE_NOTE = (
     "any member edit (content, line offset, file path — and, by construction, membership) "
     "rotates it. The "
     "advisory is non-blocking, so re-baseline per scanner version (and when ids rotate) "
-    "with --write-baseline; never treat the accepted count as a reduction target (see item 5 review)."
+    "with --write-baseline; never treat the accepted count as a reduction target (see item 5 review). "
+    "The baseline stamps the producing nose tool_version; the read path warns when the live "
+    "scanner version differs so a silent bump reads as re-baseline, not a flood of false drift."
 )
 
 
@@ -85,16 +87,39 @@ def load_baseline_ids(repo_root: Path, baseline_rel: str | None) -> set[str] | N
     return {str(fid) for fid in ids if isinstance(fid, str) and fid}
 
 
-def build_baseline(code_family_ids: Iterable[str], *, note: str = BASELINE_NOTE) -> dict[str, Any]:
+def load_baseline_tool_version(repo_root: Path, baseline_rel: str | None) -> str:
+    """The nose version stamped into the baseline on its last ``--write-baseline``,
+    or ``""`` when absent/legacy/unreadable. The advisory compares it against the
+    live scanner version (``nose_report.tool_version_skew``) so a silent version bump
+    surfaces as "re-baseline" instead of a wall of false drift."""
+    if not baseline_rel:
+        return ""
+    try:
+        data = json.loads((repo_root / baseline_rel).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    version = data.get("tool_version") if isinstance(data, dict) else None
+    return version if isinstance(version, str) else ""
+
+
+def build_baseline(
+    code_family_ids: Iterable[str], *, tool_version: str = "", note: str = BASELINE_NOTE
+) -> dict[str, Any]:
     ids = sorted({str(fid) for fid in code_family_ids if fid})
-    return {"schemaVersion": BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
+    baseline: dict[str, Any] = {"schemaVersion": BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
+    # Stamp only when known: a legacy/unknown write stays unstamped (the read path
+    # treats a missing stamp as "unknown", never a false skew warning), not ``""``.
+    if tool_version:
+        baseline["tool_version"] = str(tool_version)
+    return baseline
 
 
 def write_baseline_payload(
-    repo_root: Path, baseline_rel: str | None, code_family_ids: Iterable[str], roots: list[str]
+    repo_root: Path, baseline_rel: str | None, code_family_ids: Iterable[str], roots: list[str],
+    *, tool_version: str = "",
 ) -> dict[str, Any]:
     rel = baseline_rel or DEFAULT_BASELINE_REL
-    baseline = build_baseline(code_family_ids)
+    baseline = build_baseline(code_family_ids, tool_version=tool_version)
     path = repo_root / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -106,6 +131,7 @@ def write_baseline_payload(
         "repo_root": str(repo_root),
         "paths": roots,
         "baseline": rel,
+        "tool_version": tool_version,
         "code_family_count": len(baseline["code_family_ids"]),
         "notes": [
             "Baseline accepts today's intentional/portability code clone family_ids so the advisory reports only new/changed drift.",

@@ -88,7 +88,10 @@ duplication:
 
 1. **Scanner-version bump.** A new nose version re-hashes every `family_id`; the
    whole set shifts. Trips the `--write-baseline` large-delta guard, so confirm it
-   deliberately with `--confirm-baseline-delta`.
+   deliberately with `--confirm-baseline-delta`. This case is now *self-detecting*:
+   each baseline stamps the producing `tool_version` on write, and the read path
+   surfaces a skew WARNING when the live scanner version differs (see below), so a
+   wall of "new" families reads as "re-baseline", not "remove duplication".
 2. **Member-file edit that shifts a duplicated span.** Editing any scanned file —
    even inserting lines *above* an unchanged duplicated span, or renaming/moving a
    member file — rotates the `family_id`s of every family that file belongs to
@@ -103,6 +106,21 @@ Re-baseline **both id-set baselines together** when ids rotate: the gate baselin
 (`dup-ratchet-baseline.json`) and the clone-advisory baseline (`nose-baseline.json`)
 key on the same `family_id` set and rotate in lockstep, so updating only the gate
 baseline that blocked you leaves the advisory baseline stale (silent advisory drift).
+
+**Scanner-version skew detection.** Both code id-set baselines stamp the nose
+`tool_version` that produced them (from the same scan that minted the ids, never a
+fresh probe). On read, the gate and the advisory compare the stamped version against
+the live scanner version and surface a one-line skew WARNING when they differ. The
+warning *explains* a block, it never *suppresses* one: the blocking gate keeps
+blocking on skew (degrading would silently drop the gate and let real new
+duplication through) — the operator just reads the hard-block as version-rotation to
+re-baseline rather than dup to remove. A *missing* stamp (a legacy baseline written
+before this field) is treated as "unknown", not a mismatch, so existing repos do not
+warn until their next deliberate re-baseline stamps the version. The doc-signature
+baseline (`doc-nose-baseline.json`) is the same class but lower stakes — advisory,
+and its `path#heading` signatures are position-independent and already floor-guarded
+at `nose >= 0.13.0` — so its version stamp is a deferred same-class sibling, not
+shipped here.
 
 A re-baseline driven by case 2 is expected churn, not a defect — it is the cost of
 keying on an offset-sensitive `family_id` (the known limitation the gate documents

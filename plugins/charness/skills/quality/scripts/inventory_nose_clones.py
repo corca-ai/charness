@@ -128,7 +128,8 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             }
         ids = {nose_report.family_identity(family) for family in families}
         return nose_baseline.write_baseline_payload(
-            repo_root, baseline, {fid for fid in ids if fid}, roots
+            repo_root, baseline, {fid for fid in ids if fid}, roots,
+            tool_version=collected.get("tool_version", ""),
         )
     if collected["status"] == "error":
         return {
@@ -155,6 +156,25 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
     else:
         drift = families
     summaries = [nose_report.family_summary(family) for family in drift]
+    # Scanner-version skew: a baseline written under a different nose version makes
+    # its accepted ids stale, so today's families read as drift even with zero new
+    # duplication. Surface "re-baseline", not a flood of false findings.
+    skew = (
+        nose_report.tool_version_skew(
+            nose_baseline.load_baseline_tool_version(repo_root, baseline),
+            collected.get("tool_version", ""),
+        )
+        if baseline_ids is not None
+        else None
+    )
+    notes = [
+        "nose findings are refactoring candidates, not standing quality failures.",
+        "Review only extractable non-bootstrap families before changing code; do not chase every reported family.",
+        "Map each reviewed family to a structural response (machine-owned consistency for intentional duplication, owned extraction, generated-surface ownership, or design review) per the quality inventory-dispatch reference.",
+        "Never treat total_dup_lines as a reduction target or a cross-scanner-version trend; re-baseline per scanner version.",
+    ]
+    if skew:
+        notes.insert(0, f"WARNING: {skew}")
     return {
         "status": "findings" if summaries else "clean",
         "advisory": True,
@@ -168,17 +188,13 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         "command": command,
         "exit_code": collected["exit_code"],
         "tool_version": collected.get("tool_version", ""),
+        "version_skew": skew,
         "family_count": len(summaries),
         "total_dup_lines": sum(int(summary.get("dup_lines") or 0) for summary in summaries),
         "families": summaries,
         "stderr": collected["stderr"],
         "interpretation": dict(INTERPRETATION),
-        "notes": [
-            "nose findings are refactoring candidates, not standing quality failures.",
-            "Review only extractable non-bootstrap families before changing code; do not chase every reported family.",
-            "Map each reviewed family to a structural response (machine-owned consistency for intentional duplication, owned extraction, generated-surface ownership, or design review) per the quality inventory-dispatch reference.",
-            "Never treat total_dup_lines as a reduction target or a cross-scanner-version trend; re-baseline per scanner version.",
-        ],
+        "notes": notes,
     }
 
 
@@ -200,6 +216,9 @@ def print_human(payload: dict[str, Any]) -> None:
         f"nose clone advisory (nose {version_label}): {status}; {payload['family_count']} families, "
         f"{payload['total_dup_lines']} duplicated lines in reported families."
     )
+    skew = payload.get("version_skew")
+    if skew:
+        print(f"WARNING: {skew}")
     ranking = payload.get("ranking")
     if isinstance(ranking, dict):
         total_families = ranking.get("total_families")

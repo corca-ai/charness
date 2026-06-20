@@ -47,6 +47,31 @@ NOSE_TIMEOUT_SECONDS = 180
 _VERSION_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
 
+def tool_version_skew(baseline_version: str | None, live_version: str | None) -> str | None:
+    """Operator warning when a stored baseline was minted under a different nose
+    version than the one now scanning, else ``None``.
+
+    family_ids are scanner-version-scoped (the id folds nose's normalize+hash, which
+    a version bump can change), so an unrecorded version skew makes every stored id
+    stale — the advisory floods with false drift and the blocking gate false-hard-
+    blocks a wall of "new" families that are really just version-rotated. A MISSING
+    stamp on either side returns ``None`` (it is "unknown", NOT a mismatch): legacy
+    unstamped baselines do not warn until a deliberate re-baseline stamps the version,
+    after which a future bump surfaces here. The warning never degrades a gate — it
+    explains a block rather than suppressing one (suppressing would hide real new
+    duplication)."""
+    base = str(baseline_version or "").strip()
+    live = str(live_version or "").strip()
+    if base and live and base != live:
+        return (
+            f"nose version skew: baseline written under nose {base}, now scanning with "
+            f"nose {live}. family_ids are scanner-version-scoped, so a re-baseline "
+            "(--write-baseline) is the honest fix — do NOT treat the rotated ids as new "
+            "duplication."
+        )
+    return None
+
+
 def resolve_tool_version(nose_bin: str) -> str:
     """Best-effort `nose --version` string ("" on failure). The `query` JSON omits
     the version that the removed `scan` report carried, so the advisory stamps it

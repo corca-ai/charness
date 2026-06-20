@@ -65,7 +65,9 @@ GATE_BASELINE_NOTE = (
     "file (even adding lines above an unchanged span) rotates it and forces a re-baseline with "
     "zero new duplication. Docs key on the position-independent doc-nose-baseline signature "
     "instead, not here. Re-baseline deliberately (to accept reviewed new families) per scanner "
-    "version AND on member-file edits that rotate ids (verify byte-identical base-vs-HEAD)."
+    "version AND on member-file edits that rotate ids (verify byte-identical base-vs-HEAD). "
+    "The baseline stamps the producing nose tool_version; the gate WARNS (never degrades) when the "
+    "live scanner version differs, so a silent bump's id-rotation reads as re-baseline, not new dup."
 )
 
 
@@ -101,9 +103,17 @@ def overlay_fixable_ceiling(overlay: dict[str, Any] | None) -> int:
 # --------------------------------------------------------------------------- #
 # Gate baseline (dup-ratchet-baseline.json) load/build/validate
 # --------------------------------------------------------------------------- #
-def build_gate_baseline(code_family_ids: Iterable[str], *, note: str = GATE_BASELINE_NOTE) -> dict[str, Any]:
+def build_gate_baseline(
+    code_family_ids: Iterable[str], *, tool_version: str = "", note: str = GATE_BASELINE_NOTE
+) -> dict[str, Any]:
     ids = sorted({str(fid) for fid in code_family_ids if fid})
-    return {"schemaVersion": GATE_BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
+    baseline: dict[str, Any] = {"schemaVersion": GATE_BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
+    # Additive, optional, no schemaVersion bump (a bump would make every existing
+    # unstamped baseline fail validate_gate_baseline and degrade the gate repo-wide).
+    # Stamp only when known so a legacy write stays unstamped, never a false skew.
+    if tool_version:
+        baseline["tool_version"] = str(tool_version)
+    return baseline
 
 
 def load_gate_baseline_ids(data: Any) -> set[str] | None:
@@ -117,12 +127,27 @@ def load_gate_baseline_ids(data: Any) -> set[str] | None:
     return {str(fid) for fid in ids if isinstance(fid, str) and fid}
 
 
+def load_gate_baseline_tool_version(data: Any) -> str:
+    """The nose version stamped into the gate baseline, or ``""`` when absent/legacy.
+    The gate compares it against the live scan version and surfaces a skew WARNING
+    (never a degrade): a silent scanner bump rotates every id into a false hard-block,
+    so the operator must read "re-baseline", not "remove duplication"."""
+    if isinstance(data, dict):
+        version = data.get("tool_version")
+        if isinstance(version, str):
+            return version
+    return ""
+
+
 def validate_gate_baseline(data: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ["gate baseline must be a JSON object"]
     if data.get("schemaVersion") != GATE_BASELINE_SCHEMA_VERSION:
         errors.append(f"schemaVersion must be {GATE_BASELINE_SCHEMA_VERSION!r}")
+    version = data.get("tool_version")
+    if version is not None and not isinstance(version, str):
+        errors.append("tool_version must be a string when present")
     ids = data.get("code_family_ids")
     if not isinstance(ids, list):
         errors.append("code_family_ids must be a list")

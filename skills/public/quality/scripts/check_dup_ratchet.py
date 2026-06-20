@@ -98,10 +98,10 @@ def _families_from_text(text: str | None) -> list | None:
     return families if isinstance(families, list) else []
 
 
-def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None]:
+def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
     nose_bin = _inventory.resolve_nose_bin()
     if nose_bin is None:
-        return set(), "nose binary not found; code clone scan skipped"
+        return set(), "nose binary not found; code clone scan skipped", ""
     paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
     # Full enumeration via the pinned `nose query` resolver: one nose 0.14.0
     # `--root` multi-root query over the whole scope (a cross-root clone is grouped,
@@ -111,23 +111,37 @@ def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[
         repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
         min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",
     )
+    live_version = result.get("tool_version", "")
     if result.get("status") == "error":
-        return set(), f"nose code scan error: {result.get('stderr', '')[:160]}"
+        return set(), f"nose code scan error: {result.get('stderr', '')[:160]}", live_version
     ids = {
         _nose_report.family_identity(fam)
         for fam in result.get("families", [])
         if isinstance(fam, dict) and _nose_report.family_identity(fam)
     }
-    return {fid for fid in ids if fid}, None
+    return {fid for fid in ids if fid}, None, live_version
 
 
-def _code_family_ids(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None]:
+def _payload_tool_version(text: str | None) -> str:
+    """Top-level nose tool_version stamped into an injected inventory --json payload,
+    or ``""`` when absent/unreadable. The injected scan's version is the live scanner
+    version for skew detection against the gate baseline's stamped version."""
+    try:
+        payload = json.loads(text) if text and text.strip() else {}
+    except json.JSONDecodeError:
+        return ""
+    version = payload.get("tool_version") if isinstance(payload, dict) else None
+    return version if isinstance(version, str) else ""
+
+
+def _code_family_ids(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
     if args.code_inventory is not None:
-        families = _families_from_text(_safe_read(args.code_inventory))
+        text = _safe_read(args.code_inventory)
+        families = _families_from_text(text)
         if families is None:
-            return set(), f"injected code inventory unreadable ({args.code_inventory})"
+            return set(), f"injected code inventory unreadable ({args.code_inventory})", ""
         ids = {str(fam.get("family_id")) for fam in families if isinstance(fam, dict) and fam.get("family_id")}
-        return ids, None
+        return ids, None, _payload_tool_version(text)
     return _scan_code_family_ids(repo_root, scope_paths)
 
 
@@ -176,7 +190,7 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    ids, reason = _code_family_ids(args, repo_root, scope_paths)
+    ids, reason, live_version = _code_family_ids(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "write-baseline-failed",
                 "messages": [f"cannot write gate baseline: {reason}"]}
@@ -207,7 +221,9 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
                     ],
                 }
             delta_note = f"confirmed large delta (+{len(added)}/-{len(removed)})"
-    baseline = _ratchet.build_gate_baseline(ids)
+    # Stamp the producing nose version from THIS scan (the run that minted these ids),
+    # never a fresh probe — so the stamp can never disagree with the ids it labels.
+    baseline = _ratchet.build_gate_baseline(ids, tool_version=live_version)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(baseline, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     message = f"wrote gate baseline ({len(ids)} code family_ids) -> {baseline_rel}"
@@ -215,7 +231,7 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
         message += f" [{delta_note}]"
     return {"ok": True, "inert": False, "status": "baseline-written",
             "code_family_count": len(ids), "gate_baseline_path": baseline_rel,
-            "messages": [message]}
+            "tool_version": live_version, "messages": [message]}
 
 
 def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
@@ -243,6 +259,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         degraded.append(f"overlay missing/unreadable ({review_rel})")
     raw_baseline = _load_json(repo_root / baseline_rel)
     baseline_ids = _ratchet.load_gate_baseline_ids(raw_baseline)
+    baseline_version = _ratchet.load_gate_baseline_tool_version(raw_baseline)
     if baseline_ids is None:
         degraded.append(f"gate baseline missing/unreadable ({baseline_rel})")
     elif (integrity := _ratchet.validate_gate_baseline(raw_baseline)):
@@ -251,7 +268,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         # but wired to nothing; fold it in here so a silent integrity drift surfaces
         # as advisory through the existing dup-ratchet phase. Advisory only (FD8).
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
-    code_ids, code_reason = _code_family_ids(args, repo_root, scope_paths)
+    code_ids, code_reason, live_version = _code_family_ids(args, repo_root, scope_paths)
     if code_reason:
         degraded.append(code_reason)
     elif args.code_inventory is None and not code_ids and baseline_ids:
@@ -278,6 +295,14 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         anchor=anchor, anchor_is_ancestor=is_ancestor, degraded_reasons=degraded,
     )
     verdict["inert"] = False
+    # Scanner-version skew is a WARNING, never a degrade: surface it ON the verdict
+    # (a block stays a block) so the operator reads a wall of "new" families as
+    # version-rotation to re-baseline, not real duplication to remove. degrading here
+    # would silently drop the gate and let genuine new dup through.
+    skew = _nose_report.tool_version_skew(baseline_version, live_version)
+    verdict["version_skew"] = skew
+    if skew:
+        verdict["messages"].append(f"WARNING (scanner-version skew): {skew}")
     return verdict
 
 
