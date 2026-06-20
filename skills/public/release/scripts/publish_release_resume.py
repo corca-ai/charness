@@ -158,6 +158,20 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         release_stdout=release_stdout, expected_release_url=expected_release_url,
         release_verified=release_verify_result.returncode == 0,
     )
+    # WS-1: the resumed publish crosses the same irreversible issue-close boundary,
+    # so it gets the same rung-2 distinct-channel observer + rung-1 presence floor.
+    cli.confirm_release_via_distinct_channel(
+        repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
+        tag_name=tag_name, expected_release_url=expected_release_url,
+    )
+    if not cli.evaluate_release_distinct_channel(payload)["ok"]:
+        cli.commit_final_release_artifact(
+            repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
+            fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
+            expected_release_url=expected_release_url, remote=args.remote, branch=branch,
+            has_issue_closeout=False,
+        )
+        cli.fail_release_distinct_channel_floor(payload)
     cli.ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
     # A resumed publish is still a verified publish: auto-run the adapter-declared
     # install-refresh before the final artifact commit so the result is durable.

@@ -146,6 +146,52 @@ def test_publish_release_does_not_close_issues_when_post_create_verification_fai
 
 
 @pytest.mark.release_only
+def test_publish_release_records_distinct_channel_confirmation_before_issue_close(tmp_path: Path) -> None:
+    # WS-1 rung-2: a channel distinct from `gh release view` confirms the published
+    # release, and the verdict is RECORDED before the irreversible issue close.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
+    Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    result = _run_publish_patch(repo, env, "--close-issue", "44")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["distinct_channel_verification"]["status"] == "confirmed"
+    assert payload["distinct_channel_verification"]["channel"] == "adapter-probe"
+    # the distinct channel actually ran (a channel separate from `gh release view`)
+    distinct_log = json.loads((tmp_path / "distinct-channel-log.json").read_text(encoding="utf-8"))
+    assert distinct_log == [["v0.0.1"]]
+    state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
+    assert state["44"] == "CLOSED"
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Distinct-Channel Verification" in artifact_text
+    assert "Rung-2 distinct-channel verdict: `confirmed`" in artifact_text
+
+
+@pytest.mark.release_only
+def test_publish_release_records_distinct_channel_disposition_and_still_closes(tmp_path: Path) -> None:
+    # F2a: a typed non-`verified` disposition (the distinct channel could not
+    # confirm) passes the rung-1 presence floor EQUALLY — the close advances on
+    # record-presence, never on an automated `confirmed ⇒ proceed` gate; the
+    # honesty of the `not-confirmed` is the human rung-2 audit.
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_DISTINCT_CHANNEL_RESULT"] = "fail"
+    env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
+    Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    result = _run_publish_patch(repo, env, "--close-issue", "44")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["distinct_channel_verification"]["status"] == "not-confirmed"
+    state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
+    assert state["44"] == "CLOSED"
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "Rung-2 distinct-channel verdict: `not-confirmed`" in artifact_text
+
+
+@pytest.mark.release_only
 def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 

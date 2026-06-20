@@ -114,6 +114,7 @@ verified.
      *P4*; `references/install-surface.md` Publication Closure Boundary); then
      closeout only from the verified release ledger (tag, version, URL) per
      `closeout-discipline.md`; surface `target_unavailable` on a moved target
+   - before the irreversible issue close, a rung-2 distinct-channel verdict + rung-1 presence floor refuse a *silent* close (*P4*; `references/install-surface.md`)
    - when the release resolves GitHub issues, pass `--close-issue <number>` (helper
      preflights `gh issue view`, carries close keywords, verifies/falls back to manual)
 8. End with update steps, then refresh the maintainer's own install.

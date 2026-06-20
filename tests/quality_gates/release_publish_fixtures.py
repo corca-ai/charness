@@ -45,6 +45,7 @@ def _write_release_adapter(repo: Path) -> None:
                 "checked_in_plugin_root: plugins/demo",
                 "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
+                "post_publish_distinct_channel_probe: distinct-channel-probe {tag}",
                 "update_instructions:",
                 "- Run `demo update`.",
                 "- Restart the host if the previous version is still visible.",
@@ -225,6 +226,38 @@ def _write_fake_gh(bin_dir: Path) -> None:
     )
 
 
+def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
+    """A network-free stand-in for the rung-2 distinct-channel probe. Exit 0
+    (confirmed) by default; ``FAKE_DISTINCT_CHANNEL_RESULT=fail`` -> exit 1
+    (a typed non-`verified` disposition). It logs its invocation so a test can
+    assert the distinct channel ran and is NOT `gh release view`."""
+    _write_exec(
+        bin_dir / "distinct-channel-probe",
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            from __future__ import annotations
+            import json
+            import os
+            import sys
+            from pathlib import Path
+
+            log = os.environ.get("FAKE_DISTINCT_CHANNEL_LOG")
+            if log:
+                path = Path(log)
+                entries = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+                entries.append(sys.argv[1:])
+                path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
+            if os.environ.get("FAKE_DISTINCT_CHANNEL_RESULT") == "fail":
+                print("distinct channel could not confirm the published release", file=sys.stderr)
+                raise SystemExit(1)
+            print("distinct channel confirmed the published release")
+            raise SystemExit(0)
+            """
+        ),
+    )
+
+
 def _setup_git(repo: Path, remote: Path) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
@@ -244,6 +277,7 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     _write_sync_script(repo)
     _write_quality_script(repo)
     _write_fake_gh(bin_dir)
+    _write_fake_distinct_channel_probe(bin_dir)
     _setup_git(repo, remote)
     return repo, remote, bin_dir
 
@@ -254,6 +288,7 @@ def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
     env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
+    env["FAKE_DISTINCT_CHANNEL_LOG"] = str(tmp_path / "distinct-channel-log.json")
     return env
 
 

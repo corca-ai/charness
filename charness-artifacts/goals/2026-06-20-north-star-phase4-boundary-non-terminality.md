@@ -9,23 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **WS-1 (release publish rung-1 + rung-2)** — S0 LOCKED
-  (2026-06-20). The concept spec
+- Current slice: **WS-2 (Direction-3 HOTL-entry floor on `verify-closeout`)** —
+  WS-1 DONE + committed (2026-06-20; fresh-eye slice critique PASS, no blockers).
+  S0 spec
   `charness-artifacts/spec/2026-06-20-phase4-boundary-non-terminality-concept.md`
-  is locked (gating critique PASS-WITH-CONDITIONS, 3 blockers folded §9); it gates
-  every impl slice.
-- Current slice intent: wire the WS-1 rung-1 per-surface behavioral-verdict
-  presence floor + the rung-2 distinct-channel observer onto the release publish
-  boundary, **before** `ensure_release_issues_closed`
-  (`publish_release_execute.py:187`). Binding non-terminality rule: **F2a** —
-  issue-close advances on rung-1 record-presence only; the automated
-  distinct-channel confirmation is a recorded observable for the human rung-2
-  audit, never an automated proceed-gate. Additive (supplement the line-163
-  proxy, do not delete it). This intent spans the WS-1 commits; critique + broad
-  proof do not re-fire within it (meaningful-slice-cadence).
-- Next action: implement WS-1 per the locked spec §2 + F2a, seeded
-  published-release fixture proof, bounded fresh-eye slice critique, then
-  `run_slice_closeout.py --skip-broad-pytest`.
+  (locked) gates every impl slice.
+- Current slice intent: add the rung-1 refuse-on-undispositioned-HOTL-entry
+  presence floor to `issue verify-closeout`, extending the
+  `evaluate_behavioral_verdict` family (in-file template
+  `evaluate_source_preservation`; `proof_mismatch.py` for degrade/fail-closed).
+  Presence-gated (fires only when a HOTL entry is presented), reads the
+  carrier body (never a fixed ledger path), refuses undispositioned entries
+  against the typed HOTL vocabulary + `local-only-by-contract` (NEWLY enforced —
+  today only docstring prose). rung-2 honesty stays the resolution critique.
+- Next action: implement WS-2 per the locked spec §3 + F4, seeded
+  undispositioned-entry proof (FAILS before CLOSED; typed disposition PASSES),
+  bounded fresh-eye slice critique, then `run_slice_closeout.py --skip-broad-pytest`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -251,7 +250,7 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | S0 | Concept spec + gating critique: lock the shared non-terminality contract (WS-1 rung-1/rung-2 on release publish; WS-2 Direction-3 HOTL floor) + the WS-3 portability-deleak contract (rename-vs-adapter-provide map; grandfathered-alias shape — or straight rename if S0 judges the alias unneeded; per-surface migration discipline; the **complete `ceal-dev` leak inventory incl. the test fixture**; the **protected `slack.ceal-dev` adapter-example set**; the plugin-mirror sync barrier) | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (`spec/2026-06-20-phase4-boundary-non-terminality-concept.md` LOCKED; gating critique PASS-WITH-CONDITIONS, 3 blockers folded §9) |
-| WS-1 | Wire rung-1 per-surface behavioral-verdict presence floor + rung-2 distinct-channel observer onto the release publish boundary (before `ensure_release_issues_closed`); reuse the post-create-verification spec | a real charness boundary with confirmed terminal-green (`publish_release_execute.py:163`) | seeded published-release proof + fresh-eye + tests; no terminal-green gate | pending |
+| WS-1 | Wire rung-1 per-surface behavioral-verdict presence floor + rung-2 distinct-channel observer onto the release publish boundary (before `ensure_release_issues_closed`); reuse the post-create-verification spec | a real charness boundary with confirmed terminal-green (`publish_release_execute.py:163`) | seeded published-release proof + fresh-eye + tests; no terminal-green gate | **done** (commit; both main+resume paths; 8 unit/integration + 2 E2E + resume assertion; fresh-eye PASS; critique `critique/2026-06-20-ws1-release-distinct-channel.md`) |
 | WS-2 | Add the refuse-on-undispositioned-HOTL-entry rung-1 floor to `verify-closeout` (extend `evaluate_behavioral_verdict` family; reuse `proof_mismatch.py` pattern + HOTL status vocab) | the second #386 consumer; rung-1 HOTL floor absent in code | seeded undispositioned-entry proof (FAILS before CLOSED; typed disposition PASSES) + fresh-eye + tests | pending |
 | WS-3a | Tier 1 deleak (**the riskier slice**): remove the `ceal-dev` consumer-name leak from portable doctrine/examples (`lifecycle.md:342,353`, `goal-artifact.md:219`, `blocked_matrix.py:7` comment) **and the pinned fixture `test_goal_artifact_blocked_matrix.py:38`**; replace with vocabulary-neutral, adapter-named lane examples; **preserve the protected `slack.ceal-dev` capability-resolution adapter examples**; sync the `plugins/` mirror | clearest portability violation, but over-/under-fire risk | `grep -rn "ceal-dev" skills/ scripts/ tests/` clean except protected sites + doc-link/markdown gates + mirror-drift green + fresh-eye | pending |
 | WS-3b | Tier 2 deleak: rename `applied-restarted` taxonomy token → neutral term (S0 decides straight-rename vs grandfathered alias — the gate is token-agnostic, so the alias may be unneeded); genericize `goal_artifact_discussion.py:18,22` detection vocabulary to adapter-provided; rename `Post-Apply Checkpoint Classification`; sync the `plugins/` mirror | the deep portability surgery; migration-disciplined | seeded proof the rename resolves; producer/closeout-delegation/`test_goal_artifact_blocked_matrix` tests green; mirror-drift green; rollback refs; fresh-eye; **defer-with-cause** only if a surface proves genuinely contract-pinned/lossy | pending |
@@ -331,6 +330,29 @@ during the run:
   durable post-publish disposition review); WS-2 `local-only-by-contract` is
   *newly enforced* not pre-existing; `evaluate_source_preservation` is the in-file
   template. Routing: `find-skills` → `spec` (author) + `critique` (gate).
+- **WS-1 — release publish rung-1 + rung-2 (done, 2026-06-20).** Closed the
+  escape at `publish_release_execute.py:163` (single `gh release view` returncode
+  gating issue close). Added, before `ensure_release_issues_closed` on **both**
+  the main (`publish_release_execute.py`) and **`--resume`**
+  (`publish_release_resume.py`) paths: a rung-2 distinct-channel observer
+  (`confirm_release_via_distinct_channel` — adapter `post_publish_distinct_channel_probe`
+  else HTTP fetch of the public release URL; records confirmed/typed-disposition
+  into `payload.distinct_channel_verification` + the artifact's
+  `## Distinct-Channel Verification` section) + a rung-1 presence floor
+  (`evaluate_release_distinct_channel`). **F2a honored**: close advances on
+  record-presence only; never an automated `confirmed ⇒ proceed` gate. Additive
+  (line-163 proxy + its hard-fail unchanged). New adapter field
+  `post_publish_distinct_channel_probe`; new `skipped` attention-state declared
+  honestly. Proof: 8 unit/integration (`test_release_distinct_channel.py`) + 2
+  E2E + a resume assertion; release suite green; ruff/lengths/ergonomics/
+  attention-state gates green; mirror synced. Fresh-eye slice critique **PASS, no
+  blockers** (verified vs actual staged code, 45 tests). Public-skill validation:
+  Cautilus `next_action: none` → deterministic + recorded fresh-eye review,
+  `--ack-cautilus-skill-review`; `release` dogfood case refreshed; critique
+  `critique/2026-06-20-ws1-release-distinct-channel.md`. Routing: `find-skills` →
+  `release` (domain) + `critique` (slice gate). Release: n/a — edits the publish
+  *code path*, cuts no release / bumps no version. Issue closeout: n/a — closes no
+  tracked issue this slice. No live release (local + seeded only; ODQ-deferred).
 
 ## Context Sources
 

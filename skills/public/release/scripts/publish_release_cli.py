@@ -59,6 +59,9 @@ release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
+confirm_release_via_distinct_channel = _post_create.confirm_release_via_distinct_channel
+evaluate_release_distinct_channel = _post_create.evaluate_release_distinct_channel
+fail_release_distinct_channel_floor = _post_create.fail_release_distinct_channel_floor
 run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
@@ -93,6 +96,9 @@ def _execution_context() -> SimpleNamespace:
         "amend_fresh_checkout_artifact",
         "create_release",
         "verify_release_visible",
+        "confirm_release_via_distinct_channel",
+        "evaluate_release_distinct_channel",
+        "fail_release_distinct_channel_floor",
         "finalize_release_payload",
         "commit_final_release_artifact",
         "fail_after_post_create_verification",
@@ -177,6 +183,7 @@ def write_current_artifact(
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
         review_proof=payload.get("critique_artifact"),
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
+        distinct_channel_verification=payload.get("distinct_channel_verification"),
     )
 
 

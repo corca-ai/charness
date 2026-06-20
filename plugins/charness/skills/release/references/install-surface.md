@@ -97,6 +97,30 @@ Bounded retry/backoff is normal here. Eventual consistency after a successful
 workflow is not the same thing as flaky publication, and the closeout should
 say whether the public surface was verified or is still pending.
 
+### Distinct-channel verdict before issue close (rung-1 + rung-2)
+
+The publish path's only post-publish check used to be a re-read of the **same**
+`gh release view` channel — a single proxy gating the irreversible GitHub issue
+close. Before `ensure_release_issues_closed`, the helper now records a **rung-2
+distinct-channel verdict**: it confirms the published release through a channel
+**distinct from** `gh release view` — the adapter
+`post_publish_distinct_channel_probe` shell command (`{tag}`/`{url}` substituted)
+when declared, otherwise an HTTP fetch of the public release URL — and writes the
+result to `payload.distinct_channel_verification` (rendered in the release
+artifact's `## Distinct-Channel Verification` section). The verdict is a
+`confirmed`, or a typed non-`verified` disposition (`not-confirmed`,
+`blocked-needs-capability`, `skipped`) when the distinct channel cannot run;
+never a second `gh release view` standing in for confirmation.
+
+A **rung-1 presence floor** then refuses to advance to the issue close when that
+record is **silent** (missing). It is presence/form only: a confirmation **or** a
+typed disposition pass it **equally** — issue close advances on record-presence,
+**never** on an automated `confirmed ⇒ proceed` gate (that would relocate the
+*P4* re-examination anti-pattern onto a new channel). The honesty of the verdict
+— was the channel genuinely distinct, the disposition acceptable — is the
+**human rung-2 disposition review** at release closeout, not this floor. The
+resume path (`--resume`) crosses the same boundary and carries the same floor.
+
 ## Real-Host Proof
 
 Some release claims should stay release-time human proof instead of standing CI.

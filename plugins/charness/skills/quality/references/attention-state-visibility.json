@@ -405,10 +405,10 @@
       "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
     },
     "skills/public/release/scripts/publish_release_post_create.py": {
-      "states": ["not_configured"],
-      "visibility": ["terminal_payload", "local_noop_not_closeout"],
-      "evidence_terms": ["refreshed", "failed"],
-      "rationale": "run_post_publish_install_refresh returns status not_configured when the release adapter declares no post_publish_install_refresh command; all three states (refreshed/failed/not_configured) are surfaced in the terminal release payload under install_refresh, so a consumer-repo no-op (the authoring repo declares charness update) never silently reads as a clean closeout."
+      "states": ["not_configured", "skipped"],
+      "visibility": ["terminal_payload", "artifact_visible", "local_noop_not_closeout"],
+      "evidence_terms": ["refreshed", "failed", "skipped", "reason"],
+      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass — the gap is legible, not green."
     },
     "skills/public/release/scripts/publish_release_retro.py": {
       "states": ["skipped"],

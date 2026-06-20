@@ -151,6 +151,32 @@ def public_release_verification_lines(public_release_verification: str, release_
     return lines
 
 
+def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[str]:
+    """Render the rung-2 distinct-channel verdict — the durable observable the human
+    rung-2 disposition review audits at closeout. Rendered only when the rung-2
+    observer has run (record present); a pre-observer artifact omits the section."""
+    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
+        return []
+    lines = ["", "## Distinct-Channel Verification", ""]
+    lines.append(
+        f"- Rung-2 distinct-channel verdict: `{record.get('status')}` via "
+        f"`{record.get('channel', 'unknown')}` (a channel distinct from `gh release view`)."
+    )
+    if url := record.get("url"):
+        lines.append(f"- Channel URL: `{url}`")
+    if command := record.get("command"):
+        lines.append(f"- Probe command: `{command}`")
+    if (http_status := record.get("http_status")) is not None:
+        lines.append(f"- HTTP status: `{http_status}`")
+    if reason := record.get("reason"):
+        lines.append(f"- Disposition reason: {reason}")
+    lines.append(
+        "- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was "
+        "not silent; the honesty of this verdict is the human rung-2 disposition review."
+    )
+    return lines
+
+
 def real_host_lines(real_host_payload: dict[str, Any]) -> list[str]:
     lines = ["", "## Real-Host Verification", ""]
     if real_host_payload.get("required"):
@@ -203,6 +229,7 @@ def write_release_artifact(
     public_release_verification: str = "not checked by this helper",
     review_proof: str | None = None,
     retro_trigger_evaluation: dict[str, Any] | None = None,
+    distinct_channel_verification: dict[str, Any] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -243,6 +270,7 @@ def write_release_artifact(
         ]
     )
     lines.extend(public_release_verification_lines(public_release_verification, release_url))
+    lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
     lines.extend(real_host_lines(real_host_payload))

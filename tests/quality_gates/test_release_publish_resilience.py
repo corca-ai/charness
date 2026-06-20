@@ -432,6 +432,9 @@ def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_pat
     assert retro["evaluated_at"] == "final_release_paths", retro
     # No dry-run regression: would_write is the dry-run-only closeout status.
     assert retro["closeout"]["status"] != "would_write", retro
+    # WS-1: the resumed publish also records the rung-2 distinct-channel verdict
+    # before its issue-close boundary (the resume path was a parallel escape).
+    assert payload["distinct_channel_verification"]["status"] == "confirmed", payload.get("distinct_channel_verification")
 
 
 def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> None:
