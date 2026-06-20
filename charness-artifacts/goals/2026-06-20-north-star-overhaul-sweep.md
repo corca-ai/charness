@@ -1,6 +1,6 @@
 # Achieve Goal: North-star overhaul sweep: per-unit-disposition consolidation + skill-redesign
 
-Status: active
+Status: complete
 Created: 2026-06-20
 Activation: `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md`
 
@@ -9,17 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S4 — closeout** (broad proof, retro, dispositions, honest
-  non-claims). S0 + S1 (R2 escape closed) + S2 (R1 grammar collapsed) + S3 (WS-B:
-  unit-test-quality graft + find-skills named-heuristic cure; deeper body redesign
-  deferred with cause) committed 2026-06-20.
-- Current slice intent: run broad proof at the bundle boundary (record the
-  verification lock), run `retro`, disposition every surfaced improvement, fill
-  `## Final Verification` with honest non-claims, then flip Status to complete.
-- Next action: broad pytest (verification lock) → retro → dispositions →
-  describe_goal_closeout_shape preflight → check_goal_artifact → flip complete.
-  Operator decision pending: live GitHub close/comment for R2 is out of scope
-  (local-only by goal contract) unless the operator approves.
+- Current slice: **COMPLETE** (closeout done 2026-06-20). All five slices landed:
+  S0 (concept spec locked) + S1 (R2 escape closed) + S2 (R1 grammar collapsed) +
+  S3 (WS-B graft + find-skills cure; deeper redesign deferred with cause) + S4
+  (bundle proof + retro + dispositions).
+- Outcome: WS-A fully delivered (the primary success — a wrong answer's escape
+  path closed at issue/PR close, via rung-1/rung-2, no terminal-green gate + the
+  rung-1 grammar collapsed to one substrate). WS-B delivered the unit-test-quality
+  graft + one lossless body cure; deeper body redesign deferred with cause (the
+  cuts are contract-blocked or lossy — forcing them is the north-star failure
+  signature). Bundle proof: broad pytest 3428/0.
+- Open operator items (do not block completion): live GitHub R2 proof + filing the
+  WS-B body-redesign follow-on issue — both external writes, see
+  `## Operator Decision Queue`.
 - Locked spec (gates all impl):
   [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -166,17 +168,29 @@ What the user can do to verify completion directly.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Operator-only decisions surfaced at closeout (neither blocks safe local progress;
+both are external-write boundaries the goal contract scopes out by default).
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: run a **live** GitHub `issue resolve` / PR-close that exercises the new
+  R2 rung-1 floors (behavioral-verdict + AI-provenance) on a real issue.
+  - Owner: operator
+  - Why deferred: the goal contract scopes R2 to local implement + test +
+    seeded-instance proof; any live close/comment is operator-approved and
+    phase-scoped (approval does not carry forward). Local seeded proof is complete.
+  - Unblock action: operator names a target issue and approves one live
+    close/comment run.
+  - Revisit trigger: the next real `issue resolve` of a bug/feature/deferred-work
+    issue once the operator approves the external write.
+- Decision: file tracked GitHub issue(s) for the **deferred body-redesign
+  follow-on** (impl/debug/quality/achieve concept-separation + the pre-cut
+  lossless+contract-safe WS-B instrument).
+  - Owner: operator
+  - Why deferred: filing an issue is an external write not approved this run; the
+    follow-on is captured in the retro `## Next Improvements`/`## Sibling Search`
+    and this goal's S3 slice log.
+  - Unblock action: operator approves filing via `issue`, or starts the follow-on
+    goal directly from the retro/S3 record.
+  - Revisit trigger: starting the WS-B body-redesign follow-on.
 
 ## Discuss before activation
 
@@ -235,6 +249,7 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+  - Routing: find-skills `--recommend-for-task` recommended issue (S1), impl (S2), quality (S3) — every recorded slice was routed via find-skills; per-slice detail below.
   - S0 (concept spec + critique): `find-skills --recommend-for-task` →
     `achieve` (owner) coordinating `spec` (concept-spec authoring) + `critique`
     (gating fresh-eye review). Spec authored inline under achieve; gating critique
@@ -320,6 +335,20 @@ during the run:
 - Critique: PASS (bounded fresh-eye, no conditions). Verified A-E against actual files + ran gates: graft authoring-only (no dup-ratchet with testability-and-selection.md); find-skills collapse lossless (3 cases preserved, not contract/test-pinned); no shave remains (debug + quality body = HEAD); graft net-new + under cap; gates green. Independently judged the deferral the CORRECT north-star call (no safe lossless cut missed; the two reverts were right).
 - Off-goal findings:
 - Lessons carried forward: Operator correction internalized: a capped body at the cap is a signal to concept-separate or delete (no-op), NEVER to compress in place. And 'concept-separation' must be verified lossless (every removed phrase has a reference home) AND contract-safe (check test/CORE-contract pins) BEFORE cutting — quality's catalog failed both. The planning audits (reference-absorption 'flagship bloat'; Agent-3 collapse candidates) OVER-identified cuts; the bodies are concept-dense (Phase-0 back-test was right). Proper WS-B = deliver the clean additive graft + the genuinely-safe lossless cure, defer the rest with cause rather than force line-count wins.
+- Metrics:
+
+### Slice 5: S4 — closeout (bundle proof + retro + dispositions)
+
+- Objective: Bundle-boundary broad proof, retro, disposition every surfaced improvement, honest non-claims, flip to complete.
+- Why this approach: Achieve closeout: prove the goal at the bundle boundary and reflect honestly, with non-terminal per-unit dispositions (no aggregate green).
+- Commits:
+- What changed: Authored the retro (charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md, validated, registered source #241); ran refresh_recent_lessons (lessons now extracted as candidates after a dash-bullet fix the rung-2 review caught); filled Final Verification (Retro bound; Host log probe skipped: host-log-not-exposed; Disposition review bound) + Auto-Retro dispositions + Structural follow-up + the Coordination Cues Routing line + Operator Decision Queue (2 external-write items).
+- Alternatives rejected:
+- Targeted verification: Broad pytest = 3428 passed, 0 failed (8m15s) — bundle proof green. check_goal_artifact ok at active; complete-flip gates next. Bounded fresh-eye DISPOSITION REVIEW (rung 2) = PASS WITH ONE CORRECTION: it verified every improvement is disposed + the S1/S2/S3 non-claims are honest against committed code, and caught a real overclaim (the retro's numbered Next Improvements were NOT extracted by recent_lessons_lib's dash-bullet-only parser, so 'captured in the digest' was false) — fixed by reformatting to dash bullets (now 20 candidate hits) + precise disposition wording.
+- Test duplication pressure: n/a — closeout slice, no new tests added.
+- Critique: Disposition review (rung 2): charness-artifacts/critique/2026-06-20-north-star-overhaul-sweep-disposition-review.md — PASS WITH ONE CORRECTION, correction folded (retro dash-bullet fix + precise wording). The distinct-channel rung-2 audit caught a memory-wiring overclaim a same-proxy re-read would have shipped.
+- Off-goal findings:
+- Lessons carried forward: Rung-2 distinct-channel review caught a third escape this goal: a disposition claimed 'captured in the wired digest' but the retro's numbered bullets were silently dropped by the dash-bullet-only extractor. Lesson: retro Next Improvements must be dash bullets to enter the recent-lessons candidate pool; verify the memory actually landed, do not assume refresh_recent_lessons captured it.
 - Metrics:
 
 ## Context Sources
@@ -408,13 +437,33 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md
+Host log probe: skipped: host-log-not-exposed: this session exposes no per-turn token/time/tool-call host log to probe, so the goal-window efficiency metrics block cannot be rendered from a provider-safe source.
+Disposition review: charness-artifacts/critique/2026-06-20-north-star-overhaul-sweep-disposition-review.md
 
 ## User Verification Instructions
 
+- **S0 (concept):** read `charness-artifacts/spec/2026-06-20-per-unit-disposition-concept.md`
+  (`Status: locked`) — confirm the rung-1/rung-2 split is explicit and no
+  terminal-green gate is specced (§1 invariant, F2).
+- **S1 (R2 escape closed):** `python3 -m pytest tests/quality_gates/test_issue_closeout_verifier.py -q`
+  — the 6 seeded tests show a silent bug carrier FAILS before `CLOSED` greens, a
+  typed non-`verified` disposition PASSES (render-not-declare), and a missing
+  `AI-provenance:` marker fails its check. Read `issue/references/closeout-discipline.md`
+  §"Per-Issue Behavioral Verdict" — the rung-1 floor + the preserved
+  render-not-declare #386 sentence.
+- **S2 (R1 de-dup):** read `skills/public/achieve/scripts/goal_artifact_floor_grammar.py`
+  (the one substrate) and confirm operator-queue/blocked-matrix/coordination/
+  phase-routing/disposition import it; `python3 -m pytest tests/quality_gates/ -k "goal or disposition or coordination" -q`
+  (380 floor tests green, incl. the 2 strict→permissive divergence tests).
+- **S3 (WS-B):** read `skills/public/quality/references/unit-test-quality.md`
+  (the graft, under cap, authoring-only) and the find-skills "Classify the
+  capability layer honestly" named-heuristic; the deferred body redesign is in the
+  retro + S3 slice log with cause.
+- **Bundle:** broad pytest = 3428 passed / 0 failed (recorded in Final Verification
+  + S4 slice log).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: out-of-scope: the three surfaced lessons are behavioral/process improvements captured as candidates in the wired recent-lessons selection index (`charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md` is registered source #241 via `refresh_recent_lessons.py`; its `## Next Improvements` dash-bullets are extracted into the candidate pool — the recency/recurrence policy decides which reach the top-N display digest, so they may not appear in `recent-lessons.md` this cycle); none is a code change for THIS goal — (1) gate-failure-triage-uses-exact-enforcement-invocation and (3) bloat-diagnoses-are-hypotheses-to-verify-per-body are process lessons, and (2) the skill-body pre-cut lossless+contract-safe check belongs to the deferred body-redesign follow-on. Filing tracked GitHub issues is deferred to an operator-approved external write (see `## Operator Decision Queue`).
+Structural follow-up: repo-local guard: charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md — the transferable waste (the deferred impl/debug/quality/achieve body redesign + the pre-cut lossless+contract-safe instrument) is captured in that retro's `## Next Improvements` + `## Sibling Search` and this goal's S3 slice log for a follow-on goal; a tracked issue is deferred to operator-approved external write (Operator Decision Queue).

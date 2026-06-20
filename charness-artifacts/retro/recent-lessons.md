@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
-- **capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to "no usable coverage → skip" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.) (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
-- **follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
-- for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the "seed last" timing is the transferable half. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
+- **A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
+- **Bloat diagnoses are hypotheses to verify per-body, not mandates to cut** — carry this into the deferred follow-on body redesign. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
+- **Gate-failure triage must use the exact enforcement invocation.** A hand-rolled approximation of a gate command can false-confirm "pre-existing" and mask a real regression. (Transferable; recurs class: same-proxy re-read.) (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
 
 ## Selection Policy
 
@@ -78,3 +78,4 @@
 - `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`
 - `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
