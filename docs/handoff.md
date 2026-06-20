@@ -31,10 +31,12 @@
   Now #1 because it **gates propagating the doctrine to consumer repos (ceal)**. Start:
   Phase 0 (validate diagnosis) -> Phase 1 (#387, aggregate closeout-shape errors in one
   pass). Open question (roadmap): one `achieve` goal vs independent issues.
-- **craken-agents absorption (recurring overhaul input).** ../craken-agents has strong
-  skills (bug-hunt) + code structure; mine them vs the charness baseline (genuine gaps
-  only — lychee discipline) as the overhaul's "what good looks like" reference. Re-run
-  the craken pass each session; first inventory subagent ran 2026-06-20.
+- **craken-agents absorption (recurring overhaul input).** Pass-1 done
+  ([note](../charness-artifacts/audit/2026-06-20-craken-agents-absorption-pass-1.md)):
+  craken & charness independently converged on the north star, so wins are better
+  phrasings/worked examples (A1 survivor-disposition, A2 re-audit-by-removal, A4
+  evidence-depth), not new capability; `bug-hunt` is an external skill NOT in the repo —
+  locate it next pass. Re-run each session.
 - **ceal propagation (downstream; 2 surfaces).** ceal embeds charness via a vendored pin
   (~35 commits stale — this is how the ceal agent instance ships charness inside itself)
   and via a machine-level plugin install; the two can drift independently. Plus a real
