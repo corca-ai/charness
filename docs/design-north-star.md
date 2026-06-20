@@ -7,7 +7,7 @@ This is the standard the rest of the harness is measured against. When a skill,
 gate, doc, or contract is added or changed, it earns its place against this idea
 or it does not belong.
 
-## Diagnosis (provisional, pending a #359–#386 back-test)
+## Diagnosis (back-tested 2026-06-20 — partially confirmed)
 
 The repeated harness failure is not "too many gates." It is **terminal trust at
 irreversible boundaries**: a single context — a gate's green, a `CLOSED` state,
@@ -20,6 +20,13 @@ bodies pinned at the length cap) is the *cost of meeting that failure with ever
 more bespoke gates*. The fix is neither more gates nor blind trust. It is
 **non-terminality at the few boundaries that matter, and terse,
 concept-separated judgment everywhere else.**
+
+The [#359–#386 back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md)
+(2026-06-20) confirmed this on the irreversible-boundary cases (0/7 contradict)
+and sharpened it: the failure is terminal trust on a *single evidence channel*,
+not gates as such — the remediations that worked were gates that force a check on
+a **distinct** channel (P5), and a distinct *observer* that re-reads the same
+proxy still rubber-stamps (#359, #386). The operative variable is the channel.
 
 ## The five facets of the one idea
 

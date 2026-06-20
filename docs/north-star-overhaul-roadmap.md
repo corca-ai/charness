@@ -27,6 +27,33 @@ concept get clearer.
 
 ## Phase 0 — Validate the diagnosis (gates everything else)
 
+> **Result (2026-06-20): PARTIALLY CONFIRMED → proceed to Phase 1.** Back-test
+> run as a dynamic workflow (7 per-issue classifiers + bloat test + synthesis +
+> adversarial verify); full note:
+> [phase0 diagnosis back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md).
+> The diagnosis is **not contradicted** (0/7) and is supported by the
+> irreversible-boundary cases (firm base: #359/#363/#386 high-conf; #381 med;
+> #385 reversible mirror-image; #376/#382 neutral-reversible). Two corrections the
+> adversarial pass forced, now binding on later phases:
+>
+> - **It is not "stop adding gates."** The lesson is *anti-same-channel-terminal-trust*:
+>   4 of the fixes that WORKED added a gate/floor (#359, #363, #385, #386), and the
+>   one that matters checks a **distinct evidence channel**. A distinct *observer*
+>   alone is insufficient — on #359 and #386 a fresh-eye review ran, re-read the
+>   *same* triggering proxy, and rubber-stamped. **Phase 2's "distinct observer per
+>   unit" = distinct observer consulting a distinct evidence channel, before the
+>   boundary** (P4's wording; keep it explicit). A gate forcing that question is
+>   P5-legitimate.
+> - **#385 is the mirror image** (false-`blocked` over-classification): the Phase 2
+>   per-unit-disposition floor must guard **both** wrong-completion and wrong-block.
+> - **Bloat: "boilerplate dominates" is false.** Floor share is ≤⅓ on every capped
+>   body (impl ~32%, debug ~31%, gather/quality/find-skills 11–16%); the pin is
+>   genuine concept size. Phase 3 does **both**: floor-extract impl+debug to
+>   one-line cites (~50–64 lines each), and concept-*separate* quality+find-skills
+>   (floor surgery alone will not de-pin them).
+> - **Survivorship caveat:** these became issues *because* a human caught them;
+>   "gates were green at these escapes" ≠ "gates never catch."
+
 The diagnosis ("terminal trust at irreversible boundaries; bloat is the cost of
 bespoke gates") is provisional. Before consolidating or deleting, back-test it:
 
