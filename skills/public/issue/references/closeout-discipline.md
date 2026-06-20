@@ -151,6 +151,18 @@ gate: a gate may *force the question*; it may not *declare* the behavior proven.
 Alongside it, an `AI-provenance:` marker is required on the agent-authored carrier
 so the irreversible external write is legible to that distinct observer.
 
+A sibling **rung-1 HOTL-disposition floor** (Direction-3) refuses an
+*undispositioned HOTL entry*. It is **presence-gated**: a carrier that presents no
+HOTL entry is inert (no live loop to dispose). When a `HOTL #N: <…>` entry
+(single-issue shorthand `HOTL: <…>`) IS present, its value must carry one of the
+typed HOTL ledger statuses (`../../hotl/references/ledger-and-dispositions.md`) or
+`local-only-by-contract`; an entry present without one is refused. This is the
+first *typed* HOTL-status recognizer — the behavioral-verdict floor above accepts
+a HOTL status only as an opaque value. It reads the **carrier body** (never a
+fixed ledger path — the ledger schema/path is adapter-owned), and stays
+presence/form-only: it refuses *silence/malformation* on the typed status, never
+whether the disposition is *honest* (that is the resolution critique, **rung-2**).
+
 ## Resolution-Critique Carrier Header
 
 For `bug`, `feature`, and `deferred-work` classifications, the carrier body

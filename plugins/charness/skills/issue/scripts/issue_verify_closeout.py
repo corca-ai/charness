@@ -65,6 +65,7 @@ _missing_ledger_fields = _BODY._missing_ledger_fields
 _missing_close_keywords = _BODY._missing_close_keywords
 evaluate_source_preservation = _BODY.evaluate_source_preservation
 evaluate_behavioral_verdict = _BODY.evaluate_behavioral_verdict
+evaluate_hotl_dispositions = _BODY.evaluate_hotl_dispositions
 evaluate_ai_provenance = _BODY.evaluate_ai_provenance
 
 
@@ -214,6 +215,7 @@ def verify_closeout(
     missing_fields = _missing_ledger_fields(body, classification)
     source_preservation = evaluate_source_preservation(body)
     behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
+    hotl_dispositions = evaluate_hotl_dispositions(body, classification)
     ai_provenance = evaluate_ai_provenance(body, classification)
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
@@ -264,6 +266,7 @@ def verify_closeout(
         and not manual_comment_missing
         and not source_preservation["missing"]
         and behavioral_verdict["ok"]
+        and hotl_dispositions["ok"]
         and ai_provenance["ok"]
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
@@ -285,6 +288,7 @@ def verify_closeout(
         "resolution_critique_check": resolution_critique_check,
         "source_preservation": source_preservation,
         "behavioral_verdict": behavioral_verdict,
+        "hotl_dispositions": hotl_dispositions,
         "ai_provenance": ai_provenance,
         "verified_state": verified_state,
     }

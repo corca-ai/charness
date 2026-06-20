@@ -53,6 +53,7 @@ def _bug_closeout_body(
         "AI-provenance: agent-drafted via charness issue resolve; "
         "human-audited per the resolution critique"
     ),
+    hotl_line: str | None = None,
 ) -> str:
     parts = [
         close_line,
@@ -68,6 +69,8 @@ def _bug_closeout_body(
         parts.append(behavior_line)
     if provenance_line is not None:
         parts.append(provenance_line)
+    if hotl_line is not None:
+        parts.append(hotl_line)
     return "\n\n".join(parts)
 
 
@@ -659,6 +662,96 @@ def test_issue_verify_closeout_accepts_typed_nonverified_disposition(tmp_path: P
     payload = json.loads(result.stdout)
     assert payload["behavioral_verdict"]["ok"] is True
     assert payload["status"] == "carrier_verified"
+
+
+def test_issue_verify_closeout_rejects_undispositioned_hotl_entry(tmp_path: Path) -> None:
+    """WS-2 seeded escape (Direction-3): a bug carrier that PRESENTS a HOTL entry
+    without a typed disposition must FAIL before the CLOSED-state green stands."""
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            hotl_line="HOTL #42: still checking the connector roundtrip",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["hotl_dispositions"]["ok"] is False
+    assert payload["hotl_dispositions"]["undispositioned"][0]["target"] == "#42"
+    # the OTHER floors pass — the close fails ONLY on the undispositioned HOTL entry
+    assert payload["behavioral_verdict"]["ok"] is True
+
+
+def test_issue_verify_closeout_accepts_typed_hotl_disposition(tmp_path: Path) -> None:
+    """A typed HOTL status (here `blocked-needs-operator`) disposes the entry —
+    render-not-declare: the floor passes; honesty is the resolution critique."""
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            hotl_line="HOTL #42: blocked-needs-operator — awaiting prod approval; queued in the ODQ",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["hotl_dispositions"]["applies"] is True
+    assert payload["hotl_dispositions"]["ok"] is True
+
+
+def test_issue_verify_closeout_inert_without_hotl_entry(tmp_path: Path) -> None:
+    """Presence-gated: a carrier with NO HOTL entry is inert (no live loop to
+    dispose) — the floor does not over-fire on internal/no-live closes."""
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["hotl_dispositions"]["applies"] is False
+    assert payload["hotl_dispositions"]["ok"] is True
+
+
+def test_evaluate_hotl_dispositions_unit() -> None:
+    """Direct unit coverage of the WS-2 floor: presence-gating, typed vocabulary,
+    classification exemption, and multi-entry refusal."""
+    fn = _load_verify_module().evaluate_hotl_dispositions
+    # question/decision-needed have no live behavior -> inert
+    assert fn("HOTL #1: nonsense", "question")["applies"] is False
+    # no entry -> inert
+    assert fn("Close #1.\nBehavior: verified via X", "bug")["applies"] is False
+    # local-only-by-contract disposes; every typed status disposes
+    for status in (
+        "local-only-by-contract — no live surface", "verified: roundtrip <ts>",
+        "blocked-needs-capability: no repo command", "deferred-by-operator: next window",
+        "accepted-risk: owner ok", "out-of-scope: not this loop", "issue #77 tracks it",
+    ):
+        verdict = fn(f"HOTL: {status}", "feature")
+        assert verdict["applies"] is True and verdict["ok"] is True, status
+    # multi-entry: one typed, one untyped -> refuse only the untyped
+    multi = fn("HOTL #1: verified: roundtrip\nHOTL #2: probably fine", "bug")
+    assert multi["ok"] is False
+    assert [u["target"] for u in multi["undispositioned"]] == ["#2"]
+    # placeholder value is undispositioned
+    assert fn("HOTL #1: TODO", "bug")["ok"] is False
 
 
 def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Path) -> None:

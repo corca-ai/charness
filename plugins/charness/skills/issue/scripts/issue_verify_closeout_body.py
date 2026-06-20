@@ -258,6 +258,65 @@ def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[in
     }
 
 
+# WS-2 (Direction-3): the typed HOTL disposition vocabulary
+# (``hotl/references/ledger-and-dispositions.md`` §Statuses) plus the
+# ``local-only-by-contract`` escape the behavioral-verdict floor already names.
+# Longest alternants first so a prefix cannot shadow a longer typed token.
+_HOTL_STATUS_RE = re.compile(
+    r"(?i)\b(?:blocked-needs-(?:operator|capability)|deferred-by-operator|accepted-risk"
+    r"|out-of-scope|local-only-by-contract|verified|issue)\b"
+)
+# A HOTL ledger entry in the carrier body: ``HOTL #N: <disposition>`` per issue,
+# single-issue shorthand ``HOTL: <disposition>`` — mirrors the ``Behavior #N:`` grammar.
+_HOTL_LINE_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?HOTL(?:\s+(?P<target>[^:]+?))?\s*:\s*(?P<value>.+?)\s*$",
+    re.MULTILINE,
+)
+
+
+def _hotl_lines(text: str) -> list[dict]:
+    plain = "\n".join(_strip_code_fences(text))
+    return [
+        {"target": (m.group("target") or "").strip() or None, "value": m.group("value").strip()}
+        for m in _HOTL_LINE_RE.finditer(plain)
+    ]
+
+
+def evaluate_hotl_dispositions(text: str, classification: str) -> dict:
+    """Rung-1 refuse-on-undispositioned-HOTL-entry presence floor (WS-2 / Direction-3).
+
+    **Presence-gated.** A carrier that presents NO ``HOTL`` entry is inert (no live
+    HOTL loop to dispose), exactly like ``evaluate_source_preservation``'s
+    ``Source origin:`` gate — internal / no-live closes stay exempt. When a
+    ``HOTL #N:`` entry (single-issue shorthand ``HOTL:``) IS presented, its value
+    must carry one of the typed HOTL statuses
+    (``hotl/references/ledger-and-dispositions.md``) **or** ``local-only-by-contract``;
+    an entry present **without** one is *undispositioned* and refused.
+
+    **Presence/form only — rung-1.** It refuses *silence/malformation* on the typed
+    status (an empty/placeholder/untyped value); it NEVER judges whether the chosen
+    disposition is *honest* — that is the resolution critique (rung-2). The
+    behavioral-verdict floor accepts a HOTL status only as an opaque value; this is
+    the FIRST typed HOTL-status recognizer. ``bug``/``feature``/``deferred-work`` only;
+    ``question``/``decision-needed`` carry no live behavior. Reads the carrier body —
+    never a fixed ledger path (the HOTL ledger schema/path is adapter-owned), so it
+    stays adapter-portable. An untyped entry fails closed.
+    """
+    if classification not in BEHAVIORAL_VERDICT_CLASSIFICATIONS:
+        return {"applies": False, "ok": True, "undispositioned": [], "skipped_classification": classification}
+    lines = _hotl_lines(text)
+    if not lines:
+        return {"applies": False, "ok": True, "undispositioned": [], "lines": []}
+    undispositioned: list[dict] = []
+    parsed: list[dict] = []
+    for line in lines:
+        dispositioned = _has_substantive_value(line["value"]) and bool(_HOTL_STATUS_RE.search(line["value"]))
+        parsed.append({"target": line["target"], "value": line["value"], "dispositioned": dispositioned})
+        if not dispositioned:
+            undispositioned.append({"target": line["target"], "value": line["value"]})
+    return {"applies": True, "ok": not undispositioned, "undispositioned": undispositioned, "lines": parsed}
+
+
 def evaluate_ai_provenance(text: str, classification: str) -> dict:
     """Rung-1 presence floor for the AI-provenance marker on an agent-posted
     closeout carrier (``bug`` / ``feature`` / ``deferred-work``).
