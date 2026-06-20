@@ -171,18 +171,15 @@ The result should usually include:
   the user asked for that survey.
 - Do not store credentials, tokens, or copied secret material in gathered
   assets.
-- Do not present stale knowledge as current when freshness is uncertain.
-- Do not prefer derived summaries when the primary source is accessible.
+- Prefer the primary, current source: do not present stale knowledge as current
+  or fall back to a derived summary when the primary source is accessible
+  (Workflow 2 and Capability Resolution own the access ladder, including
+  official-API-before-`agent-browser` and the symlink-safe pointer write in
+  `references/asset-refresh.md`).
 - If access is missing for a private source, say what is missing and stop
   cleanly instead of inventing the content.
-- Do not jump to `agent-browser` before checking whether an official API or
-  export path already exists.
 - Do not treat local desktop profile reuse as equivalent to a remote/headless
   runner; say when a one-time manual or headed bootstrap is still required.
-- Do not edit the resolved gather artifact path (e.g., `latest.md`) when it
-  is a symlink; the write follows the link and overwrites the canonical
-  dated record. Use the scripted writer or the atomic pointer-refresh path
-  in `references/asset-refresh.md`.
 
 ## References
 

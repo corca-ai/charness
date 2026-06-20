@@ -151,26 +151,18 @@ The result should usually include `Source Map`, `Narrative Drift`, `Updated Trut
 
 ## Guardrails
 
-- Do not use `narrative` as a substitute for `ideation` when the concept is
-  still vague or upstream decisions are genuinely unresolved.
 - Do not leave user-confirmed direction changes only in an ephemeral brief.
-- Do not let volatile handoff, internal, or archived notes become default
-  README truth just because an adapter listed them or git freshness is unclear.
-- Do not trust a repo-local adapter blindly; review whether it can produce the
-  requested reader-facing outcome before using it as the rewrite contract.
+- Trust the adapter and its listed sources only as far as they can produce the
+  requested reader-facing outcome: volatile/internal/archived notes never become
+  default README truth, and per-repo adapter hints never harden into a global
+  template (`references/adapter-contract.md` owns the fuller trust failure modes).
 - Do not collapse durable truth docs and audience-specific briefs when their
   lifecycles differ.
 - Do not mistake a cleaner outline for success when preserved intent was lost.
 - Do not strip away the short "why not this other path" note when that note is
   what keeps the next reader from reopening the same design debate.
-- Do not let audience, language, tone, or channel adaptation pull `narrative`
-  into `announcement` territory.
-- Do not let repo-local adapter hints harden into a global README template for
-  every repo.
 - Keep the brief portable enough that later audience adaptation does not require
   re-aligning the durable truth from scratch.
-- If delivery backend execution is the only remaining task, prefer
-  `announcement` rather than growing `narrative` into a transport skill.
 
 ## References
 

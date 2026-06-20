@@ -144,16 +144,11 @@ Then load only the references needed for the detected state:
 
 - Do not write generic boilerplate without first checking whether the repo
   already has an honest concept or operating surface.
-- Do not silently merge `CLAUDE.md` into `<repo-root>/AGENTS.md` when both contain real
-  content; ask the user first.
-- Do not let `setup` expand into deep product ideation when a short
-  clarification loop is enough.
-- Do not let `setup` become a substitute for `quality`; use `quality` when
-  the user wants repo-wide gate posture, security, or broad quality review.
-- Do not let `setup` become a substitute for `narrative` when the repo
-  already has a rich truth surface that mainly needs alignment.
-- Do not create `<repo-root>/docs/handoff.md` unless the user explicitly wants a baton pass
-  or the next-step coordination burden is real enough to justify `handoff`.
+- Stay narrow: setup creates and normalizes the operating surface only — it does
+  not do product-definition (`ideation`), repo-wide quality posture (`quality`),
+  or truth-surface narrative alignment (`narrative`); route those out. (The
+  merge-`CLAUDE.md`-ask and don't-create-`handoff.md` rules live in Workflow
+  steps 2 and 5.)
 - Do not invent a full evaluator regime for repos that do not actually keep
   repo-owned skills; skill-proof policy belongs only where the repo really
   maintains skills as a first-class surface.

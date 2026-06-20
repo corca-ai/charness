@@ -9,26 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S4 (diagnose-and-cure-or-defer the headroom tier: gather /
-  spec / ideation / retro / narrative / setup / handoff / quality; record `hotl`
-  defer-with-cause, no edit)** — S0–S3 complete and committed. The full
-  diagnose-and-cure scope (all 20 public bodies) and the terminal live-release
-  slice are operator-resolved.
-- Current slice intent: apply the S0-diagnosed cures to the 8 headroom-tier
-  bodies (all `cure` except `hotl` which is **defer-with-cause — record only, no
-  edit**). retro carries a PIN HAZARD (the `Trends vs Last Retro` PACKAGE-pin
-  paraphrase — leave L81 or move the literal first; the pre-cut check BLOCKs it);
-  setup has a precision REVISE (collapse only L149/L151/L153, single-source L145
-  separately); quality is the §5 anchor-split flagship (Load-Bearing-Anchors
-  catalog → inventory-dispatch.md). **Run the pinned skill-doc tests after the
-  batch** (quality has ~26 pinned assertions in `test_quality_skill_docs.py`).
-- Next action: cure the S4 batch per the S0 disposition rows; pre-cut check + run
-  pinned tests each, re-measure, one fresh-eye reviewer for the batch, then S5.
-- Cure pattern (S1–S3 proven): collapse the `## Guardrails` negative-restatement
-  cluster to a named heuristic + single-source cite; keep every CORE/PACKAGE/test
-  pin verbatim; the pre-cut check catches ≥24-char pins, running the pinned tests
-  catches short ones, fresh-eye is the losslessness backstop. S3 cured create-cli
-  155→141, find-skills 152→151, announcement 152→146, critique 150→144 (4/4 PASS).
+- Current slice: **S5 (release terminal slice)** — S0–S4 complete and committed.
+  All 20 public bodies are now dispositioned: **18 cured, 2 deferred-with-cause**
+  (`hotl` justified-density; `quality` contract-change → operator ODQ). The
+  live-release slice is operator-approved + phase-scoped at S5 (ODQ #1).
+- Current slice intent: bump the version + sync install manifests + draft the
+  announcement (the body redesign is the release payload); the **live publish is
+  operator-approved + phase-scoped at this point** and is the deferred WS-1
+  live-floor proof; rung-2 confirms the published release via a channel **distinct
+  from `gh release view`**; close any release-tracked issues through the
+  non-terminal floors. **This is the terminal external-write boundary — operator
+  approval is required at run; do not publish without it.**
+- Next action: route through the `release` skill — read current release state,
+  run the required critique, choose the bump, and surface the live-publish
+  decision to the operator (ODQ #1) before any push/tag/publish.
+- S4 outcome: cured gather 149→146, spec 148→139, ideation 147→142, retro 146→140,
+  narrative 144→136, setup 137→132, handoff 125→110; **deferred** quality (anchor
+  catalog is test-pinned — collapsing it is a contract change, see ODQ) and hotl
+  (justified density). 7/7 cured fresh-eye PASS; both defers JUSTIFIED.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -207,7 +205,7 @@ What the user can do to verify completion directly.
 | S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | **complete** (2026-06-20): issue 159→148, impl 158→152, debug 157→150; all guardrail-cluster duplication collapsed lossless; pins verbatim-preserved (no contract change); fresh-eye PASS (impl condition folded — cure A reverted as an imprecise pointer) |
 | S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | **complete** (2026-06-20): create-skill 156→149, achieve 156→142, hitl 155→140, release 155→140; guardrail-cluster duplication collapsed lossless; pins verbatim (incl. FORBIDDEN `local critique` absent); 3 test-pin breaks caught pre-commit + restored; 4/4 fresh-eye PASS |
 | S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | **complete** (2026-06-20): create-cli 155→141, find-skills 152→151, announcement 152→146, critique 150→144; guardrail/catalog duplication collapsed lossless; 4 test-pin breaks caught pre-commit + restored (incl. a Step-6 gate-name reword); FORBIDDEN `short bounded local pass` absent; 4/4 fresh-eye PASS |
-| S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | per-body disposition: cured-with-cause or deferred-with-cause; no count-driven cut | pending |
+| S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | **complete** (2026-06-20): cured gather/spec/ideation/retro/narrative/setup/handoff (lossless localized cures); **deferred-with-cause quality** (anchor catalog test-pinned → contract change, operator ODQ — the §5 hypothesis correctly did NOT force a test-breaking cut) and **hotl** (justified density). 7/7 fresh-eye PASS; both defers JUSTIFIED. No count-driven cut. |
 | S5 | Release terminal slice: bump version + sync install manifests + announcement; **live publish operator-approved + phase-scoped**; rung-2 distinct-channel confirmation; close any release-tracked issues through the non-terminal floors | the body redesign is the release payload; the live cut is the deferred WS-1 live-floor proof | release proof; distinct-channel verification recorded; mirror synced; WS-1 floors exercised | pending |
 | S6 | Closeout: broad proof (verification lock), retro, disposition every surfaced improvement, honest non-claims, flip to complete | bundle boundary | Final Verification populated; disposition review (rung 2); gate suite green | pending |
 
@@ -240,6 +238,16 @@ through S0–S4.
   - Unblock action: operator confirms the contract/test relocation, or the body is
     deferred-with-cause.
   - Revisit trigger: S0 diagnosis flags a CORE-contract-pinned phrase.
+  - **TRIGGERED at S4 — `quality` anchor-catalog split.** The §5 anchor-split of
+    `quality/SKILL.md` `## Load-Bearing Anchors` (collapse the per-surface
+    inventory catalog → `references/inventory-dispatch.md`) is blocked from a
+    prose cure: `tests/quality_gates/test_quality_skill_docs.py` pins ~25 exact
+    catalog phrases (L113–121) against the body. **Disposition this run:
+    deferred-with-cause** (no test-breaking cut forced). Unblock = operator
+    approves moving those ~25 assertions to target `inventory-dispatch.md`
+    (the reference that already holds the catalog) in a dedicated follow-up, then
+    the anchor-split lands losslessly. Note the section is pressure-exempt, so the
+    defer costs **no** core headroom — it is purely a deferred clarity refinement.
 
 ## Coordination Cues
 
@@ -272,6 +280,34 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S4 — headroom tier: 7 cured + 2 deferred-with-cause (complete, 2026-06-20)
+
+- **Cured (lossless, localized):** gather 149→146 (8→5 guardrails, source-priority
+  heuristic), spec 148→139 (deleted 4 Workflow/Contract-Shaping restatements),
+  ideation 147→142 (lens-caution fold), retro 146→140 (sprawl-trim step-2 flag
+  narration, all script names/flags kept), narrative 144→136 (adapter/source-trust
+  fold), setup 137→132 (stay-narrow heuristic, REVISE folded), handoff 125→110
+  (14→4 guardrails, biggest cut, pins kept).
+- **Deferred-with-cause (no edit) — proves count was not the metric:**
+  - `quality` (left 57): the diagnosed §5 anchor-split target (`## Load-Bearing
+    Anchors`) is **heavily test-pinned** (~25 exact-phrase assertions in
+    `test_quality_skill_docs.py` against the body, which the S0 verify's
+    bullet-lead grep missed). Collapsing it = moving those tests = a **contract
+    change** → the cure is a hypothesis that correctly **converts to
+    defer-with-cause + operator ODQ** rather than a test-breaking cut. The anchor
+    section is pressure-exempt, so it never counted toward core anyway.
+  - `hotl` (left 46): justified density — irreversible-boundary ledger vocabulary
+    needed inline; no restatement cluster present.
+- **Pre-cut check + pinned tests caught real breaks pre-commit:** handoff
+  `host already injects them automatically` (≥24 → BLOCK, restored). All other
+  short-pin risks cleared by the 101-test pinned sweep. No contract change on any
+  cure (verbatim-preserve).
+- S4 batch fresh-eye: **7/7 cured PASS, both defers JUSTIFIED** (distinct channel:
+  143 pin tests run, every collapsed rule homed). One honesty nit folded (retro
+  cite category names aligned to the reference: measured/proxy/unavailable).
+- Scenario review = preserve/no-change (0 eval-file hits; 22 eval scenarios pass).
+- **Final tally: 18 of 20 public bodies cured, 2 deferred-with-cause.**
 
 ### S3 — cure create-cli / find-skills / announcement / critique (complete, 2026-06-20)
 

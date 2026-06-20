@@ -56,21 +56,15 @@ Adapter policy:
    - for `weekly`, the most recent durable weekly retro under `output_dir` when one exists
    - adapter-defined `evidence_paths`
    - for host-log-derived efficiency signals, prefer `$SKILL_DIR/scripts/probe_host_logs.py`
-     before claiming turns, tokens, or tool-call counts; pass `--repo-root .`
-     when probing the current repo. For Codex session-level detail, use
-     `$SKILL_DIR/scripts/audit_codex_session.py` as an evidence producer, not a
-     waste conclusion. When a session id or rollout file is known, pass
-     `--session-id <id>` (or `--session-file <path>`) to read the full session
-     JSONL directly instead of the tail-limited sqlite/tui source; it tolerates
-     malformed lines and separates measured counts, point-in-time snapshots, and
-     proxy signals (including repeated broad gates and repeated VCS/status runs).
-     When a goal artifact carries a `Host metric window:` evidence line, pass
-     `probe_host_logs.py --goal-path <artifact>` to produce a scoped
-     `goal_window_audit` instead of treating the whole thread as the goal cost.
-     For a goal closeout, add `--format markdown` to emit the standardized
-     provider-safe measured-vs-proxy block (it surfaces the window status and
-     never embeds provider CLI command strings) rather than hand-assembling the
-     metric narration.
+     (`--repo-root .`) before claiming turns, tokens, or tool-call counts, and
+     `$SKILL_DIR/scripts/audit_codex_session.py` for Codex session detail — as
+     evidence producers, not waste conclusions. Pass `--session-id <id>` or
+     `--session-file <path>` to read the full session JSONL directly; pass
+     `probe_host_logs.py --goal-path <artifact>` (when the goal carries a
+     `Host metric window:` line) for a scoped `goal_window_audit`; add
+     `--format markdown` for the provider-safe measured-vs-proxy closeout block.
+     The measured / proxy / unavailable signal distinctions live in
+     `references/phase-aware-efficiency.md`.
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next

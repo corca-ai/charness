@@ -151,8 +151,6 @@ as `Entities` or `Stages` instead of recreating them under new names.
 
 - Do not reopen broad concept exploration that belongs in `ideation`, treat
   `spec` as mandatory upfront completeness, or leave success criteria vague.
-- Do not allow an important success criterion without at least one acceptance
-  check.
 - Do not clear a forced debug interrupt with generic spec churn; if the planner
   surfaced one, the spec must explicitly consume that interrupt in
   `Critique`.
@@ -160,15 +158,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
   contract just because the document reads clearly to the current author.
 - Do not leave important rejected alternatives only in chat when the same
   branch is likely to be reopened by the next maintainer.
-- Do not let acceptance checks become a second copy of the unit suite just
-  because the repo already has executable specs.
-- Do not cite generated or gitignored output paths as durable proof. Either
-  check in a selected proof artifact with the cited fields, or declare the
-  proof as reproduction-only. See `references/evidence-durability.md`.
 - Do not silently assume implementation details or ignore current code, tests,
   or operator docs when they materially affect the contract.
-- Do not keep broad shell-driven executable checks in the contract when a
-  cheaper deterministic lower layer would prove the same behavior honestly.
 - If the concept artifact is still unstable in a concept-defining way, send the
   work back to `ideation` rather than writing a fake spec.
 - A good spec refines an existing concept artifact and stays synchronized with implementation.

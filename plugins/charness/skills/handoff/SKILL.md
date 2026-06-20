@@ -119,34 +119,19 @@ The handoff should usually contain:
 
 ## Guardrails
 
-- Do not preserve stale detail that no longer changes the next action.
-- Do not copy quality, retro, debug, changelog, or commit-history detail into
-  the handoff when a link to the owning artifact is enough.
-- Do not accumulate dated `This Session (<date>)` sections across sessions;
-  replace the old one or spill durable detail into the right sibling artifact.
-- Do not hide the real next workflow behind vague prose.
 - On a session-open pickup — including one routed here by `find-skills` after a
   bare handoff-doc mention — invoke the workflow named in the `Workflow Trigger`
   instead of only re-reading the handoff; mention-only reading is the
   recurring routing miss this contract guards against.
 - Do not write unverified state as fact.
-- Do not let the handoff drift away from the current repo state.
-- Do not add new top-level sections just to preserve history; prune or move the
-  durable detail instead.
-- Do not use the line budget as permission to keep process narrative; the
-  budget is a failure guard, not a target.
-- Do not restate stable repo defaults, release numbers, or gate metrics when a
-  link to the owning artifact would leave the next action unchanged.
-- Do not let recurring capability invariants live only in handoff. Handoff may
-  point to an owner artifact, but the durable rule belongs in the skill,
-  support-runtime contract, spec, validator, or operator document that owns the
-  behavior.
-- Do not list always-loaded host instruction surfaces in `References` by
-  default when the host already injects them automatically at session start.
-- Do not assume your own interpretation of the handoff is the only plausible
-  one when a bounded critique could catch a likely misread.
-- If the handoff changed materially, treat it as a real artifact update rather
-  than an afterthought.
+- Handoff is a continuation pointer, not a diary: keep only what changes the next
+  action and honor the size gate as a failure guard, not a target. The keep/drop,
+  stale-detail, and dated-`This Session` rules live in
+  `references/continuation-sequence.md` and `references/state-selection.md`.
+- Single-source detail to the owning artifact (Workflow step 4): never replay
+  quality/retro/debug/changelog/release detail or promote a recurring capability
+  invariant inline, and leave host instruction surfaces out of `References` when
+  the host already injects them automatically (`references/spill-targets.md`).
 
 ## References
 

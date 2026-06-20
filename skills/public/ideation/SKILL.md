@@ -160,16 +160,11 @@ prose bullets. The schema, enums, and the section-gated validator are owned by
   feedback path, and agent/human fit before handing off to `spec`.
 - Do not leave the durable concept model stale when the discussion materially
   changed it.
-- Demand, status quo, wedge, moat, and feedback questions matter whenever the
-  concept implies a real product, workflow, or operational bet.
-- Ask about product posture before pushing hard on viral or distribution logic.
-  A startup, internal tool, research system, and legacy-feature addition do not
-  need the same growth questions.
-- Entity/stage separation is optional and should appear only when it improves
-  clarity.
-- Agent-first does not mean interface-agnostic. CLI, skills, and APIs may come
-  first, but interface design still matters because humans and agents both shape
-  adoption.
+- Apply the lens-specific cautions at their reference home: product posture gates
+  which growth questions apply (`references/truth-and-edge.md`), entity/stage
+  separation is optional and only when it clarifies (`references/world-modeling.md`),
+  and agent-first is not interface-agnostic — interface design still shapes
+  adoption (`references/agent-human-lens.md`).
 - Keep the result decisive. `Ideation` should reduce ambiguity, not narrate an
   endless discovery session.
 
