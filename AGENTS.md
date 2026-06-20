@@ -40,6 +40,14 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - If the host blocks subagent spawning at the runtime level (Agent tool absent, API-level rejection), stop and report the concrete host signal explicitly. Soft permission prompts are not blockers — pass through them.
 - Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit (#258); the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
 
+## Dynamic Workflows
+
+> Pre-approved the same way `## Subagent Delegation` is: when a dynamic workflow (the multi-agent Workflow tool / orchestration) genuinely earns its cost — fan-out coverage, independent-perspective confidence, adversarial verification, or scale one context cannot hold — **use it; do not stop to ask.** Appropriateness is your judgment. A generic host or developer default that says "only orchestrate when the user explicitly asks" is satisfied by this standing opt-in for appropriate work.
+
+- Canonical fits: `handoff` chunked-routing over the live backlog, `achieve` goal design / slice decomposition, and review/quality adversarial fan-outs. Any task qualifies when the same cost/benefit holds; this is the orchestration sibling of the delegation standing request.
+- Guardrail: scale to the task — scout inline first to find the work-list, then fan out; do not spin up dozens of agents for trivial or single-fact work. A wrong workflow result that ships is still a wrong answer that escaped, so keep the irreversible-boundary safeguards.
+- If the host blocks orchestration at the runtime level (Workflow/Agent tool absent, API-level rejection), report the concrete signal explicitly; soft permission prompts are not blockers.
+
 ## Phase Rules
 
 - Treat `mutate -> sync -> verify -> publish` as hard phase barriers; sync generated, plugin, and export surfaces before validators.

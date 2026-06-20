@@ -67,6 +67,15 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   task-completing `setup`, `quality`, `critique`, `release`, and GitHub
   `issue` resolution/closeout review runs instead of implying that only one
   named skill may spawn reviewers
+- when the repo uses Charness dynamic workflows / multi-agent orchestration (the
+  Workflow tool), a compact `## Dynamic Workflows` section that standing-approves
+  dynamic-workflow use when it genuinely earns its cost (fan-out coverage,
+  adversarial confidence, or scale one context cannot hold), names canonical fits
+  (handoff chunked-routing, achieve goal design/decomposition, review/quality
+  fan-outs), keeps appropriateness as the agent's judgment, and carries a
+  scale-to-the-task guardrail. This is the orchestration sibling of the
+  delegation standing request: a generic "only orchestrate when explicitly asked"
+  host default is satisfied by the repo contract for appropriate work
 - a short `Skill Routing` block that tells sessions to call the shared/public
   charness skill `find-skills` once at startup before broader exploration
 - after that bootstrap pass, tell the agent to choose the durable work skill

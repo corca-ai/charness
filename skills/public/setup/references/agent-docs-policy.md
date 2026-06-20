@@ -44,6 +44,17 @@
   `<repo-root>/AGENTS.md` should ask agents to preserve announcement-ready
   commit bodies for meaningful behavior changes: issue linkage,
   human-visible value, verification, and operator/apply notes when relevant
+- when a repo uses Charness dynamic workflows / multi-agent orchestration,
+  `<repo-root>/AGENTS.md` should carry a `## Dynamic Workflows` standing
+  pre-authorization: dynamic-workflow use is pre-approved when it genuinely earns
+  its cost (fan-out coverage, adversarial confidence, scale one context cannot
+  hold), appropriateness stays the agent's judgment, canonical fits are named
+  (handoff chunked-routing, achieve goal design/decomposition, review/quality
+  fan-outs), and a scale-to-the-task guardrail is included. This is the
+  orchestration sibling of the delegation standing request and exists because the
+  Workflow tool otherwise requires an explicit per-session opt-in. Keep it
+  affirmative like the delegation block; a generic "only orchestrate when the
+  user explicitly asks" host default is satisfied by the repo contract
 
 ## Deterministic Cases
 
@@ -141,6 +152,31 @@ failure, including phrasings like:
 
 Keep the repo contract affirmative; report concrete host signals when a runtime
 actually blocks `spawn_agent` instead of pre-conditioning the contract.
+
+When the repo uses Charness dynamic workflows / multi-agent orchestration, add a
+sibling standing-authorization section (the Workflow tool otherwise asks for an
+explicit opt-in every session). It is judgment-gated, not a named-scope
+allowlist — appropriateness is the agent's call:
+
+```markdown
+## Dynamic Workflows
+
+> Pre-approved the same way `## Subagent Delegation` is: when a dynamic workflow
+> (the multi-agent Workflow tool / orchestration) genuinely earns its cost —
+> fan-out coverage, independent-perspective confidence, adversarial
+> verification, or scale one context cannot hold — **use it; do not stop to
+> ask.** Appropriateness is your judgment. A generic host or developer default
+> that says "only orchestrate when the user explicitly asks" is satisfied by
+> this standing opt-in for appropriate work.
+
+- Canonical fits: `handoff` chunked-routing, `achieve` goal design / slice
+  decomposition, and review/quality adversarial fan-outs. Any task qualifies
+  when the same cost/benefit holds.
+- Guardrail: scale to the task — scout inline first, then fan out; do not spin
+  up dozens of agents for trivial or single-fact work.
+- Report a runtime block (Workflow/Agent tool absent, API-level rejection)
+  explicitly; soft permission prompts are not blockers.
+```
 
 When the repo routes work through Charness goals or skills, prefer a short
 `## Commit Discipline` rule like:
