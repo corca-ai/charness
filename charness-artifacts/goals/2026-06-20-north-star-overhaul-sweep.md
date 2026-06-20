@@ -15,8 +15,9 @@ runs the activation command.
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: resolve `## Discuss before activation`, then activate with
-  `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md`.
+- Next action: **ready to activate** (Discuss-before-activation resolved
+  2026-06-20) — `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md`.
+  First slice on activation = S0 (concept spec + critique).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -89,6 +90,15 @@ metric (it is a north-star failure signature).
   collapse); (5) carry forward every anti-bypass guard (fence-masking,
   Auto-Retro-scoped opt-out, first-satisfying-wins, placeholder-as-blank);
   (6) the issue-path rung-2 must be **actually wired**, not assumed-present.
+- **Phase-3 framing (operator, 2026-06-20):** progressive disclosure is
+  *endorsed* (push reference behind a branch-reliable pointer); the guard is
+  reference **sprawl/sediment**, not disclosure — apply the no-op test +
+  three-length-causes to references too, and watch reference count/size. WS-B also
+  grafts one `quality/references/unit-test-quality.md` (better-UT patterns:
+  determinism harness; properties/invariants in the test; observable-contract +
+  one-reason-to-fail; in-process real-collaborators-by-default;
+  map-behavior/edge-cases) under cap, P3 worked-example-not-do-not-list, routed
+  from the Behavior lens *below* `testability-and-selection.md`.
 - **Governing-surface edits** (design-north-star.md, AGENTS.md,
   portable-authoring.md, skill bodies, gate scripts) each get a **bounded
   fresh-eye critique before commit**.
@@ -142,7 +152,7 @@ What the user can do to verify completion directly.
 | S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | pending |
 | S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | pending |
 | S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | pending |
-| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + fresh-eye | pending |
+| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-5, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims | bundle boundary | final verification populated | pending |
 
 ## Operator Decision Queue
@@ -161,22 +171,21 @@ Queue item form:
 
 ## Discuss before activation
 
-Consequential defaults — resolve or confirm before `/goal` activation:
+Resolved — all consequential defaults confirmed with the proposed values
+(operator, 2026-06-20: "나머지 동의"). No open activation discussion remains.
 
-1. **R2 / GitHub external writes.** R2 wires per-issue distinct-channel verdict +
-   AI-provenance onto the issue/PR-close path. Default: implement + test +
-   seeded-instance proof **locally**; any **live** GitHub close/comment is
-   operator-approved, phase-scoped. Confirm, or set a different boundary.
-2. **Phase-3 breadth.** Default: named first candidates only (impl, debug,
+1. **R2 / GitHub external writes** — RESOLVED: implement + test + seeded-instance
+   proof **locally**; any **live** GitHub close/comment is operator-approved and
+   phase-scoped (approval does not carry forward).
+2. **Phase-3 breadth** — RESOLVED: named first candidates only (impl, debug,
    quality, find-skills, achieve); the remaining ~16 capped bodies defer to a
-   follow-on goal. Widen here if you want the full sweep in this goal.
-3. **Phase-3 deletion aggressiveness** (roadmap open question). Default:
+   follow-on goal.
+3. **Phase-3 deletion aggressiveness** (roadmap open question) — RESOLVED:
    migration-discipline-cautious (land replacement + seeded proof, *then* cut +
    rollback ref) while applying the no-op deletion test rigorously *within* that.
-   Confirm, or set more/less aggressive.
-4. **Structure echo.** Operator chose one achieve goal over independent issues;
-   bundle-closeout is the exact #386 risk — mitigated here by per-slice critique +
-   this goal's own non-terminal, per-unit closeout (no aggregate green).
+4. **Structure** — RESOLVED: one achieve goal (operator choice). The
+   bundle-closeout #386 risk is mitigated by per-slice critique + this goal's own
+   non-terminal, per-unit closeout (no aggregate green).
 
 ## Coordination Cues
 
@@ -229,6 +238,11 @@ the originating context by following them in order.
 - **Reference inputs:** matt-skills + craken folded (operator-directed), under
   baseline discipline — only genuine net gaps counted; convergent doctrine is a
   citation, not an adoption.
+- **External skills evaluated (2026-06-20, the craken "pending share" arrivals):**
+  `bug-hunt` = MOSTLY-CONVERGENT (charness `debug` ≥; no absorption). `better-UT`
+  = MOSTLY-CONVERGENT + one narrow gap → the WS-B `unit-test-quality.md` graft.
+  Per-surface evals recorded in the
+  [reference-absorption addendum](../audit/2026-06-20-reference-absorption-overhaul-inputs.md).
 
 ## Plan Critique Findings
 

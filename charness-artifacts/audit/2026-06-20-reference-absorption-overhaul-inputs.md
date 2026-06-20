@@ -105,3 +105,48 @@ distinct-channel + distinct-observer at irreversible boundaries.
 - matt reversible-step completion-criterion clarity/demand vocabulary: graft only
   if Phase 3 finds reversible-step skills with fuzzy bounds; do not import the
   full vocabulary.
+
+## Addendum — bug-hunt + better-UT arrived (2026-06-20)
+
+The craken-pass-1 "pending share" external skills (`bug-hunt`, `better-ut`)
+arrived from the operator (creator's own caveat: not carefully made). Evaluated
+per-surface under the same baseline discipline (two read-only agents).
+
+- **bug-hunt → MOSTLY-CONVERGENT, no absorption.** charness `debug` holds the
+  same workflow at higher resolution (falsifiable-hypothesis-first, durable debug
+  artifact, RCA ledger, detection-gap, sibling-search, P4/P5 provisional-success);
+  what bug-hunt lacks (durable memory, prevention) is exactly charness's
+  differentiator. One thin optional candidate — a "no band-aid / symptom-patch"
+  line in `debug/references/anti-patterns.md` — is held back under P3 (the
+  five-whys *principle* over an enumerated don't-list). Net: confirmation.
+- **better-UT → MOSTLY-CONVERGENT + one genuine narrow gap.** charness has **no
+  standalone per-test-body unit-test-quality authoring doctrine**; its test
+  surface is suite-level (economics / mutation / dup-ratchet /
+  testability-and-selection). Charness is equal-or-better on ~6 of ~9 clusters
+  (refactor-for-testability, DSL/fixture discipline, external-API mocking,
+  don't-chase-coverage, smallest-surface, workflow scaffold — SKIP all). The gap
+  is a missing *layer*. **Adopt:** one new
+  `skills/public/quality/references/unit-test-quality.md` grafting only patterns
+  (1) determinism harness (clock/random/tz/locale/ids/ordering; fake timers over
+  sleep; in-memory/temp isolation; order-independence), (2) properties/invariants
+  *in the test* (idempotence, round-trips, normalization, immutability /
+  no-mutation-of-caller-owned-data, preservation of unrelated fields), (3)
+  observable-contract-over-private-mechanics + one-reason-to-fail + explicit
+  assertions over snapshots, (4) real-collaborators-by-default for *in-process*
+  code (charness only states this for external provider APIs), (5)
+  map-behavior-before-testing + negative/edge-case menu. Constraints: under cap,
+  P3 principle-over-rulebook, one worked example per pattern, **not** better-UT's
+  do-not lists / glossary / workflow; route from the Behavior lens in
+  `quality-lenses.md`, sit *below* `testability-and-selection.md` (avoid the
+  dup-ratchet two-references-one-concept trap). Lands in overhaul **WS-B**.
+
+## Operator clarification (2026-06-20)
+
+Progressive disclosure is the operator's **own core philosophy** — the wariness
+is reference **sprawl/sediment** (too many, too bloated), not disclosure itself.
+So the P2 framing is: disclosure is *endorsed* (push reference behind a
+branch-reliable pointer); the guard is to apply the no-op test + the
+three-length-causes **to references too**, and watch reference count/size — not
+to keep overflow inline. This aligns matt's "context pointer wording decides
+reach" with charness's "displaced overflow goes unread": both fail on sprawl, not
+on disclosure.
