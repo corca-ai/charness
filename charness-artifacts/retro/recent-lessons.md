@@ -2,22 +2,22 @@
 
 ## Current Focus
 
-- Implemented item-5 slice-2 (the boy-scout duplicate ratchet's teeth): pure policy lib + git seams, the adapter-driven gate CLI, a validated `dup_ratchet` adapter block, the green-seeded gate baseline + charness rollout (D6), run-quality + broad pre-push wiring, the reference, and SC1–SC6 tests. (source: `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`)
-- Migrated the code-clone path from the removed `nose scan` to `nose query` (commit `15d5df4f`), re-baselined, verified (run-quality 77/0, 104 focused tests, 2-reviewer fresh-eye critique), committed. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
+- **S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`). (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- **WS-1** — release-publish rung-1 presence floor + rung-2 distinct-channel observer on BOTH the main and `--resume` paths (`e45f71d2`). (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
-- **Inverted the trust hierarchy.** The canonical gate (`run-quality`) had already *skipped* this check non-blocking (stale fingerprint → `--require-fresh-coverage` skip). I then ran a non-canonical bare `--reuse-coverage` (which trusts any coverage file regardless of freshness/format) and treated *its* block as more authoritative than the canonical gate's pass. A forced, off-contract probe should not outrank the standing gate. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
-- **Mirror sync missed a late edit.** The ownership-overlap docstring fix landed after my last `sync_root_plugin_manifests.py`, leaving the plugin mirror stale — a real BLOCKER. The fresh-eye critique caught it (working as designed), but a sync immediately before the critique/commit would have pre-empted it. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
-- **Re-introduced a known footgun by dropping a special-case in a rewrite.** The old `build_command` dropped `--top` on `--write-baseline` so a baseline records EVERY family; my `query` rewrite used the display `--top`, truncating the advisory baseline to 53 instead of 487. Caught at re-seed verification, not at edit time. (source: `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`)
+- **Minor:** a `docs/public-skill-dogfood.json` Edit anchor used the wrong next-case `skill_id` (assumed `narrative`, was `announcement`) → one failed Edit + re-read. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- **Named-subagent spawn round-trips.** S0 and WS-1 critiques used `name:` + mailbox; retrieving each verdict needed an idle-notification → `SendMessage` round trip (one even returned an idle signal with no content, needing a second nudge). The later critiques (WS-2/3a/3b) spawned WITHOUT a name and the final message returned directly — cleaner and faster. One named spawn was also rejected outright ("teammates cannot spawn teammates"), costing a re-spawn. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- **WS-1 SKILL.md headroom churn — 3 edit cycles on one bullet.** I added a 7-line bullet to `release/SKILL.md`, hit `long_core` (161/160), trimmed to 3 lines, hit the *staged* `core-headroom` ratchet (157, buffer 4), trimmed to a 1-line pointer (155). The mechanism detail belonged in the reference from the start. The recent-lessons "headroom discipline" lesson already existed; I did not **measure the core buffer before adding**. Notably I then applied the lesson correctly for WS-2 (issue SKILL.md was 159/160 → I put the floor doc in the reference, not the core) — so the cost was front-loaded into WS-1. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
 - **A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
 - **Bloat diagnoses are hypotheses to verify per-body, not mandates to cut** — carry this into the deferred follow-on body redesign. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
-- **Gate-failure triage must use the exact enforcement invocation.** A hand-rolled approximation of a gate command can false-confirm "pre-existing" and mask a real regression. (Transferable; recurs class: same-proxy re-read.) (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
+- **capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 
 ## Selection Policy
 
@@ -75,7 +75,6 @@
 - `charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md`
-- `charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
+- `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`

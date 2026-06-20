@@ -1,6 +1,6 @@
 # Achieve Goal: North-star Phase 4: non-terminality + portability at the remaining irreversible boundaries
 
-Status: active
+Status: complete
 Created: 2026-06-20
 Activation: `/goal @charness-artifacts/goals/2026-06-20-north-star-phase4-boundary-non-terminality.md`
 
@@ -280,8 +280,16 @@ Operator-only decisions surfaced at shaping; none blocks safe local progress.
 Phase-appropriate routing for this run, deferred to `find-skills` (its
 `--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
 engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
-and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
-during the run:
+and the floors below; `find-skills` owns *which* skill answers a boundary.
+
+Closeout cue lines (filled):
+
+Routing: `find-skills` recommendation engine drove every phase — S0 → `spec` (author) + `critique` (gating); WS-1 → `release` (domain) + `critique`; WS-2 → `issue`/`hotl` (domain) + `critique`; WS-3a/WS-3b → `achieve` (domain) + `critique`; S4 → `retro` + `critique` (closeout disposition review). Validation-shaped closeout routed through `quality` (the gate aggregate `run_slice_closeout` + the commit-boundary validators), per the find-skills `--recommendation-role validation` slot. `achieve` was the goal operator throughout.
+Gather: n/a — no external URL/Slack/Notion/Docs/Drive source; the goal was shaped from in-repo doctrine (design-north-star, the locked per-unit-disposition spec, recent-lessons) only, so no `gather` step applied.
+Release: n/a — WS-1 edits the release publish *code path* (`publish_release_*.py`) and adds an adapter field, but cuts no release and bumps no version (plugin version unchanged `0.52.6`); no release surface was published this run.
+Issue closeout: n/a — this goal resolves no tracked GitHub issue; it adds closeout *gates* (WS-2 the HOTL floor) and references #386/#385 as doctrine context only, not as close-intended issues.
+
+Per-step detail:
 
 - **Routing** — ask `find-skills` to recommend the skill for the current phase or
   boundary, and record the route it returns. At completion, recorded
@@ -558,16 +566,51 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md
+Host log probe: charness-artifacts/retro/2026-06-20-phase4-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-06-20-phase4-closeout-disposition-review.md
 
 ## User Verification Instructions
 
-To be populated at closeout with the concrete per-workstream verification
-commands (see `## User Acceptance` for the acceptance shape).
+Concrete commands a maintainer can run to verify completion directly.
+
+- **S0 (concept lock):** read
+  `charness-artifacts/spec/2026-06-20-phase4-boundary-non-terminality-concept.md`
+  — confirm §1 invariant (no terminal-green), the rung-1/rung-2 split per
+  workstream, the leak inventory L1–L6 + protected set P1–P5, and the §9 gating
+  critique PASS-WITH-CONDITIONS folded.
+
+- **WS-1 (release publish):**
+  `python3 -m pytest -q tests/quality_gates/test_release_distinct_channel.py`
+  (8 unit/integration: silent record refuses; a confirmation OR a typed
+  disposition pass equally; the observer never uses `gh release view`) and
+  `python3 -m pytest -q -m release_only tests/quality_gates/test_release_publish.py`
+  (the two E2E: `..._records_distinct_channel_confirmation_before_issue_close`,
+  `..._records_distinct_channel_disposition_and_still_closes`). Read the F2a
+  wiring at `skills/public/release/scripts/publish_release_execute.py` (after the
+  `release_verified` block, before `ensure_release_issues_closed`) and
+  `publish_release_resume.py`.
+
+- **WS-2 (HOTL floor):**
+  `python3 -m pytest -q tests/quality_gates/test_issue_closeout_verifier.py -k hotl`
+  — an undispositioned `HOTL #N:` entry FAILS (rc 2) before `CLOSED` greens; a
+  typed HOTL status or `local-only-by-contract` PASSES; a no-HOTL carrier is
+  inert.
+
+- **WS-3 (portability deleak):**
+  `grep -rn "ceal-dev" skills/ scripts/ tests/` returns ONLY the protected
+  `slack.ceal-dev` capability-resolution tests + the
+  `test_proof_semantics_adapter.py:244` domain-blindness guard;
+  `grep -rn "applied-restarted\|Post-Apply Checkpoint" skills/ scripts/ tests/ docs/ plugins/`
+  returns nothing. Then
+  `python3 -m pytest -q tests/quality_gates/test_goal_artifact_closeout_delegation.py tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_achieve_adapter_policy.py tests/quality_gates/test_workflow_safety_docs.py tests/quality_gates/test_goal_artifact_blocked_matrix.py`
+  (the `instance-synced` rename, the `discussion_deploy_vocab` adapter seam
+  default-preserves/custom-replaces, the heading, the neutral lane fixture).
+
+- **Bundle:** `python3 -m pytest -q tests/` (default) + `python3 -m pytest -q -m
+  release_only tests/` — 3520 green at the verification lock (3444 + 76).
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied — (1) headroom measure-first: the WS-2 issue-SKILL.md floor doc was routed to the reference (core kept at 159/160 instead of pushing over), and the pre-edit measure habit is captured in `charness-artifacts/retro/recent-lessons.md`; (2) nameless one-shot critique spawn: WS-2/3a/3b critiques used direct-return (no-name) spawns rather than named+mailbox, captured in recent-lessons. No new gate/capability needed — the existing gate suite (attention-state-visibility, long_core/core-headroom, mirror-drift, cautilus-skill-review, prose-pin) caught every issue this goal.
+Structural follow-up: none — the only transferable waste (SKILL.md headroom churn) is agent-discipline carried by the `recent-lessons.md` digest; the existing `long_core` + staged `core-headroom` gates already enforce the hard limit, so no new gate/test/contract change is warranted. (`## Sibling Search` ran in the retro across release/issue/achieve/quality surfaces: no un-applied sibling — the lesson was applied mid-goal at WS-2.)

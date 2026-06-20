@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-20",
-  "source_artifact_count": 241,
-  "candidate_count": 1159,
+  "source_artifact_count": 243,
+  "candidate_count": 1171,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -535,6 +535,106 @@
       ]
     },
     {
+      "candidate_id": "current_focus:04ed2d21d272",
+      "kind": "current_focus",
+      "lesson": "**S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`).",
+      "normalized_key": "s0 concept spec locked by a gating fresh eye critique 4e18811b",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e6144cdfa99e",
+      "kind": "current_focus",
+      "lesson": "**WS-1** — release-publish rung-1 presence floor + rung-2 distinct-channel observer on BOTH the main and `--resume` paths (`e45f71d2`).",
+      "normalized_key": "ws 1 release publish rung 1 presence floor rung 2 distinct channel observer on",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:71dac06936f7",
+      "kind": "current_focus",
+      "lesson": "**WS-2** — Direction-3 refuse-on-undispositioned-HOTL-entry floor on `issue verify-closeout` (`cfb1ae9a`).",
+      "normalized_key": "ws 2 direction 3 refuse on undispositioned hotl entry floor on issue verify closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:75a64cffe7ea",
+      "kind": "current_focus",
+      "lesson": "**WS-3a** — Tier-1 `ceal-dev` consumer-name portability deleak (`757a8264`).",
+      "normalized_key": "ws 3a tier 1 ceal dev consumer name portability deleak 757a8264",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:eba42b2559b6",
+      "kind": "current_focus",
+      "lesson": "**WS-3b** — Tier-2 verb-vocabulary deleak: `applied-restarted` → `instance-synced` straight rename + `goal_artifact_discussion` adapter-provided deploy vocab + `Post-Apply` → `Post-Checkpoint Commit` heading (`cddcf161`). Bundle proof: **3520 pytest pass** (3444 default + 76 release_only) over the final bundled state.",
+      "normalized_key": "ws 3b tier 2 verb vocabulary deleak applied restarted instance synced straight rename goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d045178f6802",
       "kind": "next_improvement",
       "lesson": "**A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap.",
@@ -575,6 +675,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:604ddbdc88c4",
+      "kind": "next_improvement",
+      "lesson": "**capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one.",
+      "normalized_key": "capability none new the gate suite attention state visibility skill ergonomics staged core headroom",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e83a9f59ae21",
       "kind": "next_improvement",
       "lesson": "**Gate-failure triage must use the exact enforcement invocation.** A hand-rolled approximation of a gate command can false-confirm \"pre-existing\" and mask a real regression. (Transferable; recurs class: same-proxy re-read.)",
@@ -595,141 +715,21 @@
       ]
     },
     {
-      "candidate_id": "current_focus:1ff8a6a46384",
-      "kind": "current_focus",
-      "lesson": "Implemented item-5 slice-2 (the boy-scout duplicate ratchet's teeth): pure policy lib + git seams, the adapter-driven gate CLI, a validated `dup_ratchet` adapter block, the green-seeded gate baseline + charness rollout (D6), run-quality + broad pre-push wiring, the reference, and SC1–SC6 tests.",
-      "normalized_key": "implemented item 5 slice 2 the boy scout duplicate ratchet s teeth pure policy",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-          "date": "2026-06-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:345cdc2cad5b",
-      "kind": "current_focus",
-      "lesson": "Migrated the code-clone path from the removed `nose scan` to `nose query` (commit `15d5df4f`), re-baselined, verified (run-quality 77/0, 104 focused tests, 2-reviewer fresh-eye critique), committed.",
-      "normalized_key": "migrated the code clone path from the removed nose scan to nose query commit",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-          "date": "2026-06-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f58d8335268b",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.52.6`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 52 6",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md",
-          "date": "2026-06-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:38548934bebb",
+      "candidate_id": "next_improvement:5d37c84c492c",
       "kind": "next_improvement",
-      "lesson": "**capability:** `check_changed_line_mutation_coverage --reuse-coverage` should reject a coverage JSON that contains none of the changed files' repo-relative paths (wrong-format/stale) — degrade to \"no usable coverage → skip\" rather than scoring every changed file 0% and blocking. This removes the entire false-block class. (follow-up; destination: charness gate hardening.)",
-      "normalized_key": "capability check changed line mutation coverage reuse coverage should reject a coverage json that",
+      "lesson": "**memory:** this retro + the recent-lessons digest.",
+      "normalized_key": "memory this retro the recent lessons digest",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-          "date": "2026-06-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:81f2c607c877",
-      "kind": "next_improvement",
-      "lesson": "**follow-up (genuine, separate from this migration):** `check_dup_ratchet.py` has 0% *attributed* coverage because slice-2 tests it via subprocess (the #393 class). Add an in-process coverage test before pushing the unpushed stack.",
-      "normalized_key": "follow up genuine separate from this migration check dup ratchet py has 0 attributed",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-          "date": "2026-06-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9a2bba2b4036",
-      "kind": "next_improvement",
-      "lesson": "for content-hash-keyed baselines (this gate; also `nose-baseline.json` / `doc-nose-baseline.json`), seed/re-seed as the LAST pre-commit step once code is frozen. The dup-ratchet adoption doc now orders scope-then-seed; the \"seed last\" timing is the transferable half.",
-      "normalized_key": "for content hash keyed baselines this gate also nose baseline json doc nose baseline",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-item5-slice2-dup-ratchet.md",
-          "date": "2026-06-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:10508c4126f0",
-      "kind": "next_improvement",
-      "lesson": "**memory:** When migrating a command builder that had read-vs-write special casing, preserve the invariant explicitly — a baseline write MUST enumerate the full set, never the display `--top`. (Captured here + in the spec Slice 3 note.)",
-      "normalized_key": "memory when migrating a command builder that had read vs write special casing preserve",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-      "latest_source_date": "2026-06-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-nose-migration-and-self-diagnosis-miss.md",
-          "date": "2026-06-19",
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
           "section": "Next Improvements"
         }
       ]
@@ -1257,6 +1257,106 @@
       ]
     },
     {
+      "candidate_id": "current_focus:04ed2d21d272",
+      "kind": "current_focus",
+      "lesson": "**S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`).",
+      "normalized_key": "s0 concept spec locked by a gating fresh eye critique 4e18811b",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e6144cdfa99e",
+      "kind": "current_focus",
+      "lesson": "**WS-1** — release-publish rung-1 presence floor + rung-2 distinct-channel observer on BOTH the main and `--resume` paths (`e45f71d2`).",
+      "normalized_key": "ws 1 release publish rung 1 presence floor rung 2 distinct channel observer on",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:71dac06936f7",
+      "kind": "current_focus",
+      "lesson": "**WS-2** — Direction-3 refuse-on-undispositioned-HOTL-entry floor on `issue verify-closeout` (`cfb1ae9a`).",
+      "normalized_key": "ws 2 direction 3 refuse on undispositioned hotl entry floor on issue verify closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:75a64cffe7ea",
+      "kind": "current_focus",
+      "lesson": "**WS-3a** — Tier-1 `ceal-dev` consumer-name portability deleak (`757a8264`).",
+      "normalized_key": "ws 3a tier 1 ceal dev consumer name portability deleak 757a8264",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:eba42b2559b6",
+      "kind": "current_focus",
+      "lesson": "**WS-3b** — Tier-2 verb-vocabulary deleak: `applied-restarted` → `instance-synced` straight rename + `goal_artifact_discussion` adapter-provided deploy vocab + `Post-Apply` → `Post-Checkpoint Commit` heading (`cddcf161`). Bundle proof: **3520 pytest pass** (3444 default + 76 release_only) over the final bundled state.",
+      "normalized_key": "ws 3b tier 2 verb vocabulary deleak applied restarted instance synced straight rename goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d045178f6802",
       "kind": "next_improvement",
       "lesson": "**A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap.",
@@ -1297,6 +1397,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:604ddbdc88c4",
+      "kind": "next_improvement",
+      "lesson": "**capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one.",
+      "normalized_key": "capability none new the gate suite attention state visibility skill ergonomics staged core headroom",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e83a9f59ae21",
       "kind": "next_improvement",
       "lesson": "**Gate-failure triage must use the exact enforcement invocation.** A hand-rolled approximation of a gate command can false-confirm \"pre-existing\" and mask a real regression. (Transferable; recurs class: same-proxy re-read.)",
@@ -1313,6 +1433,126 @@
           "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md",
           "date": "2026-06-20",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5d37c84c492c",
+      "kind": "next_improvement",
+      "lesson": "**memory:** this retro + the recent-lessons digest.",
+      "normalized_key": "memory this retro the recent lessons digest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f64e2831ebc8",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** Before adding prose to a `SKILL.md`, **measure the core buffer** (`inventory_skill_ergonomics.py --max-core-lines 160`); at ≥155/160, author new content in a reference, not the core. Reinforces the existing headroom-discipline lesson with a *pre-edit measure* habit (the 3-cycle churn above).",
+      "normalized_key": "workflow before adding prose to a skill md measure the core buffer inventory skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:586efb77f6cd",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** For a one-shot fresh-eye critique whose verdict you just want returned, spawn the subagent **without a `name`** (direct final-message return); reserve named+mailbox for agents you address repeatedly.",
+      "normalized_key": "workflow for a one shot fresh eye critique whose verdict you just want returned",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b167b49aaea6",
+      "kind": "repeat_trap",
+      "lesson": "**Minor:** a `docs/public-skill-dogfood.json` Edit anchor used the wrong next-case `skill_id` (assumed `narrative`, was `announcement`) → one failed Edit + re-read.",
+      "normalized_key": "minor a docs public skill dogfood json edit anchor used the wrong next case",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:765ea148e495",
+      "kind": "repeat_trap",
+      "lesson": "**Named-subagent spawn round-trips.** S0 and WS-1 critiques used `name:` + mailbox; retrieving each verdict needed an idle-notification → `SendMessage` round trip (one even returned an idle signal with no content, needing a second nudge). The later critiques (WS-2/3a/3b) spawned WITHOUT a name and the final message returned directly — cleaner and faster. One named spawn was also rejected outright (\"teammates cannot spawn teammates\"), costing a re-spawn.",
+      "normalized_key": "named subagent spawn round trips s0 and ws 1 critiques used name mailbox retrieving",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ef68f426bacb",
+      "kind": "repeat_trap",
+      "lesson": "**WS-1 SKILL.md headroom churn — 3 edit cycles on one bullet.** I added a 7-line bullet to `release/SKILL.md`, hit `long_core` (161/160), trimmed to 3 lines, hit the *staged* `core-headroom` ratchet (157, buffer 4), trimmed to a 1-line pointer (155). The mechanism detail belonged in the reference from the start. The recent-lessons \"headroom discipline\" lesson already existed; I did not **measure the core buffer before adding**. Notably I then applied the lesson correctly for WS-2 (issue SKILL.md was 159/160 → I put the floor doc in the reference, not the core) — so the cost was front-loaded into WS-1.",
+      "normalized_key": "ws 1 skill md headroom churn 3 edit cycles on one bullet i added",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+      "latest_source_date": "2026-06-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md",
+          "date": "2026-06-20",
+          "section": "Waste"
         }
       ]
     },
