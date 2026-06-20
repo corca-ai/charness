@@ -94,7 +94,9 @@ genuinely conflict and the call is unclear, ask.
   already cited — P4 violation;
 - you shortened a body to dodge the cap instead of splitting the concept — P2
   violation;
-- you cited "fewer lines / fewer gates" as success — count is not a metric.
+- you cited "fewer lines / fewer gates" — or, inverted, *more* code / *more*
+  gates as "thoroughness" — as success; count is not the metric in either
+  direction (escape-closed + concept-clearer is).
 
 ## Deliberately not in this document
 
