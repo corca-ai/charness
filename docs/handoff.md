@@ -31,10 +31,15 @@
   Now #1 because it **gates propagating the doctrine to consumer repos (ceal)**. Start:
   Phase 0 (validate diagnosis) -> Phase 1 (#387, aggregate closeout-shape errors in one
   pass). Open question (roadmap): one `achieve` goal vs independent issues.
-- **ceal propagation (downstream of the overhaul).** ceal already runs charness; a
-  read-only subagent drafted a ceal issue for the *already-shipped* wins (charness
-  update, nose install, pre-push dup-ratchet wiring, gate hygiene) — NOT the unfinished
-  overhaul. Review/file the draft before relying on it.
+- **craken-agents absorption (recurring overhaul input).** ../craken-agents has strong
+  skills (bug-hunt) + code structure; mine them vs the charness baseline (genuine gaps
+  only — lychee discipline) as the overhaul's "what good looks like" reference. Re-run
+  the craken pass each session; first inventory subagent ran 2026-06-20.
+- **ceal propagation (downstream; 2 surfaces).** ceal embeds charness via a vendored pin
+  (~35 commits stale — this is how the ceal agent instance ships charness inside itself)
+  and via a machine-level plugin install; the two can drift independently. Plus a real
+  bug: its native nose advisory calls the removed `nose scan`. Issue draft re-scoped
+  across both surfaces; pin target is the v0.52.6 release tag. Review before filing.
 - **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
   to advisory (surviving value from item ②), then critique/skill-ergonomics demotions.
   Plus: changed-line gate `--reuse-coverage` should skip a coverage file containing none
