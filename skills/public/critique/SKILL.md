@@ -38,8 +38,6 @@ Caller contract:
 - write any change-affecting result back into the caller's durable contract
 - record `Fresh-Eye Satisfaction` as
   `parent-delegated`, `nested-delegated`, or `blocked <host-signal>`
-- if the host blocks the canonical subagent path, treat that as a blocked state
-  for this run instead of rewriting the outcome as a local review
 
 Autonomous trigger: if no pending artifact or source summary is supplied, do
 not ask first by default; follow `references/autonomous-trigger.md`, infer a
@@ -168,17 +166,13 @@ actually ran.
 
 - Do not turn critique into broad ideation. Start from an actual pending
   change.
-- Do not pick a target reference that changes the angle distribution from
-  what the caller actually asked for.
-- Do not open more angles than you can triage honestly.
-- Do not keep rejected alternatives only in chat when the same debate will recur.
-- Do not treat every surfaced concern as equally important.
-- Do not skip the counterweight pass; a paranoia backlog without triage is
-  not change support.
-- Do not silently downgrade critique into a same-agent local pass. Use the
-  fresh-eye reference; if the canonical path stays blocked, stop, do not improvise.
-- Do not make an already delegated angle or counterweight reviewer spawn another
-  reviewer unless recursive delegation was explicitly requested.
+- Keep the counterweight pass owned, not a paranoia backlog: triage every concern
+  into the four bins, never skip it or treat all concerns as equal, and don't open
+  more angles than you can triage honestly. Persist rejected-but-recurring concerns
+  to `Deliberately Not Doing` (Workflow step 6), not chat. See
+  `references/counterweight-triage.md`. (Target-distribution, no-same-agent, and
+  no-nested-spawn rules are stated once above — Target Selection, the concept block,
+  and the delegated-reviewer fast path.)
 
 ## References
 

@@ -119,36 +119,22 @@ steps call tools outside the baseline shell surface.
    - factor shared lifecycle logic instead of copying subcommand shapes
    - keep environment detection and filesystem mutation explicit
 6. Add the right gates.
-   - smoke tests for representative commands
-   - `--help` smoke for stable public subcommands
-   - side-effect probe fixtures for mutating lifecycle commands, including
-     read-only help probes, option-looking positional rejection, dry-run/plan
-     coverage or waiver, and watched filesystem or command-runner side effects
-   - validation for generated machine-readable state
-   - JSON-shape tests for command discovery output when wrappers or agents
-     depend on it
-   - redaction tests for external-capability preflight and bridge logs, proving
-     raw tokens, request bodies, and full external identifiers are not printed
-   - for external-capability mutating commands, action-shaped self-tests, not
-     only readiness probes; reach `provider_roundtrip` per
-     `../../shared/references/external-capability-proof-ladder.md` or record
-     the concrete reason the round-trip cannot run in CI
-   - checks that docs and examples do not conflate help, healthcheck, and
-     readiness semantics
-   - a command-docs drift gate when install/update/doctor/reset/uninstall
-     semantics are part of the operator contract
-   - help text or JSON-shape checks when agents depend on them
-   - stale generated-artifact failures must include the exact regeneration
-     command in the failure message, not only a "stale" diagnostic
-   - broad verification commands (pre-push, pre-release, aggregate `verify`)
-     must not mutate the caller's worktree, index, or `HEAD`; ship a fixture
-     that asserts `git status` stays clean and `HEAD` stays unchanged on
-     success, and prefer a read-only path or disposable checkout for any
-     generating step
+   - cover the gate axes per `references/quality-gates.md`: parser/`--help` smoke,
+     mutating-command side-effect probe fixtures (read-only help probes,
+     option-looking positional rejection, dry-run/plan coverage or waiver, watched
+     side effects), machine-state + command-discovery JSON validation,
+     external-capability log redaction tests, help/healthcheck/readiness-not-conflated
+     checks, a command-docs drift gate, and broad-verification worktree safety
+     (clean `git status`/`HEAD`)
+   - for external-capability mutating commands, require action-shaped self-tests,
+     not only readiness probes; reach `provider_roundtrip` per
+     `../../shared/references/external-capability-proof-ladder.md` or record the
+     concrete reason the round-trip cannot run in CI
+   - stale generated-artifact failures must name the exact regeneration command in
+     the failure message, not only a "stale" diagnostic
    - run the repo's standing lint gate against the new CLI source before
-     slice-complete and record the result in the `Lint Gate` closeout field
-     rather than waiting for the push-time hook to reject the commit; the lint
-     survey and the field shape are owned by
+     slice-complete and record the result in the `Lint Gate` closeout field; the
+     lint survey and field shape are owned by
      `../impl/references/verification-ladder.md` "Lint Gate Closeout Shape" and
      `references/quality-gates.md`
 

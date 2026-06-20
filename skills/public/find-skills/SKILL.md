@@ -143,9 +143,8 @@ explicitly allows it.
    - what is already shipped
    - what is not yet shipped
    - whether an external skill ecosystem search is allowed by the current host
-7. Drive the routed workflow from the result.
-   - on a session-open pickup, follow the handoff `Workflow Trigger` and invoke
-     `charness:handoff` rather than stopping at the inventory
+7. Drive the routed workflow from the result (the pickup → `charness:handoff`
+   path lives in `## Drive The Routed Workflow`).
    - on a named-capability request, start the matched durable work skill
    - only a pure "which skill handles X?" question ends at the inventory answer
 
@@ -176,8 +175,8 @@ The result should usually include:
 - If nothing suitable exists yet, say so directly and classify the missing
   capability instead of hand-waving.
 - Do not stop after emitting the inventory when the session opened on a pickup
-  or named a concrete workflow; drive the routed workflow (pickup -> the handoff
-  trigger's `charness:handoff`). Stopping at the map is the routing miss this
+  or named a concrete workflow; drive the routed workflow per
+  `## Drive The Routed Workflow`. Stopping at the map is the routing miss this
   skill exists to prevent.
 - If the `artifacts` payload reports `requires_repo_closeout: true`, apply the
   host repo's commit or closeout policy for meaningful durable artifact changes

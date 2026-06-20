@@ -9,25 +9,26 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S3 (cure crammed batch C: create-cli / find-skills /
-  announcement / critique)** — S0, S1, **S2 complete and committed**. The full
+- Current slice: **S4 (diagnose-and-cure-or-defer the headroom tier: gather /
+  spec / ideation / retro / narrative / setup / handoff / quality; record `hotl`
+  defer-with-cause, no edit)** — S0–S3 complete and committed. The full
   diagnose-and-cure scope (all 20 public bodies) and the terminal live-release
   slice are operator-resolved.
-- Current slice intent: apply the S0-diagnosed cures to create-cli / find-skills /
-  announcement / critique (all `duplication`, guardrail-cluster collapse +
-  single-source). find-skills carries the short-pin hazard (`routing miss this`,
-  `Do not stop after emitting the inventory` — keep verbatim per
-  `test_find_skills_routing_drive.py`); critique keeps its 6 CORE pins + FORBIDDEN
-  `short bounded local pass` absent. **Run the pinned skill-doc tests after the
-  batch** (the <24-char blind-spot backstop — S2 hitl needed it). Pre-cut check +
-  per-body fresh-eye; sync the mirror before validators.
-- Next action: cure the S3 batch per the S0 disposition rows; pre-cut check + run
-  pinned tests each, re-measure, one fresh-eye reviewer for the batch, commit.
-- Cure pattern (S1–S2 proven): collapse the `## Guardrails` negative-restatement
+- Current slice intent: apply the S0-diagnosed cures to the 8 headroom-tier
+  bodies (all `cure` except `hotl` which is **defer-with-cause — record only, no
+  edit**). retro carries a PIN HAZARD (the `Trends vs Last Retro` PACKAGE-pin
+  paraphrase — leave L81 or move the literal first; the pre-cut check BLOCKs it);
+  setup has a precision REVISE (collapse only L149/L151/L153, single-source L145
+  separately); quality is the §5 anchor-split flagship (Load-Bearing-Anchors
+  catalog → inventory-dispatch.md). **Run the pinned skill-doc tests after the
+  batch** (quality has ~26 pinned assertions in `test_quality_skill_docs.py`).
+- Next action: cure the S4 batch per the S0 disposition rows; pre-cut check + run
+  pinned tests each, re-measure, one fresh-eye reviewer for the batch, then S5.
+- Cure pattern (S1–S3 proven): collapse the `## Guardrails` negative-restatement
   cluster to a named heuristic + single-source cite; keep every CORE/PACKAGE/test
   pin verbatim; the pre-cut check catches ≥24-char pins, running the pinned tests
-  catches short ones, fresh-eye is the losslessness backstop. S2 cured create-skill
-  156→149, achieve 156→142, hitl 155→140, release 155→140 (4/4 fresh-eye PASS).
+  catches short ones, fresh-eye is the losslessness backstop. S3 cured create-cli
+  155→141, find-skills 152→151, announcement 152→146, critique 150→144 (4/4 PASS).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -205,7 +206,7 @@ What the user can do to verify completion directly.
 | S0 | Diagnosis spec + gating critique: measure all 20 cores; apply the §5 instrument set diagnostically per body; produce a per-body length-cause + cure/defer-with-cause disposition table; build/confirm the pre-cut lossless+contract-safe check (declarative, not manual); lock with a bounded fresh-eye critique | concept-first; the diagnosis IS the contract that gates every cure | diagnosis artifact under `charness-artifacts/spec/` (or `audit/`) + the pre-cut check + critique PASS folded | **complete** (2026-06-20): disposition spec LOCKED (19 cure + 1 defer `hotl`); `check_skill_cut_safety.py` + test + docs + drift-guard landed; gating critique PASS-WITH-CONDITIONS folded |
 | S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | **complete** (2026-06-20): issue 159→148, impl 158→152, debug 157→150; all guardrail-cluster duplication collapsed lossless; pins verbatim-preserved (no contract change); fresh-eye PASS (impl condition folded — cure A reverted as an imprecise pointer) |
 | S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | **complete** (2026-06-20): create-skill 156→149, achieve 156→142, hitl 155→140, release 155→140; guardrail-cluster duplication collapsed lossless; pins verbatim (incl. FORBIDDEN `local critique` absent); 3 test-pin breaks caught pre-commit + restored; 4/4 fresh-eye PASS |
-| S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | same | pending |
+| S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | **complete** (2026-06-20): create-cli 155→141, find-skills 152→151, announcement 152→146, critique 150→144; guardrail/catalog duplication collapsed lossless; 4 test-pin breaks caught pre-commit + restored (incl. a Step-6 gate-name reword); FORBIDDEN `short bounded local pass` absent; 4/4 fresh-eye PASS |
 | S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | per-body disposition: cured-with-cause or deferred-with-cause; no count-driven cut | pending |
 | S5 | Release terminal slice: bump version + sync install manifests + announcement; **live publish operator-approved + phase-scoped**; rung-2 distinct-channel confirmation; close any release-tracked issues through the non-terminal floors | the body redesign is the release payload; the live cut is the deferred WS-1 live-floor proof | release proof; distinct-channel verification recorded; mirror synced; WS-1 floors exercised | pending |
 | S6 | Closeout: broad proof (verification lock), retro, disposition every surfaced improvement, honest non-claims, flip to complete | bundle boundary | Final Verification populated; disposition review (rung 2); gate suite green | pending |
@@ -271,6 +272,29 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S3 — cure create-cli / find-skills / announcement / critique (complete, 2026-06-20)
+
+- All `duplication`. create-cli: Step-6 gate catalog 13→4 (axis-summary cite to
+  quality-gates.md + 3 kept sharp rules); Step 2 left intact (genuine distinct
+  design rules, not restatement — fresh-eye confirmed). find-skills: small residual
+  cure (single-authority — pickup→`charness:handoff` lives once in the section).
+  announcement: Guardrails 8→1 "delivery is gated" heuristic. critique: Guardrails
+  8→2 + caller-contract fold (kept the test-pinned step-3 same-agent/blocked bullets
+  verbatim; FORBIDDEN `short bounded local pass` stays absent).
+- Re-measured: create-cli 155→141, find-skills 152→151, announcement 152→146,
+  critique 150→144.
+- **Pre-cut check + pinned tests caught 4 real breaks pre-commit:** 2 critique
+  step-3 test-pins (≥24ch → BLOCK; cure-a reverted), 2 create-cli gate-name rewords
+  (`side-effect probe fixtures`, `redaction tests`/`command-docs drift gate` — short
+  pins the scan missed, caught by `test_quality_skill_docs.py`). Also surfaced a
+  cross-file test-pin false positive (`option-looking positional rejection` pinned
+  in quality/SKILL.md, not create-cli) — adjudicated, no break. No contract change.
+- S3 batch fresh-eye: **4/4 PASS** (distinct channel: opened all 4 references,
+  homed every collapsed bullet, confirmed FORBIDDEN absent + plugin sync). Two
+  non-blocking density/why-hop nits left as-is.
+- Scenario review = preserve/no-change (0 eval-file hits; 22 eval scenarios pass).
+  Routing: `create-skill`/`quality` + `critique`.
 
 ### S2 — cure create-skill / achieve / hitl / release (complete, 2026-06-20)
 

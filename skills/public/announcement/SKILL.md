@@ -169,19 +169,13 @@ The result should usually include:
 
 ## Guardrails
 
-- Do not block draft creation on missing delivery backend.
-- Do not silently invent audience tags when the adapter leaves them unset.
-- Do not turn implementation details into the headline unless they changed
-  human-visible behavior or operator confidence.
-- Do not deliver anything without explicit user confirmation.
-- If delivery depends on a repo helper, command template, or permission, say so
-  explicitly before posting.
-- Draft body must appear inline in the response in addition to the artifact,
-  so the user can review without opening a file.
-- Do not let CommonMark go to a chat backend unconverted; apply the
-  format-rules conversion before posting.
-- Do not assume one chat message can hold the whole draft; honor
-  `message_size_limit` and split when configured.
+- Delivery is gated, drafting is not: never block a draft on a missing backend,
+  and never let anything leave the draft until it is user-confirmed, format- and
+  size-correct for the backend, and any required repo helper or permission is
+  disclosed first. The Workflow steps and `references/draft-shape.md` /
+  `references/delivery-seams.md` own the per-step enforcement the guardrails would
+  otherwise restate (no invented audience tags, value-over-mechanism headline,
+  inline draft, CommonMark conversion, `message_size_limit` split).
 
 ## References
 
