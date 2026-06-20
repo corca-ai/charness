@@ -9,24 +9,26 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S1 (cure the 3 sub-buffer must-fix: issue / impl / debug)** —
-  S0 is **complete and committed** (diagnosis spec LOCKED, gating critique
-  PASS-WITH-CONDITIONS folded). The full diagnose-and-cure scope (all 20 public
-  bodies) and the terminal live-release slice are operator-resolved.
-- Current slice intent: apply the S0-diagnosed cures to issue / impl / debug. All
-  three are `duplication` (guardrail-cluster collapse + single-source); issue and
-  impl carry **pin hazards** (test-literal pins) so the pre-cut check
-  (`scripts/check_skill_cut_safety.py`) + a per-body fresh-eye are load-bearing
-  here. Use the verbatim-preserve path (do not update a pinned test). Re-sync the
-  plugin mirror before validators.
-- Next action: cure `issue/SKILL.md` per the S0 disposition row — run the pre-cut
-  check, apply the duplication collapse preserving the pinned literals verbatim,
-  re-measure, fresh-eye, then impl and debug.
-- S0 deliverables (locked): `scripts/check_skill_cut_safety.py` (+ test, docs,
-  drift-guard); disposition table for all 20 bodies in
-  [2026-06-20-skill-body-diagnosis-disposition.md](../spec/2026-06-20-skill-body-diagnosis-disposition.md)
-  (19 cure + 1 defer-with-cause `hotl`); raw verified records in the sibling
-  `...-diagnosis-results.json` / `...-measured-input.json`.
+- Current slice: **S2 (cure crammed batch B: create-skill / achieve / hitl /
+  release)** — S0 and **S1 complete and committed**. The full diagnose-and-cure
+  scope (all 20 public bodies) and the terminal live-release slice are
+  operator-resolved.
+- Current slice intent: apply the S0-diagnosed cures to create-skill / achieve /
+  hitl / release (all `duplication`, guardrail-cluster collapse + single-source).
+  create-skill has a precision REVISE (off-by-one: PRESERVE L124-125
+  concept-singularity; keep L150 secrets-safety optional); achieve has a
+  completeness REVISE (KEEP L162 `not every prompt is a goal`; add L175-176 to the
+  prune set). release keeps its 6 CORE + 4 `Critique:` package pins + FORBIDDEN
+  `local critique` absent. Run the pre-cut check + per-body fresh-eye; sync the
+  mirror before validators.
+- Next action: cure the S2 batch per the S0 disposition rows; pre-cut check each,
+  re-measure, one fresh-eye reviewer for the batch, commit.
+- S0/S1 deliverables: `scripts/check_skill_cut_safety.py` (+ test/docs/drift-guard;
+  now also suppresses test-pin false positives when the literal survives elsewhere);
+  the LOCKED disposition table
+  [2026-06-20-skill-body-diagnosis-disposition.md](../spec/2026-06-20-skill-body-diagnosis-disposition.md);
+  S1 cured issue 159→148, impl 158→152, debug 157→150 (all off the under-buffer
+  floor), per-body fresh-eye PASS.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -202,7 +204,7 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | S0 | Diagnosis spec + gating critique: measure all 20 cores; apply the §5 instrument set diagnostically per body; produce a per-body length-cause + cure/defer-with-cause disposition table; build/confirm the pre-cut lossless+contract-safe check (declarative, not manual); lock with a bounded fresh-eye critique | concept-first; the diagnosis IS the contract that gates every cure | diagnosis artifact under `charness-artifacts/spec/` (or `audit/`) + the pre-cut check + critique PASS folded | **complete** (2026-06-20): disposition spec LOCKED (19 cure + 1 defer `hotl`); `check_skill_cut_safety.py` + test + docs + drift-guard landed; gating critique PASS-WITH-CONDITIONS folded |
-| S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | pending |
+| S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | **complete** (2026-06-20): issue 159→148, impl 158→152, debug 157→150; all guardrail-cluster duplication collapsed lossless; pins verbatim-preserved (no contract change); fresh-eye PASS (impl condition folded — cure A reverted as an imprecise pointer) |
 | S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | pending |
 | S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | same | pending |
 | S4 | Diagnose-and-cure-or-defer the headroom tier (gather / spec / ideation / retro / narrative / setup / handoff / hotl / quality): expect mostly defer-with-cause; cure only where the diagnosis genuinely warrants (e.g. quality's anchor-catalog sprawl — a §5 anchor-split *hypothesis* to confirm against the actual catalog, not a pre-committed cut) | completes the all-20 scope without forcing cuts on already-roomy bodies | per-body disposition: cured-with-cause or deferred-with-cause; no count-driven cut | pending |
@@ -270,6 +272,41 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S1 — cure issue / impl / debug (complete, 2026-06-20)
+
+- All three diagnosed `duplication` (a `## Guardrails` cluster restating the
+  numbered Workflow/references as "Do not" bullets). Cure: collapse the
+  restatements to a named heuristic + single-source cite; keep every load-bearing
+  and pinned phrase. debug 8→2 guardrails (cite `anti-patterns.md`); issue 15→8
+  (named-heuristic lead + 3 test-pinned literals kept verbatim + 5 cross-cutting);
+  impl Worktree-Readiness + Step-4 per-surface bullets single-sourced, Guardrails
+  restatements pruned.
+- Re-measured: issue 159→148, impl 158→152, debug 157→150 — all off the
+  under-buffer floor; the clarity win is the distinct rules now visible instead of
+  buried in restatements (count is the side effect, not the metric).
+- **Pre-cut check earned its keep:** it caught a real break my impl cure-B
+  introduced (`say explicitly that it did not run` is test-pinned at
+  `test_docs_and_misc.py:208`) → restored verbatim. It also over-reported
+  `charness worktree prepare` (pinned in CLI output, not SKILL.md, and surviving
+  at impl L64) → I tightened the check to suppress a test-pin finding whose literal
+  still survives in the body (+ a locked test). No contract change: all pin hazards
+  took the verbatim-preserve path.
+- Per-body fresh-eye PASS (distinct channel: opened the reference homes + planner
+  code, grepped pins, ran 71 tests). impl PASS-WITH-CONDITIONS → the one condition
+  (an imprecise `disabled`-rule pointer) folded by reverting cure A.
+- Routing: `find-skills` S1 = `create-skill`/`quality` (skill-surface authoring) +
+  `critique`. Gates green: pre-cut check, validate_skills, ergonomics,
+  core-headroom ratchet, contracts, doc-links, markdown, staged-mirror-drift.
+- **Public-skill scenario review (eval-only, ask-before-run):** Cautilus eval not
+  run (`plan_cautilus_proof` `next_action: none`, `run_mode: ask`). Deterministic
+  scenario review = **preserve, no change**: the cures are lossless guardrail-cluster
+  collapses; a scan of removed literals returns 0 `evals/cautilus/` hits;
+  `scenarios.json` holds profiles (no skill-pinned scenarios); the two issue
+  sibling-search fixtures test the Resolve-step-4 behavior (untouched), not the
+  removed wording; the debug/impl/issue dogfood `observed_evidence` describes
+  behaviors that survive at their canonical homes. Acked via
+  `run_slice_closeout --ack-cautilus-skill-review`.
 
 ### S0 — diagnosis spec + gating critique (complete, 2026-06-20)
 

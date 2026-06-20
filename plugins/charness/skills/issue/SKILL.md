@@ -139,27 +139,26 @@ repo by created date. It must not use the current session's last created issue.
 
 ## Guardrails
 
-- Do not turn `issue new` into an implementation request. Preserve problem
-  context and keep solution ideas tentative.
-- Do not resolve an omitted issue selector from session memory. Query GitHub.
-- Do not close an issue before the pushed branch contains the fix.
+- The numbered New Issue / Resolve Issue steps and the cited references are the
+  canonical contract; the guardrails below cover only the cross-cutting failure
+  modes the linear steps cannot express. Label/milestone invention, raw `--body`
+  strings, selector-from-memory, close-before-pushed-fix, brief skip/pause,
+  keyword-only sibling search, silent sibling filing, and a same-agent
+  causal-review/critique pass each stay governed at their step (and in
+  `references/issue-backend.md`, `issue-shaping.md`, `resolution-brief.md`,
+  `causal-review.md`, `../../shared/references/fresh-eye-subagent-review.md`) —
+  not restated here as negatives.
 - Do not skip close keywords when the backend can auto-close; manual close is
   the fallback, not the default success path.
 - Do not report `carrier_verified`, or a bare `CLOSED` state, as final closeout:
   `CLOSED` is necessary-not-sufficient — a per-issue behavioral verdict via a channel distinct from `CLOSED` is required (`references/closeout-discipline.md`).
-- Do not hardcode `gh` when the adapter advertises a stronger backend, or hide
-  missing backend auth behind public-fetch fallback for mutating operations.
-- Do not invent or guess repository labels or milestones. Assign only ones the
-  repo already has; when none fits, leave it unassigned and state that, or
-  report the backend capability gap — never create a new label/milestone to
-  make the request fit.
-- Do not build an issue-create command with a raw multi-line body string; use
-  `issue_tool.py create --body-file` so shell quoting cannot corrupt it.
 - Do not silently retarget on retry: surface `target_unavailable` instead of
   falling through to another accessible repo.
 - Render `issue new` closeout only from the verified `{repo, number, url}`
   ledger; for an external source add source identity + a preserved-context form
   (`verify-closeout` blocks a closeout that preserves neither).
+- Do not hardcode `gh` when the adapter advertises a stronger backend, or hide
+  missing backend auth behind public-fetch fallback for mutating operations.
 - Do not treat multiple issues as independent when one issue changes the design
   boundary for another.
 - Do not misclassify to bypass review or brief: bug → other (skips causal
@@ -167,16 +166,6 @@ repo by created date. It must not use the current session's last created issue.
   feature/deferred-work → question/decision-needed (routes around both).
   Default to `bug` when unsure about real-world divergence; default to
   `feature` when unsure between `feature` and `question`/`decision-needed`.
-- Do not skip the step 6 brief or its pause for non-empty `open decisions`
-  regardless of adapter setting or flags, and do not declare a brief "trivial"
-  outside the strict short-circuit in `references/resolution-brief.md`.
-- Do not collapse the causal-review or resolution-critique subagent into a
-  same-agent local pass; if the host blocks subagent spawning, stop and
-  report the blocked state with the concrete host signal.
-- Do not satisfy sibling search with keyword or proximity matches alone; name
-  the mental model and structural patterns scanned.
-- Do not file siblings surfaced by causal review as new issues without first
-  asking whether they should be bundled into the current fix.
 - When an active `achieve` goal artifact exists, file or defer off-goal findings
   here and append only the issue reference/reason to that goal artifact.
 

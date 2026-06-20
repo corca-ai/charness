@@ -67,11 +67,9 @@ Adapter policy:
 
 ## Worktree Readiness
 
-Before mutating code, run a non-fatal worktree readiness probe when the
-`charness` CLI is available. If the JSON status is not `pass`, surface
-`charness worktree prepare` as the next action and have the operator confirm
-before continuing. When `charness` is not on PATH, skip silently — this probe
-must not block work in repos that do not consume charness.
+Run the non-fatal readiness probe before mutating code — the adapter-policy
+worktree rule above governs the response; skip silently when `charness` is not on
+PATH so it never blocks a repo that does not consume charness.
 
 ```bash
 command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
@@ -110,10 +108,10 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
      deterministic gates first; query evaluator tools only for explicit behavior
      evaluation, prompt regression, baseline compare, or insufficient local proof
    - add or strengthen checks when an important branch would otherwise stay unproven
-   - for browser-facing output, resolve browser/runtime support through `find-skills`
-     and say explicitly that it did not run when runtime proof is unavailable
-   - run the surveyed lint gate before commit when detected (`references/verification-ladder.md`)
-   - for external named targets or third-party APIs, verify runtime state before acting
+   - for browser-facing output, the lint gate, and external named targets / third-party
+     APIs, follow the per-surface proof rules in `references/verification-ladder.md`
+     (resolve runtime support via `find-skills`; say explicitly that it did not run when
+     runtime proof is unavailable)
    - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply `../../shared/references/prescribed-path-self-test.md`
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
@@ -162,14 +160,12 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 
 - Do not implement against a stale or imaginary contract, require a separate
   `spec` session when an honest inline contract works, or silently expand scope.
-- Do not close the task without checking the named acceptance behaviors.
 - Do not close a contract-backed slice without re-reading `Fixed Decisions` and
   named acceptance checks against the delivered slice.
 - Do not treat commit, verification, or contract-sync completion as a default
   pause when the user explicitly asked for autonomous continuation.
 - Do not stop after a user-visible change without checking whether `<repo-root>/README.md`
   and adjacent durable truth surfaces are now stale.
-- Do not leave a resolved probe undocumented in the canonical artifact.
 - Do not continue ordinary implementation past a forced debug interrupt just
   because the local patch still looks tempting; let the planner and named spec
   handoff decide whether plain `impl` is allowed.
@@ -178,10 +174,8 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 - If a stronger verification path exists but needs permissions, setup, or an
   external tool, ask for it rather than pretending the weaker proof is enough.
 - Do not call a same-agent review a critique.
-- Do not skip critique for task-completing repo work just because code looks locally clean.
 - Do not commit a source-touching slice without recording `Lint Gate` per
   `references/verification-ladder.md`.
-- Do not reinvent one-off critique angle selection when the standalone `critique` skill fits the slice.
 - If the required critique is blocked, stop instead of downgrading to a local substitute and still calling the slice reviewed.
 
 ## References

@@ -119,6 +119,27 @@ def test_test_literal_pin_blocks(tmp_path: Path, monkeypatch) -> None:
     assert any(b["kind"] == "test-pin" for b in skill["blocks"])
 
 
+def test_test_pin_surviving_elsewhere_not_blocked(tmp_path: Path, monkeypatch) -> None:
+    # A test literal that lands on a removed line but still survives elsewhere in the
+    # body is NOT a real break (`assert X in skill_text` still passes) -> not a BLOCK.
+    repo = tmp_path / "repo"
+    skill_dir = _seed_repo(repo)
+    _patch_pins(monkeypatch)
+    skill_md = skill_dir / "SKILL.md"
+    skill_md.write_text(skill_md.read_text() + f"\n{SEDIMENT}\n", encoding="utf-8")  # 2nd copy
+    _run(repo, "git", "add", "-A")
+    _commit(repo, "two-copy")
+    (repo / "tests" / "test_demo.py").write_text(
+        f'def test_demo_pins(text):\n    assert "{SEDIMENT}" in text\n', encoding="utf-8"
+    )
+    # Remove only the first copy; the literal survives at the appended copy.
+    skill_md.write_text(skill_md.read_text().replace(SEDIMENT + "\n", "", 1), encoding="utf-8")
+
+    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    [skill] = report["skills"]
+    assert not any(b["kind"] == "test-pin" for b in skill["blocks"])
+
+
 def test_clean_when_nothing_removed(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     skill_dir = _seed_repo(repo)

@@ -127,19 +127,41 @@ def reference_home_gaps(repo_root: Path, rel: str) -> list[dict[str, Any]]:
 
 
 def test_pin_breaks(repo_root: Path, rel: str, test_roots: list[Path]) -> list[dict[str, Any]]:
-    """``tests/`` literal pins on lines this cut removed (check_prose_pin heuristic)."""
-    literals = _prose_pin.test_string_literals(test_roots)
-    findings = _prose_pin.find_prose_pins(repo_root, [rel], literals)
-    return [
-        {
-            "severity": "block",
-            "kind": "test-pin",
-            "phrase": finding["phrase"],
-            "test": finding["test"],
-            "line": finding["line"],
-        }
-        for finding in findings
-    ]
+    """``tests/`` literal pins on lines this cut removed, that no longer survive.
+
+    Reuses the `check_prose_pin` removed-line + test-literal scan, then suppresses a
+    finding whose literal still appears elsewhere in the post-edit SKILL.md body: an
+    ``assert "X" in skill_text`` pin only breaks when X is *gone* from the body, so a
+    phrase moved off one line but still present elsewhere (e.g. the same command in
+    another bullet) is not a real break. This keeps the heuristic's coverage while
+    removing the diff-only over-report.
+    """
+    skill_md = repo_root / rel
+    body = skill_md.read_text(encoding="utf-8") if skill_md.is_file() else ""
+    removed_blob = "\n".join(_prose_pin.removed_lines(repo_root, rel))
+    if not removed_blob:
+        return []
+    breaks: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for literal, test_path, lineno in _prose_pin.test_string_literals(test_roots):
+        if not _prose_pin._prose_candidate(literal):
+            continue
+        if literal not in removed_blob or literal in body:
+            continue
+        key = (literal, test_path.as_posix())
+        if key in seen:
+            continue
+        seen.add(key)
+        breaks.append(
+            {
+                "severity": "block",
+                "kind": "test-pin",
+                "phrase": _preview(literal),
+                "test": test_path.relative_to(repo_root).as_posix(),
+                "line": lineno,
+            }
+        )
+    return breaks
 
 
 def build_report(

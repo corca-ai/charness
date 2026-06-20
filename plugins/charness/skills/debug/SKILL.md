@@ -169,20 +169,13 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 
 ## Guardrails
 
-- Do not edit the real fix before you can state the correct behavior and a
-  falsifiable hypothesis.
-- Do not paraphrase the exact error text away.
-- Do not stop at the first plausible cause; enumerate multiple candidates first.
-- Do not treat "cannot reproduce locally" as resolution. Record what was tried
-  and what observation is still missing.
+- Apply disciplined-RCA hygiene: no fix before a falsifiable hypothesis, the exact
+  error preserved, multiple candidate causes, a minimal reproduction,
+  web-search-first, and the artifact kept past the fix. The full anti-pattern list
+  lives in `references/anti-patterns.md`.
 - Do not leave external-seam or host-disproves-local risk as free-form prose;
   carry it forward in the structured handoff fields so the next slice cannot
   quietly reset into ordinary implementation posture.
-- Do not leave the learning only in chat when the repo has a durable debug
-  artifact path or document style.
-- Do not close task-completing debug work or hand off repair without recording
-  the critique required for the next move.
-- Web search is the default tool for any "gather more information" step.
 
 ## References
 
