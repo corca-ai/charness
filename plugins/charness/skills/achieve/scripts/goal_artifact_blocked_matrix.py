@@ -4,7 +4,7 @@
 ``blocked`` it must classify **every** external/live proof lane it mentions in a
 ``## Remaining Boundary Matrix`` so one blocked boundary (e.g. GitHub
 publication awaiting approval) cannot silently mark the whole goal stuck while a
-runnable lane (e.g. a repo-preauthorized ``ceal-dev`` apply/restart) remains.
+runnable lane (e.g. a repo-preauthorized ``instance`` apply/restart) remains.
 
 The floor is **presence + no-runnable-contradiction only**: it proves the lanes
 were enumerated and that none is self-classified runnable, never that a

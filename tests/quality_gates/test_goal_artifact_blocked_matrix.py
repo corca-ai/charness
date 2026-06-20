@@ -35,7 +35,7 @@ POST_RULE = "2026-06-18"
 PRE_RULE = "2026-06-06"
 
 _APPROVAL_LANE = "- Lane: github publish | classification: approval-required | next: operator approval to push"
-_RUNNABLE_LANE = "- Lane: ceal-dev apply/restart | classification: preauthorized-runnable | next: repo preauthorized apply"
+_RUNNABLE_LANE = "- Lane: instance apply/restart | classification: preauthorized-runnable | next: repo preauthorized apply"
 
 
 def _matrix_section(*lanes: str) -> str:

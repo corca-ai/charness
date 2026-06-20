@@ -339,7 +339,7 @@ instead of rediscovering it.
 
 `blocked` is a whole-goal status, not a per-lane one. One blocked boundary
 (GitHub publication awaiting approval) does not block a goal that still has a
-runnable lane (a repo-preauthorized `ceal-dev` apply/restart). Before flipping a
+runnable lane (a repo-preauthorized instance apply/restart). Before flipping a
 goal to `blocked`, render a `## Remaining Boundary Matrix` that classifies
 **every** external/live proof lane the goal mentions — GitHub publication / PR /
 issue-close, repo-preauthorized apply/restart (with `--boundary-reason` and
@@ -350,7 +350,7 @@ lane:
 ## Remaining Boundary Matrix
 
 - Lane: github publish/PR/issue-close | classification: approval-required | next: operator approval to push
-- Lane: ceal-dev apply/restart | classification: preauthorized-runnable | next: run repo preauthorized apply with --boundary-reason + readbacks
+- Lane: instance apply/restart | classification: preauthorized-runnable | next: run repo preauthorized apply with --boundary-reason + readbacks
 - Lane: HOTL roundtrip proof | classification: runnable | next: write HOTL proof packet, then verify
 ```
 

@@ -9,23 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **WS-3a (Tier-1 `ceal-dev` consumer-name deleak)** — WS-1 + WS-2
-  DONE + committed (2026-06-20; both fresh-eye slice critiques PASS, no blockers).
+- Current slice: **WS-3b (Tier-2 verb-vocabulary deleak)** — WS-1 + WS-2 + WS-3a
+  DONE + committed (2026-06-20; all fresh-eye slice critiques PASS, no blockers).
   S0 spec
   `charness-artifacts/spec/2026-06-20-phase4-boundary-non-terminality-concept.md`
-  (locked) gates every impl slice; §4a holds the leak inventory L1–L6 + protected
-  set P1–P5 (incl. the P4 domain-blindness guard).
-- Current slice intent: remove the `ceal-dev` consumer-NAME leak from portable
-  doctrine/examples (L1–L5 + `plugins/` mirror), replacing with
-  vocabulary-neutral, adapter-named lane examples; **preserve** the protected
-  `slack.ceal-dev` capability-resolution sites (P1–P3) **and the P4
-  domain-blindness guard** `test_proof_semantics_adapter.py:244`. The **riskier**
-  slice (over-/under-fire). Re-sync the `plugins/` mirror before verify
-  (`staged-plugin-mirror-drift`).
-- Next action: implement WS-3a per the locked spec §4a + §4c migration discipline;
-  acceptance `grep -rn "ceal-dev" skills/ scripts/ tests/` returns only the two
-  protected classes; bounded fresh-eye slice critique; then
-  `run_slice_closeout.py --skip-broad-pytest`.
+  (locked) §4b gates this slice (straight rename F5; Option A F6).
+- Current slice intent: (b-i) rename the `applied-restarted` closeout-taxonomy
+  token → neutral `instance-synced` (**straight rename, no alias** — gate is
+  token-agnostic, drift test is membership-based) across T1–T6 incl. the governing
+  contract doc `docs/prescribed-skill-closeout-contract.md:227`; (b-ii) make
+  `goal_artifact_discussion.py:18,22` deploy-vocab **adapter-provided** with a
+  **behavior-preserving English default** (Option A — never drop the default, that
+  loses a guard); (b-iii) rename the `Post-Apply Checkpoint Classification` heading
+  (update the pinned `test_workflow_safety_docs.py:14`). Re-sync the `plugins/`
+  mirror before verify.
+- Next action: implement WS-3b per the locked spec §4b; seeded proof the rename
+  resolves + the adapter-default preserves trigger behavior; producer/
+  closeout-delegation/drift/workflow-safety tests green; bounded fresh-eye slice
+  critique; then `run_slice_closeout.py --skip-broad-pytest`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -253,7 +254,7 @@ What the user can do to verify completion directly.
 | S0 | Concept spec + gating critique: lock the shared non-terminality contract (WS-1 rung-1/rung-2 on release publish; WS-2 Direction-3 HOTL floor) + the WS-3 portability-deleak contract (rename-vs-adapter-provide map; grandfathered-alias shape — or straight rename if S0 judges the alias unneeded; per-surface migration discipline; the **complete `ceal-dev` leak inventory incl. the test fixture**; the **protected `slack.ceal-dev` adapter-example set**; the plugin-mirror sync barrier) | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (`spec/2026-06-20-phase4-boundary-non-terminality-concept.md` LOCKED; gating critique PASS-WITH-CONDITIONS, 3 blockers folded §9) |
 | WS-1 | Wire rung-1 per-surface behavioral-verdict presence floor + rung-2 distinct-channel observer onto the release publish boundary (before `ensure_release_issues_closed`); reuse the post-create-verification spec | a real charness boundary with confirmed terminal-green (`publish_release_execute.py:163`) | seeded published-release proof + fresh-eye + tests; no terminal-green gate | **done** (commit; both main+resume paths; 8 unit/integration + 2 E2E + resume assertion; fresh-eye PASS; critique `critique/2026-06-20-ws1-release-distinct-channel.md`) |
 | WS-2 | Add the refuse-on-undispositioned-HOTL-entry rung-1 floor to `verify-closeout` (extend `evaluate_behavioral_verdict` family; reuse `proof_mismatch.py` pattern + HOTL status vocab) | the second #386 consumer; rung-1 HOTL floor absent in code | seeded undispositioned-entry proof (FAILS before CLOSED; typed disposition PASSES) + fresh-eye + tests | **done** (commit; `evaluate_hotl_dispositions`; 3 integration + 1 unit seeded proof; draft parity; fresh-eye PASS; critique `critique/2026-06-20-ws2-issue-hotl-disposition-floor.md`) |
-| WS-3a | Tier 1 deleak (**the riskier slice**): remove the `ceal-dev` consumer-name leak from portable doctrine/examples (`lifecycle.md:342,353`, `goal-artifact.md:219`, `blocked_matrix.py:7` comment) **and the pinned fixture `test_goal_artifact_blocked_matrix.py:38`**; replace with vocabulary-neutral, adapter-named lane examples; **preserve the protected `slack.ceal-dev` capability-resolution adapter examples**; sync the `plugins/` mirror | clearest portability violation, but over-/under-fire risk | `grep -rn "ceal-dev" skills/ scripts/ tests/` clean except protected sites + doc-link/markdown gates + mirror-drift green + fresh-eye | pending |
+| WS-3a | Tier 1 deleak (**the riskier slice**): remove the `ceal-dev` consumer-name leak from portable doctrine/examples (`lifecycle.md:342,353`, `goal-artifact.md:219`, `blocked_matrix.py:7` comment) **and the pinned fixture `test_goal_artifact_blocked_matrix.py:38`**; replace with vocabulary-neutral, adapter-named lane examples; **preserve the protected `slack.ceal-dev` capability-resolution adapter examples**; sync the `plugins/` mirror | clearest portability violation, but over-/under-fire risk | `grep -rn "ceal-dev" skills/ scripts/ tests/` clean except protected sites + doc-link/markdown gates + mirror-drift green + fresh-eye | **done** (commit; `ceal-dev`→`instance` at L1–L5; grep returns only P3+P4; 46 tests green; mirror synced; fresh-eye PASS; critique `critique/2026-06-20-ws3a-ceal-dev-deleak.md`) |
 | WS-3b | Tier 2 deleak: rename `applied-restarted` taxonomy token → neutral term (S0 decides straight-rename vs grandfathered alias — the gate is token-agnostic, so the alias may be unneeded); genericize `goal_artifact_discussion.py:18,22` detection vocabulary to adapter-provided; rename `Post-Apply Checkpoint Classification`; sync the `plugins/` mirror | the deep portability surgery; migration-disciplined | seeded proof the rename resolves; producer/closeout-delegation/`test_goal_artifact_blocked_matrix` tests green; mirror-drift green; rollback refs; fresh-eye; **defer-with-cause** only if a surface proves genuinely contract-pinned/lossy | pending |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims, flip to complete | bundle boundary | final verification populated; disposition review (rung 2) | pending |
 
@@ -374,6 +375,24 @@ during the run:
   `critique/2026-06-20-ws2-issue-hotl-disposition-floor.md`. Routing: `find-skills`
   → `issue`/`hotl` (domain) + `critique` (slice gate). Issue closeout: n/a — adds
   a closeout *gate*, closes no tracked issue this slice.
+- **WS-3a — Tier-1 `ceal-dev` consumer-name deleak (done, 2026-06-20).** Removed
+  the `ceal-dev` consumer NAME from portable achieve doctrine/examples
+  (`lifecycle.md:342,353`, `goal-artifact.md:219`, `goal_artifact_blocked_matrix.py:7`
+  docstring, `test_goal_artifact_blocked_matrix.py:38` `_RUNNABLE_LANE`) →
+  vocabulary-neutral `instance apply/restart` (the illustrative verbs stay — WS-3b's
+  concern). **Preserved** the protected `slack.ceal-dev` capability-resolution
+  examples (P1–P3) **and the P4 domain-blindness guard**
+  `test_proof_semantics_adapter.py:244`. Acceptance: `grep -rn "ceal-dev" skills/
+  scripts/ tests/` returns ONLY P3 (`test_capability_resolution.py`) + P4. The
+  blocked-matrix floor keys on the `preauthorized-runnable` classification, not the
+  name — 46 tests green with the neutral fixture; mirror synced; no behavior change.
+  Bounded fresh-eye slice critique **PASS, no blockers** (verified vs actual staged
+  code: grep clean, protected sites byte-unchanged, mirror byte-identical).
+  Public-skill validation: Cautilus `next_action: none` → deterministic + recorded
+  fresh-eye review, `--ack-cautilus-skill-review`; `achieve` dogfood refreshed (the
+  frozen #385 historical entry's `ceal-dev` is P5, left as history); critique
+  `critique/2026-06-20-ws3a-ceal-dev-deleak.md`. Routing: `find-skills` → `achieve`
+  (domain) + `critique` (slice gate).
 
 ## Context Sources
 

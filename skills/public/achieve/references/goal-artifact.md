@@ -216,7 +216,7 @@ conditional). Each external/live proof lane the goal mentions is one line:
 ## Remaining Boundary Matrix
 
 - Lane: github publish/PR/issue-close | classification: approval-required | next: operator approval to push
-- Lane: ceal-dev apply/restart | classification: preauthorized-runnable | next: repo preauthorized apply with --boundary-reason + readbacks
+- Lane: instance apply/restart | classification: preauthorized-runnable | next: repo preauthorized apply with --boundary-reason + readbacks
 - Lane: HOTL roundtrip proof | classification: dispositioned | next: deferred to next window — operator directed
 ```
 
