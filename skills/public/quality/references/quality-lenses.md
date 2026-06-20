@@ -62,6 +62,11 @@ Use a behavior-confidence lens:
   through small, deterministic, in-process or target-local tests while keeping
   real delivery-boundary smokes thin; see
   [`testability-and-selection.md`](./testability-and-selection.md)
+- per-test-body authoring: once a behavior is reachable, the test *inside* should
+  pin the contract deterministically — see [`unit-test-quality.md`](./unit-test-quality.md)
+  (determinism harness, invariants, observable-contract, real collaborators,
+  edge-case mapping, fixture authoring), the authoring lens *below* the DSL-review
+  lens in `testability-and-selection.md`
 - affected-test selection honesty: observation-based selectors are useful
   accelerators, but a repo is still weak when they are the only way to discover
   which tests protect a routine behavior change

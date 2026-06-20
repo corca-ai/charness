@@ -162,14 +162,12 @@ The result should usually include:
 
 ## Guardrails
 
-- Do not recommend a new public skill when an existing public concept already
-  covers the task.
+- Classify the capability layer honestly: do not invent a new public skill when
+  an existing public concept already covers the task, label a user-facing
+  workflow concept as a support skill, or present a future-only integration as a
+  native capability.
 - Do not skip adapter-configured trusted skill roots if the host has declared
   them as part of its supported discovery surface.
-- Do not recommend a support skill when the task is really a user-facing
-  workflow concept.
-- Do not pretend an external capability is native to the repo if it only exists
-  as a future integration.
 - Do not recommend installing from a generic external skill ecosystem unless the
   host policy or adapter explicitly allows that path.
 - Do not answer ordinary decision-shaped prompts with routing alone when the

@@ -193,6 +193,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/standing-gate-verbosity.md`
 - `references/startup-probes.md`
 - `references/testability-and-selection.md`
+- `references/unit-test-quality.md`
 - `references/validate_spec_pytest_references.py`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

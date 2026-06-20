@@ -9,21 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S3 (WS-B) — Phase-3 skill bloat-audit + redesign of the named
-  first candidates** + graft `quality/references/unit-test-quality.md`.
-  S0 locked + S1 (R2 escape closed) + S2 (R1 grammar collapsed) committed 2026-06-20.
-- Current slice intent: per the locked spec §5, apply the Phase-3 instrument set
-  (no-op deletion test, three length-causes, Leading Word Rule, body-altitude,
-  named-heuristic-over-do-nots, load-bearing-anchor split, show-one-instance) to
-  the named candidates (debug=DUPLICATION floor-extract; quality=SPRAWL
-  load-bearing-anchor split; impl/find-skills/achieve = re-measure cause first),
-  de-pinning by the *right* cure (negative-directive count drop + no-op test
-  applied + concept clarity, NOT line count); + graft the unit-test-quality
-  reference (6 better-UT patterns, authoring-only, P3 worked-examples, routed from
-  the Behavior lens below testability-and-selection.md). Each capped-body edit
-  must respect the 4-line headroom buffer (push detail to references).
-- Next action: route S3 via `find-skills`; per-body cause-diagnosis (re-measure) +
-  cut; graft the reference under cap; fresh-eye critique; commit at the boundary.
+- Current slice: **S4 — closeout** (broad proof, retro, dispositions, honest
+  non-claims). S0 + S1 (R2 escape closed) + S2 (R1 grammar collapsed) + S3 (WS-B:
+  unit-test-quality graft + find-skills named-heuristic cure; deeper body redesign
+  deferred with cause) committed 2026-06-20.
+- Current slice intent: run broad proof at the bundle boundary (record the
+  verification lock), run `retro`, disposition every surfaced improvement, fill
+  `## Final Verification` with honest non-claims, then flip Status to complete.
+- Next action: broad pytest (verification lock) → retro → dispositions →
+  describe_goal_closeout_shape preflight → check_goal_artifact → flip complete.
+  Operator decision pending: live GitHub close/comment for R2 is out of scope
+  (local-only by goal contract) unless the operator approves.
 - Locked spec (gates all impl):
   [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -165,7 +161,7 @@ What the user can do to verify completion directly.
 | S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (spec locked; critique PASS-WITH-CONDITIONS folded 2026-06-20) |
 | S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | **done** (rung-1 block-the-silent + provenance floors wired; 6 seeded tests; fresh-eye PASS-WITH-CONDITIONS folded; cautilus refused per policy) |
 | S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | **done** (goal_artifact_floor_grammar.py; parser 5→1, section_body 3→1; 380 floor tests green; strict→permissive swap tested; net −28 lines; fresh-eye PASS) |
-| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
+| S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | **done (scoped)** — graft landed (82 lines, under cap, fresh-eye PASS) + find-skills named-heuristic cure (neg-directive 7→4, lossless); deeper body redesign (impl/debug/quality/achieve) **deferred with cause**: verification showed cuts blocked (quality anchors contract-pinned by 11 tests) or lossy (impl bullets distinct, one CORE-pinned) — forcing them = the line-count failure signature. Operator-corrected mid-slice (no shaving). |
 | S4 | Closeout: broad proof, retro, dispositions, honest non-claims | bundle boundary | final verification populated | pending |
 
 ## Operator Decision Queue
@@ -213,6 +209,20 @@ not line-count churn. No conditions. The extraction also surfaced a latent
 accidental divergence (two floors parsed `Created:` more strictly than three
 others) and turned it into one deliberate, tested decision.
 
+**S3 (WS-B) critique — PASS (2026-06-20), folded.** Bounded fresh-eye reviewer
+verified A-E against actual files + ran gates: the unit-test-quality.md graft is
+authoring-only (no dup-ratchet with `testability-and-selection.md`'s review lens);
+the find-skills named-heuristic collapse is lossless (3 layer-honesty cases
+preserved in one principle, neg-directive 7→4, not contract/test-pinned); **no
+shave remains** (debug + the quality body byte-identical to HEAD); the graft is
+net-new + under cap; all gates green. The reviewer independently judged the
+deferral of deeper impl/debug/quality/achieve redesign the **correct north-star
+call** (no safe lossless cut missed; the two reverts — a debug in-place shave and
+a lossy/contract-blocked quality catalog move — were right). **Operator correction
+folded:** compressing a capped body in place is the P2 anti-pattern; the proper
+cure is concept-separation / de-dup / named-heuristic, verified lossless +
+contract-safe before cutting, measured by concept clarity not line count.
+
 ## Coordination Cues
 
 Phase-appropriate routing for this run, deferred to `find-skills` (its
@@ -236,6 +246,10 @@ during the run:
   - S2 (R1 impl): `impl` (gate-script refactor on the achieve floor surface) +
     `critique` (slice fresh-eye). Cautilus refused (next_action=none).
     `Routing: impl + critique`.
+  - S3 (WS-B): `quality` (skill bloat-audit + the unit-test-quality graft on the
+    quality surface) + `create-skill`/`impl` (skill-body redesign) + `critique`
+    (slice fresh-eye). Cautilus refused (next_action=none).
+    `Routing: quality + critique`.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -292,6 +306,20 @@ during the run:
 - Critique: PASS (bounded fresh-eye, no conditions). Verified against actual code + ran tests + ruff on canonical AND mirror. 6 checks CONFIRMED: 3 permissive consumers behavior-preserving; strict swap real+tested; >=7 RULE_DATEs still separate; fail-closed/grandfather intact; triggers/anti-bypass guards untouched; substrate a pure leaf; operator_queue/blocked_matrix H2-list _section_body correctly kept separate; no clone missed. De-dup judged GENUINE (single source of truth), not line-count churn.
 - Off-goal findings:
 - Lessons carried forward: An accidental divergence (2 floors parsed Created more strictly than 3 others) hid behind passing tests because the tests only used plain Created lines — extraction surfaced it and turned it into one deliberate, tested decision. De-dup value is single-source-of-truth + consistency, not line count (north-star metric).
+- Metrics:
+
+### Slice 4: S3 (WS-B) — unit-test-quality graft + one demonstrated body cure (find-skills); deeper body redesign deferred with cause
+
+- Objective: Phase-3 skill bloat-audit + redesign per the locked spec section 5, measured by concept clarity not line count (P2/P3, no shaving).
+- Why this approach: WS-B instruments: graft the better-UT authoring layer (genuine net gap); apply named-heuristic-over-do-nots / concept-separation to the capped bodies. Operator mid-flight correction (2026-06-20): in-place compression of a capped body is the P2 anti-pattern — do it properly (concept-separation/de-dup/named-heuristic, lossless) or not at all.
+- Commits:
+- What changed: ADDED skills/public/quality/references/unit-test-quality.md (82 lines, under cap): 6 better-UT patterns (determinism harness, invariants-in-test, observable-contract, real-collaborators-in-process, map-behavior/edge-cases, fixture/DSL authoring), each principle + one worked example, authoring-only, routed from the quality Behavior lens BELOW testability-and-selection.md (which keeps the DSL *review* lens). find-skills/SKILL.md: named-heuristic collapse — 3 layer-honesty do-nots merged into ONE 'Classify the capability layer honestly' principle (neg-directive 7->4, all 3 cases preserved, lossless). docs/handoff.md link fix. Plugin mirror synced.
+- Alternatives rejected: REVERTED two non-proper attempts (operator correction): (1) debug in-place compression = a shave (P2 violation) -> reverted to HEAD; (2) quality Load-Bearing Anchors catalog->reference move -> reverted: verification showed it is NOT clean de-dup (orphaned check phrases) AND the anchors are contract-pinned to the body by 11 tests in test_quality_skill_docs.py + the 'consumer prompts use these anchors' contract. DEFERRED deeper body redesign for impl/debug/quality/achieve: careful verification found their cuts blocked (quality contract-pinned) or lossy (impl critique bullets are distinct rules, one CORE-pinned; bodies are concept-dense per the Phase-0 back-test). Forcing cuts to hit a line target is the north-star failure signature.
+- Targeted verification: find-skills 7->4 neg-directive (lossless), 200->198 lines; all gates green (validate_skills, check_skill_contracts, ergonomics, headroom, doc-links, test_quality_skill_docs 22 passed). run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review = exit 0. Cautilus refused (next_action=none). No shave remains: debug + quality body byte-identical to HEAD.
+- Test duplication pressure:
+- Critique: PASS (bounded fresh-eye, no conditions). Verified A-E against actual files + ran gates: graft authoring-only (no dup-ratchet with testability-and-selection.md); find-skills collapse lossless (3 cases preserved, not contract/test-pinned); no shave remains (debug + quality body = HEAD); graft net-new + under cap; gates green. Independently judged the deferral the CORRECT north-star call (no safe lossless cut missed; the two reverts were right).
+- Off-goal findings:
+- Lessons carried forward: Operator correction internalized: a capped body at the cap is a signal to concept-separate or delete (no-op), NEVER to compress in place. And 'concept-separation' must be verified lossless (every removed phrase has a reference home) AND contract-safe (check test/CORE-contract pins) BEFORE cutting — quality's catalog failed both. The planning audits (reference-absorption 'flagship bloat'; Agent-3 collapse candidates) OVER-identified cuts; the bodies are concept-dense (Phase-0 back-test was right). Proper WS-B = deliver the clean additive graft + the genuinely-safe lossless cure, defer the rest with cause rather than force line-count wins.
 - Metrics:
 
 ## Context Sources

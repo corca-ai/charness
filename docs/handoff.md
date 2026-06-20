@@ -43,8 +43,8 @@
   into S0). The [roadmap](./north-star-overhaul-roadmap.md) Phase 0 block is now resolved.
 - **Reference absorption is current.** matt-skills first pass done; craken bug-hunt +
   better-UT (the pending-share arrivals) evaluated per-surface + folded (both MOSTLY-CONVERGENT;
-  only net-new = the WS-B `unit-test-quality.md` graft). Re-run craken absorption only if
-  new material arrives.
+  only net-new = the WS-B [unit-test-quality.md](../skills/public/quality/references/unit-test-quality.md)
+  graft). Re-run craken absorption only if new material arrives.
 - **ceal propagation — issue filed (corca-ai/ceal#417)** — unchanged; the overhaul doctrine
   stays deferred there until charness embodies it (S0–S4 above).
 - **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
