@@ -166,20 +166,17 @@ def test_nose_advisory_human_output_discloses_filtered_scope(tmp_path: Path) -> 
 
 
 def test_nose_advisory_human_output_discloses_top_n_ranking(tmp_path: Path) -> None:
-    # Ranking is aggregated per root; only the `scripts` root contributes the ranked
-    # set here, so the advisory reports "showing 20 of 526" without per-root double
-    # counting (a sibling root reporting its own total would inflate it).
+    # nose 0.14.0 runs ONE `--root` multi-root query; the advisory discloses its
+    # top-N ranking straight from that single response (no per-root aggregation).
     bin_dir = tmp_path / "bin"
     _make_nose(
         bin_dir,
         """
         assert args[0] == "query"
-        if args[1] == "scripts":
-            fams = [{"id": "f%d" % i, "members": 2, "locations": []} for i in range(20)]
-            summary = {"families": 526, "shown": 20}
-        else:
-            fams, summary = [], {"families": 0, "shown": 0}
-        print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": fams, "summary": summary}))
+        assert "--root" in args  # multi-root invocation, not a positional single root
+        fams = [{"id": "f%d" % i, "members": 2, "locations": []} for i in range(20)]
+        summary = {"families": 526, "shown": 20}
+        print(json.dumps({"schema_version": 4, "tool_version": "0.14.0", "families": fams, "summary": summary}))
         """,
     )
     result = _run(["--repo-root", str(tmp_path)], bin_dir)

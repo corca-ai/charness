@@ -126,43 +126,46 @@ def test_run_nose_success_findings(monkeypatch) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# nose_report_lib.collect_families — multi-root query merge (the 0.13.3 resolver).
+# nose_report_lib.collect_families — single multi-root query (nose 0.14.0 --root).
 # --------------------------------------------------------------------------- #
-def test_collect_families_merges_dedupes_and_stamps_version(monkeypatch) -> None:
+def test_collect_families_single_multiroot_query_and_stamps_version(monkeypatch) -> None:
     calls = []
 
     def fake_run(_repo, command):
         calls.append(command)
-        fams = [{"id": "a"}, {"id": "b"}] if command[2] == "scripts" else [{"id": "b"}, {"id": "c"}]
+        # one query over the whole corpus; the duplicate id proves family_id
+        # normalization/dedup still holds defensively.
         return {"status": "findings", "exit_code": 0, "stdout": "", "stderr": "",
-                "families": fams, "tool_version": "", "scope": {},
+                "families": [{"id": "a"}, {"id": "b"}, {"id": "b"}], "tool_version": "", "scope": {},
                 "ranking": {"total_families": 2, "shown_families": 2}}
 
     monkeypatch.setattr(nr, "run_nose", fake_run)
-    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.13.3")
+    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.14.0")
     result = nr.collect_families(
         REPO_ROOT, "nose", ["scripts", "skills/public"], mode="m", min_size=24, top=10, sort="extractability"
     )
-    assert sorted(nr.family_identity(f) for f in result["families"]) == ["a", "b", "c"]  # 'b' deduped
+    assert sorted(nr.family_identity(f) for f in result["families"]) == ["a", "b"]  # 'b' deduped
     assert result["status"] == "findings"
-    assert result["tool_version"] == "0.13.3"  # query JSON has no version -> stamped
-    assert result["ranking"]["total_families"] == 4  # summed per-root
-    assert len(calls) == 2 and calls[0][:3] == ["nose", "query", "scripts"]
+    assert result["tool_version"] == "0.14.0"  # query JSON has no version -> stamped
+    assert result["ranking"]["total_families"] == 2  # from the single response, not summed
+    # ONE multi-root call carrying every root as --root (no per-root loop)
+    assert len(calls) == 1
+    cmd = calls[0]
+    assert cmd[:2] == ["nose", "query"]
+    roots = [cmd[i + 1] for i, token in enumerate(cmd) if token == "--root"]
+    assert roots == ["scripts", "skills/public"]
 
 
-def test_collect_families_errored_path_degrades_to_error(monkeypatch) -> None:
-    def fake_run(_repo, command):
-        if command[2] == "scripts":
-            return {"status": "error", "exit_code": 1, "stdout": "", "stderr": "boom", "families": [], "tool_version": ""}
-        return {"status": "findings", "exit_code": 0, "stdout": "", "stderr": "",
-                "families": [{"id": "a"}], "tool_version": "", "scope": {}, "ranking": {}}
+def test_collect_families_query_error_degrades_to_error(monkeypatch) -> None:
+    def fake_run(_repo, _command):
+        return {"status": "error", "exit_code": 1, "stdout": "", "stderr": "boom", "families": [], "tool_version": ""}
 
     monkeypatch.setattr(nr, "run_nose", fake_run)
-    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.13.3")
+    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.14.0")
     result = nr.collect_families(
         REPO_ROOT, "nose", ["scripts", "skills/public"], mode="m", min_size=24, top=10, sort="extractability"
     )
-    assert result["status"] == "error"  # any errored root degrades the whole scan (never a silent clean pass)
+    assert result["status"] == "error"  # a query error degrades the whole scan (never a silent clean pass)
     assert "boom" in result["stderr"]
 
 
@@ -402,18 +405,35 @@ def test_resolve_nose_bin_path_lookup(monkeypatch) -> None:
 
 def test_build_query_command_terms_and_flags() -> None:
     cmd = nr.build_query_command(
-        "nose", "scripts", mode="syntax", min_size=24, top=20, sort="value",
+        "nose", ["scripts", "skills/public"], mode="syntax", min_size=24, top=20, sort="value",
         exclude=["a"], ignore_file="ig.json",
     )
-    assert cmd[:3] == ["nose", "query", "scripts"]
-    # all/top=/sort= are query TERMS (positional), not flags: passing --top/--sort
-    # to `query` errors and yields zero families (nose 0.13.3 migration).
+    assert cmd[:2] == ["nose", "query"]
+    # nose 0.14.0 multi-root: every scope root is a --root flag in one invocation.
+    roots = [cmd[i + 1] for i, token in enumerate(cmd) if token == "--root"]
+    assert roots == ["scripts", "skills/public"]
+    # all/top=/sort= are query TERMS (bare args), not flags: passing --top/--sort
+    # to `query` errors and yields zero families.
     assert "all" in cmd and "top=20" in cmd and "sort=value" in cmd
     assert "--top" not in cmd and "--sort" not in cmd
     assert "--mode" in cmd and "--min-size" in cmd
     assert "--exclude" in cmd and "--ignore-file" in cmd
     assert cmd[-2:] == ["--format", "json"]
     assert "scan" not in cmd and "--write-baseline" not in cmd and "--baseline" not in cmd
+
+
+def test_build_query_command_single_root_uses_root_flag() -> None:
+    # A single root still goes through `--root` (identical to the legacy positional
+    # form), so the one builder serves both single- and multi-root callers.
+    cmd = nr.build_query_command("nose", ["scripts"], mode="m", min_size=24, top=10, sort="value")
+    assert cmd[:4] == ["nose", "query", "--root", "scripts"]
+    assert cmd.count("--root") == 1
+
+
+def test_build_query_command_empty_paths_raises() -> None:
+    # No root would scan the WRONG default tree silently; fail loud instead.
+    with pytest.raises(ValueError):
+        nr.build_query_command("nose", [], mode="m", min_size=24, top=10, sort="value")
 
 
 def _args(tmp_path: Path, **overrides) -> SimpleNamespace:

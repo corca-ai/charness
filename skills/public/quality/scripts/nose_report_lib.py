@@ -10,13 +10,16 @@ resolver shared by the clone advisory and the dup-ratchet gate.
 nose 0.13.3 removed the deprecated `nose scan` subcommand, so the code path runs
 `nose query` instead. The migration is isolated to this resolver:
 
-- `nose query <path> all top=N sort=K --mode M --min-size S --format json`. `all`,
-  `top=`, and `sort=` are query TERMS (positional), NOT flags — passing
-  `--top`/`--sort` to `query` errors and yields zero families.
-- `query` accepts ONE path root per call, so a multi-root scope is scanned per
-  path and merged here (`collect_families`), deduped by family identity. A
-  cross-root clone family that scan would have grouped is split per path; this is
-  accepted query semantics (re-baseline per scanner version).
+- `nose query --root P1 --root P2 ... all top=N sort=K --mode M --min-size S
+  --format json`. `all`, `top=`, and `sort=` are query TERMS (bare args, which
+  `--root` mode treats as terms), NOT flags — passing `--top`/`--sort` to `query`
+  errors and yields zero families.
+- nose 0.14.0 `--root/-r` takes EVERY scope root in one invocation, so the whole
+  scope is analyzed as a single corpus in one `collect_families` call (no per-root
+  loop). A cross-root clone family is therefore GROUPED, not split per path —
+  unlike the pre-0.14.0 per-root-loop-and-merge, which missed cross-root clones.
+  This is a deliberate semantic choice (global clustering); identities are
+  scanner-version- AND scope-model-scoped, so re-baseline when switching it.
 - The `--format json` family array is `families` (with the `all` term) under both
   schema_version 2 (nose 0.13.0 query) and schema_version 3 (0.13.3 query); the
   no-`all` dashboard emits `top_candidates`. `extract_report` reads either, plus
@@ -36,6 +39,10 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+# nose 0.14.0 `--root` analyzes the whole scope in ONE process under this budget
+# (vs the pre-0.14.0 per-root loop's N×budget). Cross-root dedup is cheap next to
+# the per-file AST scan, so 180s is ample for realistic scopes; a very large
+# consumer repo that times out degrades to advisory (fail-closed, same as before).
 NOSE_TIMEOUT_SECONDS = 180
 _VERSION_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
@@ -56,7 +63,7 @@ def resolve_tool_version(nose_bin: str) -> str:
 
 def build_query_command(
     nose_bin: str,
-    path: str,
+    paths: list[str],
     *,
     mode: str,
     min_size: int,
@@ -65,15 +72,20 @@ def build_query_command(
     exclude: list[str] | None = None,
     ignore_file: str | None = None,
 ) -> list[str]:
-    """One single-path `nose query` command. `all`/`top=`/`sort=` are query terms
-    (positional after the path); `--mode`/`--min-size`/`--exclude`/`--ignore-file`/
-    `--format` are flags. `query` takes one path root per call, so the multi-root
-    scope is looped in `collect_families`, never passed as several positional roots
-    (a sibling root would be parsed as an unknown query term and error)."""
-    command = [
-        nose_bin,
-        "query",
-        path,
+    """One `nose query` command over the FULL scope via nose 0.14.0 `--root/-r`
+    (every root in a single invocation). `all`/`top=`/`sort=` are query TERMS
+    (bare args, which `--root` mode treats as terms); `--mode`/`--min-size`/
+    `--exclude`/`--ignore-file`/`--format` are flags. A single root via `--root` is
+    identical to the legacy positional form, so this one builder serves both."""
+    if not paths:
+        # Fail loud: a `nose query` with no `--root` would scan the default tree
+        # (the WRONG scope), silently. Callers guard with `or DEFAULT_PATHS`; this
+        # backstops a future caller that forgets, instead of a wrong-scope scan.
+        raise ValueError("build_query_command requires at least one scope root")
+    command = [nose_bin, "query"]
+    for root in paths:
+        command.extend(["--root", root])
+    command.extend([
         "all",
         f"top={top}",
         f"sort={sort}",
@@ -81,7 +93,7 @@ def build_query_command(
         mode,
         "--min-size",
         str(min_size),
-    ]
+    ])
     for pattern in exclude or []:
         command.extend(["--exclude", pattern])
     if ignore_file:
@@ -108,53 +120,50 @@ def collect_families(
     exclude: list[str] | None = None,
     ignore_file: str | None = None,
 ) -> dict[str, Any]:
-    """Run `nose query` per path (query takes one root) and merge the families,
-    deduped by identity. Any errored path makes the WHOLE result `error` so a
-    consumer degrades to advisory rather than under-reporting a broken scan as a
-    clean pass. Each merged family carries a normalized `family_id`."""
-    merged: dict[str, dict[str, Any]] = {}
+    """Run ONE `nose query` over the full multi-root scope (nose 0.14.0 `--root`)
+    and return the family set. The scope is analyzed as a single corpus, so a
+    cross-root clone family is GROUPED rather than split per path. A nose error
+    makes the WHOLE result `error` so a consumer degrades to advisory rather than
+    under-reporting a broken scan as a clean pass. Each family carries a normalized
+    `family_id`."""
+    command = build_query_command(
+        nose_bin, paths, mode=mode, min_size=min_size, top=top, sort=sort,
+        exclude=exclude, ignore_file=ignore_file,
+    )
+    result = run_nose(repo_root, command)
+    if result["status"] == "error":
+        return {
+            "status": "error",
+            "exit_code": result.get("exit_code") or 1,
+            "stdout": "",
+            "stderr": result.get("stderr", ""),
+            "families": [],
+            "tool_version": result.get("tool_version") or resolve_tool_version(nose_bin),
+            "scope": {"paths": list(paths)},
+            "ranking": {"total_families": 0, "shown_families": 0},
+        }
+    keyed: dict[str, dict[str, Any]] = {}
     unkeyed: list[dict[str, Any]] = []
-    errors: list[str] = []
-    total_ranked = 0
-    have_total = False
-    exit_code = 0
-    json_version = ""
-    for path in paths:
-        command = build_query_command(
-            nose_bin, path, mode=mode, min_size=min_size, top=top, sort=sort,
-            exclude=exclude, ignore_file=ignore_file,
-        )
-        result = run_nose(repo_root, command)
-        if result["status"] == "error":
-            errors.append(f"{path}: {result.get('stderr', '')[:120]}")
-            exit_code = result.get("exit_code") or exit_code or 1
-            continue
-        if not json_version and result.get("tool_version"):
-            json_version = str(result["tool_version"])
-        ranked = (result.get("ranking") or {}).get("total_families")
-        if isinstance(ranked, int):
-            total_ranked += ranked
-            have_total = True
-        for family in result["families"]:
-            identity = family_identity(family)
-            if identity:
-                family.setdefault("family_id", identity)
-                merged.setdefault(identity, family)
-            else:
-                unkeyed.append(family)
-    families = list(merged.values()) + unkeyed
-    tool_version = json_version or resolve_tool_version(nose_bin)
-    status = "error" if errors else ("findings" if families else "clean")
+    for family in result["families"]:
+        identity = family_identity(family)
+        if identity:
+            family.setdefault("family_id", identity)
+            keyed.setdefault(identity, family)
+        else:
+            unkeyed.append(family)
+    families = list(keyed.values()) + unkeyed
+    tool_version = result.get("tool_version") or resolve_tool_version(nose_bin)
+    ranked = (result.get("ranking") or {}).get("total_families")
     return {
-        "status": status,
-        "exit_code": exit_code,
+        "status": "findings" if families else "clean",
+        "exit_code": result.get("exit_code", 0),
         "stdout": "",
-        "stderr": "; ".join(errors),
+        "stderr": "",
         "families": families,
         "tool_version": tool_version,
         "scope": {"paths": list(paths)},
         "ranking": {
-            "total_families": total_ranked if have_total else len(families),
+            "total_families": ranked if isinstance(ranked, int) else len(families),
             "shown_families": len(families),
         },
     }

@@ -14,10 +14,12 @@ Two arms (spec Fixed Decision 1 + Slice 2 D1–D3):
   present now, absent from the accepted reference, not classified ``intentional``.
   Code newness diffs the current ``family_id`` set against a gate-owned
   ``family_id`` baseline (``dup-ratchet-baseline.json``), NOT nose's ``key``-based
-  ``--baseline`` — for plumbing reasons: ``query`` takes one root per call and
-  ``--write-baseline`` clobbers its target each run, so a multi-root scope cannot
-  share one native baseline. CHURN CAVEAT: the gate keys on ``family_id`` for that
-  plumbing reason, NOT because it is churn-stable — it is NOT. The family ``id``
+  ``--baseline`` — for plumbing reasons: nose's native ``--baseline`` is the
+  churn-prone cluster ``key`` and ``--write-baseline`` clobbers its target each run,
+  so it cannot serve as the gate's accepted-id set. (The scope is enumerated in one
+  nose 0.14.0 ``--root`` multi-root ``query`` call.) CHURN CAVEAT: the gate keys on
+  ``family_id`` for that plumbing reason, NOT because it is churn-stable — it is NOT.
+  The family ``id``
   folds every member's per-span id, and each per-span id folds the span's normalized
   content, its **line offset**, AND its **file path**. So editing any scanned member
   file — even inserting lines *above* an unchanged duplicated span — shifts that
@@ -57,8 +59,8 @@ GATE_BASELINE_NOTE = (
     "Accepted code clone family_ids for the boy-scout dup ratchet (item 5, slice 2). "
     "A code family_id present now but absent here (and not 'intentional' in dup-review.json) "
     "is a NEW fixable-eligible family and hard-blocks. Keyed by nose family_id (16-hex "
-    "content hash) from a FULL `nose query` (one call per scope root, deduped) — NOT nose's "
-    "`key`/--baseline (one root per query, clobbers each run). CHURN CAVEAT: family_id is NOT "
+    "content hash) from a FULL `nose query` (one 0.14.0 `--root` multi-root call over the "
+    "scope) — NOT nose's `key`/--baseline (clobbers each run). CHURN CAVEAT: family_id is NOT "
     "churn-stable — it folds member span offset + file path, so editing any scanned member "
     "file (even adding lines above an unchanged span) rotates it and forces a re-baseline with "
     "zero new duplication. Docs key on the position-independent doc-nose-baseline signature "

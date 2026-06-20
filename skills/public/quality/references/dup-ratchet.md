@@ -43,14 +43,17 @@ driven by what is stable in the detector, not by preference:
 
 - **Code: a gate-owned `family_id` baseline** (`dup-ratchet-baseline.json`,
   `schemaVersion: charness.quality.dup_ratchet_baseline.v1`, a `code_family_ids`
-  list). A full `nose query` (one call per scope root — `query` takes one path —
-  merged and deduped by family identity, no nose `--baseline`) yields the current
-  code `family_id` set; a `family_id` absent from the baseline and not
-  `intentional` is new. The identity is nose's content-hash `id` (named
-  `family_id` in the removed `scan` output, normalized by the resolver). nose's
-  own `key`-based `--baseline` is NOT used for gating, for plumbing reasons:
-  `query` takes one root per call and `--write-baseline` clobbers its target each
-  run, so the multi-root scope cannot share one native baseline.
+  list). A full `nose query` (one nose 0.14.0 `--root` multi-root call over the
+  whole scope, no nose `--baseline`) yields the current code `family_id` set; a
+  `family_id` absent from the baseline and not `intentional` is new. The scope is
+  analyzed as a single corpus, so a cross-root clone family is grouped (not split
+  per root — the pre-0.14.0 per-root-loop missed those; switching that scope model
+  is a deliberate one-time re-baseline, since identities are scope-model-scoped and
+  the family set shifts when the model does). The identity is nose's
+  content-hash `id` (named `family_id` in the removed `scan` output, normalized by
+  the resolver). nose's own `key`-based `--baseline` is NOT used for gating, for
+  plumbing reasons: it keys on the churn-prone cluster `key` and `--write-baseline`
+  clobbers its target each run, so it cannot serve as the accepted-id set.
 
   **Stability caveat — `family_id` is NOT churn-stable.** The gate keys on
   `family_id` for that plumbing reason, not because it survives sibling churn — it
@@ -158,8 +161,8 @@ later — the trap step 3 below warns about).
 2. Seed the reviewed overlay: `seed_dup_review.py --repo-root . --write`.
 3. Seed the gate baseline (accept today's full code `family_id` set):
    `check_dup_ratchet.py --repo-root . --write-baseline`. It reads `scope_paths` and
-   MUST enumerate the full family set (a high `top=`, full `nose query` per root, no
-   nose `--baseline`); a truncated or wrong-scope seed would miss families and
+   MUST enumerate the full family set (a high `top=`, one `--root` multi-root
+   `nose query`, no nose `--baseline`); a truncated or wrong-scope seed would miss families and
    false-block later. Re-running `--write-baseline` later guards a large shift: a
    delta (added+removed `family_id`s) beyond `--baseline-delta-threshold` (default
    50) refuses without an explicit `--confirm-baseline-delta`, so an accidental

@@ -103,9 +103,10 @@ def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[
     if nose_bin is None:
         return set(), "nose binary not found; code clone scan skipped"
     paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
-    # Full enumeration via the pinned `nose query` resolver: one query per root
-    # (query takes one path), merged + deduped by family_id, high --top so every
-    # family_id is recorded (a truncated seed would false-block later).
+    # Full enumeration via the pinned `nose query` resolver: one nose 0.14.0
+    # `--root` multi-root query over the whole scope (a cross-root clone is grouped,
+    # not split per root), high top= so every family_id is recorded (a truncated
+    # seed would false-block later).
     result = _nose_report.collect_families(
         repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
         min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",

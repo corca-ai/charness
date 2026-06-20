@@ -71,12 +71,11 @@ INTERPRETATION = {
 
 
 def _representative_command(nose_bin: str, roots: list[str], args: argparse.Namespace, excludes: list[str], ignore_file: str | None) -> str:
-    """A human-facing command string for one root (the resolver loops the rest).
-    `query` takes one path per call, so there is no single multi-root command."""
-    sample = roots[0] if roots else "."
+    """The actual `nose query` command. nose 0.14.0 `--root/-r` takes every scope
+    root in one invocation, so this IS the single command the resolver runs."""
     return shlex.join(
         nose_report.build_query_command(
-            nose_bin, sample, mode=args.mode, min_size=args.min_size, top=args.top,
+            nose_bin, roots or ["."], mode=args.mode, min_size=args.min_size, top=args.top,
             sort=args.sort, exclude=excludes, ignore_file=ignore_file,
         )
     )
