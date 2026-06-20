@@ -1,6 +1,6 @@
 # Achieve Goal: North-star overhaul sweep: per-unit-disposition consolidation + skill-redesign
 
-Status: draft
+Status: active
 Created: 2026-06-20
 Activation: `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md`
 
@@ -9,15 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: **ready to activate** (Discuss-before-activation resolved
-  2026-06-20) — `/goal @charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md`.
-  First slice on activation = S0 (concept spec + critique).
+- Current slice: **S1 (R2) — wire the rung-2 distinct-channel observer +
+  AI-provenance marker onto the standalone issue/PR-close path** (the open
+  escape). S0 locked 2026-06-20.
+- Current slice intent: implement the rung-1 block-the-silent presence floor on
+  the issue closeout path (a `bug`/`feature`/`deferred-work` carrier must contain,
+  per closed issue, a behavioral-verdict line naming a distinct channel OR a typed
+  non-`verified` disposition) + the AI-provenance marker on agent-posted comments,
+  per the locked spec §2. Seeded-instance proof local-only. No terminal-green gate;
+  rung-1 refuses silence only; honesty stays rung-2. This is the reviewable intent
+  unit; critique fires once at the S1 boundary.
+- Next action: route S1 via `find-skills`; implement via `impl` consuming the
+  locked spec; seeded-instance proof + bounded fresh-eye critique; preserve the
+  `closeout-discipline.md` render-not-declare sentence; commit at the slice
+  boundary.
+- Locked spec (gates all impl):
+  [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -154,7 +161,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | pending |
+| S0 | Concept spec + critique (gating): the shared per-unit-disposition concept (rung-1 shared floor + rung-2 distinct-channel observer) + the Phase-3 instrument set | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (spec locked; critique PASS-WITH-CONDITIONS folded 2026-06-20) |
 | S1 (R2) | Wire the #386 distinct-channel observer + AI-provenance marker onto the standalone issue/PR-close path (the open escape) | issue-path rung-2 absent in code today | seeded-issue proof + fresh-eye + tests; no terminal-green gate added | pending |
 | S2 (R1) | Extract the cloned rung-1 grammar into one shared substrate; operator-queue/blocked-matrix/coordination → thin configs | de-dup; the substrate R2's rung-1b binding reuses | locked floor tests green + net line drop + fresh-eye | pending |
 | S3 (WS-B) | Phase-3 audit + redesign first candidates: impl/debug (floor-extract), quality/find-skills (concept-separate), achieve (headroom) — apply no-op test + length-causes + leading words; **+ graft `quality/references/unit-test-quality.md`** (better-UT patterns 1-6 incl. fixture/DSL authoring principles, P3 worked-examples) | the capped bodies; instruments now defined in S0 | per-body cause-diagnosis + cut + negative-directive count drop + new reference under cap + fresh-eye | pending |
@@ -204,6 +211,10 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+  - S0 (concept spec + critique): `find-skills --recommend-for-task` →
+    `achieve` (owner) coordinating `spec` (concept-spec authoring) + `critique`
+    (gating fresh-eye review). Spec authored inline under achieve; gating critique
+    run as a bounded fresh-eye subagent. `Routing: spec + critique`.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -219,6 +230,20 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### Slice 1: S0 — Concept spec + critique (gating)
+
+- Objective: Author the shared per-unit-disposition concept spec (rung-1 presence/form floor + rung-2 distinct-channel observer) + the Phase-3 instrument set under charness-artifacts/spec/, and lock it with a bounded fresh-eye critique before any implementation slice.
+- Why this approach: Concept-first per the goal: the cluster (operator-queue #381, blocked-matrix #385, coordination-cues, disposition rungs, issue closeout, #386) is one abstraction wearing N masks; a locked shared concept gates all impl. Three parallel read-only Explore passes mapped the R2/R1/WS-B surfaces; load-bearing claims re-verified by direct reads.
+- Commits:
+- What changed: Created charness-artifacts/spec/2026-06-20-per-unit-disposition-concept.md (Status: locked). Defines: the two-rung abstraction; the no-terminal-green invariant; R2/S1 wire (rung-1 block-the-silent presence floor + AI-provenance marker + rung-2 observer onto issue/PR close); R1/S2 substrate boundary (unify parse_created_date/is_floor_in_scope/placeholder-markers/parametric opt-out; keep RULE_DATEs/triggers/_section_body-divergence separate); the 6 risk-constraints mapped to code anchors; the Phase-3 instrument set + per-body re-measure hypotheses + the unit-test-quality graft scope/placement; Fixed Decisions F1-F7, Probes P-a..P-e, testable Success Criteria, Rejected Alternatives.
+- Alternatives rejected: Bulk gate deletion / fewer-gates-as-metric (north-star failure signature); an 8th terminal-green self-classification gate (#386 anti-pattern); keep R2 judgment-only (lets a silent carrier ride CLOSED to done); naive union of opt-out/_section_body variants (carries real anti-bypass intent); full 21-body rewrite (out of scope).
+- Targeted verification: Gating bounded fresh-eye critique = PASS-WITH-CONDITIONS; reviewer verified claims against actual code (distinct evidence channel). 4 conditions folded. Counts re-verified directly: grep confirmed >=7 RULE_DATE constants + 5 parse_created_date clones (initial map missed phase_routing). No code mutated this slice (spec-only).
+- Test duplication pressure:
+- Critique: PASS-WITH-CONDITIONS — folded into ## Plan Critique Findings + the spec's section 10. T1 (rung-1 != terminal-green) adjudicated distinct; T2/T3/T4 resolved; 4 blockers folded as S2 measurement-tightening conditions.
+- Off-goal findings:
+- Lessons carried forward: S2 must prove behavior-preservation per swap (created-date strict->permissive RELAXES grandfathering; 9 locked tests green on unchanged inputs = form-passed-not-content-correct). Surface maps from subagents can under-count (phase_routing missed) — re-verify load-bearing counts on a distinct channel before locking.
+- Metrics:
 
 ## Context Sources
 
@@ -251,7 +276,33 @@ the originating context by following them in order.
 
 ## Plan Critique Findings
 
-_S0 folds the concept-spec critique here before implementation begins._
+**S0 concept-spec critique — PASS-WITH-CONDITIONS (2026-06-20), folded.**
+Spec: [per-unit-disposition concept](../spec/2026-06-20-per-unit-disposition-concept.md)
+(`Status: locked`). A bounded fresh-eye reviewer verified the spec's load-bearing
+claims against the **actual code** (distinct evidence channel, not an artifact
+re-read — the #386 discipline). Architecture (rung-1/rung-2, R2-first,
+no-terminal-green) unchallenged; four conditions tightened the S2 measurement and
+are folded into the spec:
+
+1. Created-date unification is a **tested deliberate behavior change** (strict→
+   permissive relaxes operator_queue/blocked_matrix grandfathering), not a no-op;
+   each swapped consumer needs a divergence-input locked test. "9 locked tests
+   pass" alone is rejected as S2 proof (greens on unchanged inputs).
+2. **Counts corrected** (verified by `grep` over `skills/public/achieve/scripts/`):
+   ≥7 RULE_DATE constants (the initial surface map missed `phase_routing` 6-4 and
+   `recurrence_lineage` 6-8 + `disposition_form`/`structural_followup`); 5
+   `parse_created_date` clones (incl. phase_routing).
+3. `_section_body` unification needs a **divergence-exposing** seeded proof
+   (`###`-subsection artifact), or the consumer keeps its own.
+4. The `closeout-discipline.md:136-138` rewrite preserves the "render-not-declare /
+   no aggregate all-confirmed" #386 sentence; only the stale "no new gate/script/
+   verdict token" clause is replaced.
+
+Load-bearing tension T1 (is the rung-1 issue floor a disguised terminal-green?)
+adjudicated **distinct** — the achieve path already ships the non-terminal
+rung-1b/rung-2 shape in code; the issue floor refuses silence only,
+`status: verified` stays necessary-not-sufficient. Gate result: **S0 locked;
+S1 may proceed.**
 
 ## Off-Goal Findings
 
