@@ -13,55 +13,50 @@
 
 ## Current State
 
-- **North-Star Overhaul — the [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
-  is COMPLETE** (`check_goal_artifact` ok; 5 slices/commits; broad pytest 3428/0).
-  Roadmap now: **P0 done, P1 landed, P2 done, P3 partial, P4 not started.** P2 (root-cause
-  win): issue/PR close no longer greens on `CLOSED`+form — rung-1 block-the-silent
-  behavioral-verdict + AI-provenance floors + rung-2 observer, **no terminal-green gate**;
-  the cloned rung-1 grammar collapsed to one substrate `goal_artifact_floor_grammar.py`.
-  P3 (WS-B): `unit-test-quality.md` graft + a lossless `find-skills` cure landed; deeper
-  body redesign **deferred with cause** (cuts contract-pinned/lossy — see the goal+retro).
-- **v0.52.6 still the released surface** — no release. **18 commits ahead of origin/main,
-  unpushed**; push at maintainer cadence.
+- **North-Star Overhaul — Phase 4 COMPLETE** (this session; **P0–P4 ALL done**).
+  [Phase-4 goal](../charness-artifacts/goals/2026-06-20-north-star-phase4-boundary-non-terminality.md)
+  `complete`; 6 commits; every slice fresh-eye PASS; bundle pytest 3520/0. Every
+  charness-**owned** irreversible boundary is now non-terminal — issue/PR close (P2),
+  release publish (WS-1 rung-1+rung-2, F2a), Direction-3 HOTL (WS-2); the un-owned
+  prod-apply boundary is **portable** (WS-3: `ceal-dev` / `applied-restarted` / deploy-vocab
+  left the core for an adapter seam).
+- **Metric discipline (operator, 2026-06-20):** count is NOT the metric in either direction;
+  proof = escape-closed + concept-clearer.
+  [goodhart retro](../charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md).
+- **v0.52.6 released; no new release. ~28 commits ahead of origin/main, unpushed.**
 
 ## Next Session
 
-- **TOP PRIORITY — Phase 4: non-terminality at the REMAINING irreversible boundaries.**
-  P2 made *one* boundary (issue/PR close) non-terminal; the others still carry the
-  terminal-green pattern the diagnosis named. Extend the now-built rung-1/rung-2 +
-  floor-grammar pattern to: **release publish**, **prod apply**, and **Direction-3**
-  (`issue_tool.py verify-closeout` refuses on undispositioned HOTL entries — the second
-  consumer #386 deferred). Mostly *reuse* of the proven pattern, not invention. Follow the
-  [roadmap](./north-star-overhaul-roadmap.md) Phase 4 + the Phase-0 migration discipline
-  (name failure-mode → land replacement → seeded proof → then delete + rollback ref).
-  Shape it as an `achieve` goal (the overhaul-sweep goal is the template).
-- **Deferred from the overhaul-sweep goal (operator items, both external writes):**
-  (1) a **live GitHub R2 proof** — run a real `issue resolve`/PR-close exercising the new
-  floors once a target is named + approved; (2) **file the P3 body-redesign follow-on
-  issue** (impl/debug/quality/achieve concept-separation + a pre-cut lossless+contract-safe
-  WS-B instrument) — captured in the goal's `## Operator Decision Queue` + the
-  [retro](../charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md).
-- **Push decision:** 18 commits unpushed; review / push / cut a release at maintainer cadence.
-- **ceal propagation (corca-ai/ceal#417):** charness now embodies the doctrine at the issue
-  boundary; the doctrine can begin propagating to ceal once P4 lands the rest.
-- **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
-  to advisory, then critique/skill-ergonomics demotions. Plus: changed-line gate
-  `--reuse-coverage` should skip a coverage file containing none of the changed paths.
-- **Untouched:** [#391](https://github.com/corca-ai/charness/issues/391) extractions +
-  tool_version stamp; #392 gather X; #371 agent-browser teardown.
+- **TOP PRIORITY — skill-body redesign track (deferred P3/WS-B), then a release.**
+  0/20 SKILL.md cores over the 160 cap, but **11 crammed at 150–159** (worst: issue 159,
+  impl 158, debug 157; also achieve/create-skill/release/hitl/create-cli/find-skills/
+  announcement/critique). Apply the Phase-3 instrument set
+  ([per-unit-disposition spec §5](../charness-artifacts/spec/2026-06-20-per-unit-disposition-concept.md):
+  no-op test / three length-causes / Leading-Word / named-heuristic / anchor-split)
+  **diagnosis-first, per body**.
+  - **NOT a trim-to-160 sweep — count is not the metric.** Diagnose each body's length
+    *cause*; a justified-density body is **deferred with cause** (as overhaul-sweep WS-B did).
+    Success = concept clarity + headroom, not fewer lines. `achieve` goal (Phase-4 = template).
+  - **End state:** fix the bodies, **then cut a release** — the live `release` cut exercises
+    the new WS-1 floors = the deferred WS-1 live-release proof.
+- **Deferred live proofs (operator-approved + phase-scoped at run):** WS-1 live release
+  (Phase-4 `## Operator Decision Queue`); overhaul-sweep R2 (a real `issue resolve` / PR-close
+  through the floors). **ceal #417:** P4 done → the full doctrine can now propagate to ceal.
+- **Secondary:** gate demotions (`check_doc_links` backtick→advisory, then critique/ergonomics;
+  `--reuse-coverage` skips a coverage file with none of the changed paths). **Untouched:**
+  #391 extractions + tool_version; #392 gather X; #371 agent-browser teardown.
 
 ## Discuss
 
-- **Operator decided (2026-06-20):** finish the north-star overhaul in charness BEFORE
-  propagating the doctrine to ceal — the skills must embody it first. ceal gets the
-  already-shipped mechanisms now (separate issue); the overhaul doctrine waits.
+- **Operator decided (2026-06-20):** fix all skill bodies, THEN release — diagnosis-first
+  (not a trim sweep); the release's live cut is the WS-1 floor proof. ceal propagation now
+  unblocks (charness embodies the full doctrine).
 
 ## References
 
-- [overhaul-sweep goal](../charness-artifacts/goals/2026-06-20-north-star-overhaul-sweep.md)
-  (the pursue-ready pickup),
-- [design north star](./design-north-star.md),
+- [Phase-4 goal](../charness-artifacts/goals/2026-06-20-north-star-phase4-boundary-non-terminality.md),
+  [per-unit-disposition spec](../charness-artifacts/spec/2026-06-20-per-unit-disposition-concept.md) (§5 instruments),
+  [design north star](./design-north-star.md),
   [north-star overhaul roadmap](./north-star-overhaul-roadmap.md),
-  [gate buy-vs-build decisions](../charness-artifacts/audit/2026-06-19-gate-buy-vs-build-decisions.md),
-  [dup-ratchet reference](../skills/public/quality/references/dup-ratchet.md),
+  [goodhart retro](../charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md),
   [recent-lessons](../charness-artifacts/retro/recent-lessons.md)
