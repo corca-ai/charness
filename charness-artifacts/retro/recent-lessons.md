@@ -3,18 +3,18 @@
 ## Current Focus
 
 - After Phase 4 closeout, the operator corrected my framing: I described "fewer lines / fewer gates" as a north-star *failure signature* in a way that inverted into "more code = success," and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was "honored." That is backwards. (source: `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`)
-- **S0** — concept spec locked by a gating fresh-eye critique (`4e18811b`). (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- Release publish triggered a configured automatic session retro for `v0.53.0`. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
 - **Minor:** a `docs/public-skill-dogfood.json` Edit anchor used the wrong next-case `skill_id` (assumed `narrative`, was `announcement`) → one failed Edit + re-read. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 - **Named-subagent spawn round-trips.** S0 and WS-1 critiques used `name:` + mailbox; retrieving each verdict needed an idle-notification → `SendMessage` round trip (one even returned an idle signal with no content, needing a second nudge). The later critiques (WS-2/3a/3b) spawned WITHOUT a name and the final message returned directly — cleaner and faster. One named spawn was also rejected outright ("teammates cannot spawn teammates"), costing a re-spawn. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 - **WS-1 SKILL.md headroom churn — 3 edit cycles on one bullet.** I added a 7-line bullet to `release/SKILL.md`, hit `long_core` (161/160), trimmed to 3 lines, hit the *staged* `core-headroom` ratchet (157, buffer 4), trimmed to a 1-line pointer (155). The mechanism detail belonged in the reference from the start. The recent-lessons "headroom discipline" lesson already existed; I did not **measure the core buffer before adding**. Notably I then applied the lesson correctly for WS-2 (issue SKILL.md was 159/160 → I put the floor doc in the reference, not the core) — so the cost was front-loaded into WS-1. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`; sources: 49)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
 - **A skill-body cut needs a pre-cut lossless+contract-safe check:** every removed phrase has a reference home AND no test/CORE-contract pins it, verified *before* cutting. WS-B instrument gap. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
 - **Bloat diagnoses are hypotheses to verify per-body, not mandates to cut** — carry this into the deferred follow-on body redesign. (source: `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`)
 - **capability:** none new — the gate suite (attention-state-visibility, skill-ergonomics, staged core-headroom, mirror-drift, cautilus-skill-review, prose-pin) each caught a real issue this goal. The current bar is the right one. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
@@ -79,3 +79,4 @@
 - `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`
 - `charness-artifacts/retro/2026-06-20-north-star-overhaul-sweep.md`
 - `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`
+- `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
