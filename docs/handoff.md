@@ -35,8 +35,9 @@
   ([note](../charness-artifacts/audit/2026-06-20-craken-agents-absorption-pass-1.md)):
   craken & charness independently converged on the north star, so wins are better
   phrasings/worked examples (A1 survivor-disposition, A2 re-audit-by-removal, A4
-  evidence-depth), not new capability; `bug-hunt` is an external skill NOT in the repo —
-  locate it next pass. Re-run each session.
+  evidence-depth), not new capability. craken's skills (bug-hunt) live on its dev machine,
+  not in the repo — operator requested them separately (pending); until then learn from
+  craken's **code structure + docs only**. Re-run each session.
 - **ceal propagation (downstream; 2 surfaces).** ceal embeds charness via a vendored pin
   (~35 commits stale — this is how the ceal agent instance ships charness inside itself)
   and via a machine-level plugin install; the two can drift independently. Plus a real

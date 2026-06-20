@@ -12,7 +12,9 @@ north-star overhaul (`docs/north-star-overhaul-roadmap.md`). Baseline discipline
 `literature-search`, `experiment-protocol`, ...). The operator's anchor `bug-hunt` is NOT
 in this repo — it is an external `$bug-hunt` / `$better-*` Codex skill referenced in
 `docs/self-healing.md`, installed elsewhere. Its stated intent (reproduce before fixing)
-is already enforced by charness `debug`.
+is already enforced by charness `debug`. These external skills live on the craken
+developer's machine, not in any repo; the operator has requested them separately (pending
+share). **Until they arrive, scope craken absorption to docs + code structure only.**
 
 ## Strong external validation
 
@@ -48,8 +50,9 @@ new capability.
 
 ## Next-pass veins
 
-1. Locate `$bug-hunt` / `$better-*` bodies (operator's anchor; verify per-surface vs
-   `debug`/`quality`/`code-review` before absorbing).
+1. `$bug-hunt` / `$better-*` are external dev-machine skills the operator has requested
+   separately (pending share) — do NOT spend a pass hunting the machine; when they arrive,
+   verify per-surface vs `debug`/`quality`/`code-review` before absorbing.
 2. Extract `testing-mutation.md` survivor-disposition pattern as a concrete P5 example (A1).
 3. `docs/code-quality.md` "Retrospective" — inline-in-standard lessons vs charness's
    separate `retro`/`recent-lessons.md`.
