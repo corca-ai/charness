@@ -38,11 +38,15 @@
   evidence-depth), not new capability. craken's skills (bug-hunt) live on its dev machine,
   not in the repo — operator requested them separately (pending); until then learn from
   craken's **code structure + docs only**. Re-run each session.
-- **ceal propagation (downstream; 2 surfaces).** ceal embeds charness via a vendored pin
-  (~35 commits stale — this is how the ceal agent instance ships charness inside itself)
-  and via a machine-level plugin install; the two can drift independently. Plus a real
-  bug: its native nose advisory calls the removed `nose scan`. Issue draft re-scoped
-  across both surfaces; pin target is the v0.52.6 release tag. Review before filing.
+- **matt-skills (skill-redesign reference — review AGGRESSIVELY).** When the overhaul
+  redesigns charness skills, actively mine ../matt-skills for skill patterns (same
+  baseline discipline). Unexplored so far — first pass pending.
+- **ceal propagation — issue filed (corca-ai/ceal#417).** ceal embeds charness via a
+  vendored pin (~31 commits behind v0.52.6) AND a machine-level plugin (already v0.52.6) —
+  the two are diverged and the agent runs on the stale vendored copy. Issue #417 covers:
+  delete the broken native nose advisory + route through vendored charness (own zero
+  charness copies), bump pin to the v0.52.6 tag, reconcile both surfaces, lean-adopt the
+  dup-ratchet, harden the staleness signal. North-star overhaul deferred there.
 - **Secondary — gate demotions:** Track A = demote check_doc_links backtick/bare-mention
   to advisory (surviving value from item ②), then critique/skill-ergonomics demotions.
   Plus: changed-line gate `--reuse-coverage` should skip a coverage file containing none
