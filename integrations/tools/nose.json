@@ -3,7 +3,7 @@
   "tool_id": "nose",
   "kind": "external_binary",
   "display_name": "nose",
-  "summary": "Required (>=0.13.3) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. 0.13.3 removed the deprecated `nose scan`; the code path runs `nose query`.",
+  "summary": "Required (>=0.14.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3); 0.14.0 emits schema v4 query JSON, and the committed dup-ratchet/clone id-baselines are seeded from 0.14.0's family ids.",
   "upstream_repo": "corca-ai/nose",
   "homepage": "https://github.com/corca-ai/nose",
   "platforms": [
@@ -47,7 +47,7 @@
         "exit_code:0",
         "stdout_contains:nose"
       ],
-      "failure_hint": "Install nose >=0.13.3; the quality `doc-duplicates` phase fails closed without it (run `charness tool doctor nose --json`)."
+      "failure_hint": "Install nose >=0.14.0; the quality `doc-duplicates` phase fails closed without it (run `charness tool doctor nose --json`)."
     }
   },
   "access_modes": [
@@ -55,7 +55,7 @@
   ],
   "version_expectation": {
     "policy": "minimum",
-    "constraint": ">=0.13.3",
+    "constraint": ">=0.14.0",
     "detected_by": "stdout"
   },
   "supports_public_skills": [
@@ -78,16 +78,17 @@
   "degradation": {
     "when_missing": [
       "Doc near-duplicate review has no fallback: the bespoke difflib gate was removed, so a missing nose means the quality `doc-duplicates` phase fails closed.",
-      "Do not claim document near-duplicate or clone-family review succeeded without a healthy nose >=0.13.0 binary."
+      "Do not claim document near-duplicate or clone-family review succeeded without a healthy nose >=0.14.0 binary (the doc engine alone works on >=0.13.0, but the committed code-clone id-baselines require >=0.14.0)."
     ],
     "when_version_mismatch": [
       "nose < 0.13.0 lacks the Markdown duplication engine and silently reports zero doc families; treat any pre-0.13.0 binary as missing for doc review.",
       "nose < 0.13.3 still ships the deprecated `nose scan`; the code path now requires `nose query` (scan was removed in 0.13.3). The query family `id` is scanner-version-scoped, so re-seed the dup-ratchet and nose advisory id baselines per nose version.",
+      "nose < 0.14.0 emits schema v3 query JSON and a different family-detection basis (0.14.0 closed Python/Go/Java/Swift/Rust/Ruby/TypeScript lowering gaps and stopped routing ANSI/binary/`.h` artifacts to a parser), so its family ids will not match the committed 0.14.0-seeded dup-ratchet/clone id-baselines and the dup-ratchet gate will false-fire; treat any pre-0.14.0 binary as a re-baseline mismatch and update via `charness tool update nose`.",
       "Treat changes in ranking, clone channels, or JSON output across versions as advisory drift before promoting findings into gates."
     ]
   },
   "host_notes": [
-    "`nose` is REQUIRED (>=0.13.3) in Charness quality: code clone families stay advisory (refactoring candidates), and the Markdown engine backs the doc near-duplicate review that replaced the bespoke difflib gate. Findings are advisory; tool absence fails closed.",
+    "`nose` is REQUIRED (>=0.14.0) in Charness quality: code clone families stay advisory (refactoring candidates), and the Markdown engine backs the doc near-duplicate review that replaced the bespoke difflib gate. Findings are advisory; tool absence fails closed.",
     "Code clones: `nose query <root> all top=20 sort=extractability --mode syntax,semantic,near --min-size 24 --format json` per scope root (scripts, skills/public, skills/support), merged by `inventory_nose_clones.py`; 0.13.3 removed `nose scan` and `query` takes one path per call.",
     "Doc near-duplicates: `nose query . --exclude 'plugins/**' --exclude 'charness-artifacts/**' --format json` and read the top-level `markdown` array (advisory `inventory_doc_duplicates.py` with its own drift baseline)."
   ]
