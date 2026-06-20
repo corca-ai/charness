@@ -1,6 +1,6 @@
 # Achieve Goal: North-star Phase 4: non-terminality + portability at the remaining irreversible boundaries
 
-Status: draft
+Status: active
 Created: 2026-06-20
 Activation: `/goal @charness-artifacts/goals/2026-06-20-north-star-phase4-boundary-non-terminality.md`
 
@@ -9,14 +9,23 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft awaiting activation. First slice once active = **S0
-  (concept spec + gating critique)**, which locks every impl slice.
-- Current slice intent: real draft awaiting activation; reshape before activating
-  if the acceptance boundary has changed. Once active, this names the
-  reviewable-intent unit in progress and the commits it spans; critique and broad
-  proof do not re-fire within one unchanged intent — update it when the intent
-  changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-20-north-star-phase4-boundary-non-terminality.md` after confirming the draft is still intended.
+- Current slice: **WS-1 (release publish rung-1 + rung-2)** — S0 LOCKED
+  (2026-06-20). The concept spec
+  `charness-artifacts/spec/2026-06-20-phase4-boundary-non-terminality-concept.md`
+  is locked (gating critique PASS-WITH-CONDITIONS, 3 blockers folded §9); it gates
+  every impl slice.
+- Current slice intent: wire the WS-1 rung-1 per-surface behavioral-verdict
+  presence floor + the rung-2 distinct-channel observer onto the release publish
+  boundary, **before** `ensure_release_issues_closed`
+  (`publish_release_execute.py:187`). Binding non-terminality rule: **F2a** —
+  issue-close advances on rung-1 record-presence only; the automated
+  distinct-channel confirmation is a recorded observable for the human rung-2
+  audit, never an automated proceed-gate. Additive (supplement the line-163
+  proxy, do not delete it). This intent spans the WS-1 commits; critique + broad
+  proof do not re-fire within it (meaningful-slice-cadence).
+- Next action: implement WS-1 per the locked spec §2 + F2a, seeded
+  published-release fixture proof, bounded fresh-eye slice critique, then
+  `run_slice_closeout.py --skip-broad-pytest`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -241,7 +250,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S0 | Concept spec + gating critique: lock the shared non-terminality contract (WS-1 rung-1/rung-2 on release publish; WS-2 Direction-3 HOTL floor) + the WS-3 portability-deleak contract (rename-vs-adapter-provide map; grandfathered-alias shape — or straight rename if S0 judges the alias unneeded; per-surface migration discipline; the **complete `ceal-dev` leak inventory incl. the test fixture**; the **protected `slack.ceal-dev` adapter-example set**; the plugin-mirror sync barrier) | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | pending |
+| S0 | Concept spec + gating critique: lock the shared non-terminality contract (WS-1 rung-1/rung-2 on release publish; WS-2 Direction-3 HOTL floor) + the WS-3 portability-deleak contract (rename-vs-adapter-provide map; grandfathered-alias shape — or straight rename if S0 judges the alias unneeded; per-surface migration discipline; the **complete `ceal-dev` leak inventory incl. the test fixture**; the **protected `slack.ceal-dev` adapter-example set**; the plugin-mirror sync barrier) | concept-first decision; gates every impl slice | spec artifact under `charness-artifacts/spec/` + critique PASS folded | **done** (`spec/2026-06-20-phase4-boundary-non-terminality-concept.md` LOCKED; gating critique PASS-WITH-CONDITIONS, 3 blockers folded §9) |
 | WS-1 | Wire rung-1 per-surface behavioral-verdict presence floor + rung-2 distinct-channel observer onto the release publish boundary (before `ensure_release_issues_closed`); reuse the post-create-verification spec | a real charness boundary with confirmed terminal-green (`publish_release_execute.py:163`) | seeded published-release proof + fresh-eye + tests; no terminal-green gate | pending |
 | WS-2 | Add the refuse-on-undispositioned-HOTL-entry rung-1 floor to `verify-closeout` (extend `evaluate_behavioral_verdict` family; reuse `proof_mismatch.py` pattern + HOTL status vocab) | the second #386 consumer; rung-1 HOTL floor absent in code | seeded undispositioned-entry proof (FAILS before CLOSED; typed disposition PASSES) + fresh-eye + tests | pending |
 | WS-3a | Tier 1 deleak (**the riskier slice**): remove the `ceal-dev` consumer-name leak from portable doctrine/examples (`lifecycle.md:342,353`, `goal-artifact.md:219`, `blocked_matrix.py:7` comment) **and the pinned fixture `test_goal_artifact_blocked_matrix.py:38`**; replace with vocabulary-neutral, adapter-named lane examples; **preserve the protected `slack.ceal-dev` capability-resolution adapter examples**; sync the `plugins/` mirror | clearest portability violation, but over-/under-fire risk | `grep -rn "ceal-dev" skills/ scripts/ tests/` clean except protected sites + doc-link/markdown gates + mirror-drift green + fresh-eye | pending |
@@ -280,6 +289,10 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+  - `Routing: S0` — `find-skills --recommend-for-task` (concept spec + gating
+    critique) → public skills `spec` (author the contract) + `critique` (gating
+    critique), with `release`/`hotl` as the WS-1/WS-2 domain skills; `achieve` is
+    the goal operator. Recorded read-only.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -298,6 +311,27 @@ during the run:
 
 ## Slice Log
 
+- **S0 — concept spec + gating critique (done, 2026-06-20).** Authored
+  `charness-artifacts/spec/2026-06-20-phase4-boundary-non-terminality-concept.md`
+  from direct code reads of every load-bearing surface (release publish/post-create/
+  issue-closeout, `proof_mismatch.py`, HOTL ledger vocab, achieve taxonomy/discussion/
+  closeout-delegation, the 4 pinned tests). Locked: the rung-1/rung-2 split per
+  workstream (no terminal-green); the **complete leak inventory L1–L6 / protected
+  set P1–P5** including **two sites the plan critique missed** —
+  **P4** (`test_proof_semantics_adapter.py:244` `ceal-dev` is a *domain-blindness
+  guard*, protected) and the **T4/heading pinned tests**
+  (`prescribed-skill-closeout-contract.md:227`, `test_workflow_safety_docs.py:14`);
+  WS-3b is a **straight rename (no grandfathered alias)** (gate is token-agnostic;
+  drift test is membership-based) with neutral token `instance-synced`; WS-3b(b-ii)
+  is **Option A** (adapter-provided deploy-vocab with behavior-preserving English
+  default). A bounded fresh-eye **gating critique** (read-only, distinct agent
+  context, verified against actual code) returned **PASS-WITH-CONDITIONS**; 3
+  blockers folded (§9): WS-1 **F2a** presence-only/non-automated-gate + corrected
+  rung-2 location (the release critique gate is *pre-publish*, so rung-2 is a
+  durable post-publish disposition review); WS-2 `local-only-by-contract` is
+  *newly enforced* not pre-existing; `evaluate_source_preservation` is the in-file
+  template. Routing: `find-skills` → `spec` (author) + `critique` (gate).
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -315,6 +349,8 @@ source — `Gather: n/a` expected.)
   `goal_artifact_floor_grammar.py`).
 - [per-unit-disposition concept spec](../spec/2026-06-20-per-unit-disposition-concept.md)
   — the locked rung-1/rung-2 contract WS-1/WS-2 reuse.
+- [**Phase-4 concept spec (S0, LOCKED)**](../spec/2026-06-20-phase4-boundary-non-terminality-concept.md)
+  — this goal's locked S0 contract; gates every impl slice (WS-1/WS-2/WS-3a/WS-3b).
 - [release-post-create-verification-suppression spec](../spec/release-post-create-verification-suppression.md)
   — the partial WS-1 post-publish verification implementation to extend.
 - HOTL [ledger-and-dispositions](../../skills/public/hotl/references/ledger-and-dispositions.md)
