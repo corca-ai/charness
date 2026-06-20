@@ -277,6 +277,38 @@ line, and the pinned phrase or path). It is advisory by default (`--strict` exit
 non-zero), and `run_slice_closeout.py` surfaces the same `WARN:` lines at slice
 closeout before the broad pytest runs.
 
+### Pre-cut lossless + contract-safe check (skill-body cuts)
+
+Cutting prose from a public/support `SKILL.md` has a sharper failure mode than a
+reword: a removed phrase may be *pinned* (a CORE/PACKAGE contract or a `tests/`
+literal requires it, so removal breaks a gate) or *lost* (its content vanishes
+with no reference home). Verify both **before** the cut, not after a late gate
+rejects it:
+
+```bash
+python3 scripts/check_skill_cut_safety.py --repo-root .            # changed SKILL.md vs HEAD
+python3 scripts/check_skill_cut_safety.py --path skills/public/<skill>/SKILL.md
+```
+
+[check_skill_cut_safety.py](../../scripts/check_skill_cut_safety.py) composes the
+two pin surfaces (`check_skill_contracts` CORE/PACKAGE phrases +
+`check_prose_pin` test literals) and adds the lossless half, with two severities:
+
+- **BLOCK** (exit 1): a removed phrase broke a CORE pin (must stay in `SKILL.md`),
+  a PACKAGE pin (may move to a reference but must survive the package), or a
+  `tests/` literal. Restore or re-home the pinned phrase before cutting.
+- **REVIEW** (exit 0): a removed prose line vanished with no reference home.
+  Confirm it is a justified no-op deletion (the §5 no-op test — legitimate, needs
+  no reference home) or re-home its content. This stays REVIEW, not BLOCK, on
+  purpose: a hard "every removed line must reappear" rule would forbid the prune
+  cure that diagnosis-first body redesign depends on. Use `--strict` to fail on
+  REVIEW too when a caller wants the stricter gate.
+
+It is a helper, not a new commit gate: the contract gate, prose-pin, and
+core-headroom ratchet stay the enforcement; this consolidates their pre-cut view
+into one declarative command so a body cut is lossless+contract-safe by
+construction.
+
 ## Regex / string-matching edges
 
 When a check matches a version, identifier, or other token by string content,

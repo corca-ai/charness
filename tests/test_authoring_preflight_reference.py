@@ -59,6 +59,15 @@ def test_authoring_preflight_points_at_one_shot_preflight_and_prose_pin() -> Non
     assert "prose and path pins" in text.lower()
 
 
+def test_authoring_preflight_names_skill_cut_safety() -> None:
+    # Drift guard: the reference must point at the pre-cut lossless+contract-safe
+    # check, so a skill-body cut verifies pins + reference homes up front instead
+    # of discovering a broken contract/test pin at the broad gate.
+    text = PREFLIGHT_DOC.read_text(encoding="utf-8")
+    assert "check_skill_cut_safety.py" in text
+    assert "lossless" in text.lower()
+
+
 def test_authoring_preflight_names_general_doc_preflight() -> None:
     # #362 drift guard: the reference (and the read-before-authoring discipline
     # doc) must name the aggregate general-doc preflight, so an author editing a

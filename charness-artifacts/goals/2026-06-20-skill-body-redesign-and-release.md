@@ -9,16 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **S0 (diagnosis spec + gating critique)** — draft awaiting
-  activation. The full diagnose-and-cure scope (all 20 public bodies) and the
-  terminal live-release slice are operator-resolved (see `## Discuss before
-  activation`); reshape before activating only if the acceptance boundary changed.
-- Current slice intent: once active, S0 measures all 20 cores, applies the §5
-  instrument set diagnostically per body, produces a per-body length-cause +
-  cure/defer-with-cause disposition table, builds/confirms the pre-cut
-  lossless+contract-safe check, and locks it with a bounded fresh-eye critique.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-20-skill-body-redesign-and-release.md`
-  after confirming the draft is still intended.
+- Current slice: **S1 (cure the 3 sub-buffer must-fix: issue / impl / debug)** —
+  S0 is **complete and committed** (diagnosis spec LOCKED, gating critique
+  PASS-WITH-CONDITIONS folded). The full diagnose-and-cure scope (all 20 public
+  bodies) and the terminal live-release slice are operator-resolved.
+- Current slice intent: apply the S0-diagnosed cures to issue / impl / debug. All
+  three are `duplication` (guardrail-cluster collapse + single-source); issue and
+  impl carry **pin hazards** (test-literal pins) so the pre-cut check
+  (`scripts/check_skill_cut_safety.py`) + a per-body fresh-eye are load-bearing
+  here. Use the verbatim-preserve path (do not update a pinned test). Re-sync the
+  plugin mirror before validators.
+- Next action: cure `issue/SKILL.md` per the S0 disposition row — run the pre-cut
+  check, apply the duplication collapse preserving the pinned literals verbatim,
+  re-measure, fresh-eye, then impl and debug.
+- S0 deliverables (locked): `scripts/check_skill_cut_safety.py` (+ test, docs,
+  drift-guard); disposition table for all 20 bodies in
+  [2026-06-20-skill-body-diagnosis-disposition.md](../spec/2026-06-20-skill-body-diagnosis-disposition.md)
+  (19 cure + 1 defer-with-cause `hotl`); raw verified records in the sibling
+  `...-diagnosis-results.json` / `...-measured-input.json`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -193,7 +201,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S0 | Diagnosis spec + gating critique: measure all 20 cores; apply the §5 instrument set diagnostically per body; produce a per-body length-cause + cure/defer-with-cause disposition table; build/confirm the pre-cut lossless+contract-safe check (declarative, not manual); lock with a bounded fresh-eye critique | concept-first; the diagnosis IS the contract that gates every cure | diagnosis artifact under `charness-artifacts/spec/` (or `audit/`) + the pre-cut check + critique PASS folded | pending |
+| S0 | Diagnosis spec + gating critique: measure all 20 cores; apply the §5 instrument set diagnostically per body; produce a per-body length-cause + cure/defer-with-cause disposition table; build/confirm the pre-cut lossless+contract-safe check (declarative, not manual); lock with a bounded fresh-eye critique | concept-first; the diagnosis IS the contract that gates every cure | diagnosis artifact under `charness-artifacts/spec/` (or `audit/`) + the pre-cut check + critique PASS folded | **complete** (2026-06-20): disposition spec LOCKED (19 cure + 1 defer `hotl`); `check_skill_cut_safety.py` + test + docs + drift-guard landed; gating critique PASS-WITH-CONDITIONS folded |
 | S1 | Cure the 3 sub-buffer must-fix (issue 159 / impl 158 / debug 157): apply the S0-diagnosed cures; pre-cut check; re-measure; fresh-eye; public-skill validation | they already violate the 4-line ratchet buffer — highest value, land first | each body de-pinned by the right cure (or deferred with cause); lossless+contract-safe; mirror synced; fresh-eye PASS | pending |
 | S2 | Cure crammed batch B (create-skill / achieve / hitl / release): per-body diagnosed cure or defer-with-cause; pre-cut check; re-measure; fresh-eye; validation | the next-tightest cluster (155–156) | same evidence shape as S1 | pending |
 | S3 | Cure crammed batch C (create-cli / find-skills / announcement / critique): same discipline | the remaining ≥150 crammed set | same | pending |
@@ -262,6 +270,34 @@ during the run:
   `Issue closeout: n/a — <reason>`.
 
 ## Slice Log
+
+### S0 — diagnosis spec + gating critique (complete, 2026-06-20)
+
+- **Built the pre-cut lossless+contract-safe check** (`scripts/check_skill_cut_safety.py`):
+  composes `check_skill_contracts` CORE/PACKAGE after-state pins + `check_prose_pin`
+  test-literal scan (BLOCK, deterministic) and adds the lossless reference-home half
+  (REVIEW, surfaced not blocked — a hard "every removed line must reappear" rule
+  would forbid the §5 no-op prune cure). Locked by
+  `tests/quality_gates/test_check_skill_cut_safety.py` (7 cases), documented in
+  `docs/conventions/authoring-preflight.md`, drift-guarded in
+  `tests/test_authoring_preflight_reference.py`.
+- **Diagnosed all 20 bodies** via a background Workflow (40 agents: 20 diagnose +
+  20 adversarial verify): 15 `duplication`, 3 `mixed`, 1 `sprawl`, 1
+  `justified-density`. **19 cure + 1 defer-with-cause (`hotl`)** — proves count was
+  not the metric. Dominant signature: `## Guardrails` clusters that negate the
+  Workflow/references → §5.5 named-heuristic collapse + §5.2 single-source.
+- **Key finding:** the adversarial verify caught 4 of 20 proposed cures (issue,
+  impl, find-skills, retro) would break a pin the diagnosing agent missed (dedicated
+  test-literal files + a paraphrased package pin). Diagnosis is a hypothesis; the
+  pre-cut check + per-body fresh-eye are mandatory before each cure. All 4 have a
+  verbatim-preserve path → no contract change required.
+- **Gating critique:** bounded fresh-eye PASS-WITH-CONDITIONS (distinct channel:
+  re-measured 6 cores, grepped 4 test files, ran the check). Two precision
+  conditions folded; spec LOCKED.
+- Routing: `find-skills` → S0 = `spec`/`quality` validation + `critique` (gating);
+  Cautilus `next_action: none` (ask-before-run, disabled this run).
+- Gates green: ruff, check_python_lengths, validate_skills, check_doc_links,
+  check-markdown, attention-state-visibility, affected pytest.
 
 ## Context Sources
 

@@ -1,0 +1,560 @@
+[
+ {
+  "id": "issue",
+  "core": 159,
+  "left": 1,
+  "total": 199,
+  "refs": [
+   "causal-review.md",
+   "closeout-discipline.md",
+   "issue-backend.md",
+   "issue-shaping.md",
+   "resolution-brief.md",
+   "resolve-flow.md"
+  ],
+  "core_pins": [
+   "GitHub is the source of truth.",
+   "Do not prefer session memory",
+   "one numeric token or `start-end` token is the issue\n  selector, not a repository name",
+   "With no selector, `select` queries the newest open GitHub issue",
+   "Do not ask for approval unless the user explicitly asks to review first."
+  ],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "impl",
+  "core": 158,
+  "left": 2,
+  "total": 200,
+  "refs": [
+   "adapter-contract.md",
+   "contract-consumption.md",
+   "design-lenses.md",
+   "external-api-contract.md",
+   "review-gate.md",
+   "sequence-discipline.md",
+   "spec-loop.md",
+   "verification-ladder.md"
+  ],
+  "core_pins": [
+   "impl adapter resolution and verification survey",
+   "risk interrupt planner reports a forced interrupt",
+   "best self-verification path before you code and again before you stop",
+   "re-read `Fixed Decisions` and named acceptance checks",
+   "reflected in the delivered slice or explicitly",
+   "Do not call a same-agent review a critique.",
+   "plain implementation until the named spec handoff says this slice may"
+  ],
+  "package_pins": [
+   "python3 \"$SKILL_DIR/../../../scripts/plan_risk_interrupt.py\" --repo-root . --json 2>/dev/null || true",
+   "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
+   "`Critique: short <scope>`",
+   "`Critique: full <artifact-or-subagent-status>`",
+   "`Critique: not-applicable <reason>`",
+   "`Critique: blocked <host-signal>`"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "debug",
+  "core": 157,
+  "left": 3,
+  "total": 200,
+  "refs": [
+   "adapter-contract.md",
+   "anti-patterns.md",
+   "debug-memory.md",
+   "detection-gap.md",
+   "disconfirmer-first.md",
+   "document-seams.md",
+   "five-steps.md",
+   "five-whys-causal-chain.md",
+   "invariant-first-review.md",
+   "named-target-verification.md",
+   "sibling-search.md"
+  ],
+  "core_pins": [
+   "classify seam risk explicitly",
+   "set the next step to `spec`",
+   "structured handoff fields",
+   "Do not run critique before the facts needed for diagnosis exist.",
+   "before closing task-completing debug work or handing off a repair",
+   "- `Seam Risk`",
+   "- `Interrupt Decision`"
+  ],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "achieve",
+  "core": 156,
+  "left": 4,
+  "total": 183,
+  "refs": [
+   "adapter-contract.md",
+   "coordination.md",
+   "goal-artifact.md",
+   "index.md",
+   "lifecycle.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "create-skill",
+  "core": 156,
+  "left": 4,
+  "total": 189,
+  "refs": [
+   "adapter-contract.md",
+   "adapter-pattern.md",
+   "binary-preflight.md",
+   "deployable-skill-packaging.md",
+   "integration-seams.md",
+   "portable-authoring.md",
+   "preset-conventions.md",
+   "runtime-capabilities.md"
+  ],
+  "core_pins": [
+   "public skill: one user-facing concept",
+   "support skill: teaches tool usage without becoming product philosophy",
+   "Freeze the current consumer contract before editing an existing public skill",
+   "decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract",
+   "run a customer-of-this-skill critique",
+   "the customer repo's first prompt before trusting producer-side checks",
+   "if an upstream support skill already exists, prefer reference, sync, or a",
+   "Treat public-skill frontmatter and generated AGENTS hints as classifier input"
+  ],
+  "package_pins": [
+   "For `evaluator-required` skills, treat maintained scenario coverage and",
+   "keep manifest",
+   "metadata rich enough to reveal capability kind and supported access modes",
+   "express them as manifest readiness checks",
+   "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
+   "python3 \"$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py\" --repo-root . --skill-id <skill-id>",
+   "## Binary Preflight Philosophy",
+   "Public skills must not silently assume non-baseline binaries",
+   "CHARNESS_BASELINE",
+   "Preflight is lazy, not eager",
+   "CHARNESS_BINARY_PREFLIGHT=degraded",
+   "Auto-install is forbidden",
+   "Silent skip is forbidden"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "create-cli",
+  "core": 155,
+  "left": 5,
+  "total": 187,
+  "refs": [
+   "case-studies.md",
+   "code-shape.md",
+   "command-conventions.md",
+   "command-surface.md",
+   "external-capability-clis.md",
+   "install-update.md",
+   "intent-first-grammar.md",
+   "machine-readable-state.md",
+   "quality-gates.md",
+   "version-provenance.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "hitl",
+  "core": 155,
+  "left": 5,
+  "total": 196,
+  "refs": [
+   "adapter-contract.md",
+   "chunk-contract.md",
+   "report-mode.md",
+   "rule-propagation.md",
+   "state-model.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "release",
+  "core": 155,
+  "left": 5,
+  "total": 195,
+  "refs": [
+   "adapter-contract.md",
+   "closeout-critique-gate.md",
+   "install-surface.md",
+   "version-policy.md"
+  ],
+  "core_pins": [
+   "maintainer-facing workflow",
+   "Choose the lightest honest bump",
+   "patch for bug fixes, copy fixes, and behavior repairs",
+   "Do not hand-edit generated plugin manifests",
+   "Do not push, tag, or announce a release without explicit user confirmation",
+   "Every task-completing release slice records critique before closeout."
+  ],
+  "package_pins": [
+   "`Critique: short <scope>`",
+   "`Critique: full <artifact-or-subagent-status>`",
+   "`Critique: not-applicable <reason>`",
+   "`Critique: blocked <host-signal>`"
+  ],
+  "forbidden": [
+   "local critique"
+  ]
+ },
+ {
+  "id": "announcement",
+  "core": 152,
+  "left": 8,
+  "total": 197,
+  "refs": [
+   "adapter-contract.md",
+   "audience-policy.md",
+   "delivery-seams.md",
+   "draft-shape.md",
+   "large-window-fanout.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "find-skills",
+  "core": 152,
+  "left": 8,
+  "total": 198,
+  "refs": [
+   "adapter-contract.md",
+   "discovery-order.md",
+   "session-start-routing.md",
+   "support-consumption.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "critique",
+  "core": 150,
+  "left": 10,
+  "total": 198,
+  "refs": [
+   "adapter-contract.md",
+   "angle-selection.md",
+   "autonomous-trigger.md",
+   "cadence.md",
+   "code-critique.md",
+   "confirmed-input-over-anchoring.md",
+   "counterweight-triage.md",
+   "premortem-decision.md",
+   "prepare-packet.md",
+   "release-critique.md",
+   "rename-critique.md",
+   "spec-critique.md"
+  ],
+  "core_pins": [
+   "Task-completing repo work always records critique before closeout.",
+   "Scale the\npass, not the obligation",
+   "When this standalone `critique` skill runs, it always means a fresh bounded\nsubagent review.",
+   "There\nis no same-agent or local standalone `critique` variant.",
+   "If the host blocks the canonical subagent path before execution, report",
+   "- `Execution`"
+  ],
+  "package_pins": [],
+  "forbidden": [
+   "short bounded local pass"
+  ]
+ },
+ {
+  "id": "gather",
+  "core": 149,
+  "left": 11,
+  "total": 200,
+  "refs": [
+   "adapter-contract.md",
+   "asset-refresh.md",
+   "browser-mediated-private-sources.md",
+   "capability-contract.md",
+   "document-seams.md",
+   "gather-provider.md",
+   "google-workspace-access.md",
+   "source-priority.md"
+  ],
+  "core_pins": [
+   "Prefer primary sources.",
+   "Refresh in place when the source identity matches.",
+   "local files before external summaries",
+   "browser-mediated fallback through `agent-browser`",
+   "- `Requested Facts`",
+   "- `Open Gaps`"
+  ],
+  "package_pins": [
+   "official API/export docs before browser automation",
+   "resolves a per-source provider mode from the adapter",
+   "Modes that the\nhost does not expose should be declared"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "spec",
+  "core": 148,
+  "left": 12,
+  "total": 198,
+  "refs": [
+   "acceptance-checks.md",
+   "ambiguity-rules.md",
+   "contract-modes.md",
+   "design-lenses.md",
+   "document-seams.md",
+   "evidence-durability.md",
+   "executable-spec-cost.md",
+   "fixed-probe-defer.md",
+   "ideation-boundary.md",
+   "impl-loop.md",
+   "ingest-and-refine.md",
+   "public-executable-contracts.md",
+   "rejected-alternatives.md",
+   "sequence-discipline.md",
+   "success-criteria.md",
+   "taxonomy-axis-checkpoint.md"
+  ],
+  "core_pins": [
+   "## Contract Shaping",
+   "Choose the lightest honest contract shape.",
+   "run success criteria review so future-success claims",
+   "call `critique` for non-trivial contract decisions",
+   "keep the contract",
+   "probe-friendly and visible instead of inventing a user-facing taxonomy choice.",
+   "- `Fixed Decisions`",
+   "- `Probe Questions`",
+   "- `Deferred Decisions`",
+   "- `Acceptance Checks`",
+   "- `First Implementation Slice`"
+  ],
+  "package_pins": [
+   "public executable contract",
+   "maintenance lint / implementation guard",
+   "python3 \"$SKILL_DIR/../../../scripts/plan_risk_interrupt.py\" --repo-root . --json 2>/dev/null || true",
+   "risk interrupt planner reports a forced debug interrupt",
+   "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "ideation",
+  "core": 147,
+  "left": 13,
+  "total": 188,
+  "refs": [
+   "agent-human-lens.md",
+   "concept-architecture.md",
+   "decision-question-response.md",
+   "effectuation.md",
+   "sequence-discipline.md",
+   "spec-boundary.md",
+   "structured-questions.md",
+   "truth-and-edge.md",
+   "world-modeling.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "retro",
+  "core": 146,
+  "left": 14,
+  "total": 185,
+  "refs": [
+   "adapter-contract.md",
+   "expert-lens.md",
+   "mode-guide.md",
+   "phase-aware-efficiency.md",
+   "section-guide.md",
+   "trigger-and-persistence.md",
+   "waste-sibling-scan.md",
+   "weekly-trends.md"
+  ],
+  "core_pins": [
+   "If the user correctly points out a missed issue",
+   "`Persisted`: whether the retro was written to a durable artifact",
+   "never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`",
+   "Trigger a short `session` retro automatically when a user correction exposes a"
+  ],
+  "package_pins": [
+   "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
+   "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "narrative",
+  "core": 144,
+  "left": 16,
+  "total": 187,
+  "refs": [
+   "adapter-contract.md",
+   "brief-shape.md",
+   "cross-repo-issue-shaping.md",
+   "landing-rewrite-loop.md",
+   "scenario-blocks.md",
+   "source-map.md"
+  ],
+  "core_pins": [
+   "map the current source-of-truth surface",
+   "rewrite the durable docs so the current story is honest in one place",
+   "If the idea is still under-shaped, use `ideation` first.",
+   "keep it audience-neutral by default",
+   "when the repo adapter declares `brief_template`, use that ordered skeleton",
+   "Hand off to `announcement` only when the user explicitly wants human-facing"
+  ],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "setup",
+  "core": 137,
+  "left": 23,
+  "total": 175,
+  "refs": [
+   "agent-docs-policy.md",
+   "bootstrap-seams.md",
+   "default-surfaces.md",
+   "github-actions-defaults.md",
+   "greenfield-flow.md",
+   "normalization-flow.md",
+   "operator-acceptance-synthesis.md",
+   "probe-surface.md",
+   "retro-memory-seam.md"
+  ],
+  "core_pins": [
+   "normalize",
+   "AGENTS.md",
+   "CLAUDE.md",
+   "into one explicit host-facing policy",
+   "optional Charness seams",
+   "bootstrap-seams.md",
+   "runtime ownership",
+   "already delegated"
+  ],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "handoff",
+  "core": 125,
+  "left": 35,
+  "total": 161,
+  "refs": [
+   "adapter-contract.md",
+   "chunked-routing.md",
+   "continuation-sequence.md",
+   "document-seams.md",
+   "spill-targets.md",
+   "state-selection.md",
+   "workflow-trigger.md"
+  ],
+  "core_pins": [
+   "mention-only pickup",
+   "Run a bounded misunderstanding critique when the handoff changed materially.",
+   "Assume a competent next operator can follow one good link",
+   "The handoff should usually contain:",
+   "- `Workflow Trigger`",
+   "- `Current State`",
+   "- `Next Session`",
+   "- `Discuss`",
+   "- `References`"
+  ],
+  "package_pins": [
+   "one reference to the owning artifact for metrics, history, or proof detail",
+   "always-loaded host instruction surfaces out of `References` by"
+  ],
+  "forbidden": []
+ },
+ {
+  "id": "hotl",
+  "core": 114,
+  "left": 46,
+  "total": 147,
+  "refs": [
+   "adapter-contract.md",
+   "ledger-and-dispositions.md",
+   "proof-rules.md"
+  ],
+  "core_pins": [],
+  "package_pins": [],
+  "forbidden": []
+ },
+ {
+  "id": "quality",
+  "core": 103,
+  "left": 57,
+  "total": 200,
+  "refs": [
+   "adapter-contract.md",
+   "adapter-gate-review.md",
+   "agent-production-runtime.md",
+   "automation-promotion.md",
+   "behavior-testing.md",
+   "bootstrap-escalations.md",
+   "bootstrap-posture.md",
+   "boundary-bypass-ratchet.md",
+   "brittle-source-guards.md",
+   "cautilus-on-demand.md",
+   "ci-recoverable-gate-triage.md",
+   "cli-ergonomics-smells.md",
+   "coverage-floor-policy.md",
+   "dual-implementation-parity.md",
+   "dup-ratchet.md",
+   "entrypoint-docs-ergonomics.md",
+   "executable-spec-economics.md",
+   "gate-classification.md",
+   "installable-cli-probes.md",
+   "inventory-dispatch.md",
+   "lint-ignore-discipline.md",
+   "maintainer-local-enforcement.md",
+   "mutation-testing.md",
+   "operability-signals.md",
+   "prompt-asset-policy.md",
+   "proposal-flow.md",
+   "public-spec-layering.md",
+   "quality-lenses.md",
+   "quality-signal-scorecard.md",
+   "sample-presets.md",
+   "security-npm.md",
+   "security-overview.md",
+   "security-pnpm.md",
+   "security-uv.md",
+   "skill-ergonomics.md",
+   "skill-quality.md",
+   "standing-doc-provenance.md",
+   "standing-gate-verbosity.md",
+   "startup-probes.md",
+   "testability-and-selection.md",
+   "unit-test-quality.md"
+  ],
+  "core_pins": [
+   "When the next quality move is repo-local, deterministic, and low-risk",
+   "implementing that gate in the same turn",
+   "when the automatable move is already clear and repo-owned, implement it in",
+   "If you stop short of an obvious repo-owned deterministic gate",
+   "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
+   "Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract",
+   "route the call through the repo-owned wrapper instead of bare `cautilus evaluate`"
+  ],
+  "package_pins": [
+   "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
+   "duplicated at the wrong layer",
+   "scaffold one consumer-side dogfood case with `python3 \"$SKILL_DIR/scripts/suggest_public_skill_dogfood.py\" --repo-root . --skill-id <skill-id>`"
+  ],
+  "forbidden": []
+ }
+]
