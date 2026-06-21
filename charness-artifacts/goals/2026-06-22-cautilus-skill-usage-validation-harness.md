@@ -13,10 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current disposition: real draft/backlog awaiting activation — shaped + plan-critiqued (4 blockers folded); reshape only if the acceptance boundary changes.
-- Current slice intent: real draft/backlog awaiting activation. Once active, this names the reviewable-intent unit in progress and the commits it spans; critique and broad proof do not re-fire within one unchanged intent.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness.md` after confirming the draft is still intended.
+- Current slice: Slice 2 — runner stream-json default + transcript artifact (Slice 1 de-risk DONE: contract confirmed against cautilus 181ebef7, matches corrected data flow, stop condition not triggered).
+- Current disposition: ACTIVE (pursued 2026-06-22). Slice 1 cleared; the corrected data flow holds verbatim — extractor (S3) builds against the recorded `skill_clone_experiment_input.v1` contract in `## Slice Log`.
+- Current slice intent: Slice 2 flips the eval runner to a natural stream-json transcript capture (drop forced-JSON) while preserving the normalized `--output-file`. Reviewable-intent unit = the runner change + its mirror sync; critique fires at this slice boundary.
+- Next action: implement Slice 2 — `scripts/agent-runtime/run-local-eval-test.mjs` stream-json default + persist transcript artifact; sync mirrors; runner smoke.
 - Verification cadence: cheap deterministic checks at commit boundaries; runner smoke + fresh-eye critique at slice boundaries; the one real Cautilus run at the External/Live boundary; broad gate at closeout.
 - Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`; final/bundle proof records the verification lock and uses `--verification-lock`.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed files and owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
@@ -91,7 +91,7 @@ What the user can do to verify completion directly.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | De-risk the Cautilus contract against `/home/hwidong/codes/cautilus` source | Slices 3–7 depend on the real shape; the proposal's transcript-is-input premise was wrong (BLOCKER-1) | Recorded: input schema `cautilus.skill_clone_experiment_input.v1`, `--input/--output` CLI, host-supplied `output.sourceRefs`, report schema + fields | planned |
+| 1 | De-risk the Cautilus contract against `/home/hwidong/codes/cautilus` source | Slices 3–7 depend on the real shape; the proposal's transcript-is-input premise was wrong (BLOCKER-1) | Recorded: input schema `cautilus.skill_clone_experiment_input.v1`, `--input/--output` CLI, host-supplied `output.sourceRefs`, report schema + fields | **done** (181ebef7; contract matches corrected flow; see Slice Log S1) |
 | 2 | Runner: stream-json default (drop forced-JSON) + persist transcript artifact; sync mirrors | Core capture step; flip is small (`claudeArgs`/`parseClaudeOutput` only) | `node --check` + runner smoke: transcript captured, normalized `--output-file` preserved, consumers green, mirrors synced | planned |
 | 3 | Keystone: transcript → `skill_clone_experiment_input.v1` extractor (sourceRefs capture) | The chain's keystone the original plan omitted; fixture + run both need it | Extractor unit: known transcript → expected `output.sourceRefs`; emitted JSON validates against the schema | planned |
 | 4 | Wire the wrapper invocation: justification-log + full `-- --input/--output` | Two-file roles (BLOCKER-3) must be correct or the run fails | `run_cautilus_eval.py --dry-run ... -- --input --output` accepts both the gate and the schema | planned |
@@ -122,6 +122,20 @@ safe local progress. Use `none — <reason>` when the queue is empty at closeout
 Phase routing defers to `find-skills` at the point of need — no inline phase→skill map is hardcoded here. Closeout coordination evidence (`Routing:` / `Gather:` / `Release:` / `Issue closeout:`) is recorded under `## Final Verification` / here at the After phase when the matching floor triggers.
 
 ## Slice Log
+
+### Slice 1: S1: De-risk Cautilus skill-experiment contract
+
+- Objective: Record the real cautilus skill-experiment contract from source (181ebef7), confirm the corrected data flow, clear the Slice-1 stop condition.
+- Why this approach: Goal mandates source-as-ground-truth (not the proposal prose); read the Go scorer directly rather than probing the binary.
+- Commits: none (research/de-risk slice; no code mutation)
+- What changed: No files changed. Findings recorded here + carried into S3 extractor design.
+- Alternatives rejected:
+- Targeted verification: Read internal/contracts/constants.go:69-70, internal/app/skill_experiment_command.go, internal/runtime/skill_clone_experiment.go (full), internal/app/app.go:200-201 (dispatch) + 2791-2818 (parseInputOutputArgs); cross-checked scripts/run_cautilus_eval.py passthrough.
+- Test duplication pressure:
+- Critique: n/a — pure research slice; no design lock yet. Fresh-eye critique reserved for the S2 runner-change and S3 extractor slices per the goal's verification plan.
+- Off-goal findings:
+- Lessons carried forward: CONTRACT CONFIRMED (matches corrected data flow; stop condition NOT triggered). (1) Input schema cautilus.skill_clone_experiment_input.v1 REQUIRED keys: schemaVersion, experimentId (non-empty), taskPacket (object w/ >=1 of path|sourceRef|schemaVersion|summary), baseline (object), variant (object). OPTIONAL: exemplar, sourceCoverageObligations (array of {id,ref,required?=true}), rubricPhrases (array of non-empty strings), isolation. (2) Run object: status one of passed|failed|blocked|degraded (default passed); sourceRefs merged from top-level sourceRefs + output.sourceRefs (unique-sorted); text = input.text||output.text||input.summary||output.summary. (3) CLI: cautilus evaluate skill-experiment --input <path> --output <path>; parseInputOutputArgs accepts ONLY --input/--output (else 'unknown argument'); --input required, --output optional->stdout. (4) GOTCHA isolationSafe = productionTouchDeclared && !productionTouched: a clean 'promote' REQUIRES input.isolation.productionSkillTouched:false explicitly; omitting isolation => isolationSafe=false => recommendation downgrades to 'revise'. (5) promotion_recommendation: discard if !variantRan; revise if !baselineComparable||!isolationSafe||lost>0||stillMissing>0||rubricMissing>0; promote if addedSourceCoverage>0||rubricGained>0; else discard. (6) Report schema cautilus.skill_clone_experiment_report.v1 fields: promotion_recommendation, source_coverage_delta, rubric_match, baseline_vs_variant_delta, variant_ran, baseline_comparable, findings, isolation_notes. (7) Wrapper: -- --input/--output forwarded verbatim; --justification-log wrapper-only; planner-none overridden by justification-log (printed note) = BLOCKER-4 confirmed.
+- Metrics:
 
 ## Context Sources
 
