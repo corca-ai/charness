@@ -13,18 +13,19 @@
 
 ## Current State
 
-- **Essence/deletion redesign — `impl` exemplar EXECUTED + PUSHED** (@ `6791cf4f`).
-  Distill to essence and **DELETE** duplication, not relocate. Lever: **the gate
-  pins mark the load-bearing essence, so delete the unpinned duplication around
-  them** (zero `check_skill_contracts.py`/test edits). Guardrails 9→2 via
-  `achieve`'s name-the-rule template; step 4 13→4 by deferring to
-  `verification-ladder.md`; 194→187; 2 fresh-eye `ESSENCE-PRESERVED`/`CONTRACT-HONEST`.
-  [critique](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md).
-- **Operator agreed (2026-06-21) to OPEN THE PINS** next — see `## Next Session`.
-  The impl cut was modest (7 lines) because unpinned-dup-only is the safe ceiling;
-  the deeper "less is more" is challenging the pins themselves.
-- **`main` red by one (environmental):** the `nose doctor` version-mismatch test
-  fails on clean HEAD too (this machine's nose vs the manifest). Item A owns it.
+- **Essence/deletion — `impl` exemplar shipped** (`6791cf4f`). Distill to essence
+  and **DELETE** duplication, not relocate. Lever: **gate pins mark the
+  load-bearing essence, so delete the unpinned dup around them** (zero
+  contract/test edits). Guardrails 9→2; step 4 13→4 deferring to
+  `verification-ladder.md`. The deeper "less is more" (open the pins) is in
+  `## Next Session`. [critique](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md).
+- **Item A DONE — `main` green + #394 coverage (test-only).** Standing-red was a
+  stale fixture (`make_fake_nose` `0.13.3` vs the bumped `>=0.14.0` floor → doctor
+  read `version-mismatch`); fixed to `0.14.0`. Suite green (2283 + 1189). #394's
+  changed-line target (`nose_report_lib.py:178`) covered + `build_items`
+  boundary-default mutants pinned; 1 fresh-eye `HONEST-AND-FAITHFUL`.
+  [critique](../charness-artifacts/critique/2026-06-21-green-main-394-coverage.md).
+  **#394 closure awaits the next CI mutation run — verify PASS, don't hand-close.**
 
 ## Next Session
 
@@ -34,13 +35,11 @@
 > canonically elsewhere (`CLAUDE.md` / a reference / another gate). Deleting a pin
 > deletes its test + contract row. **Body-read each issue — titles undersell.**
 
-- **A — Green `main` + #394 (FIRST — protect the oracle).** Opening pins deletes
-  tests, and the green suite is the losslessness oracle, so it must be trustworthy
-  before any pin comes out. Diagnose the standing-red `nose doctor`
-  version-mismatch (machine nose vs manifest); triage #394's 12 survived
-  *config-literal* mutants (`init_adapter.py` / `resolve_adapter.py` `...: True`).
-  Score passes (90% vs 80%).
-- **B — Essence rollout with pin-opening.** `debug` first (safe: the thrice-printed
+- **A — Green `main` + #394 — DONE this session.** Oracle is trustworthy:
+  whole suite green; the changed-line blocking target is covered; the
+  irreversible-boundary `build_items` mutants are pinned. Remaining: confirm the
+  next CI mutation run flips #394 to PASS (do not hand-close).
+- **B (now lead) — Essence rollout with pin-opening.** `debug` first (safe: the thrice-printed
   `issue resolve invokes the same substrate` cross-ref + helper-duplicating
   Bootstrap prose — unpinned dup, re-proves the recipe). Then **`quality` as the
   pin-opening pilot:** the anchor-split only *relocated* (191 body, **49 refs**) —

@@ -259,4 +259,14 @@ def test_init_adapter_scaffolds_resolvable_policy(tmp_path: Path) -> None:
     payload = policy.load_adapter(tmp_path)
     assert payload["found"] is True
     assert payload["valid"] is True
-    assert payload["data"]["closeout_publication"]["issue_closeout_carrier"] == "direct-commit"
+    data = payload["data"]
+    assert data["closeout_publication"]["issue_closeout_carrier"] == "direct-commit"
+    # Pin the irreversible-boundary defaults the scaffold ships: silently flipping
+    # any of these to False removes a human-confirmation / post-publish-verify gate
+    # at a publish boundary (a contract downgrade, not a refactor).
+    assert data["version"] == 1
+    assert data["closeout_publication"]["require_draft_validation"] is True
+    assert data["closeout_publication"]["require_post_publication_verify"] is True
+    assert data["closeout_publication"]["publish_requires_user_confirmation"] is True
+    assert data["auto_retro"]["allow_host_blocked_disposition_review_skip"] is True
+    assert data["auto_retro"]["allow_none_optout"] is True

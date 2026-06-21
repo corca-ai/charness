@@ -156,6 +156,27 @@ def test_collect_families_single_multiroot_query_and_stamps_version(monkeypatch)
     assert roots == ["scripts", "skills/public"]
 
 
+def test_collect_families_keeps_identityless_families_unkeyed(monkeypatch) -> None:
+    # A family with neither `id` nor `family_id` has no derivable identity, so it
+    # cannot be keyed/deduped. It must still survive into the output via the
+    # unkeyed branch — never be silently dropped (which would under-report a real
+    # clone family as a clean pass).
+    def fake_run(_repo, _command):
+        return {"status": "findings", "exit_code": 0, "stdout": "", "stderr": "",
+                "families": [{"id": "a"}, {"label": "no-identity"}], "tool_version": "",
+                "scope": {}, "ranking": {"total_families": 2, "shown_families": 2}}
+
+    monkeypatch.setattr(nr, "run_nose", fake_run)
+    monkeypatch.setattr(nr, "resolve_tool_version", lambda _bin: "0.14.0")
+    result = nr.collect_families(
+        REPO_ROOT, "nose", ["scripts"], mode="m", min_size=24, top=10, sort="extractability"
+    )
+    families = result["families"]
+    assert {"label": "no-identity"} in families  # identity-less family preserved (unkeyed branch)
+    assert any(nr.family_identity(f) == "a" for f in families)  # keyed family still present
+    assert len(families) == 2  # keyed + unkeyed: nothing dropped
+
+
 def test_collect_families_query_error_degrades_to_error(monkeypatch) -> None:
     def fake_run(_repo, _command):
         return {"status": "error", "exit_code": 1, "stdout": "", "stderr": "boom", "families": [], "tool_version": ""}
