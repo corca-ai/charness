@@ -293,8 +293,14 @@ both are external-write boundaries the goal contract scopes out by default).
     **dropped the #394/mutation gate** as a blocker (cron-only, auto-closes on the
     next tick). The 49-ref reduction stays deferred — `validate_skills` locks the
     list to the `references/` directory, so it is a per-file deletion audit, not a
-    trim. **Licensed next:** promote the pin-deletion test to a durable convention
-    and run the harness-wide pin sweep over all CORE/PACKAGE rows.
+    trim. **dup-ratchet friction (found):** editing `check_skill_contracts.py`
+    re-partitions nose's clone grouping of the 3 twin validators
+    (`validate_core_contract`/`validate_package_contract`/`validate_forbidden_snippets`,
+    lines 233–258) → count-neutral re-baseline (526→526, 2 ids swapped, zero new
+    dup) needed each push. **Licensed next (operator: do both):** (A, first)
+    extract the 3 twin validators into one helper to kill that friction and make
+    the file genuinely smaller; (B) run the harness-wide pin sweep over all
+    CORE/PACKAGE rows and promote the pin-deletion test to a durable convention.
 
 ## Discuss before activation
 

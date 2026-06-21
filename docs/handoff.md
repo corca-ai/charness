@@ -22,11 +22,9 @@
   [impl](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md),
   [debug](../charness-artifacts/critique/2026-06-21-debug-essence-deletion.md),
   [quality](../charness-artifacts/critique/2026-06-21-quality-pin-opening.md).
-- **Item A DONE — `main` green + #394 coverage (test-only).** Stale `make_fake_nose`
-  fixture (`0.13.3` vs the `>=0.14.0` floor) fixed; suite green (2283 + 1189);
-  #394 changed-line target covered + `build_items` boundary mutants pinned. The
-  mutation gate is cron-only (auto-closes #394 on the next tick) — operator
-  dropped it as a blocker; it no longer gates the sweep.
+- **`main` green + #394 coverage DONE (test-only).** Stale `make_fake_nose`
+  fixture fixed (`0.13.3` vs `>=0.14.0`); suite green (2283 + 1189). Mutation gate
+  is cron-only (auto-closes #394) — operator dropped it as a blocker.
 
 ## Next Session
 
@@ -36,16 +34,19 @@
 > canonically elsewhere (`CLAUDE.md` / a reference / another gate). Deleting a pin
 > deletes its test + contract row. **Body-read each issue — titles undersell.**
 
-- **A (lead) — harness-wide pin sweep (licensed by the `quality` pilot).** Apply
-  the disciplined pin test to every CORE/PACKAGE row in `check_skill_contracts.py`:
-  delete pins that freeze wording or are owned canonically elsewhere; **keep**
-  destructive-boundary guards (cautilus, publish confirmation). Promote the
-  pin-deletion test to a durable convention. **Friction:** each pin edit
-  re-partitions `check_skill_contracts.py` clones → count-neutral
-  `check_dup_ratchet.py --write-baseline` per push (or extract the 3 twin
-  validators once to stabilize it). The quality 49-ref reduction is a separate
-  per-file deletion audit (`validate_skills` locks the list to the directory —
-  not a trim, and `index.md` relocation is the rejected not-the-point move).
+- **A (do first) — extract the 3 twin validators in `check_skill_contracts.py`**
+  (`validate_core_contract` / `validate_package_contract` /
+  `validate_forbidden_snippets`, lines 233–258): fold the
+  exists→read→`in`/`not in`→raise shape into one helper. Kills the dup-ratchet
+  re-partition friction so B's pin edits don't each need a count-neutral
+  `check_dup_ratchet.py --write-baseline`. Fewer twins = the file is also
+  genuinely *less but better*, not just unblocked.
+- **B — harness-wide pin sweep (licensed by the `quality` pilot).** Apply the
+  disciplined pin test to every CORE/PACKAGE row: delete pins that freeze wording
+  or are owned canonically elsewhere; **keep** destructive-boundary guards
+  (cautilus, publish confirmation). Promote the pin-deletion test to a durable
+  convention. The quality 49-ref reduction is a separate per-file deletion audit
+  (`validate_skills` locks the list; `index.md` relocation is the rejected move).
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
