@@ -13,12 +13,14 @@
 
 ## Current State
 
-- **Essence/deletion — `impl` exemplar shipped** (`6791cf4f`). Distill to essence
-  and **DELETE** duplication, not relocate. Lever: **gate pins mark the
+- **Essence/deletion rollout — `impl` (`6791cf4f`) + `debug` shipped.** Distill to
+  essence and **DELETE** unpinned duplication, not relocate; **gate pins mark the
   load-bearing essence, so delete the unpinned dup around them** (zero
-  contract/test edits). Guardrails 9→2; step 4 13→4 deferring to
-  `verification-ladder.md`. The deeper "less is more" (open the pins) is in
-  `## Next Session`. [critique](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md).
+  contract/test edits). debug: 4× `issue resolve` substrate cross-ref → 1×
+  (causal-review.md owns the lens↔step map) + helper-bullet fold, 193→185,
+  fresh-eye `ESSENCE-PRESERVED`. Open-the-pins is in `## Next Session`. critiques:
+  [impl](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md),
+  [debug](../charness-artifacts/critique/2026-06-21-debug-essence-deletion.md).
 - **Item A DONE — `main` green + #394 coverage (test-only).** Standing-red was a
   stale fixture (`make_fake_nose` `0.13.3` vs the bumped `>=0.14.0` floor → doctor
   read `version-mismatch`); fixed to `0.14.0`. Suite green (2283 + 1189). #394's
@@ -39,12 +41,12 @@
   whole suite green; the changed-line blocking target is covered; the
   irreversible-boundary `build_items` mutants are pinned. Remaining: confirm the
   next CI mutation run flips #394 to PASS (do not hand-close).
-- **B (now lead) — Essence rollout with pin-opening.** `debug` first (safe: the thrice-printed
-  `issue resolve invokes the same substrate` cross-ref + helper-duplicating
-  Bootstrap prose — unpinned dup, re-proves the recipe). Then **`quality` as the
-  pin-opening pilot:** the anchor-split only *relocated* (191 body, **49 refs**) —
-  delete the anchors that fail the pin test (drop their dispatch entry + test pin)
-  and fold/kill reference sprawl, not just trim the body.
+- **B (now lead) — `quality` as the PIN-OPENING pilot.** `debug` done (safe, no
+  pins). `quality` is the consequential first real pin-opening: the anchor-split
+  only *relocated* (191 body, **49 refs**) — apply the disciplined pin test, delete
+  the anchors that fail it (drop their dispatch entry + test pin), and fold/kill
+  reference sprawl, not just trim the body. Surface the specific pinned-contract
+  deletions before committing — this is the operator-flagged frontier.
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result

@@ -10,8 +10,9 @@ Use this when the goal is to understand and resolve incorrect behavior without g
 `debug` is part of the execution cluster, but its job is diagnosis before
 repair. A bug investigation without a durable record only solves the current
 incident and wastes the next one. `debug` is callable directly when no
-GitHub issue exists; bug-class `issue resolve` invokes the same RCA
-substrate through `../issue/references/causal-review.md` Lens 1.
+GitHub issue exists; bug-class `issue resolve` invokes the same RCA substrate
+through `../issue/references/causal-review.md`, whose lenses map onto the debug
+steps below (so each step states its substrate once, not per lens).
 Do not run critique before the facts needed for diagnosis exist. Once a debug
 slice closes repo work, hands off a fix, or authorizes repair, record the
 required critique before closeout so the next move does not inherit an
@@ -37,16 +38,11 @@ using the same core debug sections.
 Edit the scaffold payload's `write_artifact_path`, not `latest.md` by habit; it
 resolves a symlinked current pointer to its actual target.
 
-Treat the scaffold helper as the canonical artifact contract shortcut:
-
-- it prints the default artifact path
-- it labels that path as the current pointer artifact
-- it prints the safe write target for a current-pointer scaffold, resolving a
-  symlinked `latest.md` when needed
-- it prints the required heading / section order
-- it points at the standing validator command for the current installed
-  Charness layout; consumer repos do not need Charness validator scripts copied
-  into their own `scripts/` directory
+The helper's JSON is the canonical artifact contract — it carries the safe write
+target, current-pointer role, required heading/section order, and the validator
+command for the installed Charness layout (consumer repos do not copy Charness
+validator scripts into their own `scripts/`). Use it instead of hand-typing the
+skeleton.
 
 Before stopping, run the `validator_command` emitted by the scaffold helper.
 Do not replace it with a guessed repo-local scripts path unless the emitted
@@ -102,9 +98,7 @@ as codebase memory rather than as stale trivia.
    - include environment, dependency, state, and control-flow causes alongside
      obvious logic bugs
    - walk from symptom to structural cause per
-     `references/five-whys-causal-chain.md` — `debug` is callable directly
-     when no GitHub issue exists; bug-class `issue resolve` invokes the same
-     substrate through `../issue/references/causal-review.md` Lens 1
+     `references/five-whys-causal-chain.md`
 5. Test a falsifiable hypothesis.
    - state what should change if the hypothesis is true
    - make the smallest change or observation that can verify or falsify it
@@ -116,12 +110,10 @@ as codebase memory rather than as stale trivia.
      end-to-end workflow proof
    - walk the existing detection surface per `references/detection-gap.md` and
      record which gate did not fire and the smallest change that would have
-     fired it; bug-class `issue resolve` invokes the same substrate through
-     `../issue/references/causal-review.md` Lens 2
+     fired it
    - walk the four-axis sibling scan per `references/sibling-search.md`,
      name the wrong mental model, classify each sibling decision, and record
-     proof level separately from the decision; bug-class `issue resolve` invokes
-     the same substrate through `../issue/references/causal-review.md` Lens 3
+     proof level separately from the decision
    - persist `valid follow-up outside the slice` siblings with a `follow-up:`
      identifier per `references/sibling-search.md`; missing it blocks closeout
    - trivial single-file fixes may record `n/a — trivial fix` in the detection
