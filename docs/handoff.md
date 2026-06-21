@@ -18,28 +18,30 @@
   disciplined pin-deletion test now a convention in the gate header). Gotcha:
   every `check_skill_contracts.py` edit re-rotates the validator clone family ->
   count-neutral dup-ratchet re-baseline (526->526); expect it on the next edit.
-- **Skill-structure audit DONE (read-only).** Raskin + north-star fan-out over
-  all 20 public skills: **split = 0, merge = 0, structure healthy**; body length
-  is ratchet-capped (not a lever). Map:
-  [2026-06-21 audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
-- **Quality reference merit-disposition DRAFT ready for critique (read-only).**
-  Per-ref merit assessment of all 41 quality `.md` refs against the skill's
-  current purpose (routing = signal, not value): **keep 34 / route-it 5 /
-  merge 2 / delete 0 — nothing is meaningless.** The defect is a discoverability
-  gap (valuable refs un-routed), not bloat; the routing heuristic over-flagged
-  (many "orphans" had eval/doc/script consumers). Proposal (with critique hooks):
-  [disposition proposal](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+- **Skill-structure audit DONE.** Raskin + north-star fan-out, 20 public skills:
+  split=0, merge=0, structure healthy. [audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
+- **Quality reference disposition critiqued + EXECUTED.** The 41-ref merit map was
+  adversarially critiqued (10-skeptic fan-out) then applied: **7 route-it + 2
+  merge-retire (files deleted), 0 deletes.** The critique corrected 4 anchors
+  (incl. a non-existent dispatch target), redirected both merges off the largest
+  ref, and added 2 route-it the draft missed. Full pin sweep green (validate_skills
+  / check_skill_contracts / 2283 quality_gates tests / doc-links / dup-ratchet);
+  mirror synced. Outcome + corrections:
+  [disposition proposal `## EXECUTED`](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
 
 ## Next Session
 
-- **START HERE — quality reference disposition.** The proposal carries the
-  LOCKED plan + critique hooks; follow it: critique → execute the 5 route-it + 2
-  merge fixes (pin-sweep apply-discipline) → empirically validate the post-fix
-  skill via `cautilus evaluate skill-experiment` (blind multi-scenario,
-  per-scenario `sourceCoverageObligations`, baseline-vs-variant; eval-only/
-  ask-before-run). Settled there: don't move bootstrap to setup; the lever is
-  routing quality not ref count; "unused in one run" ≠ dead. The broader 19-skill
-  rollout stays a verify-first "where to look" map; metric is concept clarity.
+- **START HERE — empirical validation (LOCKED plan step 2).** Critique + apply are
+  DONE; run `cautilus evaluate skill-experiment` on the post-fix quality skill: a
+  few BLIND per-lens scenarios, per-scenario `sourceCoverageObligations` (NOT all
+  41 — all-in-one-run is the anti-goal), baseline-vs-variant. Eval-only/
+  ask-before-run — consult `plan_cautilus_proof.py`, refuse on `next_action: none`,
+  route via `run_cautilus_eval.py`. A ref uncovered ACROSS scenarios is only then a
+  candidate (same disciplined verify, never auto-delete). Full design:
+  [proposal LOCKED plan](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+  **Push is HELD:** the 4 local commits (`ahead 4`) stay unpushed until this
+  validation confirms the routing — operator chose strict fix→validate→publish.
+  The broader 19-skill rollout stays a verify-first "where to look" map.
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result

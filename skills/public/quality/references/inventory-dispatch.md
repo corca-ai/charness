@@ -73,6 +73,8 @@ does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
 - standing test economics:
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py`
+- executable-spec runtime and dup economics:
+  `references/executable-spec-economics.md`
 - duplicate discovery and broad scanner waste:
   `$SKILL_DIR/scripts/inventory_structural_waste.py`
 - release-only sentinel coverage:
@@ -157,10 +159,17 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
 
 - dual implementation smell:
   `$SKILL_DIR/scripts/inventory_dual_implementation.py`
+  (`references/dual-implementation-parity.md` — the shared-schema /
+  exported-both / no-parity-harness signals, the three honest contracts, and the
+  weak-contract classification behind the advisory)
 - brittle source guards:
   `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`
+  (`references/brittle-source-guards.md` — the brittle / at_risk /
+  normalization_needed taxonomy, Recommendation Order, and policy-without-tool rule)
 - lint suppression pressure:
   `$SKILL_DIR/scripts/inventory_lint_ignores.py`
+  (`references/lint-ignore-discipline.md` — suppression pressure points, the
+  keep-it-narrow-and-cheaper-than-the-deferred-fix rule, and Retained Policy Ignores)
 - gitignore scan hygiene:
   `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py`
 - Python dead-code advisory:
@@ -173,7 +182,9 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
 When dual implementation smell is real, require one honest contract: parity
 harness, canonical side plus deletion/wrapper plan, or intentional divergence
 backed by an assertion. Treat first-run dead-code findings as advisory until
-the repo accounts for dynamic entrypoints.
+the repo accounts for dynamic entrypoints. For JavaScript/TypeScript, default to
+`knip` as the unused files/exports/dependencies advisory detector and keep it
+advisory until the repo proves low-noise findings and a clear cleanup action.
 
 ### Clone Families As Structural Signals
 
@@ -240,7 +251,9 @@ names, or artifacts may use different words for the same concept. Keep it
 advisory unless the adapter declares low-noise deprecated aliases.
 
 Use adapter/gate design review when adapter policy, recommendation queues,
-acknowledgements, migrations, or brittle gate promotion are in scope.
+acknowledgements, migrations, or brittle gate promotion are in scope; see
+`references/adapter-gate-review.md` for the finding_class / enforcement_tier
+glossary and the Template-First doctrine.
 
 Language baselines stay explicit.
 For Python, default to `ruff check` as the standing lint path, include `C90`,

@@ -79,7 +79,7 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      route the call through the repo-owned wrapper instead of bare `cautilus evaluate`.
      Supported modes are `fixture`, `observation`, `skill-experiment`; for
      recommend-only behavior tests use `references/behavior-testing.md`.
-4. Inspect four quality lenses.
+4. Inspect four quality lenses; the lens detail and named-expert defaults live in `references/quality-lenses.md`.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
    - `behavior`: do tests, evals, checks, probes, and command surfaces prove
@@ -87,7 +87,7 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
    - `security`: are code, secret, dependency, and supply-chain risks covered
      by repo-local proof or honestly deferred
    - `operability`: are setup, CI, hooks, docs, install/update flows, runtime
-     budgets, and maintenance surfaces honest enough to sustain the bar
+     budgets, and maintenance surfaces honest enough to sustain the bar (detail: `references/operability-signals.md`)
 5. Classify each finding by enforcement tier first: `AUTO_EXISTING`,
    `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
 6. Classify posture as `healthy`, `weak`, `missing`, or `defer`.
@@ -173,7 +173,6 @@ judgment that governs every route is in `## Workflow` and `## Guardrails`.
 - `references/public-spec-layering.md`
 - `references/quality-lenses.md`
 - `references/quality-signal-scorecard.md`
-- `references/sample-presets.md`
 - `references/security-overview.md`
 - `references/security-npm.md`
 - `references/security-pnpm.md`
@@ -182,7 +181,6 @@ judgment that governs every route is in `## Workflow` and `## Guardrails`.
 - `references/skill-ergonomics.md`
 - `references/standing-doc-provenance.md`
 - `references/standing-gate-verbosity.md`
-- `references/startup-probes.md`
 - `references/testability-and-selection.md`
 - `references/unit-test-quality.md`
 - `references/validate_spec_pytest_references.py`

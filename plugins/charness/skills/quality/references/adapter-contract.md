@@ -231,7 +231,9 @@ or agent-facing CLIs. Each record should include:
 
 - `label`
 - `command`
-- `class` (`standing` or `release`)
+- `class` (`standing` for cheap, repeatable probes that run in the normal quality
+  path, or `release` for launcher/packaging-sensitive probes that belong in
+  release proof rather than every local gate)
 - `startup_mode` (`warm`, `cold`, or `first-launch`)
 - `surface`
 - `samples`

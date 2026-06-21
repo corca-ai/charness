@@ -1,8 +1,10 @@
 # Quality reference disposition — DRAFT PROPOSAL (2026-06-21)
 
-**STATUS: draft for critique. Critique this before executing any disposition.**
-Next session starts by critiquing this map (adversarial fresh-eye), then executes
-only the approved items. Nothing here has been applied; the tree is clean.
+**STATUS: EXECUTED 2026-06-21.** The draft below is preserved as the pre-critique
+map. The adversarial fresh-eye critique ran and the approved (corrected)
+disposition was applied — see `## EXECUTED` at the end for the critique outcome,
+the corrections it forced, and the verification. Next step is the empirical
+Cautilus validation in the LOCKED plan, not re-applying this draft.
 
 ## Why this exists
 
@@ -154,3 +156,62 @@ So Cautilus CAN score whether a run meaningfully used the required references.
   be unused ACROSS the relevant scenarios before it is even a candidate — and then it
   gets the SAME disciplined verification, never auto-delete. "Unused in one run" ≠ dead,
   exactly like "un-routed" ≠ dead and "test-pinned" ≠ valuable.
+
+## EXECUTED (2026-06-21) — adversarial critique outcome + applied disposition
+
+The LOCKED plan's step-1 critique ran as an adversarial fresh-eye dynamic
+workflow (10 independent skeptics — 7 item-verifiers + the 3 named probes — →
+synthesis). Verdict: **all 7 items sound on merit (4 approve, 3 revise; 0
+rejected, 0 deletes confirmed).** The reframe held — every flagged ref earned
+keep/route on content; the defect was discoverability, not bloat.
+
+### Corrections the critique forced (all applied)
+- **operability-signals** — the proposal's alternate "dispatch operability entry"
+  does NOT exist (inventory-dispatch.md has no operability section). Routed ONLY
+  from the body operability lens (SKILL.md step 4 operability bullet).
+- **dual-implementation-parity** — the proposal's "concept lens" anchor routes
+  zero per-detail refs and risks the body-headroom ratchet. Routed from
+  inventory-dispatch.md Source Hygiene (beside `inventory_dual_implementation.py`).
+- **startup-probes / sample-presets merges** — both REDIRECTED off the
+  already-largest adapter-contract.md (503 lines). startup-probes' schema half is
+  already verbatim in adapter-contract.md L229-240 and its defaults+guardrail in
+  installable-cli-probes.md; only the standing-vs-release rationale survived
+  (folded as a one-line `class`-field note) plus the doctor≠fast-startup guardrail
+  (folded into installable-cli-probes.md). sample-presets' only unique survivor —
+  the knip advisory-gating policy — folded into inventory-dispatch.md's dead-code
+  prose (vulture is already in `presets/python-quality.md`). Both files DELETED +
+  de-listed ("not a delete" was true of content only — the file is gone, the
+  sentence relocates).
+- **NEW 6th route-it: quality-lenses** — keep-bias probe found it flat-list-only
+  with the identical discoverability defect the proposal already flagged. Routed
+  from SKILL.md step 4.
+- **7th route-it (consistency): lint-ignore-discipline** — the identical-state
+  Source Hygiene sibling to brittle-source-guards (script routed, prose un-routed);
+  routed beside its script in the same dispatch edit so the section stays consistent.
+
+### Proposal-map honesty fixes (no skill mutation)
+- **skill-quality ↔ skill-ergonomics:** dangling "reconcile" resolved as KEEP BOTH
+  (load-bearing divergence: ergonomics owns the `inventory_skill_ergonomics.py`
+  advisory contract; skill-quality owns the deterministic-gates/manual-findings
+  lens; ~15 test files; merge is high-risk for zero concept gain). Routing need is
+  already met — inventory-dispatch.md L62-64 carries a compact third copy of the
+  review-question checklist.
+- **security trio (npm/pnpm/uv):** drop "un-routed" — they ARE conditionally
+  routed from inventory-dispatch.md ("plus the relevant package-manager reference").
+  0-delete keep confirmed (genuine per-manager nuance; collapsing to one table
+  forces loading all managers — the proposal's own anti-goal).
+
+### Final applied tally
+route-it **7** (5 original + quality-lenses + lint-ignore) · merge/retire **2**
+(both retargeted, files deleted) · delete **0**.
+
+### Verification — full pin sweep, green
+validate_skills ✓ · check_skill_contracts ✓ · quality_gates pytest **2283 passed** ✓
+· doc-links ✓ · dup-ratchet ✓ (no re-baseline — edited files are not scanned
+clone-members) · plugin mirror synced.
+
+### Residual (deferred, not blocking)
+- operability-signals.md ↔ quality-lenses.md `## Operability` overlap is genuine
+  lens-detail-vs-summary, not duplication; a future dedup pass could reconcile.
+- Next per the LOCKED plan: empirical validation via `cautilus evaluate
+  skill-experiment` (ask-before-run; consult `plan_cautilus_proof.py` first).

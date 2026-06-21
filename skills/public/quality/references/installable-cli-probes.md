@@ -23,7 +23,8 @@ Check these seams explicitly:
 Review docs and runtime together:
 
 - startup latency claims should point at explicit measured probes, not generic
-  "CLI works" prose
+  "CLI works" prose; a passing `doctor`/health command is not proof of a fast
+  enough startup path
 - first-touch docs such as README and operator docs should describe install,
   update, doctor, reset, and uninstall behavior without conflating them
 - when one canonical bootstrap exists, prefer a pasteable README-first contract
