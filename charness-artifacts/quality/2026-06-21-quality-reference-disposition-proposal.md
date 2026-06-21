@@ -106,3 +106,51 @@ standing-doc-provenance, standing-gate-verbosity, testability-and-selection, uni
   + the quality docs tests + doc-links + dup-ratchet, and adversarially verify each,
   exactly as the pin sweep did. A "route-it" that moves a test-pinned phrase must
   move its test too.
+
+## LOCKED next-session plan (operator-agreed 2026-06-21)
+
+Sequencing: **fix the wrong parts first, then empirically validate** — do NOT
+restructure on theory.
+
+1. **Execute only the approved disposition fixes** (5 route-it + 2 merge above),
+   each under the pin-sweep apply-discipline (validate_skills + check_skill_contracts
+   + quality docs tests + doc-links + dup-ratchet; adversarial verify each; a moved
+   test-pinned phrase moves its test). Critique this proposal first.
+2. **Then run the empirical "does the skill actually operate as intended" test** on
+   the post-fix skill.
+
+### Rejected / settled
+- **Do NOT move bootstrap refs to `setup`.** quality's bootstrap = resolving its
+  OWN adapter/artifact/evaluator; `setup` = repo operating-surface bootstrap.
+  Same name, different concept — moving it creates cross-skill coupling (routing
+  maze) and is count-chasing relocation, not improvement. (Audit already found
+  quality↔setup boundary crisp, split=0.)
+- **The lever for "operate as intended" is ROUTING quality, not ref count.** A
+  healthy run loads body+dispatch then lazy-pulls ~3–5 in-scope refs, never all
+  41. The 5 route-it fixes directly improve this. "Fewer refs" is NOT the goal.
+
+### Empirical validation design (corrected — Cautilus DOES evaluate process)
+Verified against cautilus 0.15.4 / `../cautilus`: `cautilus evaluate skill-experiment`
+takes `sourceCoverageObligations` (id, ref, required) + `rubricPhrases` and the
+baseline/variant `sourceRefs`, and emits `source_coverage_delta` + `rubric_match`
++ `baseline_vs_variant_delta` + `promotion_recommendation` (promote/revise/discard).
+So Cautilus CAN score whether a run meaningfully used the required references.
+
+- **Instrument:** Cautilus does NOT run/trace the skill itself — a host runner
+  executes baseline + variant and supplies each run's `sourceRefs` (captured from
+  the run's actual reference reads / output citations). Cautilus scores coverage +
+  rubric against obligations. So transcript ref-capture and Cautilus are
+  complementary (transcript = input; Cautilus = the structured verdict).
+- **Scenarios, not one run:** a few BLIND runs ("아무 말 없이" — no leading context)
+  spanning the lenses (concept-heavy / CLI-shipping / security-heavy / skill-authoring
+  repo). Per scenario, `sourceCoverageObligations` lists only the refs that SHOULD
+  be in scope for THAT task — NOT all 41 (all-refs-in-one-run is an anti-goal; a run
+  that pulls everything is a scoping red flag).
+- **A/B:** use baseline (current 41-ref skill) vs a variant (post-fix, or a
+  deliberately leaner ref set) to get `baseline_vs_variant_delta` + promote/revise/discard.
+- **Honor eval-only:** ask-before-run; consult `plan_cautilus_proof.py`; refuse on
+  `next_action: none`; route via `run_cautilus_eval.py`, never bare `cautilus evaluate`.
+- **Decision rule (the load-bearing lesson, 3rd time):** a ref unused/uncovered must
+  be unused ACROSS the relevant scenarios before it is even a candidate — and then it
+  gets the SAME disciplined verification, never auto-delete. "Unused in one run" ≠ dead,
+  exactly like "un-routed" ≠ dead and "test-pinned" ≠ valuable.

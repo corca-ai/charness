@@ -32,15 +32,14 @@
 
 ## Next Session
 
-- **START HERE — critique the quality reference disposition proposal**, then
-  execute the approved items. The proposal carries explicit critique hooks
-  (keep-bias, no-holistic-dedup, merge-target bloat, route targets). Route/merge
-  edits touch SKILL.md References + dispatch + maybe tests — apply the pin-sweep
-  discipline (validate_skills + check_skill_contracts + quality docs tests +
-  doc-links + dup-ratchet, adversarial verify each; a moved test-pinned phrase
-  moves its test too). The broader 19-skill rollout stays a "where to look" map
-  only — verify each flag against tests first (this session's false-positive rate
-  was high); metric is concept clarity, never line count.
+- **START HERE — quality reference disposition.** The proposal carries the
+  LOCKED plan + critique hooks; follow it: critique → execute the 5 route-it + 2
+  merge fixes (pin-sweep apply-discipline) → empirically validate the post-fix
+  skill via `cautilus evaluate skill-experiment` (blind multi-scenario,
+  per-scenario `sourceCoverageObligations`, baseline-vs-variant; eval-only/
+  ask-before-run). Settled there: don't move bootstrap to setup; the lever is
+  routing quality not ref count; "unused in one run" ≠ dead. The broader 19-skill
+  rollout stays a verify-first "where to look" map; metric is concept clarity.
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
