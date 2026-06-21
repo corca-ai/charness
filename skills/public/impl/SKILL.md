@@ -60,16 +60,15 @@ Adapter policy:
   `<repo-root>/.agents/impl-adapter.yaml` early
 - treat the verification survey as onboarding, not a closing nicety: look for
   the best self-verification path before you code and again before you stop
-- if `charness worktree doctor --json` reports a non-pass status, surface the
-  recommended next action (typically `charness worktree prepare`) and have the
-  operator run it before mutating code; do not auto-run prepare and do not
-  silently proceed past missing hook-manager state
+- run the worktree readiness probe below; when `charness worktree doctor`
+  reports a non-pass status, surface the recommended next action (usually
+  `charness worktree prepare`) for the operator to run — do not auto-run prepare
+  and do not silently proceed past missing hook-manager state
 
 ## Worktree Readiness
 
-Run the non-fatal readiness probe before mutating code — the adapter-policy
-worktree rule above governs the response; skip silently when `charness` is not on
-PATH so it never blocks a repo that does not consume charness.
+Run the non-fatal readiness probe before mutating code; skip silently when
+`charness` is not on PATH so it never blocks a repo that does not consume charness.
 
 ```bash
 command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
@@ -78,11 +77,11 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 ## Workflow
 
 1. Ingest the current slice.
-   - identify the canonical artifact for the work or write an inline
-     current-slice contract before changing code
-   - restate the current slice in implementation terms
-   - list the acceptance checks that must pass before stopping
-   - when user-corrected behavior starts or redirects the work, classify stable contract vs better case reading before adding repo rules, tests, or gates
+   - identify the canonical artifact or write an inline current-slice contract
+     before changing code; restate the slice in implementation terms and list
+     the acceptance checks that must pass before stopping
+   - when user-corrected behavior starts or redirects the work, classify stable
+     contract vs better case reading before adding repo rules, tests, or gates
    - if the risk interrupt planner reports a forced interrupt, do not continue
      plain implementation until the named spec handoff says this slice may
      proceed honestly
@@ -94,59 +93,61 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
      the contract before stopping
 3. Implement the smallest meaningful unit.
    - prefer a slice that proves one user-visible behavior or one structural seam
-   - prefer the slice that opens the next good move most cleanly
-   - when a probe exists, design the slice so it answers the probe cleanly
-   - for judgment-quality corrections, preserve the boundary: direct answer, smaller guidance, or no repo change yet may be correct
-   - apply `../../shared/references/source-bound-records.md` for multi-source external writes
-   - for skill packages, scheduled workflows, or external lookup contracts, use
-     the prescribed path from `SKILL.md`, not an author-composed smoke probe
-   - when an active `achieve` goal artifact exists, treat it as the slice memory surface and append slice evidence per `../../shared/references/active-goal-coordination.md`
-4. Verify with the strongest honest path.
-   - survey repo and adapter capabilities before coding and again before stopping
-   - prefer executed proof over code inspection when an executable path exists
+     and opens the next good move most cleanly; when a probe exists, design the
+     slice to answer it cleanly
+   - for judgment-quality corrections, preserve the boundary: a direct answer,
+     smaller guidance, or no repo change yet may be correct
+   - apply `../../shared/references/source-bound-records.md` for multi-source
+     external writes, and the prescribed path from `SKILL.md` (not an
+     author-composed smoke probe) for skill packages, scheduled workflows, or
+     external lookup contracts
+   - when an active `achieve` goal artifact exists, treat it as the slice memory
+     surface and append slice evidence per `../../shared/references/active-goal-coordination.md`
+4. Verify with the strongest honest path. `references/verification-ladder.md`
+   owns the per-surface rules — browser output, the lint gate, external /
+   third-party APIs, and the completion-report categories. Prefer executed proof
+   over code inspection, resolve runtime support via `find-skills`, and when
+   runtime proof is unavailable say explicitly that it did not run.
    - for validation-shaped review, closeout, or operator reading work, run
      deterministic gates first; query evaluator tools only for explicit behavior
      evaluation, prompt regression, baseline compare, or insufficient local proof
-   - add or strengthen checks when an important branch would otherwise stay unproven
-   - for browser-facing output, the lint gate, and external named targets / third-party
-     APIs, follow the per-surface proof rules in `references/verification-ladder.md`
-     (resolve runtime support via `find-skills`; say explicitly that it did not run when
-     runtime proof is unavailable)
-   - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply `../../shared/references/prescribed-path-self-test.md`
-   - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
-   - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
-   - generic review or closeout wording must not silently launch Cautilus
-   - prompt-affecting diffs alone do not require live Cautilus; keep deterministic validation local, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` only for explicit log-backed behavior proof, and pair behavior-improving claims with `cautilus evaluate observation --input <observed.json>` baseline compare paths
-   - source, wiring, and guidance checks prove mechanism only; do not claim future semantic quality without targeted replay or evaluator comparison
-   - if stronger proof needs setup or permission, ask instead of silently
-     downgrading the claim
-   - when the slice crosses a worker → host → provider seam, label the highest
-     executed proof level per `../../shared/references/external-capability-proof-ladder.md`
+   - skill self-tests and delegated workflows follow
+     `../../shared/references/prescribed-path-self-test.md`; label a worker →
+     host → provider seam at its highest executed proof level per
+     `../../shared/references/external-capability-proof-ladder.md`
+   - if the slice changes repo-owned instruction or prompt surfaces (`AGENTS.md`,
+     public/support `SKILL.md`, behavior-steering references, adapter prompt
+     wording), let the repo's cautilus adapter decide prompt/evaluator proof
+     policy; generic review or closeout wording must not silently launch Cautilus
+   - keep deterministic validation local; use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
+     only for explicit log-backed behavior proof, pair behavior-improving claims
+     with `cautilus evaluate observation --input <observed.json>` baseline
+     compare, and treat source/wiring/guidance checks as mechanism-only — not
+     proof of future semantic quality
 5. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
-     check `<repo-root>/README.md` and the adapter's `truth_surfaces`
-   - update the relevant truth surfaces before stopping
-   - re-read `Fixed Decisions` and named acceptance checks
-   - confirm each item is reflected in the delivered slice or explicitly
-     deferred or reclassified in the contract
+     check `<repo-root>/README.md` and the adapter's `truth_surfaces` and update
+     them before stopping
+   - re-read `Fixed Decisions` and named acceptance checks; confirm each is
+     reflected in the delivered slice or explicitly deferred or reclassified in
+     the contract
 6. Run the stop gate.
    - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
    - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-subagent-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `critique` always means a fresh bounded subagent review, never a same-agent pass
-   - use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
+   - `critique` always means a fresh bounded subagent review, never a same-agent pass; use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
    - if the required critique is blocked because the host cannot provide
      subagents after the capability check, stop and record `Critique: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
 7. End with execution status.
-   - what changed, what was verified, and what truth surfaces moved
-   - what the critique found and what contract updates were made
-   - what remains for the next slice
+   - what changed, what was verified, what truth surfaces moved, what the
+     critique found, what contract updates were made, and what remains for the
+     next slice
    - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
      for the current repo, run a short `session` retro before the final stop
-   - if the user explicitly asked to keep going, treat this as a terse
-     progress checkpoint and continue into the next locally decidable slice
+   - if the user explicitly asked to keep going, treat this as a terse progress
+     checkpoint and continue into the next locally decidable slice
 
 ## Output Shape
 
@@ -158,25 +159,17 @@ runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
 
 ## Guardrails
 
-- Do not implement against a stale or imaginary contract, require a separate
-  `spec` session when an honest inline contract works, or silently expand scope.
-- Do not close a contract-backed slice without re-reading `Fixed Decisions` and
-  named acceptance checks against the delivered slice.
-- Do not treat commit, verification, or contract-sync completion as a default
-  pause when the user explicitly asked for autonomous continuation.
-- Do not stop after a user-visible change without checking whether `<repo-root>/README.md`
-  and adjacent durable truth surfaces are now stale.
-- Do not continue ordinary implementation past a forced debug interrupt just
-  because the local patch still looks tempting; let the planner and named spec
-  handoff decide whether plain `impl` is allowed.
-- If a branch or fallback matters to users or operators, prove it with the best
-  available verification capability instead of relying on code inspection alone.
-- If a stronger verification path exists but needs permissions, setup, or an
-  external tool, ask for it rather than pretending the weaker proof is enough.
-- Do not call a same-agent review a critique.
-- Do not commit a source-touching slice without recording `Lint Gate` per
-  `references/verification-ladder.md`.
-- If the required critique is blocked, stop instead of downgrading to a local substitute and still calling the slice reviewed.
+- The Workflow steps and the referenced ladders own the positive form of each
+  rule the guardrails would otherwise restate: no stale or imaginary contract
+  and no silent scope creep, re-reading `Fixed Decisions` before closeout, no
+  default pause under autonomous continuation, catching a stale
+  `<repo-root>/README.md` or truth surface, holding past a forced debug interrupt
+  until the named spec handoff allows plain `impl`, proving rather than inspecting
+  any user-facing branch or fallback, asking for stronger proof rather than
+  downgrading the claim, and recording `Lint Gate` per `references/verification-ladder.md`.
+- Do not call a same-agent review a critique. If the required critique is
+  blocked, stop instead of downgrading to a local substitute and still calling
+  the slice reviewed.
 
 ## References
 

@@ -248,6 +248,26 @@ both are external-write boundaries the goal contract scopes out by default).
     [2026-06-21-quality-anchor-split](../critique/2026-06-21-quality-anchor-split.md).
     Two deferred NITs recorded there. The impl/debug/achieve bodies remain the follow-on
     (same recipe).
+  - **EXECUTED 2026-06-21 (the `impl` body redesign landed) — supersedes the S3
+    "deferred with cause (lossy: impl bullets distinct, one CORE-pinned)" note.**
+    Operator reframed the work: distill to essence + DELETE duplication, not
+    relocate (`less but better`, progressive disclosure). The clean cut the prior
+    pass thought was blocked is the **unpinned duplication around the pins** — the
+    gate pins (CORE/PACKAGE contracts + impl/cautilus test asserts) mark the
+    load-bearing essence, so deleting everything unpinned-and-duplicated needs
+    **zero** edits to `check_skill_contracts.py` or any test. Guardrails 9→2 via
+    `achieve`'s name-the-rule-don't-restate pattern (the in-repo template);
+    Workflow step 4 13 sub-bullets→4 by deferring browser/lint/external-API/
+    completion-report rules to `references/verification-ladder.md` (which already
+    owns them); worktree-doctor bullet consolidated; 194→187 lines. Proof: full
+    `tests/quality_gates/` = 2283 passed; `check_skill_contracts` (13 core + 8
+    package), `validate_skills`, ergonomics, markdown, doc-links, mirror-drift all
+    green; 2 distinct fresh-eye reviewers `ESSENCE-PRESERVED` /
+    `CONTRACT-HONEST-AND-FAITHFUL`. dogfood case[12] consumer contract re-frozen
+    (scenario review: `impl-adapter-bootstrap` unchanged). Critique:
+    [2026-06-21-impl-essence-deletion](../critique/2026-06-21-impl-essence-deletion.md).
+    Recipe now proven; `debug` (triple cross-ref, helper-prose) + `quality`
+    (relocated-not-deleted, 49 refs) are the next exemplar-rollout targets.
 
 ## Discuss before activation
 
