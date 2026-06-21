@@ -13,37 +13,38 @@
 
 ## Current State
 
-- **Pin sweep DONE (A+B), `ahead 2` on `origin/main` — UNPUSHED.**
-  - A (`1f58af89`): folded the 3 twin validators in `check_skill_contracts.py`
-    into one `_assert_snippet_membership` helper. Behavior byte-identical; this is
-    the F4 "stabilize the file" cleanup.
-  - B (`18467e56`): harness-wide audit of **all 128** CORE/PACKAGE/FORBIDDEN pins
-    via a classify + adversarial-refute fan-out — **126/128 KEEP** (the set is
-    already tight). Only 2 wording-freeze fragments deleted: spec CORE
-    `keep the contract`, create-skill PACKAGE `keep manifest` (both fully owned by
-    surviving sibling pins; no SKILL.md prose change). The **disciplined
-    pin-deletion test is now a durable convention in the gate header** — judgment,
-    not a self-classifying gate; fewer-pins is explicitly NOT the metric.
-  - Gotcha: every `check_skill_contracts.py` edit re-rotates the validator clone
-    family -> count-neutral dup-ratchet re-baseline (526->526, delta 4). Expect it
-    again on the next edit; it's case-2 rotation, not new duplication.
-  - Verified: broad pytest **2287 passed**; fresh-eye `SAFE TO COMMIT` on both slices.
+- **Pin sweep shipped** (pushed, `main` clean): validator fold (`1f58af89`) +
+  harness-wide pin audit (`18467e56`, **126/128 keep**, 2 wording-freeze deleted,
+  disciplined pin-deletion test now a convention in the gate header). Gotcha:
+  every `check_skill_contracts.py` edit re-rotates the validator clone family ->
+  count-neutral dup-ratchet re-baseline (526->526); expect it on the next edit.
+- **Skill-structure audit DONE (read-only, nothing committed but the map).**
+  Raskin + north-star fan-out over all 20 public skills:
+  **split = 0, merge = 0, structure healthy**; body length is ratchet-capped
+  (not a lever). The only recurring flag was reference duplication — but the
+  **`quality` ref-dedup pilot proved those flags are mostly false positives**:
+  all 3 quality flags are load-bearing/test-pinned (deleting `quality-lenses.md`
+  broke 3 tests; `skill-quality`/`skill-ergonomics` are wired into ~15 tests).
+  Same outcome as the pin sweep: the surface is already disciplined. Full map +
+  per-skill leads: [2026-06-21 audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
 
 ## Next Session
 
-- **Push A+B first** (see Discuss) — outward call, pre-push **full** gate applies
-  (touches `scripts/` + `charness-artifacts/`).
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +
   route-level trace + a regression fixture. Scope call at pickup (see Discuss).
+- **Ref-dedup rollout (deferred, was "B"):** NOT a deletion sweep. Per-skill flags
+  in the audit map are a "where to look" hint only — **verify each against the
+  test suite first** (pilot false-positive rate was 3/3). Real fixes are
+  content-move refactors (move pinned bullets + their tests, then retire), not
+  deletes. Low expected yield; metric stays concept clarity.
 - **Parked:** #394 (mutation cron-only, auto-closes). #371 (upstream-blocked
   vercel-labs/agent-browser#1334). #391 extraction candidates.
 
 ## Discuss
 
-- **Push A+B?** 2 local commits await an outward push decision; nothing blocks them.
 - **#392 scope (decide at pickup of D):** attempt a real exact-X route
   (browser/auth — likely infeasible) vs commit to the typed-unsupported contract.
 - **D31 still manual:** the chunker does not reconcile against recent commits, so
@@ -52,5 +53,7 @@
 ## References
 
 - [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
-  [deferred-decisions](./deferred-decisions.md); pin-sweep convention lives in
-  the [`check_skill_contracts.py`](../scripts/check_skill_contracts.py) gate header.
+  [deferred-decisions](./deferred-decisions.md),
+  [skill-structure audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md);
+  pin-sweep convention lives in the
+  [`check_skill_contracts.py`](../scripts/check_skill_contracts.py) gate header.
