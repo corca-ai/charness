@@ -18,28 +18,34 @@
   disciplined pin-deletion test now a convention in the gate header). Gotcha:
   every `check_skill_contracts.py` edit re-rotates the validator clone family ->
   count-neutral dup-ratchet re-baseline (526->526); expect it on the next edit.
-- **Skill-structure audit DONE (read-only, nothing committed but the map).**
-  Raskin + north-star fan-out over all 20 public skills:
-  **split = 0, merge = 0, structure healthy**; body length is ratchet-capped
-  (not a lever). The only recurring flag was reference duplication — but the
-  **`quality` ref-dedup pilot proved those flags are mostly false positives**:
-  all 3 quality flags are load-bearing/test-pinned (deleting `quality-lenses.md`
-  broke 3 tests; `skill-quality`/`skill-ergonomics` are wired into ~15 tests).
-  Same outcome as the pin sweep: the surface is already disciplined. Full map +
-  per-skill leads: [2026-06-21 audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
+- **Skill-structure audit DONE (read-only).** Raskin + north-star fan-out over
+  all 20 public skills: **split = 0, merge = 0, structure healthy**; body length
+  is ratchet-capped (not a lever). Map:
+  [2026-06-21 audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
+- **Quality reference merit-disposition DRAFT ready for critique (read-only).**
+  Per-ref merit assessment of all 41 quality `.md` refs against the skill's
+  current purpose (routing = signal, not value): **keep 34 / route-it 5 /
+  merge 2 / delete 0 — nothing is meaningless.** The defect is a discoverability
+  gap (valuable refs un-routed), not bloat; the routing heuristic over-flagged
+  (many "orphans" had eval/doc/script consumers). Proposal (with critique hooks):
+  [disposition proposal](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
 
 ## Next Session
 
+- **START HERE — critique the quality reference disposition proposal**, then
+  execute the approved items. The proposal carries explicit critique hooks
+  (keep-bias, no-holistic-dedup, merge-target bloat, route targets). Route/merge
+  edits touch SKILL.md References + dispatch + maybe tests — apply the pin-sweep
+  discipline (validate_skills + check_skill_contracts + quality docs tests +
+  doc-links + dup-ratchet, adversarial verify each; a moved test-pinned phrase
+  moves its test too). The broader 19-skill rollout stays a "where to look" map
+  only — verify each flag against tests first (this session's false-positive rate
+  was high); metric is concept clarity, never line count.
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +
   route-level trace + a regression fixture. Scope call at pickup (see Discuss).
-- **Ref-dedup rollout (deferred, was "B"):** NOT a deletion sweep. Per-skill flags
-  in the audit map are a "where to look" hint only — **verify each against the
-  test suite first** (pilot false-positive rate was 3/3). Real fixes are
-  content-move refactors (move pinned bullets + their tests, then retire), not
-  deletes. Low expected yield; metric stays concept clarity.
 - **Parked:** #394 (mutation cron-only, auto-closes). #371 (upstream-blocked
   vercel-labs/agent-browser#1334). #391 extraction candidates.
 
@@ -54,6 +60,7 @@
 
 - [recent-lessons](../charness-artifacts/retro/recent-lessons.md),
   [deferred-decisions](./deferred-decisions.md),
-  [skill-structure audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md);
+  [skill-structure audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md),
+  [quality ref disposition proposal](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md);
   pin-sweep convention lives in the
   [`check_skill_contracts.py`](../scripts/check_skill_contracts.py) gate header.
