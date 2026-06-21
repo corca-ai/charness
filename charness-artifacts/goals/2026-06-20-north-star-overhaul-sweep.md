@@ -268,6 +268,16 @@ both are external-write boundaries the goal contract scopes out by default).
     [2026-06-21-impl-essence-deletion](../critique/2026-06-21-impl-essence-deletion.md).
     Recipe now proven; `debug` (triple cross-ref, helper-prose) + `quality`
     (relocated-not-deleted, 49 refs) are the next exemplar-rollout targets.
+  - **Operator agreed 2026-06-21: OPEN THE PINS for the rollout.** impl stayed at
+    unpinned-dup-only (the safe ceiling); the agreed next step deletes gate-pinned
+    contracts too, under a disciplined test — a pin earns deletion only when it (a)
+    freezes wording rather than proving behavior, or (b) the behavior is owned
+    canonically elsewhere (`CLAUDE.md` / a reference / another gate). Deleting a pin
+    deletes its test + contract row, so **green `main` is the prerequisite** (the
+    green suite is the losslessness oracle): sequence is green-main → `debug`
+    (safe) → `quality` as the pin-opening pilot (undo the relocation + fold/kill
+    the 49-ref sprawl). Promote the pin-deletion test to a durable convention once
+    proven on `debug`/`quality`.
 
 ## Discuss before activation
 

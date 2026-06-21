@@ -13,48 +13,46 @@
 
 ## Current State
 
-- **Essence/deletion redesign — the `impl` exemplar EXECUTED this session.** The
-  steer: distill to essence and **DELETE** duplication, not relocate
-  (`less but better`, progressive disclosure). Key lever: **the gate pins mark the
-  load-bearing essence, so delete the unpinned duplication around them** — zero
-  edits to `check_skill_contracts.py` or any test. Guardrails 9→2 via `achieve`'s
-  name-the-rule template; Workflow step 4 13→4 by deferring to
-  `references/verification-ladder.md`; 194→187 lines; 2 fresh-eye
-  `ESSENCE-PRESERVED` / `CONTRACT-HONEST`.
+- **Essence/deletion redesign — `impl` exemplar EXECUTED + PUSHED** (@ `6791cf4f`).
+  Distill to essence and **DELETE** duplication, not relocate. Lever: **the gate
+  pins mark the load-bearing essence, so delete the unpinned duplication around
+  them** (zero `check_skill_contracts.py`/test edits). Guardrails 9→2 via
+  `achieve`'s name-the-rule template; step 4 13→4 by deferring to
+  `verification-ladder.md`; 194→187; 2 fresh-eye `ESSENCE-PRESERVED`/`CONTRACT-HONEST`.
   [critique](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md).
-- **Recipe now proven** — supersedes the sweep goal's "deferred-with-cause: lossy"
-  note. `quality`'s earlier anchor-split only **relocated** (191 body, 49 refs);
-  real deletion is still owed there.
+- **Operator agreed (2026-06-21) to OPEN THE PINS** next — see `## Next Session`.
+  The impl cut was modest (7 lines) because unpinned-dup-only is the safe ceiling;
+  the deeper "less is more" is challenging the pins themselves.
 - **`main` red by one (environmental):** the `nose doctor` version-mismatch test
-  fails on clean HEAD too (this machine's nose vs the manifest). Item B owns it.
+  fails on clean HEAD too (this machine's nose vs the manifest). Item A owns it.
 
 ## Next Session
 
-> This session the operator redirected from the prior green-main-first queue to
-> **skill essence**. The live thread is the exemplar rollout; the prior queue is
-> parked-but-pending below. **Body-read each issue — titles undersell.**
+> Operator agreed to **open the pins**: a gate-pinned skill contract is now
+> deletable under a disciplined test — a pin earns deletion only when it (a)
+> freezes wording rather than proving behavior, or (b) the behavior is owned
+> canonically elsewhere (`CLAUDE.md` / a reference / another gate). Deleting a pin
+> deletes its test + contract row. **Body-read each issue — titles undersell.**
 
-- **A — Essence/deletion rollout (live thread).** Apply the proven recipe to
-  `debug` then `quality`: (1) classify each block KEEP-essence / DISCLOSE-to-ref /
-  DELETE-duplication; (2) gate pins mark essence — delete the unpinned duplication
-  around them; (3) `achieve`'s Guardrails are the name-the-rule template;
-  (4) verify full `tests/quality_gates/` + 2 fresh-eye. `debug`: the thrice-printed
+- **A — Green `main` + #394 (FIRST — protect the oracle).** Opening pins deletes
+  tests, and the green suite is the losslessness oracle, so it must be trustworthy
+  before any pin comes out. Diagnose the standing-red `nose doctor`
+  version-mismatch (machine nose vs manifest); triage #394's 12 survived
+  *config-literal* mutants (`init_adapter.py` / `resolve_adapter.py` `...: True`).
+  Score passes (90% vs 80%).
+- **B — Essence rollout with pin-opening.** `debug` first (safe: the thrice-printed
   `issue resolve invokes the same substrate` cross-ref + helper-duplicating
-  Bootstrap prose. `quality`: delete the anchors the split relocated-not-deleted.
-  `achieve` already models the target.
-- **B — Green `main` + #394 triage (parked from prior queue).** Diagnose the
-  standing-red `nose doctor` version-mismatch (machine nose vs manifest); triage
-  #394's 12 survived *config-literal* mutants
-  (`init_adapter.py` / `resolve_adapter.py` `...: True`). Score passes (90% vs 80%).
-- **C — #387 one-pass goal-closeout shape report.** Every missing/malformed
-  required closeout line in one pass; fits `describe_goal_closeout_shape.py`
-  (describe-first preflight), not a new blocking floor.
+  Bootstrap prose — unpinned dup, re-proves the recipe). Then **`quality` as the
+  pin-opening pilot:** the anchor-split only *relocated* (191 body, **49 refs**) —
+  delete the anchors that fail the pin test (drop their dispatch entry + test pin)
+  and fold/kill reference sprawl, not just trim the body.
+- **C — #387 one-pass goal-closeout shape report.** Fits
+  `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +
   route-level trace + a regression fixture. Scope call at pickup (see Discuss).
-- **Parked:** #371 (upstream-blocked vercel-labs/agent-browser#1334; verify
-  `charness tool repair agent-browser`). #391 extraction candidates. D30/D31 in
-  [deferred-decisions.md](./deferred-decisions.md).
+- **Parked:** #371 (upstream-blocked vercel-labs/agent-browser#1334). #391
+  extraction candidates. D30/D31 in [deferred-decisions.md](./deferred-decisions.md).
 
 ## Discuss
 
