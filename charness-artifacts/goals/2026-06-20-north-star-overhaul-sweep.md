@@ -278,6 +278,15 @@ both are external-write boundaries the goal contract scopes out by default).
     (safe) → `quality` as the pin-opening pilot (undo the relocation + fold/kill
     the 49-ref sprawl). Promote the pin-deletion test to a durable convention once
     proven on `debug`/`quality`.
+  - **EXECUTED 2026-06-21:** green-`main` + #394 changed-line coverage landed
+    (`a6e5a192`, test-only — stale `make_fake_nose` fixture vs the `>=0.14.0`
+    floor); `debug` essence pass landed (`bb4dcc5b`, no pins, fresh-eye
+    `ESSENCE-PRESERVED`). `quality` scope CONFIRMED by operator = **conservative**:
+    open CORE pins 2–3 (the step-7 same-turn rule is stated twice → collapse to
+    one, keep pins 1+4) + their test asserts, **keep** the inline cautilus guard
+    (CORE pins 6–7 — load-bearing safety though `CLAUDE.md`/`cautilus-on-demand.md`
+    own it), fold the 49-ref list to inline-cited. Execution gated on #394 CI
+    confirming the oracle green (pending: last run keyed to `6791cf4f`, pre-push).
 
 ## Discuss before activation
 

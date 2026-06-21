@@ -41,12 +41,12 @@
   whole suite green; the changed-line blocking target is covered; the
   irreversible-boundary `build_items` mutants are pinned. Remaining: confirm the
   next CI mutation run flips #394 to PASS (do not hand-close).
-- **B (now lead) — `quality` as the PIN-OPENING pilot.** `debug` done (safe, no
-  pins). `quality` is the consequential first real pin-opening: the anchor-split
-  only *relocated* (191 body, **49 refs**) — apply the disciplined pin test, delete
-  the anchors that fail it (drop their dispatch entry + test pin), and fold/kill
-  reference sprawl, not just trim the body. Surface the specific pinned-contract
-  deletions before committing — this is the operator-flagged frontier.
+- **B (now lead) — `quality` pin-opening, scope LOCKED (operator: conservative).**
+  `debug` done. Open CORE pins 2–3 (step-7 states the same-turn rule twice →
+  collapse to one, keep pins 1+4) + their test asserts; **keep** the inline
+  cautilus guard (pins 6–7, load-bearing safety even though `CLAUDE.md` owns it);
+  fold the 49-ref list to inline-cited. **Gated: execute only after #394 CI
+  confirms the oracle green** (still pending; last run keyed to `6791cf4f`).
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
