@@ -13,49 +13,54 @@
 
 ## Current State
 
-- **#391 baseline `tool_version` stamp — RESOLVED + PUSHED** (@ `edd8bade`); **#391
-  stays OPEN** for its 3 extraction candidates. Both nose id-set baselines stamp the
-  producing nose version and WARN (never degrade) on scanner-version skew (additive, no
-  schema bump). [debug](../charness-artifacts/debug/2026-06-21-nose-baseline-tool-version-stamp.md).
-- **nose 0.14.0 floor + multi-root global clustering live**; both baselines at 526 ids,
-  stamped 0.14.0. First place to look if a consumer repo's clone gate behaves oddly.
+- **`quality` anchor-split EXECUTED + PUSHED** (@ `62224d9b`): `## Load-Bearing Anchors`
+  → routing in `inventory-dispatch.md` + judgment in Workflow/Guardrails + a `## Routing`
+  pointer (SKILL.md 200→191/200); lossless (green oracle + 3 fresh-eye). [critique](../charness-artifacts/critique/2026-06-21-quality-anchor-split.md).
+- **#391 `tool_version` stamp RESOLVED** (@ `edd8bade`); #391 stays OPEN for 3 extraction
+  candidates. nose 0.14.0 floor + multi-root clustering live; baselines 526 ids @ 0.14.0.
+- **`main` is red by one (pre-existing/environmental):** the `nose doctor` version-mismatch
+  test fails on clean HEAD too (this machine's nose vs the manifest). Item 1 owns it.
 
 ## Next Session
 
-> Pickup must **body-read the open issues**, not trust this list flat — a prior
-> session found #391's concrete fix buried under a tracking-issue title. Tiers below
-> are from a live-backlog read on 2026-06-21.
+> **Operator-decided order (2026-06-21): work 1 → 2 → 3 → 4 below** (gate-trust +
+> velocity first, external #392 last). **Body-read each issue — titles undersell.**
 
-- **Tier 1 — backlog clearing via the draft
-  [open-issue-hotl-closeout goal](../charness-artifacts/goals/2026-06-16-open-issue-hotl-closeout.md).**
-  Activate it to clear #387 (goal-closeout shape errors — one-pass repair report),
-  #392 (gather still cannot acquire exact X/Twitter posts after #338), #371
-  (agent-browser orphaned chromium trees + profile dirs). Body-read each first.
-- **Tier 2 — #391 extraction candidates + #394 triage.** #391's remaining open scope:
-  the cross-dir subprocess-timeout wrapper (7 sites), `scaffold_*_artifact.py`
-  scaffolding, `*_adapter_lib`/`_adapter_policy` logic — judgment per family ("decide
-  per family, don't chase the count"). #394 mutation regression re-fires on
-  changed-line coverage while the score passes — real-gap vs noise triage.
-- **Tier 3 — `quality` anchor-split EXECUTED; impl/debug/achieve bodies are the
-  same-recipe follow-on.** The `quality` `## Load-Bearing Anchors` catalog was dissolved
-  (routing → `inventory-dispatch.md`, CORE+judgment → Workflow/Guardrails, a `## Routing`
-  pointer replaced it; SKILL.md 200→191/200). Lossless by the green oracle
-  (`tests/quality_gates/` 2283 + contracts + 3 distinct-channel fresh-eye reviewers, zero
-  orphans); see the [critique](../charness-artifacts/critique/2026-06-21-quality-anchor-split.md)
-  and the sweep goal ODQ EXECUTED block. **Next:** apply the SAME recipe to the
-  impl/debug/achieve bodies (2 deferred NITs noted in the critique).
-- **Tier 4 — deferred ledger + ops.** D30 (dup-ratchet id-rotation affordance), D31
-  (handoff chunker reconcile-against-recent-commits) in
-  [deferred-decisions.md](./deferred-decisions.md); ceal #417; other-machine
-  `charness update all` (low-urgency).
+- **1 — Green `main` + #394 triage (FIRST).** Diagnose the standing-red
+  `nose doctor doctor_status == version-mismatch` (this machine's installed nose vs
+  the manifest's expected version — which is stale?). Coupled: #394's block is
+  changed-line coverage + 12 survived *config-literal* mutants
+  (`init_adapter.py` / `resolve_adapter.py` `...: True` dict values) — kill-worthy
+  vs typed-disposition, per mutant. Score itself passes (90% vs 80%).
+- **2 — #387 one-pass goal-closeout shape report.** List every missing/malformed
+  required closeout line (`Retro:` / `Host log probe:` / `Disposition review:`),
+  show the accepted shape, distinguish missing vs wrong-syntax — no flip-serial
+  discovery. Fits `describe_goal_closeout_shape.py` (describe-first preflight), not
+  a new blocking floor.
+- **3 — WS-B body redesigns + #391 extraction.** Apply today's anchor-split recipe
+  (concept-separate → verify lossless+contract-safe BEFORE cutting → re-point the
+  test oracle → fresh-eye) to impl/debug/achieve — only where a clean split verifies
+  (prior check flagged them concept-dense; some legitimately stay). #391 open scope:
+  subprocess-timeout wrapper (7 sites, clearest extract), `scaffold_*_artifact.py`,
+  `*_adapter_lib` / `_adapter_policy` — decide per family.
+- **4 — #392 gather-X honest-failure contract (LAST).** Exact X fetch is likely
+  infeasible (captcha/login-wall); deliver a typed result distinguishing
+  `exact-acquired | blocked-by-X | auth/browser-route-required | unsupported` +
+  route-level trace + a regression fixture, so Ceal stops retrying without losing
+  source identity. Scope call at pickup (see Discuss).
+- **Parked:** #371 (charness-side shipped v0.50.1 `charness tool repair agent-browser`;
+  upstream-blocked on vercel-labs/agent-browser#1334 — verify the cmd, leave open).
+  D30/D31 in [deferred-decisions.md](./deferred-decisions.md); ceal #417;
+  other-machine `charness update all` (low-urgency).
 
 ## Discuss
 
-- **D31 is still manual:** the handoff chunker does not yet reconcile against recent
-  commits, so a pickup must read `git log` by hand to de-stale the queue (done this
-  session to confirm #391). Worth pulling the slice if pickup keeps mis-prioritizing.
-- **Multi-root + version-stamp are live quality-contract surfaces** — a scanner bump
-  now self-detects (skew WARNING), but the doc-signature baseline stamp is deferred.
+- **#392 scope (decide at pickup of item 4):** attempt a real exact-X route
+  (browser/auth/syndication — likely infeasible) vs commit to the typed-unsupported
+  honest-failure contract only. Operator-decided priority puts this last.
+- **D31 still manual:** the chunker does not reconcile against recent commits, so a
+  pickup reads `git log` by hand to de-stale the queue (done again this session). Worth
+  pulling the slice if pickup keeps mis-prioritizing.
 
 ## References
 
