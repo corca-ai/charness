@@ -213,5 +213,49 @@ clone-members) · plugin mirror synced.
 ### Residual (deferred, not blocking)
 - operability-signals.md ↔ quality-lenses.md `## Operability` overlap is genuine
   lens-detail-vs-summary, not duplication; a future dedup pass could reconcile.
-- Next per the LOCKED plan: empirical validation via `cautilus evaluate
-  skill-experiment` (ask-before-run; consult `plan_cautilus_proof.py` first).
+- Next per the LOCKED plan: empirical validation (recorded below).
+
+## Empirical validation — DONE (blind baseline-vs-variant A/B, 2026-06-21)
+
+**Result: routing confirmed 7/7 — every routed ref reaches via a real pointer.**
+
+### Cautilus was NOT used — it stays gated, by contract (not by oversight)
+`plan_cautilus_proof.py` returned `next_action: "none"` + `must_ask_before_running:
+true`. Per `references/cautilus-on-demand.md` L17, `next_action: none` → **refuse,
+deterministic gates own closeout**; and `run_cautilus_eval.py` mandates a
+`--justification-log` naming an existing failing-prompt/transcript/operator-log/
+issue-log/regression-log. A *proactive* "does my routing improve ref usage?" check
+has no such behavior-source log, and fabricating one is the false-closeout the gate
+exists to stop. So Cautilus (which is only ever the *scorer* — a host runner must
+execute the skill and supply `sourceRefs`) was correctly skipped. The blind-runner
+ref-capture below is the in-policy realization of the same measurement.
+
+### Method
+Two isolated read-only worktrees — baseline `b01cee6b` (pre-fix: flat-listed refs +
+the 2 now-deleted files present) vs variant `5ded9f3a` (post-fix routing). Per
+scenario, two BLIND subagent runners (no A/B awareness, scoped to
+`skills/public/quality/` so neither arm sees the disposition notes) report which
+`references/*.md` they would consult and the EXACT pointer that routed them —
+`pointer` vs `flat-list-only` (discoverable only via the alphabetical `## References`
+list) vs `missed`. Non-blind judges classify each in-scope ref; a disambiguation
+re-probe resolved the one ambiguous case.
+
+### Result (every credit verified verbatim vs live source + pre-fix git tree)
+- source-hygiene: dual-implementation-parity / brittle-source-guards /
+  lint-ignore-discipline — all `flat-list-only` → `pointer`.
+- adapter-gate: adapter-gate-review — `flat-list-only` → `pointer`.
+- exec-spec: executable-spec-economics — `flat-list-only` → `pointer`.
+- operability: operability-signals — `flat-list-only` → `pointer`.
+- quality-lenses — `flat-list-only` → `pointer`. (First pass MISSED it in an
+  *operability* scenario; the disambiguation re-probe on a *general 4-lens-framework*
+  task — where it is the on-point ref — confirmed the variant reaches it via the
+  step-4 pointer while baseline could only flat-list it. The operability miss was
+  CORRECT specificity, not a weak anchor — honoring "one missed run ≠ dead": we
+  disambiguated rather than auto-tweaking.)
+
+### Verdict: SHIP. No tweak needed.
+The disposition delivers its discoverability goal — pre-fix these refs were
+reachable only by scanning a 40-line alphabetical list; post-fix a blind run is
+routed straight to each from the point of need. This is the signal the deterministic
+gates and fresh-eye review structurally cannot produce (they prove a pointer
+*exists*; the blind A/B proves it is *followed*).

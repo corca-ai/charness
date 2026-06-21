@@ -26,23 +26,19 @@
   (incl. a non-existent dispatch target), redirected both merges off the largest
   ref, and added 2 route-it the draft missed. Full pin sweep green (validate_skills
   / check_skill_contracts / 2283 quality_gates tests / doc-links / dup-ratchet);
-  mirror synced. Outcome + corrections:
-  [disposition proposal `## EXECUTED`](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+  mirror synced. **Blind baseline-vs-variant A/B then validated the routing — all 7
+  routed refs reach via a real pointer (flat-list-only pre-fix); Cautilus stayed
+  gated by contract (`next_action: none`), blind-runner ref-capture was the in-policy
+  substitute.** Outcome + corrections + validation:
+  [disposition proposal](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
 
 ## Next Session
 
-- **START HERE — empirical validation (LOCKED plan step 2).** Critique + apply are
-  DONE; run `cautilus evaluate skill-experiment` on the post-fix quality skill: a
-  few BLIND per-lens scenarios, per-scenario `sourceCoverageObligations` (NOT all
-  41 — all-in-one-run is the anti-goal), baseline-vs-variant. Eval-only/
-  ask-before-run — consult `plan_cautilus_proof.py`, refuse on `next_action: none`,
-  route via `run_cautilus_eval.py`. A ref uncovered ACROSS scenarios is only then a
-  candidate (same disciplined verify, never auto-delete). Full design:
-  [proposal LOCKED plan](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
-  **Push is HELD:** the 4 local commits (`ahead 4`) stay unpushed until this
-  validation confirms the routing — operator chose strict fix→validate→publish.
-  The broader 19-skill rollout stays a verify-first "where to look" map.
-- **C — #387 one-pass goal-closeout shape report.** Fits
+- **Quality-ref disposition FULLY DONE** — critiqued + executed + blind-A/B
+  validated (routing 7/7 reach-via-pointer). Commits may be HELD unpushed pending
+  operator push (`git log origin/main..HEAD`); push when ready. The broader
+  19-skill rollout stays a verify-first "where to look" map, not a deletion sweep.
+- **START HERE — C / #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +
