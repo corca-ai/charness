@@ -22,6 +22,25 @@ REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
 # PACKAGE_CONTRACTS, where they may live in SKILL.md or references/*. This keeps
 # the gate useful during skill compression without forcing SKILL.md to carry an
 # ever-growing anchor catalog.
+#
+# Disciplined pin-deletion test (operator-agreed; piloted on quality, swept
+# harness-wide 2026-06-21). A pin earns deletion ONLY when:
+#   (a) it FREEZES WORDING — a redundant restatement (a doubled phrase, or a
+#       sub-fragment of a sentence) whose rule a SURVIVING pin already proves, so
+#       deleting it loses no behavioral proof; or
+#   (b) the behavior is OWNED CANONICALLY ELSEWHERE that genuinely fails closed
+#       (another gate/validator, a checked-in reference the gate already pins, or
+#       always-loaded CLAUDE.md) — prove the owner catches the failure before
+#       deleting, never assume it.
+# KEEP otherwise. Keep destructive-boundary guards (cautilus point-of-use,
+# "Do not push, tag, or announce a release without explicit user confirmation")
+# even when owned elsewhere — point-of-use teeth stay. Keep pins that prove a
+# distinct behavioral rule or anchor a required Output Shape.
+# Deleting a pin removes its row here (and, if it froze DOUBLED prose, distill
+# that prose in the SKILL.md). This is JUDGMENT, not a count game: fewer pins is
+# not the goal and bulk deletion is a north-star failure signature — the metric
+# is concept clarity and genuine-redundancy removal. So it is a documented
+# discipline, never a self-classifying gate.
 CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/critique/SKILL.md": (
         "Task-completing repo work always records critique before closeout.",
@@ -65,7 +84,6 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Choose the lightest honest contract shape.",
         "run success criteria review so future-success claims",
         "call `critique` for non-trivial contract decisions",
-        "keep the contract",
         "probe-friendly and visible instead of inventing a user-facing taxonomy choice.",
         "- `Fixed Decisions`",
         "- `Probe Questions`",
@@ -154,7 +172,6 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/create-skill/SKILL.md": (
         "For `evaluator-required` skills, treat maintained scenario coverage and",
-        "keep manifest",
         "metadata rich enough to reveal capability kind and supported access modes",
         "express them as manifest readiness checks",
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
