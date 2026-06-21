@@ -230,32 +230,40 @@ def _package_text(path: Path) -> str:
     return "\n".join(parts)
 
 
-def validate_core_contract(path: Path, snippets: tuple[str, ...]) -> None:
+def _read_contract_text(path: Path) -> str:
     if not path.exists():
         raise ValidationError(f"missing representative contract file `{path}`")
-    contents = path.read_text(encoding="utf-8")
-    missing = [snippet for snippet in snippets if snippet not in contents]
-    if missing:
-        formatted = ", ".join(f"`{snippet}`" for snippet in missing)
-        raise ValidationError(f"{path}: missing required core contract snippet(s): {formatted}")
+    return path.read_text(encoding="utf-8")
+
+
+def _assert_snippet_membership(
+    path: Path, contents: str, snippets: tuple[str, ...], *, forbidden: bool, message: str
+) -> None:
+    violations = [snippet for snippet in snippets if (snippet in contents) == forbidden]
+    if violations:
+        formatted = ", ".join(f"`{snippet}`" for snippet in violations)
+        raise ValidationError(f"{path}: {message}: {formatted}")
+
+
+def validate_core_contract(path: Path, snippets: tuple[str, ...]) -> None:
+    _assert_snippet_membership(
+        path, _read_contract_text(path), snippets,
+        forbidden=False, message="missing required core contract snippet(s)",
+    )
 
 
 def validate_package_contract(path: Path, snippets: tuple[str, ...]) -> None:
-    contents = _package_text(path)
-    missing = [snippet for snippet in snippets if snippet not in contents]
-    if missing:
-        formatted = ", ".join(f"`{snippet}`" for snippet in missing)
-        raise ValidationError(f"{path}: missing required package contract snippet(s): {formatted}")
+    _assert_snippet_membership(
+        path, _package_text(path), snippets,
+        forbidden=False, message="missing required package contract snippet(s)",
+    )
 
 
 def validate_forbidden_snippets(path: Path, snippets: tuple[str, ...]) -> None:
-    if not path.exists():
-        raise ValidationError(f"missing representative contract file `{path}`")
-    contents = path.read_text(encoding="utf-8")
-    present = [snippet for snippet in snippets if snippet in contents]
-    if present:
-        formatted = ", ".join(f"`{snippet}`" for snippet in present)
-        raise ValidationError(f"{path}: forbidden contract snippet(s) present: {formatted}")
+    _assert_snippet_membership(
+        path, _read_contract_text(path), snippets,
+        forbidden=True, message="forbidden contract snippet(s) present",
+    )
 
 
 def main() -> int:
