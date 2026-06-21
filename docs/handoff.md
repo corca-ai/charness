@@ -13,32 +13,35 @@
 
 ## Current State
 
-- **Pin sweep shipped** (pushed, `main` clean): validator fold (`1f58af89`) +
-  harness-wide pin audit (`18467e56`, **126/128 keep**, 2 wording-freeze deleted,
-  disciplined pin-deletion test now a convention in the gate header). Gotcha:
-  every `check_skill_contracts.py` edit re-rotates the validator clone family ->
-  count-neutral dup-ratchet re-baseline (526->526); expect it on the next edit.
+- **Pin sweep shipped** (`1f58af89`+`18467e56`, 126/128 keep; disciplined
+  pin-deletion test in the gate header). Gotcha: editing `check_skill_contracts.py`
+  re-rotates the clone family → count-neutral dup-ratchet re-baseline.
 - **Skill-structure audit DONE.** Raskin + north-star fan-out, 20 public skills:
   split=0, merge=0, structure healthy. [audit](../charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md).
-- **Quality reference disposition critiqued + EXECUTED.** The 41-ref merit map was
-  adversarially critiqued (10-skeptic fan-out) then applied: **7 route-it + 2
-  merge-retire (files deleted), 0 deletes.** The critique corrected 4 anchors
-  (incl. a non-existent dispatch target), redirected both merges off the largest
-  ref, and added 2 route-it the draft missed. Full pin sweep green (validate_skills
-  / check_skill_contracts / 2283 quality_gates tests / doc-links / dup-ratchet);
-  mirror synced. **Blind baseline-vs-variant A/B then validated the routing — all 7
-  routed refs reach via a real pointer (flat-list-only pre-fix); Cautilus stayed
-  gated by contract (`next_action: none`), blind-runner ref-capture was the in-policy
-  substitute.** Outcome + corrections + validation:
+- **Quality reference disposition critiqued + EXECUTED + validated.** 41-ref merit
+  map → critique (10-skeptic, corrected 4 anchors + 2 merge targets) → **7 route-it +
+  2 merge-retire, 0 deletes**; full pin sweep green + mirror synced; blind A/B
+  confirmed routing **7/7 reach-via-pointer** (Cautilus gated, planner
+  `next_action: none`; blind-runner capture was the in-policy substitute). Detail:
   [disposition proposal](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+- **Headless-runner de-risk (B-smoke) DONE.** A real `claude -p` `quality` run
+  resolves headless, reads refs via routing, and **spawns the Step-8 fresh-eye
+  reviewer as a real subagent** (a subagent-runner can't see this). Gotcha:
+  `/quality` loads from the INSTALLED clone `~/.agents/src/charness` (old `f7bf5d2c`).
 
 ## Next Session
 
-- **Quality-ref disposition FULLY DONE** — critiqued + executed + blind-A/B
-  validated (routing 7/7 reach-via-pointer). Commits may be HELD unpushed pending
-  operator push (`git log origin/main..HEAD`); push when ready. The broader
-  19-skill rollout stays a verify-first "where to look" map, not a deletion sweep.
-- **START HERE — C / #387 one-pass goal-closeout shape report.** Fits
+- **Quality-ref disposition done+validated+pushed** (critique → execute → blind A/B
+  7/7). Broader 19-skill rollout stays a verify-first "where to look" map.
+- **START HERE — A: cautilus skill-experiment harness** (operator-requested): real
+  headless-run *usage* validation. 4 steps — (1) add natural stream-json capture to
+  the eval runner `run-local-eval-test.mjs` (drop forced-JSON); (2) `git checkout`
+  the install clone `~/.agents/src/charness` to baseline(origin/main) vs variant
+  (disposition) — SKILL_DIR is the lever, not repo-root; (3) transcript =
+  `source-kind:transcript` justification; (4) author one quality fixture (scenarios +
+  source-coverage obligations + rubric). Detail + B-smoke evidence:
+  [proposal § A design](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+- **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +

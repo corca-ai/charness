@@ -259,3 +259,40 @@ reachable only by scanning a 40-line alphabetical list; post-fix a blind run is
 routed straight to each from the point of need. This is the signal the deterministic
 gates and fresh-eye review structurally cannot produce (they prove a pointer
 *exists*; the blind A/B proves it is *followed*).
+
+## Headless-runner de-risk (B-smoke) + A design (2026-06-22)
+
+Operator path beyond routing: validate the disposition's ref **usage** (does a real
+run open and use the ref content?) via a real headless `claude -p` quality run scored
+by Cautilus. B = de-risk the runner (done); A = build the harness (next session).
+
+### B-smoke — PASS
+Headless `claude -p` invoking the `quality` skill (isolated worktree, bounded; 11
+turns, $0.68, no error):
+- **Skill resolves headless** — `Skill charness:quality`, full bootstrap.
+- **Reads refs via its own routing** — skill-quality.md, fresh-eye-subagent-review.md, …
+- **Spawns the Step-8 fresh-eye reviewer as a REAL subagent** (`Agent
+  general-purpose`; output "Delegated Review: executed"). Confirms the quality skill
+  DOES use subagents — a fact a subagent-runner test structurally cannot observe.
+- Bonus: the run blind-judged "quality ~45 refs but 189-line lean body, disclosure
+  boundary intact" — independently re-deriving the audit conclusion.
+- **Gotcha:** `/quality` resolves SKILL_DIR to the INSTALLED plugin clone at
+  `~/.agents/src/charness` (a separate git clone), parked at OLD `f7bf5d2c`
+  (pre-disposition) — so the smoke ran the OLD skill, not the variant.
+
+### A design (next session) — cautilus skill-experiment harness
+1. **Harness (#3):** add a natural-transcript (stream-json) capture mode to
+   `scripts/agent-runtime/run-local-eval-test.mjs` (drop the forced-JSON straitjacket)
+   → hand the transcript to Cautilus's agent log-analysis (its new direction). Change
+   the harness, do not bypass it.
+2. **Version (#1):** the install clone is the SKILL_DIR lever (NOT repo-root, which is
+   the review target). `git checkout` it to baseline vs variant refs (adapter
+   `baseline_ref`): baseline = origin/main (pre-disposition), variant = the pushed
+   disposition commit — so the variant arm REQUIRES the disposition commits pushed.
+3. **Gate (#2):** the captured transcript is a legit `source-kind: transcript`
+   justification-log → satisfies `run_cautilus_eval.py` honestly (may change if
+   Cautilus's agent-analyzes-logs model reworks the justification gate).
+4. **Fixture:** author one quality-skill fixture (scenarios + `sourceCoverageObligations`
+   + `rubricPhrases`) — existing fixtures are routing/contract sentinels, not this.
+5. **(optional #4):** define `reviewer_tiers.high-leverage` in the quality adapter if A
+   wants to assert the fresh-eye reviewer's tier (now a metadata-hidden host fallback).
