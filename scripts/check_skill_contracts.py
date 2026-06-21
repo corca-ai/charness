@@ -93,8 +93,6 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/quality/SKILL.md": (
         "When the next quality move is repo-local, deterministic, and low-risk",
-        "implementing that gate in the same turn",
-        "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
         "Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract",

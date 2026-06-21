@@ -13,21 +13,20 @@
 
 ## Current State
 
-- **Essence/deletion rollout — `impl` (`6791cf4f`) + `debug` shipped.** Distill to
-  essence and **DELETE** unpinned duplication, not relocate; **gate pins mark the
-  load-bearing essence, so delete the unpinned dup around them** (zero
-  contract/test edits). debug: 4× `issue resolve` substrate cross-ref → 1×
-  (causal-review.md owns the lens↔step map) + helper-bullet fold, 193→185,
-  fresh-eye `ESSENCE-PRESERVED`. Open-the-pins is in `## Next Session`. critiques:
+- **Essence/deletion rollout — `impl`, `debug`, `quality` shipped.** Distill to
+  essence and **DELETE** duplication, not relocate. `impl`/`debug`: unpinned-dup
+  only (zero contract/test edits). **`quality` opened the pins** — deleted 2 CORE
+  rows in `check_skill_contracts.py` that froze doubled step-7 wording (CORE 7→5),
+  cautilus guard kept; fresh-eye `DISCIPLINED-PIN-DELETION` **licenses a
+  harness-wide sweep** (`## Next Session`). critiques:
   [impl](../charness-artifacts/critique/2026-06-21-impl-essence-deletion.md),
-  [debug](../charness-artifacts/critique/2026-06-21-debug-essence-deletion.md).
-- **Item A DONE — `main` green + #394 coverage (test-only).** Standing-red was a
-  stale fixture (`make_fake_nose` `0.13.3` vs the bumped `>=0.14.0` floor → doctor
-  read `version-mismatch`); fixed to `0.14.0`. Suite green (2283 + 1189). #394's
-  changed-line target (`nose_report_lib.py:178`) covered + `build_items`
-  boundary-default mutants pinned; 1 fresh-eye `HONEST-AND-FAITHFUL`.
-  [critique](../charness-artifacts/critique/2026-06-21-green-main-394-coverage.md).
-  **#394 closure awaits the next CI mutation run — verify PASS, don't hand-close.**
+  [debug](../charness-artifacts/critique/2026-06-21-debug-essence-deletion.md),
+  [quality](../charness-artifacts/critique/2026-06-21-quality-pin-opening.md).
+- **Item A DONE — `main` green + #394 coverage (test-only).** Stale `make_fake_nose`
+  fixture (`0.13.3` vs the `>=0.14.0` floor) fixed; suite green (2283 + 1189);
+  #394 changed-line target covered + `build_items` boundary mutants pinned. The
+  mutation gate is cron-only (auto-closes #394 on the next tick) — operator
+  dropped it as a blocker; it no longer gates the sweep.
 
 ## Next Session
 
@@ -37,16 +36,16 @@
 > canonically elsewhere (`CLAUDE.md` / a reference / another gate). Deleting a pin
 > deletes its test + contract row. **Body-read each issue — titles undersell.**
 
-- **A — Green `main` + #394 — DONE this session.** Oracle is trustworthy:
-  whole suite green; the changed-line blocking target is covered; the
-  irreversible-boundary `build_items` mutants are pinned. Remaining: confirm the
-  next CI mutation run flips #394 to PASS (do not hand-close).
-- **B (now lead) — `quality` pin-opening, scope LOCKED (operator: conservative).**
-  `debug` done. Open CORE pins 2–3 (step-7 states the same-turn rule twice →
-  collapse to one, keep pins 1+4) + their test asserts; **keep** the inline
-  cautilus guard (pins 6–7, load-bearing safety even though `CLAUDE.md` owns it);
-  fold the 49-ref list to inline-cited. **Gated: execute only after #394 CI
-  confirms the oracle green** (still pending; last run keyed to `6791cf4f`).
+- **A (lead) — harness-wide pin sweep (licensed by the `quality` pilot).** Apply
+  the disciplined pin test to every CORE/PACKAGE row in `check_skill_contracts.py`:
+  delete pins that freeze wording or are owned canonically elsewhere; **keep**
+  destructive-boundary guards (cautilus, publish confirmation). Promote the
+  pin-deletion test to a durable convention. **Friction:** each pin edit
+  re-partitions `check_skill_contracts.py` clones → count-neutral
+  `check_dup_ratchet.py --write-baseline` per push (or extract the 3 twin
+  validators once to stabilize it). The quality 49-ref reduction is a separate
+  per-file deletion audit (`validate_skills` locks the list to the directory —
+  not a trim, and `index.md` relocation is the rejected not-the-point move).
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result

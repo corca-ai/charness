@@ -287,6 +287,14 @@ both are external-write boundaries the goal contract scopes out by default).
     (CORE pins 6–7 — load-bearing safety though `CLAUDE.md`/`cautilus-on-demand.md`
     own it), fold the 49-ref list to inline-cited. Execution gated on #394 CI
     confirming the oracle green (pending: last run keyed to `6791cf4f`, pre-push).
+  - **EXECUTED 2026-06-21 (first pin-opening):** `quality` deleted 2 CORE pins
+    (the doubled step-7 same-turn wording) from `check_skill_contracts.py` (CORE
+    7→5), kept the cautilus guard; fresh-eye `DISCIPLINED-PIN-DELETION`. Operator
+    **dropped the #394/mutation gate** as a blocker (cron-only, auto-closes on the
+    next tick). The 49-ref reduction stays deferred — `validate_skills` locks the
+    list to the `references/` directory, so it is a per-file deletion audit, not a
+    trim. **Licensed next:** promote the pin-deletion test to a durable convention
+    and run the harness-wide pin sweep over all CORE/PACKAGE rows.
 
 ## Discuss before activation
 

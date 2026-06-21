@@ -97,10 +97,10 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
    - implement clear repo-owned automation unless the user asked for review only
    - do not leave dual implementations, duplicated proof, or stale command
      surfaces in an unpriced "keep both for safety" state
-   - When the next quality move is repo-local, deterministic, and low-risk, prefer
-     implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in
-     the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate,
-     name the unresolved enforcement gap.
+   - When the next quality move is repo-local, deterministic, and low-risk,
+     implement it the same turn unless review-only was requested.
+     If you stop short of an obvious repo-owned deterministic gate, name the
+     unresolved enforcement gap.
 8. Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations
    as `high-leverage`, applying host-exposed
    `reviewer_tiers.high-leverage` fields. Report exactly
