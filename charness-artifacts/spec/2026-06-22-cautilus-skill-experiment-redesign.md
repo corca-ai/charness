@@ -124,24 +124,87 @@ The first run shipped a working chain but a flawed design, found by operator rev
 - Update `charness-artifacts/cautilus/latest.md` after the corrected run; note the
   first run's `discard` was a design artifact, superseded.
 
-## Open questions (resolve at execution)
+## Open questions — RESOLVED this session (empirical + source-grounded)
 
-- **Open Q1 — isolated per-arm install.** Exactly how to make `/charness:quality`
-  load the worktree's version: (a) build the plugin from each `comparison prepare`
-  worktree and point a per-arm `CLAUDE_CONFIG_DIR`/plugin dir at it; (b) checkout
-  the shared install clone per arm with record-ref + `finally` restore +
-  no-concurrent-`/quality` precondition (proposal #2; BLOCKER-2 hazard). Prefer (a).
-  Verify the resolution empirically first (cheap: 1 run, confirm which SKILL.md the
-  run reads).
-- **Open Q2 — does `claude -p "/charness:quality"` invoke the skill in headless?**
-  Verify the bare slash command triggers the skill vs is treated as literal text.
-- **Open Q3 — review-variants vs bare `/charness:quality`.** `review variants` runs
-  a configured *prompt/schema* against a `--workspace`; a bare-real-user
-  `/charness:quality` is a different shape. Decide whether the runner shim drives
-  `/charness:quality` directly (D3) and `review variants` is used elsewhere, or
-  whether `review variants` can carry the bare invocation. Read `review variants`
-  arg/variant config (`parseReviewVariantsArgs`, `resolveReviewVariantPromptArtifacts`)
-  before wiring.
+All three open questions are settled. Operator also confirmed: Q1 = isolated (yes).
+
+- **Q1 — isolated per-arm install — RESOLVED (approach (a), empirically proven).**
+  `corca-charness` is a **directory-source** marketplace
+  (`~/.claude/plugins/known_marketplaces.json` → `source.path:
+  ~/.agents/src/charness`); for directory sources Claude loads the plugin
+  **directly from the source dir** (`plugins/charness`), which is exactly why
+  editing the shared clone is the #258 hazard. Isolation recipe (verified):
+  per-arm `CLAUDE_CONFIG_DIR` containing copied `~/.claude/.credentials.json`
+  (OAuth; `apiKeySource:none`) + `plugins/known_marketplaces.json` pointing
+  `corca-charness` `source.path`/`installLocation` at the arm's worktree +
+  `plugins/installed_plugins.json` listing `charness@corca-charness`. PROOF: a
+  trivial `claude -p` with such a config reported
+  `init.plugins == [{name:charness, path:<worktree>/plugins/charness,
+  source:charness@corca-charness}]` and exposed `charness:quality` — resolved to
+  the worktree, NOT the shared clone; shared clone stayed `d2cf1b75`/clean.
+  **A/B design:** vary ONLY the installed skill version per arm; fix `cwd` to ONE
+  shared review workspace so the only difference is the SKILL (the first attempt's
+  confound was the opposite: same installed skill, differing repo cwd). The
+  quality skill reads its references via `$SKILL_DIR/references/*` = the per-arm
+  installed plugin, so the measured `sourceRefs` track the skill version, not cwd.
+- **Q2 — does `claude -p "/charness:quality"` invoke the skill headless? — YES
+  (empirically proven).** A bounded probe showed `charness:quality` is a
+  registered slash command and the run drove `Skill`→`Bash`→`Agent`→
+  `AskUserQuestion` tool calls (the skill loaded and started its real flow; the
+  first `Skill` call is `find-skills`, correct per CLAUDE.md). Runner shape =
+  cautilus `executor_variants` + `cautilus evaluate review variants`:
+  `handleReviewVariants` merely renders the variant `command_template`
+  (placeholders `{candidate_repo} {prompt_file} {schema_file} {output_file}
+  {variant_id} {output_under_test}`) and runs it via `runShellCommand` with a
+  timeout + a `{output_file}.stderr` companion + runDir. The `--tools ""`/verdict
+  convention in `examples/adapter.example.yaml` is only the review-judge example,
+  NOT enforced — the template can run a tools-on capture. Model the charness
+  wrapper on cautilus's checked-in `scripts/agent-runtime/run-review-variant.sh`.
+- **Q3 — review-variants vs bare `/charness:quality` — RESOLVED.** Because
+  `command_template` is arbitrary, `evaluate review variants` CAN carry the bare
+  capture: `{prompt_file}` holds literally `/charness:quality` (D3), and the
+  template runs `claude -p ... < {prompt_file}` with the arm's isolated
+  `CLAUDE_CONFIG_DIR` + full tools. The two arms are two `executor_variants`
+  differing only by which arm config dir they bind.
+
+## NEW execution constraints discovered (from the probe — must honor)
+
+- **Capture needs FULL tools + a permissive mode.** The probe used
+  `--allowedTools "Read"` under `permissionMode:dontAsk`, which DENIED the skill's
+  Bash → the quality flow never bootstrapped/routed (it asked how to proceed). A
+  real-user capture must let Bash/Agent/gates run (representative permissive
+  setup, e.g. bypass-permissions), so the routing-to-references actually happens.
+- **Capture MUST persist sessions.** `--no-session-persistence` left only a
+  subagent `*.meta.json` (no `*.jsonl`). D2's evidence (analysis agent over the
+  session-log tree: parent + `subagents/*.jsonl`) requires those jsonl trees on
+  disk — so persist the session and VERIFY subagent `*.jsonl` were written before
+  trusting the evidence step.
+- **Contain side effects.** Under a permissive capture, set `cwd` to a throwaway
+  worktree + isolated config so any gate writes stay contained; never the shared
+  install clone.
+- **D2 evidence path = analysis agent over the session-log tree (path b).**
+  Self-report (path a) is rejected: it would require appending instructions to the
+  prompt, violating D3 ("literally `/charness:quality`, nothing else"). The bare
+  capture stays pure; a SEPARATE Read-only analysis agent reads parent +
+  `subagents/*.jsonl`, emits structured `output.sourceRefs` + an opened-vs-used
+  judgment per arm.
+
+## Build order (deferred LLM spend; reproducible before the expensive run)
+
+1. (done) Record resolutions in this spec; commit.
+2. Build checked-in harness, deterministic, no LLM spend: per-arm setup
+   (`comparison prepare` + isolated config) + capture wrapper (full tools, session
+   persistence, throwaway worktree cwd) + the named cautilus adapter
+   (`.agents/cautilus-adapters/skill-experiment.yaml`, two arm `executor_variants`)
+   + `run_cautilus_eval.py` `review-variants` mode + eval `capture-prompt.md` =
+   `/charness:quality` + generic `spec.json` summary + extractor refactor (retire
+   grep `collectSourceRefs`, keep `buildSkillCloneExperimentInput`, ingest
+   agent-produced evidence) + tests/mutation-baseline re-base + `cautilus-on-demand.md`
+   (route through `quality`). Sync → deterministic gates → commit.
+3. Run the corrected capture via the harness (the expensive real runs); inspect
+   the baseline-vs-candidate `sourceRefs` delta BEFORE any scorer run.
+4. Gate the one `skill-experiment` scorer run (`plan_cautilus_proof.py`; operator GO).
+5. Record verdict, update `charness-artifacts/cautilus/latest.md`, retro, closeout.
 
 ## Verification plan
 
