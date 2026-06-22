@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "quality",
+  "skillDisplayName": "quality",
+  "evaluations": [
+    {
+      "evaluationId": "execution-quality-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "quality",
+      "displayName": "quality",
+      "evaluationKind": "execution",
+      "prompt": "/charness:quality",
+      "startedAt": "2026-06-22T09:13:24.269Z",
+      "invoked": true,
+      "summary": "Execution of /quality: 8948439 total tokens (78396 output, 8510977 cache-read), 755169ms wall. Tool profile: Bash=77 Read=8 Edit=3 Write=2 Skill=1 Agent=1. Claim failures: command log missing required fragment: quality-lenses.md. Reference coverage: 0/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, automation-promotion.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, dup-ratchet.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, gate-classification.md, installable-cli-probes.md, inventory-dispatch.md, lint-ignore-discipline.md, maintainer-local-enforcement.md, mutation-testing.md, operability-signals.md, prompt-asset-policy.md, proposal-flow.md, public-spec-layering.md, quality-lenses.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, skill-ergonomics.md, skill-quality.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 8948439,
+        "duration_ms": 755169
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 600000
+      }
+    }
+  ]
+}

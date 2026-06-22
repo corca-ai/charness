@@ -139,7 +139,8 @@
       ],
       "derived_paths": [
         "charness-artifacts/cautilus/latest.md",
-        "charness-artifacts/cautilus/skill-experiment-*/**"
+        "charness-artifacts/cautilus/skill-experiment-*/**",
+        "charness-artifacts/cautilus/quality-claim-fidelity-*/**"
       ],
       "sync_commands": [],
       "verify_commands": [
