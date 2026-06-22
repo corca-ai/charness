@@ -475,6 +475,43 @@ test("claude runner success path is reachable through the injected spawn seam", 
 	});
 });
 
+test("claude runner parses a natural stream-json transcript and persists it", () => {
+	withTempDir((dir) => {
+		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000, claudeModel: "claude-test" };
+		// Newline-delimited stream-json: an init event, a real tool call, then the
+		// terminal result event carrying the routing JSON plus usage/cost.
+		const streamLines = [
+			JSON.stringify({ type: "system", subtype: "init", session_id: "s1" }),
+			JSON.stringify({
+				type: "assistant",
+				message: { content: [{ type: "tool_use", name: "Read", input: { file_path: join(dir, "skills/x/SKILL.md") } }] },
+			}),
+			JSON.stringify({
+				type: "result",
+				subtype: "success",
+				result: JSON.stringify(observedFixture()),
+				usage: { input_tokens: 7, output_tokens: 3 },
+				total_cost_usd: 0.02,
+			}),
+		];
+		const stdout = `${streamLines.join("\n")}\n`;
+		const { calls, spawn } = recordingSpawn({ status: 0, stdout, stderr: "" });
+
+		const result = runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+
+		assert.ok(calls[0].args.includes("stream-json"), "uses --output-format stream-json");
+		assert.ok(calls[0].args.includes("--verbose"), "stream-json requires --verbose under --print");
+		assert.equal(result.observationStatus, "observed");
+		assert.equal(result.summary, "selected the quality skill");
+		assert.equal(result.routingDecision.workSkill, "quality");
+		assert.equal(result.telemetry.completion_tokens, 3);
+		assert.equal(result.telemetry.cost_usd, 0.02);
+		const transcript = readFileSync(join(dir, "transcript.jsonl"), "utf-8");
+		assert.equal(transcript, stdout, "natural stream-json transcript is persisted verbatim");
+		assert.match(transcript, /"type":"result"/);
+	});
+});
+
 test("claude runner non-zero exit becomes a blocked result via the seam", () => {
 	withTempDir((dir) => {
 		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000 };

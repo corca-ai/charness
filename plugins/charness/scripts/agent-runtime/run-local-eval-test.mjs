@@ -442,7 +442,13 @@ function normalizeObservedOptionalFields(workspace, observed, telemetry) {
 }
 
 function claudeArgs(options) {
-	const args = ["-p", "--no-session-persistence", "--output-format", "json", "--exclude-dynamic-system-prompt-sections"];
+	// Natural stream-json transcript (`--verbose` is mandatory with
+	// `--output-format stream-json` under `--print`): the newline-delimited event
+	// stream preserves the agent's real tool calls (e.g. file Reads) so a
+	// transcript→`skill_clone_experiment_input.v1` extractor can recover each
+	// arm's `output.sourceRefs`. The legacy single `--output-format json` envelope
+	// hid that stream behind one final result object.
+	const args = ["-p", "--no-session-persistence", "--output-format", "stream-json", "--verbose", "--exclude-dynamic-system-prompt-sections"];
 	if (options.claudeModel ?? options.model) {
 		args.push("--model", options.claudeModel ?? options.model);
 	}
@@ -479,7 +485,36 @@ function extractJSON(text) {
 	return JSON.parse(text);
 }
 
+function findClaudeResultEvent(raw) {
+	// stream-json emits newline-delimited JSON events; the terminal
+	// `type:"result"` event carries the assistant's final text plus usage/cost.
+	// A single `--output-format json` envelope also has `type:"result"`, so this
+	// unifies both transports. Returns null when raw is neither (e.g. the legacy
+	// `{result: ...}` seam fixture with no `type`), letting callers fall back.
+	const lines = raw.split("\n");
+	for (let index = lines.length - 1; index >= 0; index -= 1) {
+		const line = lines[index].trim();
+		if (!line) {
+			continue;
+		}
+		let event;
+		try {
+			event = JSON.parse(line);
+		} catch {
+			continue;
+		}
+		if (event && typeof event === "object" && !Array.isArray(event) && event.type === "result") {
+			return event;
+		}
+	}
+	return null;
+}
+
 function parseClaudeOutput(raw) {
+	const resultEvent = findClaudeResultEvent(raw);
+	if (resultEvent && resultEvent.result !== undefined) {
+		return extractJSON(typeof resultEvent.result === "string" ? resultEvent.result : JSON.stringify(resultEvent.result));
+	}
 	try {
 		const parsed = JSON.parse(raw);
 		if (parsed.result !== undefined) {
@@ -603,6 +638,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 	const promptFile = join(outputDir, "prompt.md");
 	const outputFile = join(outputDir, "result.json");
 	const rawFile = join(outputDir, "result.raw");
+	const transcriptFile = join(outputDir, "transcript.jsonl");
 	const stderrFile = join(outputDir, "result.stderr");
 	const schema = baseSchema();
 	const prompt = renderClaudePrompt(evaluation, schema);
@@ -621,7 +657,15 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 	});
 	writeFileSync(stderrFile, result.stderr ?? "");
 	writeFileSync(rawFile, result.stdout ?? "");
-	const artifactRefs = [artifactRef("prompt", promptFile), artifactRef("raw", rawFile), artifactRef("stderr", stderrFile)];
+	// The stream-json stdout IS the natural transcript; persist it under an
+	// explicit name so a downstream extractor reads the agent's real tool calls.
+	writeFileSync(transcriptFile, result.stdout ?? "");
+	const artifactRefs = [
+		artifactRef("prompt", promptFile),
+		artifactRef("transcript", transcriptFile),
+		artifactRef("raw", rawFile),
+		artifactRef("stderr", stderrFile),
+	];
 	if (result.error?.code === "ETIMEDOUT") {
 		return normalizeObservedResult(
 			evaluation,
@@ -651,7 +695,9 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 	}
 	writeFileSync(outputFile, `${JSON.stringify(observed, null, 2)}\n`);
 	artifactRefs.push(artifactRef("result", outputFile));
-	const telemetry = extractClaudeTelemetry(result.stdout ?? "", options);
+	// In stream-json the usage/cost live on the terminal result event; fall back
+	// to the raw stdout for the legacy single-envelope transport.
+	const telemetry = extractClaudeTelemetry(findClaudeResultEvent(result.stdout ?? "") ?? result.stdout ?? "", options);
 	return normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, telemetry);
 }
 
