@@ -82,6 +82,44 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     assert "staged-plugin-mirror-drift" in labels
 
 
+def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, monkeypatch) -> None:
+    # Closes the worktree-vs-staged gap: a file staged then edited again commits the
+    # stale staged blob, while pre-commit gates validate the (newer) worktree. The
+    # gate fails when a staged path also carries unstaged edits; a clean full-stage
+    # passes; CHARNESS_ALLOW_PARTIAL_STAGE escapes a deliberate partial commit.
+    from scripts.check_staged_worktree_consistency import find_stale_staged
+    from scripts.check_staged_worktree_consistency import main as gate_main
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+
+    git("init")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "t")
+    target = repo / "f.txt"
+    target.write_text("v1\n", encoding="utf-8")
+    git("add", "f.txt")
+
+    monkeypatch.delenv("CHARNESS_ALLOW_PARTIAL_STAGE", raising=False)
+    # clean full-stage -> no stale, gate passes
+    assert find_stale_staged(repo) == []
+    assert gate_main(["--repo-root", str(repo)]) == 0
+    # edit after staging -> staged blob (v1) != worktree (v2): stale, gate blocks
+    target.write_text("v2\n", encoding="utf-8")
+    assert find_stale_staged(repo) == ["f.txt"]
+    assert gate_main(["--repo-root", str(repo)]) == 1
+    # escape hatch for deliberate partial staging
+    monkeypatch.setenv("CHARNESS_ALLOW_PARTIAL_STAGE", "1")
+    assert gate_main(["--repo-root", str(repo)]) == 0
+    monkeypatch.delenv("CHARNESS_ALLOW_PARTIAL_STAGE", raising=False)
+    # re-stage -> what is validated is what commits again
+    git("add", "f.txt")
+    assert find_stale_staged(repo) == []
+
+
 def test_staged_commit_plan_gates_changed_skill_md_core_headroom() -> None:
     # #319: a changed public/support SKILL.md pulls the commit-boundary core
     # headroom ratchet into the plan, scoped to exactly that path.
@@ -354,6 +392,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
     assert json_result.returncode == 0, json_result.stderr
     assert [item["label"] for item in json.loads(json_result.stdout)] == [
         "check-staged-reversion",
+        "staged-worktree-consistency",
         "staged-plugin-mirror-drift",
         "check-doc-links",
         "check-markdown",

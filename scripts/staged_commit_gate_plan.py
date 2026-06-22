@@ -195,6 +195,13 @@ def staged_commit_gate_plan(
                 ("python3", "scripts/check_staged_reversion.py", "--repo-root", str(repo_root)),
             )
         )
+        if (repo_root / "scripts" / "check_staged_worktree_consistency.py").exists():
+            plan.append(
+                GateCommand(
+                    "staged-worktree-consistency",
+                    ("python3", "scripts/check_staged_worktree_consistency.py", "--repo-root", str(repo_root)),
+                )
+            )
 
     if staged_py:
         plan.append(GateCommand("py_compile (staged)", ("python3", "-m", "py_compile", *staged_py)))
