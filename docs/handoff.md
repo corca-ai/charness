@@ -24,13 +24,13 @@
   shape** (gate-driven run never reaches the judgment/ref phase), NOT a ref-value
   verdict (settled above).
   [finding](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/finding.md)
-  · [harness](../evals/cautilus/quality-claim-fidelity/README.md) ·
-  [retro](../charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md);
-  issues cautilus#49, charness#397.
+  · [harness](../evals/cautilus/quality-claim-fidelity/README.md);
+  issues charness#397 (open), cautilus#49 (closed-resolved).
 - **Gotcha:** `/charness:quality` loads from the INSTALLED clone
   `~/.agents/src/charness` — isolate per-run via
   [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (never edit
-  the clone). `cautilus evaluate *` is operator-gated.
+  the clone). `cautilus evaluate *` is operator-gated. Cautilus is now **0.17.1**
+  (harness re-verified); `charness tool update` warns when a manual tool is behind.
 
 ## Next Session
 
