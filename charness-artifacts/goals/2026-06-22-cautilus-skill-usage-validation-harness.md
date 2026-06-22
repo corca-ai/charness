@@ -1,10 +1,10 @@
 # Achieve Goal: Cautilus skill-experiment harness — real headless-run usage validation for skills
 
-Status: draft
+Status: complete
 Created: 2026-06-22
 Activation: `/goal @charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness.md`
 Timebox: 6h
-Activation time: recorded at `/goal` activation (run start)
+Activation time: 2026-06-22T08:30:00+09:00
 Closeout reserve: 45m
 Done-early policy: continue_next_improvement
 
@@ -13,10 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 8 — closeout. S1–S7 DONE: the chain is built, tested, plumbing-proven, and PROVEN END-TO-END by one real cautilus verdict (`discard`, honest zero-coverage-delta) from two real haiku captures.
-- Current disposition: ACTIVE (pursued 2026-06-22). The empirical proof landed. Closeout = broad gate (or substitute) + retro dispositions + handoff update + flip to complete.
-- Current slice intent: Slice 8 runs the final broad gate with the verification lock, disposes the carried nit + the eval-design lesson, updates the handoff, and flips the goal to complete with honest non-claims.
-- Next action: implement Slice 8 — closeout preflight (describe_goal_closeout_shape), broad gate / substitute, retro, handoff, status→complete. Carried nit: DRY findResultEvent/findClaudeResultEvent (disposition in Auto-Retro).
+- Current slice: COMPLETE. All 8 slices landed; the chain is built, tested, plumbing-proven, and PROVEN END-TO-END by one real cautilus verdict (`discard`, honest zero-coverage-delta) from two real haiku captures; broad gate green; retro persisted + dispositioned.
+- Current disposition: COMPLETE (under-budget early close ~2h into the 6h box; full scope met). `check_goal_artifact.py` ok=true. Deferred: the full sweep + reviewer_tiers (operator queue); the DRY nit + no-name-hint eval redesign (next session).
+- Current slice intent: closed — final broad gate (verification lock + standing pytest) green, retro/handoff done, status flipped to complete with honest non-claims and an early-close report.
+- Next action: none for this goal — handoff carries #396 + the deferred decisions to the next session.
 - Verification cadence: cheap deterministic checks at commit boundaries; runner smoke + fresh-eye critique at slice boundaries; the one real Cautilus run at the External/Live boundary; broad gate at closeout.
 - Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`; final/bundle proof records the verification lock and uses `--verification-lock`.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed files and owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
@@ -98,13 +98,12 @@ What the user can do to verify completion directly.
 | 5 | Author quality-skill `sourceCoverageObligations` + `rubricPhrases` | The eval needs obligations/rubric (existing fixtures are routing sentinels on a different schema) | Obligations/rubric defined; validator-extend-vs-runtime-artifact decision recorded (install validator only knows `evaluation_input.v1`) | **done** (spec.json = runtime artifact, 7 routed obligations; surface declared; 10/10 tests; see Slice Log S5) |
 | 6 | Baseline↔variant capture via isolated read-only worktrees | The A/B arms — proposal's proven method; avoids mutating the shared install clone (BLOCKER-2) | Two transcripts captured at baseline vs `5ded9f3a`; any clone/worktree restored/cleaned | **done** (two clean haiku captures; worktrees removed; install clone untouched at d2cf1b75; see Slice Log S7) |
 | 7 | One real Cautilus proof run (gated, External/Live) | The empirical proof the whole chain emits a verdict | Recorded promote/revise/discard in `charness-artifacts/cautilus/latest.md` (labeled single-capture proof) + planner output verbatim | **done** (verdict `discard` = honest zero-coverage-delta; planner verbatim recorded; see Slice Log S7) |
-| 8 | Closeout | Task-completing repo work: prove, reflect, hand off | `check_goal_artifact.py` complete + broad gate (or substitute) green + retro dispositions + handoff updated | planned |
+| 8 | Closeout | Task-completing repo work: prove, reflect, hand off | `check_goal_artifact.py` complete + broad gate (or substitute) green + retro dispositions + handoff updated | **done** (check_goal_artifact ok=true; broad gate + standing pytest green; retro persisted; handoff updated) |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Two operator-only decisions surfaced and were deferred at closeout; neither blocks
+safe local progress (both are paid/adapter-write boundaries the goal scoped out).
 
 - Decision: run the FULL multi-scenario baseline-vs-variant Cautilus A/B sweep (beyond the one authorized proof run)?
   - Owner: operator
@@ -120,6 +119,11 @@ safe local progress. Use `none — <reason>` when the queue is empty at closeout
 ## Coordination Cues
 
 Phase routing defers to `find-skills` at the point of need — no inline phase→skill map is hardcoded here. Closeout coordination evidence (`Routing:` / `Gather:` / `Release:` / `Issue closeout:`) is recorded under `## Final Verification` / here at the After phase when the matching floor triggers.
+
+Routing: find-skills (session start) recommended `impl` as the durable work skill and `quality` for validation posture + `cautilus` (eval-only) for the harness; `achieve` drove the goal lifecycle while `critique` (S3 fresh-eye) and `retro` (closeout) coordinated the slices.
+Gather: n/a — no external URL/source was ingested; the cautilus contract came from the local read-only source tree, not a fetched asset.
+Release: n/a — generated mirrors are synced, not versioned; no plugin version bump (per Non-Goals).
+Issue closeout: n/a — this goal originated from handoff entry #2, not a tracked GitHub issue; no issue is being closed.
 
 ## Slice Log
 
@@ -246,6 +250,76 @@ Reviewer: bounded fresh-eye plan reviewer (separate `general-purpose` agent cont
 
 ## Final Verification
 
+Self-verification (what was proven):
+
+- The full chain is built, tested, and proven end-to-end: a real `claude -p`
+  stream-json capture → repo-owned extractor → `skill_clone_experiment_input.v1`
+  → `run_cautilus_eval.py` wrapper → a real cautilus `evaluate skill-experiment`
+  verdict.
+- Broad gate GREEN: `run_slice_closeout.py --verification-lock
+  --refresh-broad-pytest-proof --base` — 26 verify gates + `run_standing_pytest
+  --mode read-only` all PASS; broad-pytest proof recorded.
+- The one authorized scorer run returned `promotion_recommendation: discard`
+  (variant_ran + baseline_comparable true, rubric pass, source_coverage_delta
+  gained=[] lost=[]); recorded verbatim in `charness-artifacts/cautilus/latest.md`.
+- Captures used isolated read-only worktrees; install clone
+  `~/.agents/src/charness` untouched at `d2cf1b75`; worktrees removed.
+
+Non-claims (honest limits):
+
+- NOT a power-bearing A/B: one single-scenario capture per arm; stochastic
+  upstream capture variance is uncontrolled.
+- The `discard` reflects ZERO source-coverage delta (both arms read the same six
+  refs), NOT that the disposition is bad — source-coverage measures which files
+  were read, not pointer-directness (the disposition's actual improvement,
+  measured 7/7 by the prior routing blind A/B).
+- The built input was validated structurally against the source-read scorer
+  contract; the single scorer run is the only end-to-end schema confirmation.
+- The runner's claude_code stream-json capture is proven by 25/25 unit tests + a
+  real CLI flag smoke; the cautilus A/B used direct `claude -p` quality-task
+  captures (not the routing-eval prompt).
+
+Residual risks:
+
+- The eval obligations (7 routed concept refs) did not discriminate this
+  disposition class; a future eval needs a no-name-hint task (recorded in
+  `latest.md` Follow-ups).
+- Carried nit: `findResultEvent`/`findClaudeResultEvent` duplication
+  (test-covered; consolidate when next touching the runner).
+
+Early close rationale: all 8 slices landed and the empirical proof (one real cautilus verdict) is recorded ~2h into the 6h box; the goal's defined scope is fully met, and continuing would mean absorbing out-of-scope backlog (#396 / the full sweep) that the Non-Goals forbid.
+Early-close report: charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness-early-close-report.md
+Next slice candidate: full multi-scenario Cautilus A/B sweep | decision: user-decision | reason: a separate paid decision beyond the one authorized proof run; deferred to the operator queue until the operator approves the sweep.
+Next slice candidate: consolidate findResultEvent/findClaudeResultEvent | decision: defer | reason: carried S3 nit; ~10 duplicated scanner lines, both test-covered, consolidate when the runner is next touched to avoid re-churn.
+Next slice candidate: no-name-hint eval task redesign | decision: defer | reason: lets source-coverage discriminate a pointer-directness disposition; recorded in latest.md Follow-ups and not needed for this single proof.
+Outcome sufficiency check: sufficient: the chain is proven end-to-end with one real verdict and the broad gate passed; named non-claims explicitly bound what was not proven (no power-bearing A/B; source-coverage orthogonal to this disposition class).
+
+Retro: charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md
+Host log probe: skipped: host-log-not-exposed: the retro host-log probe reads codex sqlite/session logs; this Claude Code session's turn and token timing are not exposed to it.
+Disposition review: charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md
+
 ## User Verification Instructions
 
+- `node --test tests/agent-runtime/extract-skill-experiment-input.test.mjs
+  tests/agent-runtime/native.test.mjs` → 25 pass (runner stream-json capture +
+  keystone extractor).
+- Inspect `charness-artifacts/cautilus/latest.md` (goal: preserve) and
+  `charness-artifacts/cautilus/skill-experiment-2026-06-22/report.json` →
+  `promotion_recommendation: discard` with the honest zero-coverage-delta reading.
+- Re-score deterministically: `python3 scripts/run_cautilus_eval.py --mode
+  skill-experiment --justification-log
+  charness-artifacts/cautilus/skill-experiment-2026-06-22/justification.md --
+  --input charness-artifacts/cautilus/skill-experiment-2026-06-22/input.v1.json
+  --output /tmp/recheck.json` → same verdict (deterministic scorer).
+- `git -C ~/.agents/src/charness rev-parse --short HEAD` → `d2cf1b75` (install
+  clone untouched); `git worktree list` → only the main worktree.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md (session; persisted; recent-lessons refreshed).
+
+Retro dispositions: applied: eval-design rule (source-coverage measures file-set, not pointer-directness; a name-hinted task defeats the pointer mechanism) recorded in `charness-artifacts/cautilus/latest.md` `## Follow-ups` and the bound retro.
+Retro dispositions: none — the 529-overload "switch model tier early" lesson is recorded in the bound retro; a transient-API mitigation does not warrant a durable gate change this run.
+Retro dispositions: none — the DRY nit (`findResultEvent`/`findClaudeResultEvent`, ~10 lines) is deferred per the S3 reviewer's own "no action this slice" guidance; both copies are test-covered with no drift risk.
+
+Structural follow-up: none — the pre-commit-vs-closeout surface-coverage gap is already enforced by `run_slice_closeout.py` (a convenience pre-commit guard, not a correctness fix); single S5/S7 recurrence, deferred as low-priority.

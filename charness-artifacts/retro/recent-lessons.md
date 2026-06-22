@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- One activated `achieve` goal, 8 slices: a real headless-run usage-validation harness so a charness skill change can be proven by a real `claude -p` run scored by cautilus `evaluate skill-experiment`. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 - One pickup session that resolved three user-sequenced picks: GitHub **#395** (dup-ratchet `family_id` churn, bug), **chunk-2** (nose 0.14.0 `--root` multi-root clone resolver — a quality-contract change), and **chunk-1** (nose 0.14.0 rollout, ops). (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
-- After Phase 4 closeout, the operator corrected my framing: I described "fewer lines / fewer gates" as a north-star *failure signature* in a way that inverted into "more code = success," and I cited the net diff `+2138 / −83` as **positive evidence** that the metric was "honored." That is backwards. (source: `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
-- **Minor:** a `docs/public-skill-dogfood.json` Edit anchor used the wrong next-case `skill_id` (assumed `narrative`, was `announcement`) → one failed Edit + re-read. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
-- **Named-subagent spawn round-trips.** S0 and WS-1 critiques used `name:` + mailbox; retrieving each verdict needed an idle-notification → `SendMessage` round trip (one even returned an idle signal with no content, needing a second nudge). The later critiques (WS-2/3a/3b) spawned WITHOUT a name and the final message returned directly — cleaner and faster. One named spawn was also rejected outright ("teammates cannot spawn teammates"), costing a re-spawn. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
-- **WS-1 SKILL.md headroom churn — 3 edit cycles on one bullet.** I added a 7-line bullet to `release/SKILL.md`, hit `long_core` (161/160), trimmed to 3 lines, hit the *staged* `core-headroom` ratchet (157, buffer 4), trimmed to a 1-line pointer (155). The mechanism detail belonged in the reference from the start. The recent-lessons "headroom discipline" lesson already existed; I did not **measure the core buffer before adding**. Notably I then applied the lesson correctly for WS-2 (issue SKILL.md was 159/160 → I put the floor doc in the reference, not the core) — so the cost was front-loaded into WS-1. (source: `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`)
+- **API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- **Capture-design iteration (S6/S7).** The first capture prompt NAMED the concept refs, so a capable agent reached them by filename in BOTH arms (zero delta). The v2 "follow pointers only" prompt over-corrected into runaway broad exploration (16 refs, no clean result). Two wasted capture passes before settling on the honest v1 result. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- **Markdown lint timing (S4 — minor).** `check-markdown.sh` only lints tracked files, so my pre-`git add` check missed 3 MD errors in the new untracked docs; pre-commit then blocked the commit. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
-- **capability → already exists (correction):** the authoring-time preflight is NOT unbuilt — `check_artifact_surface_preflight.py --path <artifact>` already runs the owning validator on a single artifact, and the same check is already a commit-time gate. The miss was not using it early, now closed by the contract note above. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
-- **memory:** "any edit to a scanned clone-member file rotates nose `family_id`s → forces a re-baseline" is the #395 fix's documented contract AND now an `implementation-discipline.md` rule: expect rotation, batch the re-baseline. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
-- **workflow → applied (contract):** author strict-validator artifacts (debug/ critique/retro/closeout) to their required-shape contract first, dry-running `check_artifact_surface_preflight.py --path <artifact>` at authoring time. Promoted to the same contract section. (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- **capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- **code (carried S3 nit):** `findResultEvent` (extractor) and `findClaudeResultEvent` (runner) are duplicated ~10-line scanners; consolidate into a shared `stream-json` helper in a later slice. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- **memory:** eval-design rule — for a skill-experiment, the capture TASK must make the measured signal (source-coverage) causally require the intervention; a name-hinted task defeats a pointer-directness disposition. Recorded in `charness-artifacts/cautilus/latest.md` Follow-ups + this retro. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 
 ## Selection Policy
 
@@ -76,7 +76,6 @@
 - `charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-20-goodhart-not-line-count.md`
-- `charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`
+- `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`

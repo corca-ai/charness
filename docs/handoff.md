@@ -33,15 +33,18 @@
 
 - **Quality-ref disposition done+validated+pushed** (critique → execute → blind A/B
   7/7). Broader 19-skill rollout stays a verify-first "where to look" map.
-- **START HERE — A: cautilus skill-experiment harness** (operator-requested): real
-  headless-run *usage* validation. 4 steps — (1) add natural stream-json capture to
-  the eval runner `run-local-eval-test.mjs` (drop forced-JSON); (2) `git checkout`
-  the install clone `~/.agents/src/charness` to baseline(origin/main) vs variant
-  (disposition) — SKILL_DIR is the lever, not repo-root; (3) transcript =
-  `source-kind:transcript` justification; (4) author one quality fixture (scenarios +
-  source-coverage obligations + rubric). Detail + B-smoke evidence:
-  [proposal § A design](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
-- **C — #387 one-pass goal-closeout shape report.** Fits
+- **A: cautilus skill-experiment harness DONE** ([goal](../charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness.md),
+  complete). Built the stream-json capture + the keystone
+  transcript→`skill_clone_experiment_input.v1` extractor + wrapper wiring +
+  obligations spec; **one real baseline(b01cee6b) vs variant(5ded9f3a) cautilus
+  verdict: `discard`** — honest zero source-coverage delta (both arms read the same
+  6 refs). KEY FINDING: source-coverage measures *which files*, not
+  pointer-directness; this disposition's value (reach-via-pointer, prior A/B 7/7) is
+  orthogonal to the lens. Reproduce via [the harness README](../evals/cautilus/skill-experiment/README.md).
+  Deferred (operator queue): the full multi-scenario sweep; `reviewer_tiers`. Carried
+  nits: DRY findResultEvent/findClaudeResultEvent; a no-name-hint eval task so
+  source-coverage can discriminate this disposition class.
+- **START HERE — C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
   (`exact-acquired | blocked-by-X | auth/browser-route-required | unsupported`) +
