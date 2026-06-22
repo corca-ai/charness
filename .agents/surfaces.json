@@ -130,6 +130,7 @@
         "evals/cautilus/*.fixture.json",
         "evals/cautilus/scenarios.json",
         "evals/cautilus/skill-experiment/**",
+        "evals/cautilus/quality-claim-fidelity/**",
         "skills/public/*/SKILL.md",
         "skills/public/*/references/**",
         "skills/shared/references/**",
