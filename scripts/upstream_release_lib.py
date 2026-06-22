@@ -12,6 +12,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from packaging.version import InvalidVersion, Version
+
 SEMVER_RE = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,}(?:-[0-9A-Za-z.-]+)?)(?![0-9A-Za-z.-])")
 GITHUB_API_TEMPLATE = "https://api.github.com/repos/{repo}/releases/latest"
 
@@ -21,6 +23,53 @@ def extract_version(text: str | None) -> str | None:
         return None
     match = SEMVER_RE.search(text)
     return match.group(1) if match else None
+
+
+def observed_version_from_detect(detect_result: Any) -> str | None:
+    """Best-effort installed version parsed from a detect check result's stdout."""
+    if not isinstance(detect_result, dict):
+        return None
+    outputs = [
+        item["stdout"]
+        for item in detect_result.get("results", [])
+        if isinstance(item, dict) and isinstance(item.get("stdout"), str)
+    ]
+    return extract_version("\n".join(outputs))
+
+
+def upgrade_advisory(observed_version: str | None, release: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Compare an installed version against the probed latest upstream release.
+
+    Returns a `behind` advisory when a newer release exists, a `current` marker
+    when up to date, or None when no honest comparison is possible (no/errored
+    release probe, or an unparseable version). Most external tools carry
+    `version_expectation.policy: advisory`, which records the latest release in the
+    lock but never compares it; this turns that silent record into an actionable
+    signal so a `manual` update mode does not lag unnoticed.
+    """
+    if not isinstance(release, dict) or release.get("status") != "ok":
+        return None
+    latest_version = release.get("latest_version")
+    if not observed_version or not isinstance(latest_version, str) or not latest_version:
+        return None
+    try:
+        observed = Version(observed_version)
+        latest = Version(latest_version)
+    except InvalidVersion:
+        return None
+    if observed >= latest:
+        return {
+            "status": "current",
+            "observed_version": observed_version,
+            "latest_version": latest_version,
+        }
+    return {
+        "status": "behind",
+        "observed_version": observed_version,
+        "latest_version": latest_version,
+        "latest_tag": release.get("latest_tag"),
+        "html_url": release.get("html_url"),
+    }
 
 
 def fixture_release(repo: str) -> dict[str, Any] | None:

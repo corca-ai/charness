@@ -220,8 +220,14 @@ The current external-tool command surface is nested under `charness tool`:
   - sync upstream support skills and manifests into the local harness view
 - `charness tool update`
   - update integrated external tools where safe
+  - for a `manual`/`advisory` tool it cannot auto-bump (e.g. `cautilus`), it still
+    prints a behind-latest `ADVISORY:` line (and an `update_advisory` field in
+    `--json`) by comparing the detected version against the probed latest release,
+    so a manual tool does not lag unnoticed
 - `charness tool doctor`
   - verify tool availability, version expectations, and support-skill materialization
+  - emits the same behind-latest `update_advisory` signal (output only; not
+    persisted to the strict lock)
 
 ## Scope Guardrails
 

@@ -76,6 +76,49 @@ def test_normalize_release_payload_preserves_prerelease_suffix() -> None:
     assert release["latest_version"] == "3.4.5-rc.2"
 
 
+def test_observed_version_from_detect_reads_stdout_or_returns_none() -> None:
+    detect = {"results": [{"stdout": "0.15.4\n"}, {"stdout": ""}]}
+    assert upstream.observed_version_from_detect(detect) == "0.15.4"
+    assert upstream.observed_version_from_detect({"results": []}) is None
+    assert upstream.observed_version_from_detect({"results": ["bad", {"stdout": 7}]}) is None
+    assert upstream.observed_version_from_detect(None) is None
+
+
+def _ok_release(latest: str) -> dict[str, object]:
+    return {
+        "status": "ok",
+        "latest_tag": f"v{latest}",
+        "latest_version": latest,
+        "html_url": f"https://github.com/example/tool/releases/tag/v{latest}",
+    }
+
+
+def test_upgrade_advisory_flags_behind_with_actionable_fields() -> None:
+    advisory = upstream.upgrade_advisory("0.15.4", _ok_release("0.17.1"))
+    assert advisory == {
+        "status": "behind",
+        "observed_version": "0.15.4",
+        "latest_version": "0.17.1",
+        "latest_tag": "v0.17.1",
+        "html_url": "https://github.com/example/tool/releases/tag/v0.17.1",
+    }
+
+
+def test_upgrade_advisory_reports_current_when_at_or_past_latest() -> None:
+    assert upstream.upgrade_advisory("0.17.1", _ok_release("0.17.1"))["status"] == "current"
+    assert upstream.upgrade_advisory("0.18.0", _ok_release("0.17.1"))["status"] == "current"
+
+
+def test_upgrade_advisory_returns_none_when_comparison_is_not_honest() -> None:
+    # errored / missing release probe
+    assert upstream.upgrade_advisory("0.15.4", None) is None
+    assert upstream.upgrade_advisory("0.15.4", {"status": "error", "latest_version": "0.17.1"}) is None
+    assert upstream.upgrade_advisory("0.15.4", {"status": "ok", "latest_version": None}) is None
+    # missing or unparseable installed version
+    assert upstream.upgrade_advisory(None, _ok_release("0.17.1")) is None
+    assert upstream.upgrade_advisory("not-a-version", _ok_release("0.17.1")) is None
+
+
 def test_probe_release_requires_github_manifest_shape() -> None:
     assert upstream.probe_release({"tool_id": "demo"}) is None
     assert upstream.probe_release({"upstream_repo": "example/demo", "homepage": "https://example.com/demo"}) is None

@@ -22,10 +22,12 @@ _scripts_doctor_lib_module = import_repo_module(__file__, "scripts.doctor_lib")
 inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
 _scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
 healthcheck_attention_suffix = _scripts_control_plane_lifecycle_lib_module.healthcheck_attention_suffix
+print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
 probe_release = _scripts_upstream_release_lib_module.probe_release
+upgrade_advisory = _scripts_upstream_release_lib_module.upgrade_advisory
 
 
 def _truncate_lock_text(value: object, *, limit: int = LOCK_OUTPUT_LIMIT) -> object:
@@ -65,6 +67,9 @@ def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
     lock_payload.pop("release", None)
     lock_payload.pop("provenance", None)
     lock_payload.pop("next_steps", None)
+    # update_advisory is a runtime/output signal derived from the release probe, not
+    # durable lock state; the strict `doctor` lock block forbids extra keys.
+    lock_payload.pop("update_advisory", None)
     support_sync = lock_payload.get("support_sync")
     if isinstance(support_sync, dict):
         lock_payload["support_sync"] = {
@@ -112,6 +117,11 @@ def inspect_manifest(
     release = None if skip_release_probe or disabled else probe_release(manifest)
     if release is not None:
         payload["release"] = release
+        version_block = payload.get("version")
+        observed = version_block.get("observed_version") if isinstance(version_block, dict) else None
+        advisory = upgrade_advisory(observed, release)
+        if advisory is not None:
+            payload["update_advisory"] = advisory
     if write:
         upsert_lock(
             repo_root,
@@ -156,6 +166,7 @@ def main() -> int:
         for capability in selected
     ]
 
+    print_update_advisories(results)
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:

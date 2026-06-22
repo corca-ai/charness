@@ -23,6 +23,7 @@ detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_
 evaluate_readiness = _scripts_control_plane_lifecycle_lib_module.evaluate_readiness
 has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
 print_tool_statuses = _scripts_control_plane_lifecycle_lib_module.print_tool_statuses
+print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
@@ -221,6 +222,7 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     selected = select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [update_one(repo_root, manifest, execute=args.execute) for manifest in selected]
+    print_update_advisories(results)
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:

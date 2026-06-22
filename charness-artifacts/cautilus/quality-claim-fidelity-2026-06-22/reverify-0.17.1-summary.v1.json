@@ -1,0 +1,149 @@
+{
+  "comparisonSummary": {
+    "betterThanBaseline": 0,
+    "evaluationsWithBaseline": 0,
+    "sameAsBaseline": 0,
+    "worseThanBaseline": 0
+  },
+  "evaluatedAt": "2026-06-22T13:08:57.276580604Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "degraded": 0,
+    "execution": 1,
+    "failed": 1,
+    "passed": 0,
+    "total": 1,
+    "trigger": 0,
+    "unstable": 0
+  },
+  "evaluationRuns": [
+    {
+      "displayName": "quality",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-quality-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "quality should complete the intended task cleanly once the skill is invoked."
+      },
+      "metrics": {
+        "duration_ms": 755169,
+        "total_tokens": 8948439
+      },
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "failed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 0,
+        "passRate": 0,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 1,
+          "passed": 0
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-22T09:13:24.269Z",
+      "status": "failed",
+      "summary": "Execution of /quality: 8948439 total tokens (78396 output, 8510977 cache-read), 755169ms wall. Tool profile: Bash=77 Read=8 Edit=3 Write=2 Skill=1 Agent=1. Claim failures: command log missing required fragment: quality-lenses.md. Reference coverage: 0/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, automation-promotion.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, dup-ratchet.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, gate-classification.md, installable-cli-probes.md, inventory-dispatch.md, lint-ignore-discipline.md, maintainer-local-enforcement.md, mutation-testing.md, operability-signals.md, prompt-asset-policy.md, proposal-flow.md, public-spec-layering.md, quality-lenses.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, skill-ergonomics.md, skill-quality.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md).",
+      "surface": "execution_quality",
+      "targetId": "quality",
+      "targetKind": "public_skill"
+    }
+  ],
+  "evaluations": [
+    {
+      "displayName": "quality",
+      "evaluationId": "execution-quality-claim-fidelity",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-quality-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "quality should complete the intended task cleanly once the skill is invoked."
+      },
+      "invoked": true,
+      "metrics": {
+        "duration_ms": 755169,
+        "total_tokens": 8948439
+      },
+      "prompt": "/charness:quality",
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "failed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 0,
+        "passRate": 0,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 1,
+          "passed": 0
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-22T09:13:24.269Z",
+      "status": "failed",
+      "summary": "Execution of /quality: 8948439 total tokens (78396 output, 8510977 cache-read), 755169ms wall. Tool profile: Bash=77 Read=8 Edit=3 Write=2 Skill=1 Agent=1. Claim failures: command log missing required fragment: quality-lenses.md. Reference coverage: 0/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, automation-promotion.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, dup-ratchet.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, gate-classification.md, installable-cli-probes.md, inventory-dispatch.md, lint-ignore-discipline.md, maintainer-local-enforcement.md, mutation-testing.md, operability-signals.md, prompt-asset-policy.md, proposal-flow.md, public-spec-layering.md, quality-lenses.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, skill-ergonomics.md, skill-quality.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md).",
+      "surface": "execution_quality",
+      "targetId": "quality",
+      "targetKind": "public_skill",
+      "thresholdFindings": [
+        {
+          "actual": 755169,
+          "limit": 600000,
+          "metric": "duration_ms"
+        }
+      ],
+      "thresholds": {
+        "max_duration_ms": 600000
+      }
+    }
+  ],
+  "recommendation": "reject",
+  "samplingSummary": {
+    "evaluationsWithSampling": 1,
+    "overallConsensusRate": 1,
+    "overallInvocationRate": 1,
+    "overallPassRate": 0,
+    "totalConsensusSamples": 1,
+    "totalInvocations": 1,
+    "totalPassingSamples": 0,
+    "totalSamples": 1,
+    "unstableEvaluations": 0
+  },
+  "schemaVersion": "cautilus.skill_evaluation_summary.v1",
+  "skillDisplayName": "quality",
+  "skillId": "quality"
+}
