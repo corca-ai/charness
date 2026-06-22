@@ -54,7 +54,11 @@ rm -rf "$wt" "$cfg" 2>/dev/null || true
 git -C "$repo_root" worktree remove --force "$wt" 2>/dev/null || true
 
 git -C "$repo_root" worktree add --detach "$wt" "$ref" >/dev/null
-git -C "$wt" config core.hooksPath "$wt/.githooks"
+# Point hooks at the worktree's own .githooks ONLY for the captured subprocess.
+# Do NOT `git config` it: a worktree shares .git/config, so that would pollute the
+# main repo's core.hooksPath (and silently disable its hooks). GIT_CONFIG_* env is
+# process-scoped and writes no file.
+hooks_env=("GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=core.hooksPath" "GIT_CONFIG_VALUE_0=$wt/.githooks")
 
 mkdir -p "$cfg/plugins"
 cp "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json" "$cfg/"
@@ -77,7 +81,7 @@ PY
 
 echo "capture: ref=$ref invocation=$invocation timeout=${timeout_sec}s" >&2
 set +e
-( cd "$wt" && CLAUDE_CONFIG_DIR="$cfg" \
+( cd "$wt" && env "${hooks_env[@]}" CLAUDE_CONFIG_DIR="$cfg" \
 	CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 DISABLE_TELEMETRY=1 DISABLE_AUTOUPDATER=1 DISABLE_ERROR_REPORTING=1 \
 	timeout "${timeout_sec}" claude -p "$invocation" \
 		--output-format stream-json --verbose --dangerously-skip-permissions \
