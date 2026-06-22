@@ -47,6 +47,7 @@ def test_js_mutation_pool_is_agent_runtime_only() -> None:
     targets = list_js_targets(ROOT)
 
     assert targets == [
+        "scripts/agent-runtime/build-skill-execution-observation.mjs",
         "scripts/agent-runtime/codex-eval-runtime.mjs",
         "scripts/agent-runtime/contract-versions.mjs",
         "scripts/agent-runtime/extract-skill-experiment-input.mjs",
@@ -83,8 +84,8 @@ def test_js_mutation_full_mode_samples_targets(monkeypatch) -> None:
     targets = select_js_targets(ROOT, mode="full")
 
     assert targets == [
+        "scripts/agent-runtime/build-skill-execution-observation.mjs",
         "scripts/agent-runtime/contract-versions.mjs",
-        "scripts/agent-runtime/skill-test-telemetry.mjs",
     ]
     assert set(targets) <= set(list_js_targets(ROOT))
 
