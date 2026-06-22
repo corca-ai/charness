@@ -35,17 +35,17 @@
 ## Next Session
 
 - **START HERE — skill claim-fidelity + doc-philosophy across ALL skills
-  (public + support).** Generalize the quality finding. Per skill: does a real run
-  engage its reference/judgment layer, or is the gate/flow self-sufficient so refs
-  are never reached? Per doc: when is it worth reading; is the gate sufficient; if
-  genuinely gate-sufficient it may be **deletable** — but only via principled
-  merit + gate-sufficiency, NOT the rejected reachability heuristic (disposition
-  stays settled). **First move is an `ideation`/`spec` framing decision** (engage
-  every run vs gate-sufficient + on-demand); then honest-up the claim / delete the
-  redundant doc, or fix execution shape (triage front-loaded gates / wire refs into
-  gate findings). Tool = the claim-fidelity harness (one `spec.json` per skill; add
-  a gates-green-but-lens-issues discriminator). Pilot quality (#397), then fan out;
-  each run = expensive `claude -p` capture + gated `cautilus evaluate observation`.
+  (public + support).** Framing is **SETTLED** (operator 2026-06-22): the
+  **per-doc 3-way axis** — **engage-always** (a real run must read it; 0 reads =
+  execution-shape defect), **on-demand** (read only when sought; claim must say
+  so), **gate-sufficient** (a deterministic gate already yields its conclusion →
+  **deletable**, but ONLY via this axis, NOT the rejected reachability heuristic;
+  ref-value stays settled). **First move: write the methodology `spec` encoding
+  the axis** — do NOT re-litigate the framing — then **pilot quality (#397)**:
+  classify its 39 docs, add per-ref engagement tags to `spec.json` (the
+  gates-green-but-lens discriminator), pick remediation (front-load gate triage /
+  wire refs into gate findings), then fan out. Each run = expensive `claude -p`
+  capture + gated `cautilus evaluate observation` (cautilus 0.17.1, re-verified).
 - **C — #387 one-pass goal-closeout shape report.** Fits
   `describe_goal_closeout_shape.py` (describe-first preflight), not a new floor.
 - **D — #392 gather-X honest-failure contract.** Typed result
@@ -55,9 +55,6 @@
 
 ## Discuss
 
-- **Skill claim-fidelity framing (decide at START HERE pickup):** engage refs every
-  run vs gate-sufficient + on-demand? `0/39` is a defect only under the former.
-  Operator intent needed before fanning out across public + support skills.
 - **#392 scope (decide at pickup of D):** attempt a real exact-X route
   (browser/auth — likely infeasible) vs commit to the typed-unsupported contract.
 - **D31 still manual:** the chunker does not reconcile against recent commits, so
