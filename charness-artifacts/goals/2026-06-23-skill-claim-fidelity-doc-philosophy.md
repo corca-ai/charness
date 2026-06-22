@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active; Slice 1 methodology spec is complete and logged.
-- Current slice: Slice 2 — classify quality's 39 declared references and add compatible engagement tags.
-- Current slice intent: classify the quality reference set against the locked methodology spec, keep `declaredReferences` as a string list, and write engagement metadata beside it.
-- Next action: inspect `evals/cautilus/quality-claim-fidelity/spec.json` and `skills/public/quality/references/`, classify all 39 references, then prove `build-skill-execution-observation.mjs` still parses the tagged spec.
+- Current disposition: active; Slices 1-2 are complete and logged.
+- Current slice: Slice 3 — choose the #397 remediation from the quality reference classification.
+- Current slice intent: use the 9 engage-always / 27 on-demand / 3 gate-sufficient distribution, with `quality-lenses.md` as the required engage-always discriminator, to choose gate triage, reference routing, or both before behavior edits.
+- Next action: record the remediation decision and rationale in this goal before editing the quality skill flow or harness wiring.
 - Verification cadence: cheap deterministic checks (markdown/link gates, `run_slice_closeout.py --skip-broad-pytest`, observed-packet parse) at commit boundaries; fresh-eye critique + a real `claude -p` capture at slice boundaries; ONE operator-gated cautilus rollup at the validation boundary.
 - Slice review packet: before fresh-eye slice critique, hand the reviewer intent, changed files + owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and `## Auto-Retro`.
@@ -155,6 +155,20 @@ RESOLVED — all three items below were discussed with the operator during shapi
 - Critique: Fresh-eye spec critique completed with 3 angle reviewers + 1 counterweight reviewer; Act Before Ship findings folded into the spec; critique artifact: charness-artifacts/critique/2026-06-23-skill-claim-fidelity-doc-philosophy-spec-critique.md.
 - Off-goal findings: none.
 - Lessons carried forward: Next slice starts from referenceEngagement beside declaredReferences; #397 proof must show runtime consultation of quality-lenses.md, not matcher theater; remediation decision must be recorded before behavior edits.
+- Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
+
+### Slice 2: Quality reference classification
+
+- Objective: Classify all 39 quality skill declared references against the three-way engagement axis and add compatible metadata to the quality claim-fidelity eval spec.
+- Why this approach: The classification is the gates-green-but-lens discriminator for choosing #397 remediation.
+- Commits:
+- What changed: Updated evals/cautilus/quality-claim-fidelity/spec.json with referenceEngagement metadata for all 39 declared references; aligned the methodology spec wording with the keyed metadata shape; added classification critique evidence.
+- Alternatives rejected: Kept declaredReferences as a string list rather than an object list; deferred tag-aware builder scoring; rejected promoting useful on-demand references to engage-always unless the representative run must consult them.
+- Targeted verification: python3 -m json.tool parsed spec.json; build-skill-execution-observation.mjs parsed the tagged spec over the checked-in 2026-06-22 baseline bundle and reproduced coverage=0/39; node shape assertion confirmed declaredReferences string[] plus 39/39 metadata coverage; validate_cautilus_proof.py passed with no proof artifact changed; run_slice_closeout.py --skip-broad-pytest passed.
+- Test duplication pressure: none — metadata/spec artifact slice only; no tests added or expanded.
+- Critique: Fresh-eye classification critique completed with 2 angle reviewers + 1 counterweight reviewer; no Act Before Ship findings; critique artifact: charness-artifacts/critique/2026-06-23-quality-reference-engagement-classification.md.
+- Off-goal findings: none.
+- Lessons carried forward: Next slice can choose remediation from 9 engage-always, 27 on-demand, 3 gate-sufficient; quality-lenses.md is engage-always and remains the required command fragment; tag-aware scoring is valid but deferred.
 - Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
 
 ## Context Sources

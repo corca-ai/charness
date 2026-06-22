@@ -109,7 +109,7 @@ Preferred compatible shape for the quality pilot:
 
 Required fields for each tagged reference:
 
-- `path`: basename or relative reference path already present in
+- reference key: basename or relative reference path already present in
   `declaredReferences`.
 - `engagement`: one of `engage-always`, `on-demand`, `gate-sufficient`.
 - `rationale`: one sentence explaining the classification in terms of the

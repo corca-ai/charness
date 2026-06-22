@@ -51,5 +51,202 @@
     "standing-gate-verbosity.md",
     "testability-and-selection.md",
     "unit-test-quality.md"
-  ]
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when a quality run needs adapter fields, adapter repair, or repo-specific command-surface ownership.",
+      "trigger": "adapter missing, invalid, stale, or under-specified"
+    },
+    "adapter-gate-review.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when a finding is about what should be enforced, recommended, acknowledged, or migrated.",
+      "trigger": "adapter or gate recommendation needs enforcement-tier review"
+    },
+    "agent-production-runtime.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult only when repo evidence shows a user-facing LLM or agent runtime seam.",
+      "trigger": "production agent runtime, provider policy, fallback, telemetry, or serving-path risk"
+    },
+    "automation-promotion.md": {
+      "engagement": "engage-always",
+      "rationale": "The quality workflow always classifies findings as AUTO_EXISTING, AUTO_CANDIDATE, or NON_AUTOMATABLE before recommendations.",
+      "claimRole": "core_workflow_reference"
+    },
+    "behavior-testing.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when deterministic gates cannot honestly prove an agent/user behavior seam.",
+      "trigger": "behavior-proof recommendation or evaluator-backed behavior risk"
+    },
+    "bootstrap-escalations.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when normal quality bootstrap hits missing tools, evaluator proof, Markdown preview, or artifact write-path escalation.",
+      "trigger": "bootstrap path needs non-default escalation"
+    },
+    "bootstrap-posture.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when the task is to leave the repo in a better installed quality-adapter state.",
+      "trigger": "quality adapter bootstrap or setup-state repair"
+    },
+    "boundary-bypass-ratchet.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when tests cross delivery boundaries and the run needs boundary-bypass inventory or ratchet interpretation.",
+      "trigger": "boundary-bypass inventory, ratchet, or exemption review"
+    },
+    "brittle-source-guards.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when source-guard tables or fixed-string prose assertions are present or failing.",
+      "trigger": "brittle source guard finding or matcher migration"
+    },
+    "cautilus-on-demand.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult before any live Cautilus evaluator invocation; ordinary deterministic quality closeout need not read it.",
+      "trigger": "cautilus evaluate fixture, observation, or skill-experiment is being considered"
+    },
+    "ci-recoverable-gate-triage.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when slow local-gate pressure raises the question of moving proof to CI with a CI backstop.",
+      "trigger": "local gate runtime reduction or CI recoverability review"
+    },
+    "cli-ergonomics-smells.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when the repo ships or changes an operator CLI or command registry surface.",
+      "trigger": "CLI ergonomics, command archetype, or mutating-probe review"
+    },
+    "coverage-floor-policy.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when coverage floors, floor drift, exemptions, or coverage gate policy are in scope.",
+      "trigger": "coverage-floor inventory or policy finding"
+    },
+    "dual-implementation-parity.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when duplicate shipped implementations or cross-language schema paths are detected.",
+      "trigger": "dual implementation smell or parity-harness question"
+    },
+    "dup-ratchet.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when duplicate-ratchet output, baseline churn, or clone-family disposition is part of the run.",
+      "trigger": "dup-ratchet finding, baseline update, or clone-family interpretation"
+    },
+    "entrypoint-docs-ergonomics.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when first-touch docs, README, AGENTS, or operator entrypoints are in scope.",
+      "trigger": "entrypoint documentation ergonomics review"
+    },
+    "executable-spec-economics.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when executable specs are slow, duplicated, too broad, or mixed with unit-level proof.",
+      "trigger": "executable-spec runtime, duplication, or layering review"
+    },
+    "gate-classification.md": {
+      "engagement": "engage-always",
+      "rationale": "The quality workflow must classify observed and missing gates before recommending next quality moves.",
+      "claimRole": "core_workflow_reference"
+    },
+    "installable-cli-probes.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when an installable CLI, bootstrap script, or plugin probe surface is under review.",
+      "trigger": "installable CLI probe, doctor, help, or lifecycle ownership review"
+    },
+    "inventory-dispatch.md": {
+      "engagement": "engage-always",
+      "rationale": "The quality workflow routes focused inventories through this dispatch layer before broad recommendations.",
+      "claimRole": "core_workflow_reference"
+    },
+    "lint-ignore-discipline.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when lint suppressions or ignore-policy findings are present.",
+      "trigger": "lint-ignore inventory or retained-suppression decision"
+    },
+    "maintainer-local-enforcement.md": {
+      "engagement": "engage-always",
+      "rationale": "A quality posture run with a canonical final gate must ask how that proof is enforced before push in maintainer clones.",
+      "claimRole": "core_workflow_reference"
+    },
+    "mutation-testing.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when mutation testing is installed, missing, declined, or being proposed.",
+      "trigger": "mutation-testing adapter, workflow, summary, or sampling review"
+    },
+    "operability-signals.md": {
+      "engagement": "engage-always",
+      "rationale": "The quality workflow always includes an operability lens and this repo has standing gates and operator-facing flows.",
+      "claimRole": "quality_lens_detail"
+    },
+    "prompt-asset-policy.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when prompt-affecting instruction surfaces, prompt assets, or evaluator-backed prompt review are in scope.",
+      "trigger": "prompt asset inventory or prompt-regression proof"
+    },
+    "proposal-flow.md": {
+      "engagement": "engage-always",
+      "rationale": "The quality workflow must turn findings into concrete next gates or cleanups with evidence and proposal discipline.",
+      "claimRole": "core_workflow_reference"
+    },
+    "public-spec-layering.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when public executable specs, source guards, or proof layering are in scope.",
+      "trigger": "public spec layering, smoke duplication, or source-guard pressure review"
+    },
+    "quality-lenses.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md routes the ordinary quality judgment phase to this document for the concept, behavior, security, and operability lenses.",
+      "claimRole": "required_command_fragment"
+    },
+    "quality-signal-scorecard.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult before structural cleanup edits driven by clone, coverage, runtime, lint, eval, or review signals.",
+      "trigger": "structural quality cleanup candidate scoring"
+    },
+    "security-npm.md": {
+      "engagement": "gate-sufficient",
+      "rationale": "For this eval claim, npm manifest/lockfile alignment is owned by the deterministic supply-chain gate rather than a normal reference read.",
+      "gate": "scripts/check_supply_chain.py"
+    },
+    "security-overview.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when the security lens needs repo-local versus networked supply-chain proof separation.",
+      "trigger": "security posture or supply-chain finding"
+    },
+    "security-pnpm.md": {
+      "engagement": "gate-sufficient",
+      "rationale": "For this eval claim, pnpm lockfile/package-manager alignment is owned by the deterministic supply-chain gate rather than a normal reference read.",
+      "gate": "scripts/check_supply_chain.py"
+    },
+    "security-uv.md": {
+      "engagement": "gate-sufficient",
+      "rationale": "For this eval claim, uv dependency/lockfile alignment is owned by the deterministic supply-chain gate rather than a normal reference read.",
+      "gate": "scripts/check_supply_chain.py"
+    },
+    "skill-ergonomics.md": {
+      "engagement": "engage-always",
+      "rationale": "This repo authors public and support skills, so a representative quality run must inspect skill ergonomics rather than only syntax.",
+      "claimRole": "repo_specific_core_reference"
+    },
+    "skill-quality.md": {
+      "engagement": "engage-always",
+      "rationale": "This repo authors skills as runtime artifacts, so quality posture must inspect skill quality claims and shipped helper surfaces.",
+      "claimRole": "repo_specific_core_reference"
+    },
+    "standing-doc-provenance.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when standing-rule provenance, dated incident history, or configured provenance scans are in scope.",
+      "trigger": "standing-doc provenance finding or policy review"
+    },
+    "standing-gate-verbosity.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when standing local gate output, runtime, progress signal, or failure detail is under review.",
+      "trigger": "standing gate verbosity or slow-gate output review"
+    },
+    "testability-and-selection.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when slow tests, changed-file selection, mutation, broad E2E coverage, or testability structure are in scope.",
+      "trigger": "testability, selection, slow-test, or mutation-workload review"
+    },
+    "unit-test-quality.md": {
+      "engagement": "on-demand",
+      "rationale": "Consult when a quality run reviews per-test-body authoring rather than suite-level economics.",
+      "trigger": "unit test body quality or fixture/assertion review"
+    }
+  }
 }
