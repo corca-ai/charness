@@ -63,7 +63,15 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      whether the gate proves a behavior contract or only freezes wording and
      whether `find-skills` can surface the support seam from task language
    - treat migration-time exact-prose guards as temporary bridges; when `inventory_skill_ergonomics.py` is cited, closeout uses `prose review result:` to record judgment separately from script fields
-3. Run the meaningful gates that already exist.
+3. Run a bounded quality judgment primer before broad gates.
+   - consult only `references/quality-lenses.md`, `references/inventory-dispatch.md`,
+     `references/automation-promotion.md`, `references/gate-classification.md`,
+     `references/proposal-flow.md`, `references/maintainer-local-enforcement.md`,
+     `references/operability-signals.md`, and, when skills are in scope,
+     `references/skill-quality.md` plus `references/skill-ergonomics.md`
+   - do not chase links from those refs during the primer; use the judgment to choose focused gates and review lenses
+   - open on-demand references only when a concrete gate, inventory, source, or operator finding matches the ref's named trigger/topic; do not scan them for coverage
+4. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - resolve and run the Charness package-root validator `validate_usage_episodes.py` and report `report_usage_episodes.py`; `no_adapter`, `disabled`, and `no_records` are skipped warnings, not product-success proof or failures
    - keep exit-zero attention states visible with `validate_attention_state_visibility.py`; new skipped/advisory states need warning output, artifact-visible status, or an explicit local-noop declaration
@@ -79,7 +87,7 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      route the call through the repo-owned wrapper instead of bare `cautilus evaluate`.
      Supported modes are `fixture`, `observation`, `skill-experiment`; for
      recommend-only behavior tests use `references/behavior-testing.md`.
-4. Inspect four quality lenses; the lens detail and named-expert defaults live in `references/quality-lenses.md`.
+5. Inspect four quality lenses; the lens detail and named-expert defaults live in `references/quality-lenses.md`.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
    - `behavior`: do tests, evals, checks, probes, and command surfaces prove
@@ -88,10 +96,10 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      by repo-local proof or honestly deferred
    - `operability`: are setup, CI, hooks, docs, install/update flows, runtime
      budgets, and maintenance surfaces honest enough to sustain the bar (detail: `references/operability-signals.md`)
-5. Classify each finding by enforcement tier first: `AUTO_EXISTING`,
+6. Classify each finding by enforcement tier first: `AUTO_EXISTING`,
    `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
-6. Classify posture as `healthy`, `weak`, `missing`, or `defer`.
-7. Propose concrete next quality moves.
+7. Classify posture as `healthy`, `weak`, `missing`, or `defer`.
+8. Propose concrete next quality moves.
    - tag each recommended next gate as `active` or `passive`
    - name the exact seam, command family, setup, or deletion/merge/split move
    - implement clear repo-owned automation unless the user asked for review only
@@ -101,12 +109,12 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      implement it the same turn unless review-only was requested.
      If you stop short of an obvious repo-owned deterministic gate, name the
      unresolved enforcement gap.
-8. Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations
+9. Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations
    as `high-leverage`, applying host-exposed
    `reviewer_tiers.high-leverage` fields. Report exactly
    `Delegated Review: executed|blocked|not_applicable`. Blocked requires a concrete
    host or tool signal; use `../../shared/references/fresh-eye-subagent-review.md`.
-9. End with a quality posture summary. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings just because the implemented slice or final gate passed.
+10. End with a quality posture summary. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings just because the implemented slice or final gate passed.
 
 ## Routing
 

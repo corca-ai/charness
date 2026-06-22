@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active; Slices 1-3 are complete and logged.
-- Current slice: Slice 4 — implement the chosen quality remediation.
-- Current slice intent: edit the quality skill flow with exactly one bounded judgment-primer insertion before broad gates, then finding-triggered on-demand routing; no new scripts, no tag-aware builder scoring, no broad quality-flow redesign.
-- Next action: update `skills/public/quality/SKILL.md` to consult only the 9 engage-always references in the primer without chasing links, and to open on-demand references only from concrete findings whose trigger matches `referenceEngagement.trigger`; then sync/validate exported surfaces.
+- Current disposition: active; Slices 1-4 are complete and logged.
+- Current slice: Slice 5 — validate the remediated quality skill run.
+- Current slice intent: capture a representative `/charness:quality` run from the installed/synced skill surface, build the observed packet, and separate the primary deterministic coverage signal from the secondary cautilus rollup.
+- Next action: before any cautilus call, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json`; if allowed, capture the remediated run, build `observed.json`, and verify runtime consultation of `quality-lenses.md` with coverage `0/39 -> >=1/39`.
 - Verification cadence: cheap deterministic checks (markdown/link gates, `run_slice_closeout.py --skip-broad-pytest`, observed-packet parse) at commit boundaries; fresh-eye critique + a real `claude -p` capture at slice boundaries; ONE operator-gated cautilus rollup at the validation boundary.
 - Slice review packet: before fresh-eye slice critique, hand the reviewer intent, changed files + owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and `## Auto-Retro`.
@@ -183,6 +183,20 @@ RESOLVED — all three items below were discussed with the operator during shapi
 - Critique: Fresh-eye decision critique completed with 2 angle reviewers + 1 counterweight reviewer; constraints folded into decision; critique artifact: charness-artifacts/critique/2026-06-23-quality-remediation-decision.md.
 - Off-goal findings: none.
 - Lessons carried forward: Implementation must be exactly one quality SKILL.md primer insertion before broad gates; primer reads only 9 engage-always refs and does not chase linked refs; on-demand refs open only from concrete findings whose trigger matches referenceEngagement.trigger; no tag-aware builder scoring or new scripts in Slice 4.
+- Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
+
+### Slice 4: Quality remediation implementation
+
+- Objective: Implement the chosen #397 quality remediation in the public quality skill flow.
+- Why this approach: The committed decision required a narrow prompt behavior repair before validation: one bounded judgment primer plus finding-triggered on-demand routing.
+- Commits:
+- What changed: Updated skills/public/quality/SKILL.md and the synced plugin export to add a bounded quality judgment primer before broad gates; tightened on-demand routing to named trigger/topic matches; updated the quality claim-fidelity spec comment after workflow renumbering; recorded the quality dogfood scenario review; added implementation critique evidence.
+- Alternatives rejected: Rejected new scripts, tag-aware builder scoring, direct eval-spec leakage into the portable skill, and broader quality-flow redesign.
+- Targeted verification: sync_root_plugin_manifests.py passed; check_skill_surface_preflight passed with quality SKILL.md at 197/200 lines; python3 -m json.tool parsed spec.json and docs/public-skill-dogfood.json; validate_skills.py, validate_packaging.py, validate_packaging_committed.py, check_changed_surfaces.py, check-markdown.sh, check_doc_links.py, check_command_docs.py, check-secrets.sh, validate_cautilus_proof.py, py_compile skill scripts, check_skill_ownership_overlap.py, validate_skill_ergonomics.py, validate_public_skill_validation.py, validate_public_skill_dogfood.py, and validate_critique_artifacts.py passed; run_slice_closeout.py --skip-broad-pytest passed after recording the public-skill scenario review and rerunning with --ack-cautilus-skill-review.
+- Test duplication pressure: none — prompt/spec artifact slice only; no tests added or expanded.
+- Critique: Fresh-eye implementation critique completed with 2 angle reviewers + 1 counterweight reviewer; one Act Before Ship finding on implicit trigger wording was folded; critique artifact: charness-artifacts/critique/2026-06-23-quality-remediation-implementation.md.
+- Off-goal findings: Stale eval spec comment said the quality-lenses route was step 4; corrected while touching the same spec.
+- Lessons carried forward: Slice 5 must prove runtime behavior from the installed/synced quality skill, not only the working-tree prompt: captured /charness:quality must open quality-lenses.md and move observed coverage from 0/39 to at least 1/39.
 - Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
 
 ## Context Sources
