@@ -1,6 +1,6 @@
 # Achieve Goal: START HERE — skill claim-fidelity + doc-philosophy across ALL skills (public + support)
 
-Status: draft
+Status: active
 Created: 2026-06-23
 Activation: `/goal @charness-artifacts/goals/2026-06-23-skill-claim-fidelity-doc-philosophy.md`
 
@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: real draft awaiting activation — shaped this session, not yet pursued.
-- Current slice: before activation (shaping complete).
-- Current slice intent: shape + save; reshape only if the acceptance boundary changes before activation.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-23-skill-claim-fidelity-doc-philosophy.md`; the first executing slice is the methodology spec (Slice 1).
+- Current disposition: active; Slice 1 methodology spec is complete and logged.
+- Current slice: Slice 2 — classify quality's 39 declared references and add compatible engagement tags.
+- Current slice intent: classify the quality reference set against the locked methodology spec, keep `declaredReferences` as a string list, and write engagement metadata beside it.
+- Next action: inspect `evals/cautilus/quality-claim-fidelity/spec.json` and `skills/public/quality/references/`, classify all 39 references, then prove `build-skill-execution-observation.mjs` still parses the tagged spec.
 - Verification cadence: cheap deterministic checks (markdown/link gates, `run_slice_closeout.py --skip-broad-pytest`, observed-packet parse) at commit boundaries; fresh-eye critique + a real `claude -p` capture at slice boundaries; ONE operator-gated cautilus rollup at the validation boundary.
 - Slice review packet: before fresh-eye slice critique, hand the reviewer intent, changed files + owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and `## Auto-Retro`.
@@ -64,7 +64,7 @@ What the user can do to verify completion directly:
 - Read the methodology spec doc and confirm it encodes the 3-way axis (engage-always / on-demand / gate-sufficient) and the per-ref engagement-tag contract — without re-litigating the framing.
 - Open `evals/cautilus/quality-claim-fidelity/spec.json` and see a per-ref engagement classification across quality's 39 references, with `build-skill-execution-observation.mjs` still parsing it.
 - Read the recorded remediation decision + rationale (chosen after classification).
-- **(Primary, locally verifiable)** See the deterministic coverage shift `0/39 → ≥1/39 including quality-lenses.md` from `observed.json` (README steps 1–2, no gate) — this number is the host-side matcher's output, not cautilus's judgment, and it is the success signal.
+- **(Primary, locally verifiable)** See the deterministic coverage shift `0/39 → ≥1/39 including quality-lenses.md` from `observed.json` (README steps 1–2, no gate), backed by an actual runtime read/open of `quality-lenses.md` in the captured session tree. This number is the host-side matcher's output, not cautilus's judgment, and it is the success signal; matcher-only/spec-only changes are not closeout evidence.
 - **(Secondary, operator-gated)** See the single post-remediation cautilus rollup verdict compared to the 2026-06-22 `reject` baseline at `5a9d6fa8`. Note: cautilus may still report `reject` on the `runtime_budget_respect` dimension alone (duration) even when coverage is fixed; a still-slow run is NOT a coverage-fix failure.
 - Read the fan-out classification notes for the 1–2 additional skills and the generalization finding.
 
@@ -84,7 +84,7 @@ What the user can do to verify completion directly:
 ### External Or Live Proof
 
 - ONE operator-gated `cautilus evaluate observation` rollup on the post-remediation arm, run through the `run_cautilus_eval.py` wrapper after `plan_cautilus_proof.py` clears it. Compared to the 2026-06-22 `reject` baseline. No provider/live claims beyond this single rollup; the baseline is the "before", the single run is the "after".
-- **Signal separation (folded from plan critique).** The baseline failed BOTH `skill_task_fidelity` (0/39) and `runtime_budget_respect` (755169ms > 600000ms). The **primary** success signal is the deterministic coverage shift from the observed packet (host-side matcher, settled before cautilus runs); the cautilus recommendation and the `runtime_budget_respect` dimension are **secondary** and reported separately. A coverage-fixing remediation that stays slow will still draw a cautilus `reject` on duration alone — that is not a coverage-fix failure and does not by itself block #397 closeout.
+- **Signal separation (folded from plan critique).** The baseline failed BOTH `skill_task_fidelity` (0/39) and `runtime_budget_respect` (755169ms > 600000ms). The **primary** success signal is the deterministic coverage shift from the observed packet, backed by a real runtime consultation of `quality-lenses.md`; the cautilus recommendation and the `runtime_budget_respect` dimension are **secondary** and reported separately. A coverage-fixing remediation that stays slow will still draw a cautilus `reject` on duration alone — that is not a coverage-fix failure and does not by itself block #397 closeout.
 
 ## Slice Plan
 
@@ -94,7 +94,7 @@ What the user can do to verify completion directly:
 | 2 | Classify quality's 39 refs against the axis; add per-ref engagement tags to the eval `spec.json` (verify matcher tolerance first) | The engage-always set is the gates-green-but-lens discriminator that picks remediation | Tagged `spec.json` + per-ref rationale; observation builder still parses | planned |
 | 3 | Choose the #397 remediation from the classification (front-load gate triage / wire-refs-into-findings / both) | Decided-after-classification per operator; classification is the input | Recorded remediation decision + rationale in this artifact | planned |
 | 4 | Implement the chosen remediation on the quality skill flow + harness wiring; fresh-eye slice critique | The fix is the point of #397; behavior-affecting change needs critique | Edited skill surface, synced exports/mirrors, slice critique findings | planned |
-| 5 | Validate: capture remediated `/charness:quality`, build observed packet (PRIMARY = deterministic coverage shift), then ONE operator-gated cautilus rollup (SECONDARY, may degrade on duration alone) | The single operator-authorized validation; baseline reject already on record | observed.json coverage `0/39 → ≥1/39 incl. quality-lenses.md` (primary) + one cautilus summary (secondary) vs `5a9d6fa8` baseline | planned |
+| 5 | Validate: capture remediated `/charness:quality`, build observed packet (PRIMARY = deterministic coverage shift from runtime consultation), then ONE operator-gated cautilus rollup (SECONDARY, may degrade on duration alone) | The single operator-authorized validation; baseline reject already on record | observed.json coverage `0/39 → ≥1/39 incl. quality-lenses.md` backed by a captured read/open event (primary) + one cautilus summary (secondary) vs `5a9d6fa8` baseline | planned |
 | 6 | Begin fan-out: classify 1–2 more skills' docs against the axis; record whether the same execution-shape gap appears | Operator chose to begin fan-out; validates the spec beyond quality | Per-skill classification notes + a generalization finding | planned |
 
 ## Operator Decision Queue
@@ -128,7 +128,7 @@ each boundary — not a baked-in phase→skill map.
 - Slice 1 (methodology spec) → query find-skills for the upstream contract owner (`spec`).
 - Slice 4 (remediation) → query find-skills for the skill-edit owner (`impl`); validation-shaped closeout → `quality` before HITL/manual.
 - Slice 5 (validation) → cautilus eval-only contract; off-goal findings → `issue`.
-- #397 closeout → staged through `issue` (`Close #397` on the remediation carrier) **only if the closeout predicate holds**: coverage rises `0/39 → ≥1/39 including quality-lenses.md` (the `requiredCommandFragments` matcher passes). Duration / `runtime_budget_respect` is reported but is NOT a close-blocker — #397's stated defect is the 0/39 mechanism gap, not the time budget. If coverage does not move, leave #397 open with the evidence recorded.
+- #397 closeout → staged through `issue` (`Close #397` on the remediation carrier) **only if the closeout predicate holds**: the captured run actually reads/opens `quality-lenses.md`, and observed coverage rises `0/39 → ≥1/39 including quality-lenses.md`. Duration / `runtime_budget_respect` is reported but is NOT a close-blocker — #397's stated defect is the 0/39 mechanism gap, not the time budget. If runtime consultation does not move, leave #397 open with the evidence recorded.
 - Gather: n/a — sources are repo-internal; cautilus is an integration tool, not an external URL source.
 - Release: n/a — no version bump or install-manifest edit expected.
 
@@ -142,6 +142,20 @@ RESOLVED — all three items below were discussed with the operator during shapi
 3. **Broad scope (begin fan-out).** Resolved: scope is bounded to 1–2 additional skills to validate generalization; full all-skills fan-out is an explicit follow-up, not this goal.
 
 ## Slice Log
+
+### Slice 1: Methodology spec
+
+- Objective: Author the skill claim-fidelity/doc-philosophy methodology spec encoding the three-way engagement axis, tag contract, and proof boundaries.
+- Why this approach: Slice 1 is the dependency for quality classification and remediation; the operator settled the axis, so implementation needed a written contract.
+- Commits:
+- What changed: Added charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md; added charness-artifacts/critique/2026-06-23-skill-claim-fidelity-doc-philosophy-spec-critique.md; flipped the goal artifact to active.
+- Alternatives rejected: Rejected treating coverage count alone as #397 closeout; rejected gate-sufficient as deletion-candidate wording; rejected an object list inside declaredReferences because the current builder treats it as a string list.
+- Targeted verification: check_goal_artifact.py --pursue-ready passed before activation; charness worktree doctor passed; check_doc_authoring_preflight passed for the spec; check-markdown.sh passed; check_doc_links.py passed; build-skill-execution-observation.mjs smoke command over the checked-in 2026-06-22 baseline bundle reproduced coverage=0/39; validate_critique_artifacts.py passed for the critique artifact; run_slice_closeout.py --skip-broad-pytest passed.
+- Test duplication pressure: none — documentation/spec slice only; no tests added or expanded.
+- Critique: Fresh-eye spec critique completed with 3 angle reviewers + 1 counterweight reviewer; Act Before Ship findings folded into the spec; critique artifact: charness-artifacts/critique/2026-06-23-skill-claim-fidelity-doc-philosophy-spec-critique.md.
+- Off-goal findings: none.
+- Lessons carried forward: Next slice starts from referenceEngagement beside declaredReferences; #397 proof must show runtime consultation of quality-lenses.md, not matcher theater; remediation decision must be recorded before behavior edits.
+- Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
 
 ## Context Sources
 
@@ -169,12 +183,12 @@ goal + #397 + harness README/spec.json + baseline finding.
 **Blockers folded (all one root: the baseline failed BOTH dimensions, so a coverage-fix that stays slow misreads as a failed validation):**
 
 - (B) Duration confound → folded into Agent Verification Plan (signal separation) + User Acceptance (primary/secondary split): primary = deterministic coverage shift; cautilus `reject`-on-duration is secondary and not a coverage-fix failure.
-- (C) #397 closeout predicate under-specified → folded into Coordination Cues: closeout iff coverage `0/39 → ≥1/39 incl. quality-lenses.md` (matcher passes); duration not a close-blocker.
+- (C) #397 closeout predicate under-specified → folded into Coordination Cues during shaping, then strengthened in Slice 1 critique: closeout iff the captured run actually reads/opens `quality-lenses.md` and observed coverage rises `0/39 → ≥1/39 incl. quality-lenses.md`; duration not a close-blocker.
 - (E) Acceptance bullet asserted a verdict local checks can't fully produce → folded into User Acceptance: split locally-verifiable coverage from operator-gated cautilus rollup.
 
 **Over-worry raised, not folded (confirmed sound as written):**
 
-- (A) Slice 1 (methodology spec) is the right first move; no hidden dependency; slice order sound. Slice 2's "verify matcher tolerance first" is correct and the matcher confirms per-ref engagement tags are additive metadata the builder ignores.
+- (A) Slice 1 (methodology spec) is the right first move; no hidden dependency; slice order sound. Slice 2's parser guard is now concrete: keep `declaredReferences` as a string list and add engagement metadata beside it unless the builder is deliberately changed.
 - (B) The single after-run vs the existing baseline IS a valid before/after — both are deterministic coverage numbers computed host-side, not stochastic judge calls.
 - (C) Fan-out scope is crisply bounded (1–2 skills, classification-only, full fan-out excluded in Non-Goals).
 - (D) No over-anchoring: capture model left unlocked (529-overload lesson), cautilus 0.17.1 pinned via manifest, `max_duration_ms` is a deliberate harness threshold not a host-varying value.
