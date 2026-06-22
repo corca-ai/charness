@@ -3,21 +3,21 @@
 ## Current Focus
 
 - One activated `achieve` goal, 8 slices: a real headless-run usage-validation harness so a charness skill change can be proven by a real `claude -p` run scored by cautilus `evaluate skill-experiment`. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill. (source: `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`)
+- Operator asked why `cautilus version` stayed 0.15.4 after `charness update all`, then "why is cautilus manual? (source: `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
 - **API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 - **Capture-design iteration (S6/S7).** The first capture prompt NAMED the concept refs, so a capable agent reached them by filename in BOTH arms (zero delta). The v2 "follow pointers only" prompt over-corrected into runaway broad exploration (16 refs, no clean result). Two wasted capture passes before settling on the honest v1 result. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- **Markdown lint timing (S4 — minor).** `check-markdown.sh` only lints tracked files, so my pre-`git add` check missed 3 MD errors in the new untracked docs; pre-commit then blocked the commit. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- **Lock-schema strictness misread (one debug cycle).** A quick `additionalProperties` probe reported the lock `doctor` block as permissive; it is actually `additionalProperties: False` with a required list. I designed `update_advisory` persistence assuming permissive -> doctor.py raised a jsonschema ValidationError under `--write-locks` -> CLI exit 1, caught by the CLI lifecycle tests. Root: a one-shot probe of the schema instead of reading the actual schema node / running the validator before persisting a new field into a schema-validated artifact. (source: `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
+- **capability:** behind-latest advisory now exists for every advisory-policy tool via the shared `attach_release_metadata` chokepoint + doctor. (applied, committed.) (source: `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`)
 - **capability:** the claim-fidelity harness now exists and is reusable; the next-session work is execution-shape (gate triage so the judgment phase is reached), NOT a ref disposition redo. (source: `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`)
 - **capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- **code (carried S3 nit):** `findResultEvent` (extractor) and `findClaudeResultEvent` (runner) are duplicated ~10-line scanners; consolidate into a shared `stream-json` helper in a later slice. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 
 ## Selection Policy
 
@@ -78,4 +78,5 @@
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`
+- `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`
 - `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`

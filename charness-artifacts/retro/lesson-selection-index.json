@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-22",
-  "source_artifact_count": 250,
-  "candidate_count": 1200,
+  "source_artifact_count": 251,
+  "candidate_count": 1207,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -565,6 +565,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:923fa221227c",
+      "kind": "current_focus",
+      "lesson": "Operator asked why `cautilus version` stayed 0.15.4 after `charness update all`, then \"why is cautilus manual?",
+      "normalized_key": "operator asked why cautilus version stayed 0 15 4 after charness update all then",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:6b77a4768bed",
       "kind": "current_focus",
       "lesson": "Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill.",
@@ -581,6 +601,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
           "date": "2026-06-22",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7ecbffc056f",
+      "kind": "next_improvement",
+      "lesson": "**capability:** behind-latest advisory now exists for every advisory-policy tool via the shared `attach_release_metadata` chokepoint + doctor. (applied, committed.)",
+      "normalized_key": "capability behind latest advisory now exists for every advisory policy tool via the shared",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -665,6 +705,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:baaf4b769ec5",
+      "kind": "next_improvement",
+      "lesson": "**memory:** \"advisory-policy tool version was silent (recorded latest_tag, never compared); the fix is a behind-latest advisory in the release chokepoint, not auto-update of the evaluator.\" Recorded here.",
+      "normalized_key": "memory advisory policy tool version was silent recorded latest tag never compared the fix",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5a82cf0e5b8d",
       "kind": "next_improvement",
       "lesson": "**memory:** eval-design rule — for a skill-experiment, the capture TASK must make the measured signal (source-coverage) causally require the intervention; a name-hinted task defeats a pointer-directness disposition. Recorded in `charness-artifacts/cautilus/latest.md` Follow-ups + this retro.",
@@ -681,66 +741,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
           "date": "2026-06-22",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:47cba30351e3",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** under repeated `529 Overloaded`, switch model tier early (haiku for bounded file-reading captures) rather than retrying the same tier.",
-      "normalized_key": "workflow under repeated 529 overloaded switch model tier early haiku for bounded file reading",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:27d9bd0a710a",
-      "kind": "next_improvement",
-      "lesson": "**workflow:** When a new measurement (e.g. `0/N` coverage) implicates an artifact set a prior session ruled on, reconcile against that conclusion (handoff / recent-lessons / the disposition artifact) and attribute the symptom to the correct layer BEFORE proposing remediation. Cheap pre-check: grep `charness-artifacts/quality/` + handoff for the artifact set's prior verdict.",
-      "normalized_key": "workflow when a new measurement e g 0 n coverage implicates an artifact set",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
-          "date": "2026-06-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f0cf7c9b6549",
-      "kind": "repeat_trap",
-      "lesson": "**API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier.",
-      "normalized_key": "api 529 overload thrash s6 three sonnet capture attempts failed or partially failed on",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Waste"
         }
       ]
     }
@@ -1297,6 +1297,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:923fa221227c",
+      "kind": "current_focus",
+      "lesson": "Operator asked why `cautilus version` stayed 0.15.4 after `charness update all`, then \"why is cautilus manual?",
+      "normalized_key": "operator asked why cautilus version stayed 0 15 4 after charness update all then",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:6b77a4768bed",
       "kind": "current_focus",
       "lesson": "Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill.",
@@ -1313,6 +1333,26 @@
           "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
           "date": "2026-06-22",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7ecbffc056f",
+      "kind": "next_improvement",
+      "lesson": "**capability:** behind-latest advisory now exists for every advisory-policy tool via the shared `attach_release_metadata` chokepoint + doctor. (applied, committed.)",
+      "normalized_key": "capability behind latest advisory now exists for every advisory policy tool via the shared",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -1397,6 +1437,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:baaf4b769ec5",
+      "kind": "next_improvement",
+      "lesson": "**memory:** \"advisory-policy tool version was silent (recorded latest_tag, never compared); the fix is a behind-latest advisory in the release chokepoint, not auto-update of the evaluator.\" Recorded here.",
+      "normalized_key": "memory advisory policy tool version was silent recorded latest tag never compared the fix",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5a82cf0e5b8d",
       "kind": "next_improvement",
       "lesson": "**memory:** eval-design rule — for a skill-experiment, the capture TASK must make the measured signal (source-coverage) causally require the intervention; a name-hinted task defeats a pointer-directness disposition. Recorded in `charness-artifacts/cautilus/latest.md` Follow-ups + this retro.",
@@ -1411,6 +1471,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:51a3f626ee97",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** before persisting a new field into a schema-validated artifact, confirm the target block's `additionalProperties` by reading the schema node or running the validator on a sample — not a one-shot probe. (applied: caught + fixed via lock_safe_doctor_payload pop this run.)",
+      "normalized_key": "workflow before persisting a new field into a schema validated artifact confirm the target",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
           "date": "2026-06-22",
           "section": "Next Improvements"
         }
@@ -1457,6 +1537,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:90455dea82d9",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** when touching `scripts/agent-runtime/*` (mutation-pooled) or adding files there, run the standing pytest (not just `node --test`) before claiming green. (applied: js-mutation expected lists refreshed this run.)",
+      "normalized_key": "workflow when touching scripts agent runtime mutation pooled or adding files there run the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f0cf7c9b6549",
       "kind": "repeat_trap",
       "lesson": "**API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier.",
@@ -1497,6 +1597,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:cbf9569ec3f9",
+      "kind": "repeat_trap",
+      "lesson": "**Lock-schema strictness misread (one debug cycle).** A quick `additionalProperties` probe reported the lock `doctor` block as permissive; it is actually `additionalProperties: False` with a required list. I designed `update_advisory` persistence assuming permissive -> doctor.py raised a jsonschema ValidationError under `--write-locks` -> CLI exit 1, caught by the CLI lifecycle tests. Root: a one-shot probe of the schema instead of reading the actual schema node / running the validator before persisting a new field into a schema-validated artifact.",
+      "normalized_key": "lock schema strictness misread one debug cycle a quick additionalproperties probe reported the lock",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+          "date": "2026-06-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f85e1e85f6f1",
       "kind": "repeat_trap",
       "lesson": "**Markdown lint timing (S4 — minor).** `check-markdown.sh` only lints tracked files, so my pre-`git add` check missed 3 MD errors in the new untracked docs; pre-commit then blocked the commit.",
@@ -1511,6 +1631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
+          "date": "2026-06-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6f8e18ced604",
+      "kind": "repeat_trap",
+      "lesson": "**Prior-session incomplete green (latent red surfaced).** `tests/quality_gates/ test_js_mutation_tooling.py` had a stale hardcoded pool/sample list since build-skill-execution-observation.mjs landed (4f46230a); `node --test` passed but the standing pytest was never run, so the red shipped. Not this turn's change, but this turn's thorough verification caught it.",
+      "normalized_key": "prior session incomplete green latent red surfaced tests quality gates test js mutation tooling",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
           "date": "2026-06-22",
           "section": "Waste"
         }
