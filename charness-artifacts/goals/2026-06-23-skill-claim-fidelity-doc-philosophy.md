@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active; Slices 1-2 are complete and logged.
-- Current slice: Slice 3 — choose the #397 remediation from the quality reference classification.
-- Current slice intent: use the 9 engage-always / 27 on-demand / 3 gate-sufficient distribution, with `quality-lenses.md` as the required engage-always discriminator, to choose gate triage, reference routing, or both before behavior edits.
-- Next action: record the remediation decision and rationale in this goal before editing the quality skill flow or harness wiring.
+- Current disposition: active; Slices 1-3 are complete and logged.
+- Current slice: Slice 4 — implement the chosen quality remediation.
+- Current slice intent: edit the quality skill flow with exactly one bounded judgment-primer insertion before broad gates, then finding-triggered on-demand routing; no new scripts, no tag-aware builder scoring, no broad quality-flow redesign.
+- Next action: update `skills/public/quality/SKILL.md` to consult only the 9 engage-always references in the primer without chasing links, and to open on-demand references only from concrete findings whose trigger matches `referenceEngagement.trigger`; then sync/validate exported surfaces.
 - Verification cadence: cheap deterministic checks (markdown/link gates, `run_slice_closeout.py --skip-broad-pytest`, observed-packet parse) at commit boundaries; fresh-eye critique + a real `claude -p` capture at slice boundaries; ONE operator-gated cautilus rollup at the validation boundary.
 - Slice review packet: before fresh-eye slice critique, hand the reviewer intent, changed files + owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and `## Auto-Retro`.
@@ -169,6 +169,20 @@ RESOLVED — all three items below were discussed with the operator during shapi
 - Critique: Fresh-eye classification critique completed with 2 angle reviewers + 1 counterweight reviewer; no Act Before Ship findings; critique artifact: charness-artifacts/critique/2026-06-23-quality-reference-engagement-classification.md.
 - Off-goal findings: none.
 - Lessons carried forward: Next slice can choose remediation from 9 engage-always, 27 on-demand, 3 gate-sufficient; quality-lenses.md is engage-always and remains the required command fragment; tag-aware scoring is valid but deferred.
+- Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
+
+### Slice 3: Remediation decision
+
+- Objective: Choose the #397 remediation from the quality reference engagement classification before behavior edits.
+- Why this approach: The goal requires deciding front-load gate triage, reference routing, or both after classification and before editing the quality skill flow.
+- Commits:
+- What changed: Recorded the remediation decision: choose BOTH, ordered narrowly — one bounded quality judgment primer before broad gates, plus finding-triggered on-demand reference routing.
+- Alternatives rejected: Rejected only front-loading because it could satisfy quality-lenses.md while leaving gate findings un-routed; rejected only gate-triggered routing because it could still skip engage-always judgment refs; rejected tag-aware builder scoring and new scripts for this remediation slice.
+- Targeted verification: find-skills routed the decision through quality; classification distribution inspected as 9 engage-always / 27 on-demand / 3 gate-sufficient; bounded fresh-eye decision critique completed with no blocker; run_slice_closeout.py --skip-broad-pytest passed.
+- Test duplication pressure: none — decision artifact slice only; no tests added or expanded.
+- Critique: Fresh-eye decision critique completed with 2 angle reviewers + 1 counterweight reviewer; constraints folded into decision; critique artifact: charness-artifacts/critique/2026-06-23-quality-remediation-decision.md.
+- Off-goal findings: none.
+- Lessons carried forward: Implementation must be exactly one quality SKILL.md primer insertion before broad gates; primer reads only 9 engage-always refs and does not chase linked refs; on-demand refs open only from concrete findings whose trigger matches referenceEngagement.trigger; no tag-aware builder scoring or new scripts in Slice 4.
 - Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
 
 ## Context Sources
