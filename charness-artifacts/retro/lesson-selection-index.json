@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-22",
-  "source_artifact_count": 249,
-  "candidate_count": 1194,
+  "source_artifact_count": 250,
+  "candidate_count": 1200,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -565,6 +565,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6b77a4768bed",
+      "kind": "current_focus",
+      "lesson": "Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill.",
+      "normalized_key": "redesign of the cautilus skill usage validation work after operator review then a pivot",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1f39e5e7c2fd",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the claim-fidelity harness now exists and is reusable; the next-session work is execution-shape (gate triage so the judgment phase is reached), NOT a ref disposition redo.",
+      "normalized_key": "capability the claim fidelity harness now exists and is reusable the next session work",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0159d4cd5908",
       "kind": "next_improvement",
       "lesson": "**capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard.",
@@ -599,6 +639,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:032d537fa9c0",
+      "kind": "next_improvement",
+      "lesson": "**memory:** `0/39 refs in a real quality run = execution-shape (gate-domination bypasses the judgment phase), not a ref-value/reachability verdict (settled 2026-06-21: 0 deletes, discoverability-not-bloat).` Recorded here + `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/finding.md`.",
+      "normalized_key": "memory 0 39 refs in a real quality run execution shape gate domination bypasses",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
           "date": "2026-06-22",
           "section": "Next Improvements"
         }
@@ -645,6 +705,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:27d9bd0a710a",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When a new measurement (e.g. `0/N` coverage) implicates an artifact set a prior session ruled on, reconcile against that conclusion (handoff / recent-lessons / the disposition artifact) and attribute the symptom to the correct layer BEFORE proposing remediation. Cheap pre-check: grep `charness-artifacts/quality/` + handoff for the artifact set's prior verdict.",
+      "normalized_key": "workflow when a new measurement e g 0 n coverage implicates an artifact set",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f0cf7c9b6549",
       "kind": "repeat_trap",
       "lesson": "**API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier.",
@@ -661,86 +741,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
           "date": "2026-06-22",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:143ce29e7b9e",
-      "kind": "repeat_trap",
-      "lesson": "**Capture-design iteration (S6/S7).** The first capture prompt NAMED the concept refs, so a capable agent reached them by filename in BOTH arms (zero delta). The v2 \"follow pointers only\" prompt over-corrected into runaway broad exploration (16 refs, no clean result). Two wasted capture passes before settling on the honest v1 result.",
-      "normalized_key": "capture design iteration s6 s7 the first capture prompt named the concept refs so",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f85e1e85f6f1",
-      "kind": "repeat_trap",
-      "lesson": "**Markdown lint timing (S4 — minor).** `check-markdown.sh` only lints tracked files, so my pre-`git add` check missed 3 MD errors in the new untracked docs; pre-commit then blocked the commit.",
-      "normalized_key": "markdown lint timing s4 minor check markdown sh only lints tracked files so my",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7eab66463867",
-      "kind": "repeat_trap",
-      "lesson": "**Surface-manifest blind spot (S5, S7 — recurred).** The slice closeout blocked twice on new files (`evals/cautilus/skill-experiment/`, then `charness-artifacts/cautilus/skill-experiment-2026-06-22/`) not being in `.agents/surfaces.json`. Pre-commit does NOT catch this; only the closeout does.",
-      "normalized_key": "surface manifest blind spot s5 s7 recurred the slice closeout blocked twice on new",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:6e4bece6775f",
-      "kind": "current_focus",
-      "lesson": "One pickup session that resolved three user-sequenced picks: GitHub **#395** (dup-ratchet `family_id` churn, bug), **chunk-2** (nose 0.14.0 `--root` multi-root clone resolver — a quality-contract change), and **chunk-1** (nose 0.14.0 rollout, ops).",
-      "normalized_key": "one pickup session that resolved three user sequenced picks github 395 dup ratchet family",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
-      "latest_source_date": "2026-06-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md",
-          "date": "2026-06-21",
-          "section": "Context"
         }
       ]
     }
@@ -1297,6 +1297,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6b77a4768bed",
+      "kind": "current_focus",
+      "lesson": "Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill.",
+      "normalized_key": "redesign of the cautilus skill usage validation work after operator review then a pivot",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1f39e5e7c2fd",
+      "kind": "next_improvement",
+      "lesson": "**capability:** the claim-fidelity harness now exists and is reusable; the next-session work is execution-shape (gate triage so the judgment phase is reached), NOT a ref disposition redo.",
+      "normalized_key": "capability the claim fidelity harness now exists and is reusable the next session work",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0159d4cd5908",
       "kind": "next_improvement",
       "lesson": "**capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard.",
@@ -1337,6 +1377,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:032d537fa9c0",
+      "kind": "next_improvement",
+      "lesson": "**memory:** `0/39 refs in a real quality run = execution-shape (gate-domination bypasses the judgment phase), not a ref-value/reachability verdict (settled 2026-06-21: 0 deletes, discoverability-not-bloat).` Recorded here + `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/finding.md`.",
+      "normalized_key": "memory 0 39 refs in a real quality run execution shape gate domination bypasses",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5a82cf0e5b8d",
       "kind": "next_improvement",
       "lesson": "**memory:** eval-design rule — for a skill-experiment, the capture TASK must make the measured signal (source-coverage) causally require the intervention; a name-hinted task defeats a pointer-directness disposition. Recorded in `charness-artifacts/cautilus/latest.md` Follow-ups + this retro.",
@@ -1371,6 +1431,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
+          "date": "2026-06-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:27d9bd0a710a",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** When a new measurement (e.g. `0/N` coverage) implicates an artifact set a prior session ruled on, reconcile against that conclusion (handoff / recent-lessons / the disposition artifact) and attribute the symptom to the correct layer BEFORE proposing remediation. Cheap pre-check: grep `charness-artifacts/quality/` + handoff for the artifact set's prior verdict.",
+      "normalized_key": "workflow when a new measurement e g 0 n coverage implicates an artifact set",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
           "date": "2026-06-22",
           "section": "Next Improvements"
         }
@@ -1431,6 +1511,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
+          "date": "2026-06-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bf07041a15cf",
+      "kind": "repeat_trap",
+      "lesson": "**Re-litigating a settled decision (the headline miss).** My next-session proposal told the operator to \"diagnose 39 refs → classify orphaned → prune.\" The 2026-06-21 disposition already concluded the opposite, operator-reframed: **delete 0, \"nothing is meaningless,\" \"un-routed ≠ worthless, test-pin ≠ valuable — the defect is a discoverability gap, not bloat,\"** and that the routing heuristic **over-flags \"orphan.\"** I also let the same \"prune orphaned refs\" framing into the filed issue #397.",
+      "normalized_key": "re litigating a settled decision the headline miss my next session proposal told the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+          "date": "2026-06-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5b04e48b871e",
+      "kind": "repeat_trap",
+      "lesson": "**Reinvention framing of an existing capability.** I verified plugin-resolution isolation (Q1) and headless slash-command invocation (Q2) and drafted a skill-clone-experiment + `review variants` capture stack as if building new, when cautilus already ships the `dev/skill` execution eval surface (`evaluate observation` + `skill-test-claude-backend`/`-expectations`, token-telemetry that the operator had already optimized). The empirical verification was reused in the final harness, so the loss was bounded — but the initial direction (a bespoke review-variants/bare-A-B path in the committed spec) was wrong until the operator pointed me to reuse. Root: I read cautilus narrowly (scorer + comparison-prepare) and didn't survey the CLI surface, so I missed the dev/skill seam.",
+      "normalized_key": "reinvention framing of an existing capability i verified plugin resolution isolation q1 and headless",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
+      "latest_source_date": "2026-06-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md",
           "date": "2026-06-22",
           "section": "Waste"
         }

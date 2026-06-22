@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One activated `achieve` goal, 8 slices: a real headless-run usage-validation harness so a charness skill change can be proven by a real `claude -p` run scored by cautilus `evaluate skill-experiment`. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- One pickup session that resolved three user-sequenced picks: GitHub **#395** (dup-ratchet `family_id` churn, bug), **chunk-2** (nose 0.14.0 `--root` multi-root clone resolver — a quality-contract change), and **chunk-1** (nose 0.14.0 rollout, ops). (source: `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`)
+- Redesign of the cautilus skill-usage validation work after operator review, then a pivot to a single-arm claim-fidelity eval of the `quality` skill. (source: `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`; sources: 50)
+- **capability:** the claim-fidelity harness now exists and is reusable; the next-session work is execution-shape (gate triage so the judgment phase is reached), NOT a ref disposition redo. (source: `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`)
 - **capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 - **code (carried S3 nit):** `findResultEvent` (extractor) and `findClaudeResultEvent` (runner) are duplicated ~10-line scanners; consolidate into a shared `stream-json` helper in a later slice. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- **memory:** eval-design rule — for a skill-experiment, the capture TASK must make the measured signal (source-coverage) causally require the intervention; a name-hinted task defeats a pointer-directness disposition. Recorded in `charness-artifacts/cautilus/latest.md` Follow-ups + this retro. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
 
 ## Selection Policy
 
@@ -77,5 +77,5 @@
 - `charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-21-issue-395-and-multiroot-resolver-retro.md`
 - `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`
+- `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`

@@ -68,11 +68,16 @@ completed in ~12.6 min / 53 turns):
 - **Tool profile: Bash=77, Read=8, Edit=3, Write=2, Agent=1.** The skill's work
   was gate execution and interpretation, not reference-driven judgment.
 - It still produced a capable posture summary (found a real `dup-ratchet` red gate
-  and a CI enforcement gap) — so the gap is not competence; it is that the skill's
-  **reference corpus is bypassed by its actual gate-driven behavior**.
+  and a CI enforcement gap) — so the gap is not competence; the gate-driven run
+  **never enters the reference-consulting / judgment phase**, so the references go
+  unread at runtime.
 - Claim matcher: `failed` (required `quality-lenses.md` not read); duration
   exceeded the 600000ms bar — both feed a cautilus `reject`/degrade.
 
-Improvement direction this surfaces: either wire the references into the
-gate-driven flow so they are reached at the point of need, or prune the orphaned
-ones. Re-running this harness after such a change is the before/after proof.
+This is an **execution-shape** signal, not a reference-value verdict: ref value is
+settled (2026-06-21 disposition — delete 0, "discoverability gap, not bloat"; blind
+A/B 7/7 reach-via-pointer). Improvement direction: make the runtime reach the
+judgment phase (triage the front-loaded gate suite) and/or wire references into the
+gate-driven flow so the proven-good routing is reached at the point of need.
+Pruning is out of scope. Re-running this harness after such a change is the
+before/after proof.

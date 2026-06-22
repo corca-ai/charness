@@ -31,25 +31,34 @@ observation` (operator-authorized, transcript justification-log) scored it into
 - tool profile: **Bash=77**, Read=8, Edit=3, Write=2, Skill=1, Agent=1.
 - tokens: 8,948,439 total (78,396 output; 8,510,977 cache-read).
 
-## What it means
+## What it means (execution shape, NOT reference value)
 
 The quality skill's intelligence goes into running and interpreting ~77 gate
-commands, not into reading its own 39-file reference corpus (0/39). The references
-are **dead weight relative to actual behavior** — even the 2026-06-21 disposition
-that *added inline routing pointers* to seven of them did not change reading
-behavior (which also explains the earlier skill-experiment zero-delta: neither arm
-read the routed refs). The skill keeps its OUTPUT claim (it produces a posture
-review) but not its MECHANISM claim (route to references at the point of need).
+commands; the run never enters the reference-consulting / judgment phase, so it
+reads 0/39 of its references. This is a symptom of **where the runtime spends
+itself**, not a value verdict on the references.
 
-## Improvement directions surfaced
+Reference value is settled and not reopened here: the 2026-06-21 disposition
+concluded **delete 0, "nothing is meaningless, un-routed ≠ worthless — the defect
+is a discoverability gap, not bloat,"** and the blind A/B proved **7/7
+reach-via-pointer** when the agent does a ref-seeking task. The references are
+valuable AND well-routed AND reachable-on-demand; the gate-driven runtime simply
+never creates the demand. (This also explains the earlier skill-experiment
+zero-delta: neither arm reached the reference-consulting phase.) The skill keeps
+its OUTPUT claim but not its MECHANISM claim (route to references at the point of
+need).
 
-1. **Wire references into the gate-driven flow** so they are reached at the point
-   of need (e.g., a gate's finding cites the reference the agent must open to
-   classify it), or
-2. **Prune the orphaned references** the runtime never consults, or
-3. **Trim/triage the front-loaded gate suite** so judgment-phase work (lenses,
-   references) is reached well inside a sane time budget.
+## Improvement directions surfaced (execution-shape only)
 
+1. **Make the runtime reach the judgment phase.** Triage the front-loaded gate
+   suite so the 4-lens / reference-consulting work is reached well inside a sane
+   time budget (the run spent ~12.6 min + 77 Bash calls before any judgment-layer
+   read).
+2. **Wire references into the gate-driven flow** so the proven-good routing layer
+   is reached at the point of need (e.g., a gate finding cites the reference
+   needed to classify it).
+
+Pruning / re-judging refs is explicitly out of scope (settled 2026-06-21).
 Re-running this harness after such a change is the before/after proof. This is
 also the first end-to-end use of cautilus's `dev/skill` execution surface from
 charness as a host (see the cautilus-usefulness issue this motivates).
