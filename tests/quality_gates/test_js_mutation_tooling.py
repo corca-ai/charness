@@ -49,6 +49,7 @@ def test_js_mutation_pool_is_agent_runtime_only() -> None:
     assert targets == [
         "scripts/agent-runtime/codex-eval-runtime.mjs",
         "scripts/agent-runtime/contract-versions.mjs",
+        "scripts/agent-runtime/extract-skill-experiment-input.mjs",
         "scripts/agent-runtime/instruction-surface-case-suite.mjs",
         "scripts/agent-runtime/instruction-surface-support.mjs",
         "scripts/agent-runtime/run-local-eval-test.mjs",
@@ -59,15 +60,19 @@ def test_js_mutation_pool_is_agent_runtime_only() -> None:
 
 
 def test_js_native_tests_import_every_mutated_agent_runtime_module() -> None:
-    test_source = (ROOT / "tests" / "agent-runtime" / "native.test.mjs").read_text(encoding="utf-8")
-    imported_runtime_modules = sorted(
-        {
-            str((ROOT / "tests" / "agent-runtime" / match).resolve().relative_to(ROOT).as_posix())
-            for match in re.findall(r'from "(\.\./\.\./scripts/agent-runtime/[^"]+\.mjs)"', test_source)
-        }
-    )
+    # The invariant is coverage: every mutated module must be imported by *some*
+    # native test. Scan all tests/agent-runtime/*.test.mjs so the gate stays
+    # correct as the suite grows beyond a single native.test.mjs file.
+    test_dir = ROOT / "tests" / "agent-runtime"
+    imported_runtime_modules: set[str] = set()
+    for test_file in test_dir.glob("*.test.mjs"):
+        test_source = test_file.read_text(encoding="utf-8")
+        for match in re.findall(r'from "(\.\./\.\./scripts/agent-runtime/[^"]+\.mjs)"', test_source):
+            imported_runtime_modules.add(
+                str((test_dir / match).resolve().relative_to(ROOT).as_posix())
+            )
 
-    assert imported_runtime_modules == list_js_targets(ROOT)
+    assert sorted(imported_runtime_modules) == list_js_targets(ROOT)
 
 
 def test_js_mutation_full_mode_samples_targets(monkeypatch) -> None:
