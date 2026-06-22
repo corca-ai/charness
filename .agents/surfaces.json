@@ -137,7 +137,8 @@
         "skills/support/*/references/**"
       ],
       "derived_paths": [
-        "charness-artifacts/cautilus/latest.md"
+        "charness-artifacts/cautilus/latest.md",
+        "charness-artifacts/cautilus/skill-experiment-*/**"
       ],
       "sync_commands": [],
       "verify_commands": [

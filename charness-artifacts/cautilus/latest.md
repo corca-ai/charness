@@ -1,73 +1,78 @@
 # Cautilus Dogfood
-Date: 2026-05-12
+Date: 2026-06-22
 
 ## Trigger
 
-- slice: Charness standing-test economics and CI/local gate parity release.
-- source: `validate-cautilus-proof` required refreshing
-  `charness-artifacts/cautilus/latest.md` because prompt-affecting quality
-  skill surfaces changed.
+- slice: cautilus skill-experiment usage-validation harness — the one real
+  baseline-vs-variant proof run (goal
+  `charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness.md`).
+- source: operator-approved single eval-only run proving the capture → extract →
+  score chain emits a real verdict from real `claude -p` transcripts.
 
 ## Validation Goal
 
 - goal: preserve
-- reason: confirm the whole-repo routing surface still selects `quality` for
-  slow-gate and evaluator-backed validation requests after strengthening the
-  no-CI-only and pytest-temp-footprint guidance.
+- reason: confirm the chain emits a real, honest verdict; this single-capture
+  run is deliberately not a power-bearing A/B (the verdict is the chain working,
+  not a promotion claim).
 
 ## Change Intent
 
-- `prompt_affecting_change`
-- `skill_core_change`
-- `scenario_review_change`
-- changed surfaces:
-  - `skills/public/quality/SKILL.md`
-  - `skills/public/quality/references/maintainer-local-enforcement.md`
+- harness/eval-tooling change: new stream-json transcript capture + extractor +
+  obligations spec; no public prompt surface semantics changed.
+- the quality-ref disposition `5ded9f3a` (variant) vs `b01cee6b` (baseline) is
+  the subject under evaluation, not a change landed by this run.
 
 ## Prompt Surfaces
 
-- `skills/public/quality/SKILL.md` now treats `CI-only` quality gates as a
-  strong warning and requires quality proof to be reachable from a local
-  standing, release, update, or refresh gate.
-- `skills/public/quality/references/maintainer-local-enforcement.md` now
-  classifies `CI-only` wording as forbidden quality-gate language instead of a
-  waiver and keeps explicit local release/update/refresh gates as the allowed
-  alternative.
+- subject under evaluation (read-only): `skills/public/quality/SKILL.md` and its
+  `references/**` at variant `5ded9f3a` vs baseline `b01cee6b`.
+- planner reported zero prompt-affecting changed paths for this run; the harness
+  files are eval tooling, not prompt surfaces.
+
+## Behavior Source
+
+- source-kind: transcript
+- source-ref: `charness-artifacts/cautilus/skill-experiment-2026-06-22/`
+- note: two real haiku-4.5 `claude -p` quality-task transcripts captured in
+  isolated read-only worktrees (baseline.transcript.jsonl + variant.transcript.jsonl),
+  extracted to input.v1.json; no shared install clone was mutated.
 
 ## Commands Run
 
-- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`
-- `cautilus eval evaluate --input .cautilus/runs/20260512T103215557Z-run/eval-observed.json`
+- planner consult (verbatim, read-only): `python3 scripts/plan_cautilus_proof.py
+  --repo-root . --json` → `next_action: none`, `must_ask_before_running: true`,
+  `run_mode: ask`, `goal: preserve` (hardcoded; authorization is the operator's
+  explicit one-run approval + the transcript justification-log, not a planner green).
+- `python3 scripts/run_cautilus_eval.py --mode skill-experiment --justification-log
+  charness-artifacts/cautilus/skill-experiment-2026-06-22/justification.md --
+  --input .../input.v1.json --output .../report.json`
 
 ## Regression Proof
 
-- live eval run: `.cautilus/runs/20260512T103215557Z-run/`
-- eval test result: runner command passed in 65816ms; recommendation
-  `accept-now`.
-- eval evaluate result: 5 passed / 0 failed / 0 blocked.
-- proof class: `declared-eval-runner`, runtime `codex`, target surface
-  `dev/repo`, `productProofReady: true`.
-- routing summary: bootstrap helper `find-skills` matched in 5/5 cases;
-  durable work skills matched `impl` 2/2, `quality` 2/2, and `spec` 1/1.
-
-## Scenario Review
-
-- The active planner requested scenario review because `quality` skill core
-  text changed.
-- No maintained scenario registry change is needed for this slice: the
-  existing whole-repo fixture already contains the slow-gate and
-  evaluator-backed validation routing cases that exercise `quality`.
-- The expected behavior is preservation of routing to `quality`, not a new
-  Cautilus scenario or compare proof.
+- cautilus evaluate skill-experiment: both arms passed (variant_ran: true,
+  baseline_comparable: true); 0 failed runs.
+- promotion_recommendation: `discard` — `source_coverage_delta.gained: []` and
+  `lost: []` (baselineCovered 6 == variantCovered 6 of 7 obligations); rubric
+  status `pass`; finding severity `note` ("no declared coverage or rubric delta
+  requires promotion").
+- report: `charness-artifacts/cautilus/skill-experiment-2026-06-22/report.json`
+  (schema `cautilus.skill_clone_experiment_report.v1`).
 
 ## Outcome
 
-- recommendation: accept.
-- Charness can release the standing-test-footprint, release-gate, and
-  no-CI-only local-enforcement repairs once deterministic quality gates pass.
+- recommendation: accept the proof as a chain demonstration, not a promotion
+  signal. The chain (capture → extract → cautilus scorer) emitted a real
+  `discard` verdict from real transcripts.
+- honest reading: `discard` reflects zero source-coverage delta — both arms read
+  the same six references. This disposition improved pointer-*directness*
+  (reach-via-pointer, measured 7/7 by the prior routing blind A/B), which the
+  source-coverage lens does not measure; it is not a "bad disposition" signal.
 
 ## Follow-ups
 
-- Extend quality's consumer-facing recommendations from this slice: report
-  pytest temp footprint, duplicated fixture materialization, and forbidden
-  CI-only gates as explicit quality findings for Charness users.
+- The full multi-scenario baseline-vs-variant sweep stays an operator decision
+  (one paid run authorized; a second run re-enters the operator queue).
+- If a future eval wants source-coverage to discriminate this class of
+  disposition, design a no-name-hint task so pointer-following is the only path
+  to the refs (a name-hinted task lets a capable agent reach refs by filename).

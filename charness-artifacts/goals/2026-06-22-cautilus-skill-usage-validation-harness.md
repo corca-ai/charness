@@ -13,10 +13,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 — baseline↔variant capture via isolated read-only worktrees. S1–S5 DONE; the full capture→extract→score chain is built, tested, and plumbing-proven; spec authored with real obligations.
-- Current disposition: ACTIVE (pursued 2026-06-22). Only the two real captures (S6) + the single scorer run (S7) remain. S6 is the External/Live boundary's prerequisite — it spends real `claude -p` tokens.
-- Current slice intent: Slice 6 captures two stream-json transcripts — baseline worktree (origin/main pre-disposition) vs variant worktree (`5ded9f3a`) — by running a real quality-task `claude -p` in each worktree (cwd=worktree, reads worktree skill refs; NO shared install-clone mutation). Restore/clean every worktree.
-- Next action: implement Slice 6 — create two read-only worktrees at the baseline/variant refs, run the bounded real captures, persist transcripts, then S7 builds the input + the one scorer run. Open nit carried: DRY findResultEvent/findClaudeResultEvent.
+- Current slice: Slice 8 — closeout. S1–S7 DONE: the chain is built, tested, plumbing-proven, and PROVEN END-TO-END by one real cautilus verdict (`discard`, honest zero-coverage-delta) from two real haiku captures.
+- Current disposition: ACTIVE (pursued 2026-06-22). The empirical proof landed. Closeout = broad gate (or substitute) + retro dispositions + handoff update + flip to complete.
+- Current slice intent: Slice 8 runs the final broad gate with the verification lock, disposes the carried nit + the eval-design lesson, updates the handoff, and flips the goal to complete with honest non-claims.
+- Next action: implement Slice 8 — closeout preflight (describe_goal_closeout_shape), broad gate / substitute, retro, handoff, status→complete. Carried nit: DRY findResultEvent/findClaudeResultEvent (disposition in Auto-Retro).
 - Verification cadence: cheap deterministic checks at commit boundaries; runner smoke + fresh-eye critique at slice boundaries; the one real Cautilus run at the External/Live boundary; broad gate at closeout.
 - Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`; final/bundle proof records the verification lock and uses `--verification-lock`.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed files and owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
@@ -96,8 +96,8 @@ What the user can do to verify completion directly.
 | 3 | Keystone: transcript → `skill_clone_experiment_input.v1` extractor (sourceRefs capture) | The chain's keystone the original plan omitted; fixture + run both need it | Extractor unit: known transcript → expected `output.sourceRefs`; emitted JSON validates against the schema | **done** (9/9 unit + real CLI + NO-blocker fresh-eye critique, 2 findings folded; see Slice Log S3) |
 | 4 | Wire the wrapper invocation: justification-log + full `-- --input/--output` | Two-file roles (BLOCKER-3) must be correct or the run fails | `run_cautilus_eval.py --dry-run ... -- --input --output` accepts both the gate and the schema | **done** (dry-run assembles two-file command + planner-override note; negative gate refuses raw jsonl/wrong-kind; see Slice Log S4) |
 | 5 | Author quality-skill `sourceCoverageObligations` + `rubricPhrases` | The eval needs obligations/rubric (existing fixtures are routing sentinels on a different schema) | Obligations/rubric defined; validator-extend-vs-runtime-artifact decision recorded (install validator only knows `evaluation_input.v1`) | **done** (spec.json = runtime artifact, 7 routed obligations; surface declared; 10/10 tests; see Slice Log S5) |
-| 6 | Baseline↔variant capture via isolated read-only worktrees | The A/B arms — proposal's proven method; avoids mutating the shared install clone (BLOCKER-2) | Two transcripts captured at baseline vs `5ded9f3a`; any clone/worktree restored/cleaned | planned |
-| 7 | One real Cautilus proof run (gated, External/Live) | The empirical proof the whole chain emits a verdict | Recorded promote/revise/discard in `charness-artifacts/cautilus/latest.md` (labeled single-capture proof) + planner output verbatim | planned |
+| 6 | Baseline↔variant capture via isolated read-only worktrees | The A/B arms — proposal's proven method; avoids mutating the shared install clone (BLOCKER-2) | Two transcripts captured at baseline vs `5ded9f3a`; any clone/worktree restored/cleaned | **done** (two clean haiku captures; worktrees removed; install clone untouched at d2cf1b75; see Slice Log S7) |
+| 7 | One real Cautilus proof run (gated, External/Live) | The empirical proof the whole chain emits a verdict | Recorded promote/revise/discard in `charness-artifacts/cautilus/latest.md` (labeled single-capture proof) + planner output verbatim | **done** (verdict `discard` = honest zero-coverage-delta; planner verbatim recorded; see Slice Log S7) |
 | 8 | Closeout | Task-completing repo work: prove, reflect, hand off | `check_goal_artifact.py` complete + broad gate (or substitute) green + retro dispositions + handoff updated | planned |
 
 ## Operator Decision Queue
@@ -191,6 +191,20 @@ Phase routing defers to `find-skills` at the point of need — no inline phase�
 - Critique: n/a — data/spec authoring slice; no new code logic. The load-bearing extractor already passed the S3 fresh-eye critique; this slice only feeds it real obligations.
 - Off-goal findings:
 - Lessons carried forward: DECISION: spec.json is a RUNTIME ARTIFACT (validated by the extractor's build-time checks + the new JS test), not a cautilus-schema fixture — no validator extension. New files under evals/cautilus/ need a .agents/surfaces.json source_paths entry or run_slice_closeout blocks on unmatched-surface (pre-commit does NOT catch this; the closeout does). Added evals/cautilus/skill-experiment/** to the prompt-behavior-proof surface.
+- Metrics:
+
+### Slice 6: S7: One real cautilus skill-experiment proof run (External/Live)
+
+- Objective: Capture two real claude -p quality transcripts (baseline b01cee6b vs variant 5ded9f3a) in isolated worktrees, extract to input.v1, and run the single authorized cautilus evaluate skill-experiment scorer; record the verdict + planner output in latest.md.
+- Why this approach: The empirical proof the whole chain emits a real verdict. Captures via direct claude -p in read-only worktrees (cwd=worktree, reads worktree skill refs) avoided the BLOCKER-2 install-clone mutation hazard.
+- Commits: (this commit)
+- What changed: NEW charness-artifacts/cautilus/skill-experiment-2026-06-22/{baseline,variant}.transcript.jsonl + input.v1.json + report.json + justification.md; REWROTE charness-artifacts/cautilus/latest.md (skill-experiment verdict, goal: preserve); .agents/surfaces.json (+skill-experiment-*/ derived_path).
+- Alternatives rejected:
+- Targeted verification: PLANNER (verbatim, read-only): next_action=none, must_ask_before_running=true, run_mode=ask, goal=preserve (hardcoded; authorization = operator one-run approval + transcript justification-log per BLOCKER-4). Both captures clean (is_error=False, haiku-4.5, ~$0.15 total). Extractor cwd-relativized refs. SCORER VERDICT: promotion_recommendation=DISCARD; variant_ran=true, baseline_comparable=true, rubric=pass; source_coverage_delta.gained=[] lost=[] (both covered 6/7); finding severity=note. validate_cautilus_proof + validate_surfaces + check-secrets green; 37 cautilus artifact tests pass.
+- Test duplication pressure:
+- Critique: n/a within this slice — the load-bearing extractor/runner already passed the S3 fresh-eye critique; S7 executes the proven chain. The honest verdict (discard, not a gamed promote) is itself north-star-aligned.
+- Off-goal findings: none
+- Lessons carried forward: HONEST RESULT: verdict=discard reflects ZERO source-coverage delta — both arms read the SAME 6 refs. Two capture designs tested: (v1) naming the concept refs lets a capable agent reach them by FILENAME in both arms (no delta); (v2) Read-only pointer-following produced runaway broad exploration. Insight: this disposition improves pointer-DIRECTNESS (reach-via-pointer, prior routing A/B 7/7), which source-coverage (which-files-read) cannot measure. The chain works end-to-end; the lens is orthogonal to this disposition class. API 529 overload made sonnet captures fail; haiku captured cleanly. Install clone ~/.agents/src/charness untouched (d2cf1b75); worktrees removed.
 - Metrics:
 
 ## Context Sources

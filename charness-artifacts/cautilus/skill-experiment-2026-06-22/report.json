@@ -1,0 +1,117 @@
+{
+  "baseline": {
+    "id": "baseline",
+    "role": "baseline",
+    "skillId": "quality",
+    "skillPath": "skills/public/quality",
+    "sourceRefs": [
+      "skills/public/quality/SKILL.md",
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ],
+    "status": "passed",
+    "summary": "## Reference Files Opened I followed the explicit links from `skills/public/quality/SKILL.md` and read these six reference files that cover your specified co..."
+  },
+  "baseline_comparable": true,
+  "baseline_vs_variant_delta": {
+    "addedSourceCoverage": [],
+    "baselineLength": 1746,
+    "lengthDelta": 278,
+    "lostSourceCoverage": [],
+    "sharedSourceCoverage": [
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ],
+    "summary": "variant changes output text without changing declared source coverage",
+    "variantLength": 2024
+  },
+  "experimentId": "quality-ref-disposition-2026-06-21",
+  "findings": [
+    {
+      "message": "no declared coverage or rubric delta requires promotion",
+      "severity": "note"
+    }
+  ],
+  "generatedAt": "2026-06-22T01:19:55.317918042Z",
+  "isolation_notes": [
+    "baseline and variant captured in isolated read-only git worktrees",
+    "no shared install clone (~/.agents/src/charness) mutated"
+  ],
+  "promotion_recommendation": "discard",
+  "rubric_match": {
+    "baselineMatched": [
+      "quality",
+      "reference"
+    ],
+    "gained": [],
+    "matched": [
+      "quality",
+      "reference"
+    ],
+    "missing": [],
+    "status": "pass"
+  },
+  "schemaVersion": "cautilus.skill_clone_experiment_report.v1",
+  "source_coverage_delta": {
+    "baselineCovered": [
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ],
+    "exemplarCovered": [],
+    "expected": [
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/brittle-source-guards.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ],
+    "gained": [],
+    "lost": [],
+    "required": [],
+    "stillMissing": [],
+    "variantCovered": [
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ]
+  },
+  "taskPacket": {
+    "sourceRef": "charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md",
+    "summary": "Using the quality skill in this repo, identify and read the reference files needed to review a repo's quality gates across operability, the quality lenses, executable-spec economics, lint-ignore discipline, dual-implementation parity, and adapter gate review; report which references you consulted."
+  },
+  "variant": {
+    "id": "variant",
+    "role": "variant",
+    "skillId": "quality",
+    "skillPath": "skills/public/quality",
+    "sourceRefs": [
+      "skills/public/quality/SKILL.md",
+      "skills/public/quality/references/adapter-gate-review.md",
+      "skills/public/quality/references/dual-implementation-parity.md",
+      "skills/public/quality/references/executable-spec-economics.md",
+      "skills/public/quality/references/lint-ignore-discipline.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/quality/references/quality-lenses.md"
+    ],
+    "status": "passed",
+    "summary": "Perfect. I've now read all six reference files that SKILL.md explicitly points to for the quality concepts you requested. Here are the files I opened with th..."
+  },
+  "variant_ran": true
+}

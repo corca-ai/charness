@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "cautilus.skill_clone_experiment_input.v1",
+  "experimentId": "quality-ref-disposition-2026-06-21",
+  "taskPacket": {
+    "summary": "Using the quality skill in this repo, identify and read the reference files needed to review a repo's quality gates across operability, the quality lenses, executable-spec economics, lint-ignore discipline, dual-implementation parity, and adapter gate review; report which references you consulted.",
+    "sourceRef": "charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md"
+  },
+  "baseline": {
+    "status": "passed",
+    "output": {
+      "text": "## Reference Files Opened\n\nI followed the explicit links from `skills/public/quality/SKILL.md` and read these six reference files that cover your specified concepts:\n\n1. **skills/public/quality/references/operability-signals.md** — Defines how to treat runtime drift, diagnostic visibility, operator takeover guidance, and workflow runtime changes as first-class operability concerns; covers timing signals, slow gate triage, and log retention.\n\n2. **skills/public/quality/references/quality-lenses.md** — Establishes the four core quality lenses (concept integrity, behavior confidence, security posture, operability sustainability) with boundary notes and named expert defaults for each lens.\n\n3. **skills/public/quality/references/executable-spec-economics.md** — Describes how to evaluate whether executable specs prove boundary behavior or duplicate cheaper tests; lists common failure modes and a preferred fix order that deletes duplicates before optimizing.\n\n4. **skills/public/quality/references/lint-ignore-discipline.md** — Treats lint suppressions as local contracts that surface review pressure points; recommends structural fixes first, then narrow rule-specific comments when suppression remains.\n\n5. **skills/public/quality/references/dual-implementation-parity.md** — Classifies dual-implementation signals and requires explicit relationship (parity harness, canonical choice with deletion/wrap, or intentional documented divergence) rather than undefined middle-ground drift.\n\n6. **skills/public/quality/references/adapter-gate-review.md** — Defines enforcement tiers (`AUTO_EXISTING`, `AUTO_CANDIDATE`, `NON_AUTOMATABLE`) and distinguishes structural facts from contextual recommendations; covers template-first artifact gates.",
+      "sourceRefs": [
+        "skills/public/quality/SKILL.md",
+        "skills/public/quality/references/adapter-gate-review.md",
+        "skills/public/quality/references/dual-implementation-parity.md",
+        "skills/public/quality/references/executable-spec-economics.md",
+        "skills/public/quality/references/lint-ignore-discipline.md",
+        "skills/public/quality/references/operability-signals.md",
+        "skills/public/quality/references/quality-lenses.md"
+      ]
+    },
+    "skillId": "quality",
+    "skillPath": "skills/public/quality"
+  },
+  "variant": {
+    "status": "passed",
+    "output": {
+      "text": "Perfect. I've now read all six reference files that SKILL.md explicitly points to for the quality concepts you requested. Here are the files I opened with their contributions:\n\n## Reference Files Opened\n\n**skills/public/quality/references/operability-signals.md** — Defines what makes a repo maintainable: runtime drift visibility, operator handoff guidance, slow-gate triage methodology, diagnostic/log quality and retention practices.\n\n**skills/public/quality/references/quality-lenses.md** — Establishes the four core quality assessment lenses (concept, behavior, security, operability) with named expert reference points and boundary notes on when to apply structural simplification vs. new enforcement gates.\n\n**skills/public/quality/references/executable-spec-economics.md** — Distinguishes healthy executable specs (proving boundary behavior) from weak ones (duplicating unit tests), with a preferred fix order prioritizing deletion of duplicates, moving fine-grained assertions to lower layers, and rewiring routers after refactors.\n\n**skills/public/quality/references/lint-ignore-discipline.md** — Treats lint suppressions as small local contracts deserving review; recommends preferring structural fixes (packaging/entrypoint refactors) over suppression, keeping ignores narrow/rule-specific, and recording keep decisions durably.\n\n**skills/public/quality/references/dual-implementation-parity.md** — Flags when repos ship one implementation while keeping a historical path alive; recommends either adding a parity harness, choosing one canonical side and deleting/wrapping the other, or documenting divergence as intentional with an assertion.\n\n**skills/public/quality/references/adapter-gate-review.md** — Classifies adapter/gate findings as structural facts (directly verifiable), contextual recommendations (judgment-heavy), acknowledgement gaps, migration gaps, or brittle heuristics; guards against promoting contextual recommendations into hard gates without low-noise invariants or clear failure responses.",
+      "sourceRefs": [
+        "skills/public/quality/SKILL.md",
+        "skills/public/quality/references/adapter-gate-review.md",
+        "skills/public/quality/references/dual-implementation-parity.md",
+        "skills/public/quality/references/executable-spec-economics.md",
+        "skills/public/quality/references/lint-ignore-discipline.md",
+        "skills/public/quality/references/operability-signals.md",
+        "skills/public/quality/references/quality-lenses.md"
+      ]
+    },
+    "skillId": "quality",
+    "skillPath": "skills/public/quality"
+  },
+  "sourceCoverageObligations": [
+    {
+      "id": "operability-signals",
+      "ref": "skills/public/quality/references/operability-signals.md",
+      "required": false
+    },
+    {
+      "id": "quality-lenses",
+      "ref": "skills/public/quality/references/quality-lenses.md",
+      "required": false
+    },
+    {
+      "id": "executable-spec-economics",
+      "ref": "skills/public/quality/references/executable-spec-economics.md",
+      "required": false
+    },
+    {
+      "id": "brittle-source-guards",
+      "ref": "skills/public/quality/references/brittle-source-guards.md",
+      "required": false
+    },
+    {
+      "id": "lint-ignore-discipline",
+      "ref": "skills/public/quality/references/lint-ignore-discipline.md",
+      "required": false
+    },
+    {
+      "id": "dual-implementation-parity",
+      "ref": "skills/public/quality/references/dual-implementation-parity.md",
+      "required": false
+    },
+    {
+      "id": "adapter-gate-review",
+      "ref": "skills/public/quality/references/adapter-gate-review.md",
+      "required": false
+    }
+  ],
+  "rubricPhrases": [
+    "quality",
+    "reference"
+  ],
+  "isolation": {
+    "productionSkillTouched": false,
+    "notes": [
+      "baseline and variant captured in isolated read-only git worktrees",
+      "no shared install clone (~/.agents/src/charness) mutated"
+    ]
+  }
+}
