@@ -13,7 +13,10 @@
   "status": "active",
   "lifecycle": {
     "install": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "npm install -g agent-browser"
+      ],
       "docs_url": "https://github.com/vercel-labs/agent-browser",
       "install_url": "https://github.com/vercel-labs/agent-browser#installation",
       "notes": [
@@ -22,12 +25,15 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "npm install -g agent-browser@latest"
+      ],
       "docs_url": "https://github.com/vercel-labs/agent-browser",
       "install_url": "https://github.com/vercel-labs/agent-browser#installation",
       "notes": [
-        "Use the same package manager or release asset path that installed the current binary.",
-        "Charness promotes this manual route to a package-manager update only when install provenance proves an npm or Cargo-managed binary."
+        "Auto-updates the npm-global binary via `npm install -g agent-browser@latest`.",
+        "If the current binary came from a release asset instead of npm, update through that path."
       ]
     }
   },

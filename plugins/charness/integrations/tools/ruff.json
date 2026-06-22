@@ -26,7 +26,10 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "if command -v uv >/dev/null 2>&1; then uv tool upgrade ruff; elif command -v pipx >/dev/null 2>&1; then pipx upgrade ruff; else python3 -m pip install --user --upgrade ruff; fi"
+      ],
       "docs_url": "https://docs.astral.sh/ruff/installation/",
       "notes": [
         "Update through the same user-tool mechanism that installed `ruff`; for uv installs, run `uv tool upgrade ruff`."

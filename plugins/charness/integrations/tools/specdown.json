@@ -13,7 +13,10 @@
   "status": "active",
   "lifecycle": {
     "install": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+      ],
       "install_url": "https://github.com/corca-ai/specdown",
       "docs_url": "https://github.com/corca-ai/specdown",
       "notes": [
@@ -22,7 +25,10 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+      ],
       "docs_url": "https://github.com/corca-ai/specdown/releases",
       "notes": [
         "Use the same mechanism that originally installed the binary."

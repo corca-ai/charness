@@ -24,7 +24,10 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "GOPATH=\"$(go env GOPATH)\" && mkdir -p \"$GOPATH/bin\" \"$HOME/.local/bin\" && go install github.com/charmbracelet/glow/v2@latest && ln -sf \"$GOPATH/bin/glow\" \"$HOME/.local/bin/glow\""
+      ],
       "docs_url": "https://github.com/charmbracelet/glow/releases",
       "notes": [
         "Use the same mechanism that originally installed the binary. Go installs can rerun `go install github.com/charmbracelet/glow/v2@latest`."

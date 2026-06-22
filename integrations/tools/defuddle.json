@@ -12,7 +12,7 @@
   "status": "active",
   "lifecycle": {
     "install": {
-      "mode": "manual",
+      "mode": "script",
       "commands": [
         "npm install -g defuddle"
       ],
@@ -25,7 +25,7 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
       "commands": [
         "npm install -g defuddle@latest"
       ],

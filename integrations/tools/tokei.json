@@ -26,7 +26,10 @@
       ]
     },
     "update": {
-      "mode": "manual",
+      "mode": "script",
+      "commands": [
+        "if command -v cargo >/dev/null 2>&1; then cargo install tokei --force; elif command -v brew >/dev/null 2>&1; then brew upgrade tokei; else echo 'Update tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
+      ],
       "docs_url": "https://github.com/XAMPPRocky/tokei/releases",
       "notes": [
         "Update through the same mechanism that originally installed the binary; for cargo installs, run `cargo install tokei --force`."
