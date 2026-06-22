@@ -1,0 +1,28 @@
+{
+  "_comment": "Extractor spec for the cautilus skill-experiment proof. The extractor (scripts/agent-runtime/extract-skill-experiment-input.mjs) reads these static fields and merges each arm's captured transcript into a cautilus.skill_clone_experiment_input.v1 JSON. The discriminating signal is source-coverage GAIN: the variant (post-disposition 5ded9f3a) routes 7 references via SKILL.md/inventory-dispatch.md pointers that the baseline (pre-disposition origin/main) does not, so a quality-task run at the variant ref should READ refs the baseline cannot reach. Obligations are required:false because a single stochastic capture is not expected to exercise every routed ref; the verdict turns on `gained` coverage, not on covering all of them. rubricPhrases are kept robust (near-certain in any quality-reference answer) so the rubric stays neutral instead of forcing a spurious `revise`. Unknown keys here (this _comment, baseline/variant.skillPath) are ignored by the extractor except where consumed.",
+  "experimentId": "quality-ref-disposition-2026-06-21",
+  "taskPacket": {
+    "summary": "Using the quality skill in this repo, identify and read the reference files needed to review a repo's quality gates across operability, the quality lenses, executable-spec economics, lint-ignore discipline, dual-implementation parity, and adapter gate review; report which references you consulted.",
+    "sourceRef": "charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md"
+  },
+  "sourceCoverageObligations": [
+    { "id": "operability-signals", "ref": "skills/public/quality/references/operability-signals.md", "required": false },
+    { "id": "quality-lenses", "ref": "skills/public/quality/references/quality-lenses.md", "required": false },
+    { "id": "executable-spec-economics", "ref": "skills/public/quality/references/executable-spec-economics.md", "required": false },
+    { "id": "brittle-source-guards", "ref": "skills/public/quality/references/brittle-source-guards.md", "required": false },
+    { "id": "lint-ignore-discipline", "ref": "skills/public/quality/references/lint-ignore-discipline.md", "required": false },
+    { "id": "dual-implementation-parity", "ref": "skills/public/quality/references/dual-implementation-parity.md", "required": false },
+    { "id": "adapter-gate-review", "ref": "skills/public/quality/references/adapter-gate-review.md", "required": false }
+  ],
+  "rubricPhrases": ["quality", "reference"],
+  "isolation": {
+    "productionSkillTouched": false,
+    "notes": [
+      "baseline and variant captured in isolated read-only git worktrees",
+      "no shared install clone (~/.agents/src/charness) mutated"
+    ]
+  },
+  "skillId": "quality",
+  "baseline": { "skillPath": "skills/public/quality" },
+  "variant": { "skillPath": "skills/public/quality" }
+}

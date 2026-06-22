@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { SKILL_CLONE_EXPERIMENT_INPUT_SCHEMA } from "../../scripts/agent-runtime/contract-versions.mjs";
@@ -193,6 +195,50 @@ test("runCli builds a full input.v1 from two transcripts with per-arm roots", ()
 		"skills/public/quality/references/cautilus-on-demand.md",
 	]);
 	assert.equal(input.skillId ?? input.baseline.skillId, "quality");
+});
+
+test("committed spec.json drives the extractor to a valid input with a real coverage gain", () => {
+	const spec = JSON.parse(
+		readFileSync(fileURLToPath(new URL("../../evals/cautilus/skill-experiment/spec.json", import.meta.url)), "utf-8"),
+	);
+	// Spec sanity: the 7 routed obligations + neutral rubric + declared isolation.
+	assert.equal(spec.experimentId, "quality-ref-disposition-2026-06-21");
+	assert.equal(spec.sourceCoverageObligations.length, 7);
+	assert.equal(spec.isolation.productionSkillTouched, false);
+	const routed = spec.sourceCoverageObligations.map((o) => o.ref);
+	assert.ok(routed.includes("skills/public/quality/references/quality-lenses.md"));
+
+	// Simulate the two arms: variant reaches a routed ref the baseline does not.
+	const baseline = extractRunFromTranscript(
+		transcript([
+			JSON.stringify({ type: "system", subtype: "init", cwd: "/wt/baseline" }),
+			toolUseLine("Read", { file_path: "/wt/baseline/skills/public/quality/SKILL.md" }),
+			resultLine({ result: "baseline reviewed quality gates; consulted the reference index" }),
+		]),
+		{ workspaceRoot: "/wt/baseline" },
+	);
+	const variant = extractRunFromTranscript(
+		transcript([
+			JSON.stringify({ type: "system", subtype: "init", cwd: "/wt/variant" }),
+			toolUseLine("Read", { file_path: "/wt/variant/skills/public/quality/SKILL.md" }),
+			toolUseLine("Read", { file_path: "/wt/variant/skills/public/quality/references/quality-lenses.md" }),
+			resultLine({ result: "variant reviewed quality gates; followed the pointer to the quality reference lenses" }),
+		]),
+		{ workspaceRoot: "/wt/variant" },
+	);
+	const input = buildSkillCloneExperimentInput({
+		experimentId: spec.experimentId,
+		taskPacket: spec.taskPacket,
+		baseline,
+		variant,
+		sourceCoverageObligations: spec.sourceCoverageObligations,
+		rubricPhrases: spec.rubricPhrases,
+		isolation: spec.isolation,
+	});
+	assert.equal(input.schemaVersion, SKILL_CLONE_EXPERIMENT_INPUT_SCHEMA);
+	// The variant covers a routed obligation the baseline does not — the gain the scorer rewards.
+	assert.ok(input.variant.output.sourceRefs.includes("skills/public/quality/references/quality-lenses.md"));
+	assert.ok(!input.baseline.output.sourceRefs.includes("skills/public/quality/references/quality-lenses.md"));
 });
 
 // runCli writes via node:fs writeFileSync; to keep the test hermetic we re-run

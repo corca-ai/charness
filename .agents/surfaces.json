@@ -129,6 +129,7 @@
         "evals/cautilus/instruction-surface-cases.json",
         "evals/cautilus/*.fixture.json",
         "evals/cautilus/scenarios.json",
+        "evals/cautilus/skill-experiment/**",
         "skills/public/*/SKILL.md",
         "skills/public/*/references/**",
         "skills/shared/references/**",
