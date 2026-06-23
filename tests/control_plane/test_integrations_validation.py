@@ -242,6 +242,13 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
 
 
+def test_defuddle_manifest_missing_binary_is_advisory() -> None:
+    manifest = json.loads((ROOT / "integrations" / "tools" / "defuddle.json").read_text(encoding="utf-8"))
+
+    assert manifest["doctor_policy"] == "advisory"
+    assert "degraded" in manifest["access_modes"]
+
+
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"

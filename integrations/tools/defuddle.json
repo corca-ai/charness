@@ -59,6 +59,7 @@
     "binary",
     "degraded"
   ],
+  "doctor_policy": "advisory",
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer the current npm `defuddle` release.",

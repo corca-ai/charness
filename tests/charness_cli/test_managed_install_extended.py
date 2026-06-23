@@ -17,6 +17,7 @@ from .support import (
     make_fake_claude,
     make_fake_go_specdown,
     make_fake_npm_agent_browser,
+    make_fake_update_all_toolchain,
     make_release_fixture,
     make_support_sync_fixture,
     run_cli,
@@ -46,8 +47,9 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         text=True,
     )
 
-    _fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
+    fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
+    make_fake_update_all_toolchain(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     fake_curl, fake_nose = make_fake_nose(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -56,6 +58,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         [
             str(fake_curl.parent),
             str(fake_nose.parent),
+            str(fake_agent_browser_npm.parent),
             str(fake_agent_browser.parent),
             str(fake_go.parent),
             str(specdown_bin.parent),
@@ -99,7 +102,10 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["nose"]["update"]["status"] == "updated"
     assert tool_update["results"]["nose"]["doctor"]["doctor_status"] == "ok"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
-    assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
+    assert tool_update["results"]["specdown"]["update"]["mode"] == "script"
+    assert tool_update["results"]["specdown"]["update"]["commands"][0]["command"] == (
+        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+    )
 
     assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
     assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
@@ -110,8 +116,8 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     cautilus_lock = json.loads((managed_repo / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
     assert cautilus_lock["doctor"]["doctor_status"] == "ok"
     assert json.loads((managed_repo / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))["update"][
-        "package_manager"
-    ] == "go"
+        "mode"
+    ] == "script"
 
 
 def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:
