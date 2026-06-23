@@ -119,6 +119,27 @@
       ]
     },
     {
+      "surface_id": "quality-baseline-artifacts",
+      "description": "Committed quality advisory and ratchet baselines must parse and match their owning inventories.",
+      "source_paths": [
+        "charness-artifacts/quality/nose-baseline.json",
+        "charness-artifacts/quality/doc-nose-baseline.json",
+        "charness-artifacts/quality/dup-ratchet-baseline.json",
+        "charness-artifacts/quality/dup-review.json"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done",
+        "python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null",
+        "python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null",
+        "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json >/dev/null"
+      ],
+      "notes": [
+        "Baseline clean means clean drift relative to an accepted scanner-version-specific baseline, not zero clone families."
+      ]
+    },
+    {
       "surface_id": "prompt-behavior-proof",
       "description": "Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.",
       "source_paths": [

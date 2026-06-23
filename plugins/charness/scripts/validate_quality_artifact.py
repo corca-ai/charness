@@ -49,7 +49,7 @@ REQUIRED_SECTIONS = (
     "## Recommended Next Gates",
     "## History",
 )
-HISTORY_LINK_RE = re.compile(r"\[.+\]\(history/[^)]+\.md\)")
+HISTORY_LINK_RE = re.compile(r"\[.+\]\((?:\./)?history/[^)]+\.md\)")
 RUNTIME_SIGNAL_PREFIXES = (
     "- runtime source:",
     "- runtime hot spots:",

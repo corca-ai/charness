@@ -29,6 +29,11 @@
   validated by
   [validate_cautilus_diagnostics.py](../scripts/validate_cautilus_diagnostics.py);
   `latest.md` remains only the passing proof carrier.
+- **Quality gate health review DONE** (2026-06-23): full read-only quality was
+  78/78 PASS in 38.7s; current deterministic gates are healthy as evidence
+  packets, not a replacement for judgment.
+  [nose-baseline.json](../charness-artifacts/quality/nose-baseline.json) was
+  re-baselined to nose 0.15.0; next budget work needs another drift observation.
 - **Gotcha:** `/charness:quality` loads from the INSTALLED clone
   `~/.agents/src/charness` -- isolate per-run via
   [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (never edit
@@ -37,18 +42,12 @@
 
 ## Next Session
 
-- **START HERE -- quality gate health review.** Re-open the question the operator
-  queued after #397/#398: are the current quality gates healthy, necessary, and
-  correctly layered? Use the north star: deterministic gates should produce useful
-  packets, but the skill still needs a judgment pass over whether the packets
-  prove the intended claim.
-- **Then fan out the same pattern to other skills.** Do not start by mass-editing;
-  first identify which skill references are engage-always, on-demand, or
-  gate-sufficient, and whether a repo script should tell the agent the next
-  review action.
-- **Then build per-skill Cautilus fixtures.** Fixtures should not coach the target
-  skill; observe the early run shape, keep logs, and stop early if the run is
-  drifting.
+- **START HERE -- fan out the same quality pattern to other skills.** Do not
+  start by mass-editing; first identify which skill references are engage-always,
+  on-demand, or gate-sufficient, and whether a repo script should tell the agent
+  the next review action.
+- **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
+  target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Then use Cautilus to improve behavior.** Preserve intent while reducing wasted
   time/cost; diagnostic findings go through the #398 bundle path, not `latest.md`.
 - **Open issue queue:** #396 handoff lifecycle/linter, #392 gather-X honest
@@ -57,8 +56,8 @@
 
 ## Discuss
 
-- **Gate review scope:** inspect only `quality`'s current gates first, or define a
-  reusable "gate health" rubric before touching other skills.
+- **Gate review follow-up:** add aggregate runtime budgets for
+  `run-quality-read-only` and `check-duplicates` only after another drift sample.
 - **#392 scope (decide at pickup):** attempt a real exact-X route (browser/auth,
   likely infeasible) vs commit to the typed-unsupported contract.
 - **D31 still manual:** the chunker does not reconcile against recent commits, so
