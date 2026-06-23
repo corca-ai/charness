@@ -101,6 +101,12 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
     }
     assert skill["bootstrap_fence_count"] == 3
     assert skill["review_prompts"]
+    assert set(skill["review_topic_ids"]) >= {
+        "helper_owned_workflow_packet",
+        "concept_split_references",
+    }
+    assert any("planner/report packet" in item for item in skill["review_prompts"])
+    assert any("split the concepts" in item for item in skill["review_prompts"])
 
 
 def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_path: Path) -> None:
@@ -571,6 +577,27 @@ def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Pat
     payload = json.loads(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["scope_status"] == "configured_scope_empty"
+    assert payload["finding_status"] == "not_evaluated"
+    assert payload["checked_skill_count"] == 0
+    assert payload["skills"] == []
+
+
+def test_inventory_skill_ergonomics_reports_requested_scope_empty(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = _run(
+        "--repo-root",
+        str(repo),
+        "--skill-path",
+        "missing-skill",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "clean"
+    assert payload["scope_status"] == "empty_requested_scope"
     assert payload["finding_status"] == "not_evaluated"
     assert payload["checked_skill_count"] == 0
     assert payload["skills"] == []

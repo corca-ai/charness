@@ -165,8 +165,8 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "CLOSED"
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
-    assert "## Distinct-Channel Verification" in artifact_text
-    assert "Rung-2 distinct-channel verdict: `confirmed`" in artifact_text
+    assert "adapter-probe" in artifact_text
+    assert "confirmed" in artifact_text
 
 
 @pytest.mark.release_only

@@ -28,14 +28,33 @@ run_git_listing_to_file() {
   return 1
 }
 
+filter_existing_file_list() {
+  local input_path="$1"
+  local output_path="$2"
+  local listed_file
+
+  : >"$output_path"
+  while IFS= read -r -d '' listed_file; do
+    if [[ -e "$listed_file" || -L "$listed_file" ]]; then
+      printf '%s\0' "$listed_file" >>"$output_path"
+    fi
+  done <"$input_path"
+}
+
 if command -v gitleaks >/dev/null 2>&1; then
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     scan_dir="$(mktemp -d)"
     tracked_files_path="$scan_dir/tracked-files.zlist"
+    existing_files_path="$scan_dir/existing-files.zlist"
     trap 'rm -rf "$scan_dir"' EXIT
     run_git_listing_to_file secret-scan-files "$tracked_files_path" \
       git ls-files -z --cached --others --exclude-standard
-    if tar --null -T "$tracked_files_path" -cf - | tar -xf - -C "$scan_dir"; then
+    filter_existing_file_list "$tracked_files_path" "$existing_files_path"
+    if [[ ! -s "$existing_files_path" ]]; then
+      echo "No tracked or unignored files to scan."
+      exit 0
+    fi
+    if tar --null -T "$existing_files_path" -cf - | tar -xf - -C "$scan_dir"; then
       exec gitleaks dir \
         --config "$REPO_ROOT/.gitleaks.toml" \
         --no-banner \
@@ -60,12 +79,14 @@ if command -v npm >/dev/null 2>&1; then
     secretlint_files=()
     secretlint_list_dir="$(mktemp -d)"
     secretlint_list_path="$secretlint_list_dir/tracked-files.zlist"
+    secretlint_existing_list_path="$secretlint_list_dir/existing-files.zlist"
     trap 'rm -rf "$secretlint_list_dir"' EXIT
     run_git_listing_to_file secretlint-files "$secretlint_list_path" \
       git ls-files -z --cached --others --exclude-standard
+    filter_existing_file_list "$secretlint_list_path" "$secretlint_existing_list_path"
     while IFS= read -r -d '' secretlint_file; do
       secretlint_files+=("$secretlint_file")
-    done <"$secretlint_list_path"
+    done <"$secretlint_existing_list_path"
     if ((${#secretlint_files[@]} == 0)); then
       echo "No tracked or unignored files to scan."
       exit 0

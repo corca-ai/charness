@@ -37,6 +37,11 @@ Check for:
   a reference into a second workflow instead of progressive disclosure
 - stale E2E, eval, or smoke paths that still pay standing runtime after a
   cheaper and more direct proof now covers the same seam
+- `helper_owned_workflow_packet`: deterministic scripts already know the gate
+  sequence, but whose skill body still asks the model to rediscover that order
+  from prose instead of a planner/report packet
+- `concept_split_references`: reference overflow hides several concepts in one file; split the concept
+  before treating the move as healthy progressive disclosure
 - validator assertions that overfit exact prose snippets instead of checking the
   behavior, routing, package-level reference, or machine-readable contract they
   are meant to protect

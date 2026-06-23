@@ -6,22 +6,37 @@ from typing import Callable
 
 import skill_text_quality_lib as tqlib
 
-DEFAULT_REVIEW_PROMPTS = [
-    "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
-    "Check progressive disclosure honesty: core owns selection and sequencing, references deepen rather than fork the workflow.",
-    "Treat unnecessary user-facing modes or options as pressure to simplify with stronger defaults and inference.",
-    "Check trigger overlap or undertrigger risk against nearby public skills; a smart model still needs an honest invocation boundary.",
-    "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
-    "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required.",
-    "Keep issue-number and dated incident anchors out of public `SKILL.md` core; move historical provenance to references, tests, or retro artifacts.",
-    "Review concrete issue anchors across the whole public/support package; generic issue-workflow placeholders and version fields are not project-history leakage.",
-    "Review dated incident wording, host-surface references, and unlisted reference files as package-level portability signals.",
+DEFAULT_REVIEW_TOPIC_PROMPTS = [
+    ("concise_core", "Keep `SKILL.md` core concise; push nuance and payload into references or scripts."),
+    ("progressive_disclosure_honesty", "Check progressive disclosure honesty: core owns selection and sequencing, references deepen rather than fork the workflow."),
+    ("helper_owned_workflow_packet", "If deterministic helpers already know the workflow, consider a planner/report packet instead of keeping gate order as prose."),
+    ("concept_split_references", "If a reference carries multiple concepts, split the concepts rather than moving SKILL.md overflow into one larger reference."),
+    ("mode_option_pressure", "Treat unnecessary user-facing modes or options as pressure to simplify with stronger defaults and inference."),
+    ("trigger_boundary", "Check trigger overlap or undertrigger risk against nearby public skills; a smart model still needs an honest invocation boundary."),
+    ("prose_ritual_helper", "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph."),
+    ("installed_bundle_portability", "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required."),
+    ("public_core_history_leak", "Keep issue-number and dated incident anchors out of public `SKILL.md` core; move historical provenance to references, tests, or retro artifacts."),
+    ("package_history_leak", "Review concrete issue anchors across the whole public/support package; generic issue-workflow placeholders and version fields are not project-history leakage."),
+    ("host_surface_reference", "Review dated incident wording, host-surface references, and unlisted reference files as package-level portability signals."),
+]
+REVIEW_PROMPT_BY_TOPIC = dict(DEFAULT_REVIEW_TOPIC_PROMPTS)
+REVIEW_PROMPT_BY_TOPIC["runtime_install_portability"] = (
+    "Check runtime-install portability: prose helper paths should match the "
+    "worker-resolved skill-installer path, not the harness `$SKILL_DIR` form, "
+    "since the runtime worker has no `$SKILL_DIR` in its environment."
+)
+DEFAULT_REVIEW_TOPIC_IDS = [topic_id for topic_id, _prompt in DEFAULT_REVIEW_TOPIC_PROMPTS]
+DEFAULT_REVIEW_PROMPTS = [prompt for _topic_id, prompt in DEFAULT_REVIEW_TOPIC_PROMPTS]
+RUNTIME_INSTALL_REVIEW_TOPIC_IDS = [
+    "concise_core",
+    "progressive_disclosure_honesty",
+    "helper_owned_workflow_packet",
+    "concept_split_references",
+    "mode_option_pressure",
+    "runtime_install_portability",
 ]
 RUNTIME_INSTALL_REVIEW_PROMPTS = [
-    "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
-    "Check progressive disclosure honesty: core owns selection and sequencing, references deepen rather than fork the workflow.",
-    "Treat unnecessary user-facing modes or options as pressure to simplify with stronger defaults and inference.",
-    "Check runtime-install portability: prose helper paths should match the worker-resolved skill-installer path, not the harness `$SKILL_DIR` form, since the runtime worker has no `$SKILL_DIR` in its environment.",
+    REVIEW_PROMPT_BY_TOPIC[topic_id] for topic_id in RUNTIME_INSTALL_REVIEW_TOPIC_IDS
 ]
 MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
@@ -153,6 +168,11 @@ def inventory_skill(
         "reference_discoverability": len(reference_findings),
     }
     review_prompts = RUNTIME_INSTALL_REVIEW_PROMPTS if skill_type == "runtime_install" else DEFAULT_REVIEW_PROMPTS
+    review_topic_ids = (
+        RUNTIME_INSTALL_REVIEW_TOPIC_IDS
+        if skill_type == "runtime_install"
+        else DEFAULT_REVIEW_TOPIC_IDS
+    )
     return {
         "skill_id": skill_dir.name,
         "skill_type": skill_type,
@@ -172,6 +192,7 @@ def inventory_skill(
         "unlisted_reference_files": reference_findings,
         "subcheck_counts": subcheck_counts,
         "heuristics": heuristics,
+        "review_topic_ids": review_topic_ids,
         "review_prompts": review_prompts,
     }
 
@@ -180,42 +201,46 @@ def scope_status(scanned: int, requested: list[str], adapter_paths: list[str]) -
     if scanned > 0:
         return {"status": "clean", "scope_status": "scanned"}
     if requested:
-        return {
-            "status": "clean",
-            "scope_status": "empty_requested_scope",
-            "reason": "Explicit --skill-path arguments yielded no SKILL.md files.",
-        }
+        return _scope_status_payload(
+            "clean",
+            "empty_requested_scope",
+            "Explicit --skill-path arguments yielded no SKILL.md files.",
+        )
     if not adapter_paths:
-        return {
-            "status": "unconfigured",
-            "scope_status": "unconfigured_no_skill_surface",
-            "reason": "skill_ergonomics_skill_paths is empty in quality-adapter.yaml; no SKILL.md files were found at default fallback paths skills/, skills/public/, or skills/support/.",
-        }
-    return {
-        "status": "unconfigured",
-        "scope_status": "configured_scope_empty",
-        "reason": "skill_ergonomics_skill_paths in quality-adapter.yaml resolved to no SKILL.md files.",
-    }
+        return _scope_status_payload(
+            "unconfigured",
+            "unconfigured_no_skill_surface",
+            "skill_ergonomics_skill_paths is empty in quality-adapter.yaml; no SKILL.md files were found at default fallback paths skills/, skills/public/, or skills/support/.",
+        )
+    return _scope_status_payload(
+        "unconfigured",
+        "configured_scope_empty",
+        "skill_ergonomics_skill_paths in quality-adapter.yaml resolved to no SKILL.md files.",
+    )
+
+
+def _scope_status_payload(status: str, scope_status_name: str, reason: str) -> dict[str, str]:
+    return {"status": status, "scope_status": scope_status_name, "reason": reason}
 
 
 def prose_review_advisory(status: str) -> list[dict[str, str]]:
     if status == "required":
-        return [
-            {
-                "advisory_id": "skill_ergonomics_prose_review_required",
-                "message": "Heuristic findings are present; a human/model prose review result is still required before quality closeout.",
-                "next_action": "Record an explicit prose review result that covers trigger boundaries, progressive disclosure, and judgment-only skill risks.",
-            }
-        ]
+        return [_prose_advisory(
+            "skill_ergonomics_prose_review_required",
+            "Heuristic findings are present; a human/model prose review result is still required before quality closeout.",
+            "Record an explicit prose review result that covers trigger boundaries, progressive disclosure, and judgment-only skill risks.",
+        )]
     if status == "still_required":
-        return [
-            {
-                "advisory_id": "skill_ergonomics_prose_review_still_required",
-                "message": "No heuristic findings were found, but the inventory is not a substitute for prose review.",
-                "next_action": "Record an explicit prose review result or state why the prose review is out of scope for this quality pass.",
-            }
-        ]
+        return [_prose_advisory(
+            "skill_ergonomics_prose_review_still_required",
+            "No heuristic findings were found, but the inventory is not a substitute for prose review.",
+            "Record an explicit prose review result or state why the prose review is out of scope for this quality pass.",
+        )]
     return []
+
+
+def _prose_advisory(advisory_id: str, message: str, next_action_text: str) -> dict[str, str]:
+    return {"advisory_id": advisory_id, "message": message, "next_action": next_action_text}
 
 
 def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:

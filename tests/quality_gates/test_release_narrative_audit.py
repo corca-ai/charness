@@ -150,9 +150,8 @@ def test_audit_blocks_notes_file_pointing_at_mutable_tag_record(tmp_path: Path) 
 
     assert result.returncode == 1
     payload = json.loads(result.stdout)
-    assert any(
-        "mutable source-tree record" in blocker for blocker in payload["blockers"]
-    )
+    assert any("charness-artifacts/release/latest.md" in blocker for blocker in payload["blockers"])
+    assert any("v0.1.0" in blocker for blocker in payload["blockers"])
     assert payload["notes_blockers"], "notes_blockers should surface the offending pointer"
 
 

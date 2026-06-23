@@ -207,14 +207,21 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
     ),
     "skills/public/release/SKILL.md": (
-        "`Critique: short <scope>`",
-        "`Critique: full <artifact-or-subagent-status>`",
-        "`Critique: not-applicable <reason>`",
-        "`Critique: blocked <host-signal>`",
+        "`publish_release.py --execute` refuses unless exactly one",
+        "`--critique-artifact <path>`",
+        "`--critique-blocked <host-signal>`",
+        "A refusal leaves the release mutation unstarted.",
     ),
     "skills/public/retro/SKILL.md": (
         "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
         "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`",
+    ),
+}
+
+PACKAGE_CONTRACT_SOURCE_PATHS: dict[str, tuple[str, ...]] = {
+    "skills/public/release/SKILL.md": (
+        "references/critique-boundary.md",
+        "scripts/publish_release_preflight.py",
     ),
 }
 
@@ -239,6 +246,22 @@ def _package_text(path: Path) -> str:
     if not path.exists():
         raise ValidationError(f"missing representative contract file `{path}`")
     parts = [path.read_text(encoding="utf-8")]
+    path_text = path.as_posix()
+    active_sources = next(
+        (
+            sources
+            for rel_path, sources in PACKAGE_CONTRACT_SOURCE_PATHS.items()
+            if path_text == rel_path or path_text.endswith(f"/{rel_path}")
+        ),
+        None,
+    )
+    if active_sources is not None:
+        for source in active_sources:
+            source_path = path.parent / source
+            if not source_path.is_file():
+                raise ValidationError(f"missing package contract source `{source_path}`")
+            parts.append(source_path.read_text(encoding="utf-8", errors="ignore"))
+        return "\n".join(parts)
     references_dir = path.parent / "references"
     if references_dir.is_dir():
         for reference in sorted(references_dir.rglob("*")):
@@ -263,24 +286,44 @@ def _assert_snippet_membership(
 
 
 def validate_core_contract(path: Path, snippets: tuple[str, ...]) -> None:
-    _assert_snippet_membership(
-        path, _read_contract_text(path), snippets,
-        forbidden=False, message="missing required core contract snippet(s)",
+    _validate_contract(
+        path,
+        snippets,
+        text_loader=_read_contract_text,
+        forbidden=False,
+        message="missing required core contract snippet(s)",
     )
 
 
 def validate_package_contract(path: Path, snippets: tuple[str, ...]) -> None:
-    _assert_snippet_membership(
-        path, _package_text(path), snippets,
-        forbidden=False, message="missing required package contract snippet(s)",
+    _validate_contract(
+        path,
+        snippets,
+        text_loader=_package_text,
+        forbidden=False,
+        message="missing required package contract snippet(s)",
     )
 
 
 def validate_forbidden_snippets(path: Path, snippets: tuple[str, ...]) -> None:
-    _assert_snippet_membership(
-        path, _read_contract_text(path), snippets,
-        forbidden=True, message="forbidden contract snippet(s) present",
+    _validate_contract(
+        path,
+        snippets,
+        text_loader=_read_contract_text,
+        forbidden=True,
+        message="forbidden contract snippet(s) present",
     )
+
+
+def _validate_contract(
+    path: Path,
+    snippets: tuple[str, ...],
+    *,
+    text_loader,
+    forbidden: bool,
+    message: str,
+) -> None:
+    _assert_snippet_membership(path, text_loader(path), snippets, forbidden=forbidden, message=message)
 
 
 def main() -> int:

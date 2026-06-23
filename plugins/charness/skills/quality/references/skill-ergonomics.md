@@ -12,10 +12,19 @@ Use this lens to keep public/support skills aligned with:
 
 ## Review Questions
 
+Stable review topics emitted by `inventory_skill_ergonomics.py`:
+
+- `helper_owned_workflow_packet`
+- `concept_split_references`
+
 - Is `SKILL.md` core still concise enough to be a trigger contract and decision
   skeleton rather than a second reference manual?
 - Does the core own selection and sequencing, while `references/` and
   `scripts/` deepen the chosen move instead of forking the workflow?
+- When code already knows the workflow, should a planner/report packet tell the
+  agent what to read and run next instead of preserving gate order as prose?
+- Did a compression move create one large mixed-purpose reference, or did it
+  separate concepts so each reference teaches one thing?
 - Are explicit modes, flags, or options doing real safety work, or are they
   compensating for weak defaults?
 - Would a cold reader know when to use this skill instead of a nearby one, or
@@ -56,6 +65,10 @@ quality pass:
   portable
 - reference files that are not listed from `SKILL.md`, which makes the package
   hard to operate under line-budget pressure
+- deterministic-helper pressure: a skill that lists many helper/gate commands in
+  prose may need a planner/report packet, not another paragraph
+- concept-mixed references: a large reference that carries several independent
+  ideas may need a Raskin-style split before the core is compressed further
 
 Treat these as prompts, not automatic failures.
 
@@ -90,6 +103,8 @@ Advisory only unless the repo explicitly opts in:
 - reference discoverability review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
+- planner/report-packet opportunity review
+- concept separation review for references
 
 When a repo opts into `skill_ergonomics_gate_rules`, keep the rule values valid
 and machine-readable. `bootstrap_adapter.py` will refuse to rewrite an adapter

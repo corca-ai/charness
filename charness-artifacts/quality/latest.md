@@ -97,6 +97,11 @@ next planning target.
   `host_surface_reference_count: 10`, `unlisted_reference_count: 0`. Interpreted
   finding: the host references are mostly legitimate adapter/package surfaces;
   the actionable signal is core sequencing pressure.
+- prose review result: `prose_review_status=required` was satisfied for the
+  release slice by reviewing the inventory prompts directly; the planner/helper
+  packet plus dogfood review finding is real, while the host-surface references
+  are mostly legitimate release adapter/package evidence rather than automatic
+  portability failures.
 - command: `suggest_public_skill_dogfood.py --skill-id release --json` reports
   `validation_tier: hitl-recommended` and `adapter_requirement: required`.
 
@@ -124,14 +129,10 @@ next planning target.
 
 ## Recommended Next Gates
 
-- active Add a `plan_release_run.py` helper that emits a report-first release
-  packet: required reads, release state, pre-mutation blockers, publish-boundary
-  evidence packets, closeout evidence, and `next_action`.
-- active Use that planner to shrink `skills/public/release/SKILL.md` to trigger,
-  phase order, and hard guardrails; move detailed bullets from workflow steps 3,
-  6, 7, and 8 into existing references or planner output.
-- passive until the planner exists and one dogfood prompt has run: compress other
-  high-consequence skills with the same pattern.
+- active Apply the same planner/reference split review to the next
+  high-consequence skill.
+- passive until a real adapter need appears: decide whether requested-review
+  commands should become a release gate beyond critique and distinct-channel proof.
 
 ## History
 

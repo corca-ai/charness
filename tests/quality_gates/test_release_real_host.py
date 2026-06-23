@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 from .support import ROOT, run_script
+
+_PLANNER_SPEC = importlib.util.spec_from_file_location(
+    "plan_release_run",
+    ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run.py",
+)
+assert _PLANNER_SPEC is not None and _PLANNER_SPEC.loader is not None
+_PLANNER = importlib.util.module_from_spec(_PLANNER_SPEC)
+_PLANNER_SPEC.loader.exec_module(_PLANNER)
 
 
 def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
@@ -115,11 +125,19 @@ def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: P
 
 
 def test_release_skill_enforces_phase_barriers_for_mutating_commands() -> None:
-    skill_text = (ROOT / "skills" / "public" / "release" / "SKILL.md").read_text(encoding="utf-8")
+    payload = _PLANNER.build_plan(
+        SimpleNamespace(
+            repo_root=ROOT,
+            remote="origin",
+            critique_artifact=None,
+            critique_blocked=None,
+            publish_current=False,
+            part=None,
+            set_version=None,
+        )
+    )
 
-    assert "keep release work phase-ordered: mutate, then sync generated surfaces," in skill_text
-    assert "then verify, then push/tag/publish" in skill_text
-    assert "public release surface verified" in skill_text
-    assert "tag push alone as publish completion" in skill_text
-    assert "Do not run sync, export, bump, install/update, or git-mutation commands in" in skill_text
-    assert "parallel with validators" in skill_text
+    assert "references/publication-boundary.md" in {item["path"] for item in payload["required_reads"]}
+    assert any("publish-dry-run" in item and "publish-execute" in item for item in payload["phase_barriers"])
+    assert any("parallelize" in item and "git" in item for item in payload["phase_barriers"])
+    assert all({"id", "cost_tier", "trust_model", "run_when"} <= set(packet) for packet in payload["gate_packets"])

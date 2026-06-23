@@ -569,7 +569,7 @@ def test_validate_skills_rejects_unused_required_tools_declaration(tmp_path: Pat
 def test_validate_skills_allows_local_script_invocation(tmp_path: Path) -> None:
     repo = make_public_skill_with_bootstrap(
         tmp_path,
-        'python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .',
+        'python3 "$SKILL_DIR/scripts/helper.py" --repo-root .',
     )
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -679,6 +679,59 @@ def test_check_skill_contracts_allows_reference_level_package_contract(tmp_path:
     module.validate_package_contract(skill_path, ("Reference-level package promise.",))
 
 
+def test_check_skill_contracts_uses_declared_active_package_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    (skill_dir / "references").mkdir(parents=True)
+    (skill_dir / "scripts").mkdir()
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text(
+        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "active.md").write_text(
+        "# Active\n\nReference-level active promise.\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "scripts" / "active.py").write_text(
+        "SCRIPT_PROMISE = 'script-level active promise'\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "orphan.md").write_text(
+        "# Orphan\n\nOrphan promise should not satisfy this active-source contract.\n",
+        encoding="utf-8",
+    )
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_active_sources_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.PACKAGE_CONTRACT_SOURCE_PATHS["skills/public/demo/SKILL.md"] = (
+        "references/active.md",
+        "scripts/active.py",
+    )
+
+    module.validate_package_contract(
+        skill_path,
+        ("Reference-level active promise.", "script-level active promise"),
+    )
+    try:
+        module.validate_package_contract(skill_path, ("Orphan promise should not satisfy",))
+    except module.ValidationError as exc:
+        assert "missing required package contract snippet" in str(exc)
+    else:
+        raise AssertionError("expected active-source package contract to ignore orphan references")
+
+    module.PACKAGE_CONTRACT_SOURCE_PATHS["skills/public/demo/SKILL.md"] = ("scripts/missing.py",)
+    try:
+        module.validate_package_contract(skill_path, ("script-level active promise",))
+    except module.ValidationError as exc:
+        assert "missing package contract source" in str(exc)
+    else:
+        raise AssertionError("expected missing active package source to fail")
+
+
 def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
@@ -705,6 +758,27 @@ def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path)
         assert "missing required core contract snippet" in str(exc)
     else:
         raise AssertionError("expected core-only contract to fail when it only appears in references")
+
+
+def test_check_skill_contracts_forbidden_snippets_fail_in_skill_body(tmp_path: Path) -> None:
+    skill_path = tmp_path / "SKILL.md"
+    skill_path.write_text(
+        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n\nForbidden promise.\n",
+        encoding="utf-8",
+    )
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_forbidden_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    try:
+        module.validate_forbidden_snippets(skill_path, ("Forbidden promise.",))
+    except module.ValidationError as exc:
+        assert "forbidden contract snippet" in str(exc)
+    else:
+        raise AssertionError("expected forbidden snippet to fail when it appears in the skill body")
 
 
 def test_check_skill_contracts_ignores_non_text_reference_artifacts(tmp_path: Path) -> None:

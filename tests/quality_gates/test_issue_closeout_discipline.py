@@ -106,13 +106,15 @@ def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     skill = _read(SKILL)
     closeout = _read(CLOSEOUT)
     resolve_flow = _read(RESOLVE_FLOW)
-    release_skill = _read(ROOT / "skills" / "public" / "release" / "SKILL.md")
+    release_cli = _read(ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py")
+    publication_boundary = _read(ROOT / "skills" / "public" / "release" / "references" / "publication-boundary.md")
 
     assert "--close-issue <number>" in skill
     assert "issue_closeout.status: verified" in skill
     assert "Release-driven direct-to-default work follows the same linkage" in closeout
     assert "post-push issue verification payload" in resolve_flow
-    assert "Do not report a release-linked issue as resolved" in release_skill
+    assert "--close-issue" in release_cli
+    assert "payload.distinct_channel_verification" in publication_boundary
 
 
 def test_issue_closeout_separates_carrier_from_lifecycle_publication() -> None:
