@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import runpy
+from argparse import Namespace
 from pathlib import Path
 
-from tests.quality_gates.support import run_script
+from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 
@@ -22,6 +24,38 @@ def _bug_body(close_line: str = "Close #42.") -> str:
             "AI-provenance: agent-drafted; human-audited per the resolution critique",
         ]
     )
+
+
+def test_validate_closeout_draft_command_delegates_to_backend_runner(tmp_path: Path) -> None:
+    module = runpy.run_path(str(ROOT / "skills/public/issue/scripts/issue_validate_closeout_draft.py"))
+    verifier = runpy.run_path(str(ROOT / "skills/public/issue/scripts/issue_verify_closeout.py"))
+    command = module["command_validate_closeout_draft"]
+    body = tmp_path / "closeout.md"
+    body.write_text(_bug_body(), encoding="utf-8")
+    calls: list[dict[str, object]] = []
+
+    def run_backend_command(args: Namespace, call: object, exit_code: object) -> int:
+        calls.append({"repo": args.repo, "verifier": "injected"})
+        result = call({"backend": {"id": "fake-gh"}})
+        return exit_code(result)
+
+    rc = command(
+        Namespace(
+            repo_root=tmp_path,
+            repo="corca-ai/charness",
+            number=[42],
+            classification="bug",
+            carrier="pr-body",
+            body_file=body,
+            commit_message_file=None,
+            manual_fallback_reason=None,
+        ),
+        run_backend_command=run_backend_command,
+        verifier=Namespace(verify_closeout=verifier["verify_closeout"]),
+    )
+
+    assert rc == 0
+    assert calls == [{"repo": "corca-ai/charness", "verifier": "injected"}]
 
 
 def test_validate_closeout_draft_accepts_pr_body_before_state_mutation(tmp_path: Path) -> None:
