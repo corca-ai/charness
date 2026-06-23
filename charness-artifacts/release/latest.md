@@ -99,7 +99,23 @@ Advanced `charness` toward release `0.54.2` (tag `v0.54.2`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Configured real-host verification was executed after the public release.
+- `charness update` refreshed the maintainer install from `0.54.1` to `0.54.2`.
+- `charness doctor --json` reported installed checkout version `0.54.2`,
+  Codex cache manifest version `0.54.2`, Claude installed plugin version
+  `0.54.2`, and managed checkout git head `0dfc8bf4`.
+- `charness tool doctor nose --json --no-write-locks` reported
+  `doctor_status: ok`, `doctor_disposition: ready`, observed `nose 0.15.0`,
+  and latest upstream release `v0.15.0`.
+- `charness tool install nose --dry-run --json` pointed at the upstream
+  `nose-cli-installer.sh` release path and latest `v0.15.0` metadata.
+- `charness tool sync-support nose --json` reported `status: skipped` because
+  `nose` is integration-only with no materialized support skill.
+- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+  ran with `nose 0.15.0` and reported advisory clone findings, not a standing
+  release blocker.
+- Residual host note: active Codex/Claude sessions may need restart to load the
+  freshly rotated `0.54.2` plugin cache.
 
 ## Real-Host Proof
 
