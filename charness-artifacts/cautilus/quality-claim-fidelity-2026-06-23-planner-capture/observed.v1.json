@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "quality",
+  "skillDisplayName": "quality",
+  "evaluations": [
+    {
+      "evaluationId": "execution-quality-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "quality",
+      "displayName": "quality",
+      "evaluationKind": "execution",
+      "prompt": "/charness:quality",
+      "startedAt": "2026-06-23T04:38:19.221Z",
+      "invoked": true,
+      "summary": "Execution of /quality: 2111885 total tokens (15864 output, 1868235 cache-read), 154968ms wall. Tool profile: Read=13 Bash=8 Skill=1. All declared claims met. Reference coverage: 9/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, dup-ratchet.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, installable-cli-probes.md, lint-ignore-discipline.md, mutation-testing.md, prompt-asset-policy.md, public-spec-layering.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 2111885,
+        "duration_ms": 154968
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 600000
+      }
+    }
+  ]
+}
