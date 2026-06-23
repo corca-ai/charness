@@ -184,6 +184,26 @@ def make_fake_agent_browser(bin_dir: Path) -> None:
     script.chmod(0o755)
 
 
+def make_fake_npm(bin_dir: Path) -> None:
+    script = bin_dir / "npm"
+    script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "${1:-}" == "install" ]]; then',
+                '  echo "npm fixture installed ${*: -1}"',
+                "  exit 0",
+                "fi",
+                'echo "npm fixture"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+
+
 def run_traced_entry(
     tracer: trace.Trace,
     script_path: Path,
@@ -261,6 +281,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         shutil.copytree(repo_root, repo_copy, ignore=COPY_IGNORE)
         bin_dir.mkdir()
         make_fake_agent_browser(bin_dir)
+        make_fake_npm(bin_dir)
         build_release_fixture(release_fixture)
         build_support_sync_fixture(support_fixture, support_fixture_root)
 

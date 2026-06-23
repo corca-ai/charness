@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 
 from .support import ROOT
 
@@ -87,6 +88,20 @@ def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch,
 
     assert captured
     assert all(item["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] == "1" for item in captured)
+
+
+def test_check_coverage_fixture_npm_does_not_touch_real_global_install(tmp_path) -> None:
+    CHECK_COVERAGE.make_fake_npm(tmp_path)
+
+    result = subprocess.run(
+        [str(tmp_path / "npm"), "install", "-g", "agent-browser@latest"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "npm fixture installed agent-browser@latest" in result.stdout
 
 
 def test_check_coverage_tracer_ignores_python_runtime_dirs(monkeypatch, tmp_path) -> None:

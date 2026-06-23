@@ -3,46 +3,38 @@ Date: 2026-06-23
 
 ## Scope
 
-Advanced `charness` toward release `0.54.0` (tag `v0.54.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.54.1` (tag `v0.54.1`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.53.0`
-- target version: `0.54.0`
+- previous version: `0.54.0`
+- target version: `0.54.1`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish.
+- `./scripts/run-quality.sh --release` is queued for this publish attempt.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.54.0`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.54.1`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v0.54.0`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `required`.
 - Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
-- Previous release ref: `refs/tags/v0.53.0`
+- Previous release ref: `refs/tags/v0.54.0`
 - Adapter paths in release delta:
   - `.agents/release-adapter.yaml`
 - Changed adapter fields:
@@ -58,34 +50,34 @@ Advanced `charness` toward release `0.54.0` (tag `v0.54.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 186.
+- Evaluated changed paths: 74.
+  - `.agents/quality-adapter.yaml`
   - `.agents/release-adapter.yaml`
   - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/cautilus/latest.md`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/finding.md`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/justification.md`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/observed.v1.json`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/reverify-0.17.1-summary.v1.json`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/reverify-0.17.1.md`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/session.parent.jsonl`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/session.subagent.jsonl`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/summary.v1.json`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/finding.md`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/observed.v1.json`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/session.parent.jsonl`
-  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/session.subagent.jsonl`
-  - `charness-artifacts/cautilus/skill-experiment-2026-06-22/baseline.transcript.jsonl`
-  - `charness-artifacts/cautilus/skill-experiment-2026-06-22/corrected-capture-plan.md`
-  - `charness-artifacts/cautilus/skill-experiment-2026-06-22/input.v1.json`
-  - `charness-artifacts/cautilus/skill-experiment-2026-06-22/justification.md`
-  - ... 166 more
+  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23-planner-capture/finding.md`
+  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23-planner-capture/observation.stderr`
+  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23-planner-capture/observed.v1.json`
+  - `charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23-planner-capture/session.parent.jsonl`
+  - `charness-artifacts/critique/2026-06-23-052627-packet.json`
+  - `charness-artifacts/critique/2026-06-23-052627-packet.md`
+  - `charness-artifacts/critique/2026-06-23-063934-packet.json`
+  - `charness-artifacts/critique/2026-06-23-063934-packet.md`
+  - `charness-artifacts/critique/2026-06-23-113738-packet.json`
+  - `charness-artifacts/critique/2026-06-23-113738-packet.md`
+  - `charness-artifacts/critique/2026-06-23-issue-397-closeout.md`
+  - `charness-artifacts/critique/2026-06-23-issue-398-cautilus-diagnostics.md`
+  - `charness-artifacts/critique/2026-06-23-quality-catalog-redesign-closeout.md`
+  - `charness-artifacts/critique/2026-06-23-quality-followup-closeout.md`
+  - `charness-artifacts/critique/2026-06-23-quality-gate-health-predeploy-review.md`
+  - `charness-artifacts/critique/2026-06-23-quality-gate-health-review.md`
+  - ... 54 more
 
 ## Real-Host Verification
 
@@ -104,46 +96,26 @@ Advanced `charness` toward release `0.54.0` (tag `v0.54.0`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-06-23-release-0-54-0.md`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.54.0`.
+- Review proof: `charness-artifacts/critique/2026-06-23-quality-gate-health-predeploy-review.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.53.0 -> 0.54.0
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.53.0 -> 0.54.0
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: passed.
+- Fresh-checkout probe status: configured.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
+- Run `charness update` to pull 0.54.1 (patch release); no migration or manual reproof is required on update. Completes the quality-skill follow-up after the 0.54.0 claim-fidelity work. (1) QUALITY SKILL COMPRESSION - the installed `quality` skill now leans on the planner catalog and focused reference index instead of carrying a long inline workflow, keeping deterministic gates as evidence packets and the model responsible for judgment. (2) PLANNER CATALOG + DRIFT GUARD - quality references now have catalog roles, triggers, and gate packets; `validate_quality_reference_catalog.py` keeps the human-readable index and executable planner catalog aligned, including role mismatches that could turn on-demand references into always-read primers. (3) GATE HEALTH AND COST REVIEW - records current runtime evidence, adds a top-level `run-quality-read-only` budget for the local profile, and keeps `parallel_group` as judgment metadata until a separate scheduler design earns its complexity. OPERATOR/CONSUMER NOTE - normal `charness update` is enough; no command rename, install change, or migration ships. Cautilus remains eval-only and ask-before-run. Rollback - reinstall or pin 0.54.0; no data migration needs undoing.
 - Run `charness update` to pull 0.54.0 (minor release); no migration is required, and no consumer-side manual reproof is required on update. Adds maintained authoring/quality surfaces and clearer local safety signals. (1) SKILL CLAIM-FIDELITY HARNESS - adds the reusable cautilus-backed quality claim-fidelity eval, transcript extraction, natural stream-json capture, and durable observation artifacts so public skill claims can be tested against real headless skill runs instead of only static inspection. (2) QUALITY RUN PLANNER - adds the report-first `quality` run planner and focused docs/tests so quality can surface execution-shape failures before spending evaluator budget; the first quality claim-fidelity verdict is recorded as `reject`, explicitly as an execution-shape finding rather than a reference-value deletion mandate. (3) LOCAL PUSH-SAFETY AND TOOL STALENESS - adds a staged-worktree-consistency pre-commit guard, fixes capture-skill-run Git config environment handling, and surfaces clearer behind-latest advisories for manual/advisory tools while preserving manual-only update policy for cautilus and github-gh. (4) PROMPT-SURFACE CLEANUP - ships behavior-preserving `debug` and `impl` skill-body simplifications in the exported plugin surface. NON-CLAIMS - this release does not close #397 and does not prove planner-backed runtime reference consultation yet; it ships the harness, failure evidence, and planner remediation needed for the next real capture. OPERATOR/CONSUMER NOTE - normal `charness update` is enough; no command rename or migration ships. Cautilus-backed validation remains eval-only and ask-before-run for maintainers. Rollback - reinstall or pin 0.53.0; no data migration needs undoing.
 - Run `charness update` to pull 0.52.6 (patch release); no migration or manual reproof is required on update. Hardens the boy-scout duplicate-ratchet quality gate and closes its CLI coverage-attribution gap. (1) SCOPE_PATHS-EMPTY ADVISORY (F) - a `dup_ratchet` block that is enabled but has empty `scope_paths` now degrades the whole gate to an advisory instead of silently falling back to nose DEFAULT_PATHS (likely the wrong tree); never a false block, never a silent clean pass. (2) WRITE-BASELINE DELTA GUARD (C) - `check_dup_ratchet.py --write-baseline` now refuses a large family_id delta (added+removed over `--baseline-delta-threshold`, default 50) without an explicit `--confirm-baseline-delta`; this is a maintenance-command guard only and never touches the gate evaluate path, so it cannot false-block a push, and a deliberate re-baseline such as a nose scanner-version swing passes the flag. (3) BASELINE INTEGRITY ADVISORY (I) - `validate_gate_baseline` is now folded into the existing `check_dup_ratchet` evaluate path so a present-but-schema-invalid gate baseline surfaces as a non-blocking advisory through the existing `dup-ratchet` run-quality phase; no new phase. (4) IN-PROCESS CLI COVERAGE - `check_dup_ratchet.py` is now exercised in-process (attribution 0 percent to 86 percent), closing the subprocess-only-attribution class. OPERATOR/CONSUMER NOTE - the `dup_ratchet` gate ships opt-in/inert (enabled false) by default, so consumers inherit no new blocking behavior; repos that have adopted it receive the hardened, self-checking version, and all three hardening items are advisory/non-blocking (Floor-Addition Restraint - no new blocking content floor). No operator-facing command or install change ships - the only added invocation surface is two opt-in flags on the internal `check_dup_ratchet.py --write-baseline` maintenance command, which consumers never run - and normal `charness update` is enough. Rollback - reinstall or pin 0.52.5; no data migration needs undoing.
 - Run `charness update` to pull 0.52.5 (patch release); no migration or manual reproof is required on update. Generalizes the #386 per-unit behavioral-verdict framing to every audited irreversible boundary and de-noises the clone advisory. (1) PER-UNIT VERDICT AT EVERY IRREVERSIBLE BOUNDARY (north-star overhaul Track 1a) - the issue/PR close, release publish, release-linked close, and deletion closeouts now each cite a per-unit behavioral verdict via a channel distinct from the terminal-green/`CLOSED` proxy, generalizing the #386 disposition-review mandate; implemented as skill/reference prose (issue, release, critique), NOT a new deterministic gate or token. (2) SLIMMER STANDING SURFACE (Track 2) - the always-loaded standing prose shrank via own-concept separation (retro core off the cap; Cautilus detail pulled from `AGENTS.md`); routing and behavior unchanged. (3) NOSE CLONE ADVISORY BASELINE (#390) - the `quality` clone-family advisory now reads a committed `charness-artifacts/quality/nose-baseline.json` by default and reports only NEW/changed duplication (drift) instead of re-flagging intentional portability/idiom boilerplate every run; new `--baseline`/`--write-baseline` flags, re-baseline per scanner version. This is charness-repo-local quality tooling; installed-plugin consumers inherit no new blocking behavior. OPERATOR/CONSUMER NOTE - the changed issue/release/critique/retro skill **bodies** DO ship in the plugin export, so consumers receive the new (non-blocking) per-unit behavioral-verdict mandate prose in those installed skills; no command, install, or invocation change ships, the `AGENTS.md` slim and the nose baseline are authoring-repo-only, and normal `charness update` is enough. Rollback - reinstall or pin 0.52.4; no data migration needs undoing.
