@@ -6,6 +6,9 @@ passes were stopping after they found one canonical final gate such as
 `npm run verify` or `make verify`, without forcing an explicit judgment on how
 that gate is actually enforced in maintainer clones.
 
+Watch stale gate wiring and hidden network/external-repo work before treating a
+local or pre-push gate as reproducible maintainer proof.
+
 ## The bias to watch for
 
 `quality` should not drift into the pattern where:

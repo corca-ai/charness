@@ -5,53 +5,27 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
-BASE_PRIMER_REFS = [
-    "references/quality-lenses.md",
-    "references/inventory-dispatch.md",
-    "references/automation-promotion.md",
-    "references/gate-classification.md",
-    "references/proposal-flow.md",
-    "references/maintainer-local-enforcement.md",
-    "references/operability-signals.md",
-]
+CATALOG_PATH = Path(__file__).resolve().parents[1] / "references" / "catalog.yaml"
 
-SKILL_PRIMER_REFS = [
-    "references/skill-quality.md",
-    "references/skill-ergonomics.md",
-]
 
-ON_DEMAND_TRIGGERS = {
-    "references/adapter-contract.md": "adapter missing, invalid, stale, or under-specified",
-    "references/adapter-gate-review.md": "adapter or gate recommendation needs enforcement-tier review",
-    "references/agent-production-runtime.md": "production agent runtime, provider policy, fallback, telemetry, or serving-path risk",
-    "references/dup-ratchet.md": "dup-ratchet failure, scanner skew, baseline update, or clone-family interpretation",
-    "references/bootstrap-escalations.md": "bootstrap path needs non-default escalation",
-    "references/bootstrap-posture.md": "quality adapter bootstrap or setup-state repair",
-    "references/boundary-bypass-ratchet.md": "boundary-bypass inventory, ratchet, or exemption review",
-    "references/brittle-source-guards.md": "brittle source guard finding or matcher migration",
-    "references/standing-gate-verbosity.md": "standing gate output, runtime, progress signal, or failure detail review",
-    "references/testability-and-selection.md": "slow tests, affected-test selection, mutation workload, or broad test economics",
-    "references/cautilus-on-demand.md": "cautilus evaluate fixture, observation, or skill-experiment is being considered",
-    "references/behavior-testing.md": "deterministic gates cannot honestly prove an agent/user behavior seam",
-    "references/ci-recoverable-gate-triage.md": "slow local gate pressure raises CI recoverability as an option",
-    "references/cli-ergonomics-smells.md": "CLI ergonomics, command archetype, or mutating-probe review",
-    "references/coverage-floor-policy.md": "coverage-floor inventory or policy finding",
-    "references/dual-implementation-parity.md": "dual implementation smell or parity-harness question",
-    "references/entrypoint-docs-ergonomics.md": "entrypoint documentation ergonomics review",
-    "references/executable-spec-economics.md": "executable-spec runtime, duplication, or layering review",
-    "references/installable-cli-probes.md": "installable CLI probe, doctor, help, or lifecycle ownership review",
-    "references/lint-ignore-discipline.md": "lint-ignore inventory or retained-suppression decision",
-    "references/mutation-testing.md": "mutation-testing adapter, workflow, summary, or sampling review",
-    "references/prompt-asset-policy.md": "prompt asset inventory or prompt-regression proof",
-    "references/public-spec-layering.md": "public spec layering, smoke duplication, or source-guard pressure review",
-    "references/quality-signal-scorecard.md": "structural quality cleanup candidate scoring",
-    "references/security-overview.md": "security posture or supply-chain proof separation is in scope",
-    "references/standing-doc-provenance.md": "standing-doc provenance finding or policy review",
-    "references/unit-test-quality.md": "unit test body quality or fixture/assertion review",
-}
+def _load_yaml_file(path: Path) -> dict[str, Any]:
+    for ancestor in Path(__file__).resolve().parents:
+        if (ancestor / "scripts" / "adapter_lib.py").is_file():
+            root_text = str(ancestor)
+            if root_text not in sys.path:
+                sys.path.insert(0, root_text)
+            from scripts.adapter_lib import load_yaml_file
+
+            return load_yaml_file(path)
+    raise RuntimeError("scripts/adapter_lib.py not found")
+
+
+def _catalog() -> dict[str, Any]:
+    return _load_yaml_file(CATALOG_PATH)
 
 
 def _skill_paths_under(repo_root: Path, parents: list[Path]) -> list[str]:
@@ -84,24 +58,43 @@ def _skill_paths(repo_root: Path) -> list[str]:
 def build_plan(repo_root: Path) -> dict[str, Any]:
     skills = _skill_paths(repo_root)
     skills_in_scope = bool(skills)
-    required_refs = [*BASE_PRIMER_REFS, *(SKILL_PRIMER_REFS if skills_in_scope else [])]
+    catalog = _catalog()
+    references = catalog.get("references", [])
+    gates = catalog.get("gates", [])
+    required_reads = [
+        ref
+        for ref in references
+        if ref.get("role") == "required-primer"
+        or (ref.get("role") == "scope-primer" and ref.get("scope") == "skill-authoring" and skills_in_scope)
+    ]
+    on_demand_reads = [ref for ref in references if ref.get("role") == "on-demand"]
+    required_refs = [str(ref["path"]) for ref in required_reads]
+    on_demand_trigger_map = {
+        str(ref["path"]): str(ref["trigger"])
+        for ref in on_demand_reads
+        if isinstance(ref, dict) and ref.get("path") and ref.get("trigger")
+    }
     return {
-        "schema_version": "quality.run_plan.v1",
+        "schema_version": "quality.run_plan.v2",
         "repo_root": str(repo_root),
         "skills_in_scope": skills_in_scope,
         "skill_scope_reason": (
             f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
         ),
         "sample_skill_paths": skills[:8],
+        "required_reads": required_reads,
         "required_primer_refs": required_refs,
         "gate_plan": "report_first",
+        "gate_packets": gates,
         "next_action": "read_primer_refs",
         "phase_barriers": [
-            "Read required_primer_refs before broad gates.",
-            "Run deterministic gates as a report, then analyze the report against the primer refs before fixing.",
+            "Read required_reads (also exposed as required_primer_refs for compatibility) before broad gates.",
+            "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",
+            "Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize, or manually inspect a packet.",
             "Open on-demand refs only when a concrete gate, inventory, source, or operator finding matches their trigger.",
         ],
-        "on_demand_trigger_map": ON_DEMAND_TRIGGERS,
+        "on_demand_reads": on_demand_reads,
+        "on_demand_trigger_map": on_demand_trigger_map,
     }
 
 
@@ -111,12 +104,17 @@ def format_human(plan: dict[str, Any]) -> str:
         f"- next_action: {plan['next_action']}",
         f"- skills_in_scope: {str(plan['skills_in_scope']).lower()} ({plan['skill_scope_reason']})",
         f"- gate_plan: {plan['gate_plan']}",
-        "- required_primer_refs:",
+        "- required_reads:",
     ]
-    lines.extend(f"  - {ref}" for ref in plan["required_primer_refs"])
+    lines.extend(f"  - {ref['path']}: {ref.get('why', 'required')}" for ref in plan["required_reads"])
     lines.append("- phase_barriers:")
     lines.extend(f"  - {barrier}" for barrier in plan["phase_barriers"])
-    lines.append("- on_demand_triggers: open only from concrete findings")
+    lines.append("- gate_packets:")
+    lines.extend(
+        f"  - {gate['id']}: {gate['cost_tier']} / {gate['trust_model']}"
+        for gate in plan["gate_packets"]
+    )
+    lines.append("- on_demand_reads: open only from concrete findings")
     return "\n".join(lines)
 
 

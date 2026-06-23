@@ -1,0 +1,144 @@
+version: 1
+references:
+  - path: references/quality-lenses.md
+    role: required-primer
+    why: Interpret every quality packet through concept, behavior, security, and operability.
+  - path: references/inventory-dispatch.md
+    role: required-primer
+    why: Choose focused inventories without preloading every reference.
+  - path: references/automation-promotion.md
+    role: required-primer
+    why: Decide whether a finding deserves automation, advisory output, or judgment.
+  - path: references/gate-classification.md
+    role: required-primer
+    why: Classify findings before proposing gates or fixes.
+  - path: references/proposal-flow.md
+    role: required-primer
+    why: Keep recommendations concrete, sourced, and proportionate.
+  - path: references/maintainer-local-enforcement.md
+    role: required-primer
+    why: Preserve locally reachable proof when judging gate placement.
+  - path: references/operability-signals.md
+    role: required-primer
+    why: Read runtime, setup, CI, and maintenance signals as quality evidence.
+  - path: references/skill-quality.md
+    role: scope-primer
+    scope: skill-authoring
+    why: Inspect skills as runtime artifacts when the repo authors skills.
+  - path: references/skill-ergonomics.md
+    role: scope-primer
+    scope: skill-authoring
+    why: Judge whether skill cores, references, and scripts preserve progressive disclosure.
+  - path: references/adapter-contract.md
+    role: on-demand
+    trigger: adapter missing, invalid, stale, or under-specified
+  - path: references/adapter-gate-review.md
+    role: on-demand
+    trigger: adapter or gate recommendation needs enforcement-tier review
+  - path: references/agent-production-runtime.md
+    role: on-demand
+    trigger: production agent runtime, provider policy, fallback, telemetry, or serving-path risk
+  - path: references/dup-ratchet.md
+    role: on-demand
+    trigger: dup-ratchet failure, scanner skew, baseline update, or clone-family interpretation
+  - path: references/bootstrap-escalations.md
+    role: on-demand
+    trigger: bootstrap path needs non-default escalation, hidden setup work, adapter repair, or operator-facing bootstrap judgment
+  - path: references/bootstrap-posture.md
+    role: on-demand
+    trigger: quality adapter bootstrap or setup-state repair
+  - path: references/boundary-bypass-ratchet.md
+    role: on-demand
+    trigger: boundary-bypass inventory, ratchet, or exemption review
+  - path: references/brittle-source-guards.md
+    role: on-demand
+    trigger: brittle source guard finding or matcher migration
+  - path: references/standing-gate-verbosity.md
+    role: on-demand
+    trigger: standing gate output, runtime, progress signal, or failure detail review
+  - path: references/testability-and-selection.md
+    role: on-demand
+    trigger: slow tests, affected-test selection, mutation workload, or broad test economics
+  - path: references/cautilus-on-demand.md
+    role: on-demand
+    trigger: cautilus evaluate fixture, observation, or skill-experiment is being considered
+  - path: references/behavior-testing.md
+    role: on-demand
+    trigger: deterministic gates cannot honestly prove an agent/user behavior seam
+  - path: references/ci-recoverable-gate-triage.md
+    role: on-demand
+    trigger: slow local gate pressure raises CI recoverability as an option
+  - path: references/cli-ergonomics-smells.md
+    role: on-demand
+    trigger: CLI ergonomics, command archetype, or mutating-probe review
+  - path: references/coverage-floor-policy.md
+    role: on-demand
+    trigger: coverage-floor inventory or policy finding
+  - path: references/dual-implementation-parity.md
+    role: on-demand
+    trigger: dual implementation smell or parity-harness question
+  - path: references/entrypoint-docs-ergonomics.md
+    role: on-demand
+    trigger: entrypoint documentation ergonomics review
+  - path: references/executable-spec-economics.md
+    role: on-demand
+    trigger: executable-spec runtime, duplication, or layering review
+  - path: references/installable-cli-probes.md
+    role: on-demand
+    trigger: installable CLI probe, doctor, help, or lifecycle ownership review
+  - path: references/lint-ignore-discipline.md
+    role: on-demand
+    trigger: lint-ignore inventory or retained-suppression decision
+  - path: references/mutation-testing.md
+    role: on-demand
+    trigger: mutation-testing adapter, workflow, summary, or sampling review
+  - path: references/prompt-asset-policy.md
+    role: on-demand
+    trigger: prompt asset inventory or prompt-regression proof
+  - path: references/public-spec-layering.md
+    role: on-demand
+    trigger: public spec layering, smoke duplication, or source-guard pressure review
+  - path: references/quality-signal-scorecard.md
+    role: on-demand
+    trigger: structural quality cleanup candidate scoring
+  - path: references/security-overview.md
+    role: on-demand
+    trigger: security posture or supply-chain proof separation is in scope
+  - path: references/security-npm.md
+    role: on-demand
+    trigger: package.json, package-lock.json, npm audit, or npm supply-chain risk is in scope
+  - path: references/security-pnpm.md
+    role: on-demand
+    trigger: pnpm-lock.yaml, pnpm audit, or pnpm-managed supply-chain risk is in scope
+  - path: references/security-uv.md
+    role: on-demand
+    trigger: uv.lock, pyproject uv configuration, or uv-managed supply-chain risk is in scope
+  - path: references/standing-doc-provenance.md
+    role: on-demand
+    trigger: standing-doc provenance finding or policy review
+  - path: references/unit-test-quality.md
+    role: on-demand
+    trigger: unit test body quality or fixture/assertion review
+gates:
+  - id: read-only-quality
+    command: ./scripts/run-quality.sh --read-only
+    purpose: standing deterministic evidence packet
+    trust_model: hard gate plus advisory sub-packets; green is evidence, not judgment
+    cost_tier: broad
+    parallel_group: serial-critical
+    run_after: required-primer
+    run_when: repo exposes this repo-native command or an equivalent standing quality gate
+  - id: runtime-summary
+    command: python3 "$SKILL_DIR/scripts/render_runtime_summary.py" --repo-root . --json
+    purpose: measured runtime trend source before claiming cost or speed facts
+    trust_model: measurement packet
+    cost_tier: cheap
+    parallel_group: inventories
+    run_when: runtime, slow gate, budget, or cost is in scope
+  - id: skill-ergonomics
+    command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root . --json
+    purpose: advisory skill-surface pressure packet when skills are in scope
+    trust_model: heuristic advisory with false positives and false negatives
+    cost_tier: cheap
+    parallel_group: inventories
+    run_when: skills_in_scope

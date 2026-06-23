@@ -57,12 +57,16 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
 
 def test_quality_skill_runs_usage_episode_validator_even_without_adapter() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    catalog = (
+        ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
+    ).read_text(encoding="utf-8")
+    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
-    assert "resolve and run the Charness package-root validator `validate_usage_episodes.py`" in skill_text
-    assert "and report `report_usage_episodes.py`" in skill_text
+    assert "Run applicable `gate_packets` as report-first evidence" in skill_text
+    assert "id: read-only-quality" in catalog
+    assert "queue_selected \"validate-usage-episodes\" python3 scripts/validate_usage_episodes.py" in run_quality
+    assert "queue_selected \"report-usage-episodes\" python3 scripts/report_usage_episodes.py" in run_quality
     assert "when `.agents/usage-episodes-adapter.yaml` exists" not in skill_text
-    assert "`no_adapter`, `disabled`, and `no_records` are skipped warnings" in skill_text
-    assert "not product-success proof or failures" in skill_text
 
 
 def test_quality_skill_carries_lint_ignore_lens() -> None:
@@ -165,6 +169,9 @@ def test_quality_skill_carries_public_spec_layering_lens() -> None:
 
 def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    scaffold = (
+        ROOT / "skills" / "public" / "quality" / "scripts" / "scaffold_quality_artifact.py"
+    ).read_text(encoding="utf-8")
     dispatch = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
     ).read_text(encoding="utf-8")
@@ -178,11 +185,12 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
         ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
 
-    assert "structural smell sensors" in skill_text
-    assert "`Scope`, `Concept Risks`, `Current Gates`" in skill_text
-    assert "Standing Test Economics" in skill_text
-    assert "delete, merge, split ownership, extract a helper, or narrow the interface" in skill_text
-    assert "Do not treat a passing length, duplicate, or pressure heuristic as the goal" in skill_text
+    assert "smell sensors" in skill_text
+    assert "SECTIONS = (" in scaffold
+    assert "## Current Gates" in scaffold
+    assert "gate_packets" in skill_text
+    assert "delete, merge, split ownership, extract a helper, or narrow an interface" in skill_text
+    assert "Length, duplicate, and pressure heuristics are smell sensors" in skill_text
     assert "routing default, not a veto against good deterministic enforcement" in dispatch
     assert "standing threshold gates such as coverage floors, runtime budgets" in dispatch
     assert "Pytest Economics" in dispatch
@@ -245,7 +253,7 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "quiet defaults and failure detail" in verbosity.lower()
     assert "Failure detail" in verbosity
     assert "without forcing the operator to manually rediscover" in verbosity
-    assert "after initial inventory and before broad recommendations" in skill_text
+    assert "after initial inventory and before broad" in skill_text
     assert "runtime_budget_profiles" in dispatch
     assert "CHARNESS_RUNTIME_PROFILE" in verbosity
     assert "local-linux-x86_64-8cpu" in verbosity
@@ -256,6 +264,9 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
 
 def test_quality_skill_carries_agent_production_runtime_lens_core_anchor() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    catalog = (
+        ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
+    ).read_text(encoding="utf-8")
     lenses = (
         ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
     ).read_text(encoding="utf-8")
@@ -269,7 +280,9 @@ def test_quality_skill_carries_agent_production_runtime_lens_core_anchor() -> No
         ROOT / "skills" / "public" / "quality" / "references" / "behavior-testing.md"
     ).read_text(encoding="utf-8")
 
-    assert "agent production runtime risk" in skill_text
+    assert "runtime risk" in skill_text
+    assert "agent-production-runtime.md" in catalog
+    assert "production agent runtime" in catalog
     assert "`references/agent-production-runtime.md`" in dispatch
     assert "production LLM or agent runtime" in runtime
     assert "Do not build an Anthropic-specific wrapper" in runtime

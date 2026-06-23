@@ -217,9 +217,6 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     debug_text = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(
         encoding="utf-8"
     )
-    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
     maintainer_local = (
         ROOT
         / "skills"
@@ -233,7 +230,7 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     assert "worker execution" in debug_text
     assert "post-worker side effects" in debug_text
     assert "earliest component that can produce observable status" in debug_text
-    assert "hidden network/external-repo work" in quality_text
+    assert "hidden network/external-repo work" in maintainer_local
     assert "external-repo fetch" in maintainer_local
     assert "explicit refresh,\n> update, or release action" in maintainer_local
 
@@ -445,6 +442,9 @@ def test_release_bump_version_applies_valid_set_version_and_runs_sync(tmp_path: 
 
 def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    index = (
+        ROOT / "skills" / "public" / "quality" / "references" / "index.md"
+    ).read_text(encoding="utf-8")
     dispatch = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
     ).read_text(encoding="utf-8")
@@ -461,11 +461,11 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
-    assert "prior quality artifact is history" in skill_text
-    assert "bounded fresh-eye reviewer" in skill_text
-    assert "active` or `passive" in skill_text
+    assert "quality-lenses.md" in index
+    assert "Run bounded fresh-eye review" in skill_text
+    assert "Recommended Next Gates" in skill_text
     assert "prompt/content bulk" in dispatch
-    assert "fresh 5-minute reader" in skill_text
+    assert "progressive-disclosure map" in index
     assert "coverage_floor_policy" in adapter_contract
     assert "spec_pytest_reference_format" in adapter_contract
     assert "public_spec_section_exemptions" in adapter_contract
@@ -475,7 +475,7 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     assert "gate_script_pattern" in floor_policy
     assert "warn band" in floor_policy
     assert "canonical fresh-eye review" in fresh_eye
-    assert "misclassify as absent" in skill_text
+    assert "source_globs" in prompt_policy
     assert "prompt/content bulk" in prompt_policy
     assert "find_inline_prompt_bulk.py" in prompt_policy
 
@@ -498,9 +498,9 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "maintainer-local-enforcement.md"
     ).read_text(encoding="utf-8")
 
-    assert "prefer the smaller production surface first" in skill_text
+    assert "narrow an interface" in skill_text
     assert "bounded test-ratio posture" in dispatch
-    assert "stale gate wiring" in skill_text
+    assert "stale gate wiring" in enforcement
     assert "shrinking production\nsurface" in automation
     assert "changed-file router" in economics
     assert "bounded test-ratio posture" in lenses
@@ -510,13 +510,16 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
 
 def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    index = (
+        ROOT / "skills" / "public" / "quality" / "references" / "index.md"
+    ).read_text(encoding="utf-8")
     reference_text = (
         ROOT / "skills" / "public" / "quality" / "references" / "testability-and-selection.md"
     ).read_text(encoding="utf-8")
     dogfood = (ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8")
 
-    assert "references/testability-and-selection.md" in skill_text
-    assert "Testability and Selection" in skill_text
+    assert "references/testability-and-selection.md" in index
+    assert "testability, selection, and duplicated proof" in index
     assert "Do not claim that deterministic affected-test selection is always possible" in reference_text
     assert "cheap deterministic\ncandidate subset" in reference_text
     assert "pytest-testmon" in reference_text
@@ -631,7 +634,7 @@ def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> No
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
-    assert "must not silently omit `Weak`, `Missing`, `Advisory`" in skill_text
+    assert "must not hide `Weak`, `Missing`, `Advisory`" in skill_text
     assert "active `Recommended Next Gates`" in skill_text
     assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in dispatch
     assert "must not suppress inline prompt/content inventory" in prompt_policy
