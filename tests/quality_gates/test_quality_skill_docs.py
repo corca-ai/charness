@@ -253,7 +253,7 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "quiet defaults and failure detail" in verbosity.lower()
     assert "Failure detail" in verbosity
     assert "without forcing the operator to manually rediscover" in verbosity
-    assert "after initial inventory and before broad" in skill_text
+    assert "fresh-eye-subagent-review.md" in skill_text
     assert "runtime_budget_profiles" in dispatch
     assert "CHARNESS_RUNTIME_PROFILE" in verbosity
     assert "local-linux-x86_64-8cpu" in verbosity

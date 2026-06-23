@@ -348,6 +348,19 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
     assert "check-timing-layer-completeness" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/run-quality.sh"])}
 
 
+def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() -> None:
+    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/index.md"])
+    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/catalog.yaml"])
+    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/security-npm.md"])
+    assert "validate-quality-reference-catalog" in _labels(["scripts/validate_quality_reference_catalog.py"])
+    assert "validate-quality-reference-catalog" not in _labels(["skills/public/debug/references/index.md"])
+    assert "validate-quality-reference-catalog" not in _labels(["docs/usage.md"])
+    assert "validate-quality-reference-catalog" in STRUCTURAL_SWEEP_LABELS
+    assert "validate-quality-reference-catalog" in {
+        g.label for g in structural_sweep_gates(ROOT, ["skills/public/quality/references/index.md"])
+    }
+
+
 def test_leak_scan_gates_degrade_when_validator_absent(tmp_path: Path) -> None:
     # In a repo without the validator scripts (seeded tmp / consumer repo), the
     # leak-scan pulls degrade to no gate rather than planning a missing command —

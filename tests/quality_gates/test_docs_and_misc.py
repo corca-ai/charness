@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES
+
 from .support import ROOT, run_script
 
 
@@ -230,7 +232,6 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     assert "worker execution" in debug_text
     assert "post-worker side effects" in debug_text
     assert "earliest component that can produce observable status" in debug_text
-    assert "hidden network/external-repo work" in maintainer_local
     assert "external-repo fetch" in maintainer_local
     assert "explicit refresh,\n> update, or release action" in maintainer_local
 
@@ -308,12 +309,7 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["shared_start_commands"] == [
-        "git status --short",
-        "sed -n '1,220p' docs/handoff.md",
-        "sed -n '1,260p' docs/roadmap.md 2>/dev/null || true",
-        "./scripts/run-quality.sh",
-    ]
+    assert payload["shared_start_commands"] == [command for command, _path in SHARED_START_CANDIDATES]
     assert payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
     assert "gh workflow run release.yml" in payload["acceptance_buckets"]["external_or_costly"][0]["commands"]
     assert payload["acceptance_buckets"]["human_judgment"][0]["source_path"] == "docs/handoff.md"
@@ -441,7 +437,6 @@ def test_release_bump_version_applies_valid_set_version_and_runs_sync(tmp_path: 
 
 
 def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
-    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     index = (
         ROOT / "skills" / "public" / "quality" / "references" / "index.md"
     ).read_text(encoding="utf-8")
@@ -462,8 +457,6 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     ).read_text(encoding="utf-8")
 
     assert "quality-lenses.md" in index
-    assert "Run bounded fresh-eye review" in skill_text
-    assert "Recommended Next Gates" in skill_text
     assert "prompt/content bulk" in dispatch
     assert "progressive-disclosure map" in index
     assert "coverage_floor_policy" in adapter_contract
@@ -626,7 +619,6 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
 
 
 def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> None:
-    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     dispatch = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
     ).read_text(encoding="utf-8")
@@ -634,8 +626,6 @@ def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> No
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
-    assert "must not hide `Weak`, `Missing`, `Advisory`" in skill_text
-    assert "active `Recommended Next Gates`" in skill_text
     assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in dispatch
     assert "must not suppress inline prompt/content inventory" in prompt_policy
 

@@ -121,6 +121,7 @@ skill_ergonomics_gate_rules:
   - portable_helper_path_ambiguity
 runtime_profile_default: default
 runtime_budgets:
+  run-quality-read-only: 120000
   charness-version: 500
   check-cli-skill-surface: 11000
   pytest: 70000
@@ -142,6 +143,7 @@ runtime_budget_profiles:
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1200
+      run-quality-read-only: 90000
       pytest: 140000
       # 2026-06-14: raised 45000 -> 55000. check-coverage was documented as
       # "keeps brushing its 45s budget" and crossed it (median 45878ms, latest

@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.report_usage_episodes import NON_CLAIMS
 from tests.test_usage_episodes_schema import ceal_episode, crill_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -80,7 +81,7 @@ def test_report_usage_episodes_reports_no_adapter(tmp_path: Path) -> None:
     assert [warning["warning_id"] for warning in payload["warnings"]] == [
         "usage_episodes_adapter_missing"
     ]
-    assert any("not product-success proof" in non_claim for non_claim in payload["non_claims"])
+    assert payload["non_claims"] == NON_CLAIMS
 
 
 def test_report_usage_episodes_reports_disabled(tmp_path: Path) -> None:

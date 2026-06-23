@@ -66,6 +66,22 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
         gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
+    if any(
+        path == "scripts/validate_quality_reference_catalog.py"
+        or path.startswith("skills/public/quality/references/")
+        for path in paths
+    ):
+        # Cheap quality planner-catalog parity check. A reference/index/catalog edit can
+        # otherwise make planner-following agents miss a reference until the broad gate.
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "validate-quality-reference-catalog",
+                "scripts/validate_quality_reference_catalog.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     if any(path.endswith(".md") for path in paths):
         # Advisory posture (north-star P1): non-strict surfaces a WARN line that
         # run-quality.sh surfaces non-blocking; it no longer blocks the commit.
@@ -293,6 +309,7 @@ STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
         "check-bootstrap-shim-consistency",
         "check-inventory-declaration-coverage",
         "check-timing-layer-completeness",
+        "validate-quality-reference-catalog",
     }
 )
 

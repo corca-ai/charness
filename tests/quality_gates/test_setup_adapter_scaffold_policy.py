@@ -16,7 +16,8 @@ def test_setup_init_adapter_scaffolds_review_policy_surface(tmp_path) -> None:
     assert raw["defaults_version"] == "issue-64"
     policy = raw["policy_sources"][0]
     assert policy["path"] == "AGENTS.md"
-    assert "bounded fresh-eye review" in policy["evidence_terms"]
+    assert "critique" in policy["evidence_terms"]
+    assert any("fresh-eye" in term and "review" in term for term in policy["evidence_terms"])
     assert "recommendations" not in policy
     assert raw["recommendation_sets"]["enabled"] == []
 

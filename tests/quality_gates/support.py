@@ -109,6 +109,7 @@ def init_git_repo(repo: Path, *tracked_paths: str) -> None:
 
 QUALITY_PYTHON_STUBS = (
     ("validate-skills", "validate_skills.py"),
+    ("validate-quality-reference-catalog", "validate_quality_reference_catalog.py"),
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
     ("validate-usage-episodes", "validate_usage_episodes.py"),
     ("report-usage-episodes", "report_usage_episodes.py"),

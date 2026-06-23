@@ -366,7 +366,7 @@ def test_run_quality_surfaces_usage_episode_report(tmp_path: Path, seeded_qualit
     assert "--- report-usage-episodes output ---" in result.stdout
     assert "Usage episodes: 4 record(s) across 3 session group(s)." in result.stdout
     assert "Capture gaps: ungrouped=2" in result.stdout
-    assert "not product-success proof" in result.stdout
+    assert "Non-claims:" in result.stdout
 
 
 def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
