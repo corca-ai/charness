@@ -127,11 +127,11 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "already delegated",
     ),
     "skills/public/issue/SKILL.md": (
-        "GitHub is the source of truth.",
-        "Do not prefer session memory",
-        "one numeric token or `start-end` token is the issue\n  selector, not a repository name",
-        "With no selector, `select` queries the newest open GitHub issue",
-        "Do not ask for approval unless the user explicitly asks to review first.",
+        "GitHub is the source of truth for issue identity",
+        "context, but they do not select or verify an issue.",
+        "`issue resolve [repo] [number|start-end]` resolves one or more issues.",
+        "If no selector was supplied, select the newest open GitHub issue through the\n   backend.",
+        "unless the user explicitly asks to review first.",
     ),
     "skills/public/narrative/SKILL.md": (
         "map the current source-of-truth surface",

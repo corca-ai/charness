@@ -89,9 +89,9 @@ def test_causal_review_cites_five_whys_causal_chain() -> None:
 
 
 def test_issue_skill_step_4_dispatches_to_debug_substrate() -> None:
-    text = ISSUE_SKILL.read_text(encoding="utf-8")
+    text = CAUSAL_REVIEW.read_text(encoding="utf-8")
     pattern = re.compile(r"consume.*debug.*substrate|debug.*RCA.*reference", re.IGNORECASE | re.DOTALL)
-    assert pattern.search(text), "issue/SKILL.md step 4 must dispatch to debug substrate"
+    assert pattern.search(text), "issue causal-review.md must dispatch to debug substrate"
 
 
 def test_debug_skill_marks_standalone_callable() -> None:
@@ -101,8 +101,8 @@ def test_debug_skill_marks_standalone_callable() -> None:
 
 
 def test_issue_skill_close_comment_has_debug_artifact_slot() -> None:
-    text = ISSUE_SKILL.read_text(encoding="utf-8")
-    assert "Debug artifact:" in text, "issue/SKILL.md close-comment shape must have `Debug artifact:` slot"
+    text = CAUSAL_REVIEW.read_text(encoding="utf-8")
+    assert "Debug artifact:" in text, "issue causal-review.md must have `Debug artifact:` slot"
 
 
 def test_causal_review_does_not_re_derive_rca_body() -> None:

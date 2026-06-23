@@ -1,138 +1,139 @@
 # Quality Review
-Date: 2026-06-23
+Date: 2026-06-24
 
 ## Scope
 
-After publishing `v0.54.1`, evaluate one next skill candidate through the
-`quality` lens. Candidate selected: `release`, because it owns irreversible
-tag/publish/GitHub-release/issue-close/install-refresh boundaries where helper-
-owned evidence and concise progressive disclosure matter more than raw prose
-volume.
+Evaluate and improve the next high-consequence skill through the `quality`
+lens. Candidate selected: `issue`, because it owns GitHub issue creation,
+resolution, closeout carriers, and external tracker state. Those boundaries are
+easy to over-claim if the agent follows prose memory instead of a helper-owned
+plan plus final readback.
 
-No Cautilus evaluator run was performed. This was a deterministic quality pass
-plus bounded fresh-eye review; no live behavior fixture was needed to choose the
-next planning target.
+No Cautilus evaluator run was performed for this slice. The change is a
+deterministic skill-surface improvement: planner packet, core compression,
+reference discoverability, and focused contract tests.
 
 ## Current Gates
 
-- Release surface: `current_release.py` reports all checked-in release versions
-  at `0.54.1`, `git_status: []`, and `drift: []`.
-- Public release: `v0.54.1` is published at
-  `https://github.com/corca-ai/charness/releases/tag/v0.54.1`; helper recorded
-  public release verification, distinct-channel HTTP confirmation, and
-  `charness update` install refresh.
-- Fresh-checkout probes: `check_fresh_checkout_probes.py --run-probes --json`
-  passed all three declared probes.
-- Narrative audit: `audit_public_release_narrative.py --target-tag v0.54.1`
-  passed for `charness-artifacts/release/latest.md`.
-- Requested-review gate: `check_requested_review_gate.py` returned `ok` with a
-  warning that `requested_review_commands` is empty, so this adapter surface is
-  advisory-only.
+- `issue_tool.py plan --intent new|resolve` now emits the run plan before issue reads, mutations, or closeout.
+- Focused issue tests pass: `tests/quality_gates/test_issue_skill.py` reports 25/25 passing.
+- Skill ergonomics inventory reports `issue` core non-empty lines at 69, down from 148 before the planner/core split.
+- Reference discoverability for `issue` is 0 unlisted reference files; the
+  reference list now explains each reference's role.
+- The remaining inventory heuristic is `portable_package_host_surface_reference`
+  from `.codex/issue-adapter.yaml` and `.claude/issue-adapter.yaml` fallback
+  paths in `resolve_adapter.py`; prose review disposition: intentional adapter
+  fallback, not portable-package debt for this slice.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
-  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median, budget
-  90.0s; `pytest` 23.2s latest / 23.9s median, budget 140.0s;
-  `check-coverage` 18.8s latest / 19.5s median, budget 55.0s;
-  `check-duplicates` 10.0s latest / 11.9s median; `check-markdown` 4.8s median.
-- coverage gate: not rerun as part of this candidate-only review; the just-run
-  release helper already executed `./scripts/run-quality.sh --release`.
-- evaluator depth: deterministic gates and fresh-eye review only; live evaluator
-  proof is deferred until a concrete release dogfood fixture is designed.
+- runtime source: structured planner JSON from `issue_tool.py plan` and inventory JSON from `inventory_skill_ergonomics.py`.
+- runtime hot spots: unavailable; this slice did not collect timing samples beyond normal command completion.
+- coverage gate: focused issue tests passed 24/24; broad pytest is deferred to closeout.
+- evaluator depth: no Cautilus run; deterministic planner/skill gates only.
+- Mutation Tests run `28049447961` passed the old failing `Select mutation sample` step and is still in `Run mutation`.
 
 ## Healthy
 
-- `release` already has strong helper-owned evidence. The publish helper owns
-  fresh checkout probes, release visibility verification, distinct-channel
-  confirmation, issue-close preflight, and post-publish install refresh.
-- `skills/public/release/references/install-surface.md` clearly separates
-  local/tag state, workflow publication, and public release surface verification,
-  which matches the design north star for irreversible boundaries.
-- Progressive-disclosure mechanics are structurally present: `SKILL.md` lists
-  all four release references, and `inventory_skill_ergonomics.py` reports no
-  unlisted release references.
+- The `issue` skill already had real helper coverage: adapter preflight,
+  invocation parsing, issue read with comments, body-file create, milestone
+  resolution, brief path, close-with-comment, and closeout verification.
+- The new planner lets code do what code is good at: assemble adapter state,
+  target selection, required reads, trust/cost notes, and next action as
+  structured output.
+- The compressed `SKILL.md` keeps the trigger contract, GitHub source-of-truth
+  rule, intent split, classification routing, and irreversible-boundary warning
+  in core.
+- References are now role-described progressive disclosure rather than an
+  unexplained filename list.
 
 ## Weak
 
-- `skills/public/release/SKILL.md` is under the hard core budget but still carries
-  too much evidence sequencing inline: bootstrap command list, critique handling,
-  fresh-checkout proof, narrative audit, issue closeout, and install refresh are
-  all in the core workflow around lines 38-126.
-- `release` has helper mechanics, but no `plan_release_run.py` equivalent to the
-  new `quality` planner. The model still has to infer which helper outputs are
-  required reads, pre-mutation checks, publish-boundary checks, and closeout
-  evidence.
-- Requested-review enforcement is adapter-advisory for this repo because
-  `.agents/release-adapter.yaml` leaves `requested_review_commands` empty. This
-  should not block the transition because critique and distinct-channel proof are
-  separately enforced, but it is real evidence posture to keep visible.
+- `issue_tool.py` is now within 36 lines of its Python file limit. The next CLI addition should register from a submodule.
+- The planner does not classify an issue body by itself; that stays judgment-owned for now.
+- Non-`gh` host-mediated issue backend behavior remains structurally tested, not
+  provider-roundtrip proven in this slice.
 
 ## Missing
 
-- Missing planner/helper packet: a release planning command should emit
-  `required_reads`, current release state, pre-mutation blockers, publish-boundary
-  packets, closeout evidence requirements, trust/cost notes, and next action.
-- Missing dogfood fixture: `suggest_public_skill_dogfood.py --skill-id release`
-  recommends a HITL-backed scenario for "verify and advance the checked-in
-  release surface without hand-editing generated packaging artifacts." That is
-  the right proof shape before compressing the core aggressively.
+- Missing dogfood/evaluator fixture: `suggest_public_skill_dogfood.py --skill-id
+  issue` classifies `issue` as evaluator-required. The next behavior proof
+  should test whether a fresh session routes to `issue`, runs the planner, and
+  follows the planner's next action without being coached by the fixture.
+- Scenario review: existing `issue-146` / `issue-148` Cautilus fixtures cover
+  causal-review sibling search, not planner-first execution. Keep them unchanged
+  for this deterministic slice; add a neutral planner-use fixture later.
+- Held-out scenario eval passed 10/10 after updating representative issue core contract markers.
+- Missing planner adoption for adjacent high-consequence skills beyond
+  `quality`, `release`, and now `issue`.
 
 ## Deferred
 
-- Do not add a blocking gate for release core length. The current weakness is
-  sequencing ergonomics and judgment load, not a low-noise line-count invariant.
-- Do not make requested-review commands mandatory in this slice. First decide
-  whether the existing critique gate and distinct-channel release verification
-  already cover the meaningful release-closeout risk.
-- Do not choose a raw line-count outlier instead of `release` only because it is
-  longer. `release` has higher consequence per loaded line than many longer
-  skills because it governs irreversible publish boundaries.
+- Do not add a blocking length gate for `issue_tool.py` in this slice; the
+  existing Python length advisory already surfaces the headroom pressure.
+- Do not remove `.codex` / `.claude` adapter fallback paths just to satisfy the
+  inventory heuristic; those are host adapter seams, not accidental prose
+  leakage.
+- Do not run Cautilus until a neutral issue-skill fixture is written. A fixture
+  must not instruct the model to use the planner; it should observe whether the
+  loaded skill naturally does so.
 
 ## Advisory
 
-- command: `inventory_skill_ergonomics.py --json` reports release core lines:
-  140; code fences: 8; bootstrap fences: 4;
-  `host_surface_reference_count: 10`, `unlisted_reference_count: 0`. Interpreted
-  finding: the host references are mostly legitimate adapter/package surfaces;
-  the actionable signal is core sequencing pressure.
+- command: `inventory_skill_ergonomics.py --skill-path skills/public/issue/SKILL.md --json`
+  reports `reference_file_count: 6`, `unlisted_reference_count: 0`, and `host_surface_reference_count: 2`.
 - prose review result: `prose_review_status=required` was satisfied for the
-  release slice by reviewing the inventory prompts directly; the planner/helper
-  packet plus dogfood review finding is real, while the host-surface references
-  are mostly legitimate release adapter/package evidence rather than automatic
-  portability failures.
-- command: `suggest_public_skill_dogfood.py --skill-id release --json` reports
-  `validation_tier: hitl-recommended` and `adapter_requirement: required`.
+  issue slice by reviewing trigger boundaries, progressive disclosure, helper
+  ownership, and remaining host-surface findings. The planner/core split is a
+  real ergonomic improvement; the host-surface findings are intentional adapter
+  fallback paths.
+- command: `suggest_public_skill_dogfood.py --skill-id issue --json` reports
+  `validation_tier: evaluator-required` and `adapter_requirement: required`.
 
 ## Delegated Review
 
-- Delegated Review: executed — fresh-eye explorer agreed `release` is the right
-  next candidate despite not being the worst raw ergonomics outlier, because its
-  irreversible boundary risk makes planner/helper-owned evidence high leverage.
-- Slow-gate lenses: fixture-economics, parallel-critical-path, and
-  duplicated-proof were not the target; this review is skill-transition
-  planning, not slow-gate redesign.
+- executed: bounded fresh-eye review found and fixed the ignored `plan --intent resolve --target` flag, duplicate closeout on-demand ref, missing fresh-eye policy surfacing, and prose-shaped classification action test. Valid deferrals: neutral Cautilus fixture and non-`gh` provider roundtrip.
 
 ## Commands Run
 
-- `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id release --json`
-- `python3 skills/public/release/scripts/current_release.py --repo-root .`
-- `python3 skills/public/release/scripts/check_real_host_proof.py --repo-root .`
-- `python3 skills/public/release/scripts/check_requested_review_gate.py --repo-root .`
-- `python3 skills/public/release/scripts/check_fresh_checkout_probes.py --repo-root . --run-probes --json`
-- `python3 skills/public/release/scripts/audit_public_release_narrative.py --repo-root . --target-tag v0.54.1 --artifact-path charness-artifacts/release/latest.md --json`
-- bounded fresh-eye subagent review over `skills/public/release`
+- `python3 skills/public/issue/scripts/issue_tool.py plan --repo-root . --intent resolve -- 399`
+- `python3 skills/public/issue/scripts/issue_tool.py plan --repo-root . --intent new`
+- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --skill-path skills/public/issue/SKILL.md --json`
+- `python3 scripts/check_skill_surface_preflight.py --repo-root . --path skills/public/issue/SKILL.md --preview-delta 0`
+- `python3 scripts/check_python_lengths.py --headroom --paths skills/public/issue/scripts/issue_tool.py skills/public/issue/scripts/issue_plan.py`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+- `python3 scripts/check_changed_surfaces.py --repo-root .`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/validate_skill_ergonomics.py --repo-root .`
+- `python3 scripts/validate_packaging.py --repo-root .`
+- `python3 scripts/validate_packaging_committed.py --repo-root .`
+- `python3 scripts/validate_public_skill_validation.py --repo-root .`
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
+- `python3 scripts/check_doc_links.py --repo-root .`
+- `python3 scripts/check_command_docs.py --repo-root .`
+- `./scripts/check-markdown.sh`
+- `./scripts/check-secrets.sh`
+- `python3 scripts/check_skill_ownership_overlap.py --repo-root .`
+- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`
+- `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+- `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`
+- `python3 scripts/validate_cautilus_proof.py --repo-root .`
+- `python3 scripts/validate_cautilus_diagnostics.py --repo-root .`
+- `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`
+- `python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --baseline-ref origin/main --output-dir /tmp/cautilus-held-out-issue-debug-2`
+
+Focused pytest result: `tests/quality_gates/test_issue_skill.py` passed 25/25.
+Focused closeout-discipline pytest result: issue closeout discipline plus issue skill tests passed 34/34.
+Python compile over public/support skill scripts passed.
 
 ## Recommended Next Gates
 
-- active Apply the same planner/reference split review to the next
-  high-consequence skill.
-- passive until a real adapter need appears: decide whether requested-review
-  commands should become a release gate beyond critique and distinct-channel proof.
+- active Finish verification for the `issue` planner/core split, including
+  fresh-eye critique and closeout.
+- active Watch Mutation Tests run `28049447961`; if it succeeds or auto-closes
+  #399, verify #399 state. If it fails in the mutation step, treat that as a new
+  manifestation rather than the old sample-selection regression.
+- passive until a neutral fixture exists: evaluate issue-skill planner use without naming the planner in the prompt.
 
 ## History
 

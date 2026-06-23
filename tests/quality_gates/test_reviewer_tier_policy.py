@@ -17,7 +17,6 @@ NAMED_SKILLS = ("critique", "quality", "release", "issue")
 DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES = (
     ROOT / "skills" / "public" / "quality" / "SKILL.md",
     ROOT / "skills" / "public" / "setup" / "SKILL.md",
-    ROOT / "skills" / "public" / "issue" / "SKILL.md",
     ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md",
 )
 PROVIDER_MODEL_TOKENS = ("gpt-5", "sonnet-4")

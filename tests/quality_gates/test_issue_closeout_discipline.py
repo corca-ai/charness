@@ -1,15 +1,42 @@
 from __future__ import annotations
 
-from .support import ROOT
+import json
+import os
+from pathlib import Path
+
+from .support import ROOT, run_script
 
 SKILL = ROOT / "skills" / "public" / "issue" / "SKILL.md"
 CLOSEOUT = ROOT / "skills" / "public" / "issue" / "references" / "closeout-discipline.md"
 SHAPING = ROOT / "skills" / "public" / "issue" / "references" / "issue-shaping.md"
 RESOLVE_FLOW = ROOT / "skills" / "public" / "issue" / "references" / "resolve-flow.md"
+SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 
 
 def _read(path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _fake_gh_env(tmp_path: Path) -> dict[str, str]:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    fake = bin_dir / "gh"
+    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+    return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
+
+
+def _issue_plan(tmp_path: Path, *args: str) -> dict:
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        *args,
+        env=_fake_gh_env(tmp_path),
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
 
 
 def test_issue_skill_pins_verified_ledger_for_new_closeout() -> None:
@@ -30,9 +57,9 @@ def test_issue_skill_pins_target_durability_on_retry() -> None:
 
     assert "durable workflow state" in skill
     assert "target_unavailable" in skill
-    assert "silently switching to" in skill
     assert "Target Durability" in closeout
     assert "do not re-walk the fallback ladder" in closeout
+    assert "never silently fall through" in closeout
     assert "durable workflow state" in resolve_flow
 
 
@@ -50,39 +77,34 @@ def test_issue_shaping_requires_external_source_identity() -> None:
     # auditable preservation form (Source text / Re-read obligation / degraded).
     assert "Source origin:" in closeout
     assert "Re-read obligation:" in closeout
-    assert "preserved original context" in skill
+    assert "source identity/preservation" in skill
 
 
 def test_issue_skill_guardrails_block_silent_retarget_and_chat_memory_closeout() -> None:
     skill = _read(SKILL)
 
-    assert "Do not silently retarget on retry" in skill
-    assert "Render `issue new` closeout only from the verified" in skill
-    assert "external source" in skill
+    assert "Target repo is durable workflow state" in skill
+    assert "target_unavailable" in skill
+    assert "stale local note" in skill
+    assert "source identity/preservation" in skill
 
 
-def test_issue_skill_cites_closeout_discipline_at_each_anchor() -> None:
-    skill = _read(SKILL)
+def test_issue_planner_requires_closeout_discipline_for_new_and_resolve(tmp_path: Path) -> None:
+    new_plan = _issue_plan(tmp_path, "--intent", "new")
+    resolve_plan = _issue_plan(tmp_path, "--intent", "resolve", "--", "42")
 
-    citations = [
-        line for line in skill.splitlines()
-        if "references/closeout-discipline.md" in line
-    ]
-    assert len(citations) >= 3, (
-        f"expected closeout-discipline.md cited from step 3, Target Rules, "
-        f"and step 6 anchors plus References list; found: {citations}"
-    )
+    assert "references/closeout-discipline.md" in {ref["path"] for ref in new_plan["required_reads"]}
+    assert "references/closeout-discipline.md" in {ref["path"] for ref in resolve_plan["required_reads"]}
 
 
 def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
     skill = _read(SKILL)
+    skill_flat = " ".join(skill.split())
     closeout = _read(CLOSEOUT)
     resolve_flow = _read(RESOLVE_FLOW)
     brief = _read(ROOT / "skills" / "public" / "issue" / "references" / "resolution-brief.md")
 
-    assert "prefer GitHub auto-close via explicit close keywords" in skill
-    assert "manual close is" in skill
-    assert "the fallback, not the default success path" in skill
+    assert "explicit close keywords when auto-close is available" in skill_flat
     assert "Resolve Auto-Close Linkage" in closeout
     assert "PR body" in closeout
     assert "commit body" in closeout
@@ -93,24 +115,22 @@ def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
     assert "command success alone is not closeout" in closeout
 
 
-def test_issue_closeout_draft_validation_runs_before_mutation() -> None:
-    skill = _read(SKILL)
+def test_issue_closeout_draft_validation_runs_before_mutation(tmp_path: Path) -> None:
+    plan = _issue_plan(tmp_path, "--intent", "resolve", "--", "42")
     closeout = _read(CLOSEOUT)
 
-    assert "validate-closeout-draft" in skill
+    gate_commands = {gate.get("id"): gate.get("command") for gate in plan["gate_packets"]}
+    assert "validate-closeout-draft" in gate_commands["closeout-draft"]
     assert "Before a PR body, direct commit body, or manual close comment is published" in closeout
     assert "fails before any GitHub mutation" in closeout
 
 
 def test_issue_closeout_covers_release_helper_issue_verification() -> None:
-    skill = _read(SKILL)
     closeout = _read(CLOSEOUT)
     resolve_flow = _read(RESOLVE_FLOW)
     release_cli = _read(ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py")
     publication_boundary = _read(ROOT / "skills" / "public" / "release" / "references" / "publication-boundary.md")
 
-    assert "--close-issue <number>" in skill
-    assert "issue_closeout.status: verified" in skill
     assert "Release-driven direct-to-default work follows the same linkage" in closeout
     assert "post-push issue verification payload" in resolve_flow
     assert "--close-issue" in release_cli

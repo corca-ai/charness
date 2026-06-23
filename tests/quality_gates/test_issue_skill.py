@@ -606,8 +606,63 @@ def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
     )
 
     assert "GitHub is the source of truth" in skill_text
-    assert "It must not use the current session's last created issue" in skill_text
+    assert "Do not use the session's last-created issue" in skill_text
     assert "omitted selector means newest open GitHub issue" in resolve_flow
+
+
+def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "gh"
+    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        "--intent",
+        "resolve",
+        "--",
+        "42",
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["next_action"] == "read_selected_issues_with_comments_then_classify"
+    assert payload["selected_backend"]["id"] == "gh"
+    assert "auth_status" not in payload["selected_backend"]
+    required_paths = {ref["path"] for ref in payload["required_reads"]}
+    on_demand_paths = {ref["path"] for ref in payload["on_demand_reads"]}
+    assert "references/issue-backend.md" in required_paths
+    assert "references/closeout-discipline.md" in required_paths
+    assert "references/causal-review.md" in on_demand_paths
+    assert "../../shared/references/fresh-eye-subagent-review.md" in on_demand_paths
+    assert payload["classification_actions"]["bug"]["action_id"] == "causal_review_before_design"
+    assert payload["classification_actions"]["bug"]["fresh_eye_required"] is True
+    assert "references/causal-review.md" in payload["classification_actions"]["bug"]["required_reads"]
+
+
+def test_issue_plan_resolve_rejects_ignored_target_flag(tmp_path: Path) -> None:
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        "--intent",
+        "resolve",
+        "--target",
+        "corca-ai/other",
+        "--",
+        "42",
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "--target" in payload["error"]
 
 
 def test_issue_skill_documents_backend_resolution() -> None:
@@ -616,7 +671,7 @@ def test_issue_skill_documents_backend_resolution() -> None:
         encoding="utf-8"
     )
 
-    assert "resolves the issue backend through the adapter" in skill_text
+    assert "selected backend comes from the adapter" in " ".join(skill_text.lower().split())
     assert "selected_backend" in skill_text
     assert "issue_backend" in backend_ref
     assert "ceal" in backend_ref

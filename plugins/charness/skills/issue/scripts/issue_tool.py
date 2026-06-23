@@ -18,6 +18,7 @@ READ = _load_local("issue_read")
 VERIFY = _load_local("issue_verify_closeout")
 VERIFY_BODY = _load_local("issue_verify_closeout_body")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
+PLAN = _load_local("issue_plan")
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -48,6 +49,41 @@ def command_preflight(args: argparse.Namespace) -> int:
     else:
         print(f"{selected['id']} backend binary {selected['binary']!r} missing")
     return 0 if ok else 1
+
+
+def command_plan(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root.resolve()
+    adapter = ADAPTER.load_adapter(repo_root)
+    resolved = _resolve_backend(repo_root)
+    preflight = BACKEND.build_preflight_payload(resolved)
+    if not adapter["valid"]:
+        emit({"ok": False, "adapter": adapter, "next_action": "repair_issue_adapter"})
+        return 1
+    try:
+        if args.intent == "new":
+            target = RUNTIME.resolve_target(repo_root, args.target, adapter["data"])
+            payload = PLAN.build_new_plan(repo_root, target, adapter, preflight)
+        else:
+            if args.target:
+                emit({
+                    "ok": False,
+                    "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
+                    "adapter": adapter,
+                })
+                return 2
+            invocation = BRIEF.build_invocation_payload(
+                repo_root,
+                args.values,
+                adapter,
+                ADAPTER.DEFAULT_FEATURE_BRIEF_PAUSE,
+            )
+            payload = PLAN.build_resolve_plan(repo_root, invocation, preflight)
+    except ValueError as exc:
+        emit({"ok": False, "error": str(exc), "adapter": adapter})
+        return 2
+    payload["ok"] = bool(payload.get("backend_ready"))
+    emit(payload)
+    return 0 if payload["ok"] else 1
 
 
 def command_resolve_target(args: argparse.Namespace) -> int:
@@ -243,6 +279,13 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--json", action="store_true", help="Emit the full preflight payload as JSON")
     preflight.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     preflight.set_defaults(func=command_preflight)
+
+    plan = subparsers.add_parser("plan", help="Plan an issue new/resolve run before reading, mutating, or closing")
+    plan.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
+    plan.add_argument("--intent", choices=("new", "resolve"), required=True, help="Issue operation to plan")
+    plan.add_argument("--target", help="Target repo for issue new; defaults through adapter/git remote")
+    plan.add_argument("values", nargs="*", help="Raw issue resolve invocation values when --intent resolve")
+    plan.set_defaults(func=command_plan)
 
     target = subparsers.add_parser("resolve-target", help="Resolve an issue target selector (owner/repo[#number]) against the adapter")
     target.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
