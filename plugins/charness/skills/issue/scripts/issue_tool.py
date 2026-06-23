@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,8 @@ PLAN = _load_local("issue_plan")
 
 
 def emit(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    rendered = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    sys.stdout.write(rendered + "\n")
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:
@@ -31,6 +33,35 @@ def _resolve_backend(repo_root: Path) -> dict[str, Any]:
         return {"adapter": adapter, "backend": ADAPTER.default_backend(), "adapter_ok": False}
     backend = dict(adapter["data"].get("issue_backend") or ADAPTER.default_backend())
     return {"adapter": adapter, "backend": backend, "adapter_ok": True}
+
+
+def _run_backend_command(args: argparse.Namespace, call: Any, exit_code: Any) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        emit({"ok": False, "adapter": resolved["adapter"]})
+        return 1
+    try:
+        result = call(resolved)
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
+    result["selected_backend"] = resolved["backend"]
+    emit(result)
+    return exit_code(result)
+
+
+def _run_adapter_payload(args: argparse.Namespace, call: Any, error_key: str = "adapter") -> int:
+    adapter = ADAPTER.load_adapter(args.repo_root.resolve())
+    if not adapter["valid"]:
+        emit({"ok": False, error_key: adapter})
+        return 1
+    try:
+        payload = call(adapter)
+    except ValueError as exc:
+        emit({"ok": False, "error": str(exc), error_key: adapter})
+        return 2
+    emit(payload)
+    return 0
 
 
 def command_preflight(args: argparse.Namespace) -> int:
@@ -51,53 +82,15 @@ def command_preflight(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
-def command_plan(args: argparse.Namespace) -> int:
-    repo_root = args.repo_root.resolve()
-    adapter = ADAPTER.load_adapter(repo_root)
-    resolved = _resolve_backend(repo_root)
-    preflight = BACKEND.build_preflight_payload(resolved)
-    if not adapter["valid"]:
-        emit({"ok": False, "adapter": adapter, "next_action": "repair_issue_adapter"})
-        return 1
-    try:
-        if args.intent == "new":
-            target = RUNTIME.resolve_target(repo_root, args.target, adapter["data"])
-            payload = PLAN.build_new_plan(repo_root, target, adapter, preflight)
-        else:
-            if args.target:
-                emit({
-                    "ok": False,
-                    "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
-                    "adapter": adapter,
-                })
-                return 2
-            invocation = BRIEF.build_invocation_payload(
-                repo_root,
-                args.values,
-                adapter,
-                ADAPTER.DEFAULT_FEATURE_BRIEF_PAUSE,
-            )
-            payload = PLAN.build_resolve_plan(repo_root, invocation, preflight)
-    except ValueError as exc:
-        emit({"ok": False, "error": str(exc), "adapter": adapter})
-        return 2
-    payload["ok"] = bool(payload.get("backend_ready"))
-    emit(payload)
-    return 0 if payload["ok"] else 1
-
-
 def command_resolve_target(args: argparse.Namespace) -> int:
-    adapter = ADAPTER.load_adapter(args.repo_root.resolve())
-    if not adapter["valid"]:
-        emit({"ok": False, "adapter": adapter})
-        return 1
-    try:
-        target = RUNTIME.resolve_target(args.repo_root.resolve(), args.target, adapter["data"])
-    except ValueError as exc:
-        emit({"ok": False, "error": str(exc), "adapter": adapter})
-        return 2
-    emit({"ok": True, "target": target, "adapter": adapter})
-    return 0
+    return _run_adapter_payload(
+        args,
+        lambda adapter: {
+            "ok": True,
+            "target": RUNTIME.resolve_target(args.repo_root.resolve(), args.target, adapter["data"]),
+            "adapter": adapter,
+        },
+    )
 
 
 def command_select(args: argparse.Namespace) -> int:
@@ -121,45 +114,28 @@ def command_select(args: argparse.Namespace) -> int:
 
 
 def command_read(args: argparse.Namespace) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
-    if not resolved["adapter_ok"]:
-        emit({"ok": False, "adapter": resolved["adapter"]})
-        return 1
-    try:
-        result = READ.read_issue_with_comments(args.repo, args.number, backend=resolved["backend"])
-    except RuntimeError as exc:
-        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-        return 2
-    result["selected_backend"] = resolved["backend"]
-    emit(result)
-    return 0
+    return _run_backend_command(
+        args,
+        lambda resolved: READ.read_issue_with_comments(args.repo, args.number, backend=resolved["backend"]),
+        lambda _result: 0,
+    )
 
 
 def command_close_with_comment(args: argparse.Namespace) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
-    if not resolved["adapter_ok"]:
-        emit({"ok": False, "adapter": resolved["adapter"]})
-        return 1
-    try:
-        result = CLOSE.close_with_comment(
+    return _run_backend_command(
+        args,
+        lambda resolved: CLOSE.close_with_comment(
             args.repo, args.number, args.body_file.resolve(),
             backend=resolved["backend"], reason=args.reason,
-        )
-    except RuntimeError as exc:
-        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-        return 2
-    result["selected_backend"] = resolved["backend"]
-    emit(result)
-    return 0
+        ),
+        lambda _result: 0,
+    )
 
 
 def command_verify_closeout(args: argparse.Namespace) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
-    if not resolved["adapter_ok"]:
-        emit({"ok": False, "adapter": resolved["adapter"]})
-        return 1
-    try:
-        result = VERIFY.verify_closeout(
+    return _run_backend_command(
+        args,
+        lambda resolved: VERIFY.verify_closeout(
             repo_root=args.repo_root.resolve(),
             repo=args.repo,
             numbers=args.number,
@@ -170,13 +146,9 @@ def command_verify_closeout(args: argparse.Namespace) -> int:
             body_file=args.body_file.resolve() if args.body_file else None,
             manual_fallback_reason=args.manual_fallback_reason,
             expect_state=args.expect_state,
-        )
-    except RuntimeError as exc:
-        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-        return 2
-    result["selected_backend"] = resolved["backend"]
-    emit(result)
-    return 0 if result["ok"] else 2
+        ),
+        lambda result: 0 if result["ok"] else 2,
+    )
 
 
 def command_check_source_preservation(args: argparse.Namespace) -> int:
@@ -200,18 +172,15 @@ def command_check_source_preservation(args: argparse.Namespace) -> int:
 
 
 def command_resolve_invocation(args: argparse.Namespace) -> int:
-    adapter = ADAPTER.load_adapter(args.repo_root.resolve())
-    if not adapter["valid"]:
-        emit({"ok": False, "adapter": adapter})
-        return 1
-    try:
-        payload = BRIEF.build_invocation_payload(args.repo_root.resolve(), args.values, adapter,
-            ADAPTER.DEFAULT_FEATURE_BRIEF_PAUSE)
-    except ValueError as exc:
-        emit({"ok": False, "error": str(exc), "adapter": adapter})
-        return 2
-    emit(payload)
-    return 0
+    return _run_adapter_payload(
+        args,
+        lambda adapter: BRIEF.build_invocation_payload(
+            args.repo_root.resolve(),
+            args.values,
+            adapter,
+            ADAPTER.DEFAULT_FEATURE_BRIEF_PAUSE,
+        ),
+    )
 
 
 def command_brief_path(args: argparse.Namespace) -> int:
@@ -280,12 +249,16 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     preflight.set_defaults(func=command_preflight)
 
-    plan = subparsers.add_parser("plan", help="Plan an issue new/resolve run before reading, mutating, or closing")
-    plan.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    plan.add_argument("--intent", choices=("new", "resolve"), required=True, help="Issue operation to plan")
-    plan.add_argument("--target", help="Target repo for issue new; defaults through adapter/git remote")
-    plan.add_argument("values", nargs="*", help="Raw issue resolve invocation values when --intent resolve")
-    plan.set_defaults(func=command_plan)
+    PLAN.register_plan_subparser(
+        subparsers,
+        cwd_default,
+        adapter_module=ADAPTER,
+        runtime_module=RUNTIME,
+        brief_module=BRIEF,
+        backend_module=BACKEND,
+        resolve_backend=_resolve_backend,
+        emit=emit,
+    )
 
     target = subparsers.add_parser("resolve-target", help="Resolve an issue target selector (owner/repo[#number]) against the adapter")
     target.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
@@ -335,6 +308,7 @@ def build_parser() -> argparse.ArgumentParser:
         resolve_backend=_resolve_backend,
         emit=emit,
         verifier=VERIFY,
+        run_backend_command=_run_backend_command,
     )
 
     source = subparsers.add_parser(

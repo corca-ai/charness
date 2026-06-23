@@ -57,13 +57,15 @@ def validate_closeout_draft(
     return result
 
 
-def command_validate_closeout_draft(args: Any, *, resolve_backend: Any, emit: Any, verifier: Any) -> int:
-    resolved = resolve_backend(args.repo_root.resolve())
-    if not resolved["adapter_ok"]:
-        emit({"ok": False, "adapter": resolved["adapter"]})
-        return 1
-    try:
-        result = validate_closeout_draft(
+def command_validate_closeout_draft(
+    args: Any,
+    *,
+    run_backend_command: Any,
+    verifier: Any,
+) -> int:
+    return run_backend_command(
+        args,
+        lambda resolved: validate_closeout_draft(
             verifier=verifier,
             repo_root=args.repo_root.resolve(),
             repo=args.repo,
@@ -76,13 +78,9 @@ def command_validate_closeout_draft(args: Any, *, resolve_backend: Any, emit: An
                 args.commit_message_file.resolve() if args.commit_message_file else None
             ),
             manual_fallback_reason=args.manual_fallback_reason,
-        )
-    except RuntimeError as exc:
-        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-        return 2
-    result["selected_backend"] = resolved["backend"]
-    emit(result)
-    return 0 if result["ok"] else 2
+        ),
+        lambda result: 0 if result["ok"] else 2,
+    )
 
 
 def register_validate_closeout_draft_subparser(
@@ -92,6 +90,7 @@ def register_validate_closeout_draft_subparser(
     resolve_backend: Any,
     emit: Any,
     verifier: Any,
+    run_backend_command: Any,
 ) -> None:
     parser = subparsers.add_parser(
         "validate-closeout-draft",
@@ -127,8 +126,7 @@ def register_validate_closeout_draft_subparser(
     parser.set_defaults(
         func=lambda args: command_validate_closeout_draft(
             args,
-            resolve_backend=resolve_backend,
-            emit=emit,
             verifier=verifier,
+            run_backend_command=run_backend_command,
         )
     )

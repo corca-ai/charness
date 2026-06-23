@@ -13,6 +13,27 @@
       "note": "auto-seeded: portable per-skill copy",
       "reviewed_at": "2026-06-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "674927b1c64bf21f",
+      "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8b7bcc70c0d6a7c9",
+      "note": "issue_tool adapter/backend command wrappers share error-report shape intentionally while preserving separate call contracts",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c5d1bba267c4063d",
+      "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -27,6 +27,32 @@ def _backend_summary(preflight: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _adapter_summary(adapter: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "valid": adapter["valid"],
+        "path": adapter.get("path"),
+        "feature_brief_pause": adapter.get("data", {}).get("feature_brief_pause"),
+    }
+
+
+def _preflight_gate(preflight: dict[str, Any]) -> dict[str, str]:
+    return {
+        "id": "preflight",
+        "status": "pass" if preflight.get("ok") else "fail",
+        "trust_model": "deterministic backend/auth readiness; trust failures, inspect warnings",
+        "cost_tier": "cheap",
+        "parallel_group": "adapter-readiness",
+    }
+
+
+def _brief_action() -> dict[str, Any]:
+    return {
+        "action_id": "resolution_brief_before_mutation",
+        "pause_when": "open_decisions_non_empty",
+        "required_reads": ["references/resolution-brief.md"],
+    }
+
+
 def _ref(path: str, trigger: str, role: str) -> dict[str, str]:
     return {
         "path": path,
@@ -42,11 +68,7 @@ def build_new_plan(repo_root: Path, target: dict[str, Any], adapter: dict[str, A
         "intent": "new",
         "repo_root": str(repo_root),
         "target": target,
-        "adapter": {
-            "valid": adapter["valid"],
-            "path": adapter.get("path"),
-            "feature_brief_pause": adapter.get("data", {}).get("feature_brief_pause"),
-        },
+        "adapter": _adapter_summary(adapter),
         "selected_backend": _backend_summary(preflight),
         "backend_ready": bool(preflight.get("ok")),
         "required_reads": [
@@ -58,13 +80,7 @@ def build_new_plan(repo_root: Path, target: dict[str, Any], adapter: dict[str, A
             _ref("references/issue-shaping.md", "when the issue originated in an external source or gathered artifact", "source-preservation")
         ],
         "gate_packets": [
-            {
-                "id": "preflight",
-                "status": "pass" if preflight.get("ok") else "fail",
-                "trust_model": "deterministic backend/auth readiness; trust failures, inspect warnings",
-                "cost_tier": "cheap",
-                "parallel_group": "adapter-readiness",
-            },
+            _preflight_gate(preflight),
             {
                 "id": "source-preservation",
                 "command": "issue_tool.py check-source-preservation --body-file <body>",
@@ -124,13 +140,7 @@ def build_resolve_plan(
             _ref("references/issue-shaping.md", "resolution discovers a sibling that should become a new issue", "sibling-filing"),
         ],
         "gate_packets": [
-            {
-                "id": "preflight",
-                "status": "pass" if preflight.get("ok") else "fail",
-                "trust_model": "deterministic backend/auth readiness; trust failures, inspect warnings",
-                "cost_tier": "cheap",
-                "parallel_group": "adapter-readiness",
-            },
+            _preflight_gate(preflight),
             {
                 "id": "issue-read",
                 "command": "issue_tool.py read --repo <org/repo> --number <n>",
@@ -163,16 +173,8 @@ def build_resolve_plan(
                 ],
                 "blocked_behavior": "stop_and_report_host_signal",
             },
-            "feature": {
-                "action_id": "resolution_brief_before_mutation",
-                "pause_when": "open_decisions_non_empty",
-                "required_reads": ["references/resolution-brief.md"],
-            },
-            "deferred-work": {
-                "action_id": "resolution_brief_before_mutation",
-                "pause_when": "open_decisions_non_empty",
-                "required_reads": ["references/resolution-brief.md"],
-            },
+            "feature": _brief_action(),
+            "deferred-work": _brief_action(),
             "question": {
                 "action_id": "answer_or_discuss",
                 "review_pass": "not_required_by_default",
@@ -190,3 +192,76 @@ def build_resolve_plan(
             "Do not report CLOSED as behavior proof; render the distinct behavior verdict or typed disposition.",
         ],
     }
+
+
+def command_plan(
+    args: Any,
+    *,
+    adapter_module: Any,
+    runtime_module: Any,
+    brief_module: Any,
+    backend_module: Any,
+    resolve_backend: Any,
+    emit: Any,
+) -> int:
+    repo_root = args.repo_root.resolve()
+    adapter = adapter_module.load_adapter(repo_root)
+    resolved = resolve_backend(repo_root)
+    preflight = backend_module.build_preflight_payload(resolved)
+    if not adapter["valid"]:
+        emit({"ok": False, "adapter": adapter, "next_action": "repair_issue_adapter"})
+        return 1
+    try:
+        if args.intent == "new":
+            target = runtime_module.resolve_target(repo_root, args.target, adapter["data"])
+            payload = build_new_plan(repo_root, target, adapter, preflight)
+        else:
+            if args.target:
+                emit({
+                    "ok": False,
+                    "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
+                    "adapter": adapter,
+                })
+                return 2
+            invocation = brief_module.build_invocation_payload(
+                repo_root,
+                args.values,
+                adapter,
+                adapter_module.DEFAULT_FEATURE_BRIEF_PAUSE,
+            )
+            payload = build_resolve_plan(repo_root, invocation, preflight)
+    except ValueError as exc:
+        emit({"ok": False, "error": str(exc), "adapter": adapter})
+        return 2
+    payload["ok"] = bool(payload.get("backend_ready"))
+    emit(payload)
+    return 0 if payload["ok"] else 1
+
+
+def register_plan_subparser(
+    subparsers: Any,
+    cwd_default: Path,
+    *,
+    adapter_module: Any,
+    runtime_module: Any,
+    brief_module: Any,
+    backend_module: Any,
+    resolve_backend: Any,
+    emit: Any,
+) -> None:
+    parser = subparsers.add_parser("plan", help="Plan an issue new/resolve run before reading, mutating, or closing")
+    parser.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
+    parser.add_argument("--intent", choices=("new", "resolve"), required=True, help="Issue operation to plan")
+    parser.add_argument("--target", help="Target repo for issue new; defaults through adapter/git remote")
+    parser.add_argument("values", nargs="*", help="Raw issue resolve invocation values when --intent resolve")
+    parser.set_defaults(
+        func=lambda args: command_plan(
+            args,
+            adapter_module=adapter_module,
+            runtime_module=runtime_module,
+            brief_module=brief_module,
+            backend_module=backend_module,
+            resolve_backend=resolve_backend,
+            emit=emit,
+        )
+    )
