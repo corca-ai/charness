@@ -144,7 +144,8 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_cautilus_proof.py --repo-root ."
+        "python3 scripts/validate_cautilus_proof.py --repo-root .",
+        "python3 scripts/validate_cautilus_diagnostics.py --repo-root ."
       ],
       "notes": [
         "Prompt-affecting changes must follow `.agents/cautilus-adapter.yaml`; prompt diffs alone do not require a live Cautilus run or refreshed proof artifact.",

@@ -125,6 +125,33 @@ Do not let hidden runtime state become the only copy of:
 - the next-session pickup path
 - a durable explanation another maintainer will need
 
+### Cautilus Diagnostic Findings
+
+Use [latest.md](../charness-artifacts/cautilus/latest.md) only for passing proof
+carriers that support preserve/improve closeout. Do not reshape it into a
+failing-eval diagnostic ledger.
+
+When Cautilus or its deterministic observation builder produces a useful
+negative or diagnostic finding, preserve it as a run bundle:
+
+- a `finding.md`, such as
+  [quality-claim-fidelity-2026-06-23/finding.md](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/finding.md)
+- at least one machine evidence file such as
+  [observed.v1.json](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/observed.v1.json),
+  [summary.v1.json](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/summary.v1.json),
+  or [report.json](../charness-artifacts/cautilus/skill-experiment-2026-06-22/report.json)
+- raw transcript/session logs as sibling files when they are needed to audit the
+  finding
+
+[validate_cautilus_diagnostics.py](../scripts/validate_cautilus_diagnostics.py)
+owns the minimal shape. The finding must name what ran, carry the verdict, and
+state diagnosis, non-claims, or follow-up so a failure verdict is not mistaken
+for a passing regression proof.
+
+Floor-Addition Restraint: keep this as a narrow blocking floor because
+diagnostic evaluator findings become shared closeout evidence; an advisory would
+not stop the same evidence from landing as unfindable raw logs.
+
 ## Default Placement Rules
 
 When choosing a surface, ask these questions in order:

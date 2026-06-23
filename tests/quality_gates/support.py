@@ -119,6 +119,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-public-skill-dogfood", "validate_public_skill_dogfood.py"),
     ("validate-cautilus-scenarios", "validate_cautilus_scenarios.py"),
     ("validate-cautilus-proof", "validate_cautilus_proof.py"),
+    ("validate-cautilus-diagnostics", "validate_cautilus_diagnostics.py"),
     ("validate-cautilus-call-provenance", "validate_cautilus_call_provenance.py"),
     ("validate-profiles", "validate_profiles.py"),
     ("validate-presets", "validate_presets.py"),

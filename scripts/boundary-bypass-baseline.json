@@ -119,6 +119,7 @@
     "tests/quality_gates/test_test_production_ratio.py::scripts/check_test_production_ratio.py",
     "tests/test_agent_browser_runtime_guard.py::scripts/doctor.py",
     "tests/test_cautilus_chatbot_compare.py::scripts/eval_cautilus_chatbot_compare.py",
+    "tests/test_cautilus_proof_artifact.py::scripts/validate_cautilus_diagnostics.py",
     "tests/test_cautilus_proof_artifact.py::scripts/plan_cautilus_proof.py",
     "tests/test_cautilus_proof_artifact.py::scripts/validate_cautilus_proof.py",
     "tests/test_cautilus_scenarios.py::scripts/eval_cautilus_chatbot_proposals.py",
