@@ -141,10 +141,40 @@ def update_advisory_line(result: dict[str, Any]) -> str | None:
         return None
     detail = advisory.get("latest_tag") or advisory.get("latest_version")
     suffix = f" ({advisory['html_url']})" if advisory.get("html_url") else ""
+    route = update_route_hint(result)
     return (
         f"{result['tool_id']}: update available — {advisory['observed_version']} installed, "
-        f"{detail} latest; update via this tool's manifest install/update route{suffix}"
+        f"{detail} latest; {route}{suffix}"
     )
+
+
+def update_route_hint(result: dict[str, Any]) -> str:
+    if result.get("mode") == "manual":
+        docs_url = result.get("docs_url") or result.get("install_url")
+        if docs_url:
+            return f"manual update required; see {docs_url}"
+        return "manual update required; use this tool's documented update route"
+
+    install_route = result.get("install_route")
+    if isinstance(install_route, dict) and install_route.get("mode") == "manual":
+        docs_url = install_route.get("docs_url") or install_route.get("install_url")
+        if docs_url:
+            return f"manual update required; see {docs_url}"
+        return "manual update required; use this tool's documented update route"
+
+    commands = result.get("commands")
+    if isinstance(commands, list) and commands and isinstance(commands[0], str):
+        return f"run `{commands[0]}`"
+
+    package_manager = result.get("package_manager")
+    package_name = result.get("package_name")
+    if isinstance(package_manager, str) and package_manager and isinstance(package_name, str) and package_name:
+        return f"update `{package_name}` with {package_manager}"
+
+    tool_id = result.get("tool_id")
+    if isinstance(tool_id, str) and tool_id:
+        return f"run `charness tool update {tool_id}` or use this tool's documented update route"
+    return "use this tool's documented update route"
 
 
 def print_update_advisories(results: list[dict[str, Any]], *, stream: Any = None) -> None:

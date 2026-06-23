@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.control_plane_lifecycle_lib import update_advisory_line
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -36,6 +37,49 @@ def load_charness_module(module_name: str = "charness_tool_lifecycle_under_test"
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_update_advisory_line_uses_manual_docs_url() -> None:
+    line = update_advisory_line(
+        {
+            "tool_id": "cautilus",
+            "mode": "manual",
+            "docs_url": "https://github.com/corca-ai/cautilus/releases",
+            "update_advisory": {
+                "status": "behind",
+                "observed_version": "0.15.4",
+                "latest_version": "0.17.1",
+                "latest_tag": "v0.17.1",
+                "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v0.17.1",
+            },
+        }
+    )
+
+    assert line is not None
+    assert "manual update required; see https://github.com/corca-ai/cautilus/releases" in line
+    assert "manifest install/update route" not in line
+
+
+def test_update_advisory_line_uses_doctor_install_route_url() -> None:
+    line = update_advisory_line(
+        {
+            "tool_id": "github-gh",
+            "install_route": {
+                "mode": "manual",
+                "docs_url": "https://github.com/cli/cli/releases",
+            },
+            "update_advisory": {
+                "status": "behind",
+                "observed_version": "2.70.0",
+                "latest_version": "2.73.0",
+                "latest_tag": "v2.73.0",
+            },
+        }
+    )
+
+    assert line is not None
+    assert "manual update required; see https://github.com/cli/cli/releases" in line
+    assert "manifest install/update route" not in line
 
 
 def enable_cautilus_adapter(repo_root: Path) -> None:
