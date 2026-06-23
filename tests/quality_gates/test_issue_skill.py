@@ -2,12 +2,22 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
 import subprocess
 from pathlib import Path
 
 from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+
+
+def _fake_gh_env(tmp_path: Path) -> dict[str, str]:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    fake = bin_dir / "gh"
+    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+    return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
 def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
@@ -611,12 +621,6 @@ def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
 
 
 def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_path: Path) -> None:
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
-    fake.chmod(0o755)
-
     result = run_script(
         SCRIPT,
         "plan",
@@ -626,7 +630,7 @@ def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_
         "resolve",
         "--",
         "42",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        env=_fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 0, result.stderr
@@ -643,6 +647,70 @@ def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_
     assert payload["classification_actions"]["bug"]["action_id"] == "causal_review_before_design"
     assert payload["classification_actions"]["bug"]["fresh_eye_required"] is True
     assert "references/causal-review.md" in payload["classification_actions"]["bug"]["required_reads"]
+
+
+def test_issue_plan_resolve_without_selector_selects_github_next_action(tmp_path: Path) -> None:
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        "--intent",
+        "resolve",
+        env=_fake_gh_env(tmp_path),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["numbers"] is None
+    assert payload["selector_source"] == "github-newest-open"
+    assert payload["next_action"] == "select_newest_open_issue_from_github_then_read"
+
+
+def test_issue_plan_reports_invalid_adapter_before_planning(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "issue-adapter.yaml").write_text("version: 1\nfeature_brief_pause: maybe\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        "--intent",
+        "resolve",
+        env=_fake_gh_env(tmp_path),
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["next_action"] == "repair_issue_adapter"
+
+
+def test_issue_plan_reports_invalid_resolve_invocation_flag(tmp_path: Path) -> None:
+    result = run_script(
+        SCRIPT,
+        "plan",
+        "--repo-root",
+        str(tmp_path),
+        "--intent",
+        "resolve",
+        "--",
+        "--bogus",
+        env=_fake_gh_env(tmp_path),
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "unknown issue resolve flag" in payload["error"]
+
+
+def test_issue_plan_backend_summary_handles_missing_preflight_selection() -> None:
+    module = runpy.run_path(str(ROOT / "skills" / "public" / "issue" / "scripts" / "issue_plan.py"))
+
+    assert module["_backend_summary"]({}) is None
 
 
 def test_issue_plan_resolve_rejects_ignored_target_flag(tmp_path: Path) -> None:
