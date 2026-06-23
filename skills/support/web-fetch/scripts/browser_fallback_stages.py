@@ -16,49 +16,10 @@ from agent_browser_session import (
     run_browser_text,
     session_name,
 )
-from classify_fetch_response import classify, extract_persistable_text
+from text_attempts import attempt_from_text
 
 RunCommand = Callable[..., tuple[str, str | None]]
 PayloadFor = Callable[[object, dict[str, object], list[AcquisitionAttempt], str], dict[str, object]]
-
-
-def _attempt_from_text(
-    *,
-    stage_id: str,
-    tool_id: str | None,
-    text: str,
-    elapsed_s: float,
-    intent: str,
-    expect_text: list[str],
-    expect_regex: list[str],
-    expect_json_field: list[str],
-    error: str | None = None,
-    details: dict[str, object] | None = None,
-    content_format: str = "text",
-) -> AcquisitionAttempt:
-    classification = classify(
-        text,
-        intent=intent,
-        expect_text=expect_text,
-        expect_regex=expect_regex,
-        expect_json_field=expect_json_field,
-    )
-    status = str(classification["status"])
-    if error is not None and status != "invalid-proof":
-        status = "error"
-    return AcquisitionAttempt(
-        stage_id=stage_id,
-        tool_id=tool_id,
-        status=status,
-        confidence=str(classification.get("confidence", "none")),
-        elapsed_s=elapsed_s,
-        error=error,
-        output_chars=len(text),
-        classification=classification,
-        details=details or {},
-        content_text=extract_persistable_text(text, content_format=content_format),
-        content_format=content_format,
-    )
 
 
 def _degraded_on_cleanup(
@@ -88,6 +49,25 @@ def _close_cleanup_error(args: object, *, script_dir: Path, run_command: RunComm
     return close_error or cleanup_error or assert_error
 
 
+def _finish_stage(
+    args: object,
+    route: dict[str, object],
+    attempts: list[AcquisitionAttempt],
+    *,
+    cleanup_error: str | None,
+    proof_required: bool,
+    payload_for: PayloadFor,
+) -> dict[str, object] | None:
+    degraded = _degraded_on_cleanup(
+        cleanup_error=cleanup_error, args=args, route=route, attempts=attempts, payload_for=payload_for
+    )
+    if degraded is not None:
+        return degraded
+    if has_success(attempts, proof_required=proof_required):
+        return payload_for(args, route, attempts, "success")
+    return None
+
+
 def run_generic_browser_stage(
     args: object,
     route: dict[str, object],
@@ -98,11 +78,12 @@ def run_generic_browser_stage(
     run_command: RunCommand,
     payload_for: PayloadFor,
 ) -> dict[str, object] | None:
+    cleanup_error = None
     try:
         started = time.monotonic()
         text, error, details = run_browser_text(args.url, timeout=args.timeout, run_command=run_command)
         attempts.append(
-            _attempt_from_text(
+            attempt_from_text(
                 stage_id="agent-browser-render-recon",
                 tool_id="agent-browser",
                 text=text,
@@ -134,14 +115,10 @@ def run_generic_browser_stage(
             )
     finally:
         cleanup_error = _close_cleanup_error(args, script_dir=script_dir, run_command=run_command)
-    degraded = _degraded_on_cleanup(
-        cleanup_error=cleanup_error, args=args, route=route, attempts=attempts, payload_for=payload_for
+    return _finish_stage(
+        args, route, attempts,
+        cleanup_error=cleanup_error, proof_required=proof_required, payload_for=payload_for,
     )
-    if degraded is not None:
-        return degraded
-    if has_success(attempts, proof_required=proof_required):
-        return payload_for(args, route, attempts, "success")
-    return None
 
 
 def run_youtube_browser_stage(
@@ -154,6 +131,7 @@ def run_youtube_browser_stage(
     run_command: RunCommand,
     payload_for: PayloadFor,
 ) -> dict[str, object] | None:
+    cleanup_error = None
     try:
         attempts.append(
             youtube_browser_ui.run_browser_ui_transcript_stage(
@@ -164,11 +142,7 @@ def run_youtube_browser_stage(
         )
     finally:
         cleanup_error = _close_cleanup_error(args, script_dir=script_dir, run_command=run_command)
-    degraded = _degraded_on_cleanup(
-        cleanup_error=cleanup_error, args=args, route=route, attempts=attempts, payload_for=payload_for
+    return _finish_stage(
+        args, route, attempts,
+        cleanup_error=cleanup_error, proof_required=proof_required, payload_for=payload_for,
     )
-    if degraded is not None:
-        return degraded
-    if has_success(attempts, proof_required=proof_required):
-        return payload_for(args, route, attempts, "success")
-    return None

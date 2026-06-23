@@ -172,7 +172,7 @@ def test_classify_source_identity_all_outcomes() -> None:
     assert tes.classify_source_identity(_acq(blocked)) == "exact-blocked"
     assert tes.classify_source_identity(_acq(unavailable)) == "exact-unavailable"
     assert tes.classify_source_identity(_acq(skip_only)) == "exact-unavailable"  # no-status-id stub
-    assert tes.classify_source_identity(_acq(blocked, route_id="reddit-json")) == "not-applicable"
+    assert tes.classify_source_identity(_acq(blocked, route_id="reddit-feed")) == "not-applicable"
     assert tes.classify_source_identity({"route": "nope", "attempts": []}) == "not-applicable"
 
 

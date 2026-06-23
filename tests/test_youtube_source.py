@@ -259,33 +259,15 @@ def test_youtube_source_error_and_identity_edge_cases(monkeypatch) -> None:
 
 
 def test_youtube_source_default_fetch_url_success_and_error(monkeypatch) -> None:
-    class Headers:
-        def __init__(self, charset: str | None) -> None:
-            self._charset = charset
+    calls: list[tuple[str, int]] = []
 
-        def get_content_charset(self) -> str | None:
-            return self._charset
+    def fake_read_url(url: str, *, timeout: int):
+        calls.append((url, timeout))
+        return "caption body", None
 
-    class Response:
-        headers = Headers(None)
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_args):
-            return None
-
-        def read(self) -> bytes:
-            return "caption body".encode()
-
-    monkeypatch.setattr(youtube_source.urllib.request, "urlopen", lambda _url, timeout=20: Response())
+    monkeypatch.setattr(youtube_source, "read_url", fake_read_url)
     assert youtube_source._default_fetch_url("https://captions.example/ok") == ("caption body", None)
-
-    def raise_url_error(_url, timeout=20):
-        raise RuntimeError("network down")
-
-    monkeypatch.setattr(youtube_source.urllib.request, "urlopen", raise_url_error)
-    assert youtube_source._default_fetch_url("https://captions.example/fail") == ("", "RuntimeError:network down")
+    assert calls == [("https://captions.example/ok", 20)]
 
 
 def test_youtube_source_import_bootstrap_adds_script_dir(monkeypatch) -> None:

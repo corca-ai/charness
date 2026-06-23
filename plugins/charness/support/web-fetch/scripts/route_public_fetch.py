@@ -33,15 +33,15 @@ ROUTES: dict[str, Route] = {
             "Syndication helps for timelines; oEmbed helps when the exact post URL is known.",
         ),
     ),
-    "reddit-json": Route(
-        route_id="reddit-json",
+    "reddit-feed": Route(
+        route_id="reddit-feed",
         route_family="public-api",
-        summary="Prefer Reddit JSON endpoints with a mobile user agent.",
-        required_tools=("curl",),
+        summary="Prefer Reddit RSS feeds, with JSON as a secondary source-bound public route.",
+        required_tools=(),
         access_modes=("public", "degraded"),
         notes=(
-            "Add `.json` endpoints for posts and subreddit listings.",
-            "A mobile user agent improves public access reliability.",
+            "Add `.rss` endpoints for posts and subreddit listings before `.json`.",
+            "Unauthenticated JSON can be WAF-sensitive; RSS is usually the cheaper public route.",
         ),
     ),
     "hacker-news-firebase": Route(
@@ -195,11 +195,14 @@ GITHUB_ROUTE_FOR_MODE = {
 }
 
 
+def _stage(stage_id: str, tool_id: str | None, when: str, proof: str) -> dict[str, object]:
+    return {"stage_id": stage_id, "tool_id": tool_id, "when": when, "proof": proof}
+
+
 def _resolve_github_mode(repo_root: Path | None) -> str:
     if repo_root is None:
         return "direct-cli"
-    skill_dir = Path(__file__).resolve().parents[3]
-    adapter_script = skill_dir / "public" / "gather" / "scripts" / "resolve_adapter.py"
+    adapter_script = _find_gather_adapter_script()
     if not adapter_script.is_file():
         return "direct-cli"
     spec = importlib.util.spec_from_file_location("web_fetch_gather_adapter", adapter_script)
@@ -217,13 +220,25 @@ def _resolve_github_mode(repo_root: Path | None) -> str:
     return mode if mode in GITHUB_ROUTE_FOR_MODE else "direct-cli"
 
 
+def _find_gather_adapter_script() -> Path:
+    script = Path(__file__).resolve()
+    for ancestor in script.parents:
+        for candidate in (
+            ancestor / "skills" / "public" / "gather" / "scripts" / "resolve_adapter.py",
+            ancestor / "skills" / "gather" / "scripts" / "resolve_adapter.py",
+        ):
+            if candidate.is_file():
+                return candidate
+    return Path("__missing_gather_resolve_adapter__.py")
+
+
 def route_for_url(url: str, *, repo_root: Path | None = None, github_mode: str | None = None) -> dict[str, object]:
     host = normalized_host(url)
     effective_github_mode = github_mode if github_mode in GITHUB_ROUTE_FOR_MODE else _resolve_github_mode(repo_root)
     if host_matches(host, ("x.com", "twitter.com")):
         route = ROUTES["twitter-syndication"]
     elif host_matches(host, ("reddit.com",)):
-        route = ROUTES["reddit-json"]
+        route = ROUTES["reddit-feed"]
     elif host_matches(host, ("news.ycombinator.com",)):
         route = ROUTES["hacker-news-firebase"]
     elif host_matches(host, ("stackoverflow.com", "stackexchange.com")):
@@ -257,17 +272,23 @@ def route_for_url(url: str, *, repo_root: Path | None = None, github_mode: str |
 
 
 def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
+    if route_id == "reddit-feed":
+        return [
+            _stage("domain-specific-route", None, "Try Reddit RSS, then JSON, before raw page fallback.", "source-bound feed/json response plus optional positive proof expectations"),
+            _stage("direct-public-fetch", None, "Use raw Reddit page only after RSS/JSON cannot satisfy the request.", "classify-fetch-response"),
+            _stage("archive-or-cache", None, "Use only when a stale or cached source still honestly answers the request.", "archive/cache source identity and freshness caveat"),
+            _stage("clean-stop", None, "Stop when access, auth, challenge, or confidence gaps remain.", "recorded failure mode and missing capability"),
+        ]
     plan: list[dict[str, object]] = [
-        {
-            "stage_id": "direct-public-fetch",
-            "tool_id": None,
-            "when": "Start here for public URLs unless a stronger domain route is known.",
-            "proof": "classify-fetch-response",
-        }
+        _stage(
+            "direct-public-fetch",
+            None,
+            "Start here for public URLs unless a stronger domain route is known.",
+            "classify-fetch-response",
+        )
     ]
     if route_id in {
         "twitter-syndication",
-        "reddit-json",
         "hacker-news-firebase",
         "stackexchange-api",
         "github-grant-or-cli",

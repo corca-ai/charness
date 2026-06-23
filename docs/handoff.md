@@ -13,37 +13,22 @@
 
 ## Current State
 
-- **Quality reference disposition SETTLED** (2026-06-21): 41-ref merit map -> **7
-  route-it + 2 merge-retire, 0 deletes**; blind A/B **7/7 reach-via-pointer**.
-  [disposition](../charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md).
+- **Quality reference disposition SETTLED** (2026-06-21): 41-ref merit map -> **7 route-it + 2 merge-retire, 0 deletes**; blind A/B **7/7 reach-via-pointer**.
 - **Quality claim-fidelity shipped (#397 closed).** `quality` now separates
   deterministic gates from judgment/ref pass and preserves engage-always,
   on-demand, and gate-sufficient reference routing.
-- **Cautilus diagnostic artifact home shipped (#398).** Negative diagnostics live
-  in `charness-artifacts/cautilus/<run-slug>/finding.md`; `latest.md` is passing
-  proof only.
-- **Quality gate health review DONE** (2026-06-23): full read-only quality was
-  78/78 PASS in 38.7s; [nose-baseline.json](../charness-artifacts/quality/nose-baseline.json)
-  is re-baselined to nose 0.15.0.
-- **Issue planner/core split DONE** (2026-06-24): `issue_tool.py plan` carries
-  required/on-demand reads and gate packets; `SKILL.md` core went 148 -> 69 lines.
-  Fresh-eye fixed ignored `plan --intent resolve --target` and brittle tests.
-- **#399 disposition:** run `28049447961` proved old `Select mutation sample` /
-  missing Stryker report failure is gone; still open because StrykerJS score is
-  49.7% vs 80%.
-- **Gotcha:** `/charness:quality` loads from the INSTALLED clone
-  `~/.agents/src/charness` -- isolate per-run via
-  [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (never edit
-  the clone). `cautilus evaluate *` is operator-gated. Cautilus is now **0.17.1**
-  (harness re-verified); `charness tool update` warns when a manual tool is behind.
+- **Cautilus diagnostic artifact home shipped (#398).** Negative diagnostics live in `charness-artifacts/cautilus/<run-slug>/finding.md`; `latest.md` is passing proof only.
+- **Quality gate health review DONE** (2026-06-23): full read-only quality was 78/78 PASS in 38.7s; nose baseline is re-baselined to 0.15.0.
+- **Issue planner/core split DONE** (2026-06-24): `issue_tool.py plan` carries required/on-demand reads and gate packets; fresh-eye fixed target handling and brittle tests.
+- **Gather planner / Reddit source route SHIPPED** (2026-06-24): `gather_plan.py` fronts public URL gather; Reddit runs RSS -> JSON before raw page fallback, preserves typed verdicts, honors positive proof expectations, and has fresh-eye critique recorded in [2026-06-23-204121-packet.md](../charness-artifacts/critique/2026-06-23-204121-packet.md). Push cleanup extracted shared web-fetch helpers (`text_attempts`, `source_identity_lib`, `url_reader`) and re-baselined dup-ratchet after review.
+- **#399 disposition:** run `28049447961` proved old `Select mutation sample` / missing Stryker report failure is gone; still open because StrykerJS score is 49.7% vs 80%.
+- **Gotcha:** `/charness:quality` loads from the installed clone `~/.agents/src/charness`; isolate via [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh). `cautilus evaluate *` is operator-gated. Cautilus is **0.17.1**.
 
 ## Next Session
 
-- **START HERE -- resolve or explicitly defer #399's JS mutation-score failure.**
-  Body-read #399; latest run changed the problem from missing report to real
-  StrykerJS score failure.
-- **Then continue fanning out the same quality pattern.** `issue` and `release`
-  now have it; neutral issue planner-use fixture is still deferred.
+- **START HERE -- resolve or explicitly defer #399's JS mutation-score failure.** Body-read #399; latest run changed the problem to real StrykerJS score failure.
+- **Then continue the same planner-first pattern.** `issue`, `release`, and `gather` now have it; neutral issue planner-use fixture is still deferred.
+- **Split remaining near-limit web-fetch helper before more route behavior:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py).
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Then use Cautilus to improve behavior.** Preserve intent while reducing wasted
@@ -56,8 +41,9 @@
 
 - **Gate review follow-up:** add aggregate runtime budgets for
   `run-quality-read-only` and `check-duplicates` only after another drift sample.
-- **#392 scope (decide at pickup):** attempt a real exact-X route (browser/auth,
-  likely infeasible) vs commit to the typed-unsupported contract.
+- **#392 scope:** much of the typed exact-X contract now exists for public URL
+  gather; body-read #392 and decide whether remaining work is real live/auth X
+  acquisition, documentation closeout, or issue closure.
 - **D31 still manual:** the chunker does not reconcile against recent commits, so
   pickup reads `git log` by hand to de-stale.
 

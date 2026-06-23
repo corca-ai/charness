@@ -7,7 +7,6 @@ import json
 import subprocess
 import sys
 import time
-import urllib.request
 from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlparse
@@ -17,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import browser_fallback_stages  # noqa: E402
+import reddit_source  # noqa: E402
 import twitter_exact_source  # noqa: E402
 import youtube_browser_ui  # noqa: E402
 import youtube_source  # noqa: E402
@@ -40,26 +40,22 @@ from acquisition_trace_lib import (  # noqa: E402
     payload,
     skip_attempt,
 )
-from classify_fetch_response import classify, extract_persistable_text  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
+from text_attempts import attempt_from_text  # noqa: E402
+from url_reader import read_url  # noqa: E402
 
 
 def _read_direct(url: str, *, timeout: int, direct_response_file: Path | None) -> tuple[str, str | None]:
     if direct_response_file is not None:
         return direct_response_file.read_text(encoding="utf-8"), None
-    request = urllib.request.Request(
+    return read_url(
         url,
+        timeout=timeout,
         headers={
             "User-Agent": "Mozilla/5.0 (compatible; charness-web-fetch/1.0)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         },
     )
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            charset = response.headers.get_content_charset() or "utf-8"
-            return response.read().decode(charset, errors="replace"), None
-    except Exception as exc:
-        return "", f"{type(exc).__name__}:{str(exc)[:200]}"
 
 
 def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | None]:
@@ -86,55 +82,32 @@ def _positive_int(raw: str) -> int:
     return value
 
 
-def _domain_route_fetcher(args: argparse.Namespace):
+def _domain_seed_map(args: argparse.Namespace) -> dict | None:
     seed_path = getattr(args, "domain_route_response_file", None)
-    seed_map = json.loads(seed_path.read_text(encoding="utf-8")) if seed_path is not None else None
+    return json.loads(seed_path.read_text(encoding="utf-8")) if seed_path is not None else None
+
+
+def _domain_route_fetcher(args: argparse.Namespace):
     return twitter_exact_source.make_fetcher(
-        seed_map,
+        _domain_seed_map(args),
         live=bool(getattr(args, "live_domain_route", False)),
         live_fetch=lambda endpoint_url: _read_direct(endpoint_url, timeout=args.timeout, direct_response_file=None),
     )
 
 
-def _attempt_from_text(
-    *,
-    stage_id: str,
-    tool_id: str | None,
-    text: str,
-    elapsed_s: float,
-    intent: str,
-    expect_text: list[str],
-    expect_regex: list[str],
-    expect_json_field: list[str],
-    error: str | None = None,
-    details: dict[str, object] | None = None,
-    content_format: str = "text",
-) -> AcquisitionAttempt:
-    classification = classify(
-        text,
-        intent=intent,
-        expect_text=expect_text,
-        expect_regex=expect_regex,
-        expect_json_field=expect_json_field,
-    )
-    classification_status = str(classification["status"])
-    status = classification_status
-    if error is not None and classification_status != "invalid-proof":
-        status = "error"
-    content_text = extract_persistable_text(text, content_format=content_format)
-    return AcquisitionAttempt(
-        stage_id=stage_id,
-        tool_id=tool_id,
-        status=status,
-        confidence=str(classification.get("confidence", "none")),
-        elapsed_s=elapsed_s,
-        error=error,
-        output_chars=len(text),
-        classification=classification,
-        details=details or {},
-        content_text=content_text,
-        content_format=content_format,
-    )
+def _seeded_or_live_fetcher(args: argparse.Namespace):
+    seed_map = _domain_seed_map(args)
+
+    def fetch(endpoint: dict) -> tuple[str | None, str | None]:
+        endpoint_url = endpoint["url"]
+        if seed_map is not None and endpoint_url in seed_map:
+            entry = seed_map[endpoint_url]
+            return entry.get("text"), entry.get("error")
+        if seed_map is not None and not getattr(args, "live_domain_route", False):
+            return None, "seed-missing"
+        return _read_direct(endpoint_url, timeout=args.timeout, direct_response_file=None)
+
+    return fetch
 
 
 def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
@@ -180,6 +153,8 @@ def _payload_for(
     )
     if route.get("route_id") == "twitter-syndication":
         result["source_identity"] = twitter_exact_source.classify_source_identity(result)
+    if route.get("route_id") == "reddit-feed":
+        result["source_identity"] = reddit_source.classify_source_identity(result)
     if route.get("route_id") == "yt-dlp-metadata":
         result["source_identity"] = youtube_source.classify_source_identity(result)
     return result
@@ -194,6 +169,17 @@ def _run_domain_specific_route(
         return
     if route["route_id"] == "twitter-syndication":
         attempts.extend(twitter_exact_source.run_exact_source_stage(args.url, fetcher=_domain_route_fetcher(args)))
+    elif route["route_id"] == "reddit-feed":
+        attempts.extend(
+            reddit_source.run_reddit_stage(
+                args.url,
+                fetcher=_seeded_or_live_fetcher(args),
+                expect_text=args.expect_text,
+                expect_regex=args.expect_regex,
+                expect_json_field=args.expect_json_field,
+                intent=args.intent,
+            )
+        )
     elif route["route_id"] == "yt-dlp-metadata" and youtube_source.normalized_host(args.url).endswith(
         ("youtube.com", "youtu.be")
     ):
@@ -207,39 +193,19 @@ def _run_domain_specific_route(
         attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
 
 
-def acquire(args: argparse.Namespace) -> dict[str, object]:
-    parsed = urlparse(args.url)
-    if parsed.scheme not in {"http", "https"}:
-        return _invalid_scheme_payload(args, parsed)
-    route = route_for_url(args.url, repo_root=args.repo_root)
-    attempts: list[AcquisitionAttempt] = []
-    proof_required = bool(args.expect_text or args.expect_regex or args.expect_json_field)
-    started = time.monotonic()
-    text, error = _read_direct(args.url, timeout=args.timeout, direct_response_file=args.direct_response_file)
-    attempts.append(
-        _attempt_from_text(
-            stage_id="direct-public-fetch",
-            tool_id=None,
-            text=text,
-            elapsed_s=round(time.monotonic() - started, 3),
-            error=error,
-            intent=args.intent,
-            expect_text=args.expect_text,
-            expect_regex=args.expect_regex,
-            expect_json_field=args.expect_json_field,
-        )
-    )
-    direct_attempt = attempts[-1]
+def _domain_first_payload(args, route, attempts, *, proof_required):
+    if route.get("route_id") != "reddit-feed":
+        return None
     _run_domain_specific_route(args, route, attempts)
-    if direct_attempt.status == "invalid-proof":
-        return _payload_for(args, route, attempts, "error")
-    if _direct_attempt_sufficient(route, direct_attempt, proof_required=proof_required):
+    if has_success(attempts, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
-    try_youtube_browser, youtube_browser_skip_reason = _should_try_youtube_browser(
-        str(route["route_id"]), attempts, browser_mode=args.browser_mode
-    )
-    if try_youtube_browser:
-        youtube_browser_payload = browser_fallback_stages.run_youtube_browser_stage(
+    return None
+
+
+def _try_youtube_browser_payload(args, route, attempts, *, proof_required):
+    should_try, skip_reason = _should_try_youtube_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
+    if should_try:
+        return browser_fallback_stages.run_youtube_browser_stage(
             args,
             route,
             attempts,
@@ -248,20 +214,18 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
             run_command=_run_command,
             payload_for=_payload_for,
         )
-        if youtube_browser_payload is not None:
-            return youtube_browser_payload
-    elif youtube_browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(
-        route, youtube_browser_ui.UI_STAGE_ID
-    ):
-        attempts.append(skip_attempt(youtube_browser_ui.UI_STAGE_ID, "agent-browser", reason=youtube_browser_skip_reason))
-    if has_success(attempts, proof_required=proof_required):
-        return _payload_for(args, route, attempts, "success")
-    try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
-    if try_defuddle:
+    if skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, youtube_browser_ui.UI_STAGE_ID):
+        attempts.append(skip_attempt(youtube_browser_ui.UI_STAGE_ID, "agent-browser", reason=skip_reason))
+    return None
+
+
+def _try_defuddle_reader(args, route, attempts, *, proof_required):
+    should_try, skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
+    if should_try:
         started = time.monotonic()
         text, error = _run_command(["defuddle", "parse", args.url, "--markdown"], timeout=args.timeout)
         attempts.append(
-            _attempt_from_text(
+            attempt_from_text(
                 stage_id="defuddle-reader-extraction",
                 tool_id="defuddle",
                 text=text,
@@ -276,11 +240,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         )
         if has_success(attempts, proof_required=proof_required):
             return _payload_for(args, route, attempts, "success")
-    elif defuddle_skip_reason == "missing-tool" and has_stage(route, "defuddle-reader-extraction"):
-        attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
-    try_browser, browser_skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
-    if try_browser:
-        browser_payload = browser_fallback_stages.run_generic_browser_stage(
+    elif skip_reason == "missing-tool" and has_stage(route, "defuddle-reader-extraction"):
+        attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=skip_reason))
+    return None
+
+
+def _try_generic_browser_payload(args, route, attempts, *, proof_required):
+    should_try, skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
+    if should_try:
+        return browser_fallback_stages.run_generic_browser_stage(
             args,
             route,
             attempts,
@@ -289,12 +257,56 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
             run_command=_run_command,
             payload_for=_payload_for,
         )
-        if browser_payload is not None:
-            return browser_payload
-    elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
-        attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
+    if skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
+        attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=skip_reason))
         if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):
-            attempts.append(skip_attempt("agent-browser-network-recon", "agent-browser", reason=browser_skip_reason))
+            attempts.append(skip_attempt("agent-browser-network-recon", "agent-browser", reason=skip_reason))
+    return None
+
+
+def acquire(args: argparse.Namespace) -> dict[str, object]:
+    parsed = urlparse(args.url)
+    if parsed.scheme not in {"http", "https"}:
+        return _invalid_scheme_payload(args, parsed)
+    route = route_for_url(args.url, repo_root=args.repo_root)
+    attempts: list[AcquisitionAttempt] = []
+    proof_required = bool(args.expect_text or args.expect_regex or args.expect_json_field)
+    domain_first_payload = _domain_first_payload(args, route, attempts, proof_required=proof_required)
+    if domain_first_payload is not None:
+        return domain_first_payload
+    started = time.monotonic()
+    text, error = _read_direct(args.url, timeout=args.timeout, direct_response_file=args.direct_response_file)
+    attempts.append(
+        attempt_from_text(
+            stage_id="direct-public-fetch",
+            tool_id=None,
+            text=text,
+            elapsed_s=round(time.monotonic() - started, 3),
+            error=error,
+            intent=args.intent,
+            expect_text=args.expect_text,
+            expect_regex=args.expect_regex,
+            expect_json_field=args.expect_json_field,
+        )
+    )
+    direct_attempt = attempts[-1]
+    if route.get("route_id") != "reddit-feed":
+        _run_domain_specific_route(args, route, attempts)
+    if direct_attempt.status == "invalid-proof":
+        return _payload_for(args, route, attempts, "error")
+    if _direct_attempt_sufficient(route, direct_attempt, proof_required=proof_required):
+        return _payload_for(args, route, attempts, "success")
+    youtube_browser_payload = _try_youtube_browser_payload(args, route, attempts, proof_required=proof_required)
+    if youtube_browser_payload is not None:
+        return youtube_browser_payload
+    if has_success(attempts, proof_required=proof_required):
+        return _payload_for(args, route, attempts, "success")
+    defuddle_payload = _try_defuddle_reader(args, route, attempts, proof_required=proof_required)
+    if defuddle_payload is not None:
+        return defuddle_payload
+    browser_payload = _try_generic_browser_payload(args, route, attempts, proof_required=proof_required)
+    if browser_payload is not None:
+        return browser_payload
     return _payload_for(args, route, attempts, disposition_for_attempts(attempts))
 
 
@@ -306,8 +318,8 @@ def main() -> int:
     parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto")
     parser.add_argument("--timeout", type=int, default=20)
     parser.add_argument("--direct-response-file", type=Path)
-    parser.add_argument("--domain-route-response-file", type=Path, help="JSON map {endpoint_url: {text, error}} seeding the domain-specific exact-source stage (no live fetch)")
-    parser.add_argument("--live-domain-route", action="store_true", help="Allow live network fetch of domain-specific exact-source endpoints (operator-authorized; off by default)")
+    parser.add_argument("--domain-route-response-file", type=Path, help="JSON map {endpoint_url: {text, error}} seeding the domain-specific route; missing seeded endpoints do not fetch live unless --live-domain-route is set")
+    parser.add_argument("--live-domain-route", action="store_true", help="Allow live network fetch for seeded-missing exact-source/domain-specific endpoints when the route supports it")
     parser.add_argument("--expect-text", action="append", default=[])
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])

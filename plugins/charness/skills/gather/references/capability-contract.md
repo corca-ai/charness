@@ -146,6 +146,24 @@ The durable record should make visible:
 This lets `gather` stay public and provider-agnostic while `web-fetch` owns the
 retrieval tactics and truthful degradation contract.
 
+## Exact-Source Verdicts
+
+Some public URLs carry a stronger identity promise than "find relevant public
+material." For those sources, `gather` must preserve the requested source
+identity even when acquisition fails.
+
+- X/Twitter status URLs: accept only an identity-keyed exact post result
+  (`exact-fetched`); otherwise stop as `exact-blocked` or `exact-unavailable`.
+  A search snippet, adjacent status, cache, or timeline item is not the original.
+- Reddit URLs: prefer source-bound RSS feeds before JSON/raw-page fallbacks and
+  preserve the Reddit URL identity. A general web-search result may help explain
+  context, but it is not a gathered Reddit source unless explicitly labeled as
+  secondary.
+
+The caller should treat these verdicts as answer-path state, not mere debug
+metadata. If the verdict is blocked or unavailable, report that typed boundary
+and the remaining capability gap instead of presenting substituted content.
+
 ## Public URL Extracted Content Persistence
 
 Public URL gather does not store raw acquired bodies by default. The default

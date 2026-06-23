@@ -80,6 +80,11 @@ EVIDENCE_OVERRIDES = {
         "uses the named skill or capability lookup path before falling back to broad filesystem search",
         "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`",
     ],
+    "gather": [
+        "runs or follows a gather plan that names the support owner, route order, exact-source policy, and typed stop conditions before acquisition",
+        "does not substitute search snippets, adjacent posts, or similar sources for a named exact source",
+        "preserves typed public-URL outcomes such as `exact-fetched`, `exact-blocked`, `exact-unavailable`, `feed-fetched`, `direct-page-fetched`, and missing-capability stops",
+    ],
     "handoff": [
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first",
     ],

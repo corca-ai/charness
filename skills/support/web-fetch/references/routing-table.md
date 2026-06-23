@@ -16,7 +16,11 @@ reduced to tactics `charness` is willing to carry locally.
   - live fetching is injected, so the default is non-live: tests and host grants
     seed responses; an operator opts into live fetch explicitly
 - `reddit.com`
-  - prefer `.json` endpoints with a mobile user agent
+  - prefer `.rss` feeds for posts and subreddit listings, then `.json` as a
+    secondary source-bound public route
+  - raw HTML and unauthenticated JSON can be WAF-sensitive; RSS is the cheaper
+    first route when the request is to preserve the Reddit source rather than
+    browse an interactive page
 - `news.ycombinator.com`
   - prefer the Firebase API
 - `stackoverflow.com`, `stackexchange.com`

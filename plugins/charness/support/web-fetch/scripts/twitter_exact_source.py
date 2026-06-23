@@ -28,6 +28,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from acquisition_trace_lib import AcquisitionAttempt, skip_attempt  # noqa: E402
 from classify_fetch_response import classify  # noqa: E402
+from source_identity_lib import attempt_endpoint, has_outcome, stage_attempts  # noqa: E402
 
 STAGE_ID = "domain-specific-route"
 X_HOSTS = {"x.com", "twitter.com", "mobile.x.com", "mobile.twitter.com"}
@@ -153,18 +154,12 @@ def classify_source_identity(acquisition: dict) -> str:
     route = acquisition.get("route")
     if not isinstance(route, dict) or route.get("route_id") != "twitter-syndication":
         return "not-applicable"
-    domain = [a for a in (acquisition.get("attempts") or []) if isinstance(a, dict) and a.get("stage_id") == STAGE_ID]
-    if any(isinstance(a.get("details"), dict) and a["details"].get("outcome") == "exact-fetched" for a in domain):
+    domain = stage_attempts(acquisition, STAGE_ID)
+    if has_outcome(domain, "exact-fetched"):
         return "exact-fetched"
     # An attempt that actually fetched an endpoint carries `details.endpoint` and
     # is not the live-fetch-off stub; a no-status-id stub carries no endpoint.
-    executed = [
-        a
-        for a in domain
-        if isinstance(a.get("details"), dict)
-        and a["details"].get("endpoint")
-        and a.get("error") != "live-fetch-not-enabled"
-    ]
+    executed = [a for a in domain if attempt_endpoint(a) and a.get("error") != "live-fetch-not-enabled"]
     return "exact-blocked" if executed else "exact-unavailable"
 
 

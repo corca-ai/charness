@@ -6,7 +6,6 @@ import json
 import re
 import shutil
 import sys
-import urllib.request
 from html import unescape
 from pathlib import Path
 from typing import Callable, Sequence
@@ -17,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
+from url_reader import read_url  # noqa: E402
 
 STAGE_ID = "domain-specific-route"
 UI_STAGE_ID = "youtube-browser-transcript-ui"
@@ -176,12 +176,7 @@ def _attempt(
 
 
 def _default_fetch_url(url: str) -> tuple[str, str | None]:
-    try:
-        with urllib.request.urlopen(url, timeout=20) as response:
-            charset = response.headers.get_content_charset() or "utf-8"
-            return response.read().decode(charset, errors="replace"), None
-    except Exception as exc:
-        return "", f"{type(exc).__name__}:{str(exc)[:200]}"
+    return read_url(url, timeout=20)
 
 
 def run_youtube_stage(

@@ -5,8 +5,15 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
+WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
+sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
+
+import acquire_public_url as apu  # noqa: E402
+import route_public_fetch as rpf  # noqa: E402
+from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
 
 
 def run_helper(
@@ -26,7 +33,7 @@ def run_helper(
     )
 
 
-def test_route_public_fetch_maps_reddit_to_json_strategy() -> None:
+def test_route_public_fetch_maps_reddit_to_feed_strategy() -> None:
     result = run_helper(
         "skills/support/web-fetch/scripts/route_public_fetch.py",
         "--url",
@@ -35,8 +42,84 @@ def test_route_public_fetch_maps_reddit_to_json_strategy() -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["normalized_host"] == "reddit.com"
-    assert payload["route_id"] == "reddit-json"
+    assert payload["route_id"] == "reddit-feed"
     assert payload["route_family"] == "public-api"
+    assert payload["required_tools"] == []
+    assert [stage["stage_id"] for stage in payload["acquisition_plan"][:2]] == [
+        "domain-specific-route",
+        "direct-public-fetch",
+    ]
+
+
+def test_route_public_fetch_missing_gather_adapter_fallback(monkeypatch) -> None:
+    monkeypatch.setattr(rpf.Path, "is_file", lambda _self: False)
+    assert str(rpf._find_gather_adapter_script()) == "__missing_gather_resolve_adapter__.py"
+
+
+def test_acquire_helper_browser_branch_payloads(monkeypatch) -> None:
+    args = SimpleNamespace(
+        browser_mode="auto",
+        intent="single",
+        url="https://www.youtube.com/watch?v=abc",
+        timeout=1,
+    )
+    route = {"route_id": "yt-dlp-metadata", "acquisition_plan": [{"stage_id": "youtube-browser-transcript-ui"}]}
+    attempts: list[AcquisitionAttempt] = []
+    expected = {"disposition": "success"}
+    monkeypatch.setattr(apu, "_should_try_youtube_browser", lambda *_args, **_kwargs: (True, None))
+    monkeypatch.setattr(apu.browser_fallback_stages, "run_youtube_browser_stage", lambda *_args, **_kwargs: expected)
+    assert apu._try_youtube_browser_payload(args, route, attempts, proof_required=False) is expected
+
+
+def test_acquire_helper_skip_branches(monkeypatch) -> None:
+    args = SimpleNamespace(browser_mode="off", intent="collect", url="https://example.com", timeout=1)
+    attempts: list[AcquisitionAttempt] = []
+    youtube_route = {
+        "route_id": "yt-dlp-metadata",
+        "acquisition_plan": [{"stage_id": "youtube-browser-transcript-ui", "tool_id": "agent-browser"}],
+    }
+    monkeypatch.setattr(apu, "_should_try_youtube_browser", lambda *_args, **_kwargs: (False, "browser-mode-off"))
+    assert apu._try_youtube_browser_payload(args, youtube_route, attempts, proof_required=False) is None
+    assert attempts[-1].stage_id == "youtube-browser-transcript-ui"
+
+    generic_route = {
+        "route_id": "direct-then-fallback",
+        "acquisition_plan": [
+            {"stage_id": "agent-browser-render-recon", "tool_id": "agent-browser"},
+            {"stage_id": "agent-browser-network-recon", "tool_id": "agent-browser"},
+        ],
+    }
+    monkeypatch.setattr(apu, "_should_try_browser", lambda *_args, **_kwargs: (False, "missing-tool"))
+    assert apu._try_generic_browser_payload(args, generic_route, attempts, proof_required=False) is None
+    assert [attempt.stage_id for attempt in attempts[-2:]] == [
+        "agent-browser-render-recon",
+        "agent-browser-network-recon",
+    ]
+
+
+def test_acquire_returns_youtube_browser_payload(monkeypatch, tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>short</body></html>", encoding="utf-8")
+    args = SimpleNamespace(
+        url="https://www.youtube.com/watch?v=abc",
+        repo_root=tmp_path,
+        intent="single",
+        browser_mode="auto",
+        timeout=1,
+        direct_response_file=direct,
+        domain_route_response_file=None,
+        live_domain_route=False,
+        expect_text=[],
+        expect_regex=[],
+        expect_json_field=[],
+        include_selected_content=False,
+        selected_content_max_chars=200_000,
+    )
+    expected = {"disposition": "success", "source_identity": "youtube-browser-transcript"}
+    monkeypatch.setattr(apu, "_run_domain_specific_route", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(apu, "_direct_attempt_sufficient", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(apu, "_try_youtube_browser_payload", lambda *_args, **_kwargs: expected)
+    assert apu.acquire(args) is expected
 
 
 def test_route_public_fetch_maps_github_to_grant_or_cli_strategy() -> None:
@@ -405,28 +488,6 @@ def test_acquire_public_url_records_all_planned_stages_as_attempts(tmp_path: Pat
     assert planned == attempted
     assert payload["attempts"][-1]["stage_id"] == "clean-stop"
     assert payload["attempts"][-1]["details"]["reason"] == "prior-stage-sufficient"
-
-
-def test_acquire_public_url_records_unimplemented_domain_route(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.html"
-    direct.write_text("<html><body>" + ("reddit content " * 120) + "</body></html>", encoding="utf-8")
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://www.reddit.com/r/python/",
-        "--direct-response-file",
-        str(direct),
-        "--browser-mode",
-        "off",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["disposition"] == "success"
-    domain_attempt = next(attempt for attempt in payload["attempts"] if attempt["stage_id"] == "domain-specific-route")
-    assert domain_attempt["status"] == "skipped"
-    assert domain_attempt["details"]["reason"] == "not-implemented"
-    assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
 
 
 def test_acquire_public_url_network_recon_alone_is_not_success(tmp_path: Path) -> None:
