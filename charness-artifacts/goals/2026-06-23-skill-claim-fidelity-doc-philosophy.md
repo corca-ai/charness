@@ -9,10 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active; Slices 1-4 are complete and logged.
-- Current slice: Slice 5 — validate the remediated quality skill run.
-- Current slice intent: capture a representative `/charness:quality` run from the installed/synced skill surface, build the observed packet, and separate the primary deterministic coverage signal from the secondary cautilus rollup.
-- Next action: before any cautilus call, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json`; if allowed, capture the remediated run, build `observed.json`, and verify runtime consultation of `quality-lenses.md` with coverage `0/39 -> >=1/39`.
+- Current disposition: active; Slices 1-6 are logged; Slice 5 failed the
+  primary runtime-consultation predicate and Slice 6 added a report-first
+  `quality` planner remediation.
+- Current slice: Slice 7 — validate the planner-backed `quality` run.
+- Current slice intent: capture a representative `/charness:quality` run from
+  the installed/synced skill surface and verify it reads `quality-lenses.md`
+  plus the planner-selected primer refs before broad gate/fix work.
+- Next action: before any cautilus call, consult
+  `python3 scripts/plan_cautilus_proof.py --repo-root . --json`; then capture
+  the planner-backed run, build `observed.json`, and check the primary
+  deterministic coverage signal before any secondary evaluator rollup.
 - Verification cadence: cheap deterministic checks (markdown/link gates, `run_slice_closeout.py --skip-broad-pytest`, observed-packet parse) at commit boundaries; fresh-eye critique + a real `claude -p` capture at slice boundaries; ONE operator-gated cautilus rollup at the validation boundary.
 - Slice review packet: before fresh-eye slice critique, hand the reviewer intent, changed files + owning/generated surfaces, expected invariants, tests/proof, non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and `## Auto-Retro`.
@@ -198,6 +205,34 @@ RESOLVED — all three items below were discussed with the operator during shapi
 - Off-goal findings: Stale eval spec comment said the quality-lenses route was step 4; corrected while touching the same spec.
 - Lessons carried forward: Slice 5 must prove runtime behavior from the installed/synced quality skill, not only the working-tree prompt: captured /charness:quality must open quality-lenses.md and move observed coverage from 0/39 to at least 1/39.
 - Metrics: Host token/tool metrics not available; reviewer agents completed and were closed.
+
+### Slice 5: Remediated quality capture
+
+- Objective: Validate Slice 4 by capturing a real remediated /charness:quality run and building the deterministic observed packet.
+- Why this approach: The goal's primary closeout predicate is runtime consultation of quality-lenses.md, so the prompt edit needed a real installed-surface capture rather than source inspection.
+- Commits: none yet — this slice records the failed post-ea46da85 validation evidence before the next remediation commit.
+- What changed: Added durable evidence under charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/ for the failed remediated capture.
+- Alternatives rejected: Did not run cautilus: plan_cautilus_proof.py returned next_action none and the deterministic coverage predicate already failed. Did not treat duration as the blocker because #397 is the 0/39 reference-consultation mechanism gap.
+- Targeted verification: capture-skill-run.sh completed for /charness:quality at ea46da85; build-skill-execution-observation.mjs emitted observed.v1.json with outcome failed, coverage 0/39, missing quality-lenses.md, duration 881138ms; python3 -m json.tool parsed observed.v1.json.
+- Test duplication pressure: none — runtime evidence and prompt-contract slice only; no tests added or expanded.
+- Critique: not-applicable — this validation slice records a failed proof packet, not a behavior fix by itself.
+- Off-goal findings: The capture also spent 881138ms and 9267413 tokens, reinforcing that /charness:quality currently mixes deterministic gate execution with agent-driven investigation rather than a clean gate-report-first workflow.
+- Lessons carried forward: Next analysis must return to the Slice 2 reference classification: quality loaded, but the run still went gate-first and did not consult engage-always references such as quality-lenses.md.
+- Metrics: Real capture: 881138ms, 9267413 total tokens, tools Bash=42 Read=8 Edit=4 Skill=1 Agent=1 Write=1.
+
+### Slice 6: Quality run planner remediation
+
+- Objective: Turn the quality reference-engagement classification into an executable quality run order.
+- Why this approach: The remediated capture loaded quality but went gate-first and skipped engage-always references; a small planner can fix phase order without turning judgment into code.
+- Commits: pending
+- What changed: Added skills/public/quality/scripts/plan_quality_run.py and synced plugin mirror; wired quality bootstrap/workflow to run the planner; added focused planner tests; recorded fresh-eye critique.
+- Alternatives rejected: Rejected editing find-skills after the transcript showed intended session-start behavior and quality skill loading. Rejected prose-only reminders because the failure was phase-order drift. Rejected a judgment-heavy planner; the helper only reports scope, required primer refs, report-first barrier, and on-demand trigger map.
+- Targeted verification: python3 -m pytest -q tests/quality_gates/test_quality_run_planner.py passed; planner JSON reports 27 on-demand triggers and skills_in_scope true for this repo; check_skill_surface_preflight reports quality SKILL.md at 192/200; py_compile passed for source and plugin planner; validate_skills and packaging validators passed before final closeout.
+- Test duplication pressure: Added 4 focused planner tests covering non-skill repos, root skill repos, plugin-only skill repos, and complete on-demand trigger coverage.
+- Critique: Fresh-eye subagent critique completed; all three findings folded; artifact: charness-artifacts/critique/2026-06-23-quality-run-planner.md.
+- Off-goal findings: The failed capture remains evidence that #397 is not closable yet; another real /charness:quality capture is still required.
+- Lessons carried forward: Quality's essence is report-first judgment, not gate execution alone; skill-specific refs are engage-always only when the repo actually authors skill packages.
+- Metrics: Planner output on this repo: skills_in_scope=true, 9 required primer refs, 27 on-demand triggers.
 
 ## Context Sources
 

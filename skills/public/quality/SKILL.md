@@ -29,6 +29,7 @@ before trusting a prior review.
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current
+python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root .
 rg --files .
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 git status --short
@@ -51,10 +52,10 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
 2. Detect the current gate and source surface.
    - enumerate source, specs, docs, adapters, skill surfaces, and commands
      before letting the previous quality artifact define scope
-   - use `references/inventory-dispatch.md` to choose focused inventories for
-     CLI/operator surfaces, docs/readability, skills, runtime/economics,
-     source hygiene, security/supply chain, coverage/eval depth, and adapter
-     policy
+   - after the planner primer, use `references/inventory-dispatch.md` to choose
+     focused inventories for CLI/operator surfaces, docs/readability, skills,
+     runtime/economics, source hygiene, security/supply chain, coverage/eval
+     depth, and adapter policy
    - when skills are in scope, run skill ergonomics inventory; when
      public-skill or durable artifact behavior is in scope, scaffold one
      consumer-side dogfood case with
@@ -63,14 +64,8 @@ validator-passing skeleton; edit its resolved `write_artifact_path`, not `latest
      whether the gate proves a behavior contract or only freezes wording and
      whether `find-skills` can surface the support seam from task language
    - treat migration-time exact-prose guards as temporary bridges; when `inventory_skill_ergonomics.py` is cited, closeout uses `prose review result:` to record judgment separately from script fields
-3. Run a bounded quality judgment primer before broad gates.
-   - consult only `references/quality-lenses.md`, `references/inventory-dispatch.md`,
-     `references/automation-promotion.md`, `references/gate-classification.md`,
-     `references/proposal-flow.md`, `references/maintainer-local-enforcement.md`,
-     `references/operability-signals.md`, and, when skills are in scope,
-     `references/skill-quality.md` plus `references/skill-ergonomics.md`
-   - do not chase links from those refs during the primer; use the judgment to choose focused gates and review lenses
-   - open on-demand references only when a concrete gate, inventory, source, or operator finding matches the ref's named trigger/topic; do not scan them for coverage
+3. Run `plan_quality_run.py`, read its `required_primer_refs`, and obey its
+   report-first phase barriers before broad gates or fixes.
 4. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - resolve and run the Charness package-root validator `validate_usage_episodes.py` and report `report_usage_episodes.py`; `no_adapter`, `disabled`, and `no_records` are skipped warnings, not product-success proof or failures

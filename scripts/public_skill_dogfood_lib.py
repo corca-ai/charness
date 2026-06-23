@@ -94,6 +94,7 @@ EVIDENCE_OVERRIDES = {
     ],
     "quality": [
         "runs or names the existing repo-owned quality gates before proposing new ones",
+        "runs `plan_quality_run.py`, reads its `required_primer_refs` before broad gates, and treats deterministic gates as `report_first` evidence to analyze before fixing",
         "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
         "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
         "when the goal is local gate speed, cross-references costly local gates against CI proof (the CI-recoverability triage) and ranks by wall-clock, recommending only gates CI fully re-runs be moved off the local hot path while keeping the rest local, rather than only widening budgets or leaving every gate local",
