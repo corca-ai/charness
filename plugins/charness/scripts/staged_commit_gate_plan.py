@@ -97,6 +97,18 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
                 "--repo-root", str(repo_root),
             )
         )
+    if _touches_current_pointer_freshness_surface(paths):
+        # #396: stale rolling-pointer claims (notably handoff "next session"
+        # SHA/status claims) used to wait until pre-push. The freshness validator
+        # is cheap and deterministic, so run the exact broad-gate command at the
+        # commit boundary for every surface it cross-checks.
+        gates.extend(
+            _timing_pull_gate(
+                repo_root, "validate-current-pointer-freshness",
+                "scripts/validate_current_pointer_freshness.py",
+                "--repo-root", str(repo_root),
+            )
+        )
     if _any_starts(paths, ".github/workflows/"):
         # <0.1s; only a workflow edit can flip the parity verdict. Carries
         # --require-canonical-gate-match so the commit boundary enforces the
@@ -111,6 +123,31 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             )
         )
     return gates
+
+
+def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
+    exact = {
+        ".gitignore",
+        "docs/handoff.md",
+        "charness-artifacts/quality/latest.md",
+        "charness-artifacts/release/latest.md",
+        "charness-artifacts/find-skills/latest.json",
+        "scripts/run-quality.sh",
+        "scripts/validate_current_pointer_freshness.py",
+        "scripts/record_quality_runtime.py",
+        "skills/public/quality/scripts/check_runtime_budget.py",
+        "skills/public/quality/scripts/runtime_budget_lib.py",
+        "skills/public/find-skills/scripts/capability_sources.py",
+        "packaging/charness.json",
+        "plugins/charness/.codex-plugin/plugin.json",
+        "plugins/charness/.claude-plugin/plugin.json",
+    }
+    return any(
+        path in exact
+        or (path.startswith("scripts/") and path.endswith(".py"))
+        or path.startswith("integrations/tools/")
+        for path in paths
+    )
 
 
 def fast_surface_verify_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
@@ -287,7 +324,7 @@ def staged_commit_gate_plan(
 
 
 # #332: the cheap structural sweep -- the presence/structural gates a new
-# skill-package or scripts/*.py edit must NOT be able to defer to the slow broad
+# skill-package, scripts/*.py, or rolling-pointer edit must NOT be able to defer to the slow broad
 # gate (the recurring #308/#325/#329 class). Selected by label from
 # staged_commit_gate_plan so the plan stays the single source of truth (no
 # parallel gate list): ergonomics (skill packages), attention-state visibility
@@ -310,6 +347,7 @@ STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
         "check-inventory-declaration-coverage",
         "check-timing-layer-completeness",
         "validate-quality-reference-catalog",
+        "validate-current-pointer-freshness",
     }
 )
 

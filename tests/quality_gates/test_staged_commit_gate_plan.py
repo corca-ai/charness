@@ -273,6 +273,39 @@ def test_timing_pull_handoff_validator_fires_for_handoff_edit_only() -> None:
     assert "validate-handoff-artifact" not in _labels(["scripts/new_helper.py"])
 
 
+def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> None:
+    # #396: rolling-pointer freshness used to wait until pre-push, leaving a
+    # commit->push window for stale handoff SHA/status claims and sibling pointer
+    # claims. The exact broad-gate command is cheap enough to pull forward for
+    # every surface it cross-checks.
+    trigger_paths = [
+        "docs/handoff.md",
+        "charness-artifacts/quality/latest.md",
+        "charness-artifacts/release/latest.md",
+        "charness-artifacts/find-skills/latest.json",
+        "scripts/run-quality.sh",
+        "scripts/any_quality_pointer_helper.py",
+        "scripts/validate_current_pointer_freshness.py",
+        "scripts/record_quality_runtime.py",
+        "skills/public/quality/scripts/check_runtime_budget.py",
+        "skills/public/quality/scripts/runtime_budget_lib.py",
+        "skills/public/find-skills/scripts/capability_sources.py",
+        "packaging/charness.json",
+        "plugins/charness/.codex-plugin/plugin.json",
+        "plugins/charness/.claude-plugin/plugin.json",
+        "integrations/tools/cautilus.json",
+    ]
+    for path in trigger_paths:
+        labels = _labels([path])
+        assert "validate-current-pointer-freshness" in labels, path
+    assert "validate-current-pointer-freshness" not in _labels(["docs/usage.md"])
+    assert "validate-current-pointer-freshness" not in _labels(["tests/new_helper.py"])
+    assert "validate-current-pointer-freshness" in STRUCTURAL_SWEEP_LABELS
+    assert "validate-current-pointer-freshness" in {
+        g.label for g in structural_sweep_gates(ROOT, ["docs/handoff.md"])
+    }
+
+
 def test_handoff_trigger_path_matches_validator_resolved_target() -> None:
     # The trigger is the literal `docs/handoff.md`; the validator resolves its
     # target from the handoff adapter. If the adapter moves the artifact, the

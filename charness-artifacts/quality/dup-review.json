@@ -34,6 +34,27 @@
       "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
       "reviewed_at": "2026-06-24",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1b534214c30d09b2",
+      "note": "common empty-input guard family rotated after staged_commit_gate_plan line shift; low-value guard boilerplate, not new extractable duplication",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8a9280732142bf56",
+      "note": "one-line typed record builder helpers in separate skill/support domains; extracting a shared helper would harm portability more than it reduces duplication",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e89e772efc0ba634",
+      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
+      "reviewed_at": "2026-06-24",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

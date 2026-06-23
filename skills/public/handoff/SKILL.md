@@ -17,47 +17,29 @@ pickups exist.
 
 ## Bootstrap
 
-Resolve the adapter first, then start from the current handoff artifact and live
-repo state.
+Plan the run first, then read only the artifact, references, and gates named by
+the plan.
 
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/plan_handoff_run.py" --repo-root . --intent auto --invocation-text "<current user request>" --json
 ```
 
 By default, `handoff` writes its durable artifact to
 `<repo-root>/docs/handoff.md`. Repos can override the directory with
 `<repo-root>/.agents/handoff-adapter.yaml`.
 
-Keep the handoff inside the repo-owned size and shape gate. Default to a
-signal target of 30-60 lines and treat 70 lines as the usual hard stop unless
-the repo names a different gate. If the current handoff approaches that range,
-preserve only information that changes the next action and spill durable detail
-before appending more prose. Multiple dated `## This Session (<date>)` sections
-are a hard diary smell. See `references/spill-targets.md` for the default spill
-destinations. Assume a competent next operator can follow one good link and
-infer stable repo defaults; do not restate those defaults just to feel safe.
-
-```bash
-# Required Tools: rg
-# Missing-binary protocol: ../../shared/references/binary-preflight.md
-# 1. current handoff and adjacent plan or roadmap context
-sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
-wc -l <resolved-handoff-artifact> 2>/dev/null || true
-if test -f <resolved-handoff-artifact>; then rg -n "^## This Session \\(" <resolved-handoff-artifact>; fi
-rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs charness-artifacts .agents
-
-# 2. current repo state
-git status --short
-git log --oneline -5
-
-# 3. current skill surfaces that change the next step
-rg --files skills/public docs
-```
-
-If the user referenced the handoff to resume work rather than refresh it, read
-the `Workflow Trigger` first and continue with that workflow.
+The planner resolves the adapter, summarizes the artifact, detects chunked
+routing triggers, lists `required_reads`, and names cheap `gate_packets`.
+For a bare direct skill invocation, add `--invoked-directly`; for a task-shaped
+invocation, pass the user's task text so the deterministic chunker can bypass.
+Open the listed reads using each entry's `base` before broader exploration.
+Treat deterministic gates as evidence for shape and freshness, then use
+judgment for the actual baton pass. The repo-owned size target is 30-60 lines;
+70 lines is the usual hard stop. Multiple dated `## This Session (<date>)`
+sections are a hard diary smell.
+Assume a competent next operator can follow one good link.
 
 ## Workflow
 
