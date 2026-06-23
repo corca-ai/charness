@@ -139,7 +139,7 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
         ],
         "next_action": {
             "command": command,
-            "execute_flag": "--execute writes the durable record only when acquisition succeeds or the route explicitly allows an honest partial record",
+            "execute_flag": "--execute writes the durable record when acquisition succeeds, when a route explicitly allows an honest partial record, or when an exact-source route reaches a terminal identity verdict",
             "stop_when": "typed blocked, unsupported, missing capability, or exact-source unavailable result answers the acquisition boundary",
         },
     }

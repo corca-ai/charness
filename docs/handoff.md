@@ -20,7 +20,11 @@
 - **Cautilus diagnostic artifact home shipped (#398).** Negative diagnostics live in `charness-artifacts/cautilus/<run-slug>/finding.md`; `latest.md` is passing proof only.
 - **Quality gate health review DONE** (2026-06-23): full read-only quality was 78/78 PASS in 38.7s; nose baseline is re-baselined to 0.15.0.
 - **Issue planner/core split DONE** (2026-06-24): `issue_tool.py plan` carries required/on-demand reads and gate packets; fresh-eye fixed target handling and brittle tests.
-- **Gather planner / Reddit source route SHIPPED** (2026-06-24): `gather_plan.py` fronts public URL gather; Reddit runs RSS -> JSON before raw page fallback, preserves typed verdicts, honors positive proof expectations, and has fresh-eye critique recorded in [2026-06-23-204121-packet.md](../charness-artifacts/critique/2026-06-23-204121-packet.md). Push cleanup extracted shared web-fetch helpers (`text_attempts`, `source_identity_lib`, `url_reader`) and re-baselined dup-ratchet after review.
+- **Gather planner / Reddit / exact-X terminal records SHIPPED** (2026-06-24):
+  `gather_plan.py` fronts public URL gather; Reddit uses RSS -> JSON; X/Twitter
+  status `exact-blocked` / `exact-unavailable` writes trace-only terminal records
+  while non-status X and generic blocked/degraded URLs do not refresh `latest.md`.
+  Critique: [2026-06-24-gather-exact-terminal-records.md](../charness-artifacts/critique/2026-06-24-gather-exact-terminal-records.md).
 - **Handoff planner-first closeout shipped (#396 closed).** `handoff` now starts through `plan_handoff_run.py`; staged current-pointer freshness covers current-pointer surfaces and `scripts/*.py`.
 - **Achieve closeout-shape issue closed (#387).** The A2 `describe_goal_closeout_shape.py --goal-path` change was already on `origin/main`; closeout evidence + manual fallback carrier verified #387 CLOSED.
 - **#399 closed externally.** GitHub shows #399 CLOSED as of 2026-06-23T23:04:19Z; do not treat it as the next open queue item.
@@ -28,23 +32,24 @@
 
 ## Next Session
 
-- **START HERE -- continue the skill-improvement sweep under `quality`.** Body-read #392 if continuing gather, or evaluate the next public-skill candidate after `achieve`/`handoff`.
+- **START HERE -- continue #392 under `quality`/`gather`.** Durable terminal
+  records are done; remaining work is richer verdict taxonomy
+  (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
+  exact-source acquisition route.
 - **Continue the same planner-first pattern.** `issue`, `release`, `gather`, `handoff`, and `achieve` closeout affordances now carry the pattern; neutral issue planner-use fixture is still deferred.
 - **Split remaining near-limit web-fetch helper before more route behavior:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py).
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Then use Cautilus to improve behavior.** Preserve intent while reducing wasted
   time/cost; diagnostic findings go through the #398 bundle path, not `latest.md`.
-- **Open issue queue:** #392 gather-X honest failure contract, #371 upstream
-  agent-browser cleanup.
+- **Open issue queue:** #392 gather-X acquisition/taxonomy, #371 agent-browser cleanup.
 
 ## Discuss
 
 - **Gate review follow-up:** add aggregate runtime budgets for
   `run-quality-read-only` and `check-duplicates` only after another drift sample.
-- **#392 scope:** much of the typed exact-X contract now exists for public URL
-  gather; body-read #392 and decide whether remaining work is real live/auth X
-  acquisition, documentation closeout, or issue closure.
+- **#392 scope:** typed durable terminal records exist; auth/browser/provider
+  states remain. Decide whether to handle in `support/web-fetch` or via #371.
 - **D31 still manual:** the chunker does not reconcile against recent commits, so
   pickup reads `git log` by hand to de-stale.
 

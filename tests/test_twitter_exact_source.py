@@ -267,6 +267,146 @@ def test_gather_record_surfaces_source_identity() -> None:
     assert "Source Identity: `exact-blocked`" in record
 
 
+def test_exact_source_terminal_record_predicate_rejects_non_terminal_shapes() -> None:
+    assert not gpu._is_exact_source_terminal_record({
+        "route": {"route_id": "twitter-syndication"},
+        "source_identity": "not-applicable",
+        "attempts": [],
+    })
+    assert not gpu._is_exact_source_terminal_record({
+        "route": {"route_id": "twitter-syndication"},
+        "source_identity": "exact-unavailable",
+        "attempts": None,
+    })
+
+
+def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
+    direct_file = tmp_path / "direct.html"
+    direct_file.write_text(
+        "<html><body>captcha DIRECT-CAPTCHA-BODY-SHOULD-NOT-PERSIST</body></html>",
+        encoding="utf-8",
+    )
+    endpoints = tes.build_endpoints({"handle": "acme", "status_id": SID})
+    seed_file = tmp_path / "seed.json"
+    seed_file.write_text(
+        json.dumps({endpoint["url"]: {"text": "captcha verify you are human"} for endpoint in endpoints}),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--url",
+            STATUS_URL,
+            "--direct-response-file",
+            str(direct_file),
+            "--domain-route-response-file",
+            str(seed_file),
+            "--browser-mode",
+            "off",
+            "--slug",
+            "blocked-twitter-exact",
+            "--date",
+            "2026-06-24",
+            "--execute",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["acquisition_disposition"] == "blocked"
+    assert payload["source_identity"] == "exact-blocked"
+    assert payload["content_persistence"] == "none"
+    record_path = Path(payload["write_record"]["record_artifact_path"])
+    record = record_path.read_text(encoding="utf-8")
+    assert "Source Identity: `exact-blocked`" in record
+    assert "Content Persistence: `none`" in record
+    assert "captcha verify you are human" not in record
+    assert "DIRECT-CAPTCHA-BODY-SHOULD-NOT-PERSIST" not in record
+    assert "<html>" not in record
+    assert "selected_content" not in record
+    assert "content_text" not in record
+    assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
+
+
+def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
+    direct_file = tmp_path / "direct.html"
+    direct_file.write_text(CAPTCHA, encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--url",
+            STATUS_URL,
+            "--direct-response-file",
+            str(direct_file),
+            "--browser-mode",
+            "off",
+            "--slug",
+            "unavailable-twitter-exact",
+            "--date",
+            "2026-06-24",
+            "--execute",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["acquisition_disposition"] == "degraded"
+    assert payload["source_identity"] == "exact-unavailable"
+    record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
+    assert "Source Identity: `exact-unavailable`" in record
+    assert "live-fetch-not-enabled" in record
+    assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
+
+
+def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> None:
+    direct_file = tmp_path / "direct.html"
+    direct_file.write_text(CAPTCHA, encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--url",
+            "https://x.com/acme",
+            "--direct-response-file",
+            str(direct_file),
+            "--browser-mode",
+            "off",
+            "--date",
+            "2026-06-24",
+            "--execute",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["source_identity"] == "exact-unavailable"
+    assert payload["write_record"] is None
+    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
 def test_gather_build_acquire_cmd_passes_through_exact_source_options() -> None:
     from argparse import Namespace
 

@@ -254,6 +254,24 @@ def _is_youtube_acquisition(acquisition: dict[str, object]) -> bool:
     ).startswith("youtube-")
 
 
+def _is_exact_source_terminal_record(acquisition: dict[str, object]) -> bool:
+    route = acquisition.get("route")
+    if not isinstance(route, dict) or route.get("route_id") != "twitter-syndication":
+        return False
+    if acquisition.get("source_identity") not in {"exact-blocked", "exact-unavailable"}:
+        return False
+    attempts = acquisition.get("attempts")
+    if not isinstance(attempts, list):
+        return False
+    for attempt in attempts:
+        if not isinstance(attempt, dict) or attempt.get("stage_id") != "domain-specific-route":
+            continue
+        details = attempt.get("details")
+        if isinstance(details, dict) and details.get("endpoint") and details.get("requested_status_id"):
+            return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
     parser.add_argument("--url", required=True, help="Public URL to gather")
@@ -280,7 +298,8 @@ def main() -> int:
     final_confidence = str(acquisition.get("final_confidence", "none"))
     content_persistence = _content_persistence(acquisition, requested=args.persist_extracted_content)
     should_write_partial = _is_youtube_acquisition(acquisition) and acquisition_disposition in {"blocked", "degraded"}
-    if acquisition_disposition != "success" and not should_write_partial:
+    should_write_terminal = _is_exact_source_terminal_record(acquisition)
+    if acquisition_disposition != "success" and not should_write_partial and not should_write_terminal:
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
             "reason": f"acquisition-{acquisition_disposition}",

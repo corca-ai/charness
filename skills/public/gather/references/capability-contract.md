@@ -176,6 +176,13 @@ attempt. This section stores readable extracted text or markdown, not raw
 HTML/API responses, and records the selected stage, format, character count,
 original character count, and truncation state.
 
-Blocked, degraded, or error acquisitions still do not refresh the durable
-gather pointer. Raw response persistence remains outside the default gather
-contract and needs a separate retention/redaction policy before being added.
+Generic blocked, degraded, or error acquisitions still do not refresh the
+durable gather pointer. Exact-source routes are narrower: when the route has
+proved that the requested source identity itself is terminally blocked or
+unavailable (for example X/Twitter `exact-blocked` or `exact-unavailable`),
+`gather_public_url.py --execute` may write an honest terminal-source record
+with no substituted content. That record is the durable acquisition result, not
+a successful content capture.
+
+Raw response persistence remains outside the default gather contract and needs a
+separate retention/redaction policy before being added.
