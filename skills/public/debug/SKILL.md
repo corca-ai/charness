@@ -20,58 +20,48 @@ untested repair story.
 
 ## Bootstrap
 
-Resolve the adapter first, then read the current debugging context.
+Resolve the adapter and run the planner before broad search, artifact edits, or
+repair.
 
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/plan_debug_run.py" --repo-root . --json
 python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root . --json
 ```
 
-By default, `debug` writes durable artifacts to `<repo-root>/charness-artifacts/debug/`. Each
-investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
-the directory with `<repo-root>/.agents/debug-adapter.yaml`.
-The scaffold helper emits the current pointer artifact, usually `latest.md`.
-When the investigation becomes durable history, preserve it as a dated record
-using the same core debug sections.
-Edit the scaffold payload's `write_artifact_path`, not `latest.md` by habit; it
-resolves a symlinked current pointer to its actual target.
+By default, `debug` writes durable artifacts to
+`<repo-root>/charness-artifacts/debug/`; repos can override the directory with
+`<repo-root>/.agents/debug-adapter.yaml`. The planner names the current artifact
+status, related prior incidents, seam-risk interrupt posture, required reads,
+on-demand reads, gate packets, and next action.
 
-The helper's JSON is the canonical artifact contract — it carries the safe write
-target, current-pointer role, required heading/section order, and the validator
-command for the installed Charness layout (consumer repos do not copy Charness
-validator scripts into their own `scripts/`). Use it instead of hand-typing the
-skeleton.
+Follow the planner's `next_action`. When it says to scaffold, use the scaffold
+helper JSON as the canonical artifact contract: it carries the safe write
+target, current-pointer role, required heading/section order, and validator
+command for the installed Charness layout. Edit the scaffold payload's
+`write_artifact_path`, not `latest.md` by habit; it resolves a symlinked current
+pointer to its actual target.
 
-Before stopping, run the `validator_command` emitted by the scaffold helper.
-Do not replace it with a guessed repo-local scripts path unless the emitted
-command already points there. The validator treats `latest.md` as the strict
-current schema and historical debug records as legacy debug memory; when a
-record fails, the error names the artifact path.
-
-Before writing a new artifact, read existing `debug-*.md` files in the output
-directory. If the current incident relates to a prior one, fill in the
-`## Related Prior Incidents` section with a filename reference and one-line
-summary.
+Before stopping, run the `validator_command` emitted by the scaffold helper or
+the planner's `debug-artifact-shape` packet. Do not replace it with a guessed
+repo-local scripts path unless the emitted command already points there. The
+validator treats `latest.md` as the strict current schema and historical debug
+records as legacy debug memory; when a record fails, the error names the
+artifact path.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
-# 1. recent context and adjacent contracts
-rg --files docs skills
-sed -n '1,220p' <resolved-debug-artifact> 2>/dev/null || true
-rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions" .
-
-# 2. existing debug notes, incident docs, or failure reports
+# After the planner's required reads, gather only the clues the diagnosis needs.
 rg -n "error|incident|debug|root cause|repro|stack trace|failure" .
-
-# 3. current runtime clues
 git status --short
 ```
 
-If a similar past debug artifact exists, read it first. Treat prior debug notes
-as codebase memory rather than as stale trivia.
+If the planner lists prior incidents, read the related ones before diagnosing.
+Treat prior debug notes as codebase memory rather than stale trivia, and record
+related incidents in the artifact when they shape the current hypothesis.
 
 ## Workflow
 
@@ -183,3 +173,4 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/disconfirmer-first.md`
 - `references/named-target-verification.md`
 - `../../shared/references/rca-ledger-append.md`
+- `scripts/plan_debug_run.py`

@@ -55,6 +55,41 @@
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "11aa7fc5349ece4a",
+      "note": "planner `_read` helper boilerplate repeated across portable skill-local planners; keep scripts directly executable until a shared planner runtime has enough users",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "29a1589acb6c49c6",
+      "note": "planner `_relative_script_command` helper boilerplate repeated across portable skill-local planners; a shared helper would be premature for this slice",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "50100becc7bcb4f6",
+      "note": "low-value missing-file guard shape rotated by the new debug planner; not extractable duplication",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "adfec76a6046c3f0",
+      "note": "planner required-read assembly boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cab093d2d1b8e627",
+      "note": "planner packet helper boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
+      "reviewed_at": "2026-06-24",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
