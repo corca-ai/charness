@@ -32,7 +32,10 @@
 
 ## Next Session
 
-- **START HERE -- continue #392 under `quality`/`gather`.** Durable terminal
+- **START HERE -- if continuing skill-improvement work, use #401.** Run the
+  improved `quality` skill against `retro`, `critique`, `spec`, and `impl` one
+  at a time; treat any `quality` miss as evidence about `quality` itself.
+- **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
   exact-source acquisition route.
@@ -42,7 +45,8 @@
   target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Then use Cautilus to improve behavior.** Preserve intent while reducing wasted
   time/cost; diagnostic findings go through the #398 bundle path, not `latest.md`.
-- **Open issue queue:** #392 gather-X acquisition/taxonomy, #371 agent-browser cleanup.
+- **Open issue queue:** #401 quality-led skill improvements, #392 gather-X
+  acquisition/taxonomy, #371 agent-browser cleanup.
 
 ## Discuss
 
