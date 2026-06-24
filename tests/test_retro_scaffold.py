@@ -41,6 +41,7 @@ def test_retro_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "## Sibling Search" in template
     assert "decision: valid follow-up outside the slice" in template
     assert "follow-up: deferred TODO-handoff-anchor" in template
+    assert "## Persisted\n\nPersisted: yes: TODO path" in template
 
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)

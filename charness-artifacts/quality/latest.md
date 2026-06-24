@@ -1,139 +1,134 @@
 # Quality Review
-Date: 2026-06-24
+Date: 2026-06-25
 
 ## Scope
 
-Evaluate and improve the next high-consequence skill through the `quality`
-lens. Candidate selected: `issue`, because it owns GitHub issue creation,
-resolution, closeout carriers, and external tracker state. Those boundaries are
-easy to over-claim if the agent follows prose memory instead of a helper-owned
-plan plus final readback.
+Review `retro` as the first skill in the handoff's #401 quality-led skill
+improvement sequence. Scope includes the public `retro` skill package, its
+persistence and memory seams, consumer dogfood expectations, focused retro tests,
+and any deterministic repo-gate failures discovered while running quality.
 
-No Cautilus evaluator run was performed for this slice. The change is a
-deterministic skill-surface improvement: planner packet, core compression,
-reference discoverability, and focused contract tests.
+No Cautilus evaluator run was performed. This was a deterministic skill-quality
+pass plus a bounded fresh-eye review; the user request did not provide a
+log-backed behavior source or maintained scenario-registry change.
 
 ## Current Gates
 
-- `issue_tool.py plan --intent new|resolve` now emits the run plan before issue reads, mutations, or closeout.
-- Focused issue tests pass: `tests/quality_gates/test_issue_skill.py` reports 25/25 passing.
-- Skill ergonomics inventory reports `issue` core non-empty lines at 69, down from 148 before the planner/core split.
-- Reference discoverability for `issue` is 0 unlisted reference files; the
-  reference list now explains each reference's role.
-- The remaining inventory heuristic is `portable_package_host_surface_reference`
-  from `.codex/issue-adapter.yaml` and `.claude/issue-adapter.yaml` fallback
-  paths in `resolve_adapter.py`; prose review disposition: intentional adapter
-  fallback, not portable-package debt for this slice.
+- `retro` core remains inside the skill ergonomics budget:
+  `core_nonempty_lines=140`, `reference_file_count=8`, `script_file_count=18`,
+  `unlisted_reference_files=[]`.
+- Consumer dogfood classifies `retro` as a persisted repeat-trap workflow:
+  expected skill `retro`, artifact `charness-artifacts/retro/recent-lessons.md`,
+  tier `hitl-recommended`, adapter `required`.
+- Focused retro/handoff proof passed after fixes: 27/27 focused tests.
+- Standing quality passed after fixes: 79/79 in 40.3s after the mutation
+  coverage producer refreshed the committed retro script change.
+- Handoff pickup planning is repaired: `docs/handoff.md` is 56 lines, status
+  `ok`, and pickup returns `follow_workflow_trigger`.
 
 ## Runtime Signals
 
-- runtime source: structured planner JSON from `issue_tool.py plan` and inventory JSON from `inventory_skill_ergonomics.py`.
-- runtime hot spots: unavailable; this slice did not collect timing samples beyond normal command completion.
-- coverage gate: focused issue tests passed 24/24; broad pytest is deferred to closeout.
-- evaluator depth: no Cautilus run; deterministic planner/skill gates only.
-- Mutation Tests run `28049447961` passed the old failing `Select mutation sample` step and is still in `Run mutation`.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
+  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
+- runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median, budget
+  90.0s; `pytest` 23.4s latest / 24.2s median, budget 140.0s; `check-coverage`
+  18.9s latest / 19.5s median, budget 55.0s; `check-duplicates` 10.0s latest /
+  11.9s median, unbudgeted.
+- coverage gate: `./scripts/run-quality.sh --read-only` passed 79/79 after the
+  handoff, scaffold, and mutation-coverage producer fixes.
+- evaluator depth: deterministic gates only; Cautilus was not triggered by this
+  quality review.
 
 ## Healthy
 
-- The `issue` skill already had real helper coverage: adapter preflight,
-  invocation parsing, issue read with comments, body-file create, milestone
-  resolution, brief path, close-with-comment, and closeout verification.
-- The new planner lets code do what code is good at: assemble adapter state,
-  target selection, required reads, trust/cost notes, and next action as
-  structured output.
-- The compressed `SKILL.md` keeps the trigger contract, GitHub source-of-truth
-  rule, intent split, classification routing, and irreversible-boundary warning
-  in core.
-- References are now role-described progressive disclosure rather than an
-  unexplained filename list.
+- `retro` has a concise-enough public core with progressive disclosure into
+  focused references for modes, section shape, phase-aware efficiency,
+  persistence, expert lenses, weekly trends, and sibling scans.
+- Persistence is script-owned through `persist_retro_artifact.py`, including
+  artifact writes, snapshot writes when configured, recent-lessons refresh, and
+  legacy summary protection.
+- Behavior proof exists around persistence, auto-trigger policy, artifact
+  validation, scaffold generation, host-log probing, and Codex session auditing.
+- Host-surface findings are mostly intentional adapter/evidence seams:
+  `.agents` is canonical, `.codex`/`.claude` are compatibility fallbacks, and
+  Codex-specific audit is optional evidence with unavailable/proxy semantics.
+- The handoff prune removed stale status lines already owned by quality,
+  release, operating-contract, or durable artifacts; no current next-session
+  queue item was lost.
 
 ## Weak
 
-- `issue_tool.py` is now within 36 lines of its Python file limit. The next CLI addition should register from a submodule.
-- The planner does not classify an issue body by itself; that stays judgment-owned for now.
-- Non-`gh` host-mediated issue backend behavior remains structurally tested, not
-  provider-roundtrip proven in this slice.
+- Fresh-eye review found one real retro defect: the scaffold emitted `yes: TODO
+  path` under `## Persisted`, while the skill/reference contract expects an
+  explicit `Persisted: yes...` or `Persisted: no...` statement. Fixed in
+  `scaffold_retro_artifact.py` and mirrored into `plugins/charness`.
+- A post-commit broad gate initially reported stale changed-line mutation
+  coverage for the retro script; `run_slice_closeout.py
+  --produce-mutation-coverage` refreshed it with `pytest -q
+  tests/test_retro_scaffold.py`, and the next broad gate passed
+  `check-changed-line-mutation-coverage`.
+- Existing length-band warnings remain outside this slice: `run_slice_closeout.py`,
+  `goal_artifact_lib.py`, `route_public_fetch.py`, and six test files are near
+  their hard line limits.
 
 ## Missing
 
-- Missing dogfood/evaluator fixture: `suggest_public_skill_dogfood.py --skill-id
-  issue` classifies `issue` as evaluator-required. The next behavior proof
-  should test whether a fresh session routes to `issue`, runs the planner, and
-  follows the planner's next action without being coached by the fixture.
-- Scenario review: existing `issue-146` / `issue-148` Cautilus fixtures cover
-  causal-review sibling search, not planner-first execution. Keep them unchanged
-  for this deterministic slice; add a neutral planner-use fixture later.
-- Held-out scenario eval passed 10/10 after updating representative issue core contract markers.
-- Missing planner adoption for adjacent high-consequence skills beyond
-  `quality`, `release`, and now `issue`.
+- No missing retro gate requiring immediate implementation remains after the
+  scaffold fix. A broader validator that enforces exact `Persisted:` prose for
+  all new retros may be useful, but existing historical fixtures use shorter
+  forms, so that would need a migration policy rather than this narrow fix.
 
 ## Deferred
 
-- Do not add a blocking length gate for `issue_tool.py` in this slice; the
-  existing Python length advisory already surfaces the headroom pressure.
-- Do not remove `.codex` / `.claude` adapter fallback paths just to satisfy the
-  inventory heuristic; those are host adapter seams, not accidental prose
-  leakage.
-- Do not run Cautilus until a neutral issue-skill fixture is written. A fixture
-  must not instruct the model to use the planner; it should observe whether the
-  loaded skill naturally does so.
+- Do not replace the optional `audit_codex_session.py` helper with a
+  provider-neutral wrapper in this slice. Defer until a third host needs the same
+  deep audit path or the compatibility fallback vocabulary starts leaking into
+  user-facing retro output.
+- Do not add a new blocking floor for exact persisted-line wording now; the
+  low-risk fix is scaffold training plus a targeted scaffold test.
 
 ## Advisory
 
-- command: `inventory_skill_ergonomics.py --skill-path skills/public/issue/SKILL.md --json`
-  reports `reference_file_count: 6`, `unlisted_reference_count: 0`, and `host_surface_reference_count: 2`.
-- prose review result: `prose_review_status=required` was satisfied for the
-  issue slice by reviewing trigger boundaries, progressive disclosure, helper
-  ownership, and remaining host-surface findings. The planner/core split is a
-  real ergonomic improvement; the host-surface findings are intentional adapter
-  fallback paths.
-- command: `suggest_public_skill_dogfood.py --skill-id issue --json` reports
-  `validation_tier: evaluator-required` and `adapter_requirement: required`.
+- command: `inventory_skill_ergonomics.py --repo-root . --json` reports
+  `retro` heuristic `portable_package_host_surface_reference` with eight hits.
+  Prose disposition: intentional adapter/evidence seams for this slice.
+- prose review result: the ergonomics inventory's `prose_review_status=required`
+  was satisfied by reviewing trigger boundaries, progressive disclosure,
+  persistence behavior, host-surface findings, and the fresh-eye scaffold issue.
+- command: `suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
+  reports persisted repeat-trap dogfood through `recent-lessons.md` and
+  `hitl-recommended` tier.
+- command: `./scripts/run-quality.sh --read-only` reports doc duplicate and code
+  clone advisories outside retro: one HITL/narrative Markdown family and one
+  multi-script small helper clone family.
 
 ## Delegated Review
 
-- executed: bounded fresh-eye review found and fixed the ignored `plan --intent resolve --target` flag, duplicate closeout on-demand ref, missing fresh-eye policy surfacing, and prose-shaped classification action test. Valid deferrals: neutral Cautilus fixture and non-`gh` provider roundtrip.
+- executed: bounded fresh-eye reviewer `019efbed-24bc-7630-9b1b-3d4ca511fa9e`
+  found the scaffold persisted-line defect, confirmed the host-surface advisory
+  is intentional/deferred, and confirmed the handoff prune is legitimate with no
+  obvious information loss.
+- Slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof
+  were not re-delegated because this slice did not redesign slow gates; runtime
+  data is reported as existing evidence only.
 
 ## Commands Run
 
-- `python3 skills/public/issue/scripts/issue_tool.py plan --repo-root . --intent resolve -- 399`
-- `python3 skills/public/issue/scripts/issue_tool.py plan --repo-root . --intent new`
-- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --skill-path skills/public/issue/SKILL.md --json`
-- `python3 scripts/check_skill_surface_preflight.py --repo-root . --path skills/public/issue/SKILL.md --preview-delta 0`
-- `python3 scripts/check_python_lengths.py --headroom --paths skills/public/issue/scripts/issue_tool.py skills/public/issue/scripts/issue_plan.py`
+- `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
+- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
+- `pytest -q tests/test_retro_scaffold.py tests/quality_gates/test_retro_skill.py tests/test_retro_artifact.py tests/quality_gates/test_retro_persistence.py tests/quality_gates/test_retro_auto_trigger.py tests/test_handoff_plan.py::test_handoff_plan_derives_refresh_and_pickup_from_invocation_text`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/check_changed_surfaces.py --repo-root .`
-- `python3 scripts/validate_skills.py --repo-root .`
-- `python3 scripts/validate_skill_ergonomics.py --repo-root .`
-- `python3 scripts/validate_packaging.py --repo-root .`
-- `python3 scripts/validate_packaging_committed.py --repo-root .`
-- `python3 scripts/validate_public_skill_validation.py --repo-root .`
-- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
-- `python3 scripts/check_doc_links.py --repo-root .`
-- `python3 scripts/check_command_docs.py --repo-root .`
-- `./scripts/check-markdown.sh`
-- `./scripts/check-secrets.sh`
-- `python3 scripts/check_skill_ownership_overlap.py --repo-root .`
-- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`
-- `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
-- `python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support`
-- `python3 scripts/validate_cautilus_proof.py --repo-root .`
-- `python3 scripts/validate_cautilus_diagnostics.py --repo-root .`
-- `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`
-- `python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --baseline-ref origin/main --output-dir /tmp/cautilus-held-out-issue-debug-2`
-
-Focused pytest result: `tests/quality_gates/test_issue_skill.py` passed 25/25.
-Focused closeout-discipline pytest result: issue closeout discipline plus issue skill tests passed 34/34.
-Python compile over public/support skill scripts passed.
+- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --produce-mutation-coverage --mutation-coverage-command "pytest -q tests/test_retro_scaffold.py"`
+- `./scripts/run-quality.sh --read-only`
 
 ## Recommended Next Gates
 
-- active Finish verification for the `issue` planner/core split, including
-  fresh-eye critique and closeout.
-- active Watch Mutation Tests run `28049447961`; if it succeeds or auto-closes
-  #399, verify #399 state. If it fails in the mutation step, treat that as a new
-  manifestation rather than the old sample-selection regression.
-- passive until a neutral fixture exists: evaluate issue-skill planner use without naming the planner in the prompt.
+- passive until a third host or repeated confusion appears: consider a
+  provider-neutral session-audit wrapper for optional deep host-log evidence.
+- passive because it needs migration policy: consider exact `Persisted:` wording
+  enforcement for future retro artifacts without breaking historical fixtures.
 
 ## History
 

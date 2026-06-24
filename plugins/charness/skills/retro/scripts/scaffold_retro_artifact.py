@@ -61,7 +61,7 @@ def render_template(*, title: str, date_text: str) -> str:
         ]
     )
     lines.extend(["## Next Improvements", "", "- workflow: TODO", "- capability: TODO", "- memory: TODO", ""])
-    lines.extend(["## Persisted", "", "yes: TODO path", ""])
+    lines.extend(["## Persisted", "", "Persisted: yes: TODO path", ""])
     return "\n".join(lines).rstrip() + "\n"
 
 
