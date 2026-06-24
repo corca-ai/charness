@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 71,
-  "indexed_artifact_count": 59,
+  "source_artifact_count": 72,
+  "indexed_artifact_count": 60,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 12,
+    "none": 13,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
-    "monitor": 55,
+    "monitor": 56,
     "none": 2
   },
   "entries": [
@@ -829,6 +829,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-25-issue-400-js-mutation-weight-gap.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-400-js-mutation-weight-gap",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
       "forced": false
     },
     {

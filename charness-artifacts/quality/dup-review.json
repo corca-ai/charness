@@ -90,6 +90,20 @@
       "note": "planner packet helper boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
       "reviewed_at": "2026-06-24",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6a30893cff8408ed",
+      "note": "standalone mutation CLI path resolver helpers; extracting this two-line helper adds import/bootstrap coupling for little value",
+      "reviewed_at": "2026-06-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "90efb4c0494f3e8d",
+      "note": "standalone JS mutation runner keeps a local stable hash helper to avoid script/package import bootstrap churn for a two-line deterministic sampler primitive",
+      "reviewed_at": "2026-06-25",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

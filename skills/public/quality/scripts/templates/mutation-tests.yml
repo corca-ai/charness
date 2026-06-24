@@ -150,6 +150,7 @@ jobs:
         shell: bash
         env:
           MUTATION_SAMPLE_FILES: ${{ steps.sample.outputs.sample_files }}
+          MUTATION_SAMPLE_SEED: ${{ github.run_id }}:${{ steps.plan.outputs.base_sha }}..${{ steps.plan.outputs.head_sha }}
           MUTATION_SCORE_BREAK: ${{ steps.adapter.outputs.score_break }}
         run: |
           set -o pipefail

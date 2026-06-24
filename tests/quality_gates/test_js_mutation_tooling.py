@@ -6,7 +6,10 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from scripts.run_js_mutation import (
+    JS_MUTATION_MUTANT_WEIGHTS,
     list_js_targets,
     remove_stale_report,
     select_js_targets,
@@ -60,6 +63,29 @@ def test_js_mutation_pool_is_agent_runtime_only() -> None:
     assert "plugins/charness/scripts/agent-runtime/run-local-eval-test.mjs" not in targets
 
 
+def test_js_mutation_weight_table_covers_every_pool_target() -> None:
+    assert set(JS_MUTATION_MUTANT_WEIGHTS) == set(list_js_targets(ROOT))
+    assert all(weight > 0 for weight in JS_MUTATION_MUTANT_WEIGHTS.values())
+
+
+def test_js_mutation_full_mode_rejects_unweighted_pool_target(tmp_path, monkeypatch) -> None:
+    target = tmp_path / "scripts" / "agent-runtime" / "new-runtime.mjs"
+    target.parent.mkdir(parents=True)
+    target.write_text("export const value = 1;\n", encoding="utf-8")
+    monkeypatch.delenv("MUTATION_JS_TARGETS", raising=False)
+
+    with pytest.raises(SystemExit, match="missing JS mutation mutant weights"):
+        select_js_targets(tmp_path, mode="full")
+
+
+def test_js_mutation_full_mode_rejects_non_positive_weight(monkeypatch) -> None:
+    monkeypatch.delenv("MUTATION_JS_TARGETS", raising=False)
+    monkeypatch.setitem(JS_MUTATION_MUTANT_WEIGHTS, "scripts/agent-runtime/contract-versions.mjs", 0)
+
+    with pytest.raises(SystemExit, match="non-positive JS mutation mutant weights"):
+        select_js_targets(ROOT, mode="full")
+
+
 def test_js_native_tests_import_every_mutated_agent_runtime_module() -> None:
     # The invariant is coverage: every mutated module must be imported by *some*
     # native test. Scan all tests/agent-runtime/*.test.mjs so the gate stays
@@ -84,8 +110,8 @@ def test_js_mutation_full_mode_samples_targets(monkeypatch) -> None:
     targets = select_js_targets(ROOT, mode="full")
 
     assert targets == [
-        "scripts/agent-runtime/build-skill-execution-observation.mjs",
         "scripts/agent-runtime/contract-versions.mjs",
+        "scripts/agent-runtime/skill-test-telemetry.mjs",
     ]
     assert set(targets) <= set(list_js_targets(ROOT))
 

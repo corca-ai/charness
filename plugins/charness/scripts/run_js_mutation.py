@@ -19,6 +19,7 @@ DEFAULT_MAX_FILES = 1
 DEFAULT_MAX_MUTANTS = 120
 JS_MUTATION_POOL = ("scripts/agent-runtime/*.mjs",)
 JS_MUTATION_MUTANT_WEIGHTS = {
+    "scripts/agent-runtime/build-skill-execution-observation.mjs": 473,
     "scripts/agent-runtime/codex-eval-runtime.mjs": 142,
     "scripts/agent-runtime/contract-versions.mjs": 5,
     "scripts/agent-runtime/extract-skill-experiment-input.mjs": 369,
@@ -74,14 +75,24 @@ def select_js_targets(repo_root: Path, *, mode: str) -> list[str]:
     targets = list_js_targets(repo_root)
     if mode == "dry-run":
         return targets
+    missing_weights = sorted(set(targets) - set(JS_MUTATION_MUTANT_WEIGHTS))
+    if missing_weights:
+        raise SystemExit(
+            "missing JS mutation mutant weights for: " + ", ".join(missing_weights)
+        )
+    non_positive_weights = sorted(path for path in targets if JS_MUTATION_MUTANT_WEIGHTS[path] <= 0)
+    if non_positive_weights:
+        raise SystemExit(
+            "non-positive JS mutation mutant weights for: " + ", ".join(non_positive_weights)
+        )
     max_files = positive_int(os.environ.get("MUTATION_JS_MAX_FILES"), DEFAULT_MAX_FILES)
     max_mutants = positive_int(os.environ.get("MUTATION_JS_MAX_MUTANTS"), DEFAULT_MAX_MUTANTS)
     seed = (os.environ.get("MUTATION_SAMPLE_SEED") or "default-js-mutation-seed").strip()
     selected: list[str] = []
     selected_mutants = 0
     for path in sorted(targets, key=lambda item: stable_hash(f"{seed}:{item}")):
-        weight = JS_MUTATION_MUTANT_WEIGHTS.get(path, 0)
-        if max_mutants and weight and selected_mutants + weight > max_mutants:
+        weight = JS_MUTATION_MUTANT_WEIGHTS[path]
+        if max_mutants and selected_mutants + weight > max_mutants:
             continue
         selected.append(path)
         selected_mutants += weight

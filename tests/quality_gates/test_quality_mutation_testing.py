@@ -368,6 +368,11 @@ def test_a4_template_rotates_scheduled_sample_seed() -> None:
     assert "MUTATION_SAMPLE_SEED: ${{ github.run_id }}:" in body
 
 
+def test_a4_template_reuses_sample_seed_for_mutation_run() -> None:
+    body = TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert body.count("MUTATION_SAMPLE_SEED: ${{ github.run_id }}:") == 2
+
+
 def test_a4_template_samples_only_full_runs_with_sample_command() -> None:
     body = TEMPLATE_PATH.read_text(encoding="utf-8")
     assert (
@@ -379,6 +384,11 @@ def test_a4_template_samples_only_full_runs_with_sample_command() -> None:
 def test_checked_in_mutation_workflow_rotates_scheduled_sample_seed() -> None:
     body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
     assert "MUTATION_SAMPLE_SEED: ${{ github.run_id }}:" in body
+
+
+def test_checked_in_mutation_workflow_reuses_sample_seed_for_mutation_run() -> None:
+    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    assert body.count("MUTATION_SAMPLE_SEED: ${{ github.run_id }}:") == 2
 
 
 def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command() -> None:
