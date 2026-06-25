@@ -31,15 +31,43 @@ INTERPRETATION = {
     "interpretation_question": "is this test-file / nested-CLI growth paying for real isolation and coverage value, or is it startup-cost waste THIS repo should consolidate?",
 }
 
+SUMMARY_FIELDS = (
+    "repo_root",
+    "summary_note",
+    "test_file_count",
+    "test_files_by_extension",
+    "runner_snippets",
+    "nested_cli_file_count",
+    "nested_cli_files_sample",
+    "pytest_temp_footprint",
+    "findings",
+    "interpretation",
+)
+SUMMARY_NESTED_CLI_SAMPLE_SIZE = 10
+SUMMARY_NOTE = "summary is triage output; use --json for full nested_cli_files attribution"
+
+
+def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
+    nested_cli_files = payload.get("nested_cli_files", [])
+    sample = nested_cli_files[:SUMMARY_NESTED_CLI_SAMPLE_SIZE] if isinstance(nested_cli_files, list) else []
+    payload_with_sample = dict(payload)
+    payload_with_sample["summary_note"] = SUMMARY_NOTE
+    payload_with_sample["nested_cli_files_sample"] = sample
+    return {field: payload_with_sample.get(field) for field in SUMMARY_FIELDS}
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-test economics inventory")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON for agent review instead of every nested-CLI path")
     args = parser.parse_args()
 
     payload = inventory(args.repo_root.resolve())
     payload["interpretation"] = dict(INTERPRETATION)
+    if args.summary:
+        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2))
+        return 0
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0

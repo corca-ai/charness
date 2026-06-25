@@ -1,1 +1,1 @@
-2026-06-25-test-speed-token-efficiency-quality-review.md
+2026-06-25-test-economics-summary-quality-review.md

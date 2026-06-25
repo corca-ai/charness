@@ -55,6 +55,37 @@ def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -
     }.issubset(finding_types)
 
 
+def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    for index in range(12):
+        (tests / f"test_case_{index}.py").write_text(
+            "import subprocess\n\n"
+            "def test_case():\n"
+            "    subprocess.run(['true'], check=True)\n",
+            encoding="utf-8",
+        )
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["nested_cli_file_count"] == 12
+    assert len(payload["nested_cli_files_sample"]) == 10
+    assert "nested_cli_files" not in payload
+    assert "--json" in payload["summary_note"]
+    assert {finding["type"] for finding in payload["findings"]} == {"nested_cli_fanout"}
+    assert payload["findings"][0]["severity"] == "advisory"
+    assert "interpretation" in payload
+
+
 def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
