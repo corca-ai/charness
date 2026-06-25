@@ -1,51 +1,42 @@
 from __future__ import annotations
 
 import getpass
-import importlib.util
 import json
 import os
 import re
 import stat
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
-
-def _load_discovery_lib() -> Any:
-    module_path = Path(__file__).resolve().with_name("standing_gate_discovery_lib.py")
-    spec = importlib.util.spec_from_file_location("standing_gate_discovery_lib", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-_DISCOVERY = _load_discovery_lib()
+sys.path.append(str(Path(__file__).resolve().parent))
+_DISCOVERY = __import__("standing_gate_discovery_lib")
+_MARKERS = __import__("surface_marker_lib")
 discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
+find_nested_cli_files = _MARKERS.nested_cli_files
+find_module_release_only_files = _MARKERS.module_release_only_files
 
 IGNORED_DIRS = {
     ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
     ".ruff_cache", ".venv", "charness-artifacts", "mutants", "node_modules", "vendor",
 }
 TEST_FILE_PATTERNS = (
-    "test_*.py",
-    "*_test.py",
-    "*.test.js",
-    "*.test.jsx",
-    "*.test.ts",
-    "*.test.tsx",
-    "*.spec.js",
-    "*.spec.jsx",
-    "*.spec.ts",
-    "*.spec.tsx",
+    ":(glob)**/test_*.py",
+    ":(glob)**/*_test.py",
+    ":(glob)**/*.test.js",
+    ":(glob)**/*.test.jsx",
+    ":(glob)**/*.test.ts",
+    ":(glob)**/*.test.tsx",
+    ":(glob)**/*.spec.js",
+    ":(glob)**/*.spec.jsx",
+    ":(glob)**/*.spec.ts",
+    ":(glob)**/*.spec.tsx",
 )
+FALLBACK_TEST_FILE_PATTERNS = tuple(pattern.removeprefix(":(glob)**/") for pattern in TEST_FILE_PATTERNS)
 TRANSPILE_EXTENSIONS = {".ts", ".tsx"}
-NESTED_CLI_RE = re.compile(
-    r"\b(subprocess\.(?:run|check_call|check_output|Popen)|spawnSync|execFileSync|execSync|spawn\(|execa\()"
-)
 NODE_TEST_RE = re.compile(r"(?:^|\s)node\b[^\n]*(?:^|\s)--test(?:\s|$)")
 TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
 PYTEST_SESSION_RE = re.compile(r"^pytest-\d+$")
@@ -82,36 +73,23 @@ def _is_ignored(path: Path) -> bool:
 
 def _test_files(repo_root: Path) -> list[Path]:
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", *TEST_FILE_PATTERNS],
         cwd=repo_root,
         check=False,
         capture_output=True,
     )
     if result.returncode == 0:
-        candidates = [repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
         return sorted(
             path
-            for path in candidates
-            if path.is_file() and any(path.match(pattern) for pattern in TEST_FILE_PATTERNS)
+            for rel in result.stdout.split(b"\0")
+            if rel and (path := repo_root / rel.decode("utf-8")).is_file()
         )
-    files: dict[Path, None] = {}
-    for pattern in TEST_FILE_PATTERNS:
-        for path in repo_root.rglob(pattern):
-            if path.is_file() and not _is_ignored(path.relative_to(repo_root)):
-                files[path] = None
-    return sorted(files)
-
-
-def _nested_cli_files(repo_root: Path, test_files: list[Path]) -> list[str]:
-    matches: list[str] = []
-    for path in test_files:
-        try:
-            text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        if NESTED_CLI_RE.search(text):
-            matches.append(path.relative_to(repo_root).as_posix())
-    return matches
+    return sorted({
+        path
+        for pattern in FALLBACK_TEST_FILE_PATTERNS
+        for path in repo_root.rglob(pattern)
+        if path.is_file() and not _is_ignored(path.relative_to(repo_root))
+    })
 
 
 def _runner_snippets(repo_root: Path) -> list[dict[str, str]]:
@@ -152,22 +130,13 @@ def _iter_file_stats(path: Path):
                 yield child_stat
 
 
-def _dir_size_bytes(path: Path) -> int:
-    if (apparent := _du_bytes(path, "-sb")) is not None:
-        return apparent
-
-    return sum(child_stat.st_size for child_stat in _iter_file_stats(path))
-
-
-def _dir_disk_bytes(path: Path) -> int:
-    if (disk := _du_bytes(path, "-sB1")) is not None:
-        return disk
-
-    return sum(child_stat.st_blocks * 512 for child_stat in _iter_file_stats(path))
-
-
 def _dir_usage(path: Path) -> dict[str, int]:
-    return {"bytes": _dir_size_bytes(path), "disk_bytes": _dir_disk_bytes(path)}
+    apparent = _du_bytes(path, "-sb")
+    disk = _du_bytes(path, "-sB1")
+    return {
+        "bytes": apparent if apparent is not None else sum(item.st_size for item in _iter_file_stats(path)),
+        "disk_bytes": disk if disk is not None else sum(item.st_blocks * 512 for item in _iter_file_stats(path)),
+    }
 
 def _pytest_temp_root() -> Path:
     base = Path(os.environ.get("PYTEST_DEBUG_TEMPROOT") or tempfile.gettempdir())
@@ -276,8 +245,8 @@ def _pytest_temp_footprint() -> dict[str, Any]:
         "session_count": len(sessions),
         "session_names": [path.name for path in sessions],
         "worker_dir_count": worker_count,
-        "total_bytes": _dir_size_bytes(root),
-        "total_disk_bytes": _dir_disk_bytes(root),
+        "total_bytes": _dir_usage(root)["bytes"],
+        "total_disk_bytes": _dir_usage(root)["disk_bytes"],
         "seed_totals": seed_totals,
         "top_test_dirs": top_tests[:10],
     }
@@ -292,7 +261,12 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     snippets = _runner_snippets(repo_root)
     node_test_snippets = [item for item in snippets if NODE_TEST_RE.search(item["snippet"])]
     ts_loader_snippets = [item for item in snippets if TS_LOADER_RE.search(item["snippet"])]
-    nested_cli_files = _nested_cli_files(repo_root, test_files)
+    nested_cli_files = find_nested_cli_files(repo_root, test_files)
+    nested_cli_release_only_files = find_module_release_only_files(repo_root, nested_cli_files)
+    nested_cli_release_only_set = set(nested_cli_release_only_files)
+    nested_cli_standing_or_mixed_files = [
+        path for path in nested_cli_files if path not in nested_cli_release_only_set
+    ]
     pytest_temp = _pytest_temp_footprint()
     findings: list[dict[str, Any]] = []
     if len(test_files) >= 50:
@@ -326,12 +300,19 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             }
         )
     if nested_cli_files:
+        standing_sample = ", ".join(nested_cli_standing_or_mixed_files[:5]) or "none"
+        release_only_sample = ", ".join(nested_cli_release_only_files[:5]) or "none"
         findings.append(
             {
                 "type": "nested_cli_fanout",
                 "severity": "advisory",
                 "message": "Tests spawn nested processes inside the standing suite.",
-                "evidence": ", ".join(nested_cli_files[:10]),
+                "evidence": (
+                    f"{len(nested_cli_standing_or_mixed_files)} standing/mixed file(s), "
+                    f"{len(nested_cli_release_only_files)} module-release-only file(s); "
+                    f"standing/mixed sample: {standing_sample}; "
+                    f"module-release-only sample: {release_only_sample}"
+                ),
                 "recommended_action": "Keep a small real-binary smoke and move repeated contract proof in-process where honest.",
             }
         )
@@ -354,6 +335,10 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         "runner_snippets": snippets,
         "nested_cli_file_count": len(nested_cli_files),
         "nested_cli_files": nested_cli_files,
+        "nested_cli_release_only_file_count": len(nested_cli_release_only_files),
+        "nested_cli_release_only_files": nested_cli_release_only_files,
+        "nested_cli_standing_or_mixed_file_count": len(nested_cli_standing_or_mixed_files),
+        "nested_cli_standing_or_mixed_files": nested_cli_standing_or_mixed_files,
         "pytest_temp_footprint": pytest_temp,
         "findings": findings,
     }

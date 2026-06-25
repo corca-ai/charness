@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import getpass
 import importlib.util
 import json
@@ -9,14 +10,35 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import yaml
+
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_standing_test_economics.py"
 LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "standing_test_economics_lib.py"
+SURFACE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "surface_marker_lib.py"
 
 
 def _load_inventory_lib() -> ModuleType:
     spec = importlib.util.spec_from_file_location("standing_test_economics_lib_for_test", LIB)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_surface_marker_lib() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("surface_marker_lib_for_test", SURFACE_LIB)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_inventory_cli() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("inventory_standing_test_economics_for_test", SCRIPT)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -78,12 +100,142 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
     payload = json.loads(result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
+    assert payload["nested_cli_release_only_file_count"] == 0
+    assert payload["nested_cli_standing_or_mixed_file_count"] == 12
     assert len(payload["nested_cli_files_sample"]) == 10
+    assert len(payload["nested_cli_standing_or_mixed_files_sample"]) == 10
     assert "nested_cli_files" not in payload
+    assert "nested_cli_standing_or_mixed_files" not in payload
     assert "--json" in payload["summary_note"]
     assert {finding["type"] for finding in payload["findings"]} == {"nested_cli_fanout"}
     assert payload["findings"][0]["severity"] == "advisory"
     assert "interpretation" in payload
+
+
+def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    for index in range(12):
+        (tests / f"test_case_{index}.py").write_text(
+            "import subprocess\n\n"
+            "def test_case():\n"
+            "    subprocess.run(['true'], check=True)\n",
+            encoding="utf-8",
+        )
+
+    json_result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    yaml_result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary-yaml"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = yaml.safe_load(yaml_result.stdout)
+
+    assert payload["nested_cli_file_count"] == 12
+    assert payload["nested_cli_standing_or_mixed_file_count"] == 12
+    assert "nested_cli_files" not in payload
+    assert len(yaml_result.stdout.encode("utf-8")) < len(json_result.stdout.encode("utf-8"))
+
+
+def test_standing_test_economics_summary_yaml_reports_missing_pyyaml(monkeypatch) -> None:
+    cli = _load_inventory_cli()
+    original_import = builtins.__import__
+
+    def missing_yaml_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("missing yaml")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", missing_yaml_import)
+
+    try:
+        cli._dump_yaml({"ok": True})
+    except SystemExit as exc:
+        assert "PyYAML is required for --summary-yaml" in str(exc)
+    else:
+        raise AssertionError("expected missing PyYAML to raise SystemExit")
+
+
+def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    (tests / "test_module_release_only.py").write_text(
+        "import pytest\nimport subprocess\n\n"
+        "pytestmark = pytest.mark.release_only\n\n"
+        "def test_case():\n"
+        "    subprocess.run(['true'], check=True)\n",
+        encoding="utf-8",
+    )
+    (tests / "test_mixed_release_only.py").write_text(
+        "import pytest\nimport subprocess\n\n"
+        "@pytest.mark.release_only\n"
+        "def test_release_case():\n"
+        "    subprocess.run(['true'], check=True)\n\n"
+        "def test_standing_case():\n"
+        "    assert True\n",
+        encoding="utf-8",
+    )
+    (tests / "test_standing.py").write_text(
+        "import subprocess\n\n"
+        "def test_case():\n"
+        "    subprocess.run(['true'], check=True)\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["nested_cli_file_count"] == 3
+    assert payload["nested_cli_release_only_file_count"] == 1
+    assert payload["nested_cli_release_only_files_sample"] == ["tests/test_module_release_only.py"]
+    assert payload["nested_cli_standing_or_mixed_file_count"] == 2
+    assert payload["nested_cli_standing_or_mixed_files_sample"] == [
+        "tests/test_mixed_release_only.py",
+        "tests/test_standing.py",
+    ]
+    assert "nested_cli_release_only_files" not in payload
+
+
+def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) -> None:
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    nested_path = repo / "test_nested.py"
+    release_path = repo / "test_release.py"
+    nested_path.write_text("import subprocess\nsubprocess.run(['true'])\n", encoding="utf-8")
+    release_path.write_text("pytestmark = pytest.mark.release_only\n", encoding="utf-8")
+
+    original_read_text = Path.read_text
+
+    def flaky_read_text(path: Path, *args, **kwargs):
+        if path == nested_path:
+            raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "bad byte")
+        if path == release_path:
+            raise OSError("gone")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", flaky_read_text)
+
+    assert lib.nested_cli_files(repo, [nested_path]) == []
+    assert lib.module_release_only_files(repo, [release_path.name]) == []
 
 
 def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -> None:
