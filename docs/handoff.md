@@ -42,8 +42,9 @@
 - **Split remaining near-limit web-fetch helper before more route behavior:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py).
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
-- **Open issue queue:** #401 continues with `critique`/`spec`/`impl`, #392
-  gather-X acquisition/taxonomy, #371 agent-browser cleanup.
+- **Open issue queue:** #392 gather-X acquisition/taxonomy, #371 agent-browser
+  cleanup. #401 is ready for release-linked closeout; keep `spec`/`impl`
+  evaluator-backed dogfood as a later behavior-proof lane, not as #401 scope.
 
 ## Discuss
 
