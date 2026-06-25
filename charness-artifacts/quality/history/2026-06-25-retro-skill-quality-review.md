@@ -24,10 +24,8 @@ log-backed behavior source or maintained scenario-registry change.
   expected skill `retro`, artifact `charness-artifacts/retro/recent-lessons.md`,
   tier `hitl-recommended`, adapter `required`.
 - Focused retro/handoff proof passed after fixes: 27/27 focused tests.
-- Standing quality passed after fixes: 79/79 in 40.3s after the mutation
-  coverage producer refreshed the committed retro script change.
-- Handoff pickup planning is repaired: `docs/handoff.md` is 56 lines, status
-  `ok`, and pickup returns `follow_workflow_trigger`.
+- Standing quality passed after fixes: 79/79 in 44.6s; handoff pickup is
+  repaired at 59 lines, `status=ok`, `follow_workflow_trigger`.
 
 ## Runtime Signals
 
@@ -38,7 +36,7 @@ log-backed behavior source or maintained scenario-registry change.
   18.9s latest / 19.5s median, budget 55.0s; `check-duplicates` 10.0s latest /
   11.9s median, unbudgeted.
 - coverage gate: `./scripts/run-quality.sh --read-only` passed 79/79 after the
-  handoff, scaffold, and mutation-coverage producer fixes.
+  scaffold, mutation-coverage producer, and handoff near-limit fixes.
 - evaluator depth: deterministic gates only; Cautilus was not triggered by this
   quality review.
 
@@ -70,6 +68,8 @@ log-backed behavior source or maintained scenario-registry change.
   --produce-mutation-coverage` refreshed it with `pytest -q
   tests/test_retro_scaffold.py`, and the next broad gate passed
   `check-changed-line-mutation-coverage`.
+- This rerun initially failed the handoff pickup planner test at 70 lines
+  (`near_limit`); pruning stale status detail restored pickup routing.
 - Existing length-band warnings remain outside this slice: `run_slice_closeout.py`,
   `goal_artifact_lib.py`, `route_public_fetch.py`, and six test files are near
   their hard line limits.
@@ -83,10 +83,8 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Deferred
 
-- Do not replace the optional `audit_codex_session.py` helper with a
-  provider-neutral wrapper in this slice. Defer until a third host needs the same
-  deep audit path or the compatibility fallback vocabulary starts leaking into
-  user-facing retro output.
+- Do not replace optional `audit_codex_session.py` with a provider-neutral wrapper
+  until a third host or user-facing compatibility leak appears.
 - Do not add a new blocking floor for exact persisted-line wording now; the
   low-risk fix is scaffold training plus a targeted scaffold test.
 
@@ -110,10 +108,10 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Delegated Review
 
-- executed: bounded fresh-eye reviewer `019efbed-24bc-7630-9b1b-3d4ca511fa9e`
-  found the scaffold persisted-line defect, confirmed the host-surface advisory
-  is intentional/deferred, and confirmed the handoff prune is legitimate with no
-  obvious information loss.
+- executed: bounded fresh-eye reviewers found the scaffold persisted-line defect
+  (`019efbed-24bc-7630-9b1b-3d4ca511fa9e`) and confirmed this rerun's handoff
+  prune + quality artifact update have no Act Before Ship items
+  (`019efc73-4832-7a33-8490-5e646960897c`).
 - Slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof
   were not re-delegated because this slice did not redesign slow gates; runtime
   data is reported as existing evidence only.
@@ -124,7 +122,8 @@ log-backed behavior source or maintained scenario-registry change.
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
 - `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
 - `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
-- `pytest -q tests/test_retro_scaffold.py tests/quality_gates/test_retro_skill.py tests/test_retro_artifact.py tests/quality_gates/test_retro_persistence.py tests/quality_gates/test_retro_auto_trigger.py tests/test_handoff_plan.py::test_handoff_plan_derives_refresh_and_pickup_from_invocation_text`
+- focused retro suite plus handoff planner proof: 27/27; pickup planner returned
+  `follow_workflow_trigger`.
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --produce-mutation-coverage --mutation-coverage-command "pytest -q tests/test_retro_scaffold.py"`
 - `./scripts/run-quality.sh --read-only`
