@@ -17,7 +17,7 @@ plus bounded fresh-eye review, with no log-backed behavior source.
 ## Current Gates
 
 - `retro` core remains inside the skill ergonomics budget:
-  `core_nonempty_lines=146`, `reference_file_count=9`, `script_file_count=19`,
+  `core_nonempty_lines=146`, `reference_file_count=9`, `script_file_count=20`,
   `unlisted_reference_files=[]`.
 - Consumer dogfood classifies `retro` as persisted repeat-trap workflow:
   `recent-lessons.md`, `hitl-recommended`, adapter `required`.
@@ -57,8 +57,8 @@ plus bounded fresh-eye review, with no log-backed behavior source.
 
 ## Weak
 
-- Fresh-eye found and fixed one real retro defect: scaffold output used
-  `yes: TODO path` under `## Persisted`, not explicit `Persisted: ...`.
+- Prior closeout overstated the scaffold persisted-line finding: current scaffold
+  uses allowed form `Persisted: yes: TODO path`; exact enforcement stays deferred.
 - Current broad gate still reports stale changed-line mutation coverage for 13
   changed mutation-pool files; warning is non-blocking and remains active.
 - This rerun initially failed the handoff pickup planner test at 70 lines
@@ -106,7 +106,7 @@ plus bounded fresh-eye review, with no log-backed behavior source.
 
 ## Delegated Review
 
-- executed: bounded fresh-eye reviewers found the scaffold persisted-line defect
+- executed: bounded fresh-eye reviewers reviewed the scaffold persisted-line concern
   (`019efbed-24bc-7630-9b1b-3d4ca511fa9e`) and confirmed the clone patch; current
   reviewer `019efcb0-840b-7c92-b587-a1d1c026311f` flagged the live mutation
   coverage warning above.
