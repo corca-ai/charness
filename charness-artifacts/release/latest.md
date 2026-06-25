@@ -3,12 +3,12 @@ Date: 2026-06-25
 
 ## Scope
 
-Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-owned release helper.
+Advanced `charness` toward release `0.56.0` (tag `v0.56.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.55.1`
-- target version: `0.55.2`
+- previous version: `0.55.2`
+- target version: `0.56.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,26 +17,18 @@ Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.55.2`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.56.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v0.55.2`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
@@ -51,42 +43,51 @@ Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 3.
+- Path hits: 13.
+  - `skills/support/web-fetch/SKILL.md`
+  - `skills/support/web-fetch/capability.json`
   - `skills/support/web-fetch/references/routing-table.md`
+  - `skills/support/web-fetch/references/runtime-contract.md`
   - `skills/support/web-fetch/scripts/acquire_public_url.py`
-  - `skills/support/web-fetch/scripts/twitter_exact_source.py`
-- Evaluated changed paths: 46.
+  - `skills/support/web-fetch/scripts/acquire_public_url_policy.py`
+  - `skills/support/web-fetch/scripts/acquisition_trace_lib.py`
+  - `skills/support/web-fetch/scripts/classify_fetch_response.py`
+  - `skills/support/web-fetch/scripts/impersonated_fetch_stage.py`
+  - `skills/support/web-fetch/scripts/patchright_headless_stage.py`
+  - `skills/support/web-fetch/scripts/route_public_fetch.py`
+  - `skills/support/web-fetch/scripts/route_stage_catalog.py`
+  - `skills/support/web-fetch/scripts/text_attempts.py`
+- Evaluated changed paths: 69.
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-06-25-065759-packet.json`
-  - `charness-artifacts/critique/2026-06-25-065759-packet.md`
-  - `charness-artifacts/critique/2026-06-25-071201-packet.json`
-  - `charness-artifacts/critique/2026-06-25-071201-packet.md`
-  - `charness-artifacts/critique/2026-06-25-issue-392-x-twitter-source-resolution.md`
-  - `charness-artifacts/critique/2026-06-25-issue-403-create-closeout-summary.md`
-  - `charness-artifacts/debug/2026-06-25-issue-402-mutation-report-secondary-missing.md`
-  - `charness-artifacts/debug/seam-risk-index.json`
-  - `charness-artifacts/gather/2026-06-25-x-com-jenzhuscott-status-2063032701087883647-source-resolution.md`
+  - `charness-artifacts/critique/2026-06-25-211733-packet.json`
+  - `charness-artifacts/critique/2026-06-25-211733-packet.md`
+  - `charness-artifacts/critique/2026-06-26-v0-56-0-release-critique.md`
+  - `charness-artifacts/gather/2026-06-25-sebastianraschka-com-llm-architecture-gallery-de5f67f8.md`
   - `charness-artifacts/gather/latest.md`
-  - `charness-artifacts/issue/2026-06-25-issue-392-closeout-commit-message.md`
-  - `charness-artifacts/issue/2026-06-25-issue-403-closeout-draft.md`
+  - `charness-artifacts/quality/2026-06-25-nested-cli-release-only-yaml-quality-review.md`
+  - `charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md`
+  - `charness-artifacts/quality/2026-06-25-test-economics-summary-quality-review.md`
+  - `charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md`
   - `charness-artifacts/quality/dup-ratchet-baseline.json`
+  - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/quality/nose-baseline.json`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md`
-  - `docs/gather-provider-ownership.md`
-  - `docs/public-skill-dogfood.json`
+  - `charness-artifacts/release/v0.56.0-notes.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
-  - ... 26 more
+  - `plugins/charness/.codex-plugin/plugin.json`
+  - `plugins/charness/scripts/run_standing_pytest.py`
+  - `plugins/charness/skills/quality/references/attention-state-visibility.json`
+  - ... 49 more
 
 ## Real-Host Verification
 
-- Configured real-host verification completed after publication with the proof recorded below.
-- Caveat: `python3 scripts/doctor.py --repo-root . --json` returned `doctor_status: ok` for all 15 tool records, with advisory update notices for `agent-browser` and `gh`, and one non-blocking `vulture` release metadata lookup timeout.
+- This slice still requires configured real-host verification before the release is fully closed.
 
 ## Real-Host Proof
 
@@ -99,45 +100,13 @@ Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-own
 - Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
 - Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
-### Executed Real-Host Proof
+## Review Proof
 
-- `charness update` completed during release publish with `VERSION: 0.55.1 -> 0.55.2` and refreshed Codex/Claude install surfaces.
-- `python3 scripts/doctor.py --repo-root . --json` returned 15 tool records and no non-`ok` `doctor_status` values.
-- `charness tool doctor nose --json --no-write-locks` detected `nose 0.15.0` at `/home/hwidong/.cargo/bin/nose`; `doctor_status: ok`, `doctor_disposition: ready`, and upstream latest `v0.15.0`.
-- `charness tool install nose --dry-run --json` reported the manifest-supported upstream installer path `https://github.com/corca-ai/nose/releases/latest/download/nose-cli-installer.sh`; no install was needed because `nose` was already present and current.
-- `nose --version` returned `nose 0.15.0`.
-- `charness tool sync-support nose --json` reported `status: skipped`, `reason: integration has no support_skill_source`; `nose` remains integration-only rather than a materialized support skill.
-- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` returned `status: clean`, `exit_code: 0`, `family_count: 0`, `total_dup_lines: 0`, with advisory interpretation only.
-
-## Review Status
-
-- Fresh-eye release critique proof was not recorded.
-- Boundary disposition: publish used `--critique-blocked 'Host runtime exposes no Agent or Workflow tool for bounded fresh-eye release critique in this turn'`; do not treat this as a completed independent release critique.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.55.2`.
+- Review proof: `charness-artifacts/critique/2026-06-26-v0-56-0-release-critique.md`.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.55.1 -> 0.55.2
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.55.1 -> 0.55.2
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
-CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
-CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Fresh Checkout Probes
 
@@ -148,7 +117,7 @@ CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code t
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
