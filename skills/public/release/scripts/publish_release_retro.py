@@ -104,7 +104,7 @@ def _retro_trigger_markdown(
         "",
         "## Persisted",
         "",
-        f"Persisted: yes `{artifact_path}`",
+        f"Persisted: yes: {artifact_path}",
     ]
     return "\n".join(lines)
 

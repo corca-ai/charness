@@ -114,6 +114,6 @@ def test_publish_release_retro_trigger_includes_helper_generated_release_paths(t
     assert retro_payload["closeout"]["status"] == "written"
     artifact_path = repo / retro_payload["closeout"]["artifact_path"]
     assert artifact_path.is_file()
-    assert "Release publish triggered a configured automatic session retro" in artifact_path.read_text(
-        encoding="utf-8"
-    )
+    artifact_text = artifact_path.read_text(encoding="utf-8")
+    assert "Release publish triggered a configured automatic session retro" in artifact_text
+    assert f"Persisted: yes: {retro_payload['closeout']['artifact_path']}" in artifact_text
