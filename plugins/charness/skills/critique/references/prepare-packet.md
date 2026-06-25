@@ -22,9 +22,10 @@ The prepare runner fires when:
 - the runner is invoked explicitly via
   `python3 skills/public/critique/scripts/prepare_packet.py --repo-root .`
 
-The runner does not fire automatically inside the `critique` workflow
-today. Critique consumes a packet that the parent (or a previous turn)
-already produced; see the *Consumer Contract* below.
+The `critique` bootstrap runs the runner before spawning reviewers when the
+adapter declares sections. Parent workflows may still prepare a packet earlier,
+but they must pass the packet path/body through and record the consumed path
+rather than silently relying on stale context.
 
 ## Envelope
 
@@ -162,9 +163,9 @@ Consumers add more sections in their own `.agents/critique-adapter.yaml`.
 
 When `critique` runs and the repo's adapter declares ≥1 packet section:
 
-1. The fresh-eye reviewer subagents receive the packet content
-   (markdown render) before broad repo sampling. The parent passes the
-   packet path or the packet body in the angle/counterweight prompts.
+1. The bootstrap produces a packet when the adapter declares sections, or the
+   parent passes an already-produced packet path/body through. The fresh-eye
+   reviewer subagents receive the markdown render before broad repo sampling.
 2. The critique closeout records `Packet Consumed: <path>` plus reviewer-tier
    evidence: requested tier, requested spawn fields, host exposure state, and
    applied-evidence boundary. The
@@ -175,9 +176,9 @@ When `critique` runs and the repo's adapter declares ≥1 packet section:
    global `validate_critique_packet_consumed.py`. Critique itself
    writes results into the caller's artifact, so there is no canonical
    critique-output file for a global validator to scan.
-3. The critique skill does not re-run the prepare runner inside its
-   own workflow. The packet is produced upstream (by the caller or a
-   previous turn) so the prepare cost is not paid twice.
+3. If a parent produced the packet earlier for a specific changed ref, critique
+   consumes that packet instead of regenerating a weaker working-tree packet.
+   Otherwise critique runs the helper once for the current review target.
 
 When the adapter declares no `packet_sections`, this contract is dormant
 and critique behavior is unchanged.

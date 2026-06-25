@@ -78,8 +78,8 @@ prepare runner once before spawning angle subagents (see `references/prepare-pac
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg -n "spec|decision|follow-up|non-goal|out of scope|acceptance|risk|rename|delete|remove|migration" .
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root . 2>/dev/null || true
-python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>" 2>/dev/null || true
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>"
 ```
 
 If a current spec, plan, PR proposal, issue, diff, or release artifact already

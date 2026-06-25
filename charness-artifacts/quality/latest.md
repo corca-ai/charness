@@ -1,1 +1,1 @@
-history/2026-06-25-retro-skill-quality-review.md
+history/2026-06-25-critique-skill-quality-review.md

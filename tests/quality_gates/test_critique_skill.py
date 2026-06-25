@@ -18,6 +18,9 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     counterweight_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "counterweight-triage.md"
     ).read_text(encoding="utf-8")
+    packet_text = (
+        ROOT / "skills" / "public" / "critique" / "references" / "prepare-packet.md"
+    ).read_text(encoding="utf-8")
     autonomous_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "autonomous-trigger.md"
     ).read_text(encoding="utf-8")
@@ -82,6 +85,10 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "changed files and owning/generated surfaces" in cadence_text
     assert "Counterweight triage stays mandatory" in cadence_text
     assert "`references/cadence.md`" in skill_text
+    assert 'python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root .' in skill_text
+    assert 'prepare_packet.py" --repo-root . --prepared-for "<short label>" 2>/dev/null || true' not in skill_text
+    assert "The `critique` bootstrap runs the runner before spawning reviewers" in packet_text
+    assert "does not fire automatically inside the `critique` workflow" not in packet_text
     for risk_class in (
         "workflow",
         "prompt",
