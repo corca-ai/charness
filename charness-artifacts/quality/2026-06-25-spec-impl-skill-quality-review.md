@@ -78,9 +78,10 @@ are not `spec` or `impl` target findings.
   contract from repo truth, which is not currently a helper-owned packet. `impl`
   already has adapter and verification survey helpers. No reference in either
   target became a competing workflow.
-- prose review result: both target cores own selection and sequencing. Command:
+- prose review result: both target cores own selection and sequencing; command:
   target SKILL/reference read plus bounded reviewer
-  `019efd32-57bc-7123-bcb1-eff03a2a2f3a`. The target references deepen chosen
+  `019efd32-57bc-7123-bcb1-eff03a2a2f3a`. The `prose_review_status` inventory
+  signal was consumed as required judgment, not proof. Target references deepen
   phases. `impl` host-surface hits are intentional compatibility and
   installed-skill lookup seams, not immediate portability debt, but they should
   remain visible in future reviews.
@@ -136,5 +137,4 @@ are not `spec` or `impl` target findings.
   an allowed behavior-source log.
 
 ## History
-
 - [critique skill quality review](history/2026-06-25-critique-skill-quality-review.md)

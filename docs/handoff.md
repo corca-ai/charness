@@ -13,14 +13,9 @@
 
 ## Current State
 
-- **Local #401 skill-improvement bundle is committed locally but not released.**
-  It includes the quality-led `retro` pass, retro prepare-packet support, the
-  follow-up correction to the quality review finding, and this validator slice:
-  future/current retro artifacts now have a machine-readable persisted-status
-  floor, and quality artifacts now fail stale explicit skill ergonomics counts.
-- **Installed plugin sessions still see 0.54.2 until release/update.** A fresh
-  Codex/Claude session that invokes `charness:quality` from the installed plugin
-  cache will not automatically include these local skill changes.
+- **v0.55.1 release is in progress for #401 closeout.** It carries the completed
+  `retro`/`critique`/`spec`/`impl` quality-led reviews and critique packet
+  ownership fix; active installed sessions need update/restart after publish.
 - **Quality claim-fidelity (#397), Cautilus diagnostics (#398), issue planner,
   and gather terminal records have shipped locally.** Planner-first closeout is
   live for `issue`, `handoff`, and adjacent workflows; `cautilus evaluate *`
@@ -31,10 +26,8 @@
 - **START HERE -- choose dogfood mode deliberately.** For installed-plugin
   dogfood, cut/push the next release and refresh the install first. If release
   is deferred, use repo-local helper paths and call it source-tree proof.
-- **#401 public-skill quality run is current through `spec` and `impl`.** The
-  `retro`, `critique`, `spec`, and `impl` quality passes are handled; no target
-  repair was justified for `spec`/`impl`, and evaluator-backed dogfood remains a
-  later behavior-proof lane.
+- **#401 quality run is handled.** `spec`/`impl` evaluator-backed dogfood remains
+  a later behavior-proof lane, not #401 scope.
 - **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
@@ -43,8 +36,7 @@
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Open issue queue:** #392 gather-X acquisition/taxonomy, #371 agent-browser
-  cleanup. #401 is ready for release-linked closeout; keep `spec`/`impl`
-  evaluator-backed dogfood as a later behavior-proof lane, not as #401 scope.
+  cleanup; #401 is release-linked closeout only.
 
 ## Discuss
 
