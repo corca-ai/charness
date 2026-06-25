@@ -407,9 +407,7 @@ def test_patchright_default_renderer_stays_headless_and_collects_network(monkeyp
         def __init__(self) -> None:
             self.closed = False
 
-        def new_context(self, *, locale: str, timezone_id: str) -> Context:
-            assert locale == "ko-KR"
-            assert timezone_id == "Asia/Seoul"
+        def new_context(self) -> Context:
             return Context()
 
         def close(self) -> None:
@@ -449,6 +447,8 @@ def test_patchright_default_renderer_stays_headless_and_collects_network(monkeyp
         "headless": True,
         "channel": "chrome",
         "http_status": 200,
+        "locale": "browser-default",
+        "timezone_id": "browser-default",
         "network_candidates": ["https://example.com/api/items.json"],
     }
     assert requested_launches == [{"headless": True, "channel": "chrome"}]
@@ -467,7 +467,7 @@ def test_patchright_default_renderer_closes_browser_after_render_error(monkeypat
             return Page()
 
     class Browser:
-        def new_context(self, *, locale: str, timezone_id: str) -> Context:
+        def new_context(self) -> Context:
             return Context()
 
         def close(self) -> None:

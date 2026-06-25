@@ -13,6 +13,10 @@ from text_attempts import attempt_from_text
 PayloadFor = Callable[[object, dict[str, object], list[AcquisitionAttempt], str], dict[str, object]]
 
 NETWORK_CANDIDATE_RE = re.compile(r"(?:/api/|/graphql|\.json(?:\?|$))", re.IGNORECASE)
+DEFAULT_CONTEXT_DETAILS = {
+    "locale": "browser-default",
+    "timezone_id": "browser-default",
+}
 
 
 def is_available() -> bool:
@@ -37,7 +41,7 @@ def _render(url: str, *, timeout: int, collect_network: bool = False) -> tuple[s
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(**_launch_args(channel))
-                context = browser.new_context(locale="ko-KR", timezone_id="Asia/Seoul")
+                context = browser.new_context()
                 page = context.new_page()
                 if collect_network:
                     page.on(
@@ -55,6 +59,7 @@ def _render(url: str, *, timeout: int, collect_network: bool = False) -> tuple[s
                     "headless": True,
                     "channel": label,
                     "http_status": response.status if response else None,
+                    **DEFAULT_CONTEXT_DETAILS,
                 }
                 if collect_network:
                     details["network_candidates"] = network_candidates[:20]
