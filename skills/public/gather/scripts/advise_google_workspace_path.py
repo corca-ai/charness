@@ -44,15 +44,10 @@ def resolve_provider_mode(repo_root: Path) -> str:
     return entry.get("mode", "direct-cli")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose Google Workspace gather path advice should be computed")
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
+def payload_for(repo_root: Path) -> dict[str, object]:
     mode = resolve_provider_mode(repo_root)
     if mode == "none":
-        payload = {
+        return {
             "provider": PROVIDER_ID,
             "provider_mode": mode,
             "doctor_status": "skipped",
@@ -66,8 +61,8 @@ def main() -> None:
                 "If the operator has a Google Workspace path, update gather_provider.google_workspace.mode in .agents/gather-adapter.yaml.",
             ],
         }
-    elif mode == "host-mediated":
-        payload = {
+    if mode == "host-mediated":
+        return {
             "provider": PROVIDER_ID,
             "provider_mode": mode,
             "doctor_status": "skipped",
@@ -81,23 +76,29 @@ def main() -> None:
                 "Do not substitute direct Google Workspace CLI invocations under a host-mediated adapter mode.",
             ],
         }
-    else:
-        payload = {
-            "provider": PROVIDER_ID,
-            "provider_mode": mode,
-            "doctor_status": "missing",
-            "summary": "Google Workspace gather has no repo-owned direct CLI provider.",
-            "operator_prompt": (
-                "No repo-supported direct Google Workspace CLI provider is configured. "
-                "Use host-mediated access, an operator-provided export, or browser-mediated fallback when appropriate."
-            ),
-            "next_steps": [
-                "For private Google Workspace content, prefer a host-mediated google_workspace capability when one exists.",
-                "If the operator can export the source, gather the exported artifact instead of invoking an untracked local CLI.",
-                "If only an authenticated browser session is available, use the browser-mediated private-source ladder.",
-            ],
-        }
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return {
+        "provider": PROVIDER_ID,
+        "provider_mode": mode,
+        "doctor_status": "missing",
+        "summary": "Google Workspace gather has no repo-owned direct CLI provider.",
+        "operator_prompt": (
+            "No repo-supported direct Google Workspace CLI provider is configured. "
+            "Use host-mediated access, an operator-provided export, or browser-mediated fallback when appropriate."
+        ),
+        "next_steps": [
+            "For private Google Workspace content, prefer a host-mediated google_workspace capability when one exists.",
+            "If the operator can export the source, gather the exported artifact instead of invoking an untracked local CLI.",
+            "If only an authenticated browser session is available, use the browser-mediated private-source ladder.",
+        ],
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose Google Workspace gather path advice should be computed")
+    args = parser.parse_args()
+
+    print(json.dumps(payload_for(args.repo_root.resolve()), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
