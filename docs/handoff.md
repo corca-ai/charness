@@ -31,9 +31,10 @@
 - **START HERE -- choose dogfood mode deliberately.** For installed-plugin
   dogfood, cut/push the next release and refresh the install first. If release
   is deferred, use repo-local helper paths and call it source-tree proof.
-- **Continue #401 with `spec` next.** The `retro` and `critique` quality passes
-  have been handled; next run improved `quality` against `spec`, then `impl`,
-  and treat any `quality` miss as evidence about `quality` itself.
+- **#401 public-skill quality run is current through `spec` and `impl`.** The
+  `retro`, `critique`, `spec`, and `impl` quality passes are handled; no target
+  repair was justified for `spec`/`impl`, and evaluator-backed dogfood remains a
+  later behavior-proof lane.
 - **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven

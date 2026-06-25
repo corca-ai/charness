@@ -1,1 +1,1 @@
-history/2026-06-25-critique-skill-quality-review.md
+2026-06-25-spec-impl-skill-quality-review.md
