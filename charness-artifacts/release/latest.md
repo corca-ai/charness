@@ -85,7 +85,8 @@ Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Configured real-host verification completed after publication with the proof recorded below.
+- Caveat: `python3 scripts/doctor.py --repo-root . --json` returned `doctor_status: ok` for all 15 tool records, with advisory update notices for `agent-browser` and `gh`, and one non-blocking `vulture` release metadata lookup timeout.
 
 ## Real-Host Proof
 
@@ -98,9 +99,20 @@ Advanced `charness` toward release `0.55.2` (tag `v0.55.2`) through the repo-own
 - Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
 - Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
+### Executed Real-Host Proof
+
+- `charness update` completed during release publish with `VERSION: 0.55.1 -> 0.55.2` and refreshed Codex/Claude install surfaces.
+- `python3 scripts/doctor.py --repo-root . --json` returned 15 tool records and no non-`ok` `doctor_status` values.
+- `charness tool doctor nose --json --no-write-locks` detected `nose 0.15.0` at `/home/hwidong/.cargo/bin/nose`; `doctor_status: ok`, `doctor_disposition: ready`, and upstream latest `v0.15.0`.
+- `charness tool install nose --dry-run --json` reported the manifest-supported upstream installer path `https://github.com/corca-ai/nose/releases/latest/download/nose-cli-installer.sh`; no install was needed because `nose` was already present and current.
+- `nose --version` returned `nose 0.15.0`.
+- `charness tool sync-support nose --json` reported `status: skipped`, `reason: integration has no support_skill_source`; `nose` remains integration-only rather than a materialized support skill.
+- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` returned `status: clean`, `exit_code: 0`, `family_count: 0`, `total_dup_lines: 0`, with advisory interpretation only.
+
 ## Review Status
 
-- Review proof: not recorded in this helper invocation.
+- Fresh-eye release critique proof was not recorded.
+- Boundary disposition: publish used `--critique-blocked 'Host runtime exposes no Agent or Workflow tool for bounded fresh-eye release critique in this turn'`; do not treat this as a completed independent release critique.
 
 ## Post-Publish Proof
 
