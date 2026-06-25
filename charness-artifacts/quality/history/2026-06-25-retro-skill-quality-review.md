@@ -3,33 +3,30 @@ Date: 2026-06-25
 
 ## Scope
 
-Review `retro` as the first #401 quality-led skill improvement. Scope includes
-the public `retro` skill, persistence/memory seams, dogfood, focused tests, and
-deterministic repo-gate failures discovered while running quality.
+Review `retro` as the first #401 quality-led skill improvement: public skill
+core, persistence/memory seams, dogfood, focused tests, and gate failures found
+during quality.
 
 Target boundary: `retro` public skill quality.
 Ambient repo findings: handoff near-limit pruning was an ambient broad-gate
 repair, not retro skill quality.
 
-No Cautilus evaluator run was performed. This was a deterministic skill-quality
-pass plus a bounded fresh-eye review; the user request did not provide a
-log-backed behavior source or maintained scenario-registry change.
+No Cautilus evaluator run was performed: this was deterministic skill-quality
+plus bounded fresh-eye review, with no log-backed behavior source.
 
 ## Current Gates
 
 - `retro` core remains inside the skill ergonomics budget:
   `core_nonempty_lines=146`, `reference_file_count=9`, `script_file_count=19`,
   `unlisted_reference_files=[]`.
-- Consumer dogfood classifies `retro` as a persisted repeat-trap workflow:
-  expected skill `retro`, artifact `charness-artifacts/retro/recent-lessons.md`,
-  tier `hitl-recommended`, adapter `required`.
-- Focused retro/handoff/packet proof passed after fixes: 52/52 focused tests.
-- Standing quality passed after commit: 79/79 in 39.9s; handoff pickup is
-  repaired at 59 lines.
+- Consumer dogfood classifies `retro` as persisted repeat-trap workflow:
+  `recent-lessons.md`, `hitl-recommended`, adapter `required`.
+- Focused retro/handoff/packet proof passed after fixes: 52/52 focused tests;
+  handoff pickup is repaired at 59 lines.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median, budget
   90.0s; `pytest` 23.4s latest / 24.2s median, budget 140.0s; `check-coverage`
@@ -42,9 +39,9 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Healthy
 
-- `retro` has a concise-enough public core with progressive disclosure into
-  focused references for modes, section shape, phase-aware efficiency,
-  persistence, expert lenses, weekly trends, and sibling scans.
+- `retro` has a concise-enough public core with focused references for modes,
+  section shape, phase-aware efficiency, persistence, expert lenses, weekly
+  trends, and sibling scans.
 - Persistence is script-owned through `persist_retro_artifact.py`, including
   artifact writes, snapshot writes when configured, recent-lessons refresh, and
   legacy summary protection.
@@ -60,10 +57,10 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Weak
 
-- Fresh-eye review found and fixed one real retro defect: scaffold output used
-  `yes: TODO path` under `## Persisted` instead of explicit `Persisted: ...`.
-- A post-commit broad gate initially reported stale changed-line mutation
-  coverage; slice closeout refreshed it with `pytest -q tests/test_retro_scaffold.py`.
+- Fresh-eye found and fixed one real retro defect: scaffold output used
+  `yes: TODO path` under `## Persisted`, not explicit `Persisted: ...`.
+- Current broad gate still reports stale changed-line mutation coverage for 13
+  changed mutation-pool files; warning is non-blocking and remains active.
 - This rerun initially failed the handoff pickup planner test at 70 lines
   (`near_limit`); pruning stale status detail restored pickup routing.
 - Existing length-band warnings remain outside this slice: `run_slice_closeout.py`,
@@ -100,16 +97,19 @@ log-backed behavior source or maintained scenario-registry change.
 - command: `suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
   reports persisted repeat-trap dogfood through `recent-lessons.md` and
   `hitl-recommended` tier.
-- command: `./scripts/run-quality.sh --read-only` reports doc duplicate and code
-  clone advisories outside retro: one HITL/narrative Markdown family and one
-  multi-script small helper clone family.
+- command: `./scripts/run-quality.sh --read-only` reports one HITL/narrative
+  Markdown duplicate family outside retro.
+- command: `inventory_nose_clones.py --repo-root . --json` reports code clone
+  `status=clean` for scope paths `scripts`, `skills/public`, and
+  `skills/support`: `family_count=0` after the accepted baseline, with
+  `ranking.total_families=541` kept behind that baseline.
 
 ## Delegated Review
 
 - executed: bounded fresh-eye reviewers found the scaffold persisted-line defect
-  (`019efbed-24bc-7630-9b1b-3d4ca511fa9e`) and confirmed this rerun's handoff
-  prune + quality artifact update have no Act Before Ship items
-  (`019efc73-4832-7a33-8490-5e646960897c`).
+  (`019efbed-24bc-7630-9b1b-3d4ca511fa9e`) and confirmed the clone patch; current
+  reviewer `019efcb0-840b-7c92-b587-a1d1c026311f` flagged the live mutation
+  coverage warning above.
 - Slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof
   were not re-delegated because this slice did not redesign slow gates; runtime
   data is reported as existing evidence only.
@@ -123,7 +123,7 @@ log-backed behavior source or maintained scenario-registry change.
 - focused retro/handoff/packet proof: 52/52; packet tests cover adapter
   validation, `charness.retro_prepare_packet`, markdown, and empty-section wording.
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --ack-cautilus-skill-review --refresh-broad-pytest-proof --produce-mutation-coverage --mutation-coverage-command "pytest -q tests/test_retro_prepare_packet.py tests/test_validate_adapters_integration_schema.py tests/test_critique_prepare_packet.py tests/quality_gates/test_retro_skill.py"`
+- `run_slice_closeout.py --verification-lock --ack-cautilus-skill-review --refresh-broad-pytest-proof --produce-mutation-coverage` with retro packet/adapter/critique/quality focused mutation coverage.
 - dup baselines: `check_dup_ratchet.py --write-baseline --json`; `inventory_nose_clones.py --write-baseline --json`
 - `./scripts/run-quality.sh --read-only`
 
