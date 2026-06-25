@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-import json
-import subprocess
+import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+_plan_risk_interrupt_cli = import_repo_module(__file__, "scripts.plan_risk_interrupt")
+_risk_interrupt_lib = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 
 
 def seed_repo(tmp_path: Path, *, debug_body: str, spec_body: str | None = None) -> Path:
@@ -131,26 +124,20 @@ def resolved_spec(*, chosen_next_step: str = "factor-first", impl_status: str = 
 
 def test_plan_risk_interrupt_blocks_without_current_slice_spec_refresh(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
-    result = run_script("scripts/plan_risk_interrupt.py", "--repo-root", str(repo), "--json")
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _risk_interrupt_lib.plan_risk_interrupt(repo)
     assert payload["status"] == "blocked"
     assert "refresh `charness-artifacts/spec/interrupt-demo.md`" in payload["next_action"]
 
 
 def test_plan_risk_interrupt_records_handoff_when_matching_spec_is_refreshed(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
-    result = run_script(
-        "scripts/plan_risk_interrupt.py",
-        "--repo-root",
-        str(repo),
-        "--paths",
-        "charness-artifacts/debug/latest.md",
-        "charness-artifacts/spec/interrupt-demo.md",
-        "--json",
+    payload = _risk_interrupt_lib.plan_risk_interrupt(
+        repo,
+        changed_paths=[
+            "charness-artifacts/debug/latest.md",
+            "charness-artifacts/spec/interrupt-demo.md",
+        ],
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["status"] == "handoff-recorded"
     assert payload["chosen_next_step"] == "factor-first"
     assert payload["impl_status"] == "blocked"
@@ -158,15 +145,18 @@ def test_plan_risk_interrupt_records_handoff_when_matching_spec_is_refreshed(tmp
 
 def test_plan_risk_interrupt_ignores_stale_current_debug_for_unrelated_slice(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
-    result = run_script(
-        "scripts/plan_risk_interrupt.py",
-        "--repo-root",
-        str(repo),
-        "--paths",
-        "README.md",
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _risk_interrupt_lib.plan_risk_interrupt(repo, changed_paths=["README.md"])
     assert payload["status"] == "not-applicable"
     assert payload["reason"] == "current debug interrupt was not refreshed in this slice"
+
+
+def test_plan_risk_interrupt_cli_maps_blocked_plan_to_exit_one(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
+    monkeypatch.setattr(sys, "argv", ["plan_risk_interrupt.py", "--repo-root", str(repo), "--json"])
+
+    assert _plan_risk_interrupt_cli.main() == 1
+    assert '"status": "blocked"' in capsys.readouterr().out

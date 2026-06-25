@@ -1,26 +1,16 @@
 from __future__ import annotations
 
-import json
-import subprocess
+import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def run_script(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+_plugin_preamble = import_repo_module(__file__, "scripts.plugin_preamble")
 
 
 def test_plugin_preamble_json_output_includes_hints_and_readiness() -> None:
-    result = run_script("scripts/plugin_preamble.py", "--repo-root", str(ROOT), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _plugin_preamble.build_payload(ROOT, ROOT)
     assert payload["package_id"] == "charness"
     assert payload["runtime_self_update"] is False
     assert payload["root_install_surface"]["ok"] is True
@@ -36,15 +26,13 @@ def test_plugin_preamble_json_output_includes_hints_and_readiness() -> None:
 def test_plugin_preamble_reports_vendored_copy_warning(tmp_path: Path) -> None:
     consumer = tmp_path / "consumer"
     (consumer / ".claude" / "skills" / "charness").mkdir(parents=True)
-    result = run_script(
-        "scripts/plugin_preamble.py",
-        "--repo-root",
-        str(ROOT),
-        "--consumer-root",
-        str(consumer),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _plugin_preamble.build_payload(ROOT, consumer)
     assert payload["warnings"]
     assert "vendored charness copy detected" in payload["warnings"][0]
+
+
+def test_plugin_preamble_cli_emits_json(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["plugin_preamble.py", "--repo-root", str(ROOT), "--json"])
+
+    assert _plugin_preamble.main() == 0
+    assert '"package_id": "charness"' in capsys.readouterr().out

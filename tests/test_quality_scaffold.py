@@ -10,6 +10,10 @@ from runtime_bootstrap import import_repo_module
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
 _validate_quality_artifact = import_repo_module(__file__, "scripts.validate_quality_artifact")
+_scaffold_quality_artifact = import_repo_module(
+    __file__,
+    "skills.public.quality.scripts.scaffold_quality_artifact",
+)
 
 SCAFFOLD = "skills/public/quality/scripts/scaffold_quality_artifact.py"
 
@@ -42,6 +46,10 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
     )
 
 
+def scaffold_payload(repo: Path) -> dict[str, object]:
+    return _scaffold_quality_artifact.payload_for(repo, title=None)
+
+
 def _write_adapter(repo: Path, repo_name: str) -> None:
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
@@ -56,9 +64,7 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
 
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = scaffold_payload(repo)
     assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["artifact_role"] == "current_pointer"
     assert payload["write_artifact_path"] == "charness-artifacts/quality/latest.md"
@@ -97,14 +103,7 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     artifact_path = repo / payload["artifact_path"]
     artifact_path.parent.mkdir(parents=True)
     artifact_path.write_text(template, encoding="utf-8")
-    validation = subprocess.run(
-        shlex.split(payload["validator_command"]),
-        cwd=repo,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert validation.returncode == 0, validation.stderr
+    _validate_quality_artifact.validate_quality_artifact(artifact_path, repo_root=repo)
 
 
 def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
@@ -116,9 +115,7 @@ def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Pa
     target.write_text("# Quality Review\n", encoding="utf-8")
     (quality_dir / "latest.md").symlink_to(target.name)
 
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = scaffold_payload(repo)
     assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["write_artifact_path"] == "charness-artifacts/quality/2026-05-06-quality-review.md"
     assert payload["write_artifact_role"] == "current_pointer_target"
