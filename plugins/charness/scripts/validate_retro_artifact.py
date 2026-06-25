@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 import sys
 from datetime import date
 from pathlib import Path
@@ -14,7 +13,11 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
+add_changed_artifact_args = _scripts_artifact_validator_module.add_changed_artifact_args
+git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
+selected_artifact_paths = _scripts_artifact_validator_module.selected_artifact_paths
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
@@ -29,7 +32,9 @@ DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md 
 # before the landing day) is grandfathered and the broad gate stays green; only
 # retros dated on/after it must carry a lineage marker on issue-form dispositions.
 RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
+PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
 _DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
+_PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 
 RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
 GENERATED_DIGEST = "recent-lessons.md"
@@ -45,33 +50,11 @@ SIBLING_BOUNDARY_HEADINGS = (
     "## Persisted",
 )
 SIBLING_SOURCE_REFERENCE = "skills/public/retro/references/waste-sibling-scan.md"
-
-
-def _git_paths(repo_root: Path, args: list[str]) -> list[str]:
-    command = ["git", *args]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        message = (
-            "retro artifact changed-path discovery failed; "
-            f"command: {' '.join(command)}; exit_code: {result.returncode}"
-        )
-        if detail:
-            message = f"{message}; output: {detail}"
-        raise ValidationError(message)
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+PERSISTED_FORM_REFERENCE = "skills/public/retro/references/trigger-and-persistence.md"
 
 
 def changed_paths(repo_root: Path) -> list[str]:
-    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"]))
-    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"]))
-    return sorted(paths)
+    return git_changed_paths(repo_root, artifact_label="retro")
 
 
 def _is_session_artifact(relpath: str) -> bool:
@@ -196,6 +179,37 @@ def validate_recurrence_lineage(lines: list[str], observed_date: date | None) ->
     )
 
 
+def validate_persisted_form(lines: list[str], observed_date: date | None) -> None:
+    """Fail future retros whose persisted status is not machine-readable.
+
+    Historical retro artifacts used several human-readable shapes, including
+    undated legacy files, so the rule is grandfathered by observable date. A
+    current-dated filename still triggers the rule even if the body omits
+    `Date:`.
+    """
+    enforced = observed_date is not None and observed_date >= PERSISTED_FORM_RULE_DATE
+    if not enforced:
+        return
+    section = [
+        line.strip()
+        for line in _skill_markdown_lib.extract_h2_section_lines("\n".join(lines), "Persisted")
+        if line.strip()
+    ]
+    if not section:
+        raise ValidationError(
+            f"`## Persisted` must state `Persisted: yes: <path>` or `Persisted: no: <reason>`. "
+            f"See {PERSISTED_FORM_REFERENCE}."
+        )
+    persisted_lines = [line for line in section if line.startswith("Persisted:")]
+    if len(persisted_lines) != 1 or not _PERSISTED_LINE.match(persisted_lines[0]):
+        offenders = "; ".join(persisted_lines) if persisted_lines else "<missing>"
+        raise ValidationError(
+            f"`## Persisted` has invalid persisted status ({offenders}); use "
+            f"`Persisted: yes: <path>` or `Persisted: no: <reason>`. "
+            f"See {PERSISTED_FORM_REFERENCE}."
+        )
+
+
 def validate_retro_artifact(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     validate_sibling_followups(
@@ -206,18 +220,25 @@ def validate_retro_artifact(path: Path) -> None:
     observed_date = _retro_observed_date(path, lines)
     validate_disposition_forms(lines, observed_date)
     validate_recurrence_lineage(lines, observed_date)
+    validate_persisted_form(lines, observed_date)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
-    parser.add_argument("--all", action="store_true", help="Validate every checked retro session artifact.")
+    add_changed_artifact_args(
+        parser,
+        default_repo_root=REPO_ROOT,
+        all_help="Validate every checked retro session artifact.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    paths = [] if args.all else args.paths if args.paths is not None else changed_paths(repo_root)
-    artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
+    artifacts = selected_artifact_paths(
+        args,
+        repo_root,
+        changed_paths_fn=changed_paths,
+        candidate_paths_fn=candidate_paths,
+    )
     for artifact in artifacts:
         validate_retro_artifact(artifact)
     print(f"Validated {len(artifacts)} retro artifact(s).")

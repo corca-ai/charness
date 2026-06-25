@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 from tests.quality_gates.support import run_script
@@ -12,6 +13,10 @@ def _seed(repo: Path, body: str, name: str = "2026-05-23-demo.md") -> Path:
     artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.write_text(body, encoding="utf-8")
     return artifact
+
+
+def _run_git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def test_retro_sibling_search_accepts_followup(tmp_path: Path) -> None:
@@ -95,3 +100,63 @@ def test_retro_validator_no_artifacts_passes(tmp_path: Path) -> None:
     (repo / "charness-artifacts" / "retro").mkdir(parents=True)
     result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
+
+
+def test_retro_persisted_form_rejects_future_legacy_shape(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n"
+        "## Persisted\n\nPersisted: yes path\n"
+    )
+    _seed(repo, body, name="2026-06-25-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "`## Persisted` has invalid persisted status" in result.stderr
+
+
+def test_retro_persisted_form_rejects_future_missing_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n"
+    )
+    _seed(repo, body, name="2026-06-25-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "`## Persisted` must state" in result.stderr
+
+
+def test_retro_persisted_form_accepts_future_canonical_shape(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-06-25-demo.md\n"
+    )
+    _seed(repo, body, name="2026-06-25-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr
+
+
+def test_retro_validator_uses_changed_path_discovery(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(repo, "init")
+    _run_git(repo, "config", "user.email", "test@example.com")
+    _run_git(repo, "config", "user.name", "Test User")
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run_git(repo, "add", "README.md")
+    _run_git(repo, "commit", "-m", "seed")
+    _seed(
+        repo,
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-06-25-demo.md\n",
+        name="2026-06-25-demo.md",
+    )
+
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 retro artifact(s)." in result.stdout

@@ -13,11 +13,11 @@
 
 ## Current State
 
-- **Local skill-improvement bundle is committed but not released.** `main` has
-  unpushed commits plus this retro #401 follow-up commit:
-  `29bb95d8` retro quality review, `ff1d8bee` quality structural review,
-  `14859b64` branch coverage, `62b41b32` release update-instructions
-  decoupling, and `fdb8cdb6` handoff update.
+- **Local #401 skill-improvement bundle is committed locally but not released.**
+  It includes the quality-led `retro` pass, retro prepare-packet support, the
+  follow-up correction to the quality review finding, and this validator slice:
+  future/current retro artifacts now have a machine-readable persisted-status
+  floor, and quality artifacts now fail stale explicit skill ergonomics counts.
 - **Installed plugin sessions still see 0.54.2 until release/update.** A fresh
   Codex/Claude session that invokes `charness:quality` from the installed plugin
   cache will not automatically include these local skill changes.
@@ -31,9 +31,9 @@
 - **START HERE -- choose dogfood mode deliberately.** For installed-plugin
   dogfood, cut/push the next release and refresh the install first. If release
   is deferred, use repo-local helper paths and call it source-tree proof.
-- **Continue #401 after that.** Retro has prepare-packet support; next run
-  improved `quality` against `critique`, then `spec` and `impl`, and treat any
-  `quality` miss as evidence about `quality` itself.
+- **Continue #401 with `critique` next.** The `retro` pass has been handled;
+  next run improved `quality` against `critique`, then `spec` and `impl`, and
+  treat any `quality` miss as evidence about `quality` itself.
 - **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
@@ -41,8 +41,8 @@
 - **Split remaining near-limit web-fetch helper before more route behavior:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py).
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
-- **Open issue queue:** #401 quality-led skill improvements, #392 gather-X
-  acquisition/taxonomy, #371 agent-browser cleanup.
+- **Open issue queue:** #401 continues with `critique`/`spec`/`impl`, #392
+  gather-X acquisition/taxonomy, #371 agent-browser cleanup.
 
 ## Discuss
 

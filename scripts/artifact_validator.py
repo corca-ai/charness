@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -17,6 +18,54 @@ def read_lines(path: Path) -> list[str]:
     if not path.exists():
         raise ValidationError(f"missing artifact `{path}`")
     return path.read_text(encoding="utf-8").splitlines()
+
+
+def _git_paths(repo_root: Path, args: list[str], *, artifact_label: str) -> list[str]:
+    command = ["git", *args]
+    result = subprocess.run(
+        command,
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip()
+        message = (
+            f"{artifact_label} artifact changed-path discovery failed; "
+            f"command: {' '.join(command)}; exit_code: {result.returncode}"
+        )
+        if detail:
+            message = f"{message}; output: {detail}"
+        raise ValidationError(message)
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
+    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"], artifact_label=artifact_label))
+    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"], artifact_label=artifact_label))
+    return sorted(paths)
+
+
+def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:
+    parser.add_argument("--repo-root", type=Path, default=default_repo_root)
+    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
+    parser.add_argument("--all", action="store_true", help=all_help)
+
+
+def selected_changed_paths(args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]) -> list[str]:
+    return [] if args.all else args.paths if args.paths is not None else changed_paths_fn(repo_root)
+
+
+def selected_artifact_paths(
+    args,
+    repo_root: Path,
+    *,
+    changed_paths_fn: Callable[[Path], list[str]],
+    candidate_paths_fn: Callable[..., list[Path]],
+) -> list[Path]:
+    paths = selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths_fn)
+    return candidate_paths_fn(repo_root, paths, all_artifacts=args.all)
 
 
 def validate_max_lines(lines: Sequence[str], *, max_lines: int, artifact_label: str) -> None:

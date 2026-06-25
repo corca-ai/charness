@@ -152,7 +152,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/retro/SKILL.md": (
         "If the user correctly points out a missed issue",
         "`Persisted`: whether the retro was written to a durable artifact",
-        "never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`",
+        "never stop without stating `Persisted: yes: <path>` or `Persisted: no: <reason>`",
         "Trigger a short `session` retro automatically when a user correction exposes a",
     ),
 }

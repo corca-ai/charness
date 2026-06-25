@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -13,8 +12,13 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+ValidationError = _artifact_validator.ValidationError
+add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
+git_changed_paths = _artifact_validator.git_changed_paths
 is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
 run_validation_checks = _artifact_validator.run_validation_checks
+selected_changed_paths = _artifact_validator.selected_changed_paths
+selected_artifact_paths = _artifact_validator.selected_artifact_paths
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
@@ -56,35 +60,8 @@ SIGNAL_HEADINGS = ("host signal", "tool signal")
 PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
 
-class ValidationError(Exception):
-    pass
-
-
-def _git_paths(repo_root: Path, args: list[str]) -> list[str]:
-    command = ["git", *args]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        message = (
-            "critique artifact changed-path discovery failed; "
-            f"command: {' '.join(command)}; exit_code: {result.returncode}"
-        )
-        if detail:
-            message = f"{message}; output: {detail}"
-        raise ValidationError(message)
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-
 def changed_paths(repo_root: Path) -> list[str]:
-    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"]))
-    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"]))
-    return sorted(paths)
+    return git_changed_paths(repo_root, artifact_label="critique")
 
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
@@ -339,9 +316,11 @@ def validate_critique_artifact(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
-    parser.add_argument("--all", action="store_true", help="Validate every checked critique artifact.")
+    add_changed_artifact_args(
+        parser,
+        default_repo_root=REPO_ROOT,
+        all_help="Validate every checked critique artifact.",
+    )
     parser.add_argument(
         "--report-all",
         action="store_true",
@@ -351,8 +330,13 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     explicit_paths = args.paths is not None
-    paths = [] if args.all else args.paths if explicit_paths else changed_paths(repo_root)
-    artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
+    paths = selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths)
+    artifacts = selected_artifact_paths(
+        args,
+        repo_root,
+        changed_paths_fn=changed_paths,
+        candidate_paths_fn=candidate_paths,
+    )
     require_tier_paths = set(paths)
     repo_has_delegation_contract = has_repo_delegation_contract(repo_root)
     for artifact in artifacts:

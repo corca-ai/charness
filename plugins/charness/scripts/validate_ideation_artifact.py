@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+
+_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+ValidationError = _artifact_validator.ValidationError
+add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
+git_changed_paths = _artifact_validator.git_changed_paths
+selected_artifact_paths = _artifact_validator.selected_artifact_paths
 
 IDEATION_ARTIFACT_PREFIX = "charness-artifacts/ideation/"
 STRUCTURED_QUESTIONS_HEADING = "## Structured Questions"
@@ -18,35 +23,8 @@ STRUCTURED_ACTIONS = frozenset({"spec", "impl", "hold"})
 STRUCTURED_REQUIRED_FIELDS = ("urgency", "depends-on", "action", "note")
 
 
-class ValidationError(Exception):
-    pass
-
-
-def _git_paths(repo_root: Path, args: list[str]) -> list[str]:
-    command = ["git", *args]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        message = (
-            "ideation artifact changed-path discovery failed; "
-            f"command: {' '.join(command)}; exit_code: {result.returncode}"
-        )
-        if detail:
-            message = f"{message}; output: {detail}"
-        raise ValidationError(message)
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-
 def changed_paths(repo_root: Path) -> list[str]:
-    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"]))
-    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"]))
-    return sorted(paths)
+    return git_changed_paths(repo_root, artifact_label="ideation")
 
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
@@ -133,14 +111,20 @@ def validate_ideation_artifact(path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
-    parser.add_argument("--all", action="store_true", help="Validate every checked ideation artifact.")
+    add_changed_artifact_args(
+        parser,
+        default_repo_root=REPO_ROOT,
+        all_help="Validate every checked ideation artifact.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    paths = [] if args.all else args.paths if args.paths is not None else changed_paths(repo_root)
-    artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
+    artifacts = selected_artifact_paths(
+        args,
+        repo_root,
+        changed_paths_fn=changed_paths,
+        candidate_paths_fn=candidate_paths,
+    )
     for artifact in artifacts:
         validate_ideation_artifact(artifact)
     print(f"Validated {len(artifacts)} ideation artifact(s).")

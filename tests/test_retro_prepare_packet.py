@@ -4,6 +4,9 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
+from skills.public.retro.scripts import prepare_packet
 from skills.public.retro.scripts.resolve_adapter import load_adapter, validate_adapter_data
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +30,24 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
 
 def _run_git(repo_root: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo_root, check=True, capture_output=True, text=True)
+
+
+def test_retro_prepare_packet_bootstrap_missing_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    class MissingBootstrapPath:
+        def __init__(self, _value: object) -> None:
+            pass
+
+        def resolve(self) -> "MissingBootstrapPath":
+            return self
+
+        @property
+        def parents(self) -> list[Path]:
+            return []
+
+    monkeypatch.setattr(prepare_packet, "Path", MissingBootstrapPath)
+
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        prepare_packet._load_skill_runtime_bootstrap()
 
 
 def test_retro_adapter_accepts_packet_sections(tmp_path: Path) -> None:
@@ -136,6 +157,83 @@ packet_sections:
     text = md_path.read_text(encoding="utf-8")
     assert "# Retro Prepare Packet" in text
     assert "retro-body" in text
+
+
+def test_retro_prepare_packet_uses_default_slug_when_none_given(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / ".agents/retro-adapter.yaml",
+        """\
+version: 1
+repo: demo
+output_dir: charness-artifacts/retro
+""",
+    )
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--prepared-for",
+        "unit",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["md_path"].startswith("charness-artifacts/retro/20")
+    assert payload["md_path"].endswith("-packet.md")
+
+
+def test_retro_prepare_packet_rejects_multiple_changed_refs(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / ".agents/retro-adapter.yaml",
+        """\
+version: 1
+repo: demo
+output_dir: charness-artifacts/retro
+""",
+    )
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--changed-ref",
+        "HEAD",
+        "--commit",
+        "HEAD~1",
+        "--json",
+    )
+
+    assert result.returncode == 2
+    assert "use only one of --changed-ref, --commit, or --range" in result.stderr
+
+
+def test_retro_prepare_packet_reports_invalid_adapter(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / ".agents/retro-adapter.yaml",
+        """\
+version: 1
+repo: demo
+output_dir: charness-artifacts/retro
+packet_sections:
+  - id: bad
+    title: Bad
+    content_kind: script
+    content: wrong
+""",
+    )
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["error"] == "retro adapter invalid"
 
 
 def test_retro_prepare_packet_empty_markdown_names_retro_adapter(tmp_path: Path) -> None:

@@ -109,7 +109,7 @@ Adapter policy:
      one RCA event (`--source retro`) per
      `../../shared/references/rca-ledger-append.md`; this is a silent no-op in
      repos without the ledger
-   - never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`
+   - never stop without stating `Persisted: yes: <path>` or `Persisted: no: <reason>`
 
 ## Output Shape
 

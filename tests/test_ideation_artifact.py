@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 from tests.quality_gates.support import run_script
@@ -12,6 +13,10 @@ def _seed(repo: Path, body: str) -> Path:
     artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.write_text(body, encoding="utf-8")
     return artifact
+
+
+def _run_git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def test_validate_ideation_structured_questions_accepts_well_formed_block(tmp_path: Path) -> None:
@@ -94,3 +99,25 @@ def test_validate_ideation_artifact_no_artifacts_passes(tmp_path: Path) -> None:
     result = run_script("scripts/validate_ideation_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
     assert "Validated 0 ideation artifact(s)." in result.stdout
+
+
+def test_validate_ideation_artifact_uses_changed_path_discovery(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(repo, "init")
+    _run_git(repo, "config", "user.email", "test@example.com")
+    _run_git(repo, "config", "user.name", "Test User")
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run_git(repo, "add", "README.md")
+    _run_git(repo, "commit", "-m", "seed")
+    _seed(
+        repo,
+        _PRELUDE
+        + "## Structured Questions\n\n"
+        + "- Q1 | urgency: defer | depends-on: null | action: hold | note: later\n",
+    )
+
+    result = run_script("scripts/validate_ideation_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 ideation artifact(s)." in result.stdout

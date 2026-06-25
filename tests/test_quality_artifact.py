@@ -6,6 +6,10 @@ import subprocess
 from pathlib import Path
 from typing import Mapping
 
+import pytest
+
+from scripts.validate_quality_artifact import ValidationError, _skill_ergonomics_counts
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -63,6 +67,34 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(artifact_body, encoding="utf-8")
     (repo / "charness-artifacts" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
     return repo
+
+
+def seed_skill(repo: Path, skill_id: str = "retro") -> None:
+    skill_dir = repo / "skills" / "public" / skill_id
+    (skill_dir / "references").mkdir(parents=True)
+    (skill_dir / "scripts").mkdir()
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                f"name: {skill_id}",
+                'description: "Demo skill."',
+                "---",
+                "# Demo",
+                "",
+                "Use this skill.",
+                "",
+                "## Bootstrap",
+                "",
+                "Run it.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "one.md").write_text("# One\n", encoding="utf-8")
+    (skill_dir / "references" / "two.md").write_text("# Two\n", encoding="utf-8")
+    (skill_dir / "scripts" / "run.py").write_text("print('ok')\n", encoding="utf-8")
 
 
 def valid_quality_artifact(*, runtime_source: str, runtime_hotspots: str = "`pytest` 10s") -> str:
@@ -136,6 +168,127 @@ def test_validate_quality_artifact_rejects_numeric_hotspots_without_renderer(tmp
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must cite the summary helper" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_stale_skill_ergonomics_counts(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace(
+        "## Current Gates\n- gate",
+        (
+            "## Current Gates\n"
+            "- `retro` core remains inside the skill ergonomics budget:\n"
+            "  `core_nonempty_lines=999`, `reference_file_count=2`, `script_file_count=1`,\n"
+            "  `unlisted_reference_files=[]`."
+        ),
+    )
+    repo = seed_repo(tmp_path, body)
+    seed_skill(repo)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "stale skill ergonomics counts for `retro`" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_differently_worded_stale_count_claim(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace(
+        "## Current Gates\n- gate",
+        (
+            "## Current Gates\n"
+            "- Skill pressure for `retro` was sampled directly: "
+            "`core_nonempty_lines=4`, `reference_file_count=999`, `script_file_count=1`."
+        ),
+    )
+    repo = seed_repo(tmp_path, body)
+    seed_skill(repo)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "stale skill ergonomics counts for `retro`" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_count_claim_without_public_skill_id(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace(
+        "## Current Gates\n- gate",
+        (
+            "## Current Gates\n"
+            "- Skill pressure was sampled directly: "
+            "`core_nonempty_lines=4`, `reference_file_count=2`, `script_file_count=1`."
+        ),
+    )
+    repo = seed_repo(tmp_path, body)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "no backticked public skill id" in result.stderr
+
+
+def test_skill_ergonomics_counts_missing_skill_fails(tmp_path: Path) -> None:
+    with pytest.raises(ValidationError, match="missing skill `retro`"):
+        _skill_ergonomics_counts(tmp_path, "retro")
+
+
+def test_validate_quality_artifact_accepts_counts_when_skill_has_no_refs_or_scripts(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace(
+        "## Current Gates\n- gate",
+        (
+            "## Current Gates\n"
+            "- Skill pressure for `retro` was sampled directly: "
+            "`core_nonempty_lines=4`, `reference_file_count=0`, `script_file_count=0`."
+        ),
+    )
+    repo = seed_repo(tmp_path, body)
+    seed_skill(repo)
+    shutil.rmtree(repo / "skills" / "public" / "retro" / "references")
+    shutil.rmtree(repo / "skills" / "public" / "retro" / "scripts")
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_quality_artifact_accepts_current_skill_ergonomics_counts(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace(
+        "## Current Gates\n- gate",
+        (
+            "## Current Gates\n"
+            "- `retro` core remains inside the skill ergonomics budget:\n"
+            "  `core_nonempty_lines=4`, `reference_file_count=2`, `script_file_count=1`,\n"
+            "  `unlisted_reference_files=[]`."
+        ),
+    )
+    repo = seed_repo(tmp_path, body)
+    seed_skill(repo)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_validate_quality_artifact_allows_missing_runtime_source_without_numbers(tmp_path: Path) -> None:
