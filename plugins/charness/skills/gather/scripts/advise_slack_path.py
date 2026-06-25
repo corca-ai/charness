@@ -33,13 +33,6 @@ SUPPORT_ID = "gather-slack"
 REQUIRED_BINARIES = ("node", "jq", "perl")
 
 
-def resolve_provider_mode(repo_root: Path) -> str:
-    adapter = load_gather_adapter(repo_root)
-    provider = adapter["data"].get("gather_provider") or {}
-    entry = provider.get(SOURCE_ID) or {}
-    return entry.get("mode", "direct-cli")
-
-
 def find_support_root() -> Path:
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
@@ -67,7 +60,9 @@ def dependency_status() -> tuple[str, list[str]]:
 
 
 def payload_for(repo_root: Path) -> dict[str, object]:
-    mode = resolve_provider_mode(repo_root)
+    adapter_data = load_gather_adapter(repo_root)["data"]
+    provider = adapter_data.get("gather_provider") or {}
+    mode = (provider.get(SOURCE_ID) or {}).get("mode", "direct-cli")
     support_root = find_support_root()
     support_skill = support_root / "SKILL.md"
     runtime_contract = support_root / "references" / "runtime-contract.md"
@@ -131,10 +126,16 @@ def payload_for(repo_root: Path) -> dict[str, object]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose Slack gather path advice should be computed")
-    args = parser.parse_args()
-    print(json.dumps(payload_for(args.repo_root.resolve()), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser(prog="advise-slack-path")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root whose Slack gather path advice should be computed",
+    )
+    repo_root = parser.parse_args().repo_root.resolve()
+    rendered = json.dumps(payload_for(repo_root), ensure_ascii=False, indent=2)
+    print(rendered)
 
 
 if __name__ == "__main__":

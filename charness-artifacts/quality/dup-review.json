@@ -44,6 +44,13 @@
     },
     {
       "class": "intentional",
+      "id": "4e3b6c938c3e9c29",
+      "note": "gather Google Workspace and Slack advice helpers intentionally share the adapter-mode payload dispatch contract while keeping provider-specific payload text separate and directly executable",
+      "reviewed_at": "2026-06-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "8a9280732142bf56",
       "note": "one-line typed record builder helpers in separate skill/support domains; extracting a shared helper would harm portability more than it reduces duplication",
       "reviewed_at": "2026-06-24",

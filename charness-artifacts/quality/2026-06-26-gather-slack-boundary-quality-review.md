@@ -40,6 +40,8 @@ warn-band files, and remaining nested-CLI fanout are not fully fixed here.
 - Boundary-bypass exemptions now document both intentional CLI smokes retained
   by these slices, reducing ratchet/advisory noise without hiding their
   in-process behavior tests.
+- `dup-review.json` classifies the shared Google/Slack adapter-mode payload
+  dispatch shape as intentional; provider-specific text remains separate.
 - Boundary-bypass summary improved from 87 candidates / 149 keys / 50
   convertible files to 85 / 146 / 48, with 5 explicit exemptions.
 
@@ -79,6 +81,10 @@ warn-band files, and remaining nested-CLI fanout are not fully fixed here.
   did not recommend Cautilus execution; `gather` remains mapped to the existing
   `gather-adapter-bootstrap` scenario because this slice changes helper
   execution seams, not first-skill routing or acquisition semantics.
+- duplicate review result: command: `check_dup_ratchet.py --repo-root . --json`
+  initially found the shared advice payload dispatch family; reviewed as
+  intentional in `dup-review.json` because the scripts share adapter-mode
+  semantics but keep provider-specific payloads separate.
 
 ## Delegated Review
 
@@ -101,6 +107,7 @@ warn-band files, and remaining nested-CLI fanout are not fully fixed here.
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id gather --json`
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
 - `python3 scripts/validate_public_skill_validation.py --repo-root .`
+- `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
 - `python3 scripts/check_python_lengths.py --repo-root . --paths skills/public/gather/scripts/advise_google_workspace_path.py tests/test_gather_google_workspace.py`
 - command: python3 -m pytest -q tests/test_gather_google_workspace.py tests/test_skill_output_schemas.py
 - `ruff check skills/public/gather/scripts/advise_google_workspace_path.py tests/test_gather_google_workspace.py tests/test_skill_output_schemas.py`

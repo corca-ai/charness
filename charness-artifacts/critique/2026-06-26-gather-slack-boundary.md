@@ -28,6 +28,9 @@ real CLI smokes in the boundary-bypass exemption list.
 - Public-skill review does not require a Cautilus run: the planner recommends
   no evaluator execution, and the existing gather scenario still covers routing
   while deterministic tests cover the helper seam.
+- Dup-ratchet review found the Google/Slack payload dispatch family; classifying
+  it intentional is narrower than baseline acceptance because the id is tied to
+  the reviewed shared adapter-mode contract.
 
 ## Structured Findings
 
@@ -38,6 +41,7 @@ real CLI smokes in the boundary-bypass exemption list.
 - F5 | bin: bundle-anyway | evidence: strong | ref: plugins/charness/scripts/boundary-bypass-exemptions.txt | action: fix | note: fresh-eye found plugin mirror drift after the Google exemption and sync cleared it before closeout
 - F6 | bin: over-worry | evidence: moderate | ref: scripts/boundary-bypass-exemptions.txt | action: document | note: exempting intentional real-boundary smokes is policy-compliant when ordinary behavior remains in-process
 - F7 | bin: bundle-anyway | evidence: strong | ref: evals/cautilus/scenarios.json | action: document | note: gather scenario coverage remains unchanged because this slice changes helper execution seams, not first-skill routing
+- F8 | bin: bundle-anyway | evidence: strong | ref: charness-artifacts/quality/dup-review.json | action: document | note: shared Google/Slack adapter-mode dispatch is intentional while provider-specific payloads stay separate
 
 ## Reviewer Tier Evidence
 

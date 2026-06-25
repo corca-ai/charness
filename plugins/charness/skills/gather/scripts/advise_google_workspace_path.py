@@ -37,45 +37,34 @@ PROVIDER_ID = "google-workspace"
 SOURCE_ID = "google_workspace"
 
 
-def resolve_provider_mode(repo_root: Path) -> str:
-    adapter = load_gather_adapter(repo_root)
-    provider = adapter["data"].get("gather_provider") or {}
-    entry = provider.get(SOURCE_ID) or {}
-    return entry.get("mode", "direct-cli")
-
-
 def payload_for(repo_root: Path) -> dict[str, object]:
-    mode = resolve_provider_mode(repo_root)
+    data = load_gather_adapter(repo_root)["data"]
+    entry = (data.get("gather_provider") or {}).get(SOURCE_ID) or {}
+    mode = str(entry.get("mode") or "direct-cli")
     if mode == "none":
-        return {
-            "provider": PROVIDER_ID,
-            "provider_mode": mode,
-            "doctor_status": "skipped",
-            "summary": "Google Workspace gather has no repo-owned direct CLI provider.",
-            "operator_prompt": (
+        return _skipped_payload(
+            mode,
+            operator_prompt=(
                 "Adapter declares gather_provider.google_workspace.mode=none. "
                 "Stop with a missing-capability explanation."
             ),
-            "next_steps": [
+            next_steps=[
                 "Surface the missing google_workspace capability to the operator.",
                 "If the operator has a Google Workspace path, update gather_provider.google_workspace.mode in .agents/gather-adapter.yaml.",
             ],
-        }
+        )
     if mode == "host-mediated":
-        return {
-            "provider": PROVIDER_ID,
-            "provider_mode": mode,
-            "doctor_status": "skipped",
-            "summary": "Google Workspace gather has no repo-owned direct CLI provider.",
-            "operator_prompt": (
+        return _skipped_payload(
+            mode,
+            operator_prompt=(
                 "Adapter declares gather_provider.google_workspace.mode=host-mediated. "
                 "Use the host's google_workspace capability command."
             ),
-            "next_steps": [
+            next_steps=[
                 "Follow the host's documented google_workspace capability command shape.",
                 "Do not substitute direct Google Workspace CLI invocations under a host-mediated adapter mode.",
             ],
-        }
+        )
     return {
         "provider": PROVIDER_ID,
         "provider_mode": mode,
@@ -93,12 +82,32 @@ def payload_for(repo_root: Path) -> dict[str, object]:
     }
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose Google Workspace gather path advice should be computed")
-    args = parser.parse_args()
+def _skipped_payload(mode: str, *, operator_prompt: str, next_steps: list[str]) -> dict[str, object]:
+    return {
+        "provider": PROVIDER_ID,
+        "provider_mode": mode,
+        "doctor_status": "skipped",
+        "summary": "Google Workspace gather has no repo-owned direct CLI provider.",
+        "operator_prompt": operator_prompt,
+        "next_steps": next_steps,
+    }
 
-    print(json.dumps(payload_for(args.repo_root.resolve()), ensure_ascii=False, indent=2))
+
+def _selected_repo_root() -> Path:
+    parser = argparse.ArgumentParser(prog="advise-google-workspace-path")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root whose Google Workspace gather path advice should be computed",
+    )
+    return parser.parse_args().repo_root.resolve()
+
+
+def main() -> None:
+    payload = payload_for(_selected_repo_root())
+    rendered = json.dumps(payload, ensure_ascii=False, indent=2)
+    print(rendered)
 
 
 if __name__ == "__main__":
