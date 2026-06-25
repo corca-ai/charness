@@ -18,7 +18,10 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _standing_test_economics = SKILL_RUNTIME.load_local_skill_module(__file__, "standing_test_economics_lib")
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 inventory = _standing_test_economics.inventory
+dump_yaml = _summary_output.dump_yaml
+emit_summary = _summary_output.emit_summary
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): the test-economics trend is an
@@ -51,14 +54,6 @@ SUMMARY_NESTED_CLI_SAMPLE_SIZE = 10
 SUMMARY_NOTE = "summary is triage output; use --json for full nested_cli_files attribution"
 
 
-def _dump_yaml(payload: dict[str, object]) -> str:
-    try:
-        import yaml  # type: ignore[import-untyped]
-    except ImportError as exc:
-        raise SystemExit("PyYAML is required for --summary-yaml") from exc
-    return yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
-
-
 def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
     payload_with_sample = dict(payload)
     payload_with_sample["summary_note"] = SUMMARY_NOTE
@@ -84,11 +79,7 @@ def main() -> int:
     payload = inventory(args.repo_root.resolve())
     payload["interpretation"] = dict(INTERPRETATION)
     if args.summary or args.summary_yaml:
-        summary = summarize_payload(payload)
-        if args.summary_yaml:
-            print(_dump_yaml(summary), end="")
-            return 0
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        emit_summary(summarize_payload(payload), as_yaml=args.summary_yaml)
         return 0
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))

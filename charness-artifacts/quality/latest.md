@@ -1,1 +1,1 @@
-2026-06-25-nested-cli-release-only-yaml-quality-review.md
+2026-06-25-skill-ergonomics-yaml-summary-quality-review.md

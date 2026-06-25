@@ -41,6 +41,9 @@ MARKDOWN_HELPERS = {
 
 DEFAULT_REVIEW_PROMPTS = elib.DEFAULT_REVIEW_PROMPTS
 RUNTIME_INSTALL_REVIEW_PROMPTS = elib.RUNTIME_INSTALL_REVIEW_PROMPTS
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
+dump_yaml = _summary_output.dump_yaml
+emit_summary = _summary_output.emit_summary
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): the ergonomics heuristics are an
@@ -100,6 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-core-lines", type=int, default=160, help="Non-empty line count above which a SKILL.md core is flagged as long")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
     parser.add_argument("--summary", action="store_true", help="Emit compact JSON for agent review instead of per-finding detail")
+    parser.add_argument("--summary-yaml", action="store_true", help="Emit compact YAML for agent review instead of compact JSON")
     return parser.parse_args()
 
 
@@ -226,8 +230,8 @@ def main() -> int:
         "interpretation": dict(INTERPRETATION),
         "skills": skills,
     }
-    if args.summary:
-        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2))
+    if args.summary or args.summary_yaml:
+        emit_summary(summarize_payload(payload), as_yaml=args.summary_yaml)
     elif args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:

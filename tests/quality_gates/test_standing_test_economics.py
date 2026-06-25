@@ -159,7 +159,7 @@ def test_standing_test_economics_summary_yaml_reports_missing_pyyaml(monkeypatch
     monkeypatch.setattr(builtins, "__import__", missing_yaml_import)
 
     try:
-        cli._dump_yaml({"ok": True})
+        cli.dump_yaml({"ok": True})
     except SystemExit as exc:
         assert "PyYAML is required for --summary-yaml" in str(exc)
     else:
