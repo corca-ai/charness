@@ -13,6 +13,15 @@
 
 ## Current State
 
+- **Local skill-improvement bundle is committed but not released.** `main` is
+  clean and `origin/main..HEAD` has four commits:
+  `29bb95d8` retro quality review, `ff1d8bee` quality structural review,
+  `14859b64` branch coverage, and `62b41b32` release update-instructions
+  decoupling. Full `./scripts/run-quality.sh --read-only` passed 79/79 after
+  the final commit.
+- **Installed plugin sessions still see 0.54.2 until release/update.** A fresh
+  Codex/Claude session that invokes `charness:quality` from the installed plugin
+  cache will not automatically include these local skill changes.
 - **Quality claim-fidelity shipped (#397 closed).** `quality` now separates
   deterministic gates from judgment/ref pass and preserves engage-always,
   on-demand, and gate-sufficient reference routing.
@@ -27,9 +36,14 @@
 
 ## Next Session
 
-- **START HERE -- if continuing skill-improvement work, use #401.** Run the
-  improved `quality` skill against `retro`, `critique`, `spec`, and `impl` one
-  at a time; treat any `quality` miss as evidence about `quality` itself.
+- **START HERE -- choose dogfood mode deliberately.** If the goal is to rerun the
+  improved installed `quality` skill against `retro`, first cut/push the next
+  release and run the install refresh/update path. If release is still deferred,
+  use repo-local quality helper paths explicitly and treat the result as
+  source-tree proof, not installed-plugin dogfood.
+- **Continue #401 after that.** Run the improved `quality` skill against
+  `retro`, then `critique`, `spec`, and `impl` one at a time; treat any
+  `quality` miss as evidence about `quality` itself.
 - **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
