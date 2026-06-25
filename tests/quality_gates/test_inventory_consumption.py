@@ -55,13 +55,22 @@ _DEFAULT_DECLARATION = {
 }
 
 
+_TARGET_SCOPE_LINES = (
+    "Target boundary: retro skill quality review.\n"
+    "Ambient repo findings: none found by this focused fixture.\n"
+)
+
+
 def test_passes_when_two_declared_fields_are_cited(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n"
         "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
         "prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries and progressive disclosure were reviewed; no blockers found.\n"
+        "- structural review result: no helper-owned packet gap; no structural move now.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -77,9 +86,12 @@ def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> 
     # Declaration lists two fields; engaging with only one is gameable.
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n"
         "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "- structural review result: no helper-owned packet gap; no structural move now.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -95,9 +107,12 @@ def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> 
 def test_fails_when_inventory_cited_without_any_declared_field(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n"
         "- skill ergonomics overall clean; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "- structural review result: no helper-owned packet gap; no structural move now.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -118,9 +133,12 @@ def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> Non
     }
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n"
         "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "- structural review result: no helper-owned packet gap; no structural move now.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -151,6 +169,8 @@ def test_field_citation_inside_commands_run_does_not_count(tmp_path: Path) -> No
     # in the artifact body.
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n- nothing to report.\n"
         "## Weak\n- prose_review_status=still_required.\n"
         "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
@@ -169,6 +189,8 @@ def test_field_citation_inside_commands_run_does_not_count(tmp_path: Path) -> No
 def test_skill_ergonomics_inventory_requires_prose_review_status(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n- skill ergonomics clean; script_file_count 0 and reference_file_count 3.\n"
         "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
@@ -185,6 +207,8 @@ def test_skill_ergonomics_inventory_requires_prose_review_status(tmp_path: Path)
 def test_skill_ergonomics_inventory_requires_prose_review_result(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n"
         "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
         "prose_review_status=still_required.\n"
@@ -197,6 +221,47 @@ def test_skill_ergonomics_inventory_requires_prose_review_result(tmp_path: Path)
 
     assert result.returncode == 1
     assert "prose review result" in result.stderr
+
+
+def test_skill_ergonomics_inventory_requires_structural_review_result(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Scope\n"
+        f"{_TARGET_SCOPE_LINES}"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
+        "prose_review_status=still_required.\n"
+        "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1
+    assert "structural review result" in result.stderr
+
+
+def test_skill_ergonomics_inventory_requires_target_and_ambient_split(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
+        "prose_review_status=still_required.\n"
+        "## Advisory\n"
+        "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "- structural review result: no helper-owned packet gap; no structural move now.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1
+    assert "Target boundary" in result.stderr
+    assert "Ambient repo findings" in result.stderr
 
 
 def test_artifact_predating_contract_start_is_skipped(tmp_path: Path) -> None:

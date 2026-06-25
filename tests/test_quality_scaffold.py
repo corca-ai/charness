@@ -70,6 +70,10 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     assert template.startswith("# Quality Review\n")
     for heading in REQUIRED_HEADINGS:
         assert heading in template, heading
+    assert "Target boundary:" in template
+    assert "Ambient repo findings:" in template
+    assert "structural review result:" in template
+    assert "prose review result:" in template
     # Runtime Signals carries the four prefixes the validator asserts on.
     assert "- runtime source: structured metrics" in template
     assert "rendered by `render_runtime_summary.py`" in template

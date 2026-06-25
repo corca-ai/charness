@@ -106,6 +106,7 @@ EVIDENCE_OVERRIDES = {
         "can ingest a repo-declared command-timing log as the wall-clock source when one exists, instead of reporting no samples until a hand-rolled bridge is built",
         "treats affected-test selection as structural testability before recommending caches, observation tools, or broader runtime budgets",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior",
+        "when reviewing a target skill, answers the planner's structural review packet, separates target-skill findings from ambient repo failures, and records structural-review/prose-review judgment before broad recommendations",
     ],
 }
 

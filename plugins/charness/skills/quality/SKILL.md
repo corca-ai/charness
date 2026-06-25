@@ -26,6 +26,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current
 python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root . --json
+# For a target-skill review, add: --target-skill <skill-id>
 rg --files .
 git status --short
 ```
@@ -33,20 +34,25 @@ git status --short
 ## Workflow
 
 1. Restate the quality question and scope.
-2. Run `plan_quality_run.py`.
+2. Run `plan_quality_run.py`; when the quality question names a target skill,
+   pass `--target-skill <skill-id>` so the planner anchors the structural packet.
 3. Read every planner `required_reads` entry before broad gates.
 4. Run applicable `gate_packets` as report-first evidence. Use each packet's
    `trust_model`, `cost_tier`, `parallel_group`, and `run_when` to decide what
    can be trusted directly, what can run in parallel, and what needs judgment
    because false positives or false negatives are expected.
-5. Open `on_demand_reads` only when a concrete gate, inventory, source, or
+5. When the planner emits `structural_review_packet`, answer it before broad
+   recommendations. Separate target-skill findings, ambient repo gate failures,
+   opportunistic repairs, and non-claims; record a `structural review result:`
+   line when consuming skill-ergonomics inventory.
+6. Open `on_demand_reads` only when a concrete gate, inventory, source, or
    operator finding matches its trigger.
-6. Classify findings by enforcement tier and posture, then recommend the next
+7. Classify findings by enforcement tier and posture, then recommend the next
    concrete gate, cleanup, deletion, merge, ownership split, helper extraction,
    or interface narrowing.
-7. Use `scaffold_quality_artifact.py` for the quality artifact; the scaffold and
+8. Use `scaffold_quality_artifact.py` for the quality artifact; the scaffold and
    validator own the output shape.
-8. Run bounded fresh-eye review after initial inventory and before broad
+9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`
    and host field `reviewer_tiers.high-leverage` when available.

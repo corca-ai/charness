@@ -81,6 +81,8 @@ def render_template(*, title: str, date_text: str) -> str:
                 [
                     heading,
                     "",
+                    "- structural review result: TODO answer `structural_review_packet` from the planner because target-skill recommendations need judgment beyond heuristic output.",
+                    "- prose review result: TODO trigger boundaries, progressive disclosure, helper ownership, dogfood pressure, and target-vs-ambient split because TODO evidence.",
                     "- TODO advisory bullet — cite `inventory`/command:/artifact: evidence"
                     " (or write `none found by inventory` with a `command:`).",
                     "",
@@ -120,6 +122,18 @@ def render_template(*, title: str, date_text: str) -> str:
                     heading,
                     "",
                     "- [TODO prior review](history/TODO-quality-review.md)",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Scope":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "Target boundary: TODO target skill, repo-wide quality question, or explicit non-target.",
+                    "",
+                    "Ambient repo findings: TODO broad-gate failures and opportunistic repairs that are not target-skill quality findings.",
                     "",
                 ]
             )

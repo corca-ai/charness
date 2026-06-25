@@ -34,6 +34,14 @@ SKILL_ERGONOMICS_INVENTORY = "inventory_skill_ergonomics.py"
 PROSE_REVIEW_RESULT_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?(?:prose[\s-]+review\s+result)\s*:",
 )
+# floor-addition-restraint: this tightens an existing skill-ergonomics citation
+# contract after a quality dogfood run passed with inventory compliance but no
+# target-skill structural judgment. It does not add a new artifact section.
+STRUCTURAL_REVIEW_RESULT_RE = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?(?:structural[\s-]+review\s+result)\s*:",
+)
+TARGET_BOUNDARY_RE = re.compile(r"(?im)^\s*(?:[-*]\s*)?Target boundary\s*:")
+AMBIENT_REPO_FINDINGS_RE = re.compile(r"(?im)^\s*(?:[-*]\s*)?Ambient repo findings\s*:")
 
 
 def parse_args() -> argparse.Namespace:
@@ -54,6 +62,37 @@ def _split_sections(text: str) -> dict[str, str]:
             continue
         sections[current].append(line)
     return {header: "\n".join(lines) for header, lines in sections.items()}
+
+
+def _skill_ergonomics_failures(inventory: str, body_without_commands: str) -> list[str]:
+    checks = [
+        (
+            re.compile(r"\bprose_review_status\b"),
+            "body does not engage with `prose_review_status`; skill ergonomics inventory "
+            "output is not a prose-review result.",
+        ),
+        (
+            TARGET_BOUNDARY_RE,
+            "body lacks an explicit `Target boundary:` line outside the command log.",
+        ),
+        (
+            AMBIENT_REPO_FINDINGS_RE,
+            "body lacks an explicit `Ambient repo findings:` line outside the command log.",
+        ),
+        (
+            PROSE_REVIEW_RESULT_RE,
+            "body lacks an explicit `prose review result:` line outside the command log.",
+        ),
+        (
+            STRUCTURAL_REVIEW_RESULT_RE,
+            "body lacks an explicit `structural review result:` line outside the command log.",
+        ),
+    ]
+    return [
+        f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact {message}"
+        for pattern, message in checks
+        if not pattern.search(body_without_commands)
+    ]
 
 
 def main() -> int:
@@ -120,17 +159,7 @@ def main() -> int:
         else:
             declared_consumed.append(inventory)
         if inventory == SKILL_ERGONOMICS_INVENTORY:
-            if not re.search(r"\bprose_review_status\b", body_without_commands):
-                failures.append(
-                    f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact "
-                    "body does not engage with `prose_review_status`; skill ergonomics inventory "
-                    "output is not a prose-review result."
-                )
-            if not PROSE_REVIEW_RESULT_RE.search(body_without_commands):
-                failures.append(
-                    f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact "
-                    "body lacks an explicit `prose review result:` line outside the command log."
-                )
+            failures.extend(_skill_ergonomics_failures(inventory, body_without_commands))
 
     if failures:
         for failure in failures:

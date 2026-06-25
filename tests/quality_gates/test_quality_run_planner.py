@@ -27,8 +27,8 @@ PLAN = importlib.util.module_from_spec(PLAN_SPEC)
 PLAN_SPEC.loader.exec_module(PLAN)
 
 
-def _run_plan(repo: Path) -> dict[str, object]:
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+def _run_plan(repo: Path, *extra: str) -> dict[str, object]:
+    result = run_script(SCRIPT, "--repo-root", str(repo), *extra, "--json")
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
 
@@ -82,9 +82,38 @@ def test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo(tmp_path:
     assert plan["sample_skill_paths"] == ["skills/public/demo/SKILL.md"]
     assert "references/skill-quality.md" in plan["required_primer_refs"]
     assert "references/skill-ergonomics.md" in plan["required_primer_refs"]
+    packet = plan["structural_review_packet"]
+    assert packet["required"] is True
+    assert packet["target_skill"]["status"] == "unspecified"
+    assert "Target boundary:" in packet["write_artifact_signals"]
+    assert "Ambient repo findings:" in packet["write_artifact_signals"]
+    assert "structural review result:" in packet["write_artifact_signals"]
+    assert {question["id"] for question in packet["questions"]} >= {
+        "target_vs_ambient",
+        "helper_owned_packet",
+        "dogfood_pressure",
+        "next_structural_move",
+    }
     assert any("before broad gates" in barrier for barrier in plan["phase_barriers"])
     assert any("before fixing" in barrier for barrier in plan["phase_barriers"])
+    assert any("structural_review_packet" in barrier for barrier in plan["phase_barriers"])
     assert any("trust_model" in barrier for barrier in plan["phase_barriers"])
+
+
+def test_quality_run_plan_resolves_target_skill_for_structural_review(tmp_path: Path) -> None:
+    repo = tmp_path / "skill_repo"
+    for skill_id in ("retro", "quality"):
+        skill_dir = repo / "skills" / "public" / skill_id
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(f"# {skill_id}\n", encoding="utf-8")
+
+    plan = _run_plan(repo, "--target-skill", "retro")
+
+    target = plan["structural_review_packet"]["target_skill"]
+    assert target["requested"] == "retro"
+    assert target["status"] == "resolved"
+    assert target["path"] == "skills/public/retro/SKILL.md"
+    assert "target-vs-ambient" in target["note"]
 
 
 def test_quality_run_plan_detects_plugin_only_skill_authoring_repo(tmp_path: Path) -> None:
@@ -147,6 +176,12 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                 {"path": "references/quality-lenses.md", "why": "judge the report"}
             ],
             "phase_barriers": ["Trust deterministic gates; inspect advisory gates."],
+            "structural_review_packet": {
+                "target_skill": {"status": "resolved", "path": "skills/public/retro/SKILL.md"},
+                "questions": [
+                    {"id": "target_vs_ambient", "question": "Separate target and ambient findings."}
+                ],
+            },
             "gate_packets": [
                 {
                     "id": "read-only-quality",
@@ -158,6 +193,8 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     )
 
     assert "references/quality-lenses.md: judge the report" in text
+    assert "- structural_review_packet:" in text
+    assert "target_vs_ambient: Separate target and ambient findings." in text
     assert "- gate_packets:" in text
     assert "read-only-quality: broad / advisory-plus-deterministic" in text
     assert "- on_demand_reads: open only from concrete findings" in text
