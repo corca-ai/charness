@@ -18,6 +18,7 @@ STANDING_PYTEST_TARGETS = (
     "tests/test_*.py",
     "tests/charness_cli",
 )
+DEFAULT_XDIST_WORKER_CAP = 16
 
 
 def repo_tmp_key(repo_root: Path) -> str:
@@ -80,6 +81,27 @@ def has_xdist(pytest_command: list[str]) -> bool:
     return "--numprocesses" in (help_result.stdout + help_result.stderr)
 
 
+def choose_xdist_workers(env: dict[str, str] | None = None) -> str:
+    env = os.environ if env is None else env
+    override = env.get("CHARNESS_PYTEST_WORKERS", "").strip()
+    if override:
+        if override in {"auto", "logical"}:
+            return override
+        try:
+            workers = int(override)
+        except ValueError as exc:
+            raise SystemExit(
+                "standing-pytest: CHARNESS_PYTEST_WORKERS must be a positive integer, "
+                "'auto', or 'logical'"
+            ) from exc
+        if workers < 1:
+            raise SystemExit("standing-pytest: CHARNESS_PYTEST_WORKERS must be >= 1")
+        return str(workers)
+
+    cpu_count = os.cpu_count() or DEFAULT_XDIST_WORKER_CAP
+    return str(min(cpu_count, DEFAULT_XDIST_WORKER_CAP))
+
+
 def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS) -> list[str]:
     expanded: list[str] = []
     for target in targets:
@@ -96,13 +118,14 @@ def build_pytest_command(
     *,
     basetemp: Path,
     include_release_only: bool,
+    env: dict[str, str] | None = None,
 ) -> list[str]:
     command = [*choose_pytest_command(), "-q"]
     if not include_release_only:
         command.extend(["-m", "not release_only"])
     command.extend(["--basetemp", str(basetemp)])
     if has_xdist(command[:3] if command[:3] == ["python3", "-m", "pytest"] else command[:1]):
-        command.extend(["-n", "auto"])
+        command.extend(["-n", choose_xdist_workers(env)])
     else:
         print(
             "standing-pytest: pytest-xdist not installed; pytest will run serially "
@@ -125,6 +148,7 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
         repo_root,
         basetemp=basetemp,
         include_release_only=args.include_release_only,
+        env=env,
     )
     if args.print_command:
         print(shlex.join(command))

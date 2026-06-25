@@ -374,6 +374,12 @@
       "evidence_terms": ["prose_review_status", "advisories"],
       "rationale": "Skill ergonomics prose-review-required states produce advisory payloads consumed by quality artifacts."
     },
+    "skills/public/quality/scripts/inventory_skill_ergonomics.py": {
+      "states": ["prose_review_status"],
+      "visibility": ["structured_warning"],
+      "evidence_terms": ["prose_review_status", "advisories"],
+      "rationale": "The compact skill ergonomics summary carries prose-review-required state and the advisory list so reviewers do not need the full per-skill payload to see the non-blocking attention state."
+    },
     "skills/public/quality/scripts/validate_skill_ergonomics.py": {
       "states": ["advisory-only", "disabled", "skipped"],
       "visibility": ["structured_warning", "stdout_attention"],

@@ -66,6 +66,32 @@ INTERPRETATION = {
     ),
 }
 
+SUMMARY_FIELDS = (
+    "repo_root",
+    "status",
+    "scope_status",
+    "finding_status",
+    "prose_review_status",
+    "checked_skill_count",
+    "heuristic_finding_count",
+    "subcheck_counts",
+    "adapter_valid",
+    "adapter_errors",
+    "adapter_warnings",
+    "advisories",
+    "interpretation",
+)
+SUMMARY_SKILL_FIELDS = (
+    "skill_id",
+    "skill_type",
+    "skill_path",
+    "core_nonempty_lines",
+    "reference_file_count",
+    "script_file_count",
+    "heuristics",
+    "subcheck_counts",
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -73,6 +99,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-path", action="append", default=[], help="Skill directory or SKILL.md to inventory (repeatable; defaults applied if omitted)")
     parser.add_argument("--max-core-lines", type=int, default=160, help="Non-empty line count above which a SKILL.md core is flagged as long")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON for agent review instead of per-finding detail")
     return parser.parse_args()
 
 
@@ -151,6 +178,22 @@ def inventory_skill(repo_root: Path, skill_path: Path, *, max_core_lines: int, r
     )
 
 
+def _pick(data: dict[str, object], fields: tuple[str, ...]) -> dict[str, object]:
+    return {field: data.get(field) for field in fields}
+
+
+def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
+    skills = payload.get("skills", [])
+    skill_items = skills if isinstance(skills, list) else []
+    summary = _pick(payload, SUMMARY_FIELDS)
+    summary["skills_with_heuristics"] = [
+        _pick(item, SUMMARY_SKILL_FIELDS)
+        for item in skill_items
+        if isinstance(item, dict) and item.get("heuristics")
+    ]
+    return summary
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -183,7 +226,9 @@ def main() -> int:
         "interpretation": dict(INTERPRETATION),
         "skills": skills,
     }
-    if args.json:
+    if args.summary:
+        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2))
+    elif args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         if payload["status"] == "unconfigured":

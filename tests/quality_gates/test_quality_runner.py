@@ -223,7 +223,7 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     assert "/charness/pytest-tmp/" in payload["temproot"]
     assert "--basetemp" in payload["args"]
     assert "-n" in payload["args"]
-    assert "auto" in payload["args"]
+    assert "16" in payload["args"]
     assert "tests/charness_cli" in payload["args"]
     basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
     assert basetemp.startswith(payload["temproot"] + "/pytest-of-")

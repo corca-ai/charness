@@ -1,45 +1,9 @@
 from __future__ import annotations
 
-import contextlib
-import importlib.util
-import io
 import json
-import sys
 from pathlib import Path
-from typing import NamedTuple
 
-from .support import ROOT
-
-# In-process boundary conversion (testability-dsl-initiative goal 1): load the
-# inventory entrypoint by file and drive its `main()` with captured stdout/stderr
-# instead of crossing a process boundary. main() parses argv and returns the exit
-# code, so patching sys.argv and capturing the streams reproduces the same CLI
-# surface (flags, exit code, adapter-wrapped JSON payload) the boundary test read.
-_SPEC = importlib.util.spec_from_file_location(
-    "inventory_skill_ergonomics",
-    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_skill_ergonomics.py",
-)
-assert _SPEC is not None and _SPEC.loader is not None
-_MODULE = importlib.util.module_from_spec(_SPEC)
-_SPEC.loader.exec_module(_MODULE)
-
-
-class _Result(NamedTuple):
-    returncode: int
-    stdout: str
-    stderr: str
-
-
-def _run(*args: str) -> _Result:
-    out, err = io.StringIO(), io.StringIO()
-    saved_argv = sys.argv
-    sys.argv = ["inventory_skill_ergonomics.py", *args]
-    try:
-        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-            code = _MODULE.main()
-    finally:
-        sys.argv = saved_argv
-    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
+from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
 
 
 def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> None:

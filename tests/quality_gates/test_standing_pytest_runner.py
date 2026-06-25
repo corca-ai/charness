@@ -17,16 +17,18 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     (tmp_path / "tests" / "charness_cli").mkdir()
     monkeypatch.setattr(runner, "choose_pytest_command", lambda: ["python3", "-m", "pytest"])
     monkeypatch.setattr(runner, "has_xdist", lambda command: True)
+    monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
 
     command = runner.build_pytest_command(
         tmp_path,
         basetemp=tmp_path.parent / "pytest-tmp",
         include_release_only=False,
+        env={},
     )
 
     assert command[:6] == ["python3", "-m", "pytest", "-q", "-m", "not release_only"]
     assert "-n" in command
-    assert "auto" in command
+    assert "16" in command
     assert "tests/test_alpha.py" in command
     assert "tests/test_*.py" not in command
     assert "tests/charness_cli" in command
@@ -103,6 +105,30 @@ def test_standing_pytest_command_probes_and_serial_fallback(
     assert command[:3] == ["pytest", "-q", "--basetemp"]
     assert "-m" not in command
     assert "pytest-xdist not installed" in capsys.readouterr().err
+
+
+def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner.os, "cpu_count", lambda: 64)
+
+    assert runner.choose_xdist_workers({}) == "16"
+    assert runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "8"}) == "8"
+    assert runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "auto"}) == "auto"
+
+    try:
+        runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "0"})
+    except SystemExit as exc:
+        assert "must be >= 1" in str(exc)
+    else:
+        raise AssertionError("expected SystemExit for invalid worker count")
+
+    try:
+        runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "many"})
+    except SystemExit as exc:
+        assert "positive integer" in str(exc)
+    else:
+        raise AssertionError("expected SystemExit for non-numeric worker count")
 
 
 def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
