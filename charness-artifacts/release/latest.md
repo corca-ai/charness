@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -55,7 +55,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 17.
+- Path hits: 18.
   - `skills/public/release/adapter.example.yaml`
   - `skills/public/release/references/adapter-contract.md`
   - `skills/public/release/references/critique-boundary.md`
@@ -63,6 +63,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
   - `skills/public/release/scripts/plan_release_run_packets.py`
   - `skills/public/release/scripts/publish_release_cli.py`
   - `skills/public/release/scripts/publish_release_preflight.py`
+  - `skills/public/release/scripts/publish_release_retro.py`
   - `skills/support/web-fetch/references/routing-table.md`
   - `skills/support/web-fetch/scripts/acquire_public_url.py`
   - `skills/support/web-fetch/scripts/browser_fallback_stages.py`
@@ -73,7 +74,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
   - `skills/support/web-fetch/scripts/twitter_exact_source.py`
   - `skills/support/web-fetch/scripts/url_reader.py`
   - `skills/support/web-fetch/scripts/youtube_source.py`
-- Evaluated changed paths: 175.
+- Evaluated changed paths: 182.
   - `.agents/critique-adapter.yaml`
   - `.agents/release-adapter.yaml`
   - `.agents/retro-adapter.yaml`
@@ -94,7 +95,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
   - `charness-artifacts/critique/release-0-55-0-full-packet.md`
   - `charness-artifacts/debug/2026-06-25-issue-400-js-mutation-weight-gap.md`
   - `charness-artifacts/debug/seam-risk-index.json`
-  - ... 155 more
+  - ... 162 more
 
 ## Real-Host Verification
 
@@ -121,7 +122,7 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
