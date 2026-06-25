@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.55.1` (tag `v0.55.1`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -48,7 +48,7 @@ Advanced `charness` toward release `0.55.1` (tag `v0.55.1`) through the repo-own
 - Surface hits: 1.
   - `checked-in-plugin-export`
 - Path hits: 0.
-- Evaluated changed paths: 19.
+- Evaluated changed paths: 23.
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/release-0-55-1-critique.md`
   - `charness-artifacts/critique/release-0-55-1-packet.json`
@@ -56,18 +56,20 @@ Advanced `charness` toward release `0.55.1` (tag `v0.55.1`) through the repo-own
   - `charness-artifacts/quality/2026-06-25-spec-impl-skill-quality-review.md`
   - `charness-artifacts/quality/history/2026-06-25-critique-skill-quality-review.md`
   - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/release/v0.55.1-notes.md`
   - `charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md`
+  - `charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md`
+  - `charness-artifacts/retro/lesson-selection-index.json`
+  - `charness-artifacts/retro/recent-lessons.md`
   - `docs/handoff.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
   - `plugins/charness/skills/critique/SKILL.md`
   - `plugins/charness/skills/critique/references/prepare-packet.md`
-  - `skills/public/critique/SKILL.md`
-  - `skills/public/critique/references/prepare-packet.md`
-  - `tests/quality_gates/test_critique_skill.py`
+  - ... 3 more
 
 ## Real-Host Verification
 
@@ -87,7 +89,7 @@ Advanced `charness` toward release `0.55.1` (tag `v0.55.1`) through the repo-own
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
