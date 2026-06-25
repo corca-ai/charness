@@ -107,11 +107,15 @@ Advanced `charness` toward release `0.55.0` (tag `v0.55.0`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Configured real-host verification was required for this slice and is recorded
+  in `charness-artifacts/release/2026-06-25-v0.55.0-real-host-proof.md`, with
+  the post-publish maintainer install refresh recorded below.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
+- Release-time real-host proof was required for this slice. The generated
+  checklist is retained here with the executed proof split across the cited
+  real-host proof artifact and the `## Install Refresh` record below.
 - On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
 - Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
 - Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
