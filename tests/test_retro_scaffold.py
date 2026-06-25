@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import shlex
 import subprocess
@@ -8,6 +9,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 SCAFFOLD = "skills/public/retro/scripts/scaffold_retro_artifact.py"
+
+SCAFFOLD_SPEC = importlib.util.spec_from_file_location(
+    "scaffold_retro_artifact", ROOT / SCAFFOLD
+)
+assert SCAFFOLD_SPEC is not None and SCAFFOLD_SPEC.loader is not None
+SCAFFOLD_MODULE = importlib.util.module_from_spec(SCAFFOLD_SPEC)
+SCAFFOLD_SPEC.loader.exec_module(SCAFFOLD_MODULE)
 
 
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -55,6 +63,15 @@ def test_retro_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     )
     assert validation.returncode == 0, validation.stderr
     assert "Validated 1 retro artifact" in validation.stdout
+
+
+def test_retro_scaffold_template_includes_persisted_section_in_process() -> None:
+    template = SCAFFOLD_MODULE.render_template(
+        title="Retro",
+        date_text="2026-06-25",
+    )
+
+    assert "## Persisted\n\nPersisted: yes: TODO path" in template
 
 
 def test_exported_retro_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

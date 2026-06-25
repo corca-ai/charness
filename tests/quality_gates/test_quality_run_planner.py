@@ -116,6 +116,40 @@ def test_quality_run_plan_resolves_target_skill_for_structural_review(tmp_path: 
     assert "target-vs-ambient" in target["note"]
 
 
+def test_quality_run_plan_reports_ambiguous_target_skill(tmp_path: Path) -> None:
+    repo = tmp_path / "skill_repo"
+    for skill_path in (
+        repo / "skills" / "public" / "demo" / "SKILL.md",
+        repo / "skills" / "support" / "demo" / "SKILL.md",
+    ):
+        skill_path.parent.mkdir(parents=True)
+        skill_path.write_text("# Demo\n", encoding="utf-8")
+
+    plan = _run_plan(repo, "--target-skill", "demo")
+
+    target = plan["structural_review_packet"]["target_skill"]
+    assert target["status"] == "ambiguous"
+    assert target["path"] is None
+    assert target["matches"] == [
+        "skills/public/demo/SKILL.md",
+        "skills/support/demo/SKILL.md",
+    ]
+
+
+def test_quality_run_plan_reports_missing_target_skill(tmp_path: Path) -> None:
+    repo = tmp_path / "skill_repo"
+    skill_dir = repo / "skills" / "public" / "quality"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text("# Quality\n", encoding="utf-8")
+
+    plan = _run_plan(repo, "--target-skill", "retro")
+
+    target = plan["structural_review_packet"]["target_skill"]
+    assert target["requested"] == "retro"
+    assert target["status"] == "not_found"
+    assert target["path"] is None
+
+
 def test_quality_run_plan_detects_plugin_only_skill_authoring_repo(tmp_path: Path) -> None:
     repo = tmp_path / "plugin_repo"
     skill_dir = repo / "plugins" / "acme" / "skills" / "demo"
