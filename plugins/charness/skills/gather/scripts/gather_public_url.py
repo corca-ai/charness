@@ -157,6 +157,18 @@ def _source_detail_lines(selected: dict[str, object]) -> list[str]:
     return lines
 
 
+def _source_resolution_lines(acquisition: dict[str, object]) -> list[str]:
+    resolution = acquisition.get("source_resolution")
+    if not isinstance(resolution, dict):
+        return []
+    lines = ["", "## Source Resolution", ""]
+    for key in ("verdict", "terminal_state", "required_capability", "next_owner"):
+        value = resolution.get(key)
+        if value not in (None, "", [], {}):
+            lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")
+    return lines
+
+
 def _render_record(url: str, acquisition: dict[str, object], *, persist_requested: bool) -> str:
     route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
     selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
@@ -172,6 +184,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
     attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
     content_persistence, content_lines = _extracted_content_lines(acquisition, requested=persist_requested)
     source_detail_lines = _source_detail_lines(selected)
+    source_resolution_lines = _source_resolution_lines(acquisition)
     return "\n".join(
         [
             "# Gathered Public URL",
@@ -201,6 +214,7 @@ def _render_record(url: str, acquisition: dict[str, object], *, persist_requeste
             "## Open Gaps",
             "",
             *gap_lines,
+            *source_resolution_lines,
             *source_detail_lines,
             *content_lines,
             "",
@@ -272,6 +286,26 @@ def _is_exact_source_terminal_record(acquisition: dict[str, object]) -> bool:
     return False
 
 
+def _acquisition_summary(
+    args: argparse.Namespace,
+    acquisition: dict[str, object],
+    *,
+    acquisition_disposition: str,
+    final_status: str,
+    final_confidence: str,
+    content_persistence: str,
+) -> dict[str, object]:
+    return {
+        "source_url": args.url,
+        "acquisition_disposition": acquisition_disposition,
+        "final_status": final_status,
+        "final_confidence": final_confidence,
+        "source_identity": acquisition.get("source_identity", "not-applicable"),
+        "source_resolution": acquisition.get("source_resolution"),
+        "content_persistence": content_persistence,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
     parser.add_argument("--url", required=True, help="Public URL to gather")
@@ -303,12 +337,14 @@ def main() -> int:
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
             "reason": f"acquisition-{acquisition_disposition}",
-            "source_url": args.url,
-            "acquisition_disposition": acquisition_disposition,
-            "final_status": final_status,
-            "final_confidence": final_confidence,
-            "source_identity": acquisition.get("source_identity", "not-applicable"),
-            "content_persistence": "none",
+            **_acquisition_summary(
+                args,
+                acquisition,
+                acquisition_disposition=acquisition_disposition,
+                final_status=final_status,
+                final_confidence=final_confidence,
+                content_persistence="none",
+            ),
             "acquisition": acquisition,
             "write_record": None,
         }
@@ -332,12 +368,14 @@ def main() -> int:
     payload = {
         "status": write_payload.get("status"),
         "record_status": write_payload.get("status"),
-        "source_url": args.url,
-        "acquisition_disposition": acquisition_disposition,
-        "final_status": final_status,
-        "final_confidence": final_confidence,
-        "source_identity": acquisition.get("source_identity", "not-applicable"),
-        "content_persistence": content_persistence,
+        **_acquisition_summary(
+            args,
+            acquisition,
+            acquisition_disposition=acquisition_disposition,
+            final_status=final_status,
+            final_confidence=final_confidence,
+            content_persistence=content_persistence,
+        ),
         "acquisition": _trace_payload(acquisition),
         "write_record": write_payload,
     }

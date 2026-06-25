@@ -20,6 +20,8 @@ import twitter_exact_source as tes  # noqa: E402
 SID = "1799999999999999999"
 STATUS_URL = f"https://x.com/acme/status/{SID}"
 SYND_URL = f"https://cdn.syndication.twimg.com/tweet-result?id={SID}&lang=en"
+ISSUE_392_SID = "2063032701087883647"
+ISSUE_392_STATUS_URL = f"https://x.com/jenzhuscott/status/{ISSUE_392_SID}"
 
 
 def test_module_bootstrap_inserts_script_dir_when_absent(monkeypatch) -> None:
@@ -176,6 +178,27 @@ def test_classify_source_identity_all_outcomes() -> None:
     assert tes.classify_source_identity({"route": "nope", "attempts": []}) == "not-applicable"
 
 
+def test_classify_source_resolution_names_unblock_owner() -> None:
+    exact = [{"stage_id": "domain-specific-route", "status": "success", "details": {"endpoint": SYND_URL, "outcome": "exact-fetched"}}]
+    blocked = [{"stage_id": "domain-specific-route", "status": "captcha", "details": {"endpoint": SYND_URL, "reason": "blocked"}}]
+    unavailable = [{
+        "stage_id": "domain-specific-route",
+        "status": "error",
+        "error": "live-fetch-not-enabled",
+        "details": {"endpoint": SYND_URL, "reason": "fetch-failed"},
+    }]
+    unsupported = [{"stage_id": "domain-specific-route", "status": "skipped", "details": {"reason": "no-status-id"}}]
+    not_applicable = [{"stage_id": "domain-specific-route", "status": "captcha", "details": {"endpoint": SYND_URL}}]
+    unknown_terminal = [{"stage_id": "domain-specific-route", "status": "error", "details": {"endpoint": SYND_URL}}]
+
+    assert tes.classify_source_resolution(_acq(exact))["terminal_state"] == "exact-post-acquired"
+    assert tes.classify_source_resolution(_acq(blocked))["terminal_state"] == "exact-post-blocked-by-x"
+    assert tes.classify_source_resolution(_acq(unavailable))["terminal_state"] == "authenticated-browser-required"
+    assert tes.classify_source_resolution(_acq(unsupported))["terminal_state"] == "unsupported-route"
+    assert tes.classify_source_resolution(_acq(not_applicable, route_id="reddit-feed"))["terminal_state"] == "not-applicable"
+    assert tes.classify_source_resolution(_acq(unknown_terminal))["required_capability"] == "new exact-source route support"
+
+
 # --- make_fetcher ---
 
 
@@ -211,6 +234,7 @@ def test_acquire_exact_fetched_after_direct_captcha(tmp_path: Path) -> None:
     out = _run_acquire(tmp_path, direct=CAPTCHA, seed={SYND_URL: {"text": json.dumps({"id_str": SID, "text": "body"})}})
     assert out["disposition"] == "success"
     assert out["source_identity"] == "exact-fetched"
+    assert out["source_resolution"]["terminal_state"] == "exact-post-acquired"
     assert out["selected_attempt"]["stage_id"] == "domain-specific-route"
 
 
@@ -223,7 +247,37 @@ def test_acquire_exact_blocked_no_substitution(tmp_path: Path) -> None:
 def test_acquire_default_is_exact_unavailable_not_substituted(tmp_path: Path) -> None:
     out = _run_acquire(tmp_path, direct=CAPTCHA, seed=None)
     assert out["source_identity"] == "exact-unavailable"
+    assert out["source_resolution"]["terminal_state"] == "authenticated-browser-required"
+    assert out["source_resolution"]["required_capability"].startswith("operator-approved live X route")
     assert out["final_status"] != "success"
+
+
+def test_issue_392_target_url_records_authenticated_browser_required(tmp_path: Path) -> None:
+    direct_file = tmp_path / "direct.html"
+    direct_file.write_text(CAPTCHA, encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"),
+            "--url",
+            ISSUE_392_STATUS_URL,
+            "--direct-response-file",
+            str(direct_file),
+            "--browser-mode",
+            "off",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["source_identity"] == "exact-unavailable"
+    assert payload["source_resolution"]["terminal_state"] == "authenticated-browser-required"
+    assert payload["attempts"][1]["details"]["requested_status_id"] == ISSUE_392_SID
 
 
 def test_acquire_non_twitter_has_no_source_identity(tmp_path: Path) -> None:
@@ -265,6 +319,28 @@ def test_gather_record_surfaces_source_identity() -> None:
     }
     record = gpu._render_record(STATUS_URL, acquisition, persist_requested=False)
     assert "Source Identity: `exact-blocked`" in record
+
+
+def test_gather_record_surfaces_source_resolution() -> None:
+    acquisition = {
+        "route": {"route_id": "twitter-syndication", "route_family": "public-api", "access_modes": []},
+        "selected_attempt": {"stage_id": "domain-specific-route", "status": "error"},
+        "attempts": [{"stage_id": "domain-specific-route", "status": "error", "details": {"endpoint": SYND_URL}}],
+        "disposition": "degraded",
+        "final_status": "error",
+        "final_confidence": "none",
+        "source_identity": "exact-unavailable",
+        "source_resolution": {
+            "verdict": "exact-unavailable",
+            "terminal_state": "authenticated-browser-required",
+            "required_capability": "operator-approved live X route",
+            "next_owner": "Charness gather/browser/provider capability",
+        },
+    }
+    record = gpu._render_record(STATUS_URL, acquisition, persist_requested=False)
+    assert "## Source Resolution" in record
+    assert "Terminal State: `authenticated-browser-required`" in record
+    assert "Next Owner: `Charness gather/browser/provider capability`" in record
 
 
 def test_exact_source_terminal_record_predicate_rejects_non_terminal_shapes() -> None:
@@ -323,10 +399,12 @@ def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["acquisition_disposition"] == "blocked"
     assert payload["source_identity"] == "exact-blocked"
+    assert payload["source_resolution"]["terminal_state"] == "exact-post-blocked-by-x"
     assert payload["content_persistence"] == "none"
     record_path = Path(payload["write_record"]["record_artifact_path"])
     record = record_path.read_text(encoding="utf-8")
     assert "Source Identity: `exact-blocked`" in record
+    assert "Terminal State: `exact-post-blocked-by-x`" in record
     assert "Content Persistence: `none`" in record
     assert "captcha verify you are human" not in record
     assert "DIRECT-CAPTCHA-BODY-SHOULD-NOT-PERSIST" not in record
@@ -334,6 +412,52 @@ def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
     assert "selected_content" not in record
     assert "content_text" not in record
     assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
+
+
+def test_gather_writes_exact_source_fetched_record_with_resolution(tmp_path: Path) -> None:
+    direct_file = tmp_path / "direct.html"
+    direct_file.write_text(
+        "<html><body>captcha DIRECT-CAPTCHA-BODY-SHOULD-NOT-PERSIST</body></html>",
+        encoding="utf-8",
+    )
+    seed_file = tmp_path / "seed.json"
+    seed_file.write_text(json.dumps({SYND_URL: {"text": json.dumps({"id_str": SID, "text": "body"})}}), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--url",
+            STATUS_URL,
+            "--direct-response-file",
+            str(direct_file),
+            "--domain-route-response-file",
+            str(seed_file),
+            "--browser-mode",
+            "off",
+            "--slug",
+            "fetched-twitter-exact",
+            "--date",
+            "2026-06-24",
+            "--execute",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["acquisition_disposition"] == "success"
+    assert payload["source_identity"] == "exact-fetched"
+    assert payload["source_resolution"]["terminal_state"] == "exact-post-acquired"
+    record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
+    assert "Source Identity: `exact-fetched`" in record
+    assert "Terminal State: `exact-post-acquired`" in record
+    assert "DIRECT-CAPTCHA-BODY-SHOULD-NOT-PERSIST" not in record
 
 
 def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
@@ -368,8 +492,10 @@ def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["acquisition_disposition"] == "degraded"
     assert payload["source_identity"] == "exact-unavailable"
+    assert payload["source_resolution"]["terminal_state"] == "authenticated-browser-required"
     record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
     assert "Source Identity: `exact-unavailable`" in record
+    assert "Terminal State: `authenticated-browser-required`" in record
     assert "live-fetch-not-enabled" in record
     assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
 
@@ -403,6 +529,7 @@ def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> N
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["source_identity"] == "exact-unavailable"
+    assert payload["source_resolution"]["terminal_state"] == "unsupported-route"
     assert payload["write_record"] is None
     assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
 

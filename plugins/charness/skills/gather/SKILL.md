@@ -91,9 +91,15 @@ or adjacent post is not the source the user asked to gather.
 
 For X/Twitter status URLs, exact-source acquisition must either produce
 `exact-fetched` or stop with `exact-blocked` / `exact-unavailable`; never present
-a similar public source as the original. For Reddit, prefer source-bound RSS
-feeds before JSON/raw-page fallbacks and preserve the Reddit URL identity even
-when the route blocks.
+a similar public source as the original. The acquisition trace should also
+surface `source_resolution.terminal_state` so callers can distinguish
+`exact-post-acquired`, `exact-post-blocked-by-x`,
+`authenticated-browser-required`, and `unsupported-route`.
+`authenticated-browser-required` means the default public/non-live route did not
+attempt exact-source endpoints and the next attempt needs an operator-approved
+live X route, authenticated browser/profile, or exact-source provider. For
+Reddit, prefer source-bound RSS feeds before JSON/raw-page fallbacks and
+preserve the Reddit URL identity even when the route blocks.
 
 ## Output Shape
 

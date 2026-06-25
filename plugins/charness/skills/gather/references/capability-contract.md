@@ -155,6 +155,13 @@ identity even when acquisition fails.
 - X/Twitter status URLs: accept only an identity-keyed exact post result
   (`exact-fetched`); otherwise stop as `exact-blocked` or `exact-unavailable`.
   A search snippet, adjacent status, cache, or timeline item is not the original.
+  Preserve `source_resolution.terminal_state` so the answer path can name
+  whether the exact post was acquired, blocked by X, needs an authenticated
+  browser/profile or exact-source provider, or is an unsupported route. The
+  `authenticated-browser-required` bucket also covers the default non-live exact
+  endpoint policy: no exact endpoint was attempted live until an operator
+  approves a live X route, authenticated browser/profile, or exact-source
+  provider.
 - Reddit URLs: prefer source-bound RSS feeds before JSON/raw-page fallbacks and
   preserve the Reddit URL identity. A general web-search result may help explain
   context, but it is not a gathered Reddit source unless explicitly labeled as

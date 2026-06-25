@@ -163,6 +163,55 @@ def classify_source_identity(acquisition: dict) -> str:
     return "exact-blocked" if executed else "exact-unavailable"
 
 
+def classify_source_resolution(acquisition: dict) -> dict[str, object]:
+    """Explain who owns the next unblock for an X/Twitter exact-source result.
+
+    `authenticated-browser-required` is the user-facing terminal bucket for
+    exact-source endpoints that were not attempted under the default non-live
+    policy. It means an operator-approved live route, authenticated
+    browser/profile, or exact-source provider must own the next attempt.
+    """
+    verdict = classify_source_identity(acquisition)
+    if verdict == "not-applicable":
+        return {"verdict": verdict, "terminal_state": "not-applicable"}
+    if verdict == "exact-fetched":
+        return {
+            "verdict": verdict,
+            "terminal_state": "exact-post-acquired",
+            "required_capability": None,
+            "next_owner": "none",
+        }
+
+    domain = stage_attempts(acquisition, STAGE_ID)
+    if any(isinstance(a.get("details"), dict) and a["details"].get("reason") == "no-status-id" for a in domain):
+        return {
+            "verdict": verdict,
+            "terminal_state": "unsupported-route",
+            "required_capability": "x-status-url",
+            "next_owner": "caller",
+        }
+    if any(a.get("error") == "live-fetch-not-enabled" and attempt_endpoint(a) for a in domain):
+        return {
+            "verdict": verdict,
+            "terminal_state": "authenticated-browser-required",
+            "required_capability": "operator-approved live X route, authenticated browser/profile, or exact-source provider",
+            "next_owner": "Charness gather/browser/provider capability",
+        }
+    if any(a.get("status") in BLOCKED_STATUSES for a in domain):
+        return {
+            "verdict": verdict,
+            "terminal_state": "exact-post-blocked-by-x",
+            "required_capability": "authenticated browser/profile or exact-source provider",
+            "next_owner": "browser/profile access or external provider",
+        }
+    return {
+        "verdict": verdict,
+        "terminal_state": "unsupported-route",
+        "required_capability": "new exact-source route support",
+        "next_owner": "Charness gather",
+    }
+
+
 def make_fetcher(seed_map: dict | None = None, *, live: bool = False, live_fetch: Callable[[str], "tuple[str | None, str | None]"] | None = None) -> Fetcher:
     """Build a fetcher. Seeded responses win (tests / host grants); live network
     fetch runs only when explicitly enabled; otherwise the endpoint is recorded as

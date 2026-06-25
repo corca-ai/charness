@@ -15,6 +15,12 @@ reduced to tactics `charness` is willing to carry locally.
     passed off as the original
   - live fetching is injected, so the default is non-live: tests and host grants
     seed responses; an operator opts into live fetch explicitly
+  - the terminal `source_resolution` distinguishes exact acquisition, X blocking,
+    authenticated browser/profile or provider need, and unsupported routes so a
+    caller can stop retrying the wrong path without losing source identity
+  - `authenticated-browser-required` includes the default non-live policy: exact
+    endpoints are not attempted live until an operator approves a live X route,
+    authenticated browser/profile, or exact-source provider
 - `reddit.com`
   - prefer `.rss` feeds for posts and subreddit listings, then `.json` as a
     secondary source-bound public route

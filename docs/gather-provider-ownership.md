@@ -124,6 +124,12 @@ When a consumer wants provider-backed gather:
   - live X fetching is operator-authorized, not autonomous: the exact-source
     stage runs against seeded/granted responses by default, and live network
     fetch is an explicit opt-in (`--live-domain-route`)
+  - `source_resolution.terminal_state` names the terminal operator boundary:
+    `exact-post-acquired`, `exact-post-blocked-by-x`,
+    `authenticated-browser-required`, or `unsupported-route`;
+    `authenticated-browser-required` includes the default non-live policy where
+    exact endpoints were not attempted until an operator-approved live X route,
+    authenticated browser/profile, or exact-source provider is available
   - the Syndication endpoint is keyed on the post-body status id (genuine
     existence proof) and is tried first; oEmbed echoes the requested URL, so it
     proves *requested-id match* only and is accepted as the original solely when

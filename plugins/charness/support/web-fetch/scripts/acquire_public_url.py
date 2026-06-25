@@ -153,6 +153,7 @@ def _payload_for(
     )
     if route.get("route_id") == "twitter-syndication":
         result["source_identity"] = twitter_exact_source.classify_source_identity(result)
+        result["source_resolution"] = twitter_exact_source.classify_source_resolution(result)
     if route.get("route_id") == "reddit-feed":
         result["source_identity"] = reddit_source.classify_source_identity(result)
     if route.get("route_id") == "yt-dlp-metadata":
