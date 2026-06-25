@@ -10,3 +10,8 @@ snapshot_path: .charness/retro/weekly-latest.json
 summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths: []
 metrics_commands: []
+packet_sections:
+  - id: changed-files-and-owning-surfaces
+    title: Changed Files And Owning Surfaces
+    content_kind: script
+    command: "python3 scripts/render_critique_section_changed_surfaces.py"

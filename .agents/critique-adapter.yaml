@@ -23,4 +23,4 @@ packet_sections:
     content:
       - "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined."
       - "- Charness does not enforce packet content correctness — the validator owns shape only."
-      - "- The retro skill does not consume this packet today. A retro-side prepare slot (retro-adapter.yaml packet_sections) is a separate follow-up."
+      - "- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment."

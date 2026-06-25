@@ -18,14 +18,14 @@ log-backed behavior source or maintained scenario-registry change.
 ## Current Gates
 
 - `retro` core remains inside the skill ergonomics budget:
-  `core_nonempty_lines=140`, `reference_file_count=8`, `script_file_count=18`,
+  `core_nonempty_lines=146`, `reference_file_count=9`, `script_file_count=19`,
   `unlisted_reference_files=[]`.
 - Consumer dogfood classifies `retro` as a persisted repeat-trap workflow:
   expected skill `retro`, artifact `charness-artifacts/retro/recent-lessons.md`,
   tier `hitl-recommended`, adapter `required`.
-- Focused retro/handoff proof passed after fixes: 27/27 focused tests.
-- Standing quality passed after fixes: 79/79 in 44.6s; handoff pickup is
-  repaired at 59 lines, `status=ok`, `follow_workflow_trigger`.
+- Focused retro/handoff/packet proof passed after fixes: 52/52 focused tests.
+- Standing quality passed after commit: 79/79 in 39.9s; handoff pickup is
+  repaired at 59 lines.
 
 ## Runtime Signals
 
@@ -36,7 +36,7 @@ log-backed behavior source or maintained scenario-registry change.
   18.9s latest / 19.5s median, budget 55.0s; `check-duplicates` 10.0s latest /
   11.9s median, unbudgeted.
 - coverage gate: `./scripts/run-quality.sh --read-only` passed 79/79 after the
-  scaffold, mutation-coverage producer, and handoff near-limit fixes.
+  retro packet fix, dup-ratchet re-baseline, and handoff near-limit fix.
 - evaluator depth: deterministic gates only; Cautilus was not triggered by this
   quality review.
 
@@ -49,7 +49,8 @@ log-backed behavior source or maintained scenario-registry change.
   artifact writes, snapshot writes when configured, recent-lessons refresh, and
   legacy summary protection.
 - Behavior proof exists around persistence, auto-trigger policy, artifact
-  validation, scaffold generation, host-log probing, and Codex session auditing.
+  validation, scaffold generation, prepare packets, host-log probing, and Codex
+  session auditing.
 - Host-surface findings are mostly intentional adapter/evidence seams:
   `.agents` is canonical, `.codex`/`.claude` are compatibility fallbacks, and
   Codex-specific audit is optional evidence with unavailable/proxy semantics.
@@ -59,27 +60,25 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Weak
 
-- Fresh-eye review found one real retro defect: the scaffold emitted `yes: TODO
-  path` under `## Persisted`, while the skill/reference contract expects an
-  explicit `Persisted: yes...` or `Persisted: no...` statement. Fixed in
-  `scaffold_retro_artifact.py` and mirrored into `plugins/charness`.
+- Fresh-eye review found and fixed one real retro defect: scaffold output used
+  `yes: TODO path` under `## Persisted` instead of explicit `Persisted: ...`.
 - A post-commit broad gate initially reported stale changed-line mutation
-  coverage for the retro script; `run_slice_closeout.py
-  --produce-mutation-coverage` refreshed it with `pytest -q
-  tests/test_retro_scaffold.py`, and the next broad gate passed
-  `check-changed-line-mutation-coverage`.
+  coverage; slice closeout refreshed it with `pytest -q tests/test_retro_scaffold.py`.
 - This rerun initially failed the handoff pickup planner test at 70 lines
   (`near_limit`); pruning stale status detail restored pickup routing.
 - Existing length-band warnings remain outside this slice: `run_slice_closeout.py`,
   `goal_artifact_lib.py`, `route_public_fetch.py`, and six test files are near
   their hard line limits.
+- First quality closeout missed #401's explicit retro prepare-packet follow-up
+  until challenged. Fixed here and treated as quality evidence.
+- Dup-ratchet re-baseline was needed after adding retro packet/adapter boilerplate;
+  `check_dup_ratchet.py --json` then returned `status=clean`.
 
 ## Missing
 
-- No missing retro gate requiring immediate implementation remains after the
-  scaffold fix. A broader validator that enforces exact `Persisted:` prose for
-  all new retros may be useful, but existing historical fixtures use shorter
-  forms, so that would need a migration policy rather than this narrow fix.
+- No missing #401 retro gate requiring immediate implementation remains after the
+  scaffold and prepare-packet fixes. Exact `Persisted:` prose enforcement may be
+  useful later, but needs migration policy for historical fixtures.
 
 ## Deferred
 
@@ -90,15 +89,14 @@ log-backed behavior source or maintained scenario-registry change.
 
 ## Advisory
 
-- command: `inventory_skill_ergonomics.py --repo-root . --json` reports
-  `retro` heuristic `portable_package_host_surface_reference` with eight hits.
+- command: `inventory_skill_ergonomics.py --repo-root . --skill-path skills/public/retro/SKILL.md --json`
+  reports `portable_package_host_surface_reference` with eight hits.
   Prose disposition: intentional adapter/evidence seams for this slice.
 - prose review result: the ergonomics inventory's `prose_review_status=required`
   was satisfied by reviewing trigger boundaries, progressive disclosure,
   persistence behavior, host-surface findings, and the fresh-eye scaffold issue.
-- structural review result: the prior run exposed a `quality` gap rather than a
-  retro gap: skill ergonomics inventory did not force target-vs-ambient or next
-  structural-move judgment. The follow-up is this planner/validator change.
+- structural review result: the prior run exposed two `quality` gaps: weak
+  target-vs-ambient forcing and a missed #401 prepared-packet follow-up.
 - command: `suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
   reports persisted repeat-trap dogfood through `recent-lessons.md` and
   `hitl-recommended` tier.
@@ -122,10 +120,11 @@ log-backed behavior source or maintained scenario-registry change.
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
 - `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id retro`
 - `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
-- focused retro suite plus handoff planner proof: 27/27; pickup planner returned
-  `follow_workflow_trigger`.
+- focused retro/handoff/packet proof: 52/52; packet tests cover adapter
+  validation, `charness.retro_prepare_packet`, markdown, and empty-section wording.
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --produce-mutation-coverage --mutation-coverage-command "pytest -q tests/test_retro_scaffold.py"`
+- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --ack-cautilus-skill-review --refresh-broad-pytest-proof --produce-mutation-coverage --mutation-coverage-command "pytest -q tests/test_retro_prepare_packet.py tests/test_validate_adapters_integration_schema.py tests/test_critique_prepare_packet.py tests/quality_gates/test_retro_skill.py"`
+- dup baselines: `check_dup_ratchet.py --write-baseline --json`; `inventory_nose_clones.py --write-baseline --json`
 - `./scripts/run-quality.sh --read-only`
 
 ## Recommended Next Gates
@@ -134,6 +133,8 @@ log-backed behavior source or maintained scenario-registry change.
   provider-neutral session-audit wrapper for optional deep host-log evidence.
 - passive because it needs migration policy: consider exact `Persisted:` wording
   enforcement for future retro artifacts without breaking historical fixtures.
+- active for #401 next targets: a quality review must explicitly map issue text
+  and prepared evidence to the target skill before declaring "good enough."
 
 ## History
 - [2026-06-16 quality review](./history/2026-06-16-quality-review.md)

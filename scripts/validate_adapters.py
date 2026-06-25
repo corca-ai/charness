@@ -18,6 +18,10 @@ _scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cau
 load_cautilus_adapter = _scripts_cautilus_adapter_lib_module.load_cautilus_adapter
 _scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
 load_critique_adapter = _scripts_critique_adapter_lib_module.load_adapter
+_skills_public_retro_resolve_adapter_module = import_repo_module(
+    __file__, "skills.public.retro.scripts.resolve_adapter"
+)
+load_retro_adapter = _skills_public_retro_resolve_adapter_module.load_adapter
 _scripts_quality_adapter_lib_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter_strict = _scripts_quality_adapter_lib_module.load_quality_adapter_strict
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
@@ -245,6 +249,10 @@ def validate_adapter_yaml(path: Path) -> None:
         if not payload["valid"]:
             raise ValidationError(f"{path}: {'; '.join(payload['errors'])}")
         return
+    if path.name == "retro-adapter.yaml" and path.parent.name == ".agents":
+        payload = load_retro_adapter(path.parent.parent.resolve())
+        if not payload["valid"]:
+            raise ValidationError(f"{path}: {'; '.join(payload['errors'])}")
     if path.name == "quality-adapter.yaml" and path.parent.name == ".agents":
         payload = load_quality_adapter_strict(path.parent.parent.resolve())
         if not payload["valid"]:

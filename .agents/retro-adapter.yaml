@@ -13,6 +13,11 @@ evidence_paths:
   - charness-artifacts/debug
   - charness-artifacts/quality/latest.md
 metrics_commands: []
+packet_sections:
+  - id: changed-files-and-owning-surfaces
+    title: Changed Files And Owning Surfaces
+    content_kind: script
+    command: "python3 scripts/render_critique_section_changed_surfaces.py"
 auto_session_trigger_surfaces:
   - checked-in-plugin-export
   - integrations-and-control-plane

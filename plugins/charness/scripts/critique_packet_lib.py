@@ -28,13 +28,17 @@ def _now_iso() -> str:
 
 
 def _run_command(
-    command: str, *, repo_root: Path, changed_ref: str | None = None
+    command: str,
+    *,
+    repo_root: Path,
+    changed_ref: str | None = None,
+    changed_ref_env_var: str = "CHARNESS_CRITIQUE_CHANGED_REF",
 ) -> tuple[str, list[str], bool]:
     env = os.environ.copy()
     if changed_ref:
-        env["CHARNESS_CRITIQUE_CHANGED_REF"] = changed_ref
+        env[changed_ref_env_var] = changed_ref
     else:
-        env.pop("CHARNESS_CRITIQUE_CHANGED_REF", None)
+        env.pop(changed_ref_env_var, None)
     try:
         result = subprocess.run(
             shlex.split(command),
@@ -74,7 +78,11 @@ def _resolve_static(section: dict[str, Any], *, repo_root: Path) -> tuple[str, l
 
 
 def execute_section(
-    section: dict[str, Any], *, repo_root: Path, changed_ref: str | None = None
+    section: dict[str, Any],
+    *,
+    repo_root: Path,
+    changed_ref: str | None = None,
+    changed_ref_env_var: str = "CHARNESS_CRITIQUE_CHANGED_REF",
 ) -> dict[str, Any]:
     section_id = section.get("id", "")
     title = section.get("title", section_id)
@@ -82,7 +90,12 @@ def execute_section(
     if kind == "script":
         command = section.get("command", "")
         producer = command
-        content, errors, ok = _run_command(command, repo_root=repo_root, changed_ref=changed_ref)
+        content, errors, ok = _run_command(
+            command,
+            repo_root=repo_root,
+            changed_ref=changed_ref,
+            changed_ref_env_var=changed_ref_env_var,
+        )
     else:
         if "content" in section:
             producer = "static-config (inline)"
@@ -107,27 +120,37 @@ def build_packet(
     repo_root: Path,
     prepared_for: str,
     changed_ref: str | None = None,
+    packet_kind: str = PACKET_KIND,
+    include_reviewer_tier: bool = True,
+    changed_ref_env_var: str = "CHARNESS_CRITIQUE_CHANGED_REF",
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
     sections = [
-        execute_section(section, repo_root=repo_root, changed_ref=changed_ref)
+        execute_section(
+            section,
+            repo_root=repo_root,
+            changed_ref=changed_ref,
+            changed_ref_env_var=changed_ref_env_var,
+        )
         for section in sections_decl
     ]
     all_ok = all(section["ok"] for section in sections)
-    return {
-        "kind": PACKET_KIND,
+    packet: dict[str, Any] = {
+        "kind": packet_kind,
         "version": PACKET_VERSION,
         "repo": data.get("repo") or repo_root.name,
         "generated_at": _now_iso(),
         "prepared_for": prepared_for,
         "changed_ref": changed_ref,
         "adapter_path": _relative_adapter_path(adapter.get("path"), repo_root),
-        "reviewer_tier_evidence": reviewer_tier_evidence(data),
         "sections": sections,
         "section_count": len(sections),
         "ok": all_ok,
     }
+    if include_reviewer_tier:
+        packet["reviewer_tier_evidence"] = reviewer_tier_evidence(data)
+    return packet
 
 
 def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
@@ -158,7 +181,10 @@ def _relative_adapter_path(adapter_path: object, repo_root: Path) -> str | None:
 
 def render_markdown(packet: dict[str, Any]) -> str:
     lines: list[str] = []
-    lines.append(f"# Critique Prepare Packet — {packet['repo']}")
+    title = "Critique Prepare Packet"
+    if packet.get("kind") == "charness.retro_prepare_packet":
+        title = "Retro Prepare Packet"
+    lines.append(f"# {title} — {packet['repo']}")
     lines.append("")
     lines.append(f"- **Kind**: `{packet['kind']}` (v{packet['version']})")
     lines.append(f"- **Generated**: {packet['generated_at']}")
@@ -170,12 +196,16 @@ def render_markdown(packet: dict[str, Any]) -> str:
     lines.append(f"- **Sections**: {packet['section_count']}")
     lines.append(f"- **Overall ok**: {packet['ok']}")
     lines.append("")
-    lines.extend(render_reviewer_tier_evidence(packet.get("reviewer_tier_evidence")))
+    if "reviewer_tier_evidence" in packet:
+        lines.extend(render_reviewer_tier_evidence(packet.get("reviewer_tier_evidence")))
     lines.append("")
     if not packet["sections"]:
+        adapter_name = ".agents/critique-adapter.yaml"
+        if packet.get("kind") == "charness.retro_prepare_packet":
+            adapter_name = ".agents/retro-adapter.yaml"
         lines.append(
             "_No `packet_sections` declared in the adapter. The prepare contract is "
-            "opt-in; declare ≥1 section in `.agents/critique-adapter.yaml` to "
+            f"opt-in; declare >=1 section in `{adapter_name}` to "
             "populate this packet._"
         )
         lines.append("")

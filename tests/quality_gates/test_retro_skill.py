@@ -39,3 +39,19 @@ def test_retro_efficiency_waste_is_phase_aware() -> None:
     assert "Cached input tokens are not a waste conclusion by themselves" in efficiency_text
     assert "issue-resolution carrier" in efficiency_text
     assert "lifecycle/audit artifact" in efficiency_text
+
+
+def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None:
+    skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
+    adapter_text = (
+        ROOT / "skills" / "public" / "retro" / "references" / "adapter-contract.md"
+    ).read_text(encoding="utf-8")
+    packet_text = (
+        ROOT / "skills" / "public" / "retro" / "references" / "prepare-packet.md"
+    ).read_text(encoding="utf-8")
+
+    assert "prepare_packet.py" in skill_text
+    assert "Packet Consumed" in skill_text
+    assert "packet_sections" in adapter_text
+    assert "charness.retro_prepare_packet" in packet_text
+    assert "CHARNESS_RETRO_CHANGED_REF" in packet_text

@@ -33,6 +33,9 @@ _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(_
 list_field_state = _scripts_adapter_lib_module.list_field_state
 optional_string = _scripts_adapter_lib_module.optional_string
 optional_string_list = _scripts_adapter_lib_module.optional_string_list
+_scripts_critique_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.critique_adapter_lib"
+)
 
 STRING_FIELDS = (
     "repo",
@@ -64,6 +67,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "summary_path": "charness-artifacts/retro/recent-lessons.md",
         "evidence_paths": [],
         "metrics_commands": [],
+        "packet_sections": [],
         "auto_session_trigger_surfaces": [],
         "auto_session_trigger_path_globs": [],
     }
@@ -90,6 +94,16 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         items = optional_string_list(data.get(field), field, errors)
         if items is not None:
             validated[field] = items
+
+    sections_raw = data.get("packet_sections")
+    if sections_raw is not None:
+        packet_data, packet_errors, _packet_warnings = (
+            _scripts_critique_adapter_lib_module.validate_adapter_data(
+                {"version": 1, "packet_sections": sections_raw}, repo_root
+            )
+        )
+        errors.extend(packet_errors)
+        validated["packet_sections"] = packet_data.get("packet_sections", [])
 
     window = data.get("weekly_window_days")
     if window is not None:
@@ -128,6 +142,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "field_state": {
                 "evidence_paths": list_field_state(raw_data, "evidence_paths"),
                 "metrics_commands": list_field_state(raw_data, "metrics_commands"),
+                "packet_sections": list_field_state(raw_data, "packet_sections"),
                 "auto_session_trigger_surfaces": list_field_state(raw_data, "auto_session_trigger_surfaces"),
                 "auto_session_trigger_path_globs": list_field_state(raw_data, "auto_session_trigger_path_globs"),
             }

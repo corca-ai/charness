@@ -13,8 +13,8 @@
 
 ## Current State
 
-- **Local skill-improvement bundle is committed but not released.** `main` is
-  clean and `origin/main..HEAD` has five commits:
+- **Local skill-improvement bundle is committed but not released.** `main` has
+  unpushed commits plus this retro #401 follow-up commit:
   `29bb95d8` retro quality review, `ff1d8bee` quality structural review,
   `14859b64` branch coverage, `62b41b32` release update-instructions
   decoupling, and `fdb8cdb6` handoff update.
@@ -31,8 +31,8 @@
 - **START HERE -- choose dogfood mode deliberately.** For installed-plugin
   dogfood, cut/push the next release and refresh the install first. If release
   is deferred, use repo-local helper paths and call it source-tree proof.
-- **Continue #401 after that.** Run the improved `quality` skill against
-  `retro`, then `critique`, `spec`, and `impl` one at a time; treat any
+- **Continue #401 after that.** Retro has prepare-packet support; next run
+  improved `quality` against `critique`, then `spec` and `impl`, and treat any
   `quality` miss as evidence about `quality` itself.
 - **Open gather lane remains #392 under `quality`/`gather`.** Durable terminal
   records are done; remaining work is richer verdict taxonomy

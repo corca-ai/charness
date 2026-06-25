@@ -30,6 +30,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 # 3. first-run scaffold when needed
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>" --json
 ```
 
 Adapter policy:
@@ -66,6 +67,9 @@ Adapter policy:
      The measured / proxy / unavailable signal distinctions live in
      `references/phase-aware-efficiency.md`.
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
+   - if the adapter declares `packet_sections`, run
+     `$SKILL_DIR/scripts/prepare_packet.py` once and read the markdown packet
+     before writing lessons; see `references/prepare-packet.md`
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next
    - `Window`: for `weekly`, the time window being summarized
@@ -123,6 +127,8 @@ The result should usually include:
 - `Sibling Search` when a transferable waste pattern is named (opt-in;
   `n/a — trivial fix; no plausible siblings` short-circuit otherwise)
 - `Persisted`
+- `Packet Consumed` when a retro prepare packet was produced, or
+  `n/a (no adapter sections)` when no sections are declared
 
 ## Auto-Retro Trigger
 
@@ -174,6 +180,7 @@ flow live in `references/expert-lens.md`.
 - `references/trigger-and-persistence.md`
 - `references/weekly-trends.md`
 - `references/waste-sibling-scan.md`
+- `references/prepare-packet.md`
 - `../../shared/references/retro-issue-destination-split.md`
 - `../debug/references/sibling-search.md`
 - `../../shared/references/rca-ledger-append.md`

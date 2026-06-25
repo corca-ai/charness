@@ -124,6 +124,49 @@ def test_cli_main_rejects_schema_violating_adapter(tmp_path: Path) -> None:
     assert "not_in_schema_342" in completed.stderr
 
 
+def test_cli_main_rejects_invalid_retro_packet_sections(tmp_path: Path) -> None:
+    agents = tmp_path / ".agents"
+    agents.mkdir(parents=True)
+    (agents / "retro-adapter.yaml").write_text(
+        """\
+version: 1
+repo: demo
+packet_sections:
+  - id: bad
+    title: Bad
+    content_kind: script
+    content: wrong field
+""",
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "content_kind=script requires `command`" in completed.stderr
+
+
+def test_cli_main_preserves_generic_floor_for_retro_adapter(tmp_path: Path) -> None:
+    agents = tmp_path / ".agents"
+    agents.mkdir(parents=True)
+    (agents / "retro-adapter.yaml").write_text("packet_sections: []\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "`version` must be a positive integer" in completed.stderr
+
+
 def test_schema_violation_names_offending_key(tmp_path: Path) -> None:
     adapter_path = _seed_pair(tmp_path, "usage-episodes", "version: 1\nenabled: false\nnot_in_schema_342: true\n")
     with pytest.raises(ValidationError, match="not_in_schema_342"):

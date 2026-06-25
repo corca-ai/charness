@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Default `changed-files-and-owning-surfaces` producer for the
-critique prepare-packet contract.
+"""Default `changed-files-and-owning-surfaces` producer for prepare packets.
 
 Stdout body lists each path in the current working set and the surfaces
 (from `.agents/surfaces.json`) that own or derive from it. The output
 shape is the *section body*; the runner wraps this into the packet
 envelope. Exit 0 even when the working set is empty.
 
-See `skills/public/critique/references/prepare-packet.md`.
+See `skills/public/critique/references/prepare-packet.md` and the retro
+prepare-packet sibling.
 """
 from __future__ import annotations
 
@@ -78,7 +78,8 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument(
         "--changed-ref",
-        default=os.environ.get("CHARNESS_CRITIQUE_CHANGED_REF"),
+        default=os.environ.get("CHARNESS_CRITIQUE_CHANGED_REF")
+        or os.environ.get("CHARNESS_RETRO_CHANGED_REF"),
         help="Git commit or range to render instead of the current working tree.",
     )
     args = parser.parse_args()
