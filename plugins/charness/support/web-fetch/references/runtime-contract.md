@@ -19,15 +19,19 @@ Prefer this order:
 1. direct public fetch or host web grant
 2. domain-specific public API or URL transform
 3. authenticated or installed binary when the route explicitly needs one
-4. `defuddle` reader extraction for article-like public pages
-5. route-owned `agent-browser` UI extraction when a domain-specific public page
+4. `curl_cffi` browser-like TLS/HTTP impersonated fetch for public pages when
+   direct fetch is blocked, ambiguous, or too weak
+5. `defuddle` reader extraction for article-like public pages
+6. headless Patchright Chromium render/network reconnaissance when fetch/reader
+   paths are blocked, JS-rendered, or ambiguous
+7. route-owned `agent-browser` UI extraction when a domain-specific public page
    exposes a stable read-only content control, such as YouTube's transcript
    section
-6. `agent-browser` render/network reconnaissance when the page is JS-rendered,
+8. `agent-browser` render/network reconnaissance when the page is JS-rendered,
    weak/partial after cleaner extraction, blocked by repeated challenge signals,
    or the user intent is list/collection and internal public APIs may exist
-7. archive/cache fallback
-8. clean stop with the failure mode recorded
+9. archive/cache fallback
+10. clean stop with the failure mode recorded
 
 ## Acquisition Invariant
 
@@ -40,9 +44,18 @@ not-implemented, terminal, or otherwise unavailable. The selected proof,
 blocker, confidence, and final status should be derived from the selected
 attempt rather than from a separate narrative summary.
 
-Reader fallbacks such as `defuddle` are part of this ladder when installed and
-appropriate for the page type. When they are missing, the trace should say so
-instead of silently collapsing the route.
+Headless fallbacks such as `curl_cffi`, `defuddle`, and Patchright are part of
+this ladder when installed and appropriate for the page type. When they are
+missing, the trace should say so instead of silently collapsing the route.
+
+Patchright reconnaissance is automatic only in headless read-only mode:
+
+- open the target URL with headless Chromium, preferring the `chrome` channel
+  when available and falling back to bundled Chromium
+- wait briefly for render
+- extract body text
+- for list/collection intent, inspect network requests for public-looking
+  `/api/`, `/graphql`, or `.json` candidates
 
 Generic `agent-browser` reconnaissance is automatic only inside these read-only
 bounds:
@@ -81,9 +94,10 @@ Classifiers should also expose:
   justified strong success
 - `signals`: WAF/product, login, CAPTCHA, empty-shell, metadata, and size
   signals used to choose the next fallback stage
-- `fallback_candidates`: next honest acquisition stages such as `defuddle`,
-  `agent-browser-render`, `agent-browser-network-recon`, `archive`, or
-  `clean-stop`
+- `fallback_candidates`: next honest acquisition stages such as
+  `impersonated-public-fetch`, `defuddle`, `patchright-render`,
+  `patchright-network-recon`, `agent-browser-render`,
+  `agent-browser-network-recon`, `archive`, or `clean-stop`
 
 ## Durable Artifact Expectation
 

@@ -47,8 +47,9 @@ reduced to tactics `charness` is willing to carry locally.
 - `news.naver.com`, `n.news.naver.com`, `finance.naver.com`
   - prefer reader-style fallback rather than raw fetch
 - generic public URLs
-  - prefer direct fetch first, then `defuddle`, then read-only `agent-browser`
-    render/network reconnaissance, then metadata-only or archive fallback
+  - prefer direct fetch first, then `curl_cffi` impersonated fetch, then
+    `defuddle`, then read-only headless Patchright render/network
+    reconnaissance, then `agent-browser`, then metadata-only or archive fallback
 
 ## Reader And Browser Fallbacks
 
@@ -56,6 +57,17 @@ reduced to tactics `charness` is willing to carry locally.
   - use for article-like pages, blogs, news, and documentation when direct HTML
     is weak, cluttered, or only partially useful
   - skip for dashboards, app UIs, private SaaS, and structured APIs
+- `curl_cffi`
+  - use after direct fetch is blocked, ambiguous, or too weak and before paying
+    browser-render cost
+  - record the impersonation profile and HTTP status; never treat a 403/error
+    page body as successful content just because it is complete HTML
+- Patchright
+  - use headless Chromium after fetch/reader paths are still blocked,
+    JS-rendered, or unclear
+  - prefer the `chrome` channel when available and fall back to bundled
+    Chromium; keep it read-only and do not solve challenges or click through
+    auth
 - `agent-browser`
   - use after direct/reader extraction is insufficient for JS-rendered pages,
     empty SPA shells, repeated challenge signals, or list/collection tasks

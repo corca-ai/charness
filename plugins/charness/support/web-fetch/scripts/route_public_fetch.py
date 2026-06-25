@@ -5,10 +5,24 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlparse
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from route_stage_catalog import (  # noqa: E402
+    FALLBACK_ORDER,
+    direct_stage,
+    domain_stage,
+    reader_fallback_stages,
+    terminal_stages,
+    youtube_browser_stage,
+)
 
 
 @dataclass(frozen=True)
@@ -164,18 +178,6 @@ MEDIA_DOMAINS = {
     "soundcloud.com",
 }
 
-FALLBACK_ORDER = (
-    "direct-public-fetch",
-    "domain-specific-route",
-    "defuddle-reader-extraction",
-    "agent-browser-render-recon",
-    "agent-browser-network-recon",
-    "reader-or-metadata-fallback",
-    "archive-or-cache",
-    "clean-stop",
-)
-
-
 def normalized_host(url: str) -> str:
     parsed = urlparse(url)
     host = (parsed.netloc or parsed.path).strip().lower()
@@ -193,10 +195,6 @@ GITHUB_ROUTE_FOR_MODE = {
     "host-mediated": "github-host-mediated",
     "none": "github-missing-capability",
 }
-
-
-def _stage(stage_id: str, tool_id: str | None, when: str, proof: str) -> dict[str, object]:
-    return {"stage_id": stage_id, "tool_id": tool_id, "when": when, "proof": proof}
 
 
 def _resolve_github_mode(repo_root: Path | None) -> str:
@@ -274,19 +272,18 @@ def route_for_url(url: str, *, repo_root: Path | None = None, github_mode: str |
 def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
     if route_id == "reddit-feed":
         return [
-            _stage("domain-specific-route", None, "Try Reddit RSS, then JSON, before raw page fallback.", "source-bound feed/json response plus optional positive proof expectations"),
-            _stage("direct-public-fetch", None, "Use raw Reddit page only after RSS/JSON cannot satisfy the request.", "classify-fetch-response"),
-            _stage("archive-or-cache", None, "Use only when a stale or cached source still honestly answers the request.", "archive/cache source identity and freshness caveat"),
-            _stage("clean-stop", None, "Stop when access, auth, challenge, or confidence gaps remain.", "recorded failure mode and missing capability"),
+            domain_stage(None)
+            | {
+                "when": "Try Reddit RSS, then JSON, before raw page fallback.",
+                "proof": "source-bound feed/json response plus optional positive proof expectations",
+            },
+            direct_stage()
+            | {
+                "when": "Use raw Reddit page only after RSS/JSON cannot satisfy the request.",
+            },
+            *terminal_stages(),
         ]
-    plan: list[dict[str, object]] = [
-        _stage(
-            "direct-public-fetch",
-            None,
-            "Start here for public URLs unless a stronger domain route is known.",
-            "classify-fetch-response",
-        )
-    ]
+    plan: list[dict[str, object]] = [direct_stage()]
     if route_id in {
         "twitter-syndication",
         "hacker-news-firebase",
@@ -297,65 +294,13 @@ def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
         "yt-dlp-metadata",
         "naver-blog-mobile",
     }:
-        plan.append(
-            {
-                "stage_id": "domain-specific-route",
-                "tool_id": ROUTES[route_id].required_tools[0] if ROUTES[route_id].required_tools else None,
-                "when": "Use the declared route before generic browser or reader fallbacks.",
-                "proof": "route-specific structured output",
-            }
-        )
+        tool_id = ROUTES[route_id].required_tools[0] if ROUTES[route_id].required_tools else None
+        plan.append(domain_stage(tool_id))
     if route_id == "yt-dlp-metadata":
-        plan.append(
-            {
-                "stage_id": "youtube-browser-transcript-ui",
-                "tool_id": "agent-browser",
-                "when": (
-                    "Use the YouTube page UI transcript button when metadata/subtitle extraction is blocked "
-                    "or transcript captions are not returned."
-                ),
-                "proof": "opened transcript UI plus accessibility snapshot segment extraction",
-            }
-        )
+        plan.append(youtube_browser_stage())
     if route_id in {"reader-fallback", "direct-then-fallback", "naver-blog-mobile"}:
-        plan.extend(
-            [
-                {
-                    "stage_id": "defuddle-reader-extraction",
-                    "tool_id": "defuddle",
-                    "when": "Use for article-like public pages when direct HTML is weak, cluttered, or partial.",
-                    "proof": "clean markdown plus source URL and classifier confidence",
-                },
-                {
-                    "stage_id": "agent-browser-render-recon",
-                    "tool_id": "agent-browser",
-                    "when": "Use for JS-rendered pages, empty SPA shells, repeated challenge signals, or weak cleaner output.",
-                    "proof": "rendered body text/html and access mode",
-                },
-                {
-                    "stage_id": "agent-browser-network-recon",
-                    "tool_id": "agent-browser",
-                    "when": "Use for list/collection intent to record public-looking /api/, /graphql, or .json request candidates.",
-                    "proof": "network request candidates; no clicks, form submits, or login bypass",
-                },
-            ]
-        )
-    plan.extend(
-        [
-            {
-                "stage_id": "archive-or-cache",
-                "tool_id": None,
-                "when": "Use only when a stale or cached source still honestly answers the request.",
-                "proof": "archive/cache source identity and freshness caveat",
-            },
-            {
-                "stage_id": "clean-stop",
-                "tool_id": None,
-                "when": "Stop when access, auth, challenge, or confidence gaps remain.",
-                "proof": "recorded failure mode and missing capability",
-            },
-        ]
-    )
+        plan.extend(reader_fallback_stages())
+    plan.extend(terminal_stages())
     return plan
 
 

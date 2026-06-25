@@ -16,6 +16,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import browser_fallback_stages  # noqa: E402
+import impersonated_fetch_stage  # noqa: E402
+import patchright_headless_stage  # noqa: E402
 import reddit_source  # noqa: E402
 import twitter_exact_source  # noqa: E402
 import youtube_browser_ui  # noqa: E402
@@ -28,6 +30,12 @@ from acquire_public_url_policy import (  # noqa: E402
 )
 from acquire_public_url_policy import (  # noqa: E402
     should_try_defuddle as _should_try_defuddle,
+)
+from acquire_public_url_policy import (  # noqa: E402
+    should_try_impersonated_fetch as _should_try_impersonated_fetch,
+)
+from acquire_public_url_policy import (  # noqa: E402
+    should_try_patchright as _should_try_patchright,
 )
 from acquire_public_url_policy import (  # noqa: E402
     should_try_youtube_browser as _should_try_youtube_browser,
@@ -246,6 +254,49 @@ def _try_defuddle_reader(args, route, attempts, *, proof_required):
     return None
 
 
+def _try_impersonated_fetch(args, route, attempts, *, proof_required):
+    should_try, skip_reason = _should_try_impersonated_fetch(
+        str(route["route_id"]),
+        attempts,
+        seeded_direct=args.direct_response_file is not None,
+    )
+    if should_try:
+        return impersonated_fetch_stage.run_impersonated_fetch_stage(
+            args,
+            route,
+            attempts,
+            proof_required=proof_required,
+            payload_for=_payload_for,
+        )
+    if skip_reason in {"missing-tool", "seeded-direct-fixture"} and has_stage(route, "impersonated-public-fetch"):
+        attempts.append(skip_attempt("impersonated-public-fetch", "curl_cffi", reason=skip_reason))
+    return None
+
+
+def _try_patchright_payload(args, route, attempts, *, proof_required):
+    should_try, skip_reason = _should_try_patchright(
+        str(route["route_id"]),
+        attempts,
+        browser_mode=args.browser_mode,
+        seeded_direct=args.direct_response_file is not None,
+    )
+    if should_try:
+        return patchright_headless_stage.run_patchright_stage(
+            args,
+            route,
+            attempts,
+            proof_required=proof_required,
+            payload_for=_payload_for,
+        )
+    if skip_reason in {"missing-tool", "browser-mode-off", "seeded-direct-fixture"} and has_stage(
+        route, "patchright-render-recon"
+    ):
+        attempts.append(skip_attempt("patchright-render-recon", "patchright", reason=skip_reason))
+        if args.intent == "collect" and has_stage(route, "patchright-network-recon"):
+            attempts.append(skip_attempt("patchright-network-recon", "patchright", reason=skip_reason))
+    return None
+
+
 def _try_generic_browser_payload(args, route, attempts, *, proof_required):
     should_try, skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if should_try:
@@ -302,9 +353,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         return youtube_browser_payload
     if has_success(attempts, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
+    impersonated_payload = _try_impersonated_fetch(args, route, attempts, proof_required=proof_required)
+    if impersonated_payload is not None:
+        return impersonated_payload
     defuddle_payload = _try_defuddle_reader(args, route, attempts, proof_required=proof_required)
     if defuddle_payload is not None:
         return defuddle_payload
+    patchright_payload = _try_patchright_payload(args, route, attempts, proof_required=proof_required)
+    if patchright_payload is not None:
+        return patchright_payload
     browser_payload = _try_generic_browser_payload(args, route, attempts, proof_required=proof_required)
     if browser_payload is not None:
         return browser_payload

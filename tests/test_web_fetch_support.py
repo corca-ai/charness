@@ -376,7 +376,8 @@ def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path
     payload = json.loads(result.stdout)
     assert payload["disposition"] == "success"
     stage_ids = [attempt["stage_id"] for attempt in payload["attempts"]]
-    assert stage_ids[:2] == ["direct-public-fetch", "defuddle-reader-extraction"]
+    assert stage_ids[:3] == ["direct-public-fetch", "impersonated-public-fetch", "defuddle-reader-extraction"]
+    assert payload["attempts"][1]["details"]["reason"] == "seeded-direct-fixture"
     defuddle_attempt = next(
         attempt for attempt in payload["attempts"] if attempt["stage_id"] == "defuddle-reader-extraction"
     )

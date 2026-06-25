@@ -106,7 +106,7 @@ def _append_unvisited_plan_stages(
             reason = "not-implemented"
         elif stage_id == "clean-stop":
             reason = "terminal-state-recorded"
-        elif stage_id == "agent-browser-network-recon" and intent != "collect":
+        elif stage_id in {"agent-browser-network-recon", "patchright-network-recon"} and intent != "collect":
             reason = "intent-not-collect"
         else:
             reason = "not-attempted"

@@ -31,9 +31,12 @@ SOFT_CAPTCHA_PATTERNS = (
 ERROR_PATTERNS = (
     "access denied",
     "not found",
+    "403 error",
     "403 forbidden",
     "404 not found",
     "429 too many requests",
+    "request blocked",
+    "request could not be satisfied",
     "temporarily unavailable",
 )
 EMPTY_SPA_PATTERNS = (
@@ -140,20 +143,20 @@ def _fallback_candidates(status: str, *, intent: str, proof_required: bool) -> l
     if status == "success":
         return ["clean-stop"]
     if status in {"partial-content", "unclear"}:
-        return ["defuddle", "agent-browser-render", "archive"]
+        return ["impersonated-public-fetch", "defuddle", "patchright-render", "agent-browser-render", "archive"]
     if status == "empty-spa":
-        candidates = ["agent-browser-render"]
+        candidates = ["patchright-render", "agent-browser-render"]
         if intent == "collect":
-            candidates.append("agent-browser-network-recon")
+            candidates.extend(["patchright-network-recon", "agent-browser-network-recon"])
         candidates.extend(["defuddle", "archive"])
         return candidates
     if status in {"captcha", "error-page", "login-wall"}:
-        candidates = ["agent-browser-render"]
+        candidates = ["impersonated-public-fetch", "patchright-render", "agent-browser-render"]
         if intent == "collect":
-            candidates.append("agent-browser-network-recon")
+            candidates.extend(["patchright-network-recon", "agent-browser-network-recon"])
         candidates.append("clean-stop")
         return candidates
-    return ["defuddle", "agent-browser-render", "archive", "clean-stop"]
+    return ["impersonated-public-fetch", "defuddle", "patchright-render", "agent-browser-render", "archive", "clean-stop"]
 
 
 def _prepare_proof(

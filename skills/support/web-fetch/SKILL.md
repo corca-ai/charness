@@ -34,11 +34,11 @@ python3 "$SKILL_DIR/scripts/acquire_public_url.py" --url "https://example.com/ar
   reachable.
 - Do not hide external binary dependencies such as `gh` or `yt-dlp`; record
   them in the selected route.
-- Use `defuddle` and `agent-browser` as explicit fallback stages with trace
-  records, not as invisible magic. Browser fallback is read-only by default:
-  render, extract text/HTML, and inspect network candidates for collection
-  intent without clicking through auth, submitting forms, or solving
-  challenges.
+- Use `curl_cffi`, `defuddle`, Patchright, and `agent-browser` as explicit
+  fallback stages with trace records, not as invisible magic. Headless
+  fallbacks stay read-only by default: impersonate browser-like fetches, render,
+  extract text/HTML, and inspect network candidates for collection intent
+  without clicking through auth, submitting forms, or solving challenges.
 - Do not turn `gather` into a giant site-by-site cookbook when this support
   seam can carry the fetch tactics.
 
