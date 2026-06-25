@@ -50,6 +50,18 @@ def test_issue_skill_pins_verified_ledger_for_new_closeout() -> None:
     assert "never report a number, repo, or status not present in the" in closeout
 
 
+def test_issue_new_closeout_requires_title_body_preview_and_warning() -> None:
+    skill = _read(SKILL)
+    closeout = _read(CLOSEOUT)
+
+    assert "helper-returned title" in skill
+    assert "body_preview" in skill
+    assert "body_verified" in skill
+    assert "Created <repo>#<number>: <title> (<url>)" in closeout
+    assert "Body summary: <one to three sentences from body_preview>" in closeout
+    assert "warning: body was not verified" in closeout
+
+
 def test_issue_skill_pins_target_durability_on_retry() -> None:
     skill = _read(SKILL)
     closeout = _read(CLOSEOUT)

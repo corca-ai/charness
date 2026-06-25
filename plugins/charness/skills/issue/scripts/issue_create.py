@@ -45,6 +45,7 @@ GH_VIEW_BODY_DEFAULT = [
     "--json",
     "{json_fields}",
 ]
+BODY_PREVIEW_CHARS = 1200
 # Labels and milestone are appended as flags after the rendered base command,
 # so they are not template placeholders — only repo/title/body_file are.
 CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "title", "body_file"})
@@ -115,6 +116,7 @@ def create_issue(
         "labels": list(labels or []),
         "milestone": milestone,
         "body_bytes": len(body_text.encode("utf-8")),
+        "body_preview": body_text[:BODY_PREVIEW_CHARS],
         "created_url": created_stdout or None,
         "created_number": created_number,
         "create_argv": create_argv,

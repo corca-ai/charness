@@ -306,6 +306,9 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
   reporting success. A `false` can also mean the backend normalized the body
   server-side (e.g. CRLF→LF or a trailing-newline tweak), not corruption —
   inspect the diff rather than assuming a body-safety regression.
+- The create payload also carries `body_preview`, a bounded excerpt of the
+  submitted body for user-facing closeout summaries. It is context for what was
+  filed, not a substitute for `body_verified`.
 - Provider-agnostic: a non-gh backend declares `commands.create` (and
   `commands.view`) with the `{repo}`/`{title}`/`{body_file}` and
   `{repo}`/`{number}`/`{json_fields}` placeholders; labels/milestone are

@@ -91,6 +91,7 @@ EVIDENCE_OVERRIDES = {
     "issue": [
         "uses GitHub as the source of truth for omitted issue selection instead of session memory",
         "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
+        "renders `issue new` closeout from the verified issue ledger plus the created title and a short filed-body summary, warning when body readback was not verified",
         "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
         "emits a pre-mutation resolution brief for `feature` and `deferred-work` issues and pauses for user discussion when `open decisions` is non-empty",
     ],

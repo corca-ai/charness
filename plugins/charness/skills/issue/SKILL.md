@@ -45,8 +45,9 @@ closing anything.
 3. Assign only existing repository labels and milestones. Gate requested
    milestones with `issue_tool.py resolve-milestone`; never invent one.
 4. Create through `issue_tool.py create --body-file <path>`, then report only
-   from the verified `{repo, number, url}` ledger. Do not ask for approval
-   unless the user explicitly asks to review first.
+   from the verified `{repo, number, url}` ledger plus the helper-returned title
+   and `body_preview` summary. Warn explicitly when `body_verified` is not true.
+   Do not ask for approval unless the user explicitly asks to review first.
 
 `issue resolve [repo] [number|start-end]` resolves one or more issues.
 

@@ -20,10 +20,22 @@ host-mediated equivalent — for example, the appropriate
 The closeout report includes:
 
 - a per-issue line for each `{repo, number, url}` in the ledger
+- the created issue title and a short problem/body summary rendered from the
+  helper's `body_preview`, so the requester can see what was filed without
+  opening GitHub
+- an explicit warning when `body_verified` is not `true`
 - nothing else: never report a number, repo, or status not present in the
   ledger
 - if any verification call failed, surface the failure inline next to the
   affected ledger entry rather than silently smoothing it
+
+Suggested single-issue shape:
+
+```text
+Created <repo>#<number>: <title> (<url>)
+Body summary: <one to three sentences from body_preview>
+Verification: <body verified | warning: body was not verified; re-check before relying on the filed body>
+```
 
 A closeout that mentions a number outside the ledger is a contract violation,
 not a stylistic miss. It forces the operator to manually re-open every URL

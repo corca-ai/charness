@@ -96,6 +96,7 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     assert payload["created_number"] == 777
     assert "issues/777" in payload["created_url"]
     assert payload["body_verified"] is True
+    assert payload["body_preview"] == HOSTILE_BODY
     # The backend received the body via file, byte-identical to the input.
     assert store.read_text(encoding="utf-8") == HOSTILE_BODY
     # And the argv carried --body-file, never an inline --body string.
@@ -162,7 +163,35 @@ def test_create_reports_unverified_when_readback_differs(tmp_path: Path) -> None
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["body_verified"] is False
+    assert payload["body_preview"] == HOSTILE_BODY
     assert "stored_body_bytes" in payload
+
+
+def test_create_body_preview_is_bounded_to_closeout_excerpt(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    store = tmp_path / "captured-body.md"
+    _write_capture_backend(bin_dir, store)
+    body_file = tmp_path / "body.md"
+    long_body = "A" * 1300
+    body_file.write_text(long_body, encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "t",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["body_preview"] == "A" * 1200
 
 
 def test_create_fails_when_body_file_missing(tmp_path: Path) -> None:
