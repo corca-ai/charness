@@ -8,7 +8,10 @@ guessing host-specific steps.
 When the adapter declares `update_instructions`, treat them as the canonical
 operator-facing refresh path for already published installs.
 
-Keep update instructions user-meaningful. Avoid host-internal compatibility
+Keep update instructions evergreen: they should tell an operator how to get the
+latest published release, not summarize a particular release. Release-specific
+behavior changes, migration notes, rollback advice, and rationale belong in the
+release notes or generated release artifact. Avoid host-internal compatibility
 detail unless operators need it to complete the update.
 
 ## Maintainer Dev-Machine Refresh

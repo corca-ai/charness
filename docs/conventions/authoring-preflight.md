@@ -314,11 +314,13 @@ construction.
 When a check matches a version, identifier, or other token by string content,
 broad scanning regexes accept inputs you did not intend (the #305
 `update_instructions` staleness check was first a general semver-scan regex, then
-rewritten to previous-vs-target containment after a fresh-eye reviewer flagged
-date and `v`-prefix edges). Before shipping a string/regex check, walk this list:
+rewritten to concrete previous/target containment after a fresh-eye reviewer
+flagged date and `v`-prefix edges). Before shipping a string/regex check, walk
+this list:
 
 - Prefer explicit containment or equality over an unbounded scan when you only
-  need "does X mention version V".
+  need "does X mention version V"; for evergreen adapter text, a concrete version
+  mention is usually the smell, not the remedy.
 - Anchor patterns (`^`/`$`) and avoid unbounded `.*`; ask what a partial or
   substring match would falsely accept.
 - Test against edge inputs: a date that looks like a version (`2026.06.05`), a

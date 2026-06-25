@@ -117,7 +117,31 @@ def test_release_run_planner_surfaces_stale_update_instructions_before_publish(t
     payload = json.loads(result.stdout)
     assert payload["next_action"]["kind"] == "prep_update_instructions"
     assert payload["blockers"]
-    assert "0.0.1" in payload["next_action"]["reason"]
+    assert "0.0.0" in payload["next_action"]["reason"]
+    assert "version-agnostic" in payload["next_action"]["reason"]
+
+
+def test_release_run_planner_prioritizes_update_instruction_prep_over_dirty_tree(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8").replace(
+            "update_instructions:\n- Run `demo update`.\n- Restart the host if the previous version is still visible.",
+            "update_instructions:\n- Run `demo update` to pull 0.0.0.\n- Restart the host if the previous version is still visible.",
+        ),
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "seed stale update instructions")
+    (repo / "WIP.txt").write_text("dirty tree should not hide prep guidance", encoding="utf-8")
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", "test host lacks agent tool")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["release_state"]["git_status"]
+    assert payload["next_action"]["kind"] == "prep_update_instructions"
 
 
 def test_release_run_planner_points_to_publish_dry_run_when_ready(tmp_path: Path) -> None:

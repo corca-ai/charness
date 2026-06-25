@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Callable
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
+SEMVER_PIN_RE = re.compile(
+    r"(?<![\w.])v?(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?![\w]|\.\d)"
+)
 
 
 def _load_adapter_preflight_helper() -> Any:
@@ -21,20 +27,38 @@ def _load_adapter_preflight_helper() -> Any:
 _adapter_preflight = _load_adapter_preflight_helper()
 
 
+def _version_pins(text: str) -> list[str]:
+    pins: list[str] = []
+    seen: set[str] = set()
+    for match in SEMVER_PIN_RE.finditer(text):
+        major = int(match.group("major"))
+        minor = int(match.group("minor"))
+        patch = int(match.group("patch"))
+        if 1900 <= major <= 2199 and 1 <= minor <= 12 and 1 <= patch <= 31:
+            continue
+        version = f"{major}.{minor}.{patch}"
+        if version not in seen:
+            seen.add(version)
+            pins.append(version)
+    return pins
+
+
 def _load_shared_closeout_helper() -> Any:
-    here = Path(__file__).resolve()
-    for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location(
-                "check_prescribed_skill_executed_lib", candidate
-            )
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:  # pragma: no cover - defensive broken-install layout
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
+    return runtime.load_repo_module_from_skill_script(
+        __file__,
+        "scripts.check_prescribed_skill_executed_lib",
+    )
 
 
 def validate_critique_artifact_arg(
@@ -67,28 +91,28 @@ def validate_critique_artifact_arg(
 def update_instructions_version_blocker(
     update_instructions: Any, *, target_version: str, previous_version: str | None
 ) -> str | None:
-    """Return a blocker when adapter `update_instructions` still describe the
-    previous release version but not the target — i.e. they went stale.
+    """Return a blocker when adapter `update_instructions` carry release-pinned
+    narrative instead of an evergreen refresh path.
 
     The adapter-focused preflight only triggers when the adapter FILE changed in the
-    release delta, so a release that should refresh `update_instructions` but does not
+    release delta, so a release that should repair `update_instructions` but does not
     touch the file is never flagged. This check is unconditional. It uses plain
-    substring containment of the concrete previous/target version strings rather than
-    a general semver scan, so it does not false-positive on dotted dates or
-    version-agnostic prose, and `v`-prefixed forms (`v0.20.0`) match transparently.
+    a release-version pin detector that ignores common dotted dates while still
+    catching older non-previous release notes left in the adapter field.
     """
     if isinstance(update_instructions, (list, tuple)):
         text = "\n".join(str(item) for item in update_instructions)
     else:
         text = str(update_instructions or "")
-    if not previous_version or previous_version == target_version:
+    pins = _version_pins(text)
+    if not pins:
         return None
-    if target_version in text or previous_version not in text:
-        return None
+    pins_text = ", ".join(f"`{pin}`" for pin in pins)
     return (
-        f"release adapter update_instructions still describe the previous version `{previous_version}` "
-        f"but not the target version `{target_version}`; refresh update_instructions before publishing so "
-        "the generated release record does not ship stale operator steps"
+        "release adapter update_instructions contain version-pinned release narrative "
+        f"({pins_text}); keep adapter update_instructions "
+        "version-agnostic and put release-specific behavior, migration, and rollback notes "
+        "in the release notes or release artifact"
     )
 
 
@@ -100,15 +124,15 @@ def build_update_instructions_prep_payload(
     previous_version: str | None,
     update_instructions: Any,
 ) -> dict[str, Any]:
-    """Pre-publish affordance: surface a target-version `update_instructions` stub
+    """Pre-publish affordance: surface evergreen `update_instructions` guidance
     BEFORE the release critique so the maintainer can refresh the adapter early and
     the staleness guard (`update_instructions_version_blocker`) does not HOLD the
     publish at the critique gate.
 
     Reports staleness as *data* and never raises — the whole point is to run before
-    the clean-worktree / critique gate so the maintainer acts on it first. The stub
-    embeds the target version verbatim, so pasting it into the adapter is exactly
-    what makes the staleness guard pass.
+    the clean-worktree / critique gate so the maintainer acts on it first. The
+    suggested adapter text deliberately avoids the target version; per-release
+    narrative belongs in release notes, not in the adapter contract.
     """
     if isinstance(update_instructions, (list, tuple)):
         current_list = [str(item) for item in update_instructions]
@@ -119,10 +143,10 @@ def build_update_instructions_prep_payload(
     blocker = update_instructions_version_blocker(
         update_instructions, target_version=target_version, previous_version=previous_version
     )
-    stub = (
-        f"After updating {package_id} to v{target_version}, "
-        f"<describe the operator-facing refresh step for {target_version}>."
-    )
+    suggestion = [
+        f"Run the repo-owned update command for {package_id} to install the latest published release.",
+        "Read the release notes for release-specific behavior changes, migrations, or rollback notes.",
+    ]
     return {
         "mode": "prep-update-instructions",
         "package_id": package_id,
@@ -132,12 +156,14 @@ def build_update_instructions_prep_payload(
         "current_update_instructions": current_list,
         "update_instructions_stale": blocker is not None,
         "staleness_blocker": blocker,
-        "stub_update_instructions_entry": stub,
+        "suggested_update_instructions": suggestion,
+        "stub_update_instructions_entry": suggestion[0],
         "next_step": (
-            "Refresh the release adapter `update_instructions` so they describe the "
-            f"target version `{target_version}` (paste/fill the stub above), then run "
-            "the release critique and publish. Doing this now pre-empts the "
-            "update_instructions staleness HOLD at the critique gate."
+            "Refresh the release adapter `update_instructions` to a version-agnostic "
+            "operator refresh path, and put release-specific behavior, migration, or "
+            "rollback notes in the release notes/artifact. Then run the release critique "
+            "and publish; doing this now pre-empts the update_instructions HOLD at the "
+            "critique gate."
         ),
     }
 

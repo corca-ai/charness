@@ -23,11 +23,12 @@ push, GitHub release, or install refresh. A refusal leaves the release mutation 
 ## Update Instructions Prep
 
 When the target version is known, run the read-only prep affordance before the
-critique if update instructions may be stale:
+critique if update instructions may be stale or release-pinned:
 
 ```bash
 python3 "$SKILL_DIR/scripts/publish_release.py" --repo-root . --part patch --prep-update-instructions
 ```
 
-It emits a target-version stub and staleness report without requiring a clean
-worktree or critique proof.
+It emits version-agnostic adapter guidance and a staleness report without
+requiring a clean worktree or critique proof. Keep per-release notes in the
+release notes or release artifact, not in adapter `update_instructions`.

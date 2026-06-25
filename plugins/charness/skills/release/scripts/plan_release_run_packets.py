@@ -163,10 +163,10 @@ def next_action(
         return action("repair_release_surface", "Current release state could not be built.")
     if release_payload.get("drift"):
         return action("sync_release_surface", "Generated release surfaces drift from the packaging manifest.")
-    if release_payload.get("git_status") and target_version is not None:
-        return action("clean_worktree", "Publish helper requires a clean worktree before dry-run or execute.")
     if update_blocker:
         return action("prep_update_instructions", update_blocker)
+    if release_payload.get("git_status") and target_version is not None:
+        return action("clean_worktree", "Publish helper requires a clean worktree before dry-run or execute.")
     if target_version is None:
         return action(
             "inspect_only",

@@ -149,20 +149,25 @@ def test_update_instructions_version_blocker_logic() -> None:
             instructions, target_version=target, previous_version=previous
         )
 
-    # Stale: describes the previous version but not the target.
+    # Stale: describes the previous version instead of an evergreen refresh path.
     assert blocker(["Run update to pull 0.20.0 steps."])
-    # Fresh: mentions the target version.
-    assert blocker(["Run update to pull 0.21.0."]) is None
-    # Version-agnostic: previous version not present -> nothing to go stale.
+    # Also stale: describes only the target version; release narrative belongs
+    # in notes/artifacts, not the adapter refresh path.
+    assert blocker(["Run update to pull 0.21.0."])
+    # Also stale: an older non-previous release note is still release-pinned
+    # adapter narrative.
+    assert blocker(["Run update to pull 0.18.0."])
+    # Version-agnostic: no release-version pin -> nothing to go stale.
     assert blocker(["Run `demo update`.", "Restart the host."]) is None
     # `v`-prefixed previous is matched by substring; target absent -> stale.
     assert blocker(["Upgrade from v0.20.0."])
     # A dotted date with no previous-version mention must NOT false-positive.
     assert blocker(["Cut on 2026.06.05."]) is None
-    # previous == target (no version change) -> no check.
-    assert blocker(["anything 0.21.0"], previous="0.21.0") is None
-    # No previous version available -> no check.
-    assert blocker(["mentions 0.20.0"], previous=None) is None
+    # previous == target / no previous version still block version-pinned text.
+    assert blocker(["Run update to pull 0.21.0"], previous="0.21.0")
+    assert blocker(["mentions 0.20.0"], previous=None)
+    # No previous version and no version-pinned text -> no check.
+    assert blocker(["Run `demo update`."], previous=None) is None
 
 
 def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> None:
@@ -184,7 +189,8 @@ def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> No
 
     assert result.returncode != 0
     assert "update_instructions" in result.stderr
-    assert "0.0.1" in result.stderr
+    assert "0.0.0" in result.stderr
+    assert "version-agnostic" in result.stderr
 
 
 # --- update_instructions pre-publish stub (prep affordance) -------------------
@@ -204,10 +210,12 @@ def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() ->
     assert stale["mode"] == "prep-update-instructions"
     assert stale["update_instructions_stale"] is True
     assert stale["staleness_blocker"]
-    # The stub embeds the target version verbatim, so pasting it satisfies the guard.
-    assert "0.0.1" in stale["stub_update_instructions_entry"]
+    # The guidance deliberately avoids the target version; per-release narrative
+    # belongs in release notes, not adapter update_instructions.
+    assert "0.0.1" not in stale["stub_update_instructions_entry"]
+    assert stale["suggested_update_instructions"]
 
-    # Fresh / version-agnostic: not stale, stub still emitted.
+    # Fresh / version-agnostic: not stale, guidance still emitted.
     fresh = preflight.build_update_instructions_prep_payload(
         package_id="demo",
         current_version="0.0.0",
@@ -217,7 +225,7 @@ def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() ->
     )
     assert fresh["update_instructions_stale"] is False
     assert fresh["staleness_blocker"] is None
-    assert "0.1.0" in fresh["stub_update_instructions_entry"]
+    assert "0.1.0" not in fresh["stub_update_instructions_entry"]
 
     # A bare string is normalized to a single-element list (not split per char).
     as_string = preflight.build_update_instructions_prep_payload(
@@ -238,7 +246,7 @@ def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() ->
         update_instructions=None,
     )
     assert as_none["current_update_instructions"] == []
-    assert "0.1.0" in as_none["stub_update_instructions_entry"]
+    assert "0.1.0" not in as_none["stub_update_instructions_entry"]
 
 
 def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(tmp_path: Path) -> None:
@@ -253,7 +261,8 @@ def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(
     payload = json.loads(result.stdout)
     assert payload["mode"] == "prep-update-instructions"
     assert payload["target_version"] == "0.1.0"  # current 0.0.0 -> minor
-    assert "0.1.0" in payload["stub_update_instructions_entry"]
+    assert "0.1.0" not in payload["stub_update_instructions_entry"]
+    assert payload["suggested_update_instructions"]
     # The seed instructions are version-agnostic -> not stale.
     assert payload["update_instructions_stale"] is False
 
@@ -279,13 +288,13 @@ def test_prep_reports_staleness_as_data_where_dry_run_would_hold(tmp_path: Path)
     payload = json.loads(result.stdout)
     assert payload["update_instructions_stale"] is True
     assert payload["staleness_blocker"]
-    assert "0.0.1" in payload["stub_update_instructions_entry"]
+    assert "0.0.1" not in payload["stub_update_instructions_entry"]
 
 
 def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> None:
     # Lock in the non-`--part` branches of the shared target-version helper:
     # --set-version takes the explicit string; --publish-current targets the
-    # current manifest version (no bump), so the stub still embeds it.
+    # current manifest version (no bump), while guidance stays version-agnostic.
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
 
@@ -293,7 +302,7 @@ def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> No
     assert explicit.returncode == 0, explicit.stderr
     explicit_payload = json.loads(explicit.stdout)
     assert explicit_payload["target_version"] == "9.9.9"
-    assert "9.9.9" in explicit_payload["stub_update_instructions_entry"]
+    assert "9.9.9" not in explicit_payload["stub_update_instructions_entry"]
 
     current = _run_publish(repo, env, "--prep-update-instructions", "--publish-current")
     assert current.returncode == 0, current.stderr

@@ -119,7 +119,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
     parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
-    parser.add_argument("--prep-update-instructions", action="store_true", help="Emit a target-version update_instructions stub + staleness report, then exit. Run this BEFORE the release critique so the staleness guard does not HOLD the publish; does not require a clean worktree or the critique gate.")
+    parser.add_argument("--prep-update-instructions", action="store_true", help="Emit version-agnostic update_instructions guidance + staleness report, then exit. Run this BEFORE the release critique so the adapter guard does not HOLD the publish; does not require a clean worktree or the critique gate.")
     parser.add_argument("--resume", action="store_true", help="Resume a partial publish: detect the existing local release commit+tag, re-validate, then push/release/verify (requires --publish-current)")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
@@ -275,12 +275,12 @@ def _load_adapter_and_gate(args: argparse.Namespace, repo_root: Path) -> tuple[d
 
 
 def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> None:
-    """Pre-publish, pre-critique affordance: emit a target-version
-    `update_instructions` stub + staleness report so the maintainer refreshes the
-    adapter before the release critique, pre-empting the staleness HOLD. Read-only:
-    it loads the adapter, computes the target/previous versions the real publish
-    would use, and prints the prep payload without requiring a clean worktree or the
-    critique gate.
+    """Pre-publish, pre-critique affordance: emit version-agnostic
+    `update_instructions` guidance + staleness report so the maintainer repairs
+    the adapter before the release critique, pre-empting the adapter HOLD.
+    Read-only: it loads the adapter, computes the target/previous versions the
+    real publish would use, and prints the prep payload without requiring a clean
+    worktree or the critique gate.
     """
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:

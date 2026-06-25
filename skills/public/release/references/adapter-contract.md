@@ -86,8 +86,11 @@ source. Generated plugin manifests and marketplace files are derived surfaces
 and should be rewritten by the declared sync command, not edited by hand.
 
 `update_instructions` should name the canonical operator-facing refresh path for
-already published installs. Keep them user-meaningful and avoid host-internal
-compatibility detail unless operators truly need it.
+already published installs. Keep them evergreen: describe how to install the
+latest published release, not what changed in one release. Put release-specific
+behavior changes, migration notes, rollback advice, and rationale in release
+notes or the generated release artifact. Avoid host-internal compatibility detail
+unless operators truly need it to complete the update.
 
 `real_host_checklist` is optional and exists for proofs that should stay
 release-time and human-run rather than standing CI. Use it for support-tool or
