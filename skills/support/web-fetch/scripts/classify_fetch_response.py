@@ -20,11 +20,13 @@ LOGIN_PATTERNS = (
     "login",
     "로그인",
 )
-CAPTCHA_PATTERNS = (
+HARD_CAPTCHA_PATTERNS = (
     "captcha",
     "verify you are human",
-    "robot",
     "cf-challenge",
+)
+SOFT_CAPTCHA_PATTERNS = (
+    "robot",
 )
 ERROR_PATTERNS = (
     "access denied",
@@ -193,8 +195,8 @@ def classify(
         matched.extend(f"{item['type']}:{item['value']}" for item in proof_errors)
         signals.append("invalid-proof")
         next_step = "Fix the proof input before trusting this acquisition."
-    elif any(pattern in lowered for pattern in CAPTCHA_PATTERNS):
-        matched.extend(pattern for pattern in CAPTCHA_PATTERNS if pattern in lowered)
+    elif any(pattern in lowered for pattern in HARD_CAPTCHA_PATTERNS):
+        matched.extend(pattern for pattern in HARD_CAPTCHA_PATTERNS if pattern in lowered)
         status = "captcha"
         confidence = "none"
         signals.append("captcha")
@@ -211,6 +213,12 @@ def classify(
         confidence = "none"
         signals.append("bot-challenge")
         next_step = "Try read-only browser rendering or stop with the challenge recorded."
+    elif any(pattern in lowered for pattern in SOFT_CAPTCHA_PATTERNS) and text_length < 1000:
+        matched.extend(pattern for pattern in SOFT_CAPTCHA_PATTERNS if pattern in lowered)
+        status = "captcha"
+        confidence = "none"
+        signals.append("captcha")
+        next_step = "Try the next fallback route or stop with the bot-block noted."
     elif any(pattern in lowered for pattern in EMPTY_SPA_PATTERNS):
         matched.extend(pattern for pattern in EMPTY_SPA_PATTERNS if pattern in lowered)
         status = "empty-spa"

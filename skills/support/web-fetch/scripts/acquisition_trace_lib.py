@@ -122,6 +122,36 @@ def selected_attempt(attempts: list[AcquisitionAttempt]) -> AcquisitionAttempt |
     return last_content_attempt(attempts)
 
 
+def missing_capabilities(attempts: list[AcquisitionAttempt]) -> list[str]:
+    capabilities: list[str] = []
+    for attempt in attempts:
+        if attempt.status != "skipped" or attempt.details.get("reason") != "missing-tool":
+            continue
+        if attempt.tool_id is not None and attempt.tool_id not in capabilities:
+            capabilities.append(attempt.tool_id)
+    return capabilities
+
+
+def untried_routes(attempts: list[AcquisitionAttempt], *, disposition: str) -> list[dict[str, object]]:
+    if disposition == "success":
+        return []
+    routes: list[dict[str, object]] = []
+    for attempt in attempts:
+        if attempt.status != "skipped":
+            continue
+        reason = attempt.details.get("reason")
+        if reason in {"prior-stage-sufficient", "terminal-state-recorded"}:
+            continue
+        routes.append(
+            {
+                "stage_id": attempt.stage_id,
+                "tool_id": attempt.tool_id,
+                "reason": reason,
+            }
+        )
+    return routes
+
+
 def disposition_for_attempts(attempts: list[AcquisitionAttempt]) -> str:
     selected = selected_attempt(attempts)
     if selected is None:
@@ -157,6 +187,12 @@ def payload(
         "final_status": selected.status if selected is not None else "unknown",
         "final_confidence": selected.confidence if selected is not None else "none",
     }
+    missing = missing_capabilities(attempts)
+    if missing and disposition != "success":
+        result["missing_capabilities"] = missing
+    untried = untried_routes(attempts, disposition=disposition)
+    if untried:
+        result["untried_routes"] = untried
     if (
         include_selected_content
         and selected is not None
