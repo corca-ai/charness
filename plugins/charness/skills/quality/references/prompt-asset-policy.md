@@ -27,7 +27,9 @@ Suggested adapter split:
 
 Use [`find_inline_prompt_bulk.py`](./find_inline_prompt_bulk.py) as a cheap
 inventory helper when the repo keeps prompt-heavy Python sources and wants a
-repeatable advisory scan.
+repeatable advisory scan. Prefer `--from-adapter --summary` when the quality
+adapter already declares `prompt_asset_policy`; it avoids mirror-tree scans and
+keeps the payload small enough for agent review.
 
 In `charness`, prompt-affecting repo changes should also leave visible
 behavioral proof:

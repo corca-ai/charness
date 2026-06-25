@@ -1,139 +1,139 @@
 # Quality Review
-Date: 2026-06-25
+Date: 2026-06-26
 
 ## Scope
 
-Target boundary: repo-wide quality slice for agent-facing inventory output
-efficiency, focused on `inventory_skill_ergonomics.py` summary output.
+Target boundary: repo-wide quality slice for script execution speed and
+agent-facing token efficiency, focused on prompt-bulk inventory output and
+runtime-hotspot ranking fidelity.
 
-Ambient repo findings: existing Python near-limit warnings, stale changed-line
-coverage before commit, and the HITL/narrative doc-duplicate advisory are not
-caused by this slice. Per operator direction, manual `nose` latest checks are
-not part of this loop.
+Ambient repo findings: the HITL/narrative doc-duplicate advisory, Python
+near-limit warnings, and standing nested-CLI test backlog are pre-existing
+quality signals, not fixed by this slice.
 
 ## Current Gates
 
-- Focused pytest passed 16 tests across skill-ergonomics and standing-test
-  economics summary contracts.
-- Changed-surface validators passed for packaging, skills, dogfood,
-  inference-interpretation, gitignore scan hygiene, boundary-bypass, ruff, and
-  plugin mirror sync.
-- Broad `./scripts/run-quality.sh --read-only` passed 79/79 after this slice.
+- Focused pytest passed 32 tests across runtime-budget rendering and prompt-bulk
+  inventory contracts; `ruff` passed on changed Python; plugin export was synced.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
-  rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`;
-  profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median,
-  budget 90.0s; `pytest` 32.8s latest / 26.6s median, budget 140.0s;
-  `check-coverage` 18.7s latest / 19.0s median, budget 55.0s.
-- coverage gate: broad read-only gate passed; changed-line coverage remains
-  pre-commit stale until the locked closeout producer refreshes it.
-- evaluator depth: deterministic gates only. No Cautilus run was in scope
-  because this changed inventory serialization, not prompt behavior.
+  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
+- runtime hot spots: after stale filtering, `run-quality-read-only` 38.1s latest
+  / 65.7s median, budget 90.0s; `pytest` 25.1s latest / 26.6s median, budget
+  140.0s; `check-coverage` 18.4s latest / 18.9s median, budget 55.0s.
+- stale runtime hot spots excluded: `check-duplicates` latest sample
+  2026-06-04T12:11:36Z, plus three older retired labels.
+- coverage gate: focused tests passed; final broad read-only gate pending at
+  artifact draft time.
+- evaluator depth: deterministic gates only. No live Cautilus run was in scope
+  because this changed helper/report mechanics, not maintained scenario
+  behavior.
 
 ## Healthy
 
-- `inventory_skill_ergonomics.py --summary-yaml` now emits the same compact
-  payload as `--summary`, preserving full `--json` attribution behavior.
-- On this checkout, skill-ergonomics compact summary measured 12,201 bytes as
-  JSON and 9,392 bytes as YAML, a 23% serialized-byte reduction.
-- Shared `summary_output_lib.py` owns YAML dumping and summary emission for the
-  two YAML-enabled quality inventories, reducing helper drift.
-- Plugin export is synced; public and plugin quality scripts are byte-identical
-  for the changed helper surfaces.
+- `find_inline_prompt_bulk.py --from-adapter --summary` now uses quality adapter
+  prompt globs and emits `finding_count` plus a bounded sample, avoiding plugin
+  mirror scans and full findings payloads.
+- Measured on this checkout: default full JSON was 108,061 bytes and 2.387s;
+  adapter-backed summary was 4,736 bytes and 1.585s.
+- Runtime hotspot ranking excludes samples older than 14 days from active
+  priority, preserves them under `stale_runtime_hotspots`, and names stale-only
+  markdown instead of implying absent samples.
 
 ## Weak
 
-- The efficiency proof measures serialized bytes, not tokenizer-specific token
-  counts. It is a useful proxy for agent context size, not a tokenizer claim.
-- Missing PyYAML behavior is covered through the helper seam, not a subprocess
-  CLI invocation. That is adequate for this small branch, but weaker than an
-  end-to-end import-failure CLI proof.
+- Byte size is only a proxy for token efficiency; no tokenizer count was run.
+- Runtime freshness prevents stale label ranking, but it is not a cleanup policy.
+- The standing boundary-bypass backlog remains: the ratchet prevents growth but
+  does not reduce existing subprocess fanout.
 
 ## Missing
 
-- No active missing deterministic gate is justified by this slice. Existing
-  validators cover inventory declaration, interpretation pairing, packaging, and
-  exported plugin sync.
+- Missing before this slice: runtime hotspot ranking had no stale/retired-label
+  filter, so obsolete `check-duplicates` samples still looked actionable.
+- No new deterministic gate is justified for prompt-bulk output size; the helper
+  now exposes the lower-cost path directly.
 
 ## Deferred
 
-- Other agent-facing inventory summaries remain candidates for YAML only when
-  a measured payload shows meaningful serialized-byte savings.
-- Tokenizer-specific measurement is deferred until a repo-owned tokenizer seam
-  exists; byte comparison remains the portable local proxy for now.
+- Convert one import-safe nested-CLI cluster to in-process tests separately.
+- Tokenizer-specific measurement stays deferred until a stable tokenizer seam exists.
 
 ## Advisory
 
 - structural review result: command:
-  `plan_quality_run.py --repo-root . --json`; planner required runtime and
-  skill-ergonomics evidence, and the next structural move was a compact
-  consumer-facing output mode rather than weakening any standing gate.
-- prose review result: command:
-  `inventory_skill_ergonomics.py --repo-root . --summary-yaml`; summary engages
-  `checked_skill_count`, `heuristic_finding_count`, `subcheck_counts`, and
-  `prose_review_status=required` through `skills_with_heuristics` without full
-  per-finding payload expansion.
-- test-economics review result: command:
-  `inventory_standing_test_economics.py --repo-root . --summary-yaml`; this
-  slice did not change standing test scope, but the inventory still reports
-  `test_file_count=332`, `nested_cli_file_count=150`, and
-  `nested_cli_standing_or_mixed_file_count=146`.
-- runtime interpretation: command:
-  `render_runtime_summary.py --repo-root . --json`; current hot spots remain
-  within budget, so this loop improved review-output cost rather than reducing
-  test proof.
+  `plan_quality_run.py --repo-root . --json`; planner required runtime summary,
+  skill ergonomics, and broad quality evidence, and the structural move was to
+  reduce inventory/report noise and stale-ranking false priorities.
+- prose review result: artifact:
+  `skills/public/quality/references/prompt-asset-policy.md`; it now names the
+  preferred `--from-adapter --summary` path so future quality runs do not
+  rediscover the low-token invocation manually.
+- doc-duplicates advisory: command:
+  `./scripts/run-quality.sh --read-only`; HITL/narrative bootstrap similarity is
+  retained as review material, not a blocker for this slice.
+- Python length advisory: command:
+  `./scripts/run-quality.sh --read-only`; 10 warn-band files remain, to trim only
+  when touching the owning surface.
+- skill-ergonomics inventory result: command:
+  `inventory_skill_ergonomics.py --repo-root . --json`;
+  `scope_status=scanned`, `prose_review_status=required`, and
+  `heuristic_finding_count=17` mean the host-surface portability hits remain
+  judgment prompts, not this slice's target.
+- standing-test economics result: command:
+  `inventory_standing_test_economics.py --repo-root . --json`;
+  `test_file_count=333` and `nested_cli_standing_or_mixed_file_count=147` support
+  the deferred in-process conversion recommendation.
 - dup-ratchet interpretation: command:
-  `inventory_nose_clones.py --repo-root . --write-baseline` and
-  `check_dup_ratchet.py --repo-root . --write-baseline`; helper extraction
-  removed the new YAML helper clone, then both code duplicate baselines accepted
-  remaining line-offset family-id rotations in existing inventory boilerplate.
-- public-skill dogfood result: command:
+  `check_dup_ratchet.py --repo-root . --write-baseline` and
+  `inventory_nose_clones.py --repo-root . --write-baseline --json`; the seven
+  blocked code family ids were reviewed as line-offset rotations in touched
+  duplicate-member files, so the gate and advisory id-set baselines were
+  deliberately refreshed together.
+- quality dogfood decision: command:
   `suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`;
-  the existing quality case is `hitl-recommended` and still covers slow-gate,
-  structural-review, runtime-budget, and durable-artifact consumer behavior.
+  existing `hitl-recommended` case covers runtime/test-speed review, so no
+  scenario-registry change is needed for this helper/report mechanics slice.
 
 ## Delegated Review
 
 - Delegated Review: executed — fresh-eye reviewer
-  `019efea7-7720-7c61-a060-198f52d45a05` found no blockers, confirmed JSON/full
-  inventory behavior and plugin mirror sync, and warned that the compactness
-  proof is byte-sized rather than tokenizer-measured.
+  `019f00b7-d116-7c80-a606-847fe69bb0d7` recommended fixing stale/noisy quality
+  signals first and called prompt-bulk adapter summary the same low-risk slice.
+- Critique fresh-eye reviewers `019f00c6-f822-70c0-9958-82dbbdf48234`,
+  `019f00c7-0fff-7540-ab6f-c45d0cb5ceb5`, and
+  `019f00c7-2b33-7742-b130-8e32f8b2cc1d` found stale-only markdown and paired
+  baseline gaps; both were fixed.
 - Slow-gate lenses (fixture-economics, parallel-critical-path,
-  duplicated-proof): reviewed via runtime hot spots, broad read-only gate
-  output, and dup-ratchet family attribution; no test-removal change was made.
+  duplicated-proof): reviewed at inventory level; no test-removal change was
+  made in this slice.
 
 ## Commands Run
 
 - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
+- `./scripts/run-quality.sh --read-only`
 - `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary[,-yaml]`
-- `pytest -q tests/quality_gates/test_quality_skill_ergonomics_summary.py tests/quality_gates/test_standing_test_economics.py`
-- `ruff check skills/public/quality/scripts/inventory_skill_ergonomics.py skills/public/quality/scripts/inventory_standing_test_economics.py skills/public/quality/scripts/summary_output_lib.py tests/quality_gates/test_quality_skill_ergonomics_summary.py tests/quality_gates/test_standing_test_economics.py`
+- inventory scripts: skill ergonomics, standing test economics, standing gate verbosity
+- `python3 skills/public/quality/references/find_inline_prompt_bulk.py --repo-root . --json`
+- `python3 skills/public/quality/references/find_inline_prompt_bulk.py --repo-root . --from-adapter --summary`
+- command: python3 -m pytest -q tests/quality_gates/test_runtime_budget_gate.py tests/test_find_inline_prompt_bulk.py
+- `ruff check skills/public/quality/scripts/runtime_budget_lib.py skills/public/quality/scripts/render_runtime_summary.py skills/public/quality/references/find_inline_prompt_bulk.py tests/quality_gates/test_runtime_budget_gate.py tests/test_find_inline_prompt_bulk.py`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `python3 scripts/check_changed_surfaces.py --repo-root .`
-- `python3 scripts/validate_packaging.py --repo-root .`
-- `python3 scripts/validate_packaging_committed.py --repo-root .`
-- `python3 scripts/validate_skills.py --repo-root .`
-- `python3 scripts/validate_skill_ergonomics.py --repo-root .`
-- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
-- `python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing`
-- `python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing`
-- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --write-baseline`
 - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline`
-- `./scripts/run-quality.sh --read-only`
+- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --write-baseline --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 
 ## Recommended Next Gates
 
-- active none — this slice extends an existing compact summary contract and
-  shares helper code without adding a low-noise blocking invariant.
-- passive convert more agent-facing summaries to YAML because byte measurement
-  must show material savings while JSON remains the stable machine contract.
-- passive add tokenizer-specific measurement until a repo-owned tokenizer seam
-  exists, because byte size is only a portable proxy for token efficiency.
+- active none — this slice fixes quality-signal mechanics with focused tests.
+- passive convert one nested-CLI cluster to in-process proof because standing
+  pytest still pays broad subprocess fanout and the current ratchet only prevents
+  growth.
+- passive add tokenizer-specific token measurement until a stable repo-owned
+  tokenizer seam exists, because byte size is only a portable proxy.
 
 ## History
 

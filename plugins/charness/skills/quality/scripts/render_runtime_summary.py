@@ -76,6 +76,18 @@ def _format_hotspots(items: list[dict[str, object]]) -> str:
     return "; ".join(parts)
 
 
+def _format_stale_hotspots(items: list[dict[str, object]]) -> str:
+    parts: list[str] = []
+    for item in items:
+        label = str(item["label"])
+        timestamp = item.get("latest_timestamp")
+        stale_days = item.get("stale_days")
+        timestamp_text = f"latest sample {timestamp}" if isinstance(timestamp, str) else "latest sample unknown"
+        stale_text = f", {stale_days}d old" if isinstance(stale_days, int) else ""
+        parts.append(f"`{label}` {timestamp_text}{stale_text}")
+    return "; ".join(parts)
+
+
 def _format_visibility(findings: list[dict[str, object]]) -> str:
     if not findings:
         return "- runtime visibility: configured."
@@ -94,6 +106,9 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
     hotspots = report.get("runtime_hotspots")
     if not isinstance(hotspots, list):
         hotspots = []
+    stale_hotspots = report.get("stale_runtime_hotspots")
+    if not isinstance(stale_hotspots, list):
+        stale_hotspots = []
     findings = report.get("runtime_visibility_findings")
     if not isinstance(findings, list):
         findings = []
@@ -119,7 +134,11 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
                 f"`{RUNTIME_SIGNALS_PATH}` rendered by `render_runtime_summary.py`{provenance}; profile `{profile}`."
             )
         hot_spots = f"- runtime hot spots: {_format_hotspots(hotspots)}."
-        return [source, hot_spots, visibility, _interpretation_line()]
+        lines = [source, hot_spots]
+        if stale_hotspots:
+            lines.append(f"- stale runtime hot spots excluded: {_format_stale_hotspots(stale_hotspots)}.")
+        lines.extend([visibility, _interpretation_line()])
+        return lines
 
     # No hot spots: prefer the most specific source explanation available.
     if timing_log.get("configured") and not timing_log.get("file_present"):
@@ -129,25 +148,40 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
             f"`{RUNTIME_SIGNALS_PATH}` also has no samples for profile `{profile}`."
         )
     elif timing_log.get("configured"):
-        source_line = (
-            "- runtime source: command-timing log "
-            f"`{timing_log.get('path')}` has no usable samples for profile `{profile}`."
-        )
+        if stale_hotspots:
+            source_line = (
+                "- runtime source: command-timing log "
+                f"`{timing_log.get('path')}` has no fresh usable samples for profile `{profile}`."
+            )
+        else:
+            source_line = (
+                "- runtime source: command-timing log "
+                f"`{timing_log.get('path')}` has no usable samples for profile `{profile}`."
+            )
     elif signals_present:
-        source_line = (
-            "- runtime source: structured metrics file "
-            f"`{RUNTIME_SIGNALS_PATH}` has no samples for profile `{profile}`."
-        )
+        if stale_hotspots:
+            source_line = (
+                "- runtime source: structured metrics file "
+                f"`{RUNTIME_SIGNALS_PATH}` has no fresh samples for profile `{profile}`."
+            )
+        else:
+            source_line = (
+                "- runtime source: structured metrics file "
+                f"`{RUNTIME_SIGNALS_PATH}` has no samples for profile `{profile}`."
+            )
     else:
         source_line = (
             "- runtime source: not configured; add structured timing capture "
             "(or a `command_timing_log` adapter key) before reporting timing trends."
         )
-    return [
-        source_line,
+    lines = [source_line]
+    if stale_hotspots:
+        lines.append(f"- stale runtime hot spots excluded: {_format_stale_hotspots(stale_hotspots)}.")
+    lines.extend([
         "- runtime hot spots: unavailable until structured runtime metrics have samples.",
         visibility,
-    ]
+    ])
+    return lines
 
 
 def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_count: int) -> dict[str, object]:
@@ -165,6 +199,7 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
         "signals_path": str(RUNTIME_SIGNALS_PATH),
         "signals_present": signals_present,
         "runtime_hotspots": hotspots,
+        "stale_runtime_hotspots": report.get("stale_runtime_hotspots", []),
         "runtime_visibility_findings": report.get("runtime_visibility_findings", []),
         "missing_samples": report.get("missing_samples", []),
         "commands_source": report.get("commands_source", "none"),

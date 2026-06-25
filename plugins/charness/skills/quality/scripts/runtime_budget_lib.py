@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -11,6 +12,7 @@ from runtime_visibility_lib import runtime_visibility_findings
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
 DEFAULT_TOP_RUNTIME_COUNT = 5
+STALE_HOTSPOT_SAMPLE_DAYS = 14
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -35,36 +37,68 @@ def _advisory_ewma(entry: dict[str, Any]) -> tuple[float | None, float | None, i
     )
 
 
-def _elapsed_summary(label: str, entry: dict[str, Any], budgets: dict[str, int]) -> dict[str, Any] | None:
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _reference_time(payload: dict[str, Any]) -> datetime:
+    parsed = _parse_timestamp(payload.get("updated_at"))
+    return parsed or datetime.now(timezone.utc)
+
+
+def _elapsed_summary(
+    label: str,
+    entry: dict[str, Any],
+    budgets: dict[str, int],
+    *,
+    reference_time: datetime,
+) -> dict[str, Any] | None:
     latest = entry.get("latest")
     elapsed = latest.get("elapsed_ms") if isinstance(latest, dict) else None
     if not isinstance(elapsed, int):
         return None
+    latest_timestamp = latest.get("timestamp") if isinstance(latest, dict) else None
+    parsed_latest = _parse_timestamp(latest_timestamp)
+    stale_days: int | None = None
+    if parsed_latest is not None:
+        age = reference_time - parsed_latest
+        stale_days = max(age.days, 0)
     median_recent = entry.get("median_recent_elapsed_ms")
     max_recent = entry.get("max_recent_elapsed_ms")
     budget = budgets.get(label)
     return {
         "label": label,
+        "latest_timestamp": latest_timestamp if isinstance(latest_timestamp, str) else None,
         "latest_elapsed_ms": elapsed,
         "median_recent_elapsed_ms": median_recent if isinstance(median_recent, int) else elapsed,
         "max_recent_elapsed_ms": max_recent if isinstance(max_recent, int) else None,
         "budget_ms": budget if isinstance(budget, int) else None,
         "budgeted": isinstance(budget, int),
+        "stale": stale_days is not None and stale_days > STALE_HOTSPOT_SAMPLE_DAYS,
+        "stale_days": stale_days,
     }
 
 
-def _runtime_hotspots(
+def _runtime_hotspot_summaries(
     commands: dict[str, Any],
     budgets: dict[str, int],
     *,
-    count: int,
+    reference_time: datetime,
 ) -> list[dict[str, Any]]:
     summaries = [
         summary
         for label, entry in commands.items()
         if isinstance(label, str)
         and isinstance(entry, dict)
-        and (summary := _elapsed_summary(label, entry, budgets)) is not None
+        and (summary := _elapsed_summary(label, entry, budgets, reference_time=reference_time)) is not None
     ]
     summaries.sort(
         key=lambda item: (
@@ -74,7 +108,24 @@ def _runtime_hotspots(
         ),
         reverse=True,
     )
-    return summaries[:count]
+    return summaries
+
+
+def _runtime_hotspots(
+    commands: dict[str, Any],
+    budgets: dict[str, int],
+    *,
+    count: int,
+    reference_time: datetime,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    summaries = _runtime_hotspot_summaries(commands, budgets, reference_time=reference_time)
+    fresh = [
+        {key: value for key, value in summary.items() if key not in {"latest_timestamp", "stale", "stale_days"}}
+        for summary in summaries
+        if summary.get("stale") is not True
+    ]
+    stale = [summary for summary in summaries if summary.get("stale") is True]
+    return fresh[:count], stale
 
 
 def _checked_entry(label: str, max_ms: int, entry: Any, smoothing_entry: dict[str, Any]) -> dict[str, Any]:
@@ -119,6 +170,7 @@ def evaluate(
     smoothing = _load_json(smoothing_path)
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
     smoothing_commands = profile_commands(smoothing, selected_profile) if isinstance(smoothing, dict) else {}
+    runtime_reference_time = _reference_time(signals) if isinstance(signals, dict) else datetime.now(timezone.utc)
 
     # When runtime-signals.json has no samples for the selected profile, fall back
     # to a repo-declared command-timing log (inert when unconfigured). Config-shape
@@ -163,6 +215,13 @@ def evaluate(
                 }
             )
 
+    runtime_hotspots, stale_runtime_hotspots = _runtime_hotspots(
+        commands,
+        budgets,
+        count=top_runtime_count,
+        reference_time=runtime_reference_time,
+    )
+
     return {
         "signals_path": str(signals_path),
         "smoothing_path": str(smoothing_path),
@@ -174,7 +233,8 @@ def evaluate(
         "violations": violations,
         "latest_spikes": latest_spikes,
         "missing_samples": missing_samples,
-        "runtime_hotspots": _runtime_hotspots(commands, budgets, count=top_runtime_count),
+        "runtime_hotspots": runtime_hotspots,
+        "stale_runtime_hotspots": stale_runtime_hotspots,
         "runtime_visibility_findings": runtime_visibility_findings(adapter_data, budgets),
         "commands_source": commands_source,
         "timing_log": {
@@ -216,5 +276,13 @@ def format_human(report: dict[str, Any]) -> str:
             lines.append(
                 f"HOTSPOT      {item['label']}: latest {item['latest_elapsed_ms']}ms, "
                 f"median {item['median_recent_elapsed_ms']}ms ({budget_text})"
+            )
+    stale_hotspots = report.get("stale_runtime_hotspots")
+    if isinstance(stale_hotspots, list) and stale_hotspots:
+        lines.append("Stale runtime hot spots excluded:")
+        for item in stale_hotspots:
+            lines.append(
+                f"STALE       {item['label']}: latest sample {item.get('latest_timestamp') or 'unknown'} "
+                f"({item.get('stale_days')}d old)"
             )
     return "\n".join(lines)

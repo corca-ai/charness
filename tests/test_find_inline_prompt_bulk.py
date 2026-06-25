@@ -93,3 +93,88 @@ def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> Non
     )
     assert payload["exemption_globs"] == []
     assert [finding["path"] for finding in payload["findings"]] == ["src/kept.py"]
+
+
+def test_find_inline_prompt_bulk_uses_quality_adapter_policy(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "src").mkdir(parents=True)
+    (repo / "plugins" / "mirror").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "prompt_asset_policy:",
+                "  source_globs:",
+                "    - src/**/*.py",
+                "  min_multiline_chars: 300",
+                "  exemption_globs:",
+                "    - src/exempt_*.py",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "src" / "kept.py").write_text(
+        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
+        encoding="utf-8",
+    )
+    (repo / "src" / "exempt_prompt.py").write_text(
+        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
+        encoding="utf-8",
+    )
+    (repo / "plugins" / "mirror" / "ignored.py").write_text(
+        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
+        encoding="utf-8",
+    )
+    init_git_repo(
+        repo,
+        ".agents/quality-adapter.yaml",
+        "src/kept.py",
+        "src/exempt_prompt.py",
+        "plugins/mirror/ignored.py",
+    )
+
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--from-adapter",
+        "--summary",
+        "--summary-limit",
+        "1",
+    )
+
+    assert payload["scope_classification"] == "scanned_from_adapter"
+    assert payload["source_globs"] == ["src/**/*.py"]
+    assert payload["exemption_globs"] == ["src/exempt_*.py"]
+    assert payload["min_multiline_chars"] == 300
+    assert payload["adapter"]["found"] is True
+    assert payload["adapter"]["valid"] is True
+    assert payload["finding_count"] == 1
+    assert [finding["path"] for finding in payload["findings_sample"]] == ["src/kept.py"]
+    assert "findings" not in payload
+
+
+def test_find_inline_prompt_bulk_summary_limits_findings(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    for index in range(3):
+        (repo / "src" / f"prompt_{index}.py").write_text(
+            'PROMPT = """line one\\n' + ("x" * 450) + '"""\n',
+            encoding="utf-8",
+        )
+
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--source-glob",
+        "src/**/*.py",
+        "--summary",
+        "--summary-limit",
+        "2",
+    )
+
+    assert payload["finding_count"] == 3
+    assert len(payload["findings_sample"]) == 2
+    assert "findings" not in payload

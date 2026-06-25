@@ -2,17 +2,26 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
+QUALITY_SCRIPTS_DIR = ROOT / "skills" / "public" / "quality" / "scripts"
+if str(QUALITY_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(QUALITY_SCRIPTS_DIR))
 RUNTIME_PROFILE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "runtime_profile_lib.py"
 _spec = importlib.util.spec_from_file_location("runtime_profile_lib_under_test", RUNTIME_PROFILE_LIB)
 assert _spec is not None and _spec.loader is not None
 runtime_profile_lib = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(runtime_profile_lib)
+RENDER_RUNTIME_SUMMARY = ROOT / "skills" / "public" / "quality" / "scripts" / "render_runtime_summary.py"
+_render_spec = importlib.util.spec_from_file_location("render_runtime_summary_under_test", RENDER_RUNTIME_SUMMARY)
+assert _render_spec is not None and _render_spec.loader is not None
+render_runtime_summary = importlib.util.module_from_spec(_render_spec)
+_render_spec.loader.exec_module(render_runtime_summary)
 
 
 def _seed_repo(
@@ -503,6 +512,77 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
     assert "unbudgeted" in plain_result.stdout
 
 
+def test_runtime_budget_gate_excludes_stale_runtime_hotspots(tmp_path: Path) -> None:
+    signals = {
+        "updated_at": "2026-06-26T00:00:00",
+        "commands": {
+            "current-pytest": {
+                "latest": {
+                    "timestamp": "2026-06-26T00:00:00Z",
+                    "elapsed_ms": 15000,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 14000,
+            },
+            "retired-check": {
+                "latest": {
+                    "timestamp": "2026-06-04T00:00:00",
+                    "elapsed_ms": 90000,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 88000,
+            },
+        },
+    }
+    repo = _seed_repo(tmp_path, budgets={"current-pytest": 22000}, signals=signals)
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--top-runtime-count",
+        "2",
+        "--runtime-profile",
+        "default",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [item["label"] for item in payload["runtime_hotspots"]] == ["current-pytest"]
+    assert payload["stale_runtime_hotspots"][0]["label"] == "retired-check"
+    assert payload["stale_runtime_hotspots"][0]["stale_days"] == 22
+
+    plain_result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+    assert plain_result.returncode == 0, plain_result.stderr
+    assert "Stale runtime hot spots excluded:" in plain_result.stdout
+    assert "STALE       retired-check: latest sample 2026-06-04T00:00:00 (22d old)" in plain_result.stdout
+
+
+def test_runtime_budget_gate_keeps_invalid_timestamps_active(tmp_path: Path) -> None:
+    signals = {
+        "updated_at": "2026-06-26T00:00:00Z",
+        "commands": {
+            "unknown-age": {
+                "latest": {
+                    "timestamp": "not-a-timestamp",
+                    "elapsed_ms": 30000,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 28000,
+            },
+        },
+    }
+    repo = _seed_repo(tmp_path, budgets={"unknown-age": 50000}, signals=signals)
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [item["label"] for item in payload["runtime_hotspots"]] == ["unknown-age"]
+    assert payload["stale_runtime_hotspots"] == []
+
+
 def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) -> None:
     signals = {
         "commands": {
@@ -531,6 +611,134 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)
     assert "transient" in interpretation["blind_spots"]  # the load-bearing blind spot
+
+
+def test_render_runtime_summary_names_excluded_stale_hotspots(tmp_path: Path) -> None:
+    signals = {
+        "updated_at": "2026-06-26T00:00:00Z",
+        "commands": {
+            "pytest": {
+                "latest": {
+                    "timestamp": "2026-06-26T00:00:00Z",
+                    "elapsed_ms": 15000,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 14000,
+            },
+            "check-duplicates": {
+                "latest": {
+                    "timestamp": "2026-06-04T12:11:36Z",
+                    "elapsed_ms": 9995,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 11877,
+            },
+        },
+    }
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [item["label"] for item in payload["runtime_hotspots"]] == ["pytest"]
+    assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["check-duplicates"]
+    assert any("stale runtime hot spots excluded" in line for line in payload["markdown_lines"])
+
+
+def test_render_runtime_summary_names_excluded_stale_hotspots_without_fresh_hotspots(tmp_path: Path) -> None:
+    signals = {
+        "updated_at": "2026-06-26T00:00:00Z",
+        "commands": {
+            "retired-check": {
+                "latest": {
+                    "timestamp": "2026-06-04T12:11:36Z",
+                    "elapsed_ms": 9995,
+                    "status": "pass",
+                },
+                "median_recent_elapsed_ms": 11877,
+            },
+        },
+    }
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["runtime_hotspots"] == []
+    assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["retired-check"]
+    assert payload["markdown_lines"][:3] == [
+        "- runtime source: structured metrics file `.charness/quality/runtime-signals.json` has no fresh samples for profile `default`.",
+        "- stale runtime hot spots excluded: `retired-check` latest sample 2026-06-04T12:11:36Z, 21d old.",
+        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
+    ]
+    assert "interpretation" not in payload
+
+
+def test_render_runtime_summary_handles_command_timing_log_without_stale_hotspots(tmp_path: Path) -> None:
+    lines = render_runtime_summary.render_markdown_lines(
+        {
+            "runtime_profile": "default",
+            "runtime_hotspots": [],
+            "stale_runtime_hotspots": [],
+            "runtime_visibility_findings": [],
+            "timing_log": {"configured": True, "file_present": True, "path": "reports/timing.jsonl"},
+        },
+        repo_root=tmp_path,
+        signals_present=False,
+    )
+
+    assert lines[:2] == [
+        "- runtime source: command-timing log `reports/timing.jsonl` has no usable samples for profile `default`.",
+        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
+    ]
+
+
+def test_render_runtime_summary_handles_command_timing_log_with_only_stale_hotspots(tmp_path: Path) -> None:
+    lines = render_runtime_summary.render_markdown_lines(
+        {
+            "runtime_profile": "default",
+            "runtime_hotspots": [],
+            "stale_runtime_hotspots": [
+                {
+                    "label": "retired-check",
+                    "latest_timestamp": "2026-06-04T00:00:00Z",
+                    "stale_days": 22,
+                }
+            ],
+            "runtime_visibility_findings": [],
+            "timing_log": {"configured": True, "file_present": True, "path": "reports/timing.jsonl"},
+        },
+        repo_root=tmp_path,
+        signals_present=False,
+    )
+
+    assert lines[:3] == [
+        "- runtime source: command-timing log `reports/timing.jsonl` has no fresh usable samples for profile `default`.",
+        "- stale runtime hot spots excluded: `retired-check` latest sample 2026-06-04T00:00:00Z, 22d old.",
+        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
+    ]
+
+
+def test_render_runtime_summary_normalizes_unexpected_stale_hotspot_shape(tmp_path: Path) -> None:
+    lines = render_runtime_summary.render_markdown_lines(
+        {
+            "runtime_profile": "default",
+            "runtime_hotspots": [],
+            "stale_runtime_hotspots": {"label": "bad-shape"},
+            "runtime_visibility_findings": [],
+            "timing_log": {},
+        },
+        repo_root=tmp_path,
+        signals_present=True,
+    )
+
+    assert lines[0] == (
+        "- runtime source: structured metrics file "
+        "`.charness/quality/runtime-signals.json` has no samples for profile `default`."
+    )
+    assert not any("stale runtime hot spots excluded" in line for line in lines)
 
 
 def test_render_runtime_summary_omits_interpretation_without_hotspots(tmp_path: Path) -> None:
