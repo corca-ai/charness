@@ -460,6 +460,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Metrics: Token/output proxy: standing-gate verbosity full JSON was 7870 bytes and summary JSON was 2993 bytes, a 62.0% reduction.
 - Public-skill/Cautilus disposition: `quality` dogfood suggestion was reviewed; the existing `docs/public-skill-dogfood.json` contract remains the maintained consumer contract for this summary-first dispatch change. Cautilus live proof was skipped because planner `next_action` was `none` and deterministic validation owned closeout.
 
+### Slice 23: Run metric-window CLI tests in process
+
+- Objective: Reduce avoidable subprocess cost and boundary-bypass noise in metric-window tests.
+- Why this approach: `test_record_metric_window.py` already had an in-process helper for the same script, but three CLI/error-path tests still used `run_script`. Catching argparse `SystemExit` in the helper preserves error-path assertions without spawning Python.
+- Commits:
+- What changed: Removed `run_script` usage from metric-window tests, made the in-process helper capture `SystemExit`, and routed update / mutually-exclusive / missing-session-source tests through that helper.
+- Alternatives rejected: Did not change the script implementation; the behavior surface was already import-safe and covered.
+- Targeted verification: pytest: `tests/quality_gates/test_record_metric_window.py` `13 passed` in 0.39s; `inventory_boundary_bypass.py` dropped from 75 to 74 candidates and from 36 to 35 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing subprocess tests to the already-present in-process helper.
+- Critique: Same-agent slice critique: this keeps CLI argparse behavior covered but no longer proves process startup for this script; that is acceptable because the repo keeps broader script startup/mirror gates elsewhere.
+- Off-goal findings: Boundary-bypass inventory still reports 74 advisory candidates.
+- Lessons carried forward: Before adding a new helper, check whether the test file already has an in-process runner that only needs `SystemExit` support.
+- Metrics: Speed/testability proxy: removed three nested Python script invocations from the focused metric-window test file and reduced ratchet clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -11,8 +11,6 @@ import pytest
 from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
 
-from .support import run_script
-
 ROOT = Path(__file__).resolve().parents[2]
 _LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
 _spec = importlib.util.spec_from_file_location("goal_artifact_lib", _LIB)
@@ -26,7 +24,10 @@ _record_metric_window = import_repo_module(
 
 def run_record_metric_window(monkeypatch, capsys, *args: str) -> SimpleNamespace:
     monkeypatch.setattr(sys, "argv", ["record_metric_window.py", *args])
-    returncode = _record_metric_window.main()
+    try:
+        returncode = _record_metric_window.main()
+    except SystemExit as exc:
+        returncode = exc.code if isinstance(exc.code, int) else 1
     captured = capsys.readouterr()
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
@@ -155,14 +156,15 @@ def test_absent_window_is_surfaced_at_closeout_but_never_gates_the_flip(tmp_path
     assert report_absent["ok"] == report_recorded["ok"]
 
 
-def test_record_metric_window_cli_updates_artifact(tmp_path: Path) -> None:
+def test_record_metric_window_cli_updates_artifact(tmp_path: Path, monkeypatch, capsys) -> None:
     session_file = tmp_path / "rollout.jsonl"
     session_file.write_text("{}\n", encoding="utf-8")
     goal = tmp_path / "goal.md"
     goal.write_text(_goal_text(), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/achieve/scripts/record_metric_window.py",
+    result = run_record_metric_window(
+        monkeypatch,
+        capsys,
         "--goal-path",
         str(goal),
         "--started-at",
@@ -202,12 +204,13 @@ def test_record_metric_window_accepts_claude_session_source(tmp_path, monkeypatc
     assert gal.metric_window_attention(text)["status"] == "recorded"
 
 
-def test_record_metric_window_rejects_both_session_sources(tmp_path) -> None:
+def test_record_metric_window_rejects_both_session_sources(tmp_path, monkeypatch, capsys) -> None:
     goal = tmp_path / "goal.md"
     goal.write_text(_goal_text(), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/achieve/scripts/record_metric_window.py",
+    result = run_record_metric_window(
+        monkeypatch,
+        capsys,
         "--goal-path",
         str(goal),
         "--started-at",
@@ -223,12 +226,13 @@ def test_record_metric_window_rejects_both_session_sources(tmp_path) -> None:
     assert "not allowed with" in result.stderr
 
 
-def test_record_metric_window_rejects_missing_session_source(tmp_path) -> None:
+def test_record_metric_window_rejects_missing_session_source(tmp_path, monkeypatch, capsys) -> None:
     goal = tmp_path / "goal.md"
     goal.write_text(_goal_text(), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/achieve/scripts/record_metric_window.py",
+    result = run_record_metric_window(
+        monkeypatch,
+        capsys,
         "--goal-path",
         str(goal),
         "--started-at",
