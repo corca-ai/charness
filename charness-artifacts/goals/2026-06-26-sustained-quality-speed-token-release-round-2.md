@@ -708,6 +708,28 @@ None yet.
     passed.
   - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
 
+### Slice 22 — Narrow public-skill closeout planner tests
+
+- Objective: Reduce `run_slice_closeout` test runtime without removing the
+  public-skill review blocker coverage.
+- Finding: Three public-skill Cautilus ack tests spent about 10.16s total
+  because they invoked the full closeout path, including the structural-sweep
+  preexecution subprocess chain. Profiling a blocked setup-skill case showed
+  about 2.96s of 3.64s under `block_on_structural_sweep()`.
+- Change: The Cautilus-specific tests now run `run_slice_closeout.py` with
+  `--plan-only`. That preserves the public-skill blocker/ack planner payloads
+  these tests assert, while avoiding duplicate structural-sweep execution that
+  is covered by separate closeout tests.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_blocks_public_skill_review_until_acknowledged tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_allows_acknowledged_public_skill_review tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_acknowledged --durations=10 --durations-min=0.01`
+    passed, 3 tests; this trio fell from 10.16s to 2.99s.
+  - `python3 -m pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py --durations=30 --durations-min=0.1`
+    passed, 18 tests.
+  - `python3 -m py_compile tests/quality_gates/test_run_slice_closeout_surface_obligations.py`
+    passed.
+  - `ruff check tests/quality_gates/test_run_slice_closeout_surface_obligations.py`
+    passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

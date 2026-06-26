@@ -459,6 +459,7 @@ def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> N
         "skills/public/setup/scripts/inspect_repo.py",
         "--skip-sync",
         "--skip-verify",
+        "--plan-only",
         "--json",
     )
 
@@ -488,12 +489,13 @@ def test_run_slice_closeout_allows_acknowledged_public_skill_review() -> None:
         "--skip-sync",
         "--skip-verify",
         "--ack-cautilus-skill-review",
+        "--plan-only",
         "--json",
     )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["status"] == "completed"
+    assert payload["status"] == "planned"
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
     assert payload["executed_commands"] == []
 
@@ -508,6 +510,7 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
         "charness-artifacts/cautilus/latest.md",
         "--skip-sync",
         "--skip-verify",
+        "--plan-only",
         "--json",
     )
 
