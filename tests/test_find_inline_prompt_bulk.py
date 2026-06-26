@@ -71,6 +71,66 @@ def test_find_inline_prompt_bulk_reports_large_multiline_strings(tmp_path: Path)
     ]
 
 
+def test_find_inline_prompt_bulk_ignores_docstrings(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src" / "docs.py").write_text(
+        '"""module docs\\n' + ("x" * 450) + '"""\n'
+        "def helper():\n"
+        '    """function docs\\n' + ("y" * 450) + '"""\n'
+        '    return """line one\\n' + ("z" * 450) + '"""\n',
+        encoding="utf-8",
+    )
+
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--source-glob",
+        "src/**/*.py",
+        "--min-multiline-chars",
+        "400",
+        "--json",
+    )
+
+    assert payload["findings"] == [
+        {
+            "path": "src/docs.py",
+            "line": 4,
+            "char_count": 459,
+            "preview": "line one",
+        }
+    ]
+
+
+def test_find_inline_prompt_bulk_keeps_control_flow_string_expressions(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src" / "control_flow.py").write_text(
+        "if True:\n"
+        '    """line one\\n' + ("x" * 450) + '"""\n',
+        encoding="utf-8",
+    )
+
+    payload = run_prompt_bulk(
+        "--repo-root",
+        str(repo),
+        "--source-glob",
+        "src/**/*.py",
+        "--min-multiline-chars",
+        "400",
+        "--json",
+    )
+
+    assert payload["findings"] == [
+        {
+            "path": "src/control_flow.py",
+            "line": 2,
+            "char_count": 459,
+            "preview": "line one",
+        }
+    ]
+
+
 def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "src").mkdir(parents=True)

@@ -125,6 +125,13 @@
       "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
       "reviewed_at": "2026-06-26",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ba16871eb91a1f15",
+      "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This retro reviews the goal `charness-artifacts/goals/2026-06-27-sustained-quality-speed-token-release-round-4.md`: a quality slice that split a near-limit test file, removed one `run-quality.sh` help-path startup cost, narrowed prompt-bulk inventory noise, refreshed quality evidence, and completed locked closeout proof. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
 - Closeout retro for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release.md`: a roughly three-hour quality continuation run covering bug fixes, test runtime, script runtime, token efficiency, and final publication as `v0.56.2`. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.56.1`. (source: `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md`; sources: 61)
+- The first prompt-bulk helper patch treated the first string expression inside any AST body as a docstring. Fresh-eye review caught the bug before broad proof, but the first implementation should have limited docstring ownership to module/class/function nodes up front. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
+- The new quality artifact initially failed inventory-consumption and durability checks during broad pytest. The fix was simple, but the artifact could have been validated immediately after writing instead of during the locked closeout rerun. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
 - A full `python3 -m pytest -q` coverage run was started as a brute-force fallback and then stopped after it became clear it was much slower than the standing-runner path. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
-- Boundary inventory improvements are useful but can incentivize mechanical conversion. Several remaining candidates were intentionally left because the process boundary is the behavior under test. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md`)
-- Codex host log probing could bind to `~/.codex/history.jsonl`, but that file did not expose goal-window event records in the same way as the Claude project session JSONL. The probe artifact records this as measured evidence, not as a made-up cost total. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md`; sources: 61)
+- After writing a quality current-pointer artifact, immediately run `validate_quality_artifact.py`, `validate_inventory_consumption.py`, `check_spec_evidence_durability.py`, and `validate_current_pointer_freshness.py` before starting locked closeout. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
+- When excluding AST docstrings, add a control-flow string-expression test in the first patch, not only after review. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
 - accepted-risk: did not add a new hard gate for advisory requested-review or scenario-registry follow-up in this patch; the release critique records the limitation and deterministic validation owns this release boundary. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
-- accepted-risk: did not convert Cautilus, web-fetch, release-host, or committed-packaging process boundaries because their remaining subprocesses are the behavior being validated or are safer to keep for release proof. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md`)
-- applied: added focused fallback tests for timeout/default/error branches and verified changed-line mutation coverage with a fresh coverage fingerprint. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
 
 ## Selection Policy
 
@@ -86,8 +86,8 @@
 - `charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`
 - `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`
-- `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`

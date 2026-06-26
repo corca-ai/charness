@@ -19,26 +19,47 @@ def multiline_string_findings(path: Path, *, min_chars: int) -> list[dict[str, o
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, SyntaxError, UnicodeDecodeError):
         return []
-    findings: list[dict[str, object]] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
-            continue
-        value = node.value
-        if "\n" not in value or len(value) < min_chars:
-            continue
-        findings.append(
-            {
-                "path": str(path),
-                "line": getattr(node, "lineno", 1),
-                "char_count": len(value),
-                "preview": value.strip().splitlines()[0][:80],
-            }
-        )
-    return findings
+    docstring_nodes = _docstring_constant_nodes(tree)
+    return [
+        _finding(path, node, value)
+        for node in ast.walk(tree)
+        if node not in docstring_nodes
+        for value in [_large_multiline_value(node, min_chars=min_chars)]
+        if value is not None
+    ]
 
 
-def matches_any(path: str, patterns: list[str]) -> bool:
-    return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+def _finding(path: Path, node: ast.AST, value: str) -> dict[str, object]:
+    return {
+        "path": str(path),
+        "line": getattr(node, "lineno", 1),
+        "char_count": len(value),
+        "preview": value.strip().splitlines()[0][:80],
+    }
+
+
+def _large_multiline_value(node: ast.AST, *, min_chars: int) -> str | None:
+    if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+        return None
+    value = node.value
+    return value if "\n" in value and len(value) >= min_chars else None
+
+
+def _docstring_constant_nodes(tree: ast.AST) -> set[ast.Constant]:
+    nodes: set[ast.Constant] = set()
+    for owner in ast.walk(tree):
+        if not isinstance(owner, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
+            continue
+        body = getattr(owner, "body", None)
+        if not isinstance(body, list) or not body:
+            continue
+        first = body[0]
+        if not isinstance(first, ast.Expr):
+            continue
+        value = first.value
+        if isinstance(value, ast.Constant) and isinstance(value.value, str):
+            nodes.add(value)
+    return nodes
 
 
 def _load_quality_adapter(repo_root: Path) -> dict[str, object]:
@@ -125,7 +146,7 @@ def main() -> int:
             if visible_files is not None and path not in visible_files:
                 continue
             rendered = str(path.relative_to(repo_root))
-            if matches_any(rendered, exemptions):
+            if any(fnmatch.fnmatch(rendered, pattern) for pattern in exemptions):
                 continue
             findings.extend(
                 {

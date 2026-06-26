@@ -1,1 +1,1 @@
-2026-06-26-five-pass-boundary-quality-review.md
+2026-06-27-round-four-quality-speed-token-review.md

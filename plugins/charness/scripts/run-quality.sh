@@ -4,9 +4,6 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
-mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
-
 RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
@@ -47,6 +44,9 @@ case "$RUN_QUALITY_MODE" in
     ;;
 esac
 export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
+
+STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
+mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
