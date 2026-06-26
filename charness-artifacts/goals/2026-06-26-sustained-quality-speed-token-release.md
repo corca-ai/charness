@@ -599,6 +599,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Adapter resolver matrices should usually test the resolver API directly and reserve subprocesses for one wrapper smoke plus write commands.
 - Metrics: create-skill resolve_adapter.py launches in test_create_skill_adapter.py: base 10, current 1.
 
+### Slice 33: Profile and preset validator subprocess fanout
+
+- Objective: Remove simple profile/preset validator subprocesses while leaving adapter boundary tests intact.
+- Why this approach: validate_profile() and validate_preset() expose the exact validator behavior needed for the first three error cases.
+- Commits:
+- What changed: Converted missing-skill, organization-scope, and product-slice exposure tests to direct validator function calls and direct ValidationError message assertions.
+- Alternatives rejected: Left gitignored-file and adapter validation subprocesses unchanged because they prove command/gitignored/boundary behavior and dominate runtime.
+- Targeted verification: ruff passed; focused profile/preset pytest passed 18 tests in 5.29s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; three pure validator subprocess calls removed.
+- Critique: charness-artifacts/critique/2026-06-26-profile-preset-validator-runtime.md; low-risk same-agent critique recorded because command-heavy checks remain.
+- Off-goal findings: adapter validation remains the dominant runtime in this file.
+- Lessons carried forward: In mixed validator files, trim direct validator checks first and leave git/adapter command behavior for a separate proof plan.
+- Metrics: pure profile/preset validator subprocess launches in test_profile_and_preset_validation.py: base 3, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

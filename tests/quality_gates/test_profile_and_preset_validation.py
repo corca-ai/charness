@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts import validate_presets as VALIDATE_PRESETS
+from scripts import validate_profiles as VALIDATE_PROFILES
+
 from .support import init_git_repo, run_script
 
 
@@ -22,9 +25,12 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "missing artifact `handoff`" in result.stderr
+    try:
+        VALIDATE_PROFILES.validate_profile(profiles_dir / "constitutional.json", repo)
+    except VALIDATE_PROFILES.ValidationError as exc:
+        assert "missing artifact `handoff`" in str(exc)
+    else:
+        raise AssertionError("validate_profile did not reject missing skill reference")
 
 
 def test_validate_presets_rejects_organization_scope_without_product_slice(tmp_path: Path) -> None:
@@ -51,9 +57,12 @@ def test_validate_presets_rejects_organization_scope_without_product_slice(tmp_p
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "organization-scope presets must use `preset_kind: product-slice`" in result.stderr
+    try:
+        VALIDATE_PRESETS.validate_preset(presets_dir / "bad-preset.md")
+    except VALIDATE_PRESETS.ValidationError as exc:
+        assert "organization-scope presets must use `preset_kind: product-slice`" in str(exc)
+    else:
+        raise AssertionError("validate_preset did not reject organization-scope sample preset")
 
 
 def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_path: Path) -> None:
@@ -80,9 +89,12 @@ def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_pa
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "product-slice presets must include an `## Exposure Contract` section" in result.stderr
+    try:
+        VALIDATE_PRESETS.validate_preset(presets_dir / "org-slice.md")
+    except VALIDATE_PRESETS.ValidationError as exc:
+        assert "product-slice presets must include an `## Exposure Contract` section" in str(exc)
+    else:
+        raise AssertionError("validate_preset did not reject product slice without exposure contract")
 
 
 def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
