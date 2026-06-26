@@ -319,6 +319,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When a test needs a fake external binary, keep that external boundary and remove only the redundant script process.
 - Metrics: Runtime proxy: focused dead-code advisory test file observed at 0.64s before conversion and 0.53s after conversion in this session.
 
+### Slice 13: Exclude artifacts from coverage and seeded repo copies
+
+- Objective: Reduce avoidable fixture-copy work in coverage and seeded test repos by excluding repo-owned artifacts that scenarios do not consume.
+- Why this approach: `charness-artifacts` is about 16MB locally, while check_coverage.py and tests/repo_copy.py already exclude volatile roots such as `.charness`, caches, reports, and node_modules.
+- Commits:
+- What changed: Added `charness-artifacts` to check_coverage.py COPY_IGNORE_NAMES, plugin mirror, tests/repo_copy.py REPO_COPY_EXCLUDE_NAMES, and the repo-copy invariant required exclude set.
+- Alternatives rejected: Did not narrow coverage's source copy beyond existing ignore roots because scenario behavior still expects a realistic source checkout.
+- Targeted verification: pytest: 12 passed for test_repo_copy_invariants.py; check_test_repo_copy_invariants.py passed; check_coverage.py JSON output stayed byte-equivalent as structured data to the before snapshot (coverage 0.9212, 1075/1167); ruff passed; check_python_lengths passed; run_slice_closeout.py passed.
+- Test duplication pressure: Updated the existing invariant set instead of adding another copy-specific test.
+- Critique: Same-agent slice critique: excluding artifacts is safe because coverage scenarios and seeded repo copies exercise source/control-plane behavior, not historical goal/quality artifacts.
+- Off-goal findings: Single-run coverage wall time is noisy; observed samples ranged from 4.64s to 4.84s after the change, so the durable claim is reduced copied payload rather than a precise wall-clock win.
+- Lessons carried forward: Fixture copy helpers should exclude durable artifacts unless a test explicitly opts into artifact behavior.
+- Metrics: Copy-size proxy: avoid copying the local 16MB `charness-artifacts` tree in coverage and seeded repo copies.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

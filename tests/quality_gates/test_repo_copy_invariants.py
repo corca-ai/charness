@@ -33,6 +33,7 @@ REQUIRED_VOLATILE_COPY_EXCLUDES = {
     "__pycache__",
     ".coverage",
     ".venv",
+    "charness-artifacts",
     "node_modules",
     "reports",
 }

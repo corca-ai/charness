@@ -67,6 +67,7 @@ COPY_IGNORE_NAMES = (
     "__pycache__",
     ".coverage",
     ".charness",
+    "charness-artifacts",
     ".venv",
     "node_modules",
     "reports",
