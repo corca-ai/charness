@@ -52,8 +52,8 @@ def run_script(
     )
 
 
-def inspect_setup_repo(repo: Path) -> dict[str, object]:
-    result = run_loaded_script_main("inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo))
+def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict[str, object]:
+    result = run_loaded_script_main("inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo), env=env)
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
 

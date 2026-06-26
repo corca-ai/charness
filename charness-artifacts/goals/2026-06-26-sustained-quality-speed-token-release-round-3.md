@@ -894,6 +894,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Support sync tests can call script `main()` directly when they assert generated files rather than shell isolation.
 - Metrics: Speed/testability proxy: removed two nested Python process starts and removed `tests/control_plane/test_sync_support.py` from the clean-convertible file list.
 
+### Slice 54: Run setup inspect degraded-env smokes in process
+
+- Objective: Remove the clean `inspect_repo.py` subprocess from setup inspect adapter tests.
+- Why this approach: The subprocess existed to hide `git` from PATH; the shared loaded-script runner can apply the same env in process while the inspect code still probes `git` through its own subprocess calls.
+- Commits:
+- What changed: Added optional `env` support to `inspect_setup_repo()`, routed degraded-git tests through it, and removed the now-unneeded `python3` symlink setup.
+- Alternatives rejected: Did not change the real git worktree setup subprocesses because those create actual git state that the inspector must observe.
+- Targeted verification: pytest: setup inspect plus loaded-runner dependent quality tests `51 passed` in 8.82s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 49 candidates, 71 candidate keys, and 5 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 47 candidates and 5 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted two degraded-env smokes.
+- Critique: Same-agent slice critique: the degraded PATH behavior is still real for the `git` probe, so this removes only the unnecessary outer interpreter.
+- Off-goal findings: None.
+- Lessons carried forward: Env isolation can be preserved in-process when the behavior under test is a child command lookup, not Python interpreter startup.
+- Metrics: Speed/testability proxy: removed two nested Python process starts and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

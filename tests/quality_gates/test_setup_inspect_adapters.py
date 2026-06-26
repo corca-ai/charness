@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 from .support import inspect_setup_repo
@@ -173,21 +172,7 @@ def test_setup_inspect_recommends_seed_worktree_adapter_for_active_worktrees_wit
 
 
 def _run_inspect_with_env(repo: Path, env: dict[str, str]) -> dict[str, object]:
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/setup/scripts/inspect_repo.py",
-            "--repo-root",
-            str(repo),
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        capture_output=True,
-        text=True,
-        env=env,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return inspect_setup_repo(repo, env=env)
 
 
 def test_setup_inspect_emits_probe_unavailable_finding_when_git_is_missing(tmp_path: Path) -> None:
@@ -200,8 +185,6 @@ def test_setup_inspect_emits_probe_unavailable_finding_when_git_is_missing(tmp_p
     fake_bin = tmp_path / "no-git-bin"
     fake_bin.mkdir()
     env = {"PATH": f"{fake_bin}"}
-    # Provide python3 via an explicit symlink so the test subprocess starts.
-    (fake_bin / "python3").symlink_to(sys.executable)
 
     payload = _run_inspect_with_env(repo, env)
 
@@ -220,7 +203,6 @@ def test_setup_inspect_degrades_confidence_when_probe_fails_alongside_hook_manag
     (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
     fake_bin = tmp_path / "no-git-bin"
     fake_bin.mkdir()
-    (fake_bin / "python3").symlink_to(sys.executable)
     env = {"PATH": f"{fake_bin}"}
 
     payload = _run_inspect_with_env(repo, env)
