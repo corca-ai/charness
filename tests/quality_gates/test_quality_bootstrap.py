@@ -14,10 +14,9 @@ from scripts.simple_skill_adapter_lib import validate_simple_adapter_data
 
 from .support import ROOT, run_script
 
-# In-process boundary conversion (testability-dsl-initiative goal 1): drive the
-# adapter-gate-design inventory's `main()` in-process. The other spawns in this
-# file (bootstrap_adapter / resolve_adapter / init_adapter) intentionally stay at
-# the process boundary; only the inventory_* call site is converted here.
+# In-process boundary conversions keep bootstrap/init and one direct resolve
+# error smoke at the process boundary while moving read-only follow-up probes
+# lower.
 _AGD_SPEC = importlib.util.spec_from_file_location(
     "inventory_adapter_gate_design",
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_adapter_gate_design.py",
@@ -25,6 +24,13 @@ _AGD_SPEC = importlib.util.spec_from_file_location(
 assert _AGD_SPEC is not None and _AGD_SPEC.loader is not None
 _AGD_MODULE = importlib.util.module_from_spec(_AGD_SPEC)
 _AGD_SPEC.loader.exec_module(_AGD_MODULE)
+_RESOLVE_SPEC = importlib.util.spec_from_file_location(
+    "quality_resolve_adapter",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
+)
+assert _RESOLVE_SPEC is not None and _RESOLVE_SPEC.loader is not None
+_RESOLVE_MODULE = importlib.util.module_from_spec(_RESOLVE_SPEC)
+_RESOLVE_SPEC.loader.exec_module(_RESOLVE_MODULE)
 
 
 class _Result(NamedTuple):
@@ -40,6 +46,18 @@ def _run_adapter_gate_design(*args: str) -> _Result:
     try:
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             code = _AGD_MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
+
+
+def _run_quality_resolve_adapter(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["resolve_adapter.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = _RESOLVE_MODULE.main() or 0
     finally:
         sys.argv = saved_argv
     return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
@@ -243,7 +261,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert report_payload["adapter_path"] == ".agents/quality-adapter.yaml"
     assert report_payload["report_path"] == ".charness/quality/bootstrap.json"
 
-    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
@@ -375,7 +393,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     for key in preserved_keys:
         assert payload["field_statuses"][key] == "preserved"
 
-    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 -m pytest -q"]
@@ -616,7 +634,7 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
     result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
-    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 scripts/check_github_actions.py --repo-root ."]
@@ -632,7 +650,7 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "inferred"
     assert "specdown-quality" in payload["preset_lineage"]
 
-    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
@@ -662,7 +680,7 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
 
-    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["specdown-quality"]

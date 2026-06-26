@@ -501,6 +501,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In-process preview tests must preserve PATH and timeout environment while still letting backend subprocess proof run.
 - Metrics: run_helper calls in test_markdown_preview_support.py: base 7, current 3.
 
+### Slice 26: Quality bootstrap resolve subprocess fanout
+
+- Objective: Reduce repeated quality resolve_adapter.py subprocess calls while preserving bootstrap/init write proof and one direct resolve CLI smoke.
+- Why this approach: Follow-up resolve checks after bootstrap/init are read-only; bootstrap/init remain the write boundary and invalid-field resolve remains the command smoke.
+- Commits:
+- What changed: Added _run_quality_resolve_adapter(...) and converted five follow-up resolve checks to in-process main() calls.
+- Alternatives rejected: Kept bootstrap_adapter.py, init_adapter.py, and the direct invalid review-fields resolve test as real subprocesses.
+- Targeted verification: ruff passed; focused pytest: 17 passed in 3.47s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; resolve_adapter subprocess calls dropped 6 to 1.
+- Test duplication pressure: No tests added; five read-only resolve checks switched execution layer. File-level candidate count unchanged because write-boundary subprocesses remain.
+- Critique: charness-artifacts/critique/2026-06-26-quality-bootstrap-resolve-runtime.md; low-risk same-agent critique recorded because bootstrap/init and direct resolve CLI proof remain.
+- Off-goal findings: none
+- Lessons carried forward: Bootstrap suites should keep write commands as subprocesses and move only read-only follow-up probes in-process.
+- Metrics: quality resolve_adapter subprocess calls in test_quality_bootstrap.py: base 6, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
