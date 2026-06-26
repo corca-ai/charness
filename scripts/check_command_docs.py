@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import shlex
 import subprocess
@@ -153,9 +154,12 @@ def build_report(repo_root: Path, contract_path: Path) -> dict[str, object]:
         return {"status": "skipped", "reason": "missing-contract", "commands": [], "findings": []}
 
     commands = load_contract(contract_path)
-    findings: list[str] = []
-    for command_id, config in commands.items():
-        findings.extend(check_command(repo_root, command_id, config))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
+        futures = [
+            executor.submit(check_command, repo_root, command_id, config)
+            for command_id, config in commands.items()
+        ]
+        findings = [finding for future in futures for finding in future.result()]
     return {
         "status": "fail" if findings else "pass",
         "contract_path": str(contract_path.relative_to(repo_root)),

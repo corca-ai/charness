@@ -760,6 +760,31 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Metrics: slow integration test call dropped from 7.10s to 4.26s; full focused
   file dropped from 9.71s to 6.88s in local samples.
 
+### Slice 43: Command-docs help probe parallelism
+
+- Objective: Reduce the command-docs current-repo validator hot spot from broad
+  non-release pytest.
+- Why this approach: Each command-docs entry runs an independent help command
+  and reads docs; collecting futures in contract order preserves output
+  determinism while reducing the critical path.
+- Commits:
+- What changed: `check_command_docs.py` now runs `check_command()` calls through
+  a `ThreadPoolExecutor`; plugin mirror regenerated.
+- Alternatives rejected: Tested but reverted `render_cli_reference.py`
+  parallelism because it did not improve direct wall time and made the focused
+  render test slightly slower.
+- Targeted verification: ruff passed; focused command-doc pytest passed 7 tests
+  in 5.98s; direct `check_command_docs.py --repo-root .` passed in 0.344s;
+  plugin sync ran.
+- Test duplication pressure: No tests added; existing command-doc proof now runs
+  faster.
+- Critique: charness-artifacts/critique/2026-06-26-command-docs-parallel.md;
+  low-risk same-agent critique recorded because command set and finding order
+  are preserved.
+- Off-goal findings: none.
+- Metrics: current-repo command-docs test dropped from 3.37s to 0.35s; focused
+  file dropped from 8.98s to 5.98s.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
