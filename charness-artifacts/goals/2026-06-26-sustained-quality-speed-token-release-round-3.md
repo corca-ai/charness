@@ -670,6 +670,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Existing runners are often incomplete; scan for straggler `run_script()` calls before leaving a test file.
 - Metrics: Speed/testability proxy: removed two nested Python script invocations and removed `test_goal_head_freshness.py` from the clean-convertible file list.
 
+### Slice 38: Share setup inspect in-process helper
+
+- Objective: Remove repeated `inspect_repo.py` process startup across setup inspect policy/source-guard tests while preserving the env-isolation boundary tests.
+- Why this approach: Three setup inspect files used the same helper shape; centralizing `inspect_setup_repo()` in `tests/quality_gates/support.py` avoids duplicating runners and keeps the PATH-rewritten git-missing checks as explicit subprocess boundaries.
+- Commits:
+- What changed: Added a shared loaded-script runner and `inspect_setup_repo()` helper, converted setup inspect adapters/policy/source-guard helpers to use it, and added a boundary exemption for the remaining PATH-rewritten git-missing inspect subprocess. Sync propagated the exemption to the checked-in plugin mirror.
+- Alternatives rejected: Did not convert `_run_inspect_with_env()` because that test proves behavior under a modified process environment where `git` is unavailable but `python3` still resolves.
+- Targeted verification: pytest: `tests/quality_gates/test_setup_inspect_adapters.py tests/quality_gates/test_setup_inspect_policy.py tests/quality_gates/test_setup_source_guard_scan.py` `48 passed` in 1.14s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 60 candidates, 94 candidate keys, and 19 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 56 candidates and 17 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed, including plugin-manifest sync/packaging validation after the exemption mirror update.
+- Test duplication pressure: Reduced helper duplication across three test files.
+- Critique: Same-agent slice critique: centralizing a loaded-script helper in test support makes future in-process conversions easier, but support helpers should stay small and not become a second command framework.
+- Off-goal findings: The raw advisory inventory still lists the env-isolated inspect subprocess, but the ratchet now treats it as an intentional boundary through `scripts/boundary-bypass-exemptions.txt`.
+- Lessons carried forward: When process boundaries are intentional, record them in the ratchet exemption file instead of leaving repeat advisory noise.
+- Metrics: Speed/testability proxy: removed repeated inspect subprocesses from policy/source-guard tests, reduced ratcheted clean-convertible count from 20 to 17, and reduced raw candidate keys from 96 to 94.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

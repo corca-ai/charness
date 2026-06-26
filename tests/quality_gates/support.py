@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import contextlib
 import importlib
 import importlib.util
+import io
+import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -20,6 +24,22 @@ ADAPTER_LIB = importlib.util.module_from_spec(ADAPTER_LIB_SPEC)
 ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
 
 
+def _load_script_module(module_name: str, module_path: Path):
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+SETUP_INSPECT_REPO = _load_script_module(
+    "tests.quality_gates.support_setup_inspect_repo",
+    ROOT / "skills/public/setup/scripts/inspect_repo.py",
+)
+
+
 def run_script(
     *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
@@ -31,6 +51,34 @@ def run_script(
         text=True,
         env=env,
     )
+
+
+def run_loaded_script_main(script_name: str, module: object, *args: str) -> SimpleNamespace:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = [script_name, *args]
+    returncode = 0
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                returncode = module.main() or 0
+            except SystemExit as exc:
+                if isinstance(exc.code, int):
+                    returncode = exc.code
+                elif exc.code is None:
+                    returncode = 0
+                else:
+                    returncode = 1
+                    print(str(exc.code), file=sys.stderr)
+    finally:
+        sys.argv = saved_argv
+    return SimpleNamespace(returncode=returncode, stdout=out.getvalue(), stderr=err.getvalue())
+
+
+def inspect_setup_repo(repo: Path) -> dict[str, object]:
+    result = run_loaded_script_main("inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
 
 
 def skill_package_text(skill_id: str) -> str:

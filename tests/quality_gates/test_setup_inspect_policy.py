@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .support import run_script
+from .support import inspect_setup_repo
 
 
 def _run_inspect(repo: Path) -> dict[str, object]:
-    result = run_script("skills/public/setup/scripts/inspect_repo.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return inspect_setup_repo(repo)
 
 
 def _seed_normalize_repo(repo: Path, agents_text: str) -> None:
