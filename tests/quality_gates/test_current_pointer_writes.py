@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from tests.script_loader import load_script_module
+
 from .support import ROOT, init_git_repo, run_script
 
 WRITER_SPEC = importlib.util.spec_from_file_location(
@@ -42,10 +44,22 @@ SCANNER = importlib.util.module_from_spec(SCANNER_SPEC)
 sys.modules[SCANNER_SPEC.name] = SCANNER
 SCANNER_SPEC.loader.exec_module(SCANNER)
 
+HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
+    "tests.quality_gates.current_pointer_hitl_sync_review_artifact",
+    ROOT / "skills/public/hitl/scripts/sync_review_artifact.py",
+)
+
 
 def run_current_pointer_scanner(monkeypatch, capsys, *args: str) -> SimpleNamespace:
     monkeypatch.setattr(sys, "argv", ["check_current_pointer_writes.py", *args])
     code = SCANNER.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+
+
+def run_hitl_sync_review_artifact(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["sync_review_artifact.py", *args])
+    code = HITL_SYNC_REVIEW_ARTIFACT.main() or 0
     captured = capsys.readouterr()
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
@@ -156,7 +170,7 @@ def test_find_skills_inventory_noops_when_canonical_inventory_unchanged(tmp_path
     assert (output / "latest.json").read_text(encoding="utf-8") == first_text
 
 
-def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> None:
+def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     target = repo / "docs" / "decision.md"
     target.parent.mkdir(parents=True)
@@ -181,8 +195,9 @@ def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> 
     pointer.symlink_to(prior.name)
     prior_sha = _sha(prior)
 
-    sync = run_script(
-        "skills/public/hitl/scripts/sync_review_artifact.py",
+    sync = run_hitl_sync_review_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--session-id",

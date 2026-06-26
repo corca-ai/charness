@@ -614,6 +614,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Track candidate-key deltas for files that intentionally remain candidates; file-count-only metrics hide partial cleanup wins.
 - Metrics: Speed/testability proxy: removed six nested Python script invocations and reduced raw boundary candidate keys from 108 to 102.
 
+### Slice 34: Run current-pointer HITL sync smoke in process
+
+- Objective: Remove the clean HITL sync subprocess from current-pointer symlink protection tests.
+- Why this approach: The test intentionally keeps `bootstrap_review.py` as setup, then only needs `sync_review_artifact.py main()` to write the latest artifact; direct module execution preserves the symlink assertion.
+- Commits:
+- What changed: Loaded `sync_review_artifact.py` as a module, added a file-local in-process runner, and converted the symlinked latest HITL sync test.
+- Alternatives rejected: Did not convert `bootstrap_review.py` because it remains an internal-boundary setup command in the inventory.
+- Targeted verification: pytest: `tests/quality_gates/test_current_pointer_writes.py` `20 passed` in 0.87s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 65 candidates, 101 candidate keys, and 24 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 62 candidates and 23 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: symlink behavior remains asserted after the write, and the only removed boundary is Python process startup for a clean script target.
+- Off-goal findings: None.
+- Lessons carried forward: For mixed boundary tests, leave setup processes alone when they model runtime state creation and convert only the follow-up clean target.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
