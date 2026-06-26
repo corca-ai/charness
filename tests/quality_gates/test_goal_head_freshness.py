@@ -3,7 +3,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from tests.quality_gates.support import run_script
 
@@ -18,6 +20,14 @@ def _load(name: str):
 
 
 hf = _load("goal_artifact_head_freshness")
+cga = _load("check_goal_artifact")
+
+
+def run_check_goal_artifact(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_goal_artifact.py", *args])
+    returncode = cga.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def _goal_with_context(context: str) -> str:
@@ -247,7 +257,7 @@ def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path:
     assert payload["issues"] == [f"goal artifact not found: {missing.resolve()}"]
 
 
-def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path, monkeypatch, capsys) -> None:
     created = "2026-05-29"
     slug = "missing-evidence"
     goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
@@ -264,8 +274,9 @@ def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",
@@ -277,7 +288,7 @@ def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path) 
     assert "missing files: retro_artifact, host_log_probe" in payload["issues"][-1]
 
 
-def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path, monkeypatch, capsys) -> None:
     created = "2026-05-29"
     slug = "invalid-skips"
     goal_path = tmp_path / f"charness-artifacts/goals/{created}-{slug}.md"
@@ -294,8 +305,9 @@ def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",
@@ -307,7 +319,7 @@ def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path) -> None:
     assert "invalid skips: retro_artifact, host_log_probe" in payload["issues"][-1]
 
 
-def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path, monkeypatch, capsys) -> None:
     created = "2026-05-29"
     slug = "bind-cli"
     retro = tmp_path / "charness-artifacts/retro/unrelated.md"
@@ -330,8 +342,9 @@ def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path) -> Non
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",

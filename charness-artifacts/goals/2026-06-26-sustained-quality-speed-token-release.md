@@ -221,6 +221,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Keep one real subprocess path for each important option family before converting repeated payload assertions to in-process main() calls.
 - Metrics: probe_host_logs.py run_script calls in test_retro_host_log_probe.py: base 9, current 3.
 
+### Slice 6: Goal checker subprocess fanout
+
+- Objective: Reduce repeated check_goal_artifact.py subprocess calls in goal-head-freshness tests while preserving representative closeout-gate CLI proof.
+- Why this approach: Three complete-evidence issue-string tests asserted internal JSON/message behavior through subprocesses even though check_goal_artifact.py exposes main().
+- Commits:
+- What changed: Added run_check_goal_artifact(monkeypatch, capsys, ...) and converted missing-evidence, invalid-skip, and unbound-evidence checks to in-process main() calls.
+- Alternatives rejected: Did not convert default checker failure, pursue-ready, or missing-path usage tests because they prove distinct real CLI return-code surfaces.
+- Targeted verification: ruff passed; focused pytest: 15 passed in 2.76s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 7 to 4.
+- Test duplication pressure: No tests added; three existing tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-goal-head-freshness-runtime.md; fresh-eye reviewer 019f0176-baa4-7553-b5bb-8900cc793d74 found no blocking issue and noted complete-state subprocess coverage remains repo-level rather than file-local.
+- Off-goal findings: none
+- Lessons carried forward: For closeout gates, record whether retained proof is file-local or repo-level before converting any subprocess-backed complete-state behavior.
+- Metrics: check_goal_artifact.py run_script calls in test_goal_head_freshness.py: base 7, current 4.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
