@@ -259,6 +259,22 @@ None yet.
     passed for the Python test file; the extensionless `charness` script is
     outside that checker.
 
+### Slice 2 — Remove redundant control-plane subprocesses
+
+- Objective: Reduce standing test runtime while preserving a real behavior
+  check for doctor, support sync, update, and lock state.
+- Finding: `tests/control_plane/test_sync_support.py::test_doctor_sync_and_update_work_on_seed_repo`
+  spawned `doctor.py`, `sync_support.py`, `doctor.py`, and `update_tools.py`
+  even though the scripts expose import-safe functions and separate CLI
+  boundary tests still cover command behavior.
+- Change: The test now calls `inspect_manifest`, `sync_one`, and `update_one`
+  directly against the same seeded repo and asserts the same payload/lock
+  contract.
+- Verification:
+  - `python3 -m pytest -q tests/control_plane/test_sync_support.py --durations=20 --durations-min=0.01`
+    passed; the target test call time was 0.54s, down from the 1.12s pre-change
+    sample.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

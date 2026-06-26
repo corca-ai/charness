@@ -4,6 +4,11 @@ import json
 import os
 from pathlib import Path
 
+from scripts.control_plane_lib import load_capabilities
+from scripts.doctor import inspect_manifest
+from scripts.sync_support import sync_one
+from scripts.update_tools import update_one
+
 from .support import ROOT, run_script, seed_control_plane_repo
 
 
@@ -16,44 +21,33 @@ def write_manifest_schema(repo: Path) -> None:
     )
 
 
-def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
+def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
     plugin_root = tmp_path / "plugin"
-    env = os.environ.copy()
-    env["CHARNESS_CACHE_HOME"] = str(tmp_path / "cache-home")
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
-    assert doctor.returncode == 0, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
-    assert doctor_payload[0]["tool_id"] == "demo-tool"
-    assert doctor_payload[0]["kind"] == "external_binary_with_skill"
-    assert doctor_payload[0]["access_modes"] == ["binary", "degraded"]
-    assert doctor_payload[0]["capability_requirements"] == {}
-    assert doctor_payload[0]["readiness"]["ok"] is True
-    assert doctor_payload[0]["readiness"]["failed_checks"] == []
-    assert doctor_payload[0]["doctor_status"] == "ok"
-    assert doctor_payload[0]["support_state"] == "wrapped-upstream"
-    assert doctor_payload[0]["support_sync"]["status"] == "not-tracked"
-    assert doctor_payload[0]["support_sync"]["action_required"] is True
-    assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
-    assert doctor_payload[0]["install_route"]["mode"] == "manual"
-    assert doctor_payload[0]["install_route"]["install_url"] == "https://example.com/demo-tool/install"
-    assert doctor_payload[0]["install_route"]["repo_followup"] is None
-    assert doctor_payload[0]["doctor_disposition"] == "ready"
-    assert doctor_payload[0]["support_discovery"] is None
-    assert "Local support skill surface is not materialized yet." in doctor_payload[0]["next_steps"][0]
+    monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache-home"))
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
+    manifest = load_capabilities(repo)[0]
 
-    sync = run_script(
-        "scripts/sync_support.py",
-        "--repo-root",
-        str(repo),
-        "--plugin-root",
-        str(plugin_root),
-        "--execute",
-        "--json",
-        env=env,
-    )
-    assert sync.returncode == 0, sync.stderr
-    sync_payload = json.loads(sync.stdout)[0]
+    doctor_payload = inspect_manifest(repo, manifest, write=True, skip_release_probe=False)
+    assert doctor_payload["tool_id"] == "demo-tool"
+    assert doctor_payload["kind"] == "external_binary_with_skill"
+    assert doctor_payload["access_modes"] == ["binary", "degraded"]
+    assert doctor_payload["capability_requirements"] == {}
+    assert doctor_payload["readiness"]["ok"] is True
+    assert doctor_payload["readiness"]["failed_checks"] == []
+    assert doctor_payload["doctor_status"] == "ok"
+    assert doctor_payload["support_state"] == "wrapped-upstream"
+    assert doctor_payload["support_sync"]["status"] == "not-tracked"
+    assert doctor_payload["support_sync"]["action_required"] is True
+    assert doctor_payload["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
+    assert doctor_payload["install_route"]["mode"] == "manual"
+    assert doctor_payload["install_route"]["install_url"] == "https://example.com/demo-tool/install"
+    assert doctor_payload["install_route"]["repo_followup"] is None
+    assert doctor_payload["doctor_disposition"] == "ready"
+    assert doctor_payload["support_discovery"] is None
+    assert "Local support skill surface is not materialized yet." in doctor_payload["next_steps"][0]
+
+    sync_payload = sync_one(repo, manifest, execute=True, upstream_checkouts={}, plugin_root=plugin_root)
     assert sync_payload["status"] == "synced"
     installed_skill_root = plugin_root / "support" / "demo-tool-wrapper"
     assert installed_skill_root.is_dir()
@@ -63,15 +57,11 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert sync_payload["materialized_kind"] == "installed-plugin-copy"
     assert sync_payload["discovery_stub_path"] is None
 
-    doctor_after_sync = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
-    assert doctor_after_sync.returncode == 0, doctor_after_sync.stderr
-    doctor_after_sync_payload = json.loads(doctor_after_sync.stdout)
-    assert doctor_after_sync_payload[0]["support_discovery"]["support_skill_path"] == str(installed_skill_root / "SKILL.md")
-    assert "installed Charness plugin support surface" in doctor_after_sync_payload[0]["next_steps"][0]
+    doctor_after_sync_payload = inspect_manifest(repo, manifest, write=True, skip_release_probe=False)
+    assert doctor_after_sync_payload["support_discovery"]["support_skill_path"] == str(installed_skill_root / "SKILL.md")
+    assert "installed Charness plugin support surface" in doctor_after_sync_payload["next_steps"][0]
 
-    update = run_script("scripts/update_tools.py", "--repo-root", str(repo), "--execute", "--json")
-    assert update.returncode == 0, update.stderr
-    assert json.loads(update.stdout)[0]["status"] == "updated"
+    assert update_one(repo, manifest, execute=True)["status"] == "updated"
 
     lock_payload = json.loads((repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8"))
     assert lock_payload["support"]["source_type"] == "local_wrapper"
