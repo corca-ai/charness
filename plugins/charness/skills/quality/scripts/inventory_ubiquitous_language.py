@@ -203,6 +203,35 @@ def build_inventory(repo_root: Path, adapter_path: Path) -> dict[str, Any]:
     }
 
 
+def summarize_report(report: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    terms = report.get("terms", [])
+    term_items = terms if isinstance(terms, list) else []
+    return {
+        "summary_note": "summary is triage output; use --json for full per-file terminology counts",
+        "status": report["status"],
+        "contract_path": report.get("contract_path"),
+        "reason": report.get("reason"),
+        "term_count": len(term_items),
+        "finding_count": len(report.get("findings", [])),
+        "findings_sample": report.get("findings", [])[:sample_limit],
+        "terms": [
+            {
+                "id": term.get("id"),
+                "canonical": term.get("canonical"),
+                "surface_globs": term.get("surface_globs", []),
+                "canonical_total": term.get("canonical_total", 0),
+                "allowed_alias_total": term.get("allowed_alias_total", 0),
+                "deprecated_alias_total": term.get("deprecated_alias_total", 0),
+                "files_with_terms_count": len(term.get("files_with_terms", [])),
+                "deprecated_hits_sample": term.get("deprecated_hits", [])[:sample_limit],
+                "alias_only_hits_sample": term.get("alias_only_hits", [])[:sample_limit],
+            }
+            for term in term_items
+            if isinstance(term, dict)
+        ],
+    }
+
+
 def render_report(report: dict[str, Any]) -> str:
     if report["status"] == "unconfigured":
         return "Ubiquitous-language inventory unconfigured; skipping advisory terminology scan."
@@ -218,6 +247,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the ubiquitous-language terminology inventory")
     parser.add_argument("--adapter", type=Path, default=DEFAULT_CONTRACT_PATH, help="Quality adapter file declaring the domain_language_contract")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON totals and samples instead of full per-file counts")
     args = parser.parse_args()
 
     try:
@@ -227,6 +257,8 @@ def main() -> int:
         return 1
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.summary:
+        print(json.dumps(summarize_report(report), ensure_ascii=False, indent=2, sort_keys=True))
     else:
         stream = sys.stderr if report["findings"] else sys.stdout
         stream.write(render_report(report) + "\n")

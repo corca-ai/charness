@@ -249,6 +249,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Shared in-process helpers are preferable when multiple release-only tests need the same setup mutation before proving a different external behavior.
 - Metrics: Quality/runtime proxy: boundary-bypass inventory candidate count reduced by one additional import-safe script subprocess.
 
+### Slice 8: Compact ubiquitous-language inventory output
+
+- Objective: Reduce token overhead for terminology-contract review while preserving full per-file counts.
+- Why this approach: `inventory_ubiquitous_language.py --json` emitted about 78KB in this repo because each term carries full per-file count rows; first-pass review needs status, totals, and a small sample.
+- Commits:
+- What changed: Added `--summary` output to the public quality script and checked-in plugin mirror; summary keeps status, term totals, finding count, and bounded deprecated/alias-only samples while omitting full `files_with_terms`. Updated quality dogfood evidence.
+- Alternatives rejected: Did not alter failure exit semantics for deprecated terminology and did not remove full `--json`, because detailed cleanup still needs per-file count rows.
+- Targeted verification: pytest: 6 passed for test_quality_ubiquitous_language.py; ruff passed; check_python_lengths headroom remains 129 lines for inventory_ubiquitous_language.py and 612 lines for test_quality_ubiquitous_language.py; public script and plugin mirror compare equal.
+- Test duplication pressure: Added one focused summary contract test in the existing ubiquitous-language test file.
+- Critique: Same-agent slice critique: summary preserves failing status and findings samples, so it reduces context load without hiding terminology regressions.
+- Off-goal findings: The current repo terminology contract remains ok; this slice improves review ergonomics for future failures.
+- Lessons carried forward: Inventories that fail on low-noise findings should keep summary exit codes identical to full JSON.
+- Metrics: Token/output proxy: ubiquitous-language inventory output reduced from 77814 bytes to 3325 bytes with `--summary`, a 95.7% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

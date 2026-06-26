@@ -77,6 +77,55 @@ def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path, mo
     assert "external-tool-cli: docs/tools.md uses deprecated alias `charness install <tool>`" in payload["findings"][0]
 
 
+def test_inventory_ubiquitous_language_summary_omits_full_per_file_counts(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir()
+    (repo / "docs" / "tools.md").write_text(
+        "Use charness tool for setup. Do not write charness install <tool>.\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "domain_language_contract:",
+                "  surface_globs:",
+                "    - docs/**/*.md",
+                "  terms:",
+                "    - id: external-tool-cli",
+                '      canonical: "charness tool"',
+                "      deprecated_aliases:",
+                '        - "charness install <tool>"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_ubiquitous_language(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--summary",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["summary_note"].startswith("summary is triage output")
+    assert payload["finding_count"] == 1
+    assert payload["terms"][0]["canonical_total"] == 1
+    assert payload["terms"][0]["deprecated_alias_total"] == 1
+    assert payload["terms"][0]["files_with_terms_count"] == 1
+    assert "files_with_terms" not in payload["terms"][0]
+    assert payload["terms"][0]["deprecated_hits_sample"] == [
+        {"path": "docs/tools.md", "alias": "charness install <tool>", "count": 1}
+    ]
+
+
 def test_inventory_ubiquitous_language_default_scope_does_not_scan_adapter_declarations(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
