@@ -401,134 +401,16 @@ def test_check_goal_does_not_count_fenced_sections() -> None:
 
 def test_operator_decision_queue_is_not_global_required_section() -> None:
     body = (
-        _GOAL_HEAD
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n"
         + "## Active Operating Frame\n## Goal\n## Non-Goals\n## Boundaries\n"
         "## User Acceptance\n## Agent Verification Plan\n## Slice Plan\n"
         "## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
         "## User Verification Instructions\n## Auto-Retro\n"
-        + _PORTABILITY_BODY
+        "## Context Sources\n- src\n## Interview Decisions\n- Q1\n"
+        "## Plan Critique Findings\n- blocker folded\n"
     )
     result = gal.check_goal(body)
     assert "Operator Decision Queue" not in result["missing_sections"]
-
-
-# --- Portability self-test fixtures (#230 + #229 goal, slice 2) -----------
-
-
-_REQUIRED_BODY = (
-    "## Active Operating Frame\n## Goal\n## Non-Goals\n## Boundaries\n## User Acceptance\n"
-    "## Agent Verification Plan\n"
-)
-_TAIL_SECTIONS = (
-    "## Operator Decision Queue\n## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
-    "## User Verification Instructions\n## Auto-Retro\n"
-)
-_PORTABILITY_BODY = (
-    "## Context Sources\n- src\n## Interview Decisions\n- Q1\n"
-    "## Plan Critique Findings\n- blocker folded\n"
-)
-_GOAL_HEAD = "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n"
-
-
-def _goal_with_table(rows: list[str], portability: str = "") -> str:
-    body = _GOAL_HEAD + _REQUIRED_BODY
-    body += "## Slice Plan\n\n"
-    body += "| Slice | Objective | Why | Evidence | Status |\n"
-    body += "| --- | --- | --- | --- | --- |\n"
-    for row in rows:
-        body += row + "\n"
-    body += "\n" + portability + _TAIL_SECTIONS
-    return body
-
-
-def test_slice_plan_table_row_count_table_form() -> None:
-    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])
-    assert gal.slice_plan_data_row_count(one_row) == 1
-    two_rows = _goal_with_table([
-        "| 1 | a | now | x | planned |",
-        "| 2 | b | next | y | planned |",
-    ])
-    assert gal.slice_plan_data_row_count(two_rows) == 2
-
-
-def test_single_slice_goal_still_requires_portability() -> None:
-    # #255: size no longer exempts. Even a 1-row Slice Plan must carry the
-    # three portability headings now that the trivial-goal exemption is gone.
-    one_row = _goal_with_table(["| 1 | a | now | x | planned |"])  # no portability
-    result = gal.check_goal(one_row)
-    assert result["ok"] is False
-    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
-
-
-def test_marker_prose_does_not_exempt_portability() -> None:
-    # #255 regression lock: a goal whose prose merely *mentions* the old
-    # "single-slice goal" marker phrase must still be portability-checked. The
-    # removed full-text _TRIVIAL_GOAL_MARKER scan silently exempted exactly this.
-    body = _goal_with_table([
-        "| 1 | a | now | x | planned |",
-        "| 2 | b | next | y | planned |",
-    ])  # no portability sections
-    body = body.replace(
-        "## Slice Plan\n",
-        "## Slice Plan\n\nThis is not a single-slice goal; it has two slices.\n",
-        1,
-    )
-    result = gal.check_goal(body)
-    assert result["ok"] is False
-    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
-
-
-def test_marker_prose_with_portability_sections_passes() -> None:
-    # The phrase is inert once the three headings are present: content/prose is
-    # never classified; only heading presence is checked.
-    body = _goal_with_table(
-        [
-            "| 1 | a | now | x | planned |",
-            "| 2 | b | next | y | planned |",
-        ],
-        portability=_PORTABILITY_BODY,
-    )
-    body = body.replace(
-        "## Goal\n", "## Goal\nThis mentions a single-slice goal in prose.\n", 1
-    )
-    result = gal.check_goal(body)
-    assert result["ok"] is True
-    assert result["portability_missing_sections"] == []
-
-
-def test_check_goal_reports_missing_portability() -> None:
-    body = _goal_with_table([
-        "| 1 | a | now | x | planned |",
-        "| 2 | b | next | y | planned |",
-    ])  # no portability sections
-    result = gal.check_goal(body)
-    assert result["ok"] is False
-    assert result["portability_missing_sections"] == list(gal.PORTABILITY_SECTIONS)
-    assert any("portability" in issue.lower() for issue in result["issues"])
-
-
-def test_check_goal_passes_with_portability_sections_present() -> None:
-    body = _goal_with_table(
-        [
-            "| 1 | a | now | x | planned |",
-            "| 2 | b | next | y | planned |",
-        ],
-        portability=_PORTABILITY_BODY,
-    )
-    result = gal.check_goal(body)
-    assert result["ok"] is True
-    assert result["portability_missing_sections"] == []
-
-
-def test_scaffold_carries_portability_headings(tmp_path: Path) -> None:
-    # A freshly scaffolded goal carries all three portability headings from the
-    # template, so the always-on check passes at draft time. (#255: the check is
-    # always-on; the template — not an exemption — is what keeps it quiet.)
-    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
-    text = _goal_text(tmp_path)
-    result = gal.check_goal(text)
-    assert result["ok"] is True
-    assert result["portability_missing_sections"] == []
 
 
 # --- After-phase closeout-evidence gate (#230, slice 3) -------------------

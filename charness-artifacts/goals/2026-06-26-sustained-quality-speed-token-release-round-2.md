@@ -338,6 +338,25 @@ None yet.
     reported `goal_artifact_lib.py` at 305/360 code lines, 55 lines of
     headroom.
 
+### Slice 6 — Split portability goal tests out of the near-limit file
+
+- Objective: Remove a test-file length warning before the next goal artifact
+  change is forced to pay a split tax.
+- Finding: `tests/quality_gates/test_goal_artifact_lib.py` was at 792/800 code
+  lines. Its portability self-test cluster was cohesive and independent enough
+  to own a focused file.
+- Change: Moved portability section and slice-plan row-count tests into
+  `tests/quality_gates/test_goal_artifact_portability.py`; kept the remaining
+  operator-decision queue test inline by removing its cross-fixture dependency.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_goal_artifact_portability.py tests/quality_gates/test_goal_artifact_lib.py::test_operator_decision_queue_is_not_global_required_section`
+    passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --headroom --paths tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_goal_artifact_portability.py`
+    reported `test_goal_artifact_lib.py` at 705/800 code lines, 95 lines of
+    headroom.
+  - `python3 -m py_compile tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_goal_artifact_portability.py && ruff check tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_goal_artifact_portability.py`
+    passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
