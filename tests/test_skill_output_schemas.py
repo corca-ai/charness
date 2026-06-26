@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
-from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 _validate_skill_output_schemas = import_repo_module(
@@ -72,13 +71,6 @@ def test_survey_ignores_prose_only_output_shape(tmp_path: Path) -> None:
 def test_survey_repo_is_clean() -> None:
     # The real repo must have no classifier-bearing Output Shape without a validator.
     payload = _survey_payload(ROOT)
-    assert payload["gap_count"] == 0, payload
-
-
-def test_survey_cli_emits_json() -> None:
-    result = run_script("scripts/validate_skill_output_schemas.py", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["gap_count"] == 0, payload
 
 

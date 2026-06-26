@@ -824,6 +824,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Keep exported/generated command execution as a process boundary even when the setup command can be in-process.
 - Metrics: Speed/testability proxy: removed one nested `export_plugin.py` process start and reduced raw candidate keys by one.
 
+### Slice 49: Drop duplicate skill-output schema CLI smoke
+
+- Objective: Remove a redundant subprocess smoke for `validate_skill_output_schemas.py`.
+- Why this approach: The file already tests `validate_skill_output_schemas.main()` with patched argv and JSON stdout assertions; the separate subprocess test covered the same output while adding process startup and boundary inventory noise.
+- Commits:
+- What changed: Deleted `test_survey_cli_emits_json()` and its `run_script` import from `test_skill_output_schemas.py`.
+- Alternatives rejected: Did not replace it with another in-process test because `test_survey_main_emits_json()` already covers the behavior.
+- Targeted verification: pytest: `tests/test_skill_output_schemas.py` `5 passed` in 0.41s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 53 candidates, 77 candidate keys, and 9 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 50 candidates and 8 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: Removed one duplicate test instead of converting it mechanically.
+- Critique: Same-agent slice critique: this preserves schema survey coverage while deleting only the redundant interpreter-boundary assertion.
+- Off-goal findings: None.
+- Lessons carried forward: When a subprocess smoke duplicates an adjacent `main()` test, deletion is cleaner than in-process conversion.
+- Metrics: Test-speed/token proxy: removed one test and one nested Python process start; reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
