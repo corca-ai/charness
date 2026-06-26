@@ -277,6 +277,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Small fanout reductions are worth doing when they follow an already-proven retained-CLI pattern and do not add new behavior.
 - Metrics: render_skill_routing.py run_script calls in test_setup_render_skill_routing.py: base 3, current 1.
 
+### Slice 10: Usage episodes seed subprocess fanout
+
+- Objective: Reduce repeated seed_usage_episodes_adapter.py subprocess calls while preserving write/refusal CLI proof.
+- Why this approach: Dry-run schema validation and force-overwrite behavior can call main() directly; initial write and overwrite refusal remain meaningful CLI boundaries.
+- Commits:
+- What changed: Added run_seed_usage_episodes(monkeypatch, capsys, ...) and converted dry-run and force-overwrite tests to in-process main() calls.
+- Alternatives rejected: Kept initial write and overwrite refusal as real subprocess tests because they prove shipped adapter-writing behavior.
+- Targeted verification: ruff passed; focused pytest: 6 passed in 2.56s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 5 to 3.
+- Test duplication pressure: No tests added; two existing tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-usage-episodes-seed-runtime.md; low-risk same-agent critique recorded because the slice is a two-call conversion with retained write/refusal CLI proof.
+- Off-goal findings: none
+- Lessons carried forward: Seed scripts should retain subprocess proof for write/refusal behavior, but dry-run and force-path payload assertions can use main().
+- Metrics: seed_usage_episodes_adapter.py run_script calls in test_setup_seed_usage_episodes.py: base 5, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

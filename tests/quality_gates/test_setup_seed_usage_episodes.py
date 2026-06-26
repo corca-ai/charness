@@ -2,20 +2,35 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
+
+from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
 
 jsonschema = pytest.importorskip("jsonschema")
 
 SCRIPT = "skills/public/setup/scripts/seed_usage_episodes_adapter.py"
+_seed_usage_episodes = import_repo_module(
+    ROOT / SCRIPT,
+    "skills.public.setup.scripts.seed_usage_episodes_adapter",
+)
 
 
-def test_seed_usage_episodes_dry_run_validates_against_manifest_schema() -> None:
-    result = run_script(SCRIPT, "--dry-run")
+def run_seed_usage_episodes(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["seed_usage_episodes_adapter.py", *args])
+    returncode = _seed_usage_episodes.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
+
+
+def test_seed_usage_episodes_dry_run_validates_against_manifest_schema(monkeypatch, capsys) -> None:
+    result = run_seed_usage_episodes(monkeypatch, capsys, "--dry-run")
 
     assert result.returncode == 0, result.stderr
     rendered = yaml.safe_load(result.stdout)
@@ -70,14 +85,14 @@ def test_seed_usage_episodes_refuses_overwrite_without_force(tmp_path: Path) -> 
     assert "force" in second.stderr
 
 
-def test_seed_usage_episodes_force_overwrites(tmp_path: Path) -> None:
+def test_seed_usage_episodes_force_overwrites(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     target = repo / ".agents" / "usage-episodes-adapter.yaml"
     target.parent.mkdir()
     target.write_text("version: 1\nenabled: false\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--force")
+    result = run_seed_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--force")
 
     assert result.returncode == 0, result.stderr
     assert "enabled: true" in target.read_text(encoding="utf-8")
