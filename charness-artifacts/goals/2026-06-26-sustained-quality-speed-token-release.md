@@ -361,6 +361,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Terminology scanners should retain first-run and current-repo subprocess smokes while synthetic contract fixtures can run in-process.
 - Metrics: inventory_ubiquitous_language.py run_script calls in test_quality_ubiquitous_language.py: base 5, current 2.
 
+### Slice 16: Behavior recommendation subprocess fanout
+
+- Objective: Reduce repeated recommend_behavior_test.py subprocess calls while preserving argparse-error CLI proof.
+- Why this approach: JSON and markdown success paths only need argparse/stdout semantics; the missing-report error case is the user-facing CLI boundary.
+- Commits:
+- What changed: Added run_recommend_behavior_test(monkeypatch, capsys, ...) and converted two success-path tests to in-process main() calls.
+- Alternatives rejected: Kept the --state executed missing-report test as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 3 passed in 2.40s; boundary-bypass ratchet OK with 76 candidates / 39 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; subprocess.run calls dropped 3 to 1.
+- Test duplication pressure: No tests added; two success-format checks switched execution layer. Boundary ratchet effective candidates dropped by one.
+- Critique: charness-artifacts/critique/2026-06-26-behavior-recommendation-runtime.md; low-risk same-agent critique recorded because argparse-error CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: For recommendation emitters, keep a real subprocess around argparse failure while moving pure formatting success checks in-process.
+- Metrics: recommend_behavior_test.py subprocess.run calls in test_quality_behavior_recommendation.py: base 3, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
