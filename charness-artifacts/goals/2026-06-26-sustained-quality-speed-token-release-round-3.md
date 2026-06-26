@@ -375,6 +375,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Copy-heavy invariant is the right guardrail; use function-level markers plus cheap predicates instead of demoting copy-heavy tests.
 - Metrics: Coverage proxy: release-only sentinel missing file count currently 6 after this slice.
 
+### Slice 17: Standing sentinels for tool lifecycle helpers
+
+- Objective: Reduce release-only blind spots in tool lifecycle coverage and remove one avoidable subprocess boundary from that test file.
+- Why this approach: `test_tool_lifecycle.py` had module-level `release_only`, but two update-advisory helpers and the repair next-step predicate are pure/cheap enough for standing pytest. The file also contained a best-effort cleanup helper that spawned `python3 scripts/agent_browser_runtime_guard.py`; loading the guard in-process keeps the same behavior without a nested Python process.
+- Commits:
+- What changed: Replaced the module-level marker with function-level `release_only` markers on copy-heavy CLI tests, renamed two pure tests so the standing sentinel inventory recognizes their guard role, and changed `cleanup_agent_browser_orphans()` to call `agent_browser_runtime_guard.main()` in-process with captured output.
+- Alternatives rejected: Did not demote managed-home or repo-copy lifecycle tests; the copy-heavy invariant still owns that boundary. Did not assert cleanup return codes because the previous subprocess helper was explicitly best-effort.
+- Targeted verification: pytest: standing subset `3 passed, 13 deselected` in 0.42s; release-only subset `13 passed, 3 deselected` in 33.81s; `check_test_repo_copy_invariants.py` passed; `check_boundary_bypass_ratchet.py` passed with 68 candidates, 31 clean-convertible, 31 internally-spawning, 23 likely keep-boundary; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new assertions; moved three existing cheap predicates into standing coverage.
+- Critique: Same-agent slice critique: this improves standing coverage and removes an internal subprocess, but it does not claim tool lifecycle E2E flows are cheap; those remain release-only because they copy repos/managed homes.
+- Off-goal findings: Release-only sentinel inventory still reports 5 files without obvious standing sentinels.
+- Lessons carried forward: Module-level `release_only` can hide already-fast tests; split markers only when the repo-copy invariant agrees.
+- Metrics: Coverage proxy: missing standing-sentinel file count reduced from 6 to 5; boundary-bypass candidate count reduced from 76 after earlier conversions to 68.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

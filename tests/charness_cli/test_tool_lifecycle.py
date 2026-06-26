@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.machinery
 import importlib.util
+import io
 import json
 import os
-import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -27,7 +29,6 @@ from .support import (
 from .tool_fakes import make_fake_cautilus, make_fake_nose
 
 ROOT = Path(__file__).resolve().parents[2]
-pytestmark = pytest.mark.release_only
 
 
 def load_charness_module(module_name: str = "charness_tool_lifecycle_under_test"):
@@ -39,7 +40,17 @@ def load_charness_module(module_name: str = "charness_tool_lifecycle_under_test"
     return module
 
 
-def test_update_advisory_line_uses_manual_docs_url() -> None:
+def load_agent_browser_runtime_guard_module(module_name: str = "agent_browser_runtime_guard_under_test"):
+    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "scripts" / "agent_browser_runtime_guard.py"))
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_update_advisory_line_without_manifest_route_uses_manual_docs_url() -> None:
     line = update_advisory_line(
         {
             "tool_id": "cautilus",
@@ -60,7 +71,7 @@ def test_update_advisory_line_uses_manual_docs_url() -> None:
     assert "manifest install/update route" not in line
 
 
-def test_update_advisory_line_uses_doctor_install_route_url() -> None:
+def test_update_advisory_line_without_manifest_route_uses_doctor_install_route_url() -> None:
     line = update_advisory_line(
         {
             "tool_id": "github-gh",
@@ -97,20 +108,21 @@ def enable_cautilus_adapter(repo_root: Path) -> None:
 
 
 def cleanup_agent_browser_orphans() -> None:
-    subprocess.run(
-        [
-            "python3",
-            "scripts/agent_browser_runtime_guard.py",
+    module = load_agent_browser_runtime_guard_module()
+    previous_argv = sys.argv
+    buffer = io.StringIO()
+    try:
+        sys.argv = [
+            "agent_browser_runtime_guard.py",
             "--repo-root",
-            ".",
+            str(ROOT),
             "--cleanup-orphans",
             "--execute",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+        ]
+        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+            module.main()
+    finally:
+        sys.argv = previous_argv
 
 
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
@@ -173,6 +185,7 @@ def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
     return script, gopath
 
 
+@pytest.mark.release_only
 def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     enable_cautilus_adapter(repo_root)
@@ -213,6 +226,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
     assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
 
 
+@pytest.mark.release_only
 def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
@@ -248,6 +262,7 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
     assert set(payload["results"]) == {"cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"}
 
 
+@pytest.mark.release_only
 def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
@@ -275,6 +290,7 @@ def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_pa
     assert "No tools matched recommendation filters" in result.stderr
 
 
+@pytest.mark.release_only
 def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
@@ -306,6 +322,7 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
     assert lock_payload["doctor"]["doctor_status"] == "missing"
 
 
+@pytest.mark.release_only
 def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_support(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -349,6 +366,7 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     assert cautilus["release"]["latest_tag"] == "v1.2.3"
 
 
+@pytest.mark.release_only
 def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary_gap(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -403,6 +421,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
+@pytest.mark.release_only
 def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:
     cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
@@ -439,6 +458,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     assert lock_payload["doctor"]["doctor_status"] == "ok"
 
 
+@pytest.mark.release_only
 def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, seeded_charness_repo: Path) -> None:
     cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
@@ -470,6 +490,7 @@ def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, see
     assert lock_payload["update"]["commands"][0]["command"] == "npm install -g agent-browser@latest"
 
 
+@pytest.mark.release_only
 def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
@@ -499,6 +520,7 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     assert doctor["release"]["latest_tag"] == "v0.47.2"
 
 
+@pytest.mark.release_only
 def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path, seeded_charness_repo: Path) -> None:
     cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
@@ -546,6 +568,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
     assert lock_payload["doctor"]["doctor_status"] == "ok"
 
 
+@pytest.mark.release_only
 def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     env = os.environ.copy()
@@ -583,6 +606,7 @@ def test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift()
     assert "charness tool repair --execute agent-browser" in next_step
 
 
+@pytest.mark.release_only
 def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
@@ -609,6 +633,7 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
     assert (gopath / "bin" / "glow").is_file()
 
 
+@pytest.mark.release_only
 def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
