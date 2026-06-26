@@ -136,6 +136,40 @@ def test_publish_current_fails_closed_when_remote_release_tag_discovery_fails(tm
     )
 
 
+def test_publish_current_subprocess_fails_when_remote_release_tag_discovery_fails(tmp_path: Path) -> None:
+    repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
+    _write_base_ref_failing_git(bin_dir)
+    env = _publish_env(tmp_path, bin_dir)
+    env["FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL"] = "1"
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--critique-blocked",
+            "synthetic-host-signal for legacy release publish tag-history test",
+            "--repo-root",
+            str(repo),
+            "--publish-current",
+            "--execute",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "release tag discovery failed while resolving previous release version" in result.stderr
+    assert "source: remote tags" in result.stderr
+    assert "command: git ls-remote --tags origin refs/tags/v[0-9]*" in result.stderr
+    assert "exit_code: 46" in result.stderr
+    assert "forced remote tag history failure" in result.stderr
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert ["ls-remote", "--tags", "origin", "refs/tags/v[0-9]*"] in git_log
+
+
 def test_publish_current_allows_no_previous_release_tags_after_successful_discovery(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _publish_env(tmp_path, bin_dir)

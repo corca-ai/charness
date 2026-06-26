@@ -9,11 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Release publish fake CLI fixture extraction.
+- Current slice: Release tag-history fake git reuse.
 - Current slice intent: continue reducing test helper prompt/template bulk by
-  moving release-publish fake `git`, `gh`, and distinct-channel probe bodies
-  out of `tests/quality_gates/release_publish_fixtures.py` and into fixture
-  script files.
+  reusing the release-publish fake git fixture for real-host/tag-history tests
+  instead of keeping a second inline fake git body.
 - Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
@@ -71,7 +70,8 @@ accumulate.
 | 6 | Extract remaining Charness CLI external-tool fake scripts from support helper | Prompt-bulk inventory still points at `tests/charness_cli/support.py`; the fake npm/cargo/uv bodies are local, deterministic, and expensive to keep inline | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
 | 7 | Extract Charness CLI Go/specdown/glow fake scripts from test helpers | Prompt-bulk inventory still points at Go installer script literals after slice 6 | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
 | 8 | Extract release publish fake CLI scripts from test fixture helper | Prompt-bulk inventory next surfaced large fake release CLI bodies in `release_publish_fixtures.py` | focused release publish tests, prompt-bulk delta, standing pytest | complete |
-| 9 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 9 | Reuse release fake git fixture for tag-history and real-host tests | Prompt-bulk inventory still surfaced a second fake git body in `test_release_publish_real_host_delta.py` | focused tag-history/real-host tests, prompt-bulk delta, standing pytest | complete |
+| 10 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -288,6 +288,28 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
   - Fresh-eye review: no blocking correctness issue found; reviewer flagged only
     that the three new fixture scripts must be committed with the helper change.
     Folded response: stage all new fixture scripts in the slice commit.
+- Slice 9 evidence:
+  - Prompt-bulk inventory after slice 8 still reported 39 findings and surfaced
+    `tests/quality_gates/test_release_publish_real_host_delta.py` as a large
+    inline fake git script candidate.
+  - Added the real-host/tag-history failure knobs to the shared
+    `tests/quality_gates/fixtures/release_publish_fake_git.py` fixture and
+    changed the real-host delta helper to copy that fixture with sidecar real-git
+    config.
+  - Prompt-bulk inventory after the change reported 38 findings; the
+    `test_release_publish_real_host_delta.py` fake git body no longer appears in
+    the top sample.
+  - Fresh-eye review: no blocking issue found; reviewer flagged that
+    `FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL` had only helper-level coverage. Folded
+    response: added a full subprocess `publish-current` test for that shared
+    fixture knob.
+  - Focused proof: `py_compile`, focused `ruff check`, and the real-host
+    delta/tag-history pytest bundle passed; focused pytest reported `17 passed
+    in 12.57s`.
+  - Changed-surface proof before artifact update: full repo `ruff check`, Python
+    length gate, attention-state visibility, test repo copy invariants,
+    boundary-bypass ratchet, and the standing pytest runner passed; standing
+    pytest reported `3676 passed in 21.02s`.
 
 ## Context Sources
 
