@@ -444,6 +444,31 @@ None yet.
     now reports four advisory warn-band files, down from five before this
     slice.
 
+### Slice 11 — Split skill contract validation tests
+
+- Objective: Remove the last near-limit test-file warning and keep
+  `validate_skills.py` coverage separate from `check_skill_contracts.py`
+  coverage.
+- Finding: `tests/quality_gates/test_skill_validation.py` was at 726/800 code
+  lines; its tail was a cohesive `check_skill_contracts.py` contract cluster.
+- Change: Moved the contract-check tests into
+  `tests/quality_gates/test_skill_contracts_validation.py`. Added a
+  boundary-bypass exemption for its one intentional real CLI smoke, which
+  proves `check_skill_contracts.py` startup, representative-contract loading,
+  nonzero failure exit, and operator-facing stderr.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_skill_validation.py tests/quality_gates/test_skill_contracts_validation.py --durations=25 --durations-min=0.01`
+    passed, 30 tests.
+  - `python3 -m py_compile tests/quality_gates/test_skill_validation.py tests/quality_gates/test_skill_contracts_validation.py && python3 -m ruff check tests/quality_gates/test_skill_validation.py tests/quality_gates/test_skill_contracts_validation.py`
+    passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths tests/quality_gates/test_skill_validation.py tests/quality_gates/test_skill_contracts_validation.py`
+    passed; `wc -l` reported the original skill validation file at 630 lines
+    and the new skill contract file at 185 lines.
+  - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+    now reports three advisory warn-band files, all production/script files
+    rather than tests.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
