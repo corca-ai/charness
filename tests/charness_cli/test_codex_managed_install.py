@@ -18,6 +18,7 @@ from .support import (
     make_fake_codex,
     run_cli,
 )
+from .test_managed_install import load_charness_module
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
@@ -102,3 +103,30 @@ def test_charness_doctor_reports_codex_version_drift(
     assert payload["next_action"]["kind"] == "manual"
     assert payload["next_action"]["host"] == "codex"
     assert payload["next_action"]["message"] == payload["codex_host_guidance"]["message"]
+
+
+def test_codex_host_guidance_without_refreshed_cache_requires_manual_refresh() -> None:
+    module = load_charness_module("charness_codex_managed_install_unit_under_test")
+    old_version = "0.0.0-old"
+
+    guidance = module.build_codex_host_guidance(
+        codex_available=True,
+        codex_marketplace_path=Path("/tmp/codex/marketplace.json"),
+        source_version=CURRENT_VERSION,
+        cache_entries=[
+            {
+                "marketplace": "local",
+                "plugin": "charness",
+                "version": "local",
+                "version_dir": "/tmp/codex/cache/local/charness/local",
+                "manifest_path": "/tmp/codex/cache/local/charness/local/.codex-plugin/plugin.json",
+                "manifest_version": old_version,
+            }
+        ],
+        config_entries=[{"plugin_id": "charness@local", "enabled": True}],
+    )
+
+    assert guidance["status"] == "needs-refresh"
+    assert guidance["manual_action_required"] is True
+    assert f"`{old_version}`" in guidance["message"]
+    assert f"`{CURRENT_VERSION}`" in guidance["message"]

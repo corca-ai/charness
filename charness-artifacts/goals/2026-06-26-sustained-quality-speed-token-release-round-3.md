@@ -403,6 +403,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: A standing sentinel can be an existing cheap error-path test when its name makes the guarded failure mode obvious.
 - Metrics: Coverage proxy: missing standing-sentinel file count reduced from 5 to 4; release-only test count reduced from 75 to 74 and standing count increased from 116 to 117.
 
+### Slice 19: Standing sentinel for Codex cache drift guidance
+
+- Objective: Reduce Codex managed-install release-only blind spots without duplicating official app-server or managed-home setup.
+- Why this approach: The E2E doctor test proves host-visible payloads, but the core stale-cache guidance is produced by a pure function. A standing unit keeps the `needs-refresh`/manual-action contract covered on every standing run.
+- Commits:
+- What changed: Added a standing unit test in `test_codex_managed_install.py` for `build_codex_host_guidance` when an enabled `charness@local` cache manifest version differs from the source manifest version.
+- Alternatives rejected: Did not demote the official app-server install or managed-home doctor drift tests; they still cross host/cache boundaries and remain release-only.
+- Targeted verification: pytest: standing subset `1 passed, 2 deselected` in 0.31s; release-only subset `2 passed, 1 deselected` in 11.12s; `check_test_repo_copy_invariants.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: Added one focused unit test that covers the small pure branch the E2E asserts through the full doctor payload.
+- Critique: Same-agent slice critique: this is a contract sentinel for guidance text/status, not a replacement for app-server install proof.
+- Off-goal findings: Release-only sentinel inventory still reports 3 files without obvious standing sentinels.
+- Lessons carried forward: When a release-only E2E asserts a pure helper's branch, add a direct standing sentinel instead of trying to shrink the E2E.
+- Metrics: Coverage proxy: missing standing-sentinel file count reduced from 4 to 3; standing test count increased from 117 to 118.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
