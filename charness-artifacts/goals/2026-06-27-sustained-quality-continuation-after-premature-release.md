@@ -9,13 +9,13 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: RCA ledger test-speed cleanup.
-- Current slice intent: reduce standing pytest cost by replacing repeated
-  subprocess execution in the RCA ledger tests with the already-exposed
-  in-process script entrypoints, while preserving stdout/stderr/returncode
-  assertions.
-- Next action: commit and push the test-speed slice, then continue discovery
-  unless a release-worthy boundary is reached.
+- Current slice: HITL report HTML template extraction.
+- Current slice intent: reduce inline Python prompt/template bulk by moving the
+  HITL report HTML/CSS/JS shell out of `scripts/hitl_report_mode_lib.py` and
+  into an exported template asset while preserving the rendered report contract.
+- Next action: run changed-surface validators, commit and push the template
+  extraction, then continue discovery unless a release-worthy boundary is
+  reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -66,7 +66,8 @@ accumulate.
 | 1 | Re-enter quality discovery and repair stale reference drift | User clarified the timebox should continue; startup found a stale handoff and support-skill helper path | find-skills route, quality planner, focused validators | complete |
 | 2 | Repair remaining support helper reference drift | Continue discovery beyond the first cleanup | support package scan and focused proof | complete |
 | 3 | Speed up RCA ledger tests without weakening CLI assertions | Standing-test economics pointed at nested CLI fanout; this file had 44 subprocess-heavy tests | focused timing, length headroom, changed-surface validators, standing pytest | complete |
-| 4 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 4 | Extract HITL report HTML template from Python | Prompt-bulk inventory identified two large HTML/CSS/JS literals in `hitl_report_mode_lib.py` | focused HITL report tests, prompt-bulk delta, packaging sync | complete |
+| 5 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -152,6 +153,34 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     `check_boundary_bypass_ratchet.py`, and
     `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
     passed; standing pytest reported `3675 passed in 19.98s`.
+- Slice 4 evidence:
+  - Prompt-bulk inventory before the change reported 53 findings, with two top
+    findings in `scripts/hitl_report_mode_lib.py` from the inline HTML/CSS/JS
+    shell (`1349` and `873` chars).
+  - Moved the HITL report HTML/CSS/JS shell to
+    `scripts/templates/hitl_report.html` and changed
+    `scripts/hitl_report_mode_lib.py` to render it via `string.Template`.
+  - Synced the plugin export, adding
+    `plugins/charness/scripts/templates/hitl_report.html` and updating
+    `plugins/charness/scripts/hitl_report_mode_lib.py`.
+  - Prompt-bulk inventory after the change reported 51 findings; the two
+    `hitl_report_mode_lib.py` HTML findings no longer appear in the sample.
+  - Length proof: `scripts/hitl_report_mode_lib.py` moved from `340/480` to
+    `314/480` code lines.
+  - Focused proof: `pytest -q tests/quality_gates/test_hitl_report_mode.py`,
+    `python3 -m py_compile scripts/hitl_report_mode_lib.py`,
+    `ruff check scripts/hitl_report_mode_lib.py`, and
+    `python3 scripts/sync_root_plugin_manifests.py --repo-root .` passed.
+  - Push-gate repair: `dup-ratchet` initially flagged three rotated existing
+    helper families after the template extraction shifted `hitl_report_mode_lib.py`;
+    reviewed and classified them as intentional in
+    `charness-artifacts/quality/dup-review.json`, then
+    `check_dup_ratchet.py --repo-root . --json` passed clean.
+  - Mutation proof repair: `run_slice_closeout.py --repo-root . --base
+    origin/main --produce-mutation-coverage --verification-lock --skip-sync`
+    completed and refreshed `reports/mutation/test-coverage.json.fingerprint`.
+    The pre-push-shaped check with the concrete `origin/main` SHA passed with
+    no blocking targets for `scripts/hitl_report_mode_lib.py`.
 
 ## Context Sources
 

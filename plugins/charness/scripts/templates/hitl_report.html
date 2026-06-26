@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title</title><style>
+:root { color-scheme: light; font-family: system-ui, sans-serif; line-height: 1.45; }
+body { margin: 0; background: #f7f7f4; color: #171717; }
+main { max-width: 760px; margin: 0 auto; padding: 20px 14px 96px; }
+h1 { font-size: 1.6rem; margin: 0 0 8px; } .intro { margin: 0 0 18px; color: #434343; }
+.card { background: #fff; border: 1px solid #d8d8d2; border-radius: 8px; padding: 16px; margin: 0 0 14px; }
+.item-id { color: #666; font-size: .85rem; } h2 { font-size: 1.1rem; margin: 4px 0 8px; }
+dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; } dt { font-weight: 650; } dd { margin: 0; }
+fieldset { border: 1px solid #d8d8d2; border-radius: 8px; display: grid; gap: 8px; margin: 14px 0; }
+textarea { box-sizing: border-box; width: 100%; margin-top: 6px; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .92rem; }
+th, td { border: 1px solid #d8d8d2; padding: 6px; text-align: left; vertical-align: top; } th { background: #eeeeea; }
+.save { position: fixed; inset: auto 0 0; background: #171717; color: #fff; padding: 12px 14px; }
+.save-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 6px; font-weight: 650; } .save small { color: #ddd; }
+</style></head><body><main><h1>$title</h1><p class="intro">$summary</p><p><strong>Agent next step:</strong> $next_step</p>$cards</main>
+<footer class="save"><div class="save-inner"><button type="button" id="download">Save review JSON</button>
+<small>Defaults stay unreviewed; suggested actions are display-only.</small></div></footer>
+<script>
+document.getElementById("download").addEventListener("click", () => {
+  const packet = {items: []};
+  for (const card of document.querySelectorAll(".card")) {
+    const id = card.dataset.itemId || "";
+    const decision = card.querySelector('input[type="radio"]:checked')?.value || "unreviewed";
+    const comment = card.querySelector("textarea")?.value || "";
+    if (decision !== "unreviewed" || comment.trim()) packet.items.push({id, decision, comment});
+  }
+  const blob = new Blob([JSON.stringify(packet, null, 2) + "\n"], {type: "application/json"});
+  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "$output_name";
+  link.click(); URL.revokeObjectURL(link.href);
+});
+</script></body></html>

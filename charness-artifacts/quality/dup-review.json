@@ -132,6 +132,27 @@
       "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
       "reviewed_at": "2026-06-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "988a0b1e1c5254c0",
+      "note": "portable_path helper family rotated after HITL report template extraction; helpers intentionally stay local because fallback behavior differs by surface and a shared import would add coupling",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "be1c190b59a5abee",
+      "note": "timestamp helper family rotated after HITL report template extraction; low-value local now/UTC helpers stay directly executable across repo and skill scripts",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6583710e0ce9003a",
+      "note": "small render-table comprehension family rotated after HITL report template extraction; extracting a shared HTML row helper would add coupling for little behavioral value",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
