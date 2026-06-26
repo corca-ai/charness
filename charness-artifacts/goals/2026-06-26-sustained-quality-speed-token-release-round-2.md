@@ -931,6 +931,34 @@ None yet.
   - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
     reported `status: clean`, `new_code_families: []`.
 
+### Slice 32 — Record release critique before closeout publish
+
+- Objective: Satisfy the release critique boundary before any v0.56.3 release
+  mutation and catch release-surface mistakes while they are still cheap.
+- Finding: The release planner reported no blockers, current version 0.56.2,
+  configured-but-not-run fresh-checkout probes, and no required real-host proof.
+  The critique prepare packet was valid but misleading for this release because
+  it described only the clean working tree; the actual release range is
+  `origin/main` 61093b75 through HEAD 6458fcde, 35 commits and 87 changed files.
+- Change: Spawned three parent-delegated release critique angle reviewers plus a
+  separate counterweight reviewer. Persisted the critique packet and
+  `charness-artifacts/critique/2026-06-26-v0-56-3-release-critique.md`, including
+  a range-aware surface-lock inventory, reviewer-tier evidence, structured
+  findings, and the operator-facing release-note requirements.
+- Verification:
+  - `python3 skills/public/release/scripts/plan_release_run.py --repo-root . --json`
+    reported no blockers and current surface version 0.56.2.
+  - `python3 skills/public/release/scripts/current_release.py --repo-root .`
+    reported no version drift.
+  - `python3 skills/public/release/scripts/check_fresh_checkout_probes.py --repo-root . --json`
+    reported configured probes not yet run.
+  - `python3 skills/public/release/scripts/check_real_host_proof.py --repo-root .`
+    reported `required: false`.
+  - `python3 scripts/validate_critique_artifacts.py --repo-root . --path charness-artifacts/critique/2026-06-26-v0-56-3-release-critique.md`
+    passed.
+  - `python3 scripts/check_doc_links.py --repo-root .` passed.
+  - `./scripts/check-markdown.sh` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
