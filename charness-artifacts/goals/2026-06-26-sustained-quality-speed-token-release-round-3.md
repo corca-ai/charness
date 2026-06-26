@@ -474,6 +474,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Before adding a new helper, check whether the test file already has an in-process runner that only needs `SystemExit` support.
 - Metrics: Speed/testability proxy: removed three nested Python script invocations from the focused metric-window test file and reduced ratchet clean-convertible count by one.
 
+### Slice 24: Run retro host-log probe tests in process
+
+- Objective: Reduce nested process cost and boundary-bypass noise in retro host-log probe tests.
+- Why this approach: `test_retro_host_log_probe.py` already loaded `probe_host_logs.py` and used an in-process helper for most cases; three tests still spawned the same script through `run_script`.
+- Commits:
+- What changed: Removed `run_script` from the retro host-log probe test file and routed host availability, goal-window, and named-Claude-session tests through the in-process helper.
+- Alternatives rejected: Did not alter `probe_host_logs.py`; the behavior already had an import-safe `main()` and the test file had sufficient fixture coverage.
+- Targeted verification: pytest: `tests/quality_gates/test_retro_host_log_probe.py` `17 passed` in 0.40s; `inventory_boundary_bypass.py` dropped from 74 to 73 candidates and from 35 to 34 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing subprocess invocations to the existing helper.
+- Critique: Same-agent slice critique: this no longer proves process startup for the retro probe, but the tests were behavior-heavy and the repo has separate script/package validation for startup and import safety.
+- Off-goal findings: Boundary-bypass inventory still reports 73 advisory candidates.
+- Lessons carried forward: Mixed in-process/subprocess files usually have leftover conversions; search within the same file before scanning globally.
+- Metrics: Speed/testability proxy: removed three nested Python script invocations from retro host-log probe tests and reduced ratchet clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

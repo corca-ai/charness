@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 _probe_host_logs = import_repo_module(
     ROOT / "skills/public/retro/scripts/probe_host_logs.py",
@@ -23,7 +23,7 @@ def run_probe_host_logs(monkeypatch, capsys, *args: str) -> SimpleNamespace:
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
-def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: Path) -> None:
+def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     claude_project = home / ".claude" / "projects" / "demo-project"
     claude_project.mkdir(parents=True)
@@ -114,7 +114,7 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/retro/scripts/probe_host_logs.py", "--home", str(home))
+    result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
@@ -133,7 +133,7 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
     assert codex["session_audit"]["measured"]["function_calls"] == 1
 
 
-def test_host_log_probe_reads_goal_metric_window(tmp_path: Path) -> None:
+def test_host_log_probe_reads_goal_metric_window(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     session_dir = home / ".codex" / "sessions" / "2026" / "04" / "14"
     session_dir.mkdir(parents=True)
@@ -175,8 +175,9 @@ def test_host_log_probe_reads_goal_metric_window(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--repo-root",
@@ -443,14 +444,15 @@ def test_host_log_probe_rejects_goal_window_naming_both_hosts(tmp_path: Path) ->
     assert payload["ambiguous_session_file"] == ["codex_session_file", "claude_session_file"]
 
 
-def test_host_log_probe_never_substitutes_a_missing_named_claude_session(tmp_path: Path) -> None:
+def test_host_log_probe_never_substitutes_a_missing_named_claude_session(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     project = home / ".claude" / "projects" / "demo-project"
     project.mkdir(parents=True)
     (project / "other.jsonl").write_text(_claude_session_lines(), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--claude-session-file",
