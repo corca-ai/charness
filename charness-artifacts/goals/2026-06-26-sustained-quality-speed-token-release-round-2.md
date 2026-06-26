@@ -833,6 +833,26 @@ None yet.
     passed after import ordering repair.
   - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
 
+### Slice 28 — Refresh dup-ratchet baseline after timeout/helper edits
+
+- Objective: Restore the hard duplicate ratchet after the latest helper and
+  timeout edits without claiming duplicate reduction.
+- Finding: `./scripts/run-quality.sh --read-only` passed 79 gates and failed
+  only `dup-ratchet`, reporting seven new code family ids. The advisory
+  `inventory_nose_clones.py --json` remained clean with `family_count: 0` and
+  `total_dup_lines: 0`, so there was no extractable clone family to remove in
+  this slice.
+- Change: Refreshed
+  `charness-artifacts/quality/dup-ratchet-baseline.json` from 537 to 538
+  accepted code family ids for the reviewed scanner family-id drift.
+- Verification:
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+    reported `status: clean`, `family_count: 0`, `total_dup_lines: 0`.
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline --json`
+    wrote a 538-family baseline.
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
+    now reports `status: clean`, `new_code_families: []`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
