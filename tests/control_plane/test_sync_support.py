@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+import scripts.sync_support as sync_support_module
 import scripts.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
@@ -11,7 +12,7 @@ from scripts.sync_support import sync_one
 from scripts.update_tools import update_one
 from tests.script_main import run_loaded_script_main
 
-from .support import ROOT, run_script, seed_control_plane_repo
+from .support import ROOT, seed_control_plane_repo
 
 
 def write_manifest_schema(repo: Path) -> None:
@@ -126,8 +127,9 @@ def test_sync_support_materializes_upstream_checkout_into_installed_plugin(tmp_p
 
     env = os.environ.copy()
     env["CHARNESS_CACHE_HOME"] = str(cache_home)
-    sync = run_script(
-        "scripts/sync_support.py",
+    sync = run_loaded_script_main(
+        "sync_support.py",
+        sync_support_module,
         "--repo-root",
         str(repo),
         "--plugin-root",
@@ -136,7 +138,6 @@ def test_sync_support_materializes_upstream_checkout_into_installed_plugin(tmp_p
         "--upstream-checkout",
         f"example/demo-copy={upstream}",
         "--json",
-        cwd=ROOT,
         env=env,
     )
     assert sync.returncode == 0, sync.stderr
@@ -207,8 +208,9 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
     env = os.environ.copy()
     env["CHARNESS_CACHE_HOME"] = str(cache_home)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(fixture_map)
-    sync = run_script(
-        "scripts/sync_support.py",
+    sync = run_loaded_script_main(
+        "sync_support.py",
+        sync_support_module,
         "--repo-root",
         str(repo),
         "--plugin-root",

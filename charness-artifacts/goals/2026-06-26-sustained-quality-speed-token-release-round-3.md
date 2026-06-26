@@ -880,6 +880,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: For control-plane scripts, preserving env/PATH in the shared runner is enough for tests that care about tool discovery side effects.
 - Metrics: Speed/testability proxy: removed five nested Python process starts and removed `tests/control_plane/test_integrations_validation.py` from the clean-convertible file list.
 
+### Slice 53: Run sync-support smokes in process
+
+- Objective: Remove clean `sync_support.py` subprocesses from control-plane sync support tests.
+- Why this approach: The tests assert materialized support files and JSON payloads; `sync_support.main()` through the shared runner preserves argv/env behavior while avoiding parent process startup.
+- Commits:
+- What changed: Imported `scripts.sync_support`, routed the upstream-checkout and fixture-checkout sync calls through `run_loaded_script_main()`, and removed the now-unused `run_script` import.
+- Alternatives rejected: Did not alter the lower-level `sync_one()` tests already running in process.
+- Targeted verification: pytest: `tests/control_plane/test_sync_support.py` `4 passed` in 0.84s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 50 candidates, 72 candidate keys, and 6 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 47 candidates and 5 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted two existing smokes.
+- Critique: Same-agent slice critique: filesystem materialization assertions remain unchanged; only the outer Python process was removed.
+- Off-goal findings: None.
+- Lessons carried forward: Support sync tests can call script `main()` directly when they assert generated files rather than shell isolation.
+- Metrics: Speed/testability proxy: removed two nested Python process starts and removed `tests/control_plane/test_sync_support.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
