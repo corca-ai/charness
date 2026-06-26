@@ -9,13 +9,12 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: HITL report HTML template extraction.
-- Current slice intent: reduce inline Python prompt/template bulk by moving the
-  HITL report HTML/CSS/JS shell out of `scripts/hitl_report_mode_lib.py` and
-  into an exported template asset while preserving the rendered report contract.
-- Next action: run changed-surface validators, commit and push the template
-  extraction, then continue discovery unless a release-worthy boundary is
-  reached.
+- Current slice: Charness CLI fake-binary fixture extraction.
+- Current slice intent: reduce test helper prompt/template bulk by moving the
+  fake `claude` and fake `codex` executable bodies out of
+  `tests/charness_cli/support.py` and into fixture script files.
+- Next action: commit and push the fixture extraction, then continue discovery
+  unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -67,7 +66,8 @@ accumulate.
 | 2 | Repair remaining support helper reference drift | Continue discovery beyond the first cleanup | support package scan and focused proof | complete |
 | 3 | Speed up RCA ledger tests without weakening CLI assertions | Standing-test economics pointed at nested CLI fanout; this file had 44 subprocess-heavy tests | focused timing, length headroom, changed-surface validators, standing pytest | complete |
 | 4 | Extract HITL report HTML template from Python | Prompt-bulk inventory identified two large HTML/CSS/JS literals in `hitl_report_mode_lib.py` | focused HITL report tests, prompt-bulk delta, packaging sync | complete |
-| 5 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 5 | Extract Charness CLI fake binary scripts from support helper | Prompt-bulk inventory identified large fake `claude`/`codex` script literals in `tests/charness_cli/support.py` | focused CLI tests, prompt-bulk delta, standing pytest | complete |
+| 6 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -181,6 +181,28 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     completed and refreshed `reports/mutation/test-coverage.json.fingerprint`.
     The pre-push-shaped check with the concrete `origin/main` SHA passed with
     no blocking targets for `scripts/hitl_report_mode_lib.py`.
+- Slice 5 evidence:
+  - Prompt-bulk inventory before the change reported 51 findings, with two large
+    `tests/charness_cli/support.py` fixture-script literals in the top sample
+    (`4211` and `3464` chars).
+  - Moved the fake `claude` and fake `codex` executable bodies to
+    `tests/charness_cli/fixtures/fake_claude.py` and
+    `tests/charness_cli/fixtures/fake_codex.py`; `support.py` now copies those
+    files into the temp `bin/` directory and keeps the `fail_plugin_install`
+    seam via a sidecar marker.
+  - Prompt-bulk inventory after the change reported 49 findings; the two large
+    fake binary bodies no longer appear in the top sample.
+  - Length proof: `tests/charness_cli/support.py` moved from `641/800` to
+    `462/800` code lines.
+  - Focused proof: `py_compile`, `ruff check` for the touched test helper and
+    fixtures, `pytest -q tests/charness_cli/test_codex_managed_install.py
+    tests/charness_cli/test_codex_cache_refresh.py
+    tests/charness_cli/test_doctor_cache_selection.py`,
+    `check_python_lengths.py --require-git-file-listing`,
+    `validate_attention_state_visibility.py`, `check_test_repo_copy_invariants.py`,
+    `check_boundary_bypass_ratchet.py`, and
+    `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
+    passed; standing pytest reported `3675 passed in 20.61s`.
 
 ## Context Sources
 

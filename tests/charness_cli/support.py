@@ -13,6 +13,7 @@ import pytest
 from tests.repo_copy import ROOT
 
 CLI = ROOT / "charness"
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -161,196 +162,16 @@ def make_fake_claude(tmp_path: Path) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     script = bin_dir / "claude"
-    script.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import json
-            import os
-            import sys
-            from pathlib import Path
-
-            home = Path(os.environ["HOME"])
-            plugins_root = home / ".claude" / "plugins"
-            plugins_root.mkdir(parents=True, exist_ok=True)
-            known_marketplaces_path = plugins_root / "known_marketplaces.json"
-            installed_plugins_path = plugins_root / "installed_plugins.json"
-
-            def load_json(path: Path, default):
-                if not path.exists():
-                    return default
-                return json.loads(path.read_text(encoding="utf-8"))
-
-            def save_json(path: Path, payload):
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
-
-            def ensure_marketplace(name: str, source: str):
-                data = load_json(known_marketplaces_path, {})
-                data[name] = {
-                    "source": {"source": "path", "path": source},
-                    "installLocation": str(home / ".claude" / "plugins" / "marketplaces" / name),
-                }
-                save_json(known_marketplaces_path, data)
-
-            def ensure_installed(plugin_ref: str):
-                plugin, marketplace = plugin_ref.split("@", 1)
-                data = load_json(installed_plugins_path, {"version": 2, "plugins": {}})
-                plugins = data.setdefault("plugins", {})
-                install_path = home / ".claude" / "plugins" / "cache" / marketplace / plugin / "local"
-                install_path.mkdir(parents=True, exist_ok=True)
-                plugins[plugin_ref] = [
-                    {
-                        "scope": "user",
-                        "installPath": str(install_path),
-                        "version": "local",
-                        "installedAt": "2026-04-11T00:00:00.000Z",
-                        "lastUpdated": "2026-04-11T00:00:00.000Z",
-                    }
-                ]
-                save_json(installed_plugins_path, data)
-
-            def uninstall(plugin_ref: str):
-                data = load_json(installed_plugins_path, {"version": 2, "plugins": {}})
-                plugins = data.setdefault("plugins", {})
-                plugins.pop(plugin_ref, None)
-                save_json(installed_plugins_path, data)
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("fake-claude 0.0.0")
-                raise SystemExit(0)
-            if args[:3] == ["plugins", "marketplace", "add"]:
-                ensure_marketplace("corca-charness", args[-1])
-                raise SystemExit(0)
-            if args[:3] == ["plugins", "marketplace", "update"]:
-                raise SystemExit(0)
-            if args[:3] == ["plugins", "marketplace", "remove"]:
-                data = load_json(known_marketplaces_path, {})
-                data.pop(args[-1], None)
-                save_json(known_marketplaces_path, data)
-                raise SystemExit(0)
-            if args[:2] == ["plugins", "install"]:
-                ensure_installed(args[-1])
-                raise SystemExit(0)
-            if args[:2] == ["plugins", "update"]:
-                ensure_installed(args[-1])
-                raise SystemExit(0)
-            if args[:2] == ["plugins", "enable"]:
-                raise SystemExit(0)
-            if args[:2] == ["plugins", "uninstall"]:
-                uninstall(args[-1])
-                raise SystemExit(0)
-            if args[:2] == ["plugins", "list"]:
-                data = load_json(installed_plugins_path, {"version": 2, "plugins": {}})
-                print("Installed plugins:")
-                print("")
-                for plugin_ref, entries in data.get("plugins", {}).items():
-                    version = entries[0].get("version", "local")
-                    print(f"  ❯ {plugin_ref}")
-                    print(f"    Version: {version}")
-                    print("    Scope: user")
-                    print("    Status: ✔ enabled")
-                    print("")
-                raise SystemExit(0)
-            raise SystemExit(0)
-            """
-        ),
-        encoding="utf-8",
-    )
+    script.write_text((FIXTURES / "fake_claude.py").read_text(encoding="utf-8"), encoding="utf-8")
     script.chmod(0o755)
     return script
 def make_fake_codex(tmp_path: Path, *, fail_plugin_install: bool = False) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     script = bin_dir / "codex"
-    template = textwrap.dedent(
-        """#!/usr/bin/env python3
-import json
-import os
-import shutil
-import sys
-from pathlib import Path
-
-FAIL_PLUGIN_INSTALL = __FAIL_PLUGIN_INSTALL__
-
-def load_json(path: Path, default=None):
-    if not path.exists():
-        return {} if default is None else default
-    return json.loads(path.read_text(encoding="utf-8"))
-
-def plugin_source_from_marketplace(marketplace_path: Path, plugin_name: str):
-    data = load_json(marketplace_path, {})
-    marketplace_name = data.get("name")
-    for plugin in data.get("plugins", []):
-        if isinstance(plugin, dict) and plugin.get("name") == plugin_name:
-            source = plugin.get("source", {})
-            raw_path = source.get("path")
-            if isinstance(raw_path, str):
-                source_path = (marketplace_path.parent.parent.parent / raw_path.removeprefix("./")).resolve()
-                return marketplace_name, source_path
-    raise SystemExit(2)
-
-def plugin_version(source_path: Path):
-    manifest_path = source_path / ".codex-plugin" / "plugin.json"
-    manifest = load_json(manifest_path, {})
-    version = manifest.get("version")
-    return version if isinstance(version, str) and version else "local"
-
-def install_plugin(codex_home: Path, marketplace_path: Path, plugin_name: str):
-    marketplace_name, source_path = plugin_source_from_marketplace(marketplace_path, plugin_name)
-    version = plugin_version(source_path)
-    target = codex_home / "plugins" / "cache" / marketplace_name / plugin_name / version
-    base_root = target.parent
-    if base_root.exists():
-        shutil.rmtree(base_root)
-    shutil.copytree(source_path, target)
-    config_path = codex_home / "config.toml"
-    existing = config_path.read_text(encoding="utf-8") if config_path.exists() else ""
-    plugin_key = f"{plugin_name}@{marketplace_name}"
-    if f'[plugins."{plugin_key}"]' not in existing:
-        existing = existing.rstrip() + ("\\n\\n" if existing.strip() else "") + f'[plugins."{plugin_key}"]\\nenabled = true\\n'
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(existing, encoding="utf-8")
-    return version
-
-args = sys.argv[1:]
-if args == ["--help"]:
-    print("Codex CLI")
-    raise SystemExit(0)
-if args[:3] == ["app-server", "--listen", "stdio://"]:
-    codex_home = Path(os.environ["CODEX_HOME"])
-    for raw in sys.stdin:
-        message = json.loads(raw)
-        method = message.get("method")
-        req_id = message.get("id")
-        if method == "initialize":
-            print(json.dumps({
-                "id": req_id,
-                "result": {"serverInfo": {"name": "fake-codex-app-server", "version": "0.0.0"}, "capabilities": {}},
-            }), flush=True)
-            continue
-        if method == "notifications/initialized":
-            continue
-        if method == "plugin/install":
-            if FAIL_PLUGIN_INSTALL:
-                print(json.dumps({
-                    "id": req_id,
-                    "error": {"code": -32000, "message": "forced plugin/install failure"},
-                }), flush=True)
-                continue
-            params = message.get("params", {})
-            version = install_plugin(codex_home, Path(params["marketplacePath"]), params["pluginName"])
-            print(json.dumps({
-                "id": req_id,
-                "result": {"authPolicy": "ON_INSTALL", "appsNeedingAuth": [], "version": version},
-            }), flush=True)
-            continue
-    raise SystemExit(0)
-raise SystemExit(0)
-"""
-    ).replace('__FAIL_PLUGIN_INSTALL__', repr(fail_plugin_install))
-    script.write_text(template, encoding="utf-8")
+    script.write_text((FIXTURES / "fake_codex.py").read_text(encoding="utf-8"), encoding="utf-8")
+    if fail_plugin_install:
+        script.with_name(".codex-fail-plugin-install").write_text("1\n", encoding="utf-8")
     script.chmod(0o755)
     return script
 @pytest.fixture(scope="session")
