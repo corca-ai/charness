@@ -1,12 +1,26 @@
 from __future__ import annotations
 
 import json
+import sys
+from types import SimpleNamespace
 
-from .support import ROOT, run_script
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT
+
+RESOLVE_SCRIPT = "skills/public/narrative/scripts/resolve_adapter.py"
+_resolve_adapter = import_repo_module(ROOT / RESOLVE_SCRIPT, "skills.public.narrative.scripts.resolve_adapter")
 
 
-def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> None:
-    result = run_script("skills/public/narrative/scripts/resolve_adapter.py", "--repo-root", str(ROOT))
+def run_narrative_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [RESOLVE_SCRIPT, *args])
+    code = _resolve_adapter.main() or 0
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+
+
+def test_narrative_resolve_adapter_reports_brief_template_for_current_repo(monkeypatch, capsys) -> None:
+    result = run_narrative_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["valid"] is True

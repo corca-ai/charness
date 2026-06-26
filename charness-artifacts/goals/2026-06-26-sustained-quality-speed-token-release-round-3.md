@@ -558,6 +558,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: If a script has no special subprocess-only side effect, prefer a loaded-module `main()` call so CLI smoke coverage does not pay process startup cost.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw clean-convertible boundary inventory by one.
 
+### Slice 30: Run narrative adapter smoke in process
+
+- Objective: Remove the process boundary from a pure narrative adapter JSON smoke.
+- Why this approach: The test only needs `resolve_adapter.py --repo-root <repo>` output for the current repo; direct `main()` execution matches the existing in-process adapter runner pattern used by neighboring narrative tests.
+- Commits:
+- What changed: Imported `skills/public/narrative/scripts/resolve_adapter.py` via `runtime_bootstrap.import_repo_module`, added a tiny runner that sets `sys.argv`, and replaced `run_script()` in `test_narrative_adapter.py`.
+- Alternatives rejected: Did not broaden the test to temp-repo fallback behavior because that coverage already exists in `test_bootstrap_visibility.py`; this slice stays scoped to speed/testability.
+- Targeted verification: pytest: `tests/quality_gates/test_narrative_adapter.py` `1 passed` in 0.34s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 67 candidates and 28 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 64 candidates and 27 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: this test no longer proves a separate Python interpreter can start the adapter, but the behavior under test is adapter resolution JSON and remains covered through `main()`.
+- Off-goal findings: None.
+- Lessons carried forward: For adapter resolver smokes, prefer a reusable in-process runner and reserve subprocesses for packaging/export/startup assertions.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
