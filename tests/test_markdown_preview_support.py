@@ -8,10 +8,25 @@ import subprocess
 import sys
 import types
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+RENDER_SCRIPT = "skills/support/markdown-preview/scripts/render_markdown_preview.py"
+
+
+def _load_render_markdown_preview():
+    spec = importlib.util.spec_from_file_location(
+        "render_markdown_preview",
+        ROOT / RENDER_SCRIPT,
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+RENDER_MARKDOWN_PREVIEW = _load_render_markdown_preview()
 
 
 def _load_check_glow_backend():
@@ -39,6 +54,26 @@ def run_helper(repo_root: Path, *args: str, env: dict[str, str] | None = None) -
         text=True,
         env=env,
     )
+
+
+def run_helper_in_process(
+    monkeypatch,
+    capsys,
+    repo_root: Path,
+    *args: str,
+    env: dict[str, str] | None = None,
+) -> SimpleNamespace:
+    if env is not None:
+        for key, value in env.items():
+            monkeypatch.setenv(key, value)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [RENDER_SCRIPT, "--repo-root", str(repo_root), *args],
+    )
+    code = RENDER_MARKDOWN_PREVIEW.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def _isolated_path() -> str:
@@ -159,14 +194,14 @@ def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path) -> None:
     assert payload["previews"][0]["source_sha256"]
 
 
-def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path) -> None:
+def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Title\n\nParagraph\n", encoding="utf-8")
     env = os.environ.copy()
     env["PATH"] = _isolated_path()
 
-    result = run_helper(repo, "--file", "README.md", "--width", "90", env=env)
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -178,7 +213,7 @@ def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path) 
     assert "glow not found on PATH" in artifact_text
 
 
-def test_markdown_preview_marks_blank_glow_output_as_backend_error(tmp_path: Path) -> None:
+def test_markdown_preview_marks_blank_glow_output_as_backend_error(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Title\n\nParagraph\n", encoding="utf-8")
@@ -188,7 +223,7 @@ def test_markdown_preview_marks_blank_glow_output_as_backend_error(tmp_path: Pat
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
-    result = run_helper(repo, "--file", "README.md", "--width", "90", env=env)
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -203,7 +238,7 @@ def test_markdown_preview_marks_blank_glow_output_as_backend_error(tmp_path: Pat
     assert "It is not equivalent to a rendered readability review." in artifact_text
 
 
-def test_markdown_preview_retries_glow_with_file_stdout(tmp_path: Path) -> None:
+def test_markdown_preview_retries_glow_with_file_stdout(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Title\n\nParagraph\n", encoding="utf-8")
@@ -213,7 +248,7 @@ def test_markdown_preview_retries_glow_with_file_stdout(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
-    result = run_helper(repo, "--file", "README.md", "--width", "90", env=env)
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -222,7 +257,7 @@ def test_markdown_preview_retries_glow_with_file_stdout(tmp_path: Path) -> None:
     assert (repo / ".artifacts/markdown-preview/README.w90.txt").read_text(encoding="utf-8").strip() == "RENDER-FILE width=90 source=README.md"
 
 
-def test_markdown_preview_marks_slow_glow_as_backend_error(tmp_path: Path) -> None:
+def test_markdown_preview_marks_slow_glow_as_backend_error(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Title\n\nParagraph\n", encoding="utf-8")
@@ -233,7 +268,7 @@ def test_markdown_preview_marks_slow_glow_as_backend_error(tmp_path: Path) -> No
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
     env["CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS"] = "0.1"
 
-    result = run_helper(repo, "--file", "README.md", "--width", "90", env=env)
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)

@@ -487,6 +487,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In-process recommendation tests must preserve isolated PATH semantics with monkeypatch.
 - Metrics: _run_recommendations calls in test_quality_tool_recommendations.py: base 4, current 1.
 
+### Slice 25: Markdown preview support subprocess fanout
+
+- Objective: Reduce repeated render_markdown_preview.py subprocess calls while preserving full-render and backend checker CLI proof.
+- Why this approach: Degraded/backend-error preview variants can call main() directly while still running fake glow through the renderer; full render and backend checker remain command boundaries.
+- Commits:
+- What changed: Added run_helper_in_process(monkeypatch, capsys, ...) and converted four preview variant tests to in-process main() calls.
+- Alternatives rejected: Kept full render, default/disabled, unsupported backend, and check_glow_backend.py subprocess tests as real command smokes.
+- Targeted verification: ruff passed; focused pytest: 11 passed in 3.87s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; subprocess-backed run_helper calls dropped 7 to 3.
+- Test duplication pressure: No tests added; four preview variants switched execution layer. File-level candidate count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-markdown-preview-support-runtime.md; low-risk same-agent critique recorded because full-render/backend subprocess proof remains.
+- Off-goal findings: none
+- Lessons carried forward: In-process preview tests must preserve PATH and timeout environment while still letting backend subprocess proof run.
+- Metrics: run_helper calls in test_markdown_preview_support.py: base 7, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
