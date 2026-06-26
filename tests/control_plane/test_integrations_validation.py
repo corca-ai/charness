@@ -22,8 +22,9 @@ from scripts.validate_integrations import (
 )
 from tests.dsl import Repo
 from tests.repo_copy import clone_seeded_charness_repo
+from tests.script_main import run_loaded_script_main
 
-from .support import ROOT, run_loaded_script_main, run_script, seed_control_plane_repo
+from .support import ROOT, run_script, seed_control_plane_repo
 
 
 def write_manifest_schema(repo: Path) -> Path:

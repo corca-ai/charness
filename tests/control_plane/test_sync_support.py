@@ -9,8 +9,9 @@ from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
 from scripts.update_tools import update_one
+from tests.script_main import run_loaded_script_main
 
-from .support import ROOT, run_loaded_script_main, run_script, seed_control_plane_repo
+from .support import ROOT, run_script, seed_control_plane_repo
 
 
 def write_manifest_schema(repo: Path) -> None:

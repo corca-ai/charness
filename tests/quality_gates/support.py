@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-import contextlib
 import importlib
 import importlib.util
-import io
 import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
+
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -51,28 +50,6 @@ def run_script(
         text=True,
         env=env,
     )
-
-
-def run_loaded_script_main(script_name: str, module: object, *args: str) -> SimpleNamespace:
-    out, err = io.StringIO(), io.StringIO()
-    saved_argv = sys.argv
-    sys.argv = [script_name, *args]
-    returncode = 0
-    try:
-        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-            try:
-                returncode = module.main() or 0
-            except SystemExit as exc:
-                if isinstance(exc.code, int):
-                    returncode = exc.code
-                elif exc.code is None:
-                    returncode = 0
-                else:
-                    returncode = 1
-                    print(str(exc.code), file=sys.stderr)
-    finally:
-        sys.argv = saved_argv
-    return SimpleNamespace(returncode=returncode, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def inspect_setup_repo(repo: Path) -> dict[str, object]:

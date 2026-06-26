@@ -5,7 +5,9 @@ import shlex
 import subprocess
 from pathlib import Path
 
+import scripts.export_plugin as export_plugin_module
 from runtime_bootstrap import import_repo_module
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 _scaffold_debug = import_repo_module(
@@ -91,8 +93,9 @@ def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path
 
 def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
-    export_result = run_script(
-        "scripts/export_plugin.py",
+    export_result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",

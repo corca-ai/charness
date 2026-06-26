@@ -796,6 +796,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: File-count ratchets can stay flat even when raw candidate keys fall; record both so the improvement is not overstated.
 - Metrics: Speed/testability proxy: removed five nested Python script invocations and reduced raw candidate keys by two.
 
+### Slice 47: Share loaded-script runner and run scaffold exports in process
+
+- Objective: Remove repeated `export_plugin.py` subprocesses from exported scaffold tests and avoid duplicating in-process script runner logic across test support modules.
+- Why this approach: The tests need export side effects and JSON-shaped CLI output, not a distinct Python interpreter; a shared `tests.script_main.run_loaded_script_main()` keeps argv/stdout/stderr/env restoration in one place.
+- Commits:
+- What changed: Added `tests/script_main.py`, routed quality-gate and control-plane helpers through it, and converted debug/ideation/retro exported-scaffold tests to call `export_plugin.main()` in process before running the exported scaffold scripts.
+- Alternatives rejected: Did not convert the exported scaffold scripts or validator commands themselves because those explicitly prove consumer-repo command strings work after export.
+- Targeted verification: pytest: debug/ideation/retro scaffold tests plus loaded-runner users in control-plane and quality gates `111 passed` in 14.80s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 54 candidates, 79 candidate keys, and 10 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 50 candidates and 8 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: Removed two local runner implementations in favor of one shared helper.
+- Critique: Same-agent slice critique: the shared helper still re-raises unexpected exceptions and only maps named CLI error classes to stderr/returncode 1, so it should not hide arbitrary test bugs.
+- Off-goal findings: None.
+- Lessons carried forward: Export setup can run in process while preserving separate-process proof for the generated consumer-facing commands.
+- Metrics: Speed/testability proxy: removed three nested `export_plugin.py` process starts, reduced ratchet clean-convertible from 11 to 8, and reduced raw candidate keys from 82 to 79.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -5,6 +5,9 @@ import shlex
 import subprocess
 from pathlib import Path
 
+import scripts.export_plugin as export_plugin_module
+from tests.script_main import run_loaded_script_main
+
 ROOT = Path(__file__).resolve().parents[1]
 
 SCAFFOLD = "skills/public/ideation/scripts/scaffold_ideation_artifact.py"
@@ -61,8 +64,9 @@ def test_ideation_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
 
 def test_exported_ideation_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
-    export_result = run_script(
-        "scripts/export_plugin.py",
+    export_result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",
