@@ -186,3 +186,20 @@ def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(
     result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_check_test_repo_copy_invariants_skips_ast_for_irrelevant_files(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_irrelevant.py").write_text(
+        "def not_valid_python(:\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr

@@ -43,6 +43,14 @@ COPY_HEAVY_HELPERS = frozenset(
         "clone_seeded_managed_home",
     }
 )
+COPY_HEAVY_TOKEN_RE = re.compile(
+    r"\b("
+    + "|".join(
+        re.escape(name)
+        for name in sorted(COPY_HEAVY_FIXTURES | COPY_HEAVY_HELPERS)
+    )
+    + r")\b"
+)
 
 
 def _name_parts(node: ast.AST) -> list[str]:
@@ -97,8 +105,7 @@ def _copy_heavy_reason(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | No
     return "; ".join(reasons) if reasons else None
 
 
-def _copy_heavy_marker_violations(repo_root: Path, rel_path: Path) -> list[str]:
-    source = (repo_root / rel_path).read_text(encoding="utf-8")
+def _copy_heavy_marker_violations(source: str, rel_path: Path) -> list[str]:
     try:
         tree = ast.parse(source, filename=rel_path.as_posix())
     except SyntaxError:
@@ -152,7 +159,8 @@ def find_violations(repo_root: Path) -> list[str]:
                 f"Use clone_seeded_charness_repo(...) with seeded_charness_repo or seeded_charness_git_repo "
                 f"from {CANONICAL_MODULE} so fixtures share a session-scoped seed."
             )
-        violations.extend(_copy_heavy_marker_violations(repo_root, rel_path))
+        if COPY_HEAVY_TOKEN_RE.search(text):
+            violations.extend(_copy_heavy_marker_violations(text, rel_path))
     return violations
 
 

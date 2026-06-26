@@ -1,0 +1,240 @@
+# Achieve Goal: Sustained Quality Speed Token Release Round 3
+
+Status: active
+Created: 2026-06-26
+Activation: `/goal @charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release-round-3.md`
+Timebox: 3h
+Activation time: 2026-06-26T21:03:40+09:00
+Closeout reserve: 20m
+Done-early policy: continue_next_improvement
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+Discuss before activation: resolved — the user explicitly requested a
+three-hour quality run ending in push and release; release publication remains
+the final boundary only, not a per-slice action.
+
+## Active Operating Frame
+
+- Current slice: active discovery for the next high-leverage quality slice.
+- Current slice intent: find structural improvements that beat repeated tiny
+  subprocess conversions: prioritize measured runtime, brittle bug risk, and
+  token/verbosity surfaces with deterministic proof.
+- Next action: run focused inventories, choose the first safe mutation slice,
+  then verify with focused tests before any broad closeout.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final/bundle proof records the verification lock and uses `--verification-lock`.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`,
+  and `## Auto-Retro`.
+
+## Goal
+
+Run a three-hour sustained quality improvement pass over charness, applying the prior-round lessons to prioritize higher-leverage structural fixes across bug risk, test speed, script runtime, token efficiency, and release readiness. Finish by pushing and publishing the next release only after final proof and critique.
+
+## Non-Goals
+
+- Do not publish or push before the final release boundary.
+- Do not weaken local pre-push proof merely to make the run faster.
+- Do not claim live/provider proof unless a real configured proof channel runs.
+- Do not add new blocking floors for first-sighting waste; prefer advisory or
+  existing preflight absorption unless recurrence is proven.
+- Do not chase metric-only cleanup: each slice needs a behavioral or operator
+  value claim.
+
+## Boundaries
+
+- External side-effect scope: name which phase or bundle any approved
+  publish / push / remote-CI / apply applies to. That approval is phase-scoped
+  and does not carry forward — after an approved publish/CI/apply lane
+  completes, done-early test-only quality continuation is local by default
+  (batch remote proof, run CI once over the final bundled state). Per-slice
+  remote publication is assumed only when the operator explicitly asks or a
+  runtime-affecting slice requires earlier publication.
+- Push and release are approved by the user's request, but only for the final
+  bundle after final quality proof, release critique, and publish helper checks.
+- Generated/export surfaces follow mutate -> sync -> verify -> publish.
+- Cautilus remains eval-only and ask-before-run; no bare `cautilus evaluate`.
+- Fresh-eye critique is required before release publication. If host tooling
+  blocks it, record the concrete host signal instead of substituting same-agent
+  review.
+
+## User Acceptance
+
+- Check the final pushed commit and release tag on GitHub.
+- Re-run `./scripts/run-quality.sh --read-only` from a clean checkout.
+- Inspect this goal artifact, the quality artifact, critique artifact, and
+  release artifact for slice proof and non-claims.
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- `git status --short --branch`
+- `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task ... --summary`
+- `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
+- Focused inventories: runtime summary, skill ergonomics, standing test
+  economics, boundary/duplicate/script/runtime inventories as triggered.
+- Focused unit tests for each changed seam.
+- `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
+  for pre-lock bundle checks.
+
+### High-Confidence Checks
+
+- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock`
+  with refresh only after mutation set is locked.
+- `./scripts/run-quality.sh --read-only` through pre-push.
+- Release planner and publish helper dry-run/execute path, including fresh
+  checkout probes configured by the adapter.
+- Distinct-channel release verification recorded in the release artifact.
+
+### External Or Live Proof
+
+- Git push and release publication are final-boundary proof only.
+- Real-host release proof is run only when `check_real_host_proof.py` says the
+  release slice triggers configured surfaces.
+- No provider/live behavior proof is expected for this quality bundle unless a
+  later slice deliberately touches such a surface.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| 1 | Select high-leverage quality targets from current inventories | Avoid repeating low-yield subprocess micro-slices | runtime summary, ergonomics inventory, selected candidate ledger | active |
+| 2 | Implement bug/runtime/token-efficiency slice(s) | Main value delivery before release | focused tests, ruff/length checks, slice log with duplicate pressure when tests change | pending |
+| 3 | Bundle verification and critique | Prevent green-terminal trust before irreversible boundaries | fresh-eye critique, quality artifact, slice closeout verification lock | pending |
+| 4 | Push and release | User explicitly requested final publication | pre-push full gate, release helper proof, public visibility/readback | pending |
+
+## Operator Decision Queue
+
+None currently — the user already approved final push/release for this goal;
+new operator-only decisions discovered mid-run will be added here.
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, deferred to `find-skills` (its
+`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
+engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
+and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
+during the run:
+
+- **Routing** — ask `find-skills` to recommend the skill for the current phase or
+  boundary, and record the route it returns. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
+- **Gather step** — when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a — <reason>` when no external context
+  applies.
+- **Release step** — when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
+
+Routing: `find-skills` recommended `quality` and `release` for this task; no
+external/trusted skill roots configured.
+Gather: n/a — no external source URLs are part of the request.
+Release: pending final release helper proof.
+Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
+
+## Slice Log
+
+### Slice 1: Prefilter repo-copy invariant scan
+
+- Objective: Reduce standing gate runtime waste in check_test_repo_copy_invariants.py without weakening the copy-heavy release_only contract.
+- Why this approach: Structural-waste inventory identified a broad parser-without-prefilter candidate, and the script measured around 1.14s before the change.
+- Commits:
+- What changed: Added COPY_HEAVY_TOKEN_RE text prefilter before AST parsing; added regression coverage for irrelevant invalid Python; expanded structural-waste prefilter detection to identifier segment names such as COPY_HEAVY_TOKEN_RE.
+- Alternatives rejected: Did not weaken or remove the invariant; did not move it to CI because the gate is cheap and local proof remains valuable.
+- Targeted verification: pytest: 22 passed for repo-copy invariants and structural-waste inventory; ruff passed; check_test_repo_copy_invariants.py runtime measured about 0.31s after the change; inventory_structural_waste.py now reports no broad_scanner_candidates.
+- Test duplication pressure: Added two focused tests in existing quality gate files; no new test file; length headroom remains >590 lines for touched test files.
+- Critique: Same-agent slice critique: behavior contract remains intact because regex checks still scan all files and AST release_only checks now run only when copy-heavy fixture/helper tokens are present; false-positive inventory detector was corrected with focused coverage.
+- Off-goal findings: None.
+- Lessons carried forward: Prefer a measured structural runtime fix plus inventory correction over another narrow subprocess conversion.
+- Metrics: Runtime proxy: check_test_repo_copy_invariants.py 1.14s before, 0.31s after on this machine.
+
+## Context Sources
+
+- User request on 2026-06-26: repeat sustained quality improvement for 3 hours
+  and finish with push/release.
+- `docs/handoff.md` pickup notes; stale release-state lines checked against
+  recent git log and release planner.
+- `charness-artifacts/retro/recent-lessons.md`: avoid brute-force broad pytest
+  fallback, record goal window before metrics, avoid many tiny subprocess-only
+  slices, persist release/retro follow-up.
+- `docs/design-north-star.md`: irreversible-boundary proof is provisional until
+  distinct-channel evidence and fresh observer are recorded.
+- `docs/conventions/implementation-discipline.md` and
+  `docs/conventions/operating-contract.md`.
+- `skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`.
+- `skills/public/release/scripts/plan_release_run.py --repo-root . --json`.
+
+## Interview Decisions
+
+- Mode family: artifact-only vs implementation-continuation. Chosen:
+  implementation-continuation because the user requested ongoing work and final
+  publication. Rejected artifact-only as contrary to the explicit instruction.
+- Timebox family: exact wall-clock continuation vs bounded meaningful slices
+  with closeout reserve. Chosen: 3h timebox with 20m closeout reserve and
+  continue-next-improvement policy. Rejected early release once first slice
+  finishes, matching the prior-turn lesson.
+- Publication family: local-only proof vs final push/release. Chosen: final
+  push/release after proof because the user explicitly requested it. Rejected
+  per-slice publication because approval is phase-scoped and wasteful.
+- Scope family: many tiny subprocess conversions vs higher-leverage structural
+  slices. Chosen: inventory-led structural fixes. Rejected repeated micro-slices
+  due recent retro waste.
+- Axis check: host/provider/environment are variable in adapters and release
+  proof; no host-specific assumption is promoted to global contract.
+
+## Plan Critique Findings
+
+- Folded blocker: release/push are irreversible; final proof and fresh-eye
+  critique are required before publication.
+- Folded blocker: broad quality runtime must be measured, not guessed; runtime
+  summary is required before making speed claims.
+- Folded blocker: local gate weakening is unsafe unless CI or another channel
+  repeats the proof; keep local proof by default.
+- Over-worry not folded: exact three-hour wall-clock exhaustion is less useful
+  than preserving closeout reserve and making every remaining slice safe; if
+  no safe next slice exists, the final artifact must say why.
+- Reviewer provenance: same-agent preflight critique at activation; fresh-eye
+  review required before release boundary.
+
+## Off-Goal Findings
+
+None yet.
+
+## Final Verification
+
+Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
+retro / host-log probe / disposition-review artifact) or an explicit
+`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
+`TODO` / `<path>` / `TBD` until you do.
+
+Retro: TODO — create or explicitly skip with an allowed reason before complete
+Host log probe: TODO — create or explicitly skip with an allowed reason before complete
+Disposition review: TODO — create or explicitly skip only when policy allows before complete
+
+## User Verification Instructions
+
+After closeout, verify the pushed commit and release tag named in the final
+report, then run `./scripts/run-quality.sh --read-only` if local reproduction
+is desired.
+
+## Auto-Retro
+
+Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named

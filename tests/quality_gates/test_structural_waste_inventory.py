@@ -140,6 +140,32 @@ def test_structural_waste_does_not_flag_visible_prefilter(tmp_path: Path) -> Non
     assert payload["findings"] == []
 
 
+def test_structural_waste_accepts_token_regex_prefilter_name(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write(
+        repo / "scripts" / "scan_token_candidates.py",
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "import ast",
+                "TOKEN_RE = 'needle'",
+                "for path in Path('.').rglob('*.py'):",
+                "    text = path.read_text()",
+                "    if TOKEN_RE not in text:",
+                "        continue",
+                "    ast.parse(text)",
+            ]
+        )
+        + "\n",
+    )
+
+    payload = _run_json(repo)
+
+    assert payload["broad_scanner_candidates"] == []
+    assert payload["findings"] == []
+
+
 def test_structural_waste_text_output_carries_interpretation(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -9,7 +9,10 @@ from typing import Any
 PYTEST_COLLECT_RE = re.compile(r"\bpytest\b[^\n]*(?:--collect-only|--collectonly|--co)(?:\s|$)")
 BROAD_SCAN_RE = re.compile(r"(?:rglob\(|glob\(|git[^\\n]{0,40}ls-files|Path\.walk|os\.walk)")
 PARSER_RE = re.compile(r"\bast\.parse\b")
-PREFILTER_RE = re.compile(r"\b(?:candidate|prefilter|needle|token|substring|grep|ripgrep|rg|contains)\b", re.IGNORECASE)
+PREFILTER_RE = re.compile(
+    r"(?:\b|_)(?:candidate|prefilter|needle|token|substring|grep|ripgrep|rg|contains)(?:\b|_)",
+    re.IGNORECASE,
+)
 PYTHON_SOURCE_DIRS = ("scripts", "skills/public", "skills/support")
 IGNORED_PARTS = {"__pycache__", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", "mutants"}
 
