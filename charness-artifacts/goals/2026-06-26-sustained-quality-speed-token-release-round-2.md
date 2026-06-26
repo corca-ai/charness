@@ -237,6 +237,28 @@ Issues or deferred findings discovered during the run.
 
 None yet.
 
+## Slice Log
+
+### Slice 1 — Reuse update-all support sync results
+
+- Objective: Cut release-gate script execution time without weakening the
+  `charness update all` boundary proof.
+- Finding: `charness update all` ran `scripts/sync_support.py` once during
+  install surface refresh and again during tool update flow; fixture timing
+  measured the duplicate support sync at about 1.1s in the representative
+  temp install.
+- Change: `run_tool_update_flow` now accepts precomputed support sync results
+  and reuses them only for the unfiltered, non-dry-run `update all` path where
+  install surface already synced the same repo/plugin surface.
+- Verification:
+  - `python3 -m pytest -q tests/charness_cli/test_update_flow_unit.py tests/charness_cli/test_managed_install_extended.py::test_installed_cli_update_all_refreshes_external_tools_and_support_state --durations=20 --durations-min=0.01`
+    passed; update-all sentinel call time was 12.63s in this run.
+  - `python3 -m pytest -q tests/charness_cli/test_update_output.py::test_installed_cli_update_all_without_json_prints_progress_and_summary --durations=10 --durations-min=0.01`
+    passed; non-JSON progress output still includes the support sync step.
+  - `python3 scripts/check_python_lengths.py --paths charness tests/charness_cli/test_update_flow_unit.py`
+    passed for the Python test file; the extensionless `charness` script is
+    outside that checker.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

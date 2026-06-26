@@ -2804,6 +2804,7 @@ def run_tool_update_flow(
     skip_sync_support: bool,
     upstream_checkouts: list[str],
     json_mode: bool = False,
+    precomputed_support_results: object | None = None,
 ) -> tuple[dict[str, object], bool]:
     emit_progress("STEP: updating tracked external tools", json_mode=json_mode)
     update_args = ["--repo-root", str(repo_root), "--json"]
@@ -2815,14 +2816,23 @@ def run_tool_update_flow(
     support_results: object = []
     if not skip_sync_support:
         emit_progress("STEP: syncing support surfaces", json_mode=json_mode)
-        support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
-        for tool_id in tool_ids:
-            support_args.extend(["--tool-id", tool_id])
-        for upstream_checkout in upstream_checkouts:
-            support_args.extend(["--upstream-checkout", upstream_checkout])
-        if not dry_run:
-            support_args.append("--execute")
-        support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
+        can_reuse_support = (
+            precomputed_support_results is not None
+            and not dry_run
+            and not tool_ids
+            and not upstream_checkouts
+        )
+        if can_reuse_support:
+            support_results = precomputed_support_results
+        else:
+            support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+            for tool_id in tool_ids:
+                support_args.extend(["--tool-id", tool_id])
+            for upstream_checkout in upstream_checkouts:
+                support_args.extend(["--upstream-checkout", upstream_checkout])
+            if not dry_run:
+                support_args.append("--execute")
+            support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
     emit_progress("STEP: refreshing tool doctor state", json_mode=json_mode)
     doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids:
@@ -3524,6 +3534,7 @@ def cmd_update(args: argparse.Namespace) -> int:
             skip_sync_support=False,
             upstream_checkouts=[],
             json_mode=args.json,
+            precomputed_support_results=payload.get("support_sync"),
         )
         payload["tool_update"] = tool_update_payload
         if tool_update_payload["results"]:
