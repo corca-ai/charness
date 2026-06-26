@@ -5,8 +5,17 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import load_path_module
 
 from .support import ROOT
+
+QUALITY_SCRIPT = "skills/public/quality/scripts/list_tool_recommendations.py"
+_quality_tool_recommendations = load_path_module(
+    "tests.quality_gates.quality_list_tool_recommendations",
+    ROOT / QUALITY_SCRIPT,
+)
 
 
 def _write_manifest(tmp_path: Path, name: str, payload: dict[str, object]) -> None:
@@ -25,6 +34,20 @@ def _isolated_path() -> str:
     if git_binary is not None:
         isolated_path_parts.append(str(Path(git_binary).resolve().parent))
     return os.pathsep.join(dict.fromkeys(isolated_path_parts))
+
+
+def _run_quality_recommendations(monkeypatch, capsys, tmp_path: Path, *args: str) -> dict[str, object]:
+    monkeypatch.setenv("PATH", _isolated_path())
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [QUALITY_SCRIPT, "--repo-root", str(tmp_path), *args],
+    )
+    code = _quality_tool_recommendations.main() or 0
+    captured = capsys.readouterr()
+    result = SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
 
 
 def _run_recommendations(
@@ -51,7 +74,7 @@ def _run_recommendations(
     return json.loads(result.stdout)
 
 
-def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: Path) -> None:
+def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: Path, monkeypatch, capsys) -> None:
     _write_manifest(
         tmp_path,
         "cautilus.json",
@@ -83,8 +106,9 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
         },
     )
 
-    payload = _run_recommendations(
-        "skills/public/quality/scripts/list_tool_recommendations.py",
+    payload = _run_quality_recommendations(
+        monkeypatch,
+        capsys,
         tmp_path,
     )
     assert payload == {
@@ -122,7 +146,7 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
     }
 
 
-def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path) -> None:
+def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path, monkeypatch, capsys) -> None:
     _write_manifest(
         tmp_path,
         "impl-only.json",
@@ -149,17 +173,20 @@ def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path) 
         },
     )
 
-    payload = _run_recommendations(
-        "skills/public/quality/scripts/list_tool_recommendations.py",
+    payload = _run_quality_recommendations(
+        monkeypatch,
+        capsys,
         tmp_path,
-        recommendation_role="validation",
-        next_skill_id="quality",
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
     )
 
     assert payload["tool_recommendations"] == []
 
 
-def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path) -> None:
+def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path, monkeypatch, capsys) -> None:
     _write_manifest(
         tmp_path,
         "glow.json",
@@ -191,11 +218,14 @@ def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Pat
         },
     )
 
-    payload = _run_recommendations(
-        "skills/public/quality/scripts/list_tool_recommendations.py",
+    payload = _run_quality_recommendations(
+        monkeypatch,
+        capsys,
         tmp_path,
-        recommendation_role="runtime",
-        next_skill_id="quality",
+        "--recommendation-role",
+        "runtime",
+        "--next-skill-id",
+        "quality",
     )
     assert payload == {
         "recommendation_role": "runtime",

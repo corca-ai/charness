@@ -473,6 +473,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Closeout tests should keep the closeout command boundary and move secondary validators in-process.
 - Metrics: run_script calls in test_slice_closeout_usage_episode.py: base 4, current 1.
 
+### Slice 24: Tool recommendation subprocess fanout
+
+- Objective: Reduce repeated quality list_tool_recommendations.py subprocess calls while preserving recommendation CLI proof.
+- Why this approach: Quality recommendation fixtures share the same script and isolated PATH semantics; narrative recommendation remains a real command smoke.
+- Commits:
+- What changed: Added _run_quality_recommendations(monkeypatch, capsys, ...) and converted three quality recommendation fixtures to in-process main() calls.
+- Alternatives rejected: Kept the narrative recommendation fixture as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 4 passed in 2.61s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; subprocess-backed helper calls dropped 4 to 1.
+- Test duplication pressure: No tests added; three recommendation checks switched execution layer. File-level candidate count unchanged because retained CLI smoke remains.
+- Critique: charness-artifacts/critique/2026-06-26-tool-recommendation-runtime.md; low-risk same-agent critique recorded because narrative recommendation CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: In-process recommendation tests must preserve isolated PATH semantics with monkeypatch.
+- Metrics: _run_recommendations calls in test_quality_tool_recommendations.py: base 4, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
