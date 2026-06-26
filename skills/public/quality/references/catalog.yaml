@@ -136,7 +136,7 @@ gates:
     parallel_group: inventories
     run_when: runtime, slow gate, budget, or cost is in scope
   - id: skill-ergonomics
-    command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root . --json
+    command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root . --summary
     purpose: advisory skill-surface pressure packet when skills are in scope
     trust_model: heuristic advisory with false positives and false negatives
     cost_tier: cheap

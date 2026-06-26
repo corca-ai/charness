@@ -291,6 +291,27 @@ None yet.
     passed; file runtime was 7.15s in the post-change sample, with the converted
     missing-support case down to 0.18s from 0.50s in the earlier sample.
 
+### Slice 4 — Plan compact skill ergonomics packets
+
+- Objective: Reduce token waste in the quality planner without hiding full
+  evidence when deeper inspection is needed.
+- Finding: The quality planner recommended the full skill ergonomics JSON
+  packet, about 97KB on this repo, even though the script already exposes a
+  compact `--summary` packet for agent triage.
+- Change: The quality reference catalog now recommends
+  `inventory_skill_ergonomics.py --summary`; the checked-in plugin copy is kept
+  in sync, and the planner test asserts the compact command.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_quality_run_planner.py`
+    passed.
+  - `python3 scripts/validate_quality_reference_catalog.py --repo-root .`
+    passed.
+  - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
+    now reports the skill ergonomics gate with `--summary`.
+  - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary | wc -c`
+    reported 12201 bytes, compared with the earlier full `--json` measurement
+    of 96643 bytes.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

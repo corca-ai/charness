@@ -197,6 +197,9 @@ def test_quality_run_plan_reports_gate_packet_cost_and_trust(tmp_path: Path) -> 
     assert read_only["parallel_group"] == "serial-critical"
     assert "advisory" in read_only["trust_model"]
     assert "repo-native command" in read_only["run_when"]
+    skill_ergonomics = next(packet for packet in packets if packet["id"] == "skill-ergonomics")
+    assert "--summary" in skill_ergonomics["command"]
+    assert "--json" not in skill_ergonomics["command"]
 
 
 def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> None:
