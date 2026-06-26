@@ -235,24 +235,7 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     script = bin_dir / "agent-browser"
-    script.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("agent-browser 0.25.3")
-                raise SystemExit(0)
-            if args == ["--help"]:
-                print("agent-browser")
-                raise SystemExit(0)
-            raise SystemExit(0)
-            """
-        ),
-        encoding="utf-8",
-    )
+    shutil.copy2(FIXTURES / "fake_agent_browser.py", script)
     script.chmod(0o755)
     return script
 
@@ -265,57 +248,14 @@ def make_fake_npm_agent_browser(tmp_path: Path) -> tuple[Path, Path]:
     package_bin.mkdir(parents=True, exist_ok=True)
     npm_script = tmp_path / "bin" / "npm"
     npm_script.parent.mkdir(parents=True, exist_ok=True)
-    npm_script.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import pathlib
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["prefix", "-g"]:
-                print({str(npm_prefix)!r})
-                raise SystemExit(0)
-            if args == ["install", "-g", "agent-browser@latest"]:
-                print("updated agent-browser")
-                raise SystemExit(0)
-            if args in (["install", "-g", "defuddle"], ["install", "-g", "defuddle@latest"]):
-                target = pathlib.Path({str(bin_dir)!r}) / "defuddle"
-                target.write_text(
-                    "#!/usr/bin/env python3\\n"
-                    "import sys\\n"
-                    "args=sys.argv[1:]\\n"
-                    "print('defuddle 0.1.0') if args == ['--version'] else print('defuddle help')\\n",
-                    encoding="utf-8",
-                )
-                target.chmod(0o755)
-                print("updated defuddle")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
+    shutil.copy2(FIXTURES / "fake_npm_agent_browser.py", npm_script)
+    npm_script.with_suffix(".json").write_text(
+        json.dumps({"npm_prefix": str(npm_prefix), "bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
         encoding="utf-8",
     )
     npm_script.chmod(0o755)
     browser_impl = package_bin / "agent-browser-linux-x64"
-    browser_impl.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("agent-browser 0.25.3")
-                raise SystemExit(0)
-            if args == ["--help"]:
-                print("agent-browser")
-                raise SystemExit(0)
-            raise SystemExit(0)
-            """
-        ),
-        encoding="utf-8",
-    )
+    shutil.copy2(FIXTURES / "fake_agent_browser.py", browser_impl)
     browser_impl.chmod(0o755)
     browser_link = bin_dir / "agent-browser"
     browser_link.symlink_to(browser_impl)
@@ -327,79 +267,17 @@ def make_fake_update_all_toolchain(tmp_path: Path) -> Path:
     bin_dir.mkdir(parents=True, exist_ok=True)
 
     cargo = bin_dir / "cargo"
-    cargo.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import pathlib
-            import sys
-
-            bin_dir = pathlib.Path({str(bin_dir)!r})
-            args = sys.argv[1:]
-            if args == ["install", "tokei", "--force"]:
-                target = bin_dir / "tokei"
-                target.write_text(
-                    "#!/usr/bin/env python3\\n"
-                    "import sys\\n"
-                    "args = sys.argv[1:]\\n"
-                    "if args == ['--version']:\\n"
-                    "    print('tokei 12.1.2')\\n"
-                    "elif args == ['--help']:\\n"
-                    "    print('Usage: tokei')\\n"
-                    "else:\\n"
-                    "    print('tokei')\\n",
-                    encoding="utf-8",
-                )
-                target.chmod(0o755)
-                print("installed tokei")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
+    shutil.copy2(FIXTURES / "fake_cargo_update_all.py", cargo)
+    cargo.with_suffix(".json").write_text(
+        json.dumps({"bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
         encoding="utf-8",
     )
     cargo.chmod(0o755)
 
     uv = bin_dir / "uv"
-    uv.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import pathlib
-            import sys
-
-            bin_dir = pathlib.Path({str(bin_dir)!r})
-            args = sys.argv[1:]
-
-            def write_tool(name, version_text, help_text):
-                target = bin_dir / name
-                target.write_text(
-                    "#!/usr/bin/env python3\\n"
-                    "import sys\\n"
-                    f"version_text = {{version_text!r}}\\n"
-                    f"help_text = {{help_text!r}}\\n"
-                    "args = sys.argv[1:]\\n"
-                    "if args == ['--version']:\\n"
-                    "    print(version_text)\\n"
-                    "elif args == ['--help'] or args == ['check', '--help']:\\n"
-                    "    print(help_text)\\n"
-                    "else:\\n"
-                    "    print(version_text)\\n",
-                    encoding="utf-8",
-                )
-                target.chmod(0o755)
-
-            if args == ["tool", "upgrade", "ruff"]:
-                write_tool("ruff", "ruff 0.15.18", "Run Ruff")
-                print("upgraded ruff")
-                raise SystemExit(0)
-            if args == ["tool", "upgrade", "vulture"]:
-                write_tool("vulture", "vulture 2.14", "usage: vulture")
-                print("upgraded vulture")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
+    shutil.copy2(FIXTURES / "fake_uv_update_all.py", uv)
+    uv.with_suffix(".json").write_text(
+        json.dumps({"bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
         encoding="utf-8",
     )
     uv.chmod(0o755)

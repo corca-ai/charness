@@ -9,11 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Charness CLI fake-binary fixture extraction.
-- Current slice intent: reduce test helper prompt/template bulk by moving the
-  fake `claude` and fake `codex` executable bodies out of
-  `tests/charness_cli/support.py` and into fixture script files.
-- Next action: commit and push the fixture extraction, then continue discovery
+- Current slice: Charness CLI external-tool fixture extraction.
+- Current slice intent: continue reducing test helper prompt/template bulk by
+  moving fake `agent-browser`, `npm`, `cargo`, `uv`, and generated fake tool
+  bodies out of `tests/charness_cli/support.py` and into fixture script files.
+- Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -67,7 +67,8 @@ accumulate.
 | 3 | Speed up RCA ledger tests without weakening CLI assertions | Standing-test economics pointed at nested CLI fanout; this file had 44 subprocess-heavy tests | focused timing, length headroom, changed-surface validators, standing pytest | complete |
 | 4 | Extract HITL report HTML template from Python | Prompt-bulk inventory identified two large HTML/CSS/JS literals in `hitl_report_mode_lib.py` | focused HITL report tests, prompt-bulk delta, packaging sync | complete |
 | 5 | Extract Charness CLI fake binary scripts from support helper | Prompt-bulk inventory identified large fake `claude`/`codex` script literals in `tests/charness_cli/support.py` | focused CLI tests, prompt-bulk delta, standing pytest | complete |
-| 6 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 6 | Extract remaining Charness CLI external-tool fake scripts from support helper | Prompt-bulk inventory still points at `tests/charness_cli/support.py`; the fake npm/cargo/uv bodies are local, deterministic, and expensive to keep inline | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
+| 7 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -203,6 +204,33 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     `check_boundary_bypass_ratchet.py`, and
     `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
     passed; standing pytest reported `3675 passed in 20.61s`.
+- Slice 6 evidence:
+  - Prompt-bulk inventory before this change reported 49 findings and still
+    sampled `tests/charness_cli/support.py` fake toolchain literals in the top
+    results.
+  - Moved fake `agent-browser`, `npm`/`defuddle`, `cargo`/`tokei`, and
+    `uv`/`ruff`/`vulture` executable bodies to
+    `tests/charness_cli/fixtures/`; `support.py` now copies fixture executables
+    and writes small sidecar JSON files for temp paths.
+  - Prompt-bulk inventory after the change reported 46 findings; the extracted
+    npm/cargo/uv bodies no longer appear in the top sample, leaving the larger
+    Go/specdown and tool-lifecycle fake bodies as later candidates.
+  - Length proof: `tests/charness_cli/support.py` moved from `462/800` to
+    `340/800` code lines; new fixture files are each at most `26/800` code
+    lines.
+  - Focused proof: `py_compile` for the touched helper and fixture files,
+    focused `ruff check`, and the release-only CLI update/tool lifecycle subset
+    passed; the focused pytest run reported `9 passed, 13 deselected in
+    35.10s`.
+  - Changed-surface proof: full repo `ruff check`, Python length gate,
+    attention-state visibility, test repo copy invariants, boundary-bypass
+    ratchet, and the standing pytest runner passed; standing pytest reported
+    `3675 passed in 22.35s`.
+  - Slice critique: the main risk is sidecar JSON lookup drift between copied
+    fake binaries and generated fake tools. Folded response: every copied
+    installer script resolves its own `<script>.json` config, and the focused
+    update/tool lifecycle tests exercised the npm, cargo, uv, agent-browser,
+    specdown, and glow update/install paths.
 
 ## Context Sources
 
