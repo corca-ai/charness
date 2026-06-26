@@ -656,6 +656,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Continue choosing small resolver smokes when they completely remove a file from the clean-convertible set.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw and ratcheted clean-convertible counts by one.
 
+### Slice 37: Run goal artifact CLI smokes in process
+
+- Objective: Remove remaining `check_goal_artifact.py` subprocess calls from goal freshness tests.
+- Why this approach: The file already had `run_check_goal_artifact()` for most CLI cases; converting the two leftover subprocess tests makes the whole check-goal-artifact suite use one in-process path.
+- Commits:
+- What changed: Routed the head-freshness failure and missing-goal-path usage-error tests through the existing runner and removed the now-unused `run_script` import.
+- Alternatives rejected: Kept git subprocess fixture setup in `_init_git()` because it creates repository state rather than invoking the script under test.
+- Targeted verification: pytest: `tests/quality_gates/test_goal_head_freshness.py` `15 passed` in 0.48s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 62 candidates, 96 candidate keys, and 21 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 59 candidates and 20 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted two existing smokes.
+- Critique: Same-agent slice critique: the usage-error test still verifies returncode 2 and JSON output, so the CLI behavior is preserved without process startup.
+- Off-goal findings: None.
+- Lessons carried forward: Existing runners are often incomplete; scan for straggler `run_script()` calls before leaving a test file.
+- Metrics: Speed/testability proxy: removed two nested Python script invocations and removed `test_goal_head_freshness.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

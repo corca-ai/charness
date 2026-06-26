@@ -7,8 +7,6 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-from tests.quality_gates.support import run_script
-
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
 
@@ -187,7 +185,7 @@ def test_fenced_examples_are_ignored() -> None:
     assert hf.check_head_freshness(text, head_sha="abc1234567890")["ok"] is True
 
 
-def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path, monkeypatch, capsys) -> None:
     _init_git(tmp_path)
     goal_path = tmp_path / "charness-artifacts/goals/2026-05-31-t.md"
     goal_path.parent.mkdir(parents=True)
@@ -196,8 +194,9 @@ def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",
@@ -243,10 +242,11 @@ def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monke
     assert json.loads(result.stdout)["pursue_ready"] is False
 
 
-def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path: Path, monkeypatch, capsys) -> None:
     missing = tmp_path / "missing.md"
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",
