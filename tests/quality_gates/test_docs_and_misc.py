@@ -1,11 +1,35 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
+from types import ModuleType
 
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES
 
 from .support import ROOT, run_script
+
+
+def _load_script_module(module_name: str, relative_path: str) -> ModuleType:
+    module_path = ROOT / relative_path
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+LIST_CAPABILITIES = _load_script_module(
+    "tests.quality_gates.docs_misc_list_capabilities",
+    "skills/public/find-skills/scripts/list_capabilities.py",
+)
+SURVEY_VERIFICATION = _load_script_module(
+    "tests.quality_gates.docs_misc_survey_verification",
+    "skills/public/impl/scripts/survey_verification.py",
+)
 
 
 def test_release_current_release_reports_packaging_version() -> None:
@@ -524,7 +548,7 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
         assert tool_name not in skill_text
 
 
-def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> None:
+def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     local_skill_dir = repo / "skills" / "public" / "local-demo"
     trusted_skill_dir = repo / "vendor" / "trusted-skills" / "trusted-demo"
@@ -558,14 +582,14 @@ def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    monkeypatch.setattr(sys, "argv", ["list_capabilities.py", "--repo-root", str(repo)])
+    LIST_CAPABILITIES.main()
+    payload = json.loads(capsys.readouterr().out)
     assert payload["public_skills"][0]["id"] == "local-demo"
     assert payload["trusted_skills"][0]["id"] == "trusted-demo"
 
 
-def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> None:
+def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     adapter_dir = repo / ".agents"
     skills_dir = adapter_dir / "skills"
@@ -593,9 +617,9 @@ def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> N
     )
     (skills_dir / "agent-browser").symlink_to(repo / "missing-agent-browser")
 
-    result = run_script("skills/public/impl/scripts/survey_verification.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    monkeypatch.setattr(sys, "argv", ["survey_verification.py", "--repo-root", str(repo)])
+    SURVEY_VERIFICATION.main()
+    payload = json.loads(capsys.readouterr().out)
     assert payload["missing_tools"] == ["skill:agent-browser"]
     assert payload["missing_ui_tools"] == ["skill:agent-browser"]
     assert payload["tool_checks"][1]["warning"].startswith("Broken skill symlink:")

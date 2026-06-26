@@ -7,6 +7,13 @@ from pathlib import Path
 
 import pytest
 
+from scripts.validate_integrations import (
+    ValidationError,
+    validate_access_mode_order,
+    validate_capability_requirements,
+    validate_config_layers,
+    validate_support_install_entrypoint,
+)
 from tests.dsl import Repo
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -21,6 +28,12 @@ def write_manifest_schema(repo: Path) -> Path:
         encoding="utf-8",
     )
     return tools_dir
+
+
+def read_manifest(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
     (
         Repo()
@@ -90,9 +103,9 @@ def test_validate_integrations_requires_install_entrypoint_for_support_backed_to
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "must declare lifecycle.install.install_url" in result.stderr
+    manifest_path = tools_dir / "missing-install-url.json"
+    with pytest.raises(ValidationError, match="must declare lifecycle.install.install_url"):
+        validate_support_install_entrypoint(read_manifest(manifest_path), manifest_path)
 
 
 def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> None:
@@ -118,9 +131,9 @@ def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "access_modes must stay in preferred runtime order" in result.stderr
+    manifest_path = tools_dir / "bad-order.json"
+    with pytest.raises(ValidationError, match="access_modes must stay in preferred runtime order"):
+        validate_access_mode_order(read_manifest(manifest_path), manifest_path)
 
 
 def test_validate_integrations_requires_capability_requirements_for_grant_and_env(tmp_path: Path) -> None:
@@ -146,9 +159,9 @@ def test_validate_integrations_requires_capability_requirements_for_grant_and_en
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "grant access requires capability_requirements.grant_ids" in result.stderr
+    manifest_path = tools_dir / "grant-env.json"
+    with pytest.raises(ValidationError, match="grant access requires capability_requirements.grant_ids"):
+        validate_capability_requirements(read_manifest(manifest_path), manifest_path)
 
 
 def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) -> None:
@@ -179,9 +192,9 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "config_layers must stay in preferred order" in result.stderr
+    manifest_path = tools_dir / "bad-layers.json"
+    with pytest.raises(ValidationError, match="config_layers must stay in preferred order"):
+        validate_config_layers(read_manifest(manifest_path), manifest_path)
 
 
 def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path) -> None:

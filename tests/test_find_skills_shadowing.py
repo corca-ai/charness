@@ -1,10 +1,26 @@
 from __future__ import annotations
 
+import importlib.util
 import json
-import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_list_capabilities():
+    module_name = "skills.public.find_skills.scripts.list_capabilities_shadowing_test"
+    module_path = REPO_ROOT / "skills" / "public" / "find-skills" / "scripts" / "list_capabilities.py"
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_list_capabilities = _load_list_capabilities()
 
 
 def _skill(path: Path, description: str) -> None:
@@ -15,7 +31,21 @@ def _skill(path: Path, description: str) -> None:
     )
 
 
-def test_list_capabilities_prefers_local_skill_over_trusted_duplicate(tmp_path: Path) -> None:
+def _run_list_capabilities(tmp_path: Path, monkeypatch, capsys) -> dict[str, object]:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "list_capabilities.py",
+            "--repo-root",
+            str(tmp_path),
+        ],
+    )
+    _list_capabilities.main()
+    return json.loads(capsys.readouterr().out)
+
+
+def test_list_capabilities_prefers_local_skill_over_trusted_duplicate(tmp_path: Path, monkeypatch, capsys) -> None:
     _skill(tmp_path / "skills" / "public" / "demo", "Public demo.")
     _skill(tmp_path / "vendor" / "trusted-skills" / "demo", "Trusted demo.")
     (tmp_path / ".agents").mkdir(parents=True)
@@ -36,19 +66,12 @@ def test_list_capabilities_prefers_local_skill_over_trusted_duplicate(tmp_path: 
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", "skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(tmp_path)],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_list_capabilities(tmp_path, monkeypatch, capsys)
     assert [entry["id"] for entry in payload["public_skills"]] == ["demo"]
     assert payload["trusted_skills"] == []
 
 
-def test_list_capabilities_dedupes_trusted_duplicate_ids(tmp_path: Path) -> None:
+def test_list_capabilities_dedupes_trusted_duplicate_ids(tmp_path: Path, monkeypatch, capsys) -> None:
     _skill(tmp_path / "vendor" / "a" / "demo", "Trusted demo A.")
     _skill(tmp_path / "vendor" / "b" / "demo", "Trusted demo B.")
     (tmp_path / ".agents").mkdir(parents=True)
@@ -70,12 +93,5 @@ def test_list_capabilities_dedupes_trusted_duplicate_ids(tmp_path: Path) -> None
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", "skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(tmp_path)],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_list_capabilities(tmp_path, monkeypatch, capsys)
     assert [entry["id"] for entry in payload["trusted_skills"]] == ["demo"]
