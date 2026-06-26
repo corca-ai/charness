@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from scripts.control_plane_lib import load_capabilities
+from scripts.doctor import inspect_manifest
+from scripts.sync_support import sync_one
 from scripts.validate_integrations import (
     ValidationError,
     validate_access_mode_order,
@@ -197,34 +200,23 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
         validate_config_layers(read_manifest(manifest_path), manifest_path)
 
 
-def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path) -> None:
+def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
     plugin_root = tmp_path / "plugin"
-    env = os.environ.copy()
-    env["CHARNESS_CACHE_HOME"] = str(tmp_path / "cache-home")
-    sync = run_script(
-        "scripts/sync_support.py",
-        "--repo-root",
-        str(repo),
-        "--plugin-root",
-        str(plugin_root),
-        "--execute",
-        "--json",
-        env=env,
-    )
-    assert sync.returncode == 0, sync.stderr
+    monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache-home"))
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
+    manifest = load_capabilities(repo)[0]
+    sync_one(repo, manifest, execute=True, upstream_checkouts={}, plugin_root=plugin_root)
     generated_skill_root = plugin_root / "support" / "demo-tool-wrapper"
     shutil.rmtree(generated_skill_root)
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
-    assert doctor.returncode == 1, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
-    assert doctor_payload[0]["doctor_status"] == "support-missing"
-    assert doctor_payload[0]["support_sync"]["status"] == "missing"
-    assert doctor_payload[0]["support_sync"]["missing_paths"] == ["support/demo-tool-wrapper"]
-    assert doctor_payload[0]["support_sync"]["action_required"] is True
-    assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
-    assert "Previously materialized support skill paths are missing." in doctor_payload[0]["next_steps"][0]
+    doctor_payload = inspect_manifest(repo, manifest, write=True, skip_release_probe=False)
+    assert doctor_payload["doctor_status"] == "support-missing"
+    assert doctor_payload["support_sync"]["status"] == "missing"
+    assert doctor_payload["support_sync"]["missing_paths"] == ["support/demo-tool-wrapper"]
+    assert doctor_payload["support_sync"]["action_required"] is True
+    assert doctor_payload["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
+    assert "Previously materialized support skill paths are missing." in doctor_payload["next_steps"][0]
 
 
 def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp_path: Path) -> None:
@@ -262,8 +254,9 @@ def test_defuddle_manifest_missing_binary_is_advisory() -> None:
     assert "degraded" in manifest["access_modes"]
 
 
-def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path) -> None:
+def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["checks"].pop("healthcheck")
@@ -272,31 +265,28 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path) -> None:
     validate = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert validate.returncode == 0, validate.stderr
 
-    env = os.environ.copy()
-    env["PATH"] = f"{repo / 'bin'}:{env.get('PATH', '')}"
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe", env=env)
-    assert doctor.returncode == 0, doctor.stderr
-    payload = json.loads(doctor.stdout)[0]
+    payload = inspect_manifest(repo, load_capabilities(repo)[0], write=False, skip_release_probe=True)
     assert payload["doctor_status"] == "ok"
     assert payload["healthcheck"]["ok"] is True
     assert payload["healthcheck"]["status"] == "not-configured"
     assert payload["healthcheck"]["skipped"] is True
 
+    env = os.environ.copy()
+    env["PATH"] = f"{repo / 'bin'}:{env.get('PATH', '')}"
     human_doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--skip-release-probe", env=env)
     assert human_doctor.returncode == 0, human_doctor.stderr
     assert "demo-tool: ok" in human_doctor.stdout
     assert "healthcheck=not-configured" in human_doctor.stdout
 
 
-def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:
+def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     (repo / ".demo-ready").unlink()
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
-    assert doctor.returncode == 1, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
-    assert doctor_payload[0]["doctor_status"] == "not-ready"
-    payload = doctor_payload[0]["readiness"]
+    doctor_payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=False)
+    assert doctor_payload["doctor_status"] == "not-ready"
+    payload = doctor_payload["readiness"]
     assert payload["ok"] is False
     assert payload["failed_checks"] == ["demo-ready-file"]
 
@@ -334,37 +324,27 @@ def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path
     assert demo_doctor["doctor_disposition"] == "blocking-failure"
 
 
-def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(tmp_path: Path) -> None:
+def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["homepage"] = "https://github.com/example/demo-tool"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    env = os.environ.copy()
-    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(tmp_path / "missing-release-fixtures.json")
+    monkeypatch.setenv("CHARNESS_RELEASE_PROBE_FIXTURES", str(tmp_path / "missing-release-fixtures.json"))
 
-    doctor = run_script(
-        "scripts/doctor.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-        "--write-locks",
-        "--skip-release-probe",
-        env=env,
-    )
-
-    assert doctor.returncode == 0, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
-    assert doctor_payload[0]["doctor_status"] == "ok"
-    assert doctor_payload[0]["readiness"]["ok"] is True
-    assert "release" not in doctor_payload[0]
+    doctor_payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=True)
+    assert doctor_payload["doctor_status"] == "ok"
+    assert doctor_payload["readiness"]["ok"] is True
+    assert "release" not in doctor_payload
     lock_payload = json.loads((repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8"))
     assert lock_payload["doctor"]["doctor_status"] == "ok"
     assert "release" not in lock_payload
 
 
-def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
+def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     support_dir = repo / "skills" / "support" / "gather-slack"
     locks_dir = repo / "integrations" / "locks"
     support_dir.mkdir(parents=True)
@@ -406,16 +386,14 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
-    assert doctor.returncode == 0, doctor.stderr
-    payload = json.loads(doctor.stdout)
-    assert payload[0]["tool_id"] == "gather-slack"
-    assert payload[0]["kind"] == "support_runtime"
-    assert payload[0]["support_state"] == "native-support"
-    assert payload[0]["support_discovery"]["status"] == "native"
-    assert payload[0]["support_discovery"]["support_skill_path"] == "skills/support/gather-slack/SKILL.md"
-    assert payload[0]["doctor_status"] == "ok"
-    assert payload[0]["access_modes"] == ["grant", "env", "degraded"]
+    payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=False)
+    assert payload["tool_id"] == "gather-slack"
+    assert payload["kind"] == "support_runtime"
+    assert payload["support_state"] == "native-support"
+    assert payload["support_discovery"]["status"] == "native"
+    assert payload["support_discovery"]["support_skill_path"] == "skills/support/gather-slack/SKILL.md"
+    assert payload["doctor_status"] == "ok"
+    assert payload["access_modes"] == ["grant", "env", "degraded"]
 
     lock_payload = json.loads((locks_dir / "gather-slack.json").read_text(encoding="utf-8"))
     assert lock_payload["manifest_path"] == "skills/support/gather-slack/capability.json"

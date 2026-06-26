@@ -275,6 +275,22 @@ None yet.
     passed; the target test call time was 0.54s, down from the 1.12s pre-change
     sample.
 
+### Slice 3 — Lower integration validation doctor checks in-process
+
+- Objective: Continue reducing standing nested-process fanout where a test
+  asserts Python payload contracts rather than CLI stdout/stderr behavior.
+- Finding: Several `tests/control_plane/test_integrations_validation.py`
+  doctor/support assertions spawned import-safe scripts even though the same
+  file keeps explicit CLI boundary coverage for human output and blocking
+  `charness tool doctor` behavior.
+- Change: Internal doctor/support cases now use `inspect_manifest`,
+  `sync_one`, and `load_capabilities` directly, while the human-output and
+  CLI-return-code tests remain subprocess boundary tests.
+- Verification:
+  - `python3 -m pytest -q tests/control_plane/test_integrations_validation.py --durations=25 --durations-min=0.01`
+    passed; file runtime was 7.15s in the post-change sample, with the converted
+    missing-support case down to 0.18s from 0.50s in the earlier sample.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
