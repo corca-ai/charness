@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .test_quality_artifact import cautilus_supports, run_script
 
@@ -13,10 +16,33 @@ requires_cautilus = pytest.mark.skipif(
     reason="cautilus with the `discover scenarios propose` surface is required for live chatbot proposal eval tests",
 )
 
+_RUN_EVALS = load_script_module(
+    "run_evals_for_test",
+    ROOT / "scripts" / "run_evals.py",
+)
+
+_VALIDATE_SCENARIOS = load_script_module(
+    "validate_cautilus_scenarios_for_test",
+    ROOT / "scripts" / "validate_cautilus_scenarios.py",
+)
+
+
+def _run_evals(*args: str):
+    return run_loaded_script_main(
+        "run_evals.py",
+        _RUN_EVALS,
+        *args,
+        cli_error_names=("EvalError", "ValidationError", "ExportError"),
+        cli_error_types=(_RUN_EVALS.EvalError, json.JSONDecodeError, shutil.Error),
+    )
+
+
+def _run_validate_scenarios(*args: str):
+    return run_loaded_script_main("validate_cautilus_scenarios.py", _VALIDATE_SCENARIOS, *args)
+
 
 def test_run_evals_supports_scenario_filter() -> None:
-    result = run_script(
-        "scripts/run_evals.py",
+    result = _run_evals(
         "--repo-root",
         str(ROOT),
         "--scenario-id", "skill-valid",
@@ -29,8 +55,7 @@ def test_run_evals_supports_scenario_filter() -> None:
 
 
 def test_run_evals_sequential_jobs_and_rejects_negative_jobs() -> None:
-    result = run_script(
-        "scripts/run_evals.py",
+    result = _run_evals(
         "--repo-root",
         str(ROOT),
         "--scenario-id",
@@ -43,7 +68,7 @@ def test_run_evals_sequential_jobs_and_rejects_negative_jobs() -> None:
     assert result.returncode == 0, result.stderr
     assert result.stdout.index("PASS skill-valid") < result.stdout.index("PASS doc-links-valid")
 
-    rejected = run_script("scripts/run_evals.py", "--repo-root", str(ROOT), "--jobs", "-1")
+    rejected = _run_evals("--repo-root", str(ROOT), "--jobs", "-1")
     assert rejected.returncode == 1
     assert "--jobs must be zero or a positive integer" in rejected.stderr
 
@@ -70,7 +95,7 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
 
 
 def test_validate_cautilus_scenarios_covers_eval_surface_wiring() -> None:
-    result = run_script("scripts/validate_cautilus_scenarios.py", "--repo-root", str(ROOT))
+    result = _run_validate_scenarios("--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
 
 

@@ -8,11 +8,21 @@ import sys
 from pathlib import Path
 
 from tests.repo_copy import REPO_COPY_IGNORE
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 GATHER_SCRIPTS = ROOT / "skills" / "public" / "gather" / "scripts"
 SPA_HTML = "<html><body><div id=\"root\"></div></body></html>"
+
+_ACQUIRE = load_script_module(
+    "acquire_public_url_for_cleanup_test",
+    WEB_FETCH_SCRIPTS / "acquire_public_url.py",
+)
+
+
+def _run_acquire(*args: str, env: dict[str, str] | None = None):
+    return run_loaded_script_main("acquire_public_url.py", _ACQUIRE, *args, env=env)
 
 
 def _make_logging_agent_browser(bin_dir: Path, log_path: Path, *, render_fails: bool = False) -> None:
@@ -49,19 +59,12 @@ def test_acquire_attempts_close_on_render_success(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(WEB_FETCH_SCRIPTS / "acquire_public_url.py"),
-            "--url", "https://example.com/app",
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = _run_acquire(
+        "--url", "https://example.com/app",
+        "--repo-root", str(ROOT),
+        "--direct-response-file", str(direct),
+        "--expect-text", "target proof",
+        "--browser-mode", "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -80,19 +83,12 @@ def test_acquire_attempts_close_on_render_failure(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(WEB_FETCH_SCRIPTS / "acquire_public_url.py"),
-            "--url", "https://example.com/app",
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = _run_acquire(
+        "--url", "https://example.com/app",
+        "--repo-root", str(ROOT),
+        "--direct-response-file", str(direct),
+        "--expect-text", "target proof",
+        "--browser-mode", "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -208,19 +204,12 @@ def test_acquire_public_url_degrades_when_agent_browser_close_fails(tmp_path: Pa
     direct.write_text("<html><body><div id=\"root\"></div></body></html>", encoding="utf-8")
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    result = subprocess.run(
-        [
-            sys.executable,
-            "skills/support/web-fetch/scripts/acquire_public_url.py",
-            "--url", "https://example.com/app",
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = _run_acquire(
+        "--url", "https://example.com/app",
+        "--repo-root", str(ROOT),
+        "--direct-response-file", str(direct),
+        "--expect-text", "target proof",
+        "--browser-mode", "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -250,20 +239,12 @@ def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) 
     direct.write_text(SPA_HTML, encoding="utf-8")
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    result = subprocess.run(
-        [
-            sys.executable,
-            "skills/support/web-fetch/scripts/acquire_public_url.py",
-            "--url", "https://example.com/app",
-            "--repo-root", str(repo),
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = _run_acquire(
+        "--url", "https://example.com/app",
+        "--repo-root", str(repo),
+        "--direct-response-file", str(direct),
+        "--expect-text", "target proof",
+        "--browser-mode", "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -299,20 +280,12 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "skills/support/web-fetch/scripts/acquire_public_url.py",
-            "--url", "https://example.com/app",
-            "--repo-root", str(repo),
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = _run_acquire(
+        "--url", "https://example.com/app",
+        "--repo-root", str(repo),
+        "--direct-response-file", str(direct),
+        "--expect-text", "target proof",
+        "--browser-mode", "auto",
         env=env,
     )
 

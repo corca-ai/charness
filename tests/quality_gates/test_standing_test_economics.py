@@ -5,12 +5,12 @@ import getpass
 import importlib.util
 import json
 import os
-import subprocess
-import sys
 from pathlib import Path
 from types import ModuleType
 
 import yaml
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
@@ -38,12 +38,16 @@ def _load_surface_marker_lib() -> ModuleType:
 
 
 def _load_inventory_cli() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("inventory_standing_test_economics_for_test", SCRIPT)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("inventory_standing_test_economics_for_test", SCRIPT)
+
+
+def _run_inventory_cli(*args: str, env: dict[str, str] | None = None):
+    return run_loaded_script_main(
+        "inventory_standing_test_economics.py",
+        _load_inventory_cli(),
+        *args,
+        env=env,
+    )
 
 
 def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -> None:
@@ -58,13 +62,8 @@ def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -
     for index in range(52):
         (tests / f"case{index}.test.ts").write_text("import { spawnSync } from 'node:child_process';\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
     assert payload["test_file_count"] == 52
@@ -90,13 +89,8 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
             encoding="utf-8",
         )
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
@@ -125,20 +119,10 @@ def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path:
             encoding="utf-8",
         )
 
-    json_result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    yaml_result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary-yaml"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    json_result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    yaml_result = _run_inventory_cli("--repo-root", str(repo), "--summary-yaml")
+    assert json_result.returncode == 0, json_result.stderr
+    assert yaml_result.returncode == 0, yaml_result.stderr
     payload = yaml.safe_load(yaml_result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
@@ -194,13 +178,8 @@ def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
     assert payload["nested_cli_file_count"] == 3
@@ -248,13 +227,8 @@ def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -
     mutant_tests.mkdir(parents=True)
     (mutant_tests / "test_generated.py").write_text("def test_generated():\n    assert True\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
     assert payload["test_file_count"] == 1
@@ -272,14 +246,8 @@ def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -
     (top_test / "payload.bin").write_bytes(b"x" * 13)
 
     env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     footprint = payload["pytest_temp_footprint"]
 
@@ -312,14 +280,8 @@ def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path
     (nested / "nested.bin").write_bytes(b"x" * 13)
 
     env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    assert result.returncode == 0, result.stderr
     footprint = json.loads(result.stdout)["pytest_temp_footprint"]
 
     assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
@@ -337,24 +299,14 @@ def test_standing_test_economics_emits_interpretation_self_declaration(tmp_path:
     (repo / "tests").mkdir()
     (repo / "tests" / "test_real.py").write_text("def test_real():\n    assert True\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
     interpretation = json.loads(result.stdout)["interpretation"]
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)
 
-    plain = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    plain = _run_inventory_cli("--repo-root", str(repo))
+    assert plain.returncode == 0, plain.stderr
     assert "INTERPRETATION" in plain.stdout
     assert "Consumer must answer first" in plain.stdout
     assert "intentional" in plain.stdout  # the load-bearing blind spot

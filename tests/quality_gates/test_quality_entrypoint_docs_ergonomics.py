@@ -112,6 +112,32 @@ def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_pa
     assert payload["review_prompts"]
 
 
+def test_inventory_entrypoint_docs_ergonomics_summary_skips_non_dict_rows() -> None:
+    payload = _inventory_entrypoint_docs.summarize_payload(
+        {
+            "repo_root": "/tmp/repo",
+            "max_core_lines": 20,
+            "documents": [
+                "not-a-document-row",
+                {
+                    "doc_path": "AGENTS.md",
+                    "core_nonempty_lines": 30,
+                    "internal_doc_link_count": 0,
+                    "inbound_internal_doc_link_count": 0,
+                    "inline_code_count": 0,
+                    "code_fence_count": 0,
+                    "numbered_procedure_count": 0,
+                    "heuristics": ["long_entrypoint"],
+                },
+            ],
+        }
+    )
+
+    assert payload["document_count"] == 2
+    assert payload["documents_with_heuristics_count"] == 1
+    assert payload["documents_with_heuristics_sample"][0]["doc_path"] == "AGENTS.md"
+
+
 def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

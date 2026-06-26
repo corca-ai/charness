@@ -181,6 +181,32 @@ def test_ignores_script_path_passed_as_data_argument_to_spawned_command(tmp_path
     assert cand["internal_boundary_targets"] == ["scripts/run_slice_closeout.py"]
 
 
+def test_finds_spawn_command_passed_by_keyword_argument(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file(
+            "tests/test_foo.py",
+            "\n".join(
+                [
+                    "import subprocess",
+                    "def test_x():",
+                    "    result = subprocess.run(args=['python3', 'scripts/foo.py'], capture_output=True)",
+                    "    assert result.returncode == 0",
+                    "    import json; assert json.loads(result.stdout or '{}') == {}",
+                    "",
+                ]
+            ),
+        )
+        .build(tmp_path)
+    )
+
+    out = LIB.find_boundary_bypass_candidates(repo)
+
+    assert out["summary"]["candidate_count"] == 1
+    assert out["candidates"][0]["clean_inprocess_targets"] == ["scripts/foo.py"]
+
+
 def test_read_text_alone_is_not_behavior_assertion(tmp_path: Path) -> None:
     repo = (
         Repo()

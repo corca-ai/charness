@@ -1,24 +1,30 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from types import SimpleNamespace
 
-from .support import ROOT, run_script
+from tests.script_main import load_script_module, run_loaded_script_main
 
-_PLANNER_SPEC = importlib.util.spec_from_file_location(
-    "plan_release_run",
+from .support import ROOT
+
+_PLANNER = load_script_module(
+    "plan_release_run_for_release_real_host_test",
     ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run.py",
 )
-assert _PLANNER_SPEC is not None and _PLANNER_SPEC.loader is not None
-_PLANNER = importlib.util.module_from_spec(_PLANNER_SPEC)
-_PLANNER_SPEC.loader.exec_module(_PLANNER)
+
+_REAL_HOST = load_script_module(
+    "check_real_host_proof_for_test",
+    ROOT / "skills" / "public" / "release" / "scripts" / "check_real_host_proof.py",
+)
+
+
+def _run_real_host_proof(*args: str):
+    return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, *args)
 
 
 def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
-    result = run_script(
-        "skills/public/release/scripts/check_real_host_proof.py",
+    result = _run_real_host_proof(
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -35,8 +41,7 @@ def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
 
 
 def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
-    result = run_script(
-        "skills/public/release/scripts/check_real_host_proof.py",
+    result = _run_real_host_proof(
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -49,8 +54,7 @@ def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
 
 
 def test_release_real_host_proof_clean_changeset_does_not_trigger() -> None:
-    result = run_script(
-        "skills/public/release/scripts/check_real_host_proof.py",
+    result = _run_real_host_proof(
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -105,8 +109,7 @@ def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/release/scripts/check_real_host_proof.py",
+    result = _run_real_host_proof(
         "--repo-root",
         str(repo),
         "--paths",
