@@ -280,36 +280,33 @@ def test_markdown_preview_marks_slow_glow_as_backend_error(tmp_path: Path, monke
     assert "timed out after 0.1s" in artifact_text
 
 
-def test_markdown_preview_glow_backend_check_exit_codes(tmp_path: Path) -> None:
-    script = ROOT / "skills" / "support" / "markdown-preview" / "scripts" / "check_glow_backend.py"
+def test_markdown_preview_glow_backend_check_exit_codes(tmp_path: Path, monkeypatch, capsys) -> None:
+    mod = _load_check_glow_backend()
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     _write_fake_glow(fake_bin)
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
+    monkeypatch.setenv("PATH", env["PATH"])
 
-    ok = subprocess.run([sys.executable, str(script)], cwd=ROOT, check=False, capture_output=True, text=True, env=env)
-
-    assert ok.returncode == 0
-    assert json.loads(ok.stdout)["status"] == "healthy"
+    assert mod.main() == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "healthy"
 
     _write_blank_fake_glow(fake_bin)
-    bad = subprocess.run([sys.executable, str(script)], cwd=ROOT, check=False, capture_output=True, text=True, env=env)
 
-    assert bad.returncode == 1
-    assert json.loads(bad.stdout)["status"] == "backend-error"
+    assert mod.main() == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "backend-error"
 
     _write_slow_fake_glow(fake_bin)
-    env["CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS"] = "0.1"
-    slow = subprocess.run([sys.executable, str(script)], cwd=ROOT, check=False, capture_output=True, text=True, env=env)
+    monkeypatch.setenv("CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS", "0.1")
 
-    assert slow.returncode == 1
-    assert json.loads(slow.stdout)["status"] == "backend-error"
+    assert mod.main() == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "backend-error"
 
 
 # --- #260 score-path survivors in check_glow_backend -------------------------
 #
-# The subprocess exit-code test above is whitespace/encoding-insensitive
+# The exit-code test above is whitespace/encoding-insensitive
 # (json.loads) and only ever sees "healthy"/"backend-error" statuses, so the
 # ensure_ascii / indent / comparison-operator mutants in main() and the `or`
 # branch in _load_render_module survive. These in-process tests pin them by

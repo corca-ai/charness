@@ -515,6 +515,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Bootstrap suites should keep write commands as subprocesses and move only read-only follow-up probes in-process.
 - Metrics: quality resolve_adapter subprocess calls in test_quality_bootstrap.py: base 6, current 1.
 
+### Slice 27: Markdown preview backend-check subprocess fanout
+
+- Objective: Reduce repeated check_glow_backend.py subprocess launches while preserving markdown-preview command proof.
+- Why this approach: The backend checker main() is a thin status-to-exit-code wrapper; full markdown-preview render CLI proof remains in the same file.
+- Commits:
+- What changed: Converted healthy, blank-output, and timeout backend checker cases to in-process main() calls using pytest monkeypatch for PATH and timeout environment.
+- Alternatives rejected: Kept broader markdown-preview command smokes and backend renderer subprocess behavior.
+- Targeted verification: ruff passed; focused pytest with durations: 11 passed in 3.66s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; backend-check subprocess launches dropped 3 to 0; test call duration dropped 0.40s to 0.23s in local samples.
+- Test duplication pressure: No tests added; one three-case exit-code test switched execution layer. File-level candidate count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-markdown-preview-backend-check-runtime.md; low-risk same-agent critique recorded because broader markdown-preview CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Thin wrapper exit-code tests can run in-process when a neighboring full CLI smoke remains.
+- Metrics: check_glow_backend.py subprocess launches in test_markdown_preview_support.py: base 3, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
