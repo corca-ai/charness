@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.56.4` (tag `v0.56.4`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -70,7 +70,7 @@ Advanced `charness` toward release `0.56.4` (tag `v0.56.4`) through the repo-own
   - `skills/support/web-fetch/scripts/route_public_fetch.py`
   - `skills/support/web-fetch/scripts/route_public_fetch_routes.py`
   - `skills/support/web-fetch/scripts/twitter_exact_source.py`
-- Evaluated changed paths: 173.
+- Evaluated changed paths: 178.
   - `.agents/release-adapter.yaml`
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-06-26-082426-packet.json`
@@ -89,9 +89,9 @@ Advanced `charness` toward release `0.56.4` (tag `v0.56.4`) through the repo-own
   - `charness-artifacts/quality/dup-ratchet-baseline.json`
   - `charness-artifacts/quality/dup-review.json`
   - `charness-artifacts/quality/nose-baseline.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/release/v0.56.4-notes.md`
-  - ... 153 more
+  - ... 158 more
 
 ## Real-Host Verification
 
@@ -115,7 +115,10 @@ Advanced `charness` toward release `0.56.4` (tag `v0.56.4`) through the repo-own
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -123,11 +126,14 @@ Advanced `charness` toward release `0.56.4` (tag `v0.56.4`) through the repo-own
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.103s
+- `quality_command`: 69.324s
+- `fresh_checkout_probes_initial`: 2.709s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`

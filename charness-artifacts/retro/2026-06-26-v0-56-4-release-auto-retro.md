@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/public/release/adapter.example.yaml`, `skills/public/release/references/adapter-contract.md`, `skills/public/release/scripts/check_requested_review_gate.py`, `skills/public/release/scripts/publish_release_artifact.py`, `skills/public/release/scripts/publish_release_artifact_sections.py`, `skills/public/release/scripts/publish_release_cli.py`, `skills/public/release/scripts/publish_release_execute.py`, `skills/public/release/scripts/publish_release_post_create.py`, `skills/public/release/scripts/publish_release_resume.py`, `skills/public/release/scripts/publish_release_runtime.py`, `skills/public/release/scripts/resolve_adapter.py`, `skills/support/web-fetch/scripts/route_public_fetch.py`, `skills/support/web-fetch/scripts/route_public_fetch_routes.py`, `skills/support/web-fetch/scripts/twitter_exact_source.py`.
-- Evaluated changed paths: 173.
+- Evaluated changed paths: 178.
 
 ## Waste
 
