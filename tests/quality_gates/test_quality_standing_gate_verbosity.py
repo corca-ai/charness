@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 from .support import ROOT
@@ -235,3 +236,36 @@ def test_inventory_standing_gate_verbosity_flags_suppressed_quiet_pytest_detail(
         and "failing test/case" in finding["suggestion"]
         for finding in payload["findings"]
     )
+
+
+def test_inventory_standing_gate_verbosity_cli_summary_omits_full_surfaces(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    hook_path = repo / ".githooks" / "pre-push"
+    hook_path.parent.mkdir(parents=True)
+    hook_path.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "pytest -q --tb=no >/dev/null",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["inventory_standing_gate_verbosity.py", "--repo-root", str(repo), "--summary"],
+    )
+
+    assert _MODULE.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert "surfaces" not in payload
+    assert "findings" not in payload
+    assert payload["surface_count"] == 1
+    assert payload["axes"]["failure_detail"]["status"] == "weak"
+    assert any(finding["type"] == "quiet_failure_detail" for finding in payload["findings_sample"])

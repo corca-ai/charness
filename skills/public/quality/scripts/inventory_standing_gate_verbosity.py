@@ -19,20 +19,23 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _standing_gate_verbosity_lib_module = SKILL_RUNTIME.load_local_skill_module(__file__, "standing_gate_verbosity_lib")
 inventory = _standing_gate_verbosity_lib_module.inventory
+summarize_payload = _standing_gate_verbosity_lib_module.summarize_payload
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-gate verbosity inventory")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON triage output")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     payload = inventory(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if args.json or args.summary:
+        output_payload = summarize_payload(payload) if args.summary else payload
+        print(json.dumps(output_payload, ensure_ascii=False, indent=2))
     else:
         for name, axis in payload["axes"].items():
             print(f"{name}: {axis['status']}")

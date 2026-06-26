@@ -445,6 +445,21 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Human output regressions often have a pure formatter underneath; cover that in standing tests and leave one E2E for wiring.
 - Metrics: Coverage proxy: missing standing-sentinel file count reduced from 3 to 2; standing test count increased from 118 to 119.
 
+### Slice 22: Compact standing-gate verbosity inventory output
+
+- Objective: Reduce token overhead and operator error for standing-gate verbosity review.
+- Why this approach: The script already produced useful full JSON, but lacked the `--summary` mode now standard across quality inventories. The full payload includes surfaces/snippets; first-pass review usually needs only axis statuses and a bounded finding sample.
+- Commits:
+- What changed: Added `summarize_payload()` to standing-gate verbosity lib, wired `--summary` into root and plugin-mirror CLIs, updated quality inventory dispatch to use summary-first, and added an in-process CLI summary test.
+- Alternatives rejected: Did not remove default text output or full `--json`; detailed verbosity review still needs full surface/snippet attribution.
+- Targeted verification: pytest: `tests/quality_gates/test_quality_standing_gate_verbosity.py` and `test_quality_skill_docs.py` `30 passed` in 0.39s; root/plugin mirror scripts/libs/docs compare equal; summary JSON validates with `python3 -m json.tool`; ruff passed; skill-surface preflight passed; public-skill dogfood suggestion inspected; `plan_cautilus_proof.py` reported `next_action: none`; `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review` passed.
+- Test duplication pressure: Added one focused CLI summary contract test without subprocess.
+- Critique: Same-agent slice critique: summary is only triage; it intentionally omits full snippets and tells the reviewer to use `--json` for attribution.
+- Off-goal findings: `measure_startup_probes.py` has no `--summary`, but its full JSON is currently only 660 bytes, so adding summary there is low leverage.
+- Lessons carried forward: Summary-first inventory dispatch should be mechanically consistent so agents do not waste attempts on unsupported flags.
+- Metrics: Token/output proxy: standing-gate verbosity full JSON was 7870 bytes and summary JSON was 2993 bytes, a 62.0% reduction.
+- Public-skill/Cautilus disposition: `quality` dogfood suggestion was reviewed; the existing `docs/public-skill-dogfood.json` contract remains the maintained consumer contract for this summary-first dispatch change. Cautilus live proof was skipped because planner `next_action` was `none` and deterministic validation owned closeout.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

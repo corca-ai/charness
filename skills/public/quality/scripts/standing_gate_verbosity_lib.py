@@ -177,3 +177,31 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             findings.append(finding)
     surface_rows = [{"path": surface["path"], "surface_type": surface["surface_type"], "command_count": len(surface["commands"]), "metadata": surface["metadata"]} for surface in surfaces]
     return {"repo_root": str(repo_root), "surfaces": surface_rows, "axes": axes, "findings": findings}
+
+
+def summarize_payload(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    findings_sample = [
+        {
+            "axis": finding.get("axis"),
+            "type": finding.get("type"),
+            "path": finding.get("path"),
+            "tool": finding.get("tool"),
+            "state": finding.get("state"),
+            "suggestion": finding.get("suggestion"),
+        }
+        for finding in payload["findings"][:sample_limit]
+    ]
+    return {
+        "repo_root": payload["repo_root"],
+        "summary_note": "summary is triage output; use --json for full surface, snippet, and finding attribution",
+        "surface_count": len(payload["surfaces"]),
+        "finding_count": len(payload["findings"]),
+        "axes": {
+            name: {
+                "status": axis["status"],
+                "finding_count": len(axis["findings"]),
+            }
+            for name, axis in payload["axes"].items()
+        },
+        "findings_sample": findings_sample,
+    }

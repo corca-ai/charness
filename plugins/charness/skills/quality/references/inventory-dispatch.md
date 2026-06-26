@@ -75,7 +75,7 @@ does not return an empty scan.
 ## Runtime And Test Economics
 
 - standing gate verbosity:
-  `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
+  `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py --summary`
 - standing test economics:
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py --summary`
 - executable-spec runtime and dup economics:
