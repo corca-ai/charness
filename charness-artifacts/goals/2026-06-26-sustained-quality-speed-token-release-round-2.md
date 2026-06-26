@@ -376,6 +376,25 @@ None yet.
   - `python3 -m py_compile tests/test_web_fetch_support.py tests/test_web_fetch_route_and_classify.py && ruff check tests/test_web_fetch_support.py tests/test_web_fetch_route_and_classify.py`
     passed.
 
+### Slice 8 — Split quality artifact report-all tests
+
+- Objective: Remove another near-limit test-file warning with a cohesive split.
+- Finding: `tests/test_quality_artifact.py` was at 739/800 code lines; the
+  `--report-all` validator behavior tests were independent from the broader
+  artifact-shape test body.
+- Change: Moved the report-all/default-fail-fast tests into
+  `tests/test_quality_artifact_report_all.py` with minimal local fixtures.
+  Added a boundary-bypass exemption because these tests intentionally prove the
+  validator CLI's fail-fast vs `--report-all` stderr and exit-code contract.
+- Verification:
+  - `python3 -m pytest -q tests/test_quality_artifact_report_all.py tests/test_quality_artifact.py`
+    passed, 24 tests.
+  - `python3 scripts/check_python_lengths.py --repo-root . --headroom --paths tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py`
+    reported `test_quality_artifact.py` at 671/800 code lines.
+  - `python3 -m py_compile tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py && ruff check tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py`
+    passed.
+  - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
