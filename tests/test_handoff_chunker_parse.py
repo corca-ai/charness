@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import shutil
 import subprocess
@@ -9,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime_bootstrap import import_repo_module
 from tests.repo_copy import REPO_COPY_IGNORE
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -28,6 +30,10 @@ PARSER_SCRIPT = (
     / "handoff"
     / "scripts"
     / "parse_handoff_entries.py"
+)
+_propose_merges = import_repo_module(
+    REPO_ROOT / "skills" / "public" / "handoff" / "scripts" / "propose_merges.py",
+    "skills.public.handoff.scripts.propose_merges",
 )
 
 
@@ -363,20 +369,13 @@ def test_parser_cli_explicit_docs_handoff_filters_completed_goal(tmp_path):
     assert [entry["index"] for entry in payload["entries"]] == [3]
 
 
-def test_fixture_handoff_pipeline_preserves_issue_linked_candidates(entries):
+def test_fixture_handoff_pipeline_preserves_issue_linked_candidates(entries, monkeypatch, capsys):
     parser_payload = {"ok": True, "entries": [entry.to_dict() for entry in entries]}
-    propose = subprocess.run(
-        [
-            "python3",
-            str(REPO_ROOT / "skills/public/handoff/scripts/propose_merges.py"),
-        ],
-        input=json.dumps(parser_payload),
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert propose.returncode == 0, propose.stderr
-    payload = json.loads(propose.stdout)
+    monkeypatch.setattr(sys, "argv", ["propose_merges.py"])
+    monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(parser_payload)))
+
+    assert _propose_merges.main() == 0
+    payload = json.loads(capsys.readouterr().out)
     candidates = payload["standalone"] + payload["merged"]
     assert candidates
     referenced = [

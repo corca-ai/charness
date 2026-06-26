@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+ROOT = Path(__file__).resolve().parents[2]
+_refresh_recent_lessons = import_repo_module(
+    ROOT / "skills" / "public" / "retro" / "scripts" / "refresh_recent_lessons.py",
+    "skills.public.retro.scripts.refresh_recent_lessons",
+)
 
 
-def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> None:
+def run_refresh(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["refresh_recent_lessons.py", *args])
+    returncode = _refresh_recent_lessons.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
+
+
+def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -55,7 +70,7 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/retro/scripts/refresh_recent_lessons.py", "--repo-root", str(repo))
+    result = run_refresh(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
@@ -71,7 +86,7 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
     assert (output_dir / "lesson-selection-index.json").is_file()
 
 
-def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
+def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -109,8 +124,9 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/refresh_recent_lessons.py",
+    result = run_refresh(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--source",

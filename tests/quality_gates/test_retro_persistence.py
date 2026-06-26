@@ -1,12 +1,29 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+ROOT = Path(__file__).resolve().parents[2]
+_persist_retro_artifact = import_repo_module(
+    ROOT / "skills" / "public" / "retro" / "scripts" / "persist_retro_artifact.py",
+    "skills.public.retro.scripts.persist_retro_artifact",
+)
 
 
-def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_path: Path) -> None:
+def run_persist(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["persist_retro_artifact.py", *args])
+    returncode = _persist_retro_artifact.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
+
+
+def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -55,8 +72,9 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -82,7 +100,9 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
     assert (output_dir / "lesson-selection-index.json").is_file()
 
 
-def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: Path) -> None:
+def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -105,8 +125,9 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: 
     markdown_file = repo / "summary.md"
     markdown_file.write_text("# Recent Retro Lessons\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -139,7 +160,9 @@ def _write_default_adapter(repo: Path) -> None:
     )
 
 
-def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(tmp_path: Path) -> None:
+def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -167,8 +190,9 @@ def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(tm
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -186,7 +210,9 @@ def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(tm
     assert "lacks .md" in result.stderr
 
 
-def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(tmp_path: Path) -> None:
+def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -205,8 +231,9 @@ def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -226,6 +253,8 @@ def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(tmp_
 
 def test_persist_retro_artifact_emits_t_events_lesson_cited_when_adapter_present(
     tmp_path: Path,
+    monkeypatch,
+    capsys,
 ) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
@@ -268,8 +297,9 @@ def test_persist_retro_artifact_emits_t_events_lesson_cited_when_adapter_present
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -296,7 +326,9 @@ def test_persist_retro_artifact_emits_t_events_lesson_cited_when_adapter_present
     assert all(row["citing_skill"] == "retro" for row in rows)
 
 
-def test_persist_retro_artifact_t_events_emit_silent_without_adapter(tmp_path: Path) -> None:
+def test_persist_retro_artifact_t_events_emit_silent_without_adapter(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -323,8 +355,9 @@ def test_persist_retro_artifact_t_events_emit_silent_without_adapter(tmp_path: P
         + "\n",
         encoding="utf-8",
     )
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
@@ -340,7 +373,9 @@ def test_persist_retro_artifact_t_events_emit_silent_without_adapter(tmp_path: P
     assert not (repo / ".charness/t-events").exists()
 
 
-def test_persist_retro_artifact_force_empty_summary_opts_in(tmp_path: Path) -> None:
+def test_persist_retro_artifact_force_empty_summary_opts_in(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
@@ -359,8 +394,9 @@ def test_persist_retro_artifact_force_empty_summary_opts_in(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_persist(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--artifact-name",
