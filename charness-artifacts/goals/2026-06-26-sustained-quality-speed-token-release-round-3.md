@@ -1004,14 +1004,16 @@ None yet.
 
 ## Final Verification
 
+Host metric window: started_at=2026-06-26T12:02:39Z completed_at=2026-06-26T14:08:45Z codex_session_file=/home/hwidong/.codex/history.jsonl
+
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md
+Host log probe: charness-artifacts/probe/2026-06-26-sustained-quality-speed-token-release-round-3-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-26-sustained-quality-speed-token-release-round-3-disposition.md
 
 ## User Verification Instructions
 
@@ -1021,5 +1023,5 @@ is desired.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: none — all surfaced improvements were either applied in this goal or explicitly documented as accepted process-boundary risk
+Structural follow-up: applied: tests/script_main.py centralizes the repeated loaded-script runner pattern and the remaining boundary candidates are intentionally process-backed

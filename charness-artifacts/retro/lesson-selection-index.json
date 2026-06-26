@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-26",
-  "source_artifact_count": 264,
-  "candidate_count": 1240,
+  "source_artifact_count": 265,
+  "candidate_count": 1248,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -745,6 +745,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3b8269f7bdd1",
+      "kind": "current_focus",
+      "lesson": "Three-hour quality continuation for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release-round-3.md`.",
+      "normalized_key": "three hour quality continuation for charness artifacts goals 2026 06 26 sustained quality speed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1979146887de",
       "kind": "current_focus",
       "lesson": "Three-hour quality pass across bug fixes, test speed, script execution speed, token efficiency, closeout proof, and final release preparation.",
@@ -785,50 +805,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f474b80def00",
+      "kind": "next_improvement",
+      "lesson": "accepted-risk: did not convert Cautilus, web-fetch, release-host, or committed-packaging process boundaries because their remaining subprocesses are the behavior being validated or are safer to keep for release proof.",
+      "normalized_key": "accepted risk did not convert cautilus web fetch release host or committed packaging process",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:849123e069a6",
       "kind": "next_improvement",
       "lesson": "applied: added focused fallback tests for timeout/default/error branches and verified changed-line mutation coverage with a fresh coverage fingerprint.",
       "normalized_key": "applied added focused fallback tests for timeout default error branches and verified changed line",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
-          "date": "2026-06-26",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1c42f91bc394",
-      "kind": "next_improvement",
-      "lesson": "applied: added range-aware release critique and concise v0.56.3 notes before publish.",
-      "normalized_key": "applied added range aware release critique and concise v0 56 3 notes before publish",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
-          "date": "2026-06-26",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2c31eff50719",
-      "kind": "next_improvement",
-      "lesson": "applied: recorded a goal metric window before the host log probe so closeout metrics are scoped to this goal window.",
-      "normalized_key": "applied recorded a goal metric window before the host log probe so closeout metrics",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
       "latest_source_date": "2026-06-26",
@@ -1577,6 +1577,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3b8269f7bdd1",
+      "kind": "current_focus",
+      "lesson": "Three-hour quality continuation for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release-round-3.md`.",
+      "normalized_key": "three hour quality continuation for charness artifacts goals 2026 06 26 sustained quality speed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1979146887de",
       "kind": "current_focus",
       "lesson": "Three-hour quality pass across bug fixes, test speed, script execution speed, token efficiency, closeout proof, and final release preparation.",
@@ -1611,6 +1631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f474b80def00",
+      "kind": "next_improvement",
+      "lesson": "accepted-risk: did not convert Cautilus, web-fetch, release-host, or committed-packaging process boundaries because their remaining subprocesses are the behavior being validated or are safer to keep for release proof.",
+      "normalized_key": "accepted risk did not convert cautilus web fetch release host or committed packaging process",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
           "date": "2026-06-26",
           "section": "Next Improvements"
         }
@@ -1657,6 +1697,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:45163de7df58",
+      "kind": "next_improvement",
+      "lesson": "applied: extracted `tests.script_main.run_loaded_script_main()` and reused it across control-plane, quality-gate, scaffold, packaging, setup, and agent browser tests.",
+      "normalized_key": "applied extracted tests script main run loaded script main and reused it across control",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7b894e0cecaf",
+      "kind": "next_improvement",
+      "lesson": "applied: preserved generated/exported command subprocess tests while converting local setup/validator/export smokes in process.",
+      "normalized_key": "applied preserved generated exported command subprocess tests while converting local setup validator export smokes",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:2c31eff50719",
       "kind": "next_improvement",
       "lesson": "applied: recorded a goal metric window before the host log probe so closeout metrics are scoped to this goal window.",
@@ -1671,6 +1751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:011fbe1b8424",
+      "kind": "next_improvement",
+      "lesson": "applied: recorded the host metric window and probe artifact before final closeout so host-cost claims stay scoped and honest.",
+      "normalized_key": "applied recorded the host metric window and probe artifact before final closeout so host",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
           "date": "2026-06-26",
           "section": "Next Improvements"
         }
@@ -1817,6 +1917,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:85f0818c6bc3",
+      "kind": "repeat_trap",
+      "lesson": "Boundary inventory improvements are useful but can incentivize mechanical conversion. Several remaining candidates were intentionally left because the process boundary is the behavior under test.",
+      "normalized_key": "boundary inventory improvements are useful but can incentivize mechanical conversion several remaining candidates were",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a6907c954fc8",
+      "kind": "repeat_trap",
+      "lesson": "Codex host log probing could bind to `~/.codex/history.jsonl`, but that file did not expose goal-window event records in the same way as the Claude project session JSONL. The probe artifact records this as measured evidence, not as a made-up cost total.",
+      "normalized_key": "codex host log probing could bind to codex history jsonl but that file did",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:be5eb5a0ce70",
       "kind": "repeat_trap",
       "lesson": "Host metrics were initially probed without a goal window, which would have reported whole-session pressure as goal-scoped pressure. Recording the metric window before the final probe fixed the attribution.",
@@ -1851,6 +1991,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5bf232fbee53",
+      "kind": "repeat_trap",
+      "lesson": "Many small subprocess-conversion slices still created commit and artifact churn. The shared runner reduced duplicate helper code, but it should have been extracted earlier in the round.",
+      "normalized_key": "many small subprocess conversion slices still created commit and artifact churn the shared runner",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md",
           "date": "2026-06-26",
           "section": "Waste"
         }
