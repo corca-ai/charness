@@ -357,6 +357,25 @@ None yet.
   - `python3 -m py_compile tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_goal_artifact_portability.py && ruff check tests/quality_gates/test_goal_artifact_lib.py tests/quality_gates/test_goal_artifact_portability.py`
     passed.
 
+### Slice 7 — Split web-fetch route/classify tests
+
+- Objective: Remove another near-limit test-file warning without changing
+  web-fetch behavior coverage.
+- Finding: `tests/test_web_fetch_support.py` was at 761/800 code lines, with a
+  cohesive route/classify/direct-helper cluster independent from the
+  acquire/gather integration tests.
+- Change: Moved route selection, response classification, and direct helper
+  branch tests into `tests/test_web_fetch_route_and_classify.py`; left
+  acquire/gather boundary tests in the original file.
+- Verification:
+  - `python3 -m pytest -q tests/test_web_fetch_route_and_classify.py tests/test_web_fetch_support.py --durations=20 --durations-min=0.01`
+    passed, 35 tests.
+  - `python3 scripts/check_python_lengths.py --repo-root . --headroom --paths tests/test_web_fetch_support.py tests/test_web_fetch_route_and_classify.py`
+    reported `test_web_fetch_support.py` at 530/800 code lines and the new
+    file at 250/800.
+  - `python3 -m py_compile tests/test_web_fetch_support.py tests/test_web_fetch_route_and_classify.py && ruff check tests/test_web_fetch_support.py tests/test_web_fetch_route_and_classify.py`
+    passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
