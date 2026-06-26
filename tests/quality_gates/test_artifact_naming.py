@@ -15,6 +15,7 @@ from scripts.artifact_naming_lib import (
     record_artifact_supported,
     slugify,
 )
+from scripts.resolve_artifact_path import payload_for as resolve_artifact_payload_for
 
 from .support import ROOT, run_script
 
@@ -50,22 +51,18 @@ def test_artifact_naming_defaults_to_latest_pointer_and_dated_slug_records() -> 
 
 
 def test_resolve_artifact_path_reports_record_and_current_paths() -> None:
-    result = run_script(
-        "scripts/resolve_artifact_path.py",
-        "--repo-root",
-        str(ROOT),
-        "--skill-id",
+    payload = resolve_artifact_payload_for(
+        ROOT,
         "gather",
-        "--slug",
         "Insane Search / Review!",
-        "--intent",
-        "record",
-        "--date",
-        "2026-04-15",
+        intent="record",
+        artifact_date=date(2026, 4, 15),
+        adapter={
+            "data": {"output_dir": "charness-artifacts/gather", "artifact_class": "history"},
+            "artifact_class": "history",
+        },
     )
 
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["slug"] == "insane-search-review"
     assert payload["artifact_class"] == "history"
     assert payload["artifact_path"] == "charness-artifacts/gather/latest.md"
@@ -79,20 +76,17 @@ def test_resolve_artifact_path_reports_record_and_current_paths() -> None:
 
 
 def test_handoff_current_path_remains_docs_handoff() -> None:
-    result = run_script(
-        "scripts/resolve_artifact_path.py",
-        "--repo-root",
-        str(ROOT),
-        "--skill-id",
+    payload = resolve_artifact_payload_for(
+        ROOT,
         "handoff",
-        "--slug",
         "handoff refresh",
-        "--date",
-        "2026-04-15",
+        artifact_date=date(2026, 4, 15),
+        adapter={
+            "data": {"output_dir": "docs", "artifact_class": "rolling"},
+            "artifact_class": "rolling",
+        },
     )
 
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["record_artifact_path"] is None
     assert payload["artifact_class"] == "rolling"
     assert payload["artifact_path"] == "docs/handoff.md"
@@ -376,7 +370,6 @@ def test_quality_resolver_reports_artifact_path_alias() -> None:
 
 def test_current_intent_resolves_symlinked_latest_to_write_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    write_minimal_resolver(repo, "quality", "charness-artifacts/quality")
     artifact_dir = repo / "charness-artifacts" / "quality"
     artifact_dir.mkdir(parents=True)
     target = artifact_dir / "history" / "current-quality.md"
@@ -384,20 +377,16 @@ def test_current_intent_resolves_symlinked_latest_to_write_target(tmp_path: Path
     target.write_text("# Quality Review\n", encoding="utf-8")
     (artifact_dir / "latest.md").symlink_to(Path("history") / "current-quality.md")
 
-    result = run_script(
-        "scripts/resolve_artifact_path.py",
-        "--repo-root",
-        str(repo),
-        "--skill-id",
+    payload = resolve_artifact_payload_for(
+        repo,
         "quality",
-        "--slug",
         "quality review",
-        "--intent",
-        "current",
+        adapter={
+            "data": {"output_dir": "charness-artifacts/quality", "artifact_class": "history"},
+            "artifact_class": "history",
+        },
     )
 
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["current_artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["current_pointer_is_symlink"] is True

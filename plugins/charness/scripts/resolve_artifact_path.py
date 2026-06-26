@@ -119,20 +119,27 @@ def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]
     ]
 
 
-def main() -> int:
-    args = parse_args()
-    repo_root = args.repo_root.resolve()
-    adapter = load_adapter(repo_root, args.skill_id)
+def payload_for(
+    repo_root: Path,
+    skill_id: str,
+    slug_text: str,
+    *,
+    intent: str = "current",
+    artifact_date: date | None = None,
+    adapter: dict[str, object] | None = None,
+) -> dict[str, object]:
+    repo_root = repo_root.resolve()
+    adapter = adapter or load_adapter(repo_root, skill_id)
     data = adapter.get("data", {})
     if not isinstance(data, dict) or not isinstance(data.get("output_dir"), str):
         raise SystemExit("adapter data must include output_dir")
-    artifact_date = date.fromisoformat(args.date) if args.date else date.today()
-    slug = slugify(args.slug)
+    artifact_date = artifact_date or date.today()
+    slug = slugify(slug_text)
     record_name = dated_artifact_filename(slug, artifact_date=artifact_date)
     output_dir = Path(data["output_dir"])
     artifact_filename = adapter.get("artifact_filename")
     current_filename = (
-        artifact_filename if isinstance(artifact_filename, str) else current_artifact_filename(args.skill_id)
+        artifact_filename if isinstance(artifact_filename, str) else current_artifact_filename(skill_id)
     )
     current_path = output_dir / current_filename
     try:
@@ -143,11 +150,11 @@ def main() -> int:
     record_path = output_dir / record_name if records_supported else None
     absolute_current_path = repo_root / current_path
     pointer_state = _current_pointer_state(repo_root, absolute_current_path)
-    if args.intent == "record" and record_path is not None:
+    if intent == "record" and record_path is not None:
         write_path = str(record_path)
         write_role = "durable_record"
         update_current_pointer_after_write = True
-        refresh_argv = _refresh_current_pointer_argv(args.skill_id, record_path)
+        refresh_argv = _refresh_current_pointer_argv(skill_id, record_path)
         refresh_command = shlex.join(refresh_argv)
     else:
         write_path = _current_write_path(repo_root, absolute_current_path, pointer_state)
@@ -156,11 +163,11 @@ def main() -> int:
         refresh_argv = None
         refresh_command = None
     payload = {
-        "skill_id": args.skill_id,
+        "skill_id": skill_id,
         "artifact_class": artifact_class,
         "slug": slug,
         "date": artifact_date.isoformat(),
-        "intent": args.intent,
+        "intent": intent,
         "artifact_path": str(current_path),
         "record_artifact_path": str(record_path) if record_path is not None else None,
         "record_artifact_supported": records_supported,
@@ -178,6 +185,19 @@ def main() -> int:
         },
     }
     payload.update(pointer_state)
+    return payload
+
+
+def main() -> int:
+    args = parse_args()
+    artifact_date = date.fromisoformat(args.date) if args.date else None
+    payload = payload_for(
+        args.repo_root,
+        args.skill_id,
+        args.slug,
+        intent=args.intent,
+        artifact_date=artifact_date,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

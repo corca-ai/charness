@@ -529,6 +529,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Thin wrapper exit-code tests can run in-process when a neighboring full CLI smoke remains.
 - Metrics: check_glow_backend.py subprocess launches in test_markdown_preview_support.py: base 3, current 0.
 
+### Slice 28: Artifact path payload subprocess fanout
+
+- Objective: Reduce repeated resolve_artifact_path.py command launches in artifact path calculation tests without weakening package-level command proof.
+- Why this approach: The script now has a reusable payload_for() function that main() delegates to, so pure payload assertions can call the same implementation in-process.
+- Commits:
+- What changed: Extracted payload construction from resolve_artifact_path.py and converted record-current, handoff-current, and symlinked-current tests to direct payload_for() calls with explicit adapter payloads.
+- Alternatives rejected: Kept exported resolver, invalid artifact class, and refresh-current-pointer subprocess tests as command/package boundary proof.
+- Targeted verification: ruff passed; focused artifact-naming pytest passed 18 tests in 4.19s; converted three-test sample passed with all call durations below 0.005s after previously showing 0.08s-0.10s calls; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; three duplicated command launches converted to the shared payload implementation. Ratchet counts unchanged because retained command smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-artifact-path-payload-runtime.md; low-risk same-agent critique recorded because exported/package command proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Extract script payload builders when tests need repeated pure assertions, but keep package/export command proof at the actual boundary.
+- Metrics: direct resolve_artifact_path.py launches in converted artifact-naming tests: base 3, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
