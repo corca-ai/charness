@@ -4,17 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Sequence
 from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import acquire_public_url_io  # noqa: E402
+import acquire_public_url_payloads  # noqa: E402
 import browser_fallback_stages  # noqa: E402
 import impersonated_fetch_stage  # noqa: E402
 import patchright_headless_stage  # noqa: E402
@@ -45,42 +45,15 @@ from acquisition_trace_lib import (  # noqa: E402
     disposition_for_attempts,
     has_stage,
     has_success,
-    payload,
     skip_attempt,
 )
 from route_public_fetch import route_for_url  # noqa: E402
 from text_attempts import attempt_from_text  # noqa: E402
-from url_reader import read_url  # noqa: E402
 
-
-def _read_direct(url: str, *, timeout: int, direct_response_file: Path | None) -> tuple[str, str | None]:
-    if direct_response_file is not None:
-        return direct_response_file.read_text(encoding="utf-8"), None
-    return read_url(
-        url,
-        timeout=timeout,
-        headers={
-            "User-Agent": "Mozilla/5.0 (compatible; charness-web-fetch/1.0)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
-    )
-
-
-def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | None]:
-    try:
-        completed = subprocess.run(
-            list(command),
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-    except Exception as exc:
-        return "", f"{type(exc).__name__}:{str(exc)[:200]}"
-    if completed.returncode != 0:
-        stderr = completed.stderr.strip() or completed.stdout.strip()
-        return completed.stdout, f"exit={completed.returncode}:{stderr[:200]}"
-    return completed.stdout, None
+_invalid_scheme_payload = acquire_public_url_payloads.invalid_scheme_payload
+_payload_for = acquire_public_url_payloads.payload_for
+_read_direct = acquire_public_url_io.read_direct
+_run_command = acquire_public_url_io.run_command
 
 
 def _positive_int(raw: str) -> int:
@@ -116,57 +89,6 @@ def _seeded_or_live_fetcher(args: argparse.Namespace):
         return _read_direct(endpoint_url, timeout=args.timeout, direct_response_file=None)
 
     return fetch
-
-
-def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
-    route = {
-        "input_url": args.url,
-        "normalized_host": parsed.netloc or parsed.path,
-        "route_id": "invalid-url-scheme",
-        "route_family": "invalid-input",
-        "summary": "Only http and https public URLs are supported.",
-        "required_tools": [],
-        "access_modes": [],
-        "fallback_order": [],
-        "acquisition_plan": [],
-        "notes": ["Rejected before any acquisition tool was invoked."],
-    }
-    attempts = [
-        AcquisitionAttempt(
-            stage_id="input-validation",
-            tool_id=None,
-            status="error",
-            error=f"unsupported-url-scheme:{parsed.scheme or 'missing'}",
-            details={"allowed_schemes": ["http", "https"]},
-        )
-    ]
-
-    return _payload_for(args, route, attempts, "error")
-
-
-def _payload_for(
-    args: argparse.Namespace,
-    route: dict[str, object],
-    attempts: list[AcquisitionAttempt],
-    disposition: str,
-) -> dict[str, object]:
-    result = payload(
-        args.url,
-        route,
-        attempts,
-        disposition,
-        intent=args.intent,
-        include_selected_content=args.include_selected_content,
-        selected_content_max_chars=args.selected_content_max_chars,
-    )
-    if route.get("route_id") == "twitter-syndication":
-        result["source_identity"] = twitter_exact_source.classify_source_identity(result)
-        result["source_resolution"] = twitter_exact_source.classify_source_resolution(result)
-    if route.get("route_id") == "reddit-feed":
-        result["source_identity"] = reddit_source.classify_source_identity(result)
-    if route.get("route_id") == "yt-dlp-metadata":
-        result["source_identity"] = youtube_source.classify_source_identity(result)
-    return result
 
 
 def _run_domain_specific_route(

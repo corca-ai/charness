@@ -491,6 +491,31 @@ None yet.
   - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
     now reports two advisory warn-band files.
 
+### Slice 13 — Extract web-fetch acquire payload and IO helpers
+
+- Objective: Remove the support web-fetch acquisition script length warning
+  without changing stage ordering or private stage-helper tests.
+- Finding: `skills/support/web-fetch/scripts/acquire_public_url.py` was at
+  348/360 code lines. Payload shaping and direct-read/subprocess IO helpers
+  were separable from acquisition orchestration.
+- Change: Added `acquire_public_url_payloads.py` for acquisition payload
+  construction and invalid-scheme payloads, plus `acquire_public_url_io.py` for
+  direct reads and subprocess command execution. Kept
+  `acquire_public_url._payload_for`, `_invalid_scheme_payload`,
+  `_read_direct`, and `_run_command` as module aliases so existing private
+  tests and monkeypatch seams remain intact. Synced the plugin mirror.
+- Verification:
+  - `python3 -m pytest -q tests/test_web_fetch_support.py::test_acquire_public_url_rejects_non_http_scheme tests/test_web_fetch_support.py::test_acquire_public_url_invalid_regex_never_succeeds tests/test_web_fetch_support.py::test_acquire_public_url_omits_selected_content_by_default tests/test_web_fetch_support.py::test_acquire_public_url_can_include_extracted_selected_content tests/test_web_fetch_route_and_classify.py tests/test_twitter_exact_source.py::test_acquire_non_twitter_has_no_source_identity tests/test_reddit_source.py::test_acquire_public_url_uses_reddit_rss_before_generic_fallback tests/test_web_fetch_content_persistence.py::test_acquire_public_url_can_persist_plain_text_starting_with_bracket --durations=20 --durations-min=0.01`
+    passed, 23 tests.
+  - `python3 -m py_compile skills/support/web-fetch/scripts/acquire_public_url.py skills/support/web-fetch/scripts/acquire_public_url_payloads.py skills/support/web-fetch/scripts/acquire_public_url_io.py plugins/charness/support/web-fetch/scripts/acquire_public_url.py plugins/charness/support/web-fetch/scripts/acquire_public_url_payloads.py plugins/charness/support/web-fetch/scripts/acquire_public_url_io.py && python3 -m ruff check skills/support/web-fetch/scripts/acquire_public_url.py skills/support/web-fetch/scripts/acquire_public_url_payloads.py skills/support/web-fetch/scripts/acquire_public_url_io.py plugins/charness/support/web-fetch/scripts/acquire_public_url.py plugins/charness/support/web-fetch/scripts/acquire_public_url_payloads.py plugins/charness/support/web-fetch/scripts/acquire_public_url_io.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths skills/support/web-fetch/scripts/acquire_public_url.py skills/support/web-fetch/scripts/acquire_public_url_payloads.py skills/support/web-fetch/scripts/acquire_public_url_io.py plugins/charness/support/web-fetch/scripts/acquire_public_url.py plugins/charness/support/web-fetch/scripts/acquire_public_url_payloads.py plugins/charness/support/web-fetch/scripts/acquire_public_url_io.py`
+    passed; `wc -l` reported `acquire_public_url.py` at 314 lines in root and
+    plugin copies.
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+    now reports one advisory warn-band file: `scripts/run_slice_closeout.py`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
