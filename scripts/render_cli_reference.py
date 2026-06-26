@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from runtime_bootstrap import repo_root_from_script
@@ -68,7 +69,17 @@ def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
     return (result.stdout + result.stderr).rstrip()
 
 
+def collect_help_outputs(repo_root: Path) -> dict[str, str]:
+    with ThreadPoolExecutor(max_workers=len(COMMANDS)) as executor:
+        futures = [
+            (title, executor.submit(run_help, repo_root, command))
+            for title, command in COMMANDS
+        ]
+        return {title: future.result() for title, future in futures}
+
+
 def render_cli_reference(repo_root: Path) -> str:
+    help_outputs = collect_help_outputs(repo_root)
     sections = [
         "<!-- GENERATED: do not edit. Regenerate via `python3 scripts/render_cli_reference.py --repo-root .` -->",
         "",
@@ -84,7 +95,7 @@ def render_cli_reference(repo_root: Path) -> str:
                 f"## `{title}`",
                 "",
                 "```text",
-                run_help(repo_root, command),
+                help_outputs[title],
                 "```",
                 "",
             ]

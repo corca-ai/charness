@@ -654,6 +654,33 @@ None yet.
     duplicate-removal and coverage-helper edits; a follow-up `--json` run
     reports `status: clean`.
 
+### Slice 20 — Parallelize generated CLI reference help collection
+
+- Objective: Reduce command-docs test and script runtime without weakening the
+  generated CLI reference drift check.
+- Finding: `tests/quality_gates/test_command_docs_gate.py` spent most of its
+  time in `test_render_cli_reference_matches_checked_in_doc`; direct timing
+  showed `scripts/render_cli_reference.py --repo-root . --output ...` at about
+  3.0s because it collected 33 `./charness ... --help` outputs sequentially.
+- Change: `scripts/render_cli_reference.py` now collects help output with a
+  `ThreadPoolExecutor` before rendering sections. The generated markdown order
+  and first-failing-command behavior remain command-list ordered because results
+  are read back in `COMMANDS` order. Synced the plugin mirror.
+- Verification:
+  - `python3 scripts/render_cli_reference.py --repo-root . --output /tmp/charness-cli-reference-test.md`
+    improved from about 3.0s to 0.13s.
+  - `python3 -m pytest -q tests/quality_gates/test_command_docs_gate.py --durations=20 --durations-min=0.01`
+    passed, 7 tests; `test_render_cli_reference_matches_checked_in_doc`
+    improved from 3.17s to 0.36s in the sequential proof run.
+  - `python3 -m py_compile scripts/render_cli_reference.py plugins/charness/scripts/render_cli_reference.py`
+    passed.
+  - `ruff check scripts/render_cli_reference.py plugins/charness/scripts/render_cli_reference.py tests/quality_gates/test_command_docs_gate.py`
+    passed.
+  - `python3 scripts/check_command_docs.py --repo-root .` passed and validated
+    31 command surfaces.
+  - `python3 scripts/check_coverage.py --repo-root .` passed with 92.1%
+    control-plane coverage and zero per-file floor violations.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
