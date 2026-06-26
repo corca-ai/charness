@@ -305,6 +305,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: After adding a new CLI mode, make its test proof cheap enough to stay in the standing loop.
 - Metrics: Runtime proxy: focused entrypoint-docs ergonomics test file observed at 0.61s before conversion and 0.38s after conversion in this session.
 
+### Slice 12: Run dead-code advisory CLI tests in-process
+
+- Objective: Reduce focused test startup cost for the dead-code advisory after adding its summary mode.
+- Why this approach: Two tests spawned a fresh Python process only to exercise the script main with a fake `vulture` on PATH; the same contract can be tested by calling `main()` with patched argv/PATH and captured stdout.
+- Commits:
+- What changed: Added an in-process helper for run_dead_code_advisory.py and converted the full JSON and summary CLI contract tests away from subprocess.run.
+- Alternatives rejected: Did not bypass the fake vulture subprocess itself because the advisory's behavior depends on invoking the external detector.
+- Targeted verification: pytest: 8 passed for test_quality_dead_code_advisory.py; ruff passed; check_python_lengths headroom remains 614 lines; run_slice_closeout.py passed.
+- Test duplication pressure: Added one local helper and kept existing assertions; no new test file.
+- Critique: Same-agent slice critique: the tests still exercise argparse/main JSON output and fake-vulture invocation, so the only removed boundary is the redundant Python wrapper process.
+- Off-goal findings: Broader boundary-bypass conversion remains available but should be batched by repeated helper patterns.
+- Lessons carried forward: When a test needs a fake external binary, keep that external boundary and remove only the redundant script process.
+- Metrics: Runtime proxy: focused dead-code advisory test file observed at 0.64s before conversion and 0.53s after conversion in this session.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

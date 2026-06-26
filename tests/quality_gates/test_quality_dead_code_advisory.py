@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
 import os
-import subprocess
 import sys
 import textwrap
 from pathlib import Path
@@ -12,7 +14,20 @@ from .support import ROOT, init_git_repo
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "run_dead_code_advisory.py"
 
 
-def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path) -> None:
+def _run_dead_code_advisory(monkeypatch, bin_dir: Path, *args: str) -> dict:
+    spec = importlib.util.spec_from_file_location("run_dead_code_advisory_cli_under_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    buffer = io.StringIO()
+    monkeypatch.setattr(sys, "argv", ["run_dead_code_advisory.py", *args])
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ.get('PATH', '')}")
+    with contextlib.redirect_stdout(buffer):
+        assert module.main() == 0
+    return json.loads(buffer.getvalue())
+
+
+def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path, monkeypatch) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     fake_vulture = bin_dir / "vulture"
@@ -37,15 +52,7 @@ def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path) -> None:
     (repo / "scripts").mkdir()
     (repo / "scripts" / "example.py").write_text("def old_helper():\n    pass\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"},
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_dead_code_advisory(monkeypatch, bin_dir, "--repo-root", str(repo), "--json")
 
     assert payload["primary"]["status"] == "clean"
     assert payload["sweep"]["status"] == "findings"
@@ -61,7 +68,7 @@ def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path) -> None:
     ]
 
 
-def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Path) -> None:
+def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Path, monkeypatch) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     fake_vulture = bin_dir / "vulture"
@@ -89,15 +96,7 @@ def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Pa
     (repo / "tests").mkdir()
     (repo / "tests" / "conftest.py").write_text("pytest_plugins = []\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"},
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_dead_code_advisory(monkeypatch, bin_dir, "--repo-root", str(repo), "--summary")
 
     assert payload["summary_note"].startswith("summary is triage output")
     assert "command" not in payload["sweep"]
